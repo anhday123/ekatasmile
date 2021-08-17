@@ -1,0 +1,31 @@
+{
+  "name": "be_admin1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js",
+    "push": "rm -r node_modules && scp -r ../be root@171.244.203.25:/root/Admin_1 && exit"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sentry/node": "^6.7.2",
+    "@sentry/tracing": "^6.7.2",
+    "axios": "^0.21.1",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "http-errors": "^1.7.2",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "mongodb": "^3.6.9",
+    "nodemailer": "^6.6.2"
+  },
+  "devDependencies": {
+    "bcrypt": "^5.0.1",
+    "crypto": "^1.0.1",
+    "nodemon": "^2.0.7"
+  }
+}

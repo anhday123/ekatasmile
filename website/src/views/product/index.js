@@ -1797,62 +1797,7 @@ export default function Product() {
                     }}
                   >
                     {
-                      statusName === '' || statusName === ' ' || statusName === 'default' ? (funcHoverImage(values.image, index, record, values.sku)) : (values &&
-                        values.image &&
-                        values.image.length > 0 &&
-                        values.image.map(
-                          (values1, index1) => {
-                            return (
-                              <Popover
-                                content={() =>
-                                  content(values1)
-                                }
-                                placement="right"
-                              >
-                                <Col
-                                  xs={11}
-                                  sm={11}
-                                  md={11}
-                                  lg={11}
-                                  xl={11}
-                                  style={{
-                                    width: '100%',
-                                    cursor: 'pointer',
-                                    marginBottom:
-                                      '1rem',
-                                  }}
-                                >
-                                  <div>
-                                    <a
-                                      style={{
-                                        position:
-                                          'relative',
-                                      }}
-                                      href={
-                                        values1
-                                      }
-                                      target="_blank"
-                                    >
-                                      <img
-                                        src={
-                                          values1
-                                        }
-                                        style={{
-                                          width: '5rem',
-                                          height: '5rem',
-                                          objectFit:
-                                            'contain',
-                                        }}
-                                        alt=""
-                                      />
-                                    </a>
-                                  </div>
-                                </Col>
-                              </Popover>
-
-                            )
-                          }
-                        ))
+                      funcHoverImage(values.image, index, record, values.sku)
 
                     }
 
@@ -3529,7 +3474,13 @@ export default function Product() {
         const res = await apiUpdateProductStore(object, id)
         console.log(res)
         if (res.status === 200) {
-          await apiAllProductData()
+
+          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
+            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          } else {
+            await apiAllProductData()
+          }
+
           setIndexCheckbox([])
 
           setSkuSelectArray([])
@@ -4498,7 +4449,7 @@ export default function Product() {
   console.log("_____________________________456456456")
   const [statusCount, setStatusCount] = useState(0)
   const filterProductMainFunc = (data, count) => {
-    filterProductMain({ status: data, page: 1, page_size: 10, merge: false })
+    filterProductMain({ status: data, page: 1, page_size: 10 })
     setStatusCount(count)
   }
   const onClickAll = async (count) => {
@@ -4861,7 +4812,7 @@ export default function Product() {
           <div className={styles['view_product_table']}>
             <Table
               className={styles['time-table-row-select']}
-              rowSelection={statusName === '' || statusName === ' ' || statusName === 'default' ? rowSelection : ''}
+              rowSelection={statusName === '' || statusName === ' ' || statusName === 'default' ? rowSelection : rowSelection}
               bordered
               rowClassName={(record, index) =>
                 // record.has_variable && record.variants.length > 0 ? (record.variants.map((values, index) => {
@@ -4893,7 +4844,7 @@ export default function Product() {
                 })) : (record.status.toLowerCase() === 'available_stock' ? (styles['available_stock']) : (record.status.toLowerCase() === 'low_stock' ? (styles['low_stock']) : (record.status.toLowerCase() === 'shipping_stock' ? (styles['shipping_stock']) : (styles['out_stock']))))
               }
               rowKey="_id"
-              columns={viewMode === 1 ? (statusName === '' || statusName === ' ' || statusName === 'default' ? columnsStore : columnsStatusNameStore) : (statusName === '' || statusName === ' ' || statusName === 'default' ? columns : columnsStatusName)}
+              columns={viewMode === 1 ? (statusName === '' || statusName === ' ' || statusName === 'default' ? columnsStore : columnsStore) : (statusName === '' || statusName === ' ' || statusName === 'default' ? columns : columns)}
               pagination={false}
               // pagination={pagination}
               loading={loading}

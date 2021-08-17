@@ -1,0 +1,18 @@
+module.exports.getSaleProduct = [
+    `product_id`,
+    `bussiness`,
+    `branch`,
+    `code`,
+    `sku`,
+    `name`,
+    `barcode`,
+    `category`,
+    `supplier`,
+    `_category`,
+    `keyword`,
+    `page`,
+    `page_size`,
+    `from_date`,
+    `to_date`,
+    `variants`,
+];
