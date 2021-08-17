@@ -262,7 +262,7 @@ export default function Product() {
     console.log('Success:', values);
     const object = {
       name: values.categoryName,
-      type: values.categoryType,
+      type: '',
       description: values.categoryDescription ? values.categoryDescription : ''
     }
     apiAddCategoryDataMain(object)
@@ -293,10 +293,10 @@ export default function Product() {
       title: 'Số lượng sản phẩm',
       dataIndex: 'address',
     },
-    {
-      title: 'Loại nhóm',
-      dataIndex: 'type',
-    },
+    // {
+    //   title: 'Loại nhóm',
+    //   dataIndex: 'type',
+    // },
     {
       title: 'Người tạo',
       dataIndex: '_creator',
@@ -306,10 +306,10 @@ export default function Product() {
       dataIndex: 'create_date',
       render: (text, record) => text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : ''
     },
-    {
-      title: 'Mô tả',
-      dataIndex: 'description',
-    },
+    // {
+    //   title: 'Mô tả',
+    //   dataIndex: 'description',
+    // },
     {
       title: 'Trạng thái',
       dataIndex: 'active',
@@ -743,11 +743,7 @@ export default function Product() {
                         product[index].variants[
                           index20
                         ].image = resultsMockup[0].data.data
-                        console.log(
-                          product[index].variants[
-                            index20
-                          ].image
-                        )
+
                       }
                     })
                 }
@@ -1100,9 +1096,9 @@ export default function Product() {
     setLoading(true)
     try {
 
-      const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: pagination.page, page_size: pagination.pageSize }) : await apiProductSeller({ ...params, page: pagination.page, page_size: pagination.pageSize })
+      const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: pagination.page, page_size: pagination.pageSize }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize })
       console.log(res)
-      console.log("____333333")
+      console.log("____3333334444455555")
       if (res.status === 200) {
         if (viewMode === 1) {
           setProductStore(res.data.data)
@@ -1114,7 +1110,7 @@ export default function Product() {
         // setProduct(res.data.data)
         setCount(res.data.count)
         setSelectedRowKeys([])
-        setPaginationChecked(1)
+        setPaginationChecked(paginationChecked)
       }
       setLoading(false)
     } catch (error) {
@@ -1177,15 +1173,28 @@ export default function Product() {
   const apiAllProductDataMain = async () => {
     setLoading(true)
     try {
-
-      const res = await apiAllProduct({ page: pagination.page, page_size: pagination.pageSize })
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-        setStatusName('')
-        setSelectedRowKeys([])
-        setPaginationChecked(1)
+      if (viewMode === 1) {
+        const res = await apiProductSeller({ page: pagination.page, page_size: pagination.pageSize })
+        if (res.status === 200) {
+          setProductStore(res.data.data)
+          setProduct([])
+          setCount(res.data.count)
+          setStatusName('')
+          setSelectedRowKeys([])
+          setPaginationChecked(1)
+        }
+      } else {
+        const res = await apiAllProduct({ page: pagination.page, page_size: pagination.pageSize })
+        if (res.status === 200) {
+          setProduct(res.data.data)
+          setProductStore([])
+          setCount(res.data.count)
+          setStatusName('')
+          setSelectedRowKeys([])
+          setPaginationChecked(1)
+        }
       }
+
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -1308,7 +1317,9 @@ export default function Product() {
                 arrayFinish[index3] = objectResult
                 objectFinish = { ...values, variants: arrayFinish }
                 console.log(objectFinish)
-                apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+
+                console.log("_________________________________456456456")
+                apiUpdateProductMultiMainStore(objectFinish, objectFinish.product_id)
               }
             })
 
@@ -1456,6 +1467,7 @@ export default function Product() {
   const [skuSelectArrayBackup, setSkuSelectArrayBackup] = useState([])
   const onChangeSelectInventoryStore = async (e) => {
     setViewMode(e.target.value)
+    setStatusCount(0)
     await apiAllProductDataMain()
     setValueSearch('')
     setCategoryValue("")
@@ -1559,7 +1571,7 @@ export default function Product() {
     arrayVariant[index2].image.splice(index1, 1)
     record.variants = arrayVariant
     console.log(record)
-    apiUpdateProductMultiMainDelete(record, record.product_id)
+    apiUpdateProductMultiMainDeleteStore(record, record.product_id)
   }
   const onClickDeleteAllImage = (index2, record) => {
     var array = [...arrayCheck]
@@ -1577,7 +1589,7 @@ export default function Product() {
 
     })
     setArrayCheck([...array])
-    apiUpdateProductMultiMainDelete(record, record.product_id)
+    apiUpdateProductMultiMainDeleteStore(record, record.product_id)
   }
   const onClickDeleteAllImageSimple = (record) => {
     var listImage = [...record.image]
@@ -1719,7 +1731,7 @@ export default function Product() {
                       }
                     })) : <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
                   } */}
-                  <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                  <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
 
                 </Col>
               </Popover>
@@ -1805,52 +1817,7 @@ export default function Product() {
                 </Col>
               )
             })
-          ) :
-
-            statusName === '' || statusName === ' ' || statusName === 'default' ? (record && record.image && record.image.length > 0 ? (funcHoverImageSimple(record))
-
-              : funcHoverImageSimple(record)) : (record.image.map((values, index) => {
-                return (
-                  <Popover
-                    content={() => content(values)}
-                    placement="right"
-                  >
-                    <Col
-                      xs={11}
-                      sm={11}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                      style={{
-                        width: '100%',
-                        cursor: 'pointer',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a
-                        style={{ position: 'relative' }}
-                        href={values}
-                        target="_blank"
-                      >
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                          }}
-                          alt=""
-                        />
-                      </a>
-                    </Col>
-                  </Popover>
-                )
-              }))
-
-
-
-
-
+          ) : funcHoverImageSimple(record)
           }
         </Row>
       ),
@@ -2581,62 +2548,7 @@ export default function Product() {
                     }}
                   >
                     {
-                      statusName === '' || statusName === ' ' || statusName === 'default' ? (funcHoverImage(values.image, index, record, values.sku)) : (values &&
-                        values.image &&
-                        values.image.length > 0 &&
-                        values.image.map(
-                          (values1, index1) => {
-                            return (
-                              <Popover
-                                content={() =>
-                                  content(values1)
-                                }
-                                placement="right"
-                              >
-                                <Col
-                                  xs={11}
-                                  sm={11}
-                                  md={11}
-                                  lg={11}
-                                  xl={11}
-                                  style={{
-                                    width: '100%',
-                                    cursor: 'pointer',
-                                    marginBottom:
-                                      '1rem',
-                                  }}
-                                >
-                                  <div>
-                                    <a
-                                      style={{
-                                        position:
-                                          'relative',
-                                      }}
-                                      href={
-                                        values1
-                                      }
-                                      target="_blank"
-                                    >
-                                      <img
-                                        src={
-                                          values1
-                                        }
-                                        style={{
-                                          width: '5rem',
-                                          height: '5rem',
-                                          objectFit:
-                                            'contain',
-                                        }}
-                                        alt=""
-                                      />
-                                    </a>
-                                  </div>
-                                </Col>
-                              </Popover>
-
-                            )
-                          }
-                        ))
+                      funcHoverImage(values.image, index, record, values.sku)
 
                     }
 
@@ -2645,51 +2557,7 @@ export default function Product() {
               )
             })
           ) :
-
-            statusName === '' || statusName === ' ' || statusName === 'default' ? (record && record.image && record.image.length > 0 ? (funcHoverImageSimple(record))
-
-              : funcHoverImageSimple(record)) : (record.image.map((values, index) => {
-                return (
-                  <Popover
-                    content={() => content(values)}
-                    placement="right"
-                  >
-                    <Col
-                      xs={11}
-                      sm={11}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                      style={{
-                        width: '100%',
-                        cursor: 'pointer',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a
-                        style={{ position: 'relative' }}
-                        href={values}
-                        target="_blank"
-                      >
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                          }}
-                          alt=""
-                        />
-                      </a>
-                    </Col>
-                  </Popover>
-                )
-              }))
-
-
-
-
-
+            funcHoverImageSimple(record)
           }
         </Row>
       ),
@@ -3465,6 +3333,59 @@ export default function Product() {
       ),
     })
   }
+  const apiUpdateProductMultiMainDeleteStore = async (object, id) => {
+    try {
+      //   dispatch({ type: ACTION.LOADING, data: true });
+      // console.log(value);
+      setLoading(true)
+      if (viewMode === 1) {
+        const res = await apiUpdateProductStore(object, id)
+        console.log(res)
+        if (res.status === 200) {
+
+
+          await apiAllProductData()
+
+
+          setIndexCheckbox([])
+
+          setSkuSelectArray([])
+          setIndexCheckboxSimple([])
+          // setSelectedRowKeys([])
+          openNotificationSuccessUpdateProductMainDelete(object.name)
+          //   onClose()
+          //   onCloseUpdate()
+          //   setCheckboxValue(false)
+        }
+      } else {
+        const res = await apiUpdateProduct(object, id)
+        console.log(res)
+        if (res.status === 200) {
+
+          await apiAllProductData()
+
+          setIndexCheckbox([])
+
+          setIndexCheckboxSimple([])
+          // setSelectedRowKeys([])
+          openNotificationSuccessUpdateProductMainDelete(object.name)
+          //   onClose()
+          //   onCloseUpdate()
+          //   setCheckboxValue(false)
+        }
+      }
+
+      // if (res.status === 200) setStatus(res.data.status);
+      //   dispatch({type: ACTION.LOADING, data: false });
+      // openNotification();
+      // history.push(ROUTES.NEWS);
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      //    dispatch({type: ACTION.LOADING, data: false });
+      setLoading(false)
+    }
+  }
   const apiUpdateProductMultiMainDelete = async (object, id) => {
     try {
       //   dispatch({ type: ACTION.LOADING, data: true });
@@ -3495,7 +3416,11 @@ export default function Product() {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
-          await apiAllProductData()
+          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
+            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          } else {
+            await apiAllProductData()
+          }
           setIndexCheckbox([])
 
           setIndexCheckboxSimple([])
@@ -3518,7 +3443,7 @@ export default function Product() {
       setLoading(false)
     }
   }
-  const apiUpdateProductMultiMain = async (object, id) => {
+  const apiUpdateProductMultiMainStore = async (object, id) => {
     try {
       //   dispatch({ type: ACTION.LOADING, data: true });
       // console.log(value);
@@ -3529,7 +3454,11 @@ export default function Product() {
         console.log(res)
         console.log("______________________________555555555555")
         if (res.status === 200) {
+
+
+
           await apiAllProductData()
+
           // setSelectedRowKeys([])
           //    openNotificationSuccessUpdateProductMain(object.name)
           //   onClose()
@@ -3544,7 +3473,66 @@ export default function Product() {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
+
           await apiAllProductData()
+
+          // setSelectedRowKeys([])
+          //    openNotificationSuccessUpdateProductMain(object.name)
+          //   onClose()
+          //   onCloseUpdate()
+          //   setCheckboxValue(false)
+        }
+        // if (res.status === 200) setStatus(res.data.status);
+        //   dispatch({type: ACTION.LOADING, data: false });
+        // openNotification();
+        // history.push(ROUTES.NEWS);
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      //    dispatch({type: ACTION.LOADING, data: false });
+      setLoading(false)
+    }
+  }
+  const apiUpdateProductMultiMain = async (object, id) => {
+    try {
+      //   dispatch({ type: ACTION.LOADING, data: true });
+      // console.log(value);
+      setLoading(true)
+
+      if (viewMode === 1) {
+        const res = await apiUpdateProductStore(object, id)
+        console.log(res)
+        console.log("______________________________555555555555")
+        if (res.status === 200) {
+
+          if (statusName !== '' || statusName !== ' ' || statusName !== 'default' || typeof statusName !== 'undefined') {
+
+            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          } else {
+
+            await apiAllProductData()
+          }
+          // setSelectedRowKeys([])
+          //    openNotificationSuccessUpdateProductMain(object.name)
+          //   onClose()
+          //   onCloseUpdate()
+          //   setCheckboxValue(false)
+        }
+        // if (res.status === 200) setStatus(res.data.status);
+        //   dispatch({type: ACTION.LOADING, data: false });
+        // openNotification();
+        // history.push(ROUTES.NEWS);
+      } else {
+        const res = await apiUpdateProduct(object, id)
+        console.log(res)
+        if (res.status === 200) {
+          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
+            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          } else {
+            await apiAllProductData()
+          }
           // setSelectedRowKeys([])
           //    openNotificationSuccessUpdateProductMain(object.name)
           //   onClose()
@@ -4221,17 +4209,17 @@ export default function Product() {
   }
   const onCloseUpdateFuncCategory = () => {
     arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.forEach((values, index) => {
-      if ((values.name === '' || values.name === ' ' || values.name === 'default') || (values.type === '' || values.type === ' ' || values.type === 'default')) {
+      if ((values.name === '' || values.name === ' ' || values.name === 'default')) {
         if (values.name === '' || values.name === ' ' || values.name === 'default') {
           openNotificationErrorCategory('tên')
         }
-        if (values.type === '' || values.type === ' ' || values.type === 'default') {
-          openNotificationErrorCategory('loại')
-        }
+        // if (values.type === '' || values.type === ' ' || values.type === 'default') {
+        //   openNotificationErrorCategory('loại')
+        // }
       } else {
         const object = {
           name: values.name,
-          type: values.type,
+          type: '',
           description: values.description ? values.description : ''
         }
         apiUpdateCategoryDataUpdate(object, values.category_id)
@@ -4278,20 +4266,40 @@ export default function Product() {
   const filterProductMain = async (params) => {
     try {
       setLoading(true)
-      const res = await apiSearchProduct(params)
-      console.log(res)
-      if (res.status === 200) {
+      if (viewMode === 1) {
+        const res = await apiProductSeller(params)
+        console.log(res)
+        if (res.status === 200) {
 
-        console.log(res.data.data)
-        console.log("_________________-6666666666")
-        setProduct(res.data.data)
-        setCount(res.data.count)
+          console.log(res.data.data)
+          console.log("_________________-6666666666")
+          setProductStore(res.data.data)
+          setProduct([])
+          setCount(res.data.count)
 
-        setSelectedRowKeys([])
-        setProductStatus(res.data.data)
-        setStatusName(params.status.toLowerCase())
-        setPaginationChecked(1)
+          setSelectedRowKeys([])
+          setProductStatus(res.data.data)
+          setStatusName(params.status.toLowerCase())
+          setPaginationChecked(1)
+        }
+      } else {
+        const res = await apiSearchProduct(params)
+        console.log(res)
+        if (res.status === 200) {
+
+          console.log(res.data.data)
+          console.log("_________________-6666666666")
+          setProduct(res.data.data)
+          setProductStore([])
+          setCount(res.data.count)
+
+          setSelectedRowKeys([])
+          setProductStatus(res.data.data)
+          setStatusName(params.status.toLowerCase())
+          setPaginationChecked(1)
+        }
       }
+
       setLoading(false)
     } catch (e) {
       console.log(e);
@@ -4454,11 +4462,9 @@ export default function Product() {
   }
   const onClickAll = async (count) => {
 
-    if (statusName !== 'available_stock') {
-      await apiAllProductDataMain()
-      setStatusName('')
-      setStatusCount(count)
-    }
+    await apiAllProductDataMain()
+    setStatusName('')
+    setStatusCount(count)
   }
   const [categoryValue, setCategoryValue] = useState('')
   const onChangeCategoryValue = async (e) => {
@@ -6068,6 +6074,8 @@ export default function Product() {
                                       index20={index1}
 
                                     />
+
+
                                     return (
                                       <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={4}>
                                         <div>
@@ -6575,7 +6583,7 @@ export default function Product() {
       <Modal
         title="Tạo nhóm sản phẩm"
         centered
-        width={1000}
+        width={500}
         footer={null}
         visible={modal6Visible}
         onOk={() => modal6VisibleModal(false)}
@@ -6590,7 +6598,7 @@ export default function Product() {
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
               <div>
 
                 <Form.Item
@@ -6603,6 +6611,7 @@ export default function Product() {
                 </Form.Item>
               </div>
             </Col>
+            {/*             
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
 
@@ -6630,6 +6639,7 @@ export default function Product() {
                 </Form.Item>
               </div>
             </Col>
+         */}
           </Row>
 
 
@@ -6657,7 +6667,7 @@ export default function Product() {
 
       <Drawer
         title="Cập nhật nhóm sản phẩm"
-        width={1000}
+        width={500}
         onClose={onCloseCategoryGroupUpdate}
         visible={visibleCategoryGroupUpdate}
         bodyStyle={{ paddingBottom: 80 }}
@@ -6700,7 +6710,7 @@ export default function Product() {
                         />
                       )
                       return (
-                        <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                        <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                           <div>
 
                             <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm: </div>
@@ -6710,55 +6720,57 @@ export default function Product() {
                         </Col>
                       )
                     }
-                    if (data === 'type') {
-                      const InputName = () => (
-                        <Input
-                          style={{ width: '100%' }}
-                          placeholder="Nhập loại nhóm"
-                          // defaultValue={values.quantity}
-                          defaultValue={values[data]}
-                          onChange={(event) => {
 
-                            arrayUpdateCategory[index][data] = event.target.value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                          <div>
+                    // if (data === 'type') {
+                    //   const InputName = () => (
+                    //     <Input
+                    //       style={{ width: '100%' }}
+                    //       placeholder="Nhập loại nhóm"
+                    //       // defaultValue={values.quantity}
+                    //       defaultValue={values[data]}
+                    //       onChange={(event) => {
 
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Loại nhóm sản phẩm: </div>
-                            <InputName />
+                    //         arrayUpdateCategory[index][data] = event.target.value
+                    //       }}
+                    //     />
+                    //   )
+                    //   return (
+                    //     <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                    //       <div>
 
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'description') {
-                      const InputName = () => (
-                        <TextArea
-                          rows={4}
-                          style={{ width: '100%' }}
-                          placeholder="Nhập mô tả"
-                          // defaultValue={values.quantity}
-                          defaultValue={values[data]}
-                          onChange={(event) => {
+                    //         <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Loại nhóm sản phẩm: </div>
+                    //         <InputName />
 
-                            arrayUpdateCategory[index].description = event.target.value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                          <div>
+                    //       </div>
+                    //     </Col>
+                    //   )
+                    // }
+                    // if (data === 'description') {
+                    //   const InputName = () => (
+                    //     <TextArea
+                    //       rows={4}
+                    //       style={{ width: '100%' }}
+                    //       placeholder="Nhập mô tả"
+                    //       // defaultValue={values.quantity}
+                    //       defaultValue={values[data]}
+                    //       onChange={(event) => {
 
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Mô tả nhóm sản phẩm: </div>
-                            <InputName />
+                    //         arrayUpdateCategory[index].description = event.target.value
+                    //       }}
+                    //     />
+                    //   )
+                    //   return (
+                    //     <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                    //       <div>
 
-                          </div>
-                        </Col>
-                      )
-                    }
+                    //         <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Mô tả nhóm sản phẩm: </div>
+                    //         <InputName />
+
+                    //       </div>
+                    //     </Col>
+                    //   )
+                    // }
+
                   })
                 }
 
