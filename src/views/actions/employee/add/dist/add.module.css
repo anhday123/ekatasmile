@@ -1,0 +1,133 @@
+.employee_add {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.employee_add_parent_form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-direction: column;
+  width: 100%;
+}
+
+.employee_add_parent {
+  background-color: white;
+  margin: 1rem;
+  display: flex;
+  padding: 1rem 1rem 0 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.employee_add_title {
+  font-size: 1.1rem;
+  color: black;
+  font-weight: 600;
+  color: black;
+}
+
+.employee_add_parent_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.employee_add_parent_col {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+}
+
+.employee_add_parent_col_button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.employee_add_parent_col_row_child {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.date {
+  width: 100%;
+}
+
+.upload_icon {
+  width: 100%;
+}
+
+.pos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.pos_top {
+  display: flex;
+  margin-bottom: 1rem;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.employee_add_parent_row_bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.employee_add_parent_col_bottom {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.employee_add_parent_col_row_child_bottom {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.pos_top_title {
+  width: 50%;
+  font-size: 1rem;
+}
+
+.employee_add_parent_col_row_child_account {
+  font-size: 1rem;
+  font-weight: 600;
+  color: black;
+}
+
+.employee_add_parent_col_row_child_name {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: black;
+}
+
+.pos_top_input {
+  width: 100%;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}

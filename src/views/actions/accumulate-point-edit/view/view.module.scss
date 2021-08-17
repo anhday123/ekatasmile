@@ -1,0 +1,97 @@
+.promotion_manager {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    margin: 1rem;
+    padding: 1rem;
+    align-items: center;
+    flex-direction: column;
+}
+.promotion_manager_title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    // margin-bottom: 1rem;
+    color: black;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.promotion_manager_search {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+    align-items: center;
+    width: 100%;
+}
+.promotion_manager_button {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.supplier_add {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+    background-color: white;
+    padding: 1rem 1rem 0 1rem;
+    flex-direction: column;
+}
+.supplier_add_content_supplier_code_input {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.supplier_add_back_parent {
+    display: flex;
+    cursor: pointer;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.supplier_add_back {
+    font-size: 1rem;
+    color: black;
+    margin-left: 0.5rem;
+    font-weight: 600;
+}
+.supplier_add_content {
+    display: flex;
+    background-color: white;
+    padding: 1rem 1rem 0 1rem;
+    margin: 0rem 1rem 0rem 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+}
+.display-none {
+    display: none;
+    visibility: hidden;
+}
+.supplier_add_content_supplier_code {
+    display: flex;
+    // margin-bottom: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.supplier_add_content_supplier_code_title {
+    width: 15%;
+}
+.supplier_add_content_supplier_button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+.supplier_add_content_supplier_button_right {
+    margin-left: 1rem;
+}
+.supplier_add_content_supplier_button_left {
+    margin-right: 1rem;
+}

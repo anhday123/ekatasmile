@@ -1,0 +1,72 @@
+.view_orders {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: white;
+  padding: 1rem;
+  margin: 1rem;
+}
+.view_orders_title {
+  display: flex;
+  cursor: pointer;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.view_orders_title > div {
+  font-size: 1rem;
+  font-weight: 600;
+  color: black;
+  margin-right: 1rem;
+}
+.view_orders_row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+.view_orders_row_child {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+.view_orders_row_child_button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-right: 2rem;
+}
+.view_orders_row_child_col {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.view_orders_row_child_col_orders_code {
+  margin-right: 1rem;
+}
+.view_orders_row_child_col_orders_code > div {
+  color: black;
+  font-weight: 600;
+}
+.view_orders_row_child_col_parent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.view_orders_row_child_col_left {
+  display: flex;
+  border: 1px solid rgb(209, 192, 192);
+  padding: 0.25rem 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.content {
+  border: 1px solid rgb(209, 192, 192);
+  padding: 0.25rem 0.5rem;
+}

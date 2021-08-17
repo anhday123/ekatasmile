@@ -1,0 +1,49 @@
+.promotion_manager {
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  margin: 1rem;
+  padding: 1rem;
+  align-items: center;
+  flex-direction: column;
+}
+
+.promotion_manager_title {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  color: black;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.promotion_manager_search {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  align-items: center;
+  width: 100%;
+}
+
+.promotion_manager_button {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.supplier_add_content_supplier_button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.supplier_add_content_supplier_button_right {
+  margin-left: 1rem;
+}
+
+.supplier_add_content_supplier_button_left {
+  margin-right: 1rem;
+}

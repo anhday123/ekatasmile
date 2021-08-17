@@ -1,0 +1,43 @@
+.business {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: white;
+    margin: 1rem;
+    padding: 1rem;
+    // width: 100%;
+    flex-direction: column;
+}
+.business > div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.business_title {
+    cursor: pointer;
+    display: flex;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgb(236, 227, 227);
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.business_title > div {
+    color: black;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}
+.business_content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.hover_item {
+    cursor: pointer;
+}
+.hover_item:hover {
+    transform: scale(1.05);
+}

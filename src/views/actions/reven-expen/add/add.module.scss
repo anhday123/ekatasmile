@@ -1,0 +1,76 @@
+.reven_add {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 1rem;
+    padding: 1rem 1rem 0 1rem; 
+    background-color: white;
+    flex-direction: column;
+}
+.reven_add_title {
+    display: flex;
+    cursor: pointer;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.reven_add_title >  div {
+    margin-right: 1rem;
+    color: black;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.reven_add_bottom {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+}
+.reven_add_bottom_row {
+    display: flex;
+    justify-content: space-between;
+    // align-items: center;
+    width: 100%;
+}
+.reven_add_bottom_row_select {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    // align-items: center;
+    width: 100%;
+}
+.reven_add_bottom_row_col {
+    width: 100%;
+    // margin-bottom: 1rem;
+}
+.reven_add_bottom_row_col_title {
+     margin-right: 1rem;
+     width: 100%;
+}
+.reven_add_bottom_row_col_input {
+    width: 100%;
+}
+.reven_add_bottom_row_col_input_child {
+    width: 100%;
+}
+.reven_add_bottom_row_col_input_child_select {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+.reven_add_button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+.reven_add_button_left {
+    margin-right: 1rem;
+}
+.reven_add_bottom_row_col_input_child_information {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgb(212, 198, 198);
+}

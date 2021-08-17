@@ -1,0 +1,85 @@
+.orders_manager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: white;
+    margin: 1rem;
+    padding: 1rem;
+}
+.orders_manager_title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
+    color: black;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.orders_manager_search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_search_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_search_row_col {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.orders_manager_search_row_col_select {
+    width: 100%;
+    margin-bottom: 1rem;
+    margin-right: 1rem;
+}
+.orders_manager_search_row_col_seach_parent {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_search_row_col_seach_child {
+    width: 100%;
+}
+.orders_manager_search_row_col_button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_select {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_select_row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_search_row_col_child {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_manager_table {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border: 1px solid rgb(212, 198, 198);
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+}
+.orders_manager_table_child {
+    width: 100%;
+}

@@ -1,0 +1,166 @@
+import UI from "../../components/Layout/UI";
+import styles from "./../configuration-store/configuration-store.module.scss";
+import React, { useState } from "react";
+import { Input, Row, Col, Popover } from "antd";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect,
+  useHistory,
+  useLocation
+} from "react-router-dom";
+import { ShopOutlined, FileExcelOutlined, FormOutlined, DollarOutlined, TeamOutlined, RadarChartOutlined, CreditCardOutlined, ApartmentOutlined, DeleteOutlined, EditOutlined, BranchesOutlined } from "@ant-design/icons";
+
+const data = [];
+for (let i = 0; i < 46; i++) {
+  data.push({
+    key: i,
+    stt: i,
+    customerName: `Nguyễn Văn A ${i}`,
+    customerCode: `PRX ${i}`,
+    customerType: `Tiềm năng ${i}`,
+    phoneNumber: `038494349${i}`,
+  });
+}
+export default function ConfigurationStore() {
+  const { Search } = Input;
+
+
+  const onSearch = (value) => console.log(value);
+
+  const dataPromotion = [];
+  for (let i = 0; i < 46; i++) {
+    dataPromotion.push({
+      key: i,
+      stt: i,
+      customerCode: <Link to="/actions/customer/view" style={{ color: '#2400FF' }}>GH {i}</Link>,
+      customerName: `Văn Tỷ ${i}`,
+      customerType: `Tiềm năng ${i}`,
+      branch: `Chi nhánh ${i}`,
+      birthDay: `2021/06/28 ${i}`,
+      email: `anhhung_so11@yahoo.com`,
+      phoneNumber: '0384943497',
+      address: '27/27, đường Ngô Y Linh',
+      district: 'Bình Tân',
+      city: 'Hồ Chí Minh',
+      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
+        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
+      </div>
+    });
+  }
+  const content = (
+    <div>
+      <div>Gợi ý 1</div>
+      <div>Gợi ý 2</div>
+    </div>
+  );
+  return (
+    <UI>
+      <div className={styles['configuration']}>
+        <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', borderBottom: '1px solid grey', paddingBottom: '0.5rem' }}>Cấu hình</div>
+        <Popover placement="bottomLeft" content={content} trigger="click">
+          <div style={{ marginTop: '1rem' }}>
+            <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên cấu trúc, chức năng của cấu hình" onSearch={onSearch} enterButton /></div>
+        </Popover>
+        <div className={styles['configuration_content']}>
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Thông tin về cửa hàng</div>
+          <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/branch/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#FCEEE4', marginRight: '1rem', border: '1px solid #FA964C', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><BranchesOutlined style={{ color: '#FA964C', fontSize: '1.5rem', }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý chi nhánh</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Thêm và điều chỉnh thông tin chi nhánh</div>
+                </div>
+              </Link>
+            </Col>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/store/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#E7FCE6', marginRight: '1rem', border: '1px solid #2DD728', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><ShopOutlined style={{ color: '#2DD728', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý cửa hàng</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Quản lý thông tin liên hệ và địa chỉ của cửa hàng</div>
+                </div>
+              </Link>
+            </Col>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/user/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#FCE5E1', marginRight: '1rem', border: '1px solid #F07D6B', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><ApartmentOutlined style={{ color: '#F07D6B', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý người dùng</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Tạo, quản lý các vai trò người dùng</div>
+                </div>
+              </Link>
+            </Col>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/employee/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#FCDFEF', marginRight: '1rem', border: '1px solid #F060AE', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><TeamOutlined style={{ color: '#F060AE', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý nhân sự</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Tạo và quản lý tất cả tài khoản của nhân sự</div>
+                </div>
+              </Link>
+            </Col>
+
+
+          </Row>
+        </div>
+
+
+        <div className={styles['configuration_content']}>
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Thông tin bán hàng</div>
+          <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/tax/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#FCF7EB', marginRight: '1rem', border: '1px solid #EFC76E', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><DollarOutlined style={{ color: '#EFC76E', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý thuế</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Thiết lập thuế nhập và bán hàng</div>
+                </div>
+              </Link>
+            </Col>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
+              <Link to="/payment/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#F3FCE2', marginRight: '1rem', border: '1px solid #B6DE62', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><CreditCardOutlined style={{ color: '#B6DE62', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Quản lý thanh toán</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Thiết lập các hình thức thanh toán</div>
+                </div>
+              </Link>
+            </Col>
+          </Row>
+        </div>
+
+
+        <div className={styles['configuration_content']}>
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Nhật ký</div>
+          <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
+              <Link to="/import-export-file/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#D7E9DB', marginRight: '1rem', border: '1px solid #388F4D', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><FileExcelOutlined style={{ color: '#388F4D', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Nhập/xuất file</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Theo dõi và quản lý nhập xuất file</div>
+                </div>
+              </Link>
+            </Col>
+            <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
+              <Link to="/activity-diary/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                <div className={styles['hover_item']} style={{ backgroundColor: '#E9D4D5', marginRight: '1rem', border: '1px solid #8F292F', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><FormOutlined style={{ color: '#8F292F', fontSize: '1.5rem' }} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Nhật ký hoạt động</div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '0.75rem' }}>Quản lý toàn bộ thao tác, nhật ký hoạt động trong cửa hàng</div>
+                </div>
+              </Link>
+            </Col>
+
+          </Row>
+        </div>
+
+      </div>
+    </UI>
+  );
+}

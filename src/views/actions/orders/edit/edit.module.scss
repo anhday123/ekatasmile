@@ -1,0 +1,70 @@
+.orders_edit {
+    display: flex;
+    background-color: white;
+    margin: 1rem;
+    padding: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.orders_edit_title {
+    margin-bottom: 1rem;
+    display: flex;
+    cursor: pointer;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+.orders_edit_title > div {
+    margin-right: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: black;
+}
+.orders_edit_bottom {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+}
+.orders_edit_bottom_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.district {
+    width: 100%;
+}
+.orders_edit_bottom_row_top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.orders_edit_bottom_row_col {
+    margin-bottom: 1rem;
+    width: 100%;
+}
+.orders_edit_bottom_row_col_name {
+    color: black;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+.orders_edit_bottom_row_col_row_child {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+.orders_edit_bottom_row_col_product_name {
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    width: 100%;
+}
+.orders_edit_bottom_row_col_icon {
+    color: #18AB15;
+    cursor: pointer;
+}

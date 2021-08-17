@@ -1,0 +1,430 @@
+.payment_method {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: white;
+  margin: 1rem;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.payment_method_active {
+  display: none;
+  visibility: hidden;
+}
+
+.payment_method_active_disable {
+  display: block;
+  visibility: visible;
+}
+
+.payment_method_date {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_select {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0 0 1rem 0;
+  width: 100%;
+}
+
+.payment_method_date_icon {
+  margin: 0 1rem;
+}
+
+.payment_method_payment {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment_method_payment_col_left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.5rem;
+  background-color: #5363e0;
+  width: 100%;
+  flex-direction: column;
+  line-height: 2rem;
+  cursor: pointer;
+}
+
+.payment_method_payment_col_left:hover {
+  transform: scale(1.05);
+}
+
+.payment_method_payment_col_left > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_button > div {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_payment_col_left_money {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_payment_col_center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fb9600;
+  width: 100%;
+  flex-direction: column;
+  line-height: 2rem;
+}
+
+.payment_method_payment_col_right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #c3fb4d;
+  flex-direction: column;
+  line-height: 2rem;
+}
+
+.payment_method_payment_parent_card {
+  width: 100%;
+}
+
+.payment_method_payment_col_title {
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.payment_method_payment_parent {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_method {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.payment_method_method_parent {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.payment_method_online {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.payment_method_online_select {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.payment_method_online_col {
+  width: 100%;
+}
+
+.payment_method_online_col_child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.payment_method_online_col_child_title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 1rem;
+}
+
+.payment_method_online_select_title {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment_method_online_select_title > div {
+  border: 1px solid grey;
+  border-radius: 0.5rem;
+}
+
+.payment_method_online_select_title_image {
+  display: flex;
+  padding: 1rem 1rem 0.5rem 1rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_left {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.payment_method_online_select_title_image_left:hover {
+  transform: scale(1.1);
+}
+
+.payment_method_online_select_title_image_right {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_right_col {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_right_item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_right_item_fix {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: black;
+  font-weight: 600;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_right_item_total {
+  font-size: 1rem;
+  font-weight: 600;
+  color: black;
+}
+
+.payment_method_online_select_title_image_col_chil_mini {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.payment_method_online_select_title_image_left_momo {
+  width: 5rem;
+  margin: 1.25rem 1rem 1.25rem 0;
+  height: 5rem;
+  object-fit: contain;
+}
+
+.payment_method_method_parent_button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_method_parent_button_left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.payment_method_method_parent_button_left_color {
+  background-color: #15ac63;
+  margin-bottom: 1rem;
+  width: 11rem;
+}
+
+.payment_method_method_parent_button_right_color {
+  background-color: #386cf2;
+  width: 11rem;
+  margin-bottom: 1rem;
+}
+
+.wallet {
+  display: flex;
+  margin: 0.5rem 1rem 0 0;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e9dfdf;
+  width: 100%;
+}
+
+.wallet_img {
+  width: 7.5rem;
+  justify-content: center;
+  margin-left: 1rem;
+  align-items: center;
+  display: flex;
+  height: 5rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.wallet_item {
+  margin-bottom: 2.25rem;
+  border-radius: 0.5rem;
+  width: 7.5rem;
+  justify-content: center;
+  margin-left: 1rem;
+  align-items: center;
+  display: flex;
+  height: 5rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  object-fit: contain;
+  border: 2.5px solid grey;
+}
+
+.wallet_item:hover {
+  transform: scale(1.15);
+  width: 7.5rem;
+  justify-content: center;
+  margin-left: 1rem;
+  align-items: center;
+  display: flex;
+  height: 5rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.wallet_item_active {
+  transform: scale(1.15);
+  margin-bottom: 2.25rem;
+  border-radius: 0.5rem;
+  width: 7.5rem;
+  justify-content: center;
+  margin-left: 1rem;
+  align-items: center;
+  display: flex;
+  height: 5rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  object-fit: contain;
+  border: 2.5px solid grey;
+}
+
+.choose {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.choose_button {
+  display: flex;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.choose_button_left {
+  width: 7.5rem;
+}
+
+.payment_confirm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.payment_confirm_child {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-direction: column;
+}
+
+.payment_confirm_child_title {
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  color: black;
+}
+
+.payment_confirm_child_content {
+  text-align: justify;
+}
+
+.payment_confirm_button {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 1px solid #cecece;
+  align-items: center;
+  width: 100%;
+}
+
+.delete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 5rem;
+}
+
+.delete {
+  color: #e01515;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete > div:hover {
+  color: red;
+}
