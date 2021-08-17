@@ -3,7 +3,6 @@ module.exports.getWarehouse = [
     `bussiness`,
     `code`,
     `name`,
-    `type`,
     `ward`,
     `district`,
     `province`,

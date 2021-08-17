@@ -171,92 +171,43 @@ let addDeliveryS = async (req, res, next) => {
         if (!_delivery.insertedId)
             throw new Error(`500 ~ Create delivery fail!`);
         if (req._delivery.products) {
-            let source;
-            if (req._delivery.from.warehouse_id) source = `Products`;
-            if (req._delivery.from.branch_id) source = `SaleProducts`;
-            let __products = await client
-                .db(DB)
-                .collection(source)
-                .find({ active: true })
-                .toArray();
-            let _products = {};
-            __products.map((item) => {
-                _products[item.product_id] = item;
+            let __sources;
+            if (req._delivery.from.warehouse_id)
+                __sources = await client
+                    .db(DB)
+                    .collection(`Products`)
+                    .find({ active: true })
+                    .toArray();
+            if (req._delivery.from.branch_id)
+                __sources = await client
+                    .db(DB)
+                    .collection(`SaleProducts`)
+                    .find({ active: true })
+                    .toArray();
+            let __destinations;
+            if (req._delivery.to.warehouse_id)
+                __destinations = await client
+                    .db(DB)
+                    .collection(`Products`)
+                    .find({ active: true })
+                    .toArray();
+            if (req._delivery.to.branch_id)
+                __destinations = await client
+                    .db(DB)
+                    .collection(`SaleProducts`)
+                    .find({ active: true })
+                    .toArray();
+            let _sources = {};
+            __sources.map((item) => {
+                _sources[item.product_id] = item;
             });
-            let _update = [];
+            let _destinations = {};
+            __destinations.map((item) => {
+                _destinations[item.product_id] = item;
+            });
+            let _update_source = [];
             let _list = new Set([]);
-            for (let i in req._delivery.products) {
-                _list.add(req._delivery.products[i].product_id);
-                if (
-                    _products[req._delivery.products[i].product_id].has_variable
-                ) {
-                    for (let j in _products[
-                        req._delivery.products[i].product_id
-                    ].variants) {
-                        if (
-                            req._delivery.products[i].sku ==
-                            _products[req._delivery.products[i].product_id]
-                                .variants[j].sku
-                        ) {
-                            _products[
-                                req._delivery.products[i].product_id
-                            ].variants[j].available_stock_quantity -=
-                                req._delivery.products[i].quantity;
-                            if (
-                                _products[req._delivery.products[i].product_id]
-                                    .variants[j].available_stock_quantity <=
-                                _products[req._delivery.products[i].product_id]
-                                    .variants[j].status_check_value
-                            ) {
-                                _products[
-                                    req._delivery.products[i].product_id
-                                ].variants[j].low_stock_quantity =
-                                    _products[
-                                        req._delivery.products[i].product_id
-                                    ].variants[j].available_stock_quantity;
-                                _products[
-                                    req._delivery.products[i].product_id
-                                ].variants[j].available_stock_quantity = 0;
-                                _products[
-                                    req._delivery.products[i].product_id
-                                ].variants[j].status = `low_stock`;
-                            }
-                            _products[
-                                req._delivery.products[i].product_id
-                            ].variants[j].shipping_quantity =
-                                req._delivery.products[i].quantity;
-                        }
-                    }
-                } else {
-                    _products[
-                        req._delivery.products[i].product_id
-                    ].available_stock_quantity -=
-                        req._delivery.products[i].available_stock_quantity;
-                    if (
-                        _products[req._delivery.products[i].product_id]
-                            .available_stock_quantity <=
-                        _products[req._delivery.products[i].product_id]
-                            .status_check_value
-                    ) {
-                        _products[
-                            req._delivery.products[i].product_id
-                        ].low_stock_quantity =
-                            _products[
-                                req._delivery.products[i].product_id
-                            ].available_stock_quantity;
-                        _products[
-                            req._delivery.products[i].product_id
-                        ].available_stock_quantity = 0;
-                        _products[
-                            req._delivery.products[i].product_id
-                        ].status = `low_stock`;
-                    }
-                    _products[
-                        req._delivery.products[i].product_id
-                    ].shipping_quantity =
-                        req._delivery.products[i].available_stock_quantity;
-                }
-            }
+
             _list.forEach((item) => {
                 _update.push(_products[item]);
             });
@@ -296,7 +247,6 @@ let updateDeliveryS = async (req, res, next) => {
             .collection(`DeliveryNotes`)
             .findOneAndUpdate(req.params, { $set: req.body });
         if (req.body.status == `COMPLETE`) {
-            
         }
         if (req.body.status == `CANCEL`) {
         }

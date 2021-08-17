@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "push": "rm -r node_modules && scp -r ../be root@171.244.203.25:/root/Admin_1 && exit"
+    "push": "rm -r node_modules && scp -r ../be root@103.81.87.65:/root/Admin_Order/be && exit"
   },
   "author": "",
   "license": "ISC",

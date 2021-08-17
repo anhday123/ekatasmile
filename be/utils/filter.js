@@ -29,11 +29,15 @@ let keyword = (keyword, filterArray) => {
         for (let i in item) {
             let value = new String(item[i])
                 .normalize(`NFD`)
-                .replace(/[\u0300-\u036f]/g, ``)
+                .replace(/[\u0300-\u036f]|\s/g, ``)
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
                 .toLocaleLowerCase();
             let compare = new String(keyword)
                 .normalize(`NFD`)
-                .replace(/[\u0300-\u036f]/g, ``)
+                .replace(/[\u0300-\u036f]|\s/g, ``)
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
                 .toLocaleLowerCase();
             if (value.includes(compare)) check = true;
         }

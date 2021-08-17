@@ -114,6 +114,14 @@ let addProductC = async (req, res, next) => {
             )
                 .trim()
                 .toUpperCase();
+            req.body.product_list[i][`slug`] = req.body.product_list[i].name
+                .trim()
+                .normalize(`NFD`)
+                .replace(/[\u0300-\u036f]/g, ``)
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .replace(/\s/g, '-')
+                .toLowerCase();
             req.body.product_list[i][`sku`] = String(
                 req.body.product_list[i].sku
             )
@@ -210,7 +218,31 @@ let addProductC = async (req, res, next) => {
                 }
                 delete req.body.product_list[i].quantity;
             } else {
+                for (let j in req.body.product_list[i].attributes) {
+                    let tmp = req.body.product_list[i].attributes[j];
+                    tmp.option = tmp.option.trim().toUpperCase();
+                    tmp.values = tmp.values.map((item) => {
+                        item = item.trim().toUpperCase();
+                        return item;
+                    });
+                }
                 for (let j in req.body.product_list[i].variants) {
+                    req.body.product_list[i].variants[j][`title`] =
+                        req.body.product_list[i].variants[j][`title`]
+                            .trim()
+                            .toUpperCase();
+                    req.body.product_list[i].variants[j][`sku`] =
+                        req.body.product_list[i].variants[j][`sku`]
+                            .trim()
+                            .toUpperCase();
+                    for (let k in req.body.product_list[i].variants[j]
+                        .options) {
+                        let tmp =
+                            req.body.product_list[i].variants[j].options[k];
+                        tmp.name = tmp.name.trim().toUpperCase();
+                        tmp.values = tmp.values.trim().toUpperCase();
+                        req.body.product_list[i].variants[j].options[k] = tmp;
+                    }
                     if (req.body.product_list[i].variants[j].quantity >= 0) {
                         req.body.product_list[i].variants[j][
                             `available_stock_quantity`
@@ -335,6 +367,7 @@ let addProductC = async (req, res, next) => {
                 warehouse: req.body.product_list[i].warehouse,
                 sku: req.body.product_list[i].sku,
                 name: req.body.product_list[i].name,
+                slug: req.body.product_list[i].slug,
                 barcode: req.body.product_list[i].barcode,
                 category: req.body.product_list[i].category,
                 image: req.body.product_list[i].image,
@@ -369,6 +402,7 @@ let addProductC = async (req, res, next) => {
             };
             req[`_product`].push(_product);
         }
+        // res.send({ data: req._product });
         await productService.addProductS(req, res, next);
     } catch (err) {
         console.log(err);
@@ -383,6 +417,17 @@ let updateProductC = async (req, res, next) => {
             .collection(`Products`)
             .findOne(req.params);
         if (!_product) throw new Error(`400 ~ Product is not exists!`);
+        if (req.body.name) req.body.name = req.body.name.trim().toUpperCase();
+        if (req.body.sku) req.body.sku = req.body.sku.trim().toUpperCase();
+        if (req.body.slug)
+            req.body.slug = req.body.name
+                .trim()
+                .normalize(`NFD`)
+                .replace(/[\u0300-\u036f]/g, ``)
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .replace(/\s/g, '-')
+                .toLowerCase();
         if (req.body.warranty) {
             __warranties = await client
                 .db(DB)
@@ -400,7 +445,29 @@ let updateProductC = async (req, res, next) => {
             }
         }
         if (req.body.has_variable == true) {
+            if (req.body.attributes) {
+                for (let i in req.body.attributes) {
+                    let tmp = req.body.attributes[i];
+                    tmp.option = tmp.option.trim().toUpperCase();
+                    tmp.values = tmp.values.map((item) => {
+                        item = item.trim().toUpperCase();
+                        return item;
+                    });
+                }
+            }
             for (i in req.body.variants) {
+                req.body.variants[i][`title`] = req.body.variants[i][`title`]
+                    .trim()
+                    .toUpperCase();
+                req.body.variants[i][`sku`] = req.body.variants[i][`sku`]
+                    .trim()
+                    .toUpperCase();
+                for (let j in req.body.variants[i].options) {
+                    let tmp = req.body.variants[i].options[j];
+                    tmp.name = tmp.name.trim().toUpperCase();
+                    tmp.values = tmp.values.trim().toUpperCase();
+                    req.body.variants[i].options[j] = tmp;
+                }
                 if (req.body.variants[i].quantity >= 0) {
                     if (
                         req.body.variants[i][`out_stock_quantity`] >
@@ -500,6 +567,7 @@ let updateProductC = async (req, res, next) => {
         delete req.body._supplier;
         await productService.updateProductS(req, res, next);
     } catch (err) {
+        console.log(err);
         next(err);
     }
 };

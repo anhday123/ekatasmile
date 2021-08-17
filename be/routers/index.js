@@ -19,9 +19,9 @@ router.use(`/category`, require(`./category`));
 router.use(`/tax`, require(`./tax`));
 router.use(`/warranty`, require(`./warranty`));
 router.use(`/promotion`, require(`./promotion`));
-router.use(`/payment`, require(`./payment`));
 router.use(`/transport`, require(`./transport`));
 router.use(`/order`, require(`./order`));
 router.use(`/delivery`, require(`./delivery`));
+router.use(`/statis`, require(`./statis`));
 
 module.exports = router;

@@ -1,7 +1,6 @@
 module.exports.getProduct = [
     `product_id`,
     `bussiness`,
-    `warehouse`,
     `code`,
     `sku`,
     `name`,
@@ -15,7 +14,6 @@ module.exports.getProduct = [
     `page_size`,
     `from_date`,
     `to_date`,
-    `merge`,
 ];
 
 module.exports.addProduct = [
@@ -29,12 +27,15 @@ module.exports.addProduct = [
     `height`,
     `weight`,
     `warranty`,
-    `quantity`,
     `unit`,
-    `has_variable`,
     `suppliers`,
+    `has_variable`,
+    `import_price`,
     `base_price`,
     `sale_price`,
+    `quantity`,
+    `status_check`,
     `options`,
     `attributes`,
+    `description`,
 ];

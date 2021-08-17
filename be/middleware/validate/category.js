@@ -11,4 +11,4 @@ module.exports.getCategory = [
     `to_date`,
 ];
 
-module.exports.addCategory = [`name`, `type`, `description`];
+module.exports.addCategory = [`name`, `description`];

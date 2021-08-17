@@ -23,7 +23,7 @@ app.use(`/` + endPoint, router)
             .map((v) => (Number(v) ? Number(v) : v));
         const httpError = createError(...messages);
         console.log(error.message);
-
+        console.log(error);
         res.status(httpError.statusCode || 500).send(httpError);
     });
 

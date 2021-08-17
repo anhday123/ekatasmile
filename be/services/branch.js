@@ -10,6 +10,8 @@ let getBranchS = async (req, res, next) => {
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.branch_id)
             mongoQuery = { ...mongoQuery, branch_id: req.query.branch_id };
+        if (req.query.bussiness)
+            mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
         if (token)
             mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
         if (req.query.store)

@@ -9,6 +9,5 @@ router.route(`/addcategory`).post(auth, category.addCategoryC);
 router
     .route(`/updatecategory/:category_id`)
     .patch(auth, category.updateCategoryC);
-router.route(`/getproductincategory`).get(auth, category.getProductInCategoryC);
 
 module.exports = router;

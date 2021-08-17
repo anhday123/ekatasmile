@@ -20,8 +20,7 @@ let getCategoryC = async (req, res, next) => {
 let addCategoryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        if (!valid.absolute(req.body, form.addCategory))
-            throw new Error(`400 ~ Validate data wrong!`);
+        if (!req.body.name) throw new Error(`400 ~ Validate data wrong!`);
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _count, _bussiness, _category] = await Promise.all([
             client.db(DB).collection(`Categories`).countDocuments(),
@@ -54,7 +53,6 @@ let addCategoryC = async (req, res, next) => {
             category_id: req.body.category_id,
             bussiness: req.body.bussiness,
             code: req.body.code,
-            type: req.body.type,
             name: req.body.name,
             description: req.body.description,
             create_date: moment().format(),

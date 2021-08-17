@@ -2,7 +2,7 @@ const moment = require(`moment`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-let getProductS = async (req, res, next) => {
+let getSaleProductS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let mongoQuery = {};
@@ -12,8 +12,10 @@ let getProductS = async (req, res, next) => {
             mongoQuery = { ...mongoQuery, product_id: req.query.product_id };
         if (token)
             mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
-        if (req.query.warehouse)
-            mongoQuery = { ...mongoQuery, warehouse: req.query.warehouse };
+        if (req.query.store)
+            mongoQuery = { ...mongoQuery, store: req.query.store };
+        if (req.query.branch)
+            mongoQuery = { ...mongoQuery, branch: req.query.branch };
         if (req.query.slug)
             mongoQuery = { ...mongoQuery, slug: req.query.slug };
         if (req.query.category)
@@ -52,15 +54,16 @@ let getProductS = async (req, res, next) => {
         // lấy data từ database
         let _products = await client
             .db(DB)
-            .collection(`Products`)
+            .collection(`SaleProducts`)
             .find(mongoQuery)
             .toArray();
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh
         _products.reverse();
-        let [__users, __warehouses, __categories, __suppliers] =
+        let [__users, __stores, __branchs, __categories, __suppliers] =
             await Promise.all([
                 client.db(DB).collection(`Users`).find({}).toArray(),
-                client.db(DB).collection(`Warehouses`).find({}).toArray(),
+                client.db(DB).collection(`Stores`).find({}).toArray(),
+                client.db(DB).collection(`Branchs`).find({}).toArray(),
                 client.db(DB).collection(`Categories`).find({}).toArray(),
                 client.db(DB).collection(`Suppliers`).find({}).toArray(),
             ]);
@@ -71,9 +74,13 @@ let getProductS = async (req, res, next) => {
             _bussiness[item.user_id] = item;
             _creator[item.user_id] = item;
         });
-        let _warehouses = {};
-        __warehouses.map((item) => {
-            _warehouses[item.warehouse_id] = item;
+        let _stores = {};
+        __stores.map((item) => {
+            _stores[item.store_id] = item;
+        });
+        let _branchs = {};
+        __branchs.map((item) => {
+            _branchs[item.branch_id] = item;
         });
         let _categories = {};
         __categories.map((item) => {
@@ -87,7 +94,8 @@ let getProductS = async (req, res, next) => {
             let _product = item;
             _product.bussiness = { ..._bussiness[_product.bussiness] };
             _product.creator = { ..._creator[_product.creator] };
-            _product.warehouse = { ..._warehouses[_product.warehouse] };
+            _product.store = { ..._stores[_product.store] };
+            _product.branch = { ..._branchs[_product.branch] };
             _product.category = { ..._categories[_product.category] };
             _product.suppliers = { ..._suppliers[_product.suppliers] };
             // Tạo properties đặc trưng của khóa định danh để lọc với độ chính xác tương đối
@@ -97,6 +105,8 @@ let getProductS = async (req, res, next) => {
             _product[
                 `_creator`
             ] = `${_product.creator?.first_name} ${_product.creator?.last_name}`;
+            _product[`_store`] = _product.store?.name;
+            _product[`_branch`] = _product.branch?.name;
             _product[`_category`] = _product.category?.name;
             _product[`_supplier`] = _product.suppliers?.name;
             return _product;
@@ -187,7 +197,6 @@ let getProductS = async (req, res, next) => {
                 });
             });
         }
-
         let _counts = _products.length;
         if (page && page_size)
             _products = _products.slice(
@@ -203,79 +212,19 @@ let getProductS = async (req, res, next) => {
         next(err);
     }
 };
-
-let addProductS = async (req, res, next) => {
-    try {
-        let token = req.tokenData?.data;
-        if (req._product.length != 0) {
-            let _product = await client
-                .db(DB)
-                .collection(`Products`)
-                .insertMany(req._product);
-            if (!_product.insertedIds)
-                throw new Error(`500 ~ Create product fail!`);
-        }
-        if (req._update.length != 0) {
-            await Promise.all(
-                req._update.map((item) => {
-                    client
-                        .db(DB)
-                        .collection(`Products`)
-                        .findOneAndUpdate(
-                            { product_id: item.product_id },
-                            { $set: item }
-                        );
-                })
-            );
-        }
-        if (token) {
-            if (req._product.length != 0)
-                await client.db(DB).collection(`Actions`).insertOne({
-                    bussiness: token.bussiness.user_id,
-                    type: `Add`,
-                    properties: `Product`,
-                    name: `Thêm sản phẩm mới`,
-                    data: req._product,
-                    performer: token.user_id,
-                    date: moment().format(),
-                });
-            if (req._update.length != 0)
-                await client.db(DB).collection(`Actions`).insertOne({
-                    bussiness: token.bussiness.user_id,
-                    type: `Update`,
-                    properties: `Product`,
-                    name: `Cập nhật thông tin sản phẩm`,
-                    data: req._update,
-                    performer: token.user_id,
-                    date: moment().format(),
-                });
-        }
-        res.send({
-            success: true,
-            data: [
-                { name: `insert_product`, product: req._product },
-                { name: `update_product`, product: req._update },
-            ],
-        });
-    } catch (err) {
-        console.log(err);
-        next(err);
-    }
-};
-
-let updateProductS = async (req, res, next) => {
+let updateSaleProductS = async (req, res, next) => {
     try {
         let token = req.tokenData?.data;
         await client
             .db(DB)
-            .collection(`Products`)
+            .collection(`SaleProducts`)
             .updateMany(req.params, { $set: req.body });
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
                 bussiness: token.bussiness.user_id,
                 type: `Update`,
-                properties: `Product`,
-                name: `Cập nhật thông tin sản phẩm`,
+                properties: `SaleProduct`,
+                name: `Cập nhật thông tin sản phẩm tại chi nhánh`,
                 data: req.body,
                 performer: token.user_id,
                 date: moment().format(),
@@ -288,7 +237,6 @@ let updateProductS = async (req, res, next) => {
 };
 
 module.exports = {
-    getProductS,
-    addProductS,
-    updateProductS,
+    getSaleProductS,
+    updateSaleProductS,
 };

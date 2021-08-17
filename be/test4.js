@@ -4,7 +4,7 @@ const client1 = new MongoClient(uri1, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
-const uri2 = `mongodb://salemanager:salemanager%40123456@194.233.68.26:27017/admin?authSource=SaleManager&readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false`;
+const uri2 = `mongodb://salemanager:salemanager%40123456@103.81.87.65:27017/admin?authSource=SaleManager&readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false`;
 const client2 = new MongoClient(uri2, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -23,7 +23,26 @@ new Promise(async (resolve, reject) => {
         console.log(message);
         new Promise(async (resolve_1, reject_1) => {
             let collection = [
-
+                `Actions`,
+                `Branchs`,
+                `Categories`,
+                `Customers`,
+                `DeliveryNotes`,
+                `Districts`,
+                `Orders`,
+                `Payments`,
+                `Permissions`,
+                `Products`,
+                `Promotions`,
+                `Provinces`,
+                `Roles`,
+                `SaleProducts`,
+                `Stores`,
+                `Suppliers`,
+                `Taxes`,
+                `Transaction`,
+                `Transports`,
+                `Users`,
                 `VertifyLinks`,
                 `Wards`,
                 `Warehouses`,
@@ -35,6 +54,10 @@ new Promise(async (resolve, reject) => {
                     .collection(collection[i])
                     .find({})
                     .toArray();
+                if (data1.length == 0) {
+                    console.log(`create ${collection[i]}`);
+                    continue;
+                }
                 let data2 = await client2
                     .db('SaleManager')
                     .collection(collection[i])

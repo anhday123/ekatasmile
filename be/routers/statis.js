@@ -1,9 +1,9 @@
 const express = require(`express`);
 
 const router = express.Router();
-const payment = require(`../controllers/payment`);
+const statis = require(`../controllers/statis`);
 const { auth } = require(`../middleware/jwt/jwt`);
 
-router.route(`/getpayment`).get(auth, payment.getPaymentC);
+router.route(`/getstatis`).get(auth, statis.getStatisC);
 
 module.exports = router;

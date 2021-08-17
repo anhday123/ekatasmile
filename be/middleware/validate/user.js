@@ -29,6 +29,5 @@ module.exports.addUser = [
     'company_website',
     'tax_code',
     'fax',
-    `store`,
     'branch',
 ];

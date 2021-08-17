@@ -2,8 +2,6 @@ const moment = require(`moment`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const filter = require(`../utils/filter`);
-
 let getRoleS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;

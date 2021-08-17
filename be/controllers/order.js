@@ -176,7 +176,7 @@ let addOrderC = async (req, res, next) => {
             _update.push(_products[item]);
         });
         req[`_update`] = _update;
-        if (req.body.voucher) {
+        if (req.body.voucher && req.body.voucher != ` `) {
             let _promotion = await client
                 .db(DB)
                 .collection(`Promotions`)

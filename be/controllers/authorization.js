@@ -92,11 +92,6 @@ let refreshTokenC = async (req, res, next) => {
             try {
                 const decoded = await jwt.verifyToken(refreshToken);
                 const userData = decoded.data;
-                const _user = await client
-                    .db(DB)
-                    .collection(`Users`)
-                    .findOne({ user_id: userData.user_id });
-                
                 const accessToken = await jwt.createToken(
                     userData,
                     process.env.ACCESS_TOKEN_LIFE

@@ -10,4 +10,4 @@ module.exports.getTax = [
     `to_date`,
 ];
 
-module.exports.addTax = [`name`, `value`, `description`, `default`];
+module.exports.addTax = [`name`, `value`, `description`];

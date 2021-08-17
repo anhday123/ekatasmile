@@ -147,6 +147,19 @@ let addCategoryS = async (req, res, next) => {
             .insertOne(req._category);
         if (!_category.insertedId)
             throw new Error(`500 ~ Create category fail!`);
+        if (req.body.product_list) {
+            await Promise.all(
+                req.body.product_list.map((item) => {
+                    client
+                        .db(DB)
+                        .collection(`Products`)
+                        .findOneAndUpdate(
+                            { product_id: item },
+                            { $set: { category: req._category.category_id } }
+                        );
+                })
+            );
+        }
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
                 bussiness: token.bussiness.user_id,
