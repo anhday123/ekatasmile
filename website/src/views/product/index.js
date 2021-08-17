@@ -580,28 +580,40 @@ export default function Product() {
               list.length > 0 &&
               list.map((values, index) => {
                 return (
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginRight: '1rem',
-                      margin: '1rem 0 0 0',
-                    }}
-                    xs={24}
-                    sm={11}
-                    md={11}
-                    lg={5}
-                    xl={5}
-                  >
-                    <img
-                      src={values}
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        objectFit: 'contain',
-                      }}
-                      alt=""
-                    />
-                  </Col>
+
+                  <Popover placement="right" content={() => content(values)} >
+                    <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+                      <a
+
+                        href={
+                          values
+                        }
+                        target="_blank"
+                      >
+                        {/* <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /> */}
+
+                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
+                      </a>
+
+                      <div className={styles['icon_hover']}>
+
+                        {/* <DeleteOutlined onClick={() => onClickDeleteImage(index1, index, record, list)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} /> */}
+
+                      </div>
+                      {/* {
+                      arrayCheck && arrayCheck.length > 0 ? (arrayCheck.map((values5, index5) => {
+                        if (values1.toLowerCase === values5) {
+                          return (
+                            <Checkbox checked={false} onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                          )
+                        }
+                      })) : <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                    } */}
+                      {/* <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox> */}
+
+                    </Col>
+                  </Popover>
+
                 )
               })}
           </div>
@@ -620,28 +632,40 @@ export default function Product() {
               imageUrl.length > 0 &&
               imageUrl.map((values, index) => {
                 return (
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginRight: '1rem',
-                      margin: '1rem 0 0 0',
-                    }}
-                    xs={24}
-                    sm={11}
-                    md={11}
-                    lg={5}
-                    xl={5}
-                  >
-                    <img
-                      src={values}
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        objectFit: 'contain',
-                      }}
-                      alt=""
-                    />
-                  </Col>
+
+                  <Popover placement="right" content={() => content(values)} >
+                    <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+                      <a
+
+                        href={
+                          values
+                        }
+                        target="_blank"
+                      >
+                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
+
+                      </a>
+                      <div className={styles['icon_hover']}>
+
+                        {/* <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /> */}
+
+                        {/* <DeleteOutlined onClick={() => onClickDeleteImage(index1, index, record, list)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} /> */}
+
+                      </div>
+                      {/* {
+                      arrayCheck && arrayCheck.length > 0 ? (arrayCheck.map((values5, index5) => {
+                        if (values1.toLowerCase === values5) {
+                          return (
+                            <Checkbox checked={false} onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                          )
+                        }
+                      })) : <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                    } */}
+                      {/* <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox> */}
+
+                    </Col>
+                  </Popover>
+
                 )
               })}
           </div>
@@ -805,27 +829,40 @@ export default function Product() {
               list.length > 0 &&
               list.map((values, index) => {
                 return (
-                  <Col
-                    style={{
-                      width: '100%',
-                      margin: '1rem 1rem 0 0',
-                    }}
-                    xs={24}
-                    sm={11}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <img
-                      src={values}
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        objectFit: 'contain',
-                      }}
-                      alt=""
-                    />
-                  </Col>
+
+                  <Popover placement="right" content={() => content(values)} >
+                    <Col xs={24} sm={24} md={16} lg={16} xl={16} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+                      <a
+
+                        href={
+                          values
+                        }
+                        target="_blank"
+                      >
+                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
+
+                      </a>
+                      <div className={styles['icon_hover']}>
+
+                        {/* <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /> */}
+
+                        {/* <DeleteOutlined onClick={() => onClickDeleteImage(index1, index, record, list)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} /> */}
+
+                      </div>
+                      {/* {
+                      arrayCheck && arrayCheck.length > 0 ? (arrayCheck.map((values5, index5) => {
+                        if (values1.toLowerCase === values5) {
+                          return (
+                            <Checkbox checked={false} onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                          )
+                        }
+                      })) : <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                    } */}
+                      {/* <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox> */}
+
+                    </Col>
+                  </Popover>
+
                 )
               })}
           </div>
@@ -844,27 +881,40 @@ export default function Product() {
               imageUrl.length > 0 &&
               imageUrl.map((values, index) => {
                 return (
-                  <Col
-                    style={{
-                      width: '100%',
-                      margin: '1rem 1rem 0 0',
-                    }}
-                    xs={24}
-                    sm={11}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <img
-                      src={values}
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        objectFit: 'contain',
-                      }}
-                      alt=""
-                    />
-                  </Col>
+
+                  <Popover placement="right" content={() => content(values)} >
+                    <Col xs={24} sm={24} md={16} lg={16} xl={16} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+                      <a
+
+                        href={
+                          values
+                        }
+                        target="_blank"
+                      >
+                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
+
+                      </a>
+                      <div className={styles['icon_hover']}>
+
+                        {/* <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /> */}
+
+                        {/* <DeleteOutlined onClick={() => onClickDeleteImage(index1, index, record, list)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} /> */}
+
+                      </div>
+                      {/* {
+                      arrayCheck && arrayCheck.length > 0 ? (arrayCheck.map((values5, index5) => {
+                        if (values1.toLowerCase === values5) {
+                          return (
+                            <Checkbox checked={false} onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                          )
+                        }
+                      })) : <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                    } */}
+                      {/* <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox> */}
+
+                    </Col>
+                  </Popover>
+
                 )
               })}
           </div>
@@ -1704,6 +1754,7 @@ export default function Product() {
         {
           list && list.length > 0 && list.map((values1, index1) => {
             return (
+
               <Popover placement="right" content={() => content(values1)} >
                 <Col xs={24} sm={24} md={11} lg={11} xl={11} className={styles['hover_Image']} style={{ border: '1px solid white', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
 
@@ -1735,6 +1786,7 @@ export default function Product() {
 
                 </Col>
               </Popover>
+
             )
           })
         }
