@@ -9,8 +9,8 @@ const productService = require(`../services/product`);
 
 let getProductC = async (req, res, next) => {
     try {
-        if (!valid.relative(req.query, form.getProduct))
-            throw new Error(`400 ~ Validate data wrong!`);
+        // if (!valid.relative(req.query, form.getProduct))
+        //     throw new Error(`400 ~ Validate data wrong!`);
         await productService.getProductS(req, res, next);
     } catch (err) {
         next(err);
