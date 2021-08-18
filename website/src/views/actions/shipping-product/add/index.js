@@ -1,13 +1,14 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useEffect, useState } from "react";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Popover, Table, Modal, Drawer, notification, AutoComplete, InputNumber } from "antd";
+import { Select, Button, Input, Form, Row, Col, DatePicker, Popover, Table, Modal, Drawer, notification, AutoComplete, InputNumber, Radio } from "antd";
 import { Link, useHistory } from "react-router-dom";
 import { ArrowLeftOutlined, AudioOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from "@ant-design/icons";
 import { getAllBranch } from "../../../../apis/branch";
 import { apiSearchProduct, apiProductSeller } from "../../../../apis/product";
 import { addDelivery } from "../../../../apis/delivery";
 import { useDispatch } from "react-redux";
+import { apiAllInventory } from "../../../../apis/inventory";
 const { Option } = Select;
 const { Search } = Input;
 export default function ShippingProduct() {
@@ -17,6 +18,8 @@ export default function ShippingProduct() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
   const [branchList, setBranchList] = useState([])
+  const [deliveryFlow, setDeliveryFlow] = useState({ from: "", fromtype: "BRANCH", to: "", totype: "BRANCH" })
+  const [warehouseList, setWarehouseList] = useState([])
   const [productList, setProductList] = useState([])
   const [productDelivery, setProductDelivery] = useState([])
   const [options, setOptions] = useState([])
@@ -53,12 +56,14 @@ export default function ShippingProduct() {
       try {
         dispatch({ type: 'LOADING', data: true })
         const obj = {
-          "type": "BRANCH-BRANCH",
+          "type": `${deliveryFlow.fromtype}-${deliveryFlow.totype}`,
           "user_ship": values.from,
           "user_receive": values.to,
           "from": values.from,
           "to": values.to,
-          "products": productSend
+          "products": productSend,
+          note: values.note,
+          tag: values.tag
         }
         const res = await addDelivery(obj)
         if (res.status == 200) {
@@ -286,6 +291,18 @@ export default function ShippingProduct() {
 
     }
   }
+  const getWarehouse = async () => {
+    try {
+      const res = await apiAllInventory()
+      if (res.status == 200) {
+        setWarehouseList(res.data.data)
+      }
+    }
+    catch (e) {
+      console.log(e);
+
+    }
+  }
   const getProductList = async params => {
     try {
       const res = await apiProductSeller(params && params)
@@ -330,6 +347,7 @@ export default function ShippingProduct() {
     setProductDelivery([...productDelivery, JSON.parse(value)])
   };
   useEffect(() => {
+    getWarehouse()
     getBranch()
   }, [])
   useEffect(() => {
@@ -339,7 +357,7 @@ export default function ShippingProduct() {
   return (
     <UI>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/product/6">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/shipping-product/9">
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Tạo phiếu chuyển hàng</div>
@@ -358,21 +376,39 @@ export default function ShippingProduct() {
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Nơi chuyển</div>
+                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Chuyển từ:&nbsp;
+                  <Radio.Group defaultValue="BRANCH" value={deliveryFlow.fromtype} onChange={(e) => setDeliveryFlow({ ...deliveryFlow, fromtype: e.target.value })}>
+                    <Radio value="BRANCH">Chi nhánh</Radio>
+                    <Radio value="WAREHOUSE">Kho</Radio>
+                  </Radio.Group>
+                </div>
                 <Form.Item
                   name="from"
 
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select placeholder="Chọn chi nhánh" showSearch filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                    optionFilterProp="children">
-                    {
-                      branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                  {
+                    deliveryFlow.fromtype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
-                  </Select>
+                      optionFilterProp="children"
+                    >
+                      {
+
+                        branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                      }
+                    </Select> :
+                      <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                        optionFilterProp="children"
+                      >
+                        {
+                          warehouseList.map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
+                        }
+                      </Select>
+                  }
                 </Form.Item>
               </div>
             </Col>
@@ -392,22 +428,42 @@ export default function ShippingProduct() {
           <Row style={{ borderBottom: '1px solid rgb(236, 226, 226)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Nơi nhận</div>
+                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Nhận ở:&nbsp;
+                  <Radio.Group defaultValue="BRANCH" value={deliveryFlow.totype} onChange={(e) => setDeliveryFlow({ ...deliveryFlow, totype: e.target.value })}>
+                    <Radio value="BRANCH">Chi nhánh</Radio>
+                    <Radio value="WAREHOUSE">Kho</Radio>
+                  </Radio.Group>
+                </div>
                 <Form.Item
                   name="to"
 
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select placeholder="Chọn chi nhánh" showSearch filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                    optionFilterProp="children"
-                  >
-                    {
-                      branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                  {
+                    deliveryFlow.totype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
-                  </Select>
+                      optionFilterProp="children"
+                    >
+                      {
+
+                        branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                      }
+                    </Select> :
+
+                      <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                        optionFilterProp="children"
+                      >
+                        {
+
+                          warehouseList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                        }
+                      </Select>
+                  }
+
                 </Form.Item>
               </div>
             </Col>
@@ -439,6 +495,7 @@ export default function ShippingProduct() {
             options={options}
             onSelect={onSelect}
             onSearch={handleSearch}
+            onFocus={handleSearch}
           >
             <div style={{ display: 'flex', margin: '1rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
               <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo mã, theo tên" onSearch={onSearch} enterButton /></div>
@@ -598,6 +655,7 @@ export default function ShippingProduct() {
             </Row>
           </Form>
         </Modal>
+
       </div>
     </UI>
   );

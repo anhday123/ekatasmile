@@ -1,6 +1,6 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, Popover, Steps, message, Tree, Table, Modal } from "antd";
+import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, Popover, Steps, message, Tree, Table, Modal, InputNumber } from "antd";
 import {
   BrowserRouter as Router,
   Switch,
@@ -55,6 +55,20 @@ const columns = [
     dataIndex: 'branchInventory',
     width: 150,
   },
+  {
+    title: "Số lượng thực tế",
+    width: 150,
+    render() {
+      return <InputNumber />
+    }
+  },
+  {
+    title: "Số lượng hệ thống",
+    width: 150,
+    render() {
+      return 10
+    }
+  }
 ];
 const content = (
   <div>
@@ -197,24 +211,7 @@ export default function ProductCheckAdd() {
             </div>
           </Col> */}
         </Row>
-        <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Steps size="small" style={{ height: '17.5rem', paddingTop: '2rem' }} direction="vertical" current={current}
-          // onChange={onChange}
-          >
-            <Step title="Lên danh sách kiểm"
-            // description="This is a description."
-            />
-            <Step title="Kiểm hàng"
-            // description="This is a description."
-            />
-            <Step title="Thống kê"
-            // description="This is a description."
-            />
-            <Step title="Hoàn thành!"
-            // description="This is a description."
-            />
-          </Steps>
-        </div>
+
 
         <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 0 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu kiểm hàng</div>
@@ -288,9 +285,9 @@ export default function ProductCheckAdd() {
                 <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
               </Popover>
             </Col>
-            <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col>
+            </Col> */}
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />

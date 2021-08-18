@@ -165,11 +165,11 @@ export default function PromotionAdd() {
     try {
       const obj = {
         name: values.name,
-        type: values.type,
+        type: values.type ? value.type : 'percent',
         value: values.value,
         limit: {
-          amount: values.amount,
-          branchs: values.branch
+          amount: parseInt(values.amount),
+          branchs: values.branch ? values.branch : ['1']
         }
       }
       const res = await addPromotion(obj)
@@ -182,7 +182,7 @@ export default function PromotionAdd() {
     }
     catch (e) {
       console.log(e)
-      notification.error({ message: 'Thất bại!', description: "Thêm khuyến mãi không thành công" })
+      notification.error({ message: 'Thất bại!', description: e.data && e.data.message })
     }
 
   };
@@ -320,7 +320,7 @@ export default function PromotionAdd() {
             >
               <div className={styles["promotion_add_name_col_child"]}>
                 <div className={styles["promotion_add_form_left_title"]}>
-                  Tên chương trình khuyến mãi
+                  <span style={{ color: 'red' }}>*</span>&nbsp; Tên chương trình khuyến mãi
                 </div>
                 <Form.Item
                   className={styles["promotion_add_name_col_child_title"]}
@@ -399,7 +399,7 @@ export default function PromotionAdd() {
                           styles["promotion_add_option_col_left_title"]
                         }
                       >
-                        Loại khuyến mãi
+                        <span style={{ color: 'red' }}>*</span>&nbsp;  Loại khuyến mãi
                       </div>
                       <div
                         className={
@@ -417,7 +417,7 @@ export default function PromotionAdd() {
                             className={
                               styles["promotion_add_form_left_select_child"]
                             }
-                            placeholder="Theo phần trăm"
+                            placeholder="Loại khuyến mãi"
                           >
                             <Option value="percent">Phần trăm</Option>
                             <Option value="value">Giá trị</Option>
@@ -441,7 +441,7 @@ export default function PromotionAdd() {
                         }
                         style={{ marginBottom: '0.5rem' }}
                       >
-                        Giá trị khuyến mãi
+                        <span style={{ color: 'red' }}>*</span>&nbsp; Giá trị khuyến mãi
                       </div>
                       <div
                         className={
@@ -506,7 +506,7 @@ export default function PromotionAdd() {
                           styles["promotion_add_option_col_left_title"]
                         }
                       >
-                        Vourcher
+                        <span style={{ color: 'red' }}>*</span>&nbsp; Vourcher
                       </div>
                       <div
                         className={

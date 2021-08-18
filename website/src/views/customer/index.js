@@ -9,6 +9,7 @@ import { PlusCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/ic
 import moment from 'moment';
 import { getCustomer, updateCustomer } from "../../apis/customer";
 import CustomerInfo from "./components/customerInfo";
+import CustomerUpdate from "../actions/customer/update";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const columns = [
@@ -60,13 +61,13 @@ export default function Promotion() {
   const [options, setOptions] = useState([])
   const [infoCustomer, setInfoCustomer] = useState({})
   const [customerFilter, setCustomerFilter] = useState({ search: '', date: [], category: undefined })
+  const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
+  const [customerListUpdate, setCustomerListUpdate] = useState([])
   const onSearch = (value) => {
     getAllCustomer({ keyword: value })
     changeFilter('search', value)
   }
   function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
     getAllCustomer({ from_date: dateStrings[0], to_date: dateStrings[1] })
     changeFilter('date', [moment(dateStrings[0]), moment(dateStrings[1])])
   }
@@ -98,13 +99,13 @@ export default function Promotion() {
     setCustomerFilter(e => { return { ...e, [key]: val } })
   }
   const columnsPromotion = [
-    {
-      title: 'STT',
-      width: 150,
-      render(data, record, index) {
-        return ((pagination.page - 1) * pagination.size) + index + 1
-      }
-    },
+    // {
+    //   title: 'STT',
+    //   width: 150,
+    //   render(data, record, index) {
+    //     return ((pagination.page - 1) * pagination.size) + index + 1
+    //   }
+    // },
     {
       title: 'Mã khách hàng',
       dataIndex: 'code',
@@ -227,12 +228,6 @@ export default function Promotion() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
   const getAllCustomer = async (params) => {
     setTableLoading(true)
     try {
@@ -271,6 +266,18 @@ export default function Promotion() {
     getAllCustomer()
     setCustomerFilter({ search: '', date: [], category: undefined })
   }
+  const openUpdateDrawer = () => {
+    var tmp = []
+    selectedRowKeys.forEach(e => {
+      var customer = customerList.find(c => c._id === e)
+      if (customer)
+        tmp.push(customer)
+    })
+    setCustomerListUpdate(tmp)
+    setTimeout(() => {
+      setCustomerUpdateDrawer(true)
+    }, 300)
+  }
   useEffect(() => {
     getAllCustomer()
   }, [])
@@ -290,7 +297,7 @@ export default function Promotion() {
             <Input
               placeholder="Tìm kiếm theo tên"
               value={customerFilter.search}
-              onChange={e => { onSearch(e); changeFilter('search', e.target.value) }}
+              onChange={e => onSearch(e.target.value)}
             />
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
@@ -320,10 +327,7 @@ export default function Promotion() {
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}>
           {
-            selectedRowKeys && selectedRowKeys.length > 0 && (<Radio.Group>
-              <Radio value={0}>Cập nhật hàng loạt</Radio>
-              <Radio value={1}> Cập nhật riêng lẻ</Radio>
-            </Radio.Group>)
+            selectedRowKeys && selectedRowKeys.length > 0 && (<Button type="primary" onClick={openUpdateDrawer}>Cập nhật khách hàng</Button>)
           }
         </Row>
 
@@ -342,6 +346,7 @@ export default function Promotion() {
         } */}
       </div>
       <CustomerInfo visible={modal2Visible} onCancel={() => modal2VisibleModal(false)} infoCustomer={infoCustomer} />
+      <CustomerUpdate customerData={customerListUpdate} visible={customerUpdateDrawer} onClose={() => { setCustomerUpdateDrawer(false) }} />
     </UI>
   );
 }

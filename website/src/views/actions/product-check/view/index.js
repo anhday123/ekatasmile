@@ -1,7 +1,7 @@
 import UI from "../../../../components/Layout/UI";
 import loading from './../../../../assets/img/loading.png'
 import styles from "./../view/view.module.scss";
-import { Popconfirm,Select, Button, Input, Form, Row, Col, DatePicker, Typography, Steps, message, Tree, Table, Modal, notification } from "antd";
+import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, Typography, Steps, message, Tree, Table, Modal, notification } from "antd";
 import {
   BrowserRouter as Router,
   Switch,
@@ -141,7 +141,7 @@ export default function ProductCheckView() {
     console.log(e);
     message.success('Click on Yes');
   }
-  
+
   function cancel(e) {
     console.log(e);
     message.error('Click on No');
@@ -216,7 +216,7 @@ export default function ProductCheckView() {
             </div>
           </Col> */}
         </Row>
-        <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+        {/* <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
           <Steps size="small" style={{ height: '17.5rem', paddingTop: '2rem' }} direction="vertical" current={current}
           // onChange={onChange}
           >
@@ -233,7 +233,7 @@ export default function ProductCheckView() {
             // description="This is a description."
             />
           </Steps>
-        </div>
+        </div> */}
 
         <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 0.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu kiểm hàng</div>
@@ -338,16 +338,16 @@ export default function ProductCheckView() {
                   </Table.Summary>
                 );
               }}
-              columns={columns} style={{ width: '100%' }} dataSource={data}  scroll={{ y: 500 }} />
+              columns={columns} style={{ width: '100%' }} dataSource={data} scroll={{ y: 500 }} />
           </div>
           {
             selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
+              title="Bạn chắc chắn muốn xóa?"
+              onConfirm={confirm}
+              onCancel={cancel}
+              okText="Yes"
+              cancelText="No"
+            ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
           }
           <div onClick={checkFinish} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
             {/* <Form.Item style={{ marginTop: '1rem' }}> */}

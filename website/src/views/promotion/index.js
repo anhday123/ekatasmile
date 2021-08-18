@@ -70,9 +70,11 @@ export default function Promotion() {
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [listPromotion, setListPromotion] = useState()
   const [listBranch, setListBranch] = useState([])
+  const [PromotionInfo, setPromotionInfo] = useState({})
   const [form] = Form.useForm();
   const [valueCheckbox, setValueCheckbox] = useState(false);
   const [loading, setLoading] = useState(false)
+  const [searchFilter, setSearchFilter] = useState({ keyword: '', date: [], type: undefined })
   const dispatch = useDispatch()
   const showDrawer = (data) => {
     setVisible(true)
@@ -100,16 +102,16 @@ export default function Promotion() {
   }
   const columnsPromotion = [
     {
-      title: 'STT',
-      width: 100,
-      render(data, record, index) {
-        return ((pagination.page - 1) * pagination.page_size) + index + 1
-      }
-    },
-    {
       title: 'Tên chương trình khuyến mãi',
       dataIndex: 'name',
-      width: 150,
+      width: 200,
+      // render(data, record) {
+      //   return <span style={{ color: "#42A5F5", cursor: "pointer" }} onClick={() => {
+      //     setPromotionInfo(record);
+      //     setTiomeout(()=>modal2VisibleModal(true), 200)
+      //     }}>
+      //       {data}</span>
+      // }
     },
     {
       title: 'Loại khuyến mãi',
@@ -129,8 +131,11 @@ export default function Promotion() {
     },
     {
       title: 'Số lượng khuyến mãi',
-      dataIndex: 'promotionQuantity',
+      dataIndex: 'limit',
       width: 150,
+      render(data) {
+        return data.amount
+      }
     },
     {
       title: 'Mô tả',
@@ -167,11 +172,11 @@ export default function Promotion() {
     console.log(date, dateString);
   }
   const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
-  const openNotification = () => {
+  const openNotification = (e) => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Chỉnh sửa chương trình khuyến mãi thành công.',
+      description: e ?
+        'Kích hoạt chương trình khuyến mãi thành công.' : "Vô hiệu hóa chương trình khuyến mãi thành công.",
     });
   };
   const onChangeCheckbox = (e) => {
@@ -184,7 +189,7 @@ export default function Promotion() {
 
       const res = await updatePromotion(id, values)
       if (res.status == 200) {
-        openNotification()
+        openNotification(values.active)
         onClose()
         form.resetFields()
         getPromotions()
@@ -225,12 +230,6 @@ export default function Promotion() {
     console.log(e);
     message.error('Click on No');
   }
-  const content = (
-    <div>
-      <p>Gợi ý 1</p>
-      <p>Gợi ý 2</p>
-    </div>
-  );
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getPromotions = async (params) => {
     try {
@@ -263,6 +262,9 @@ export default function Promotion() {
       console.log(e);
     }
   }
+  const resetFilter = () => {
+    setSearchFilter({ keyword: '', date: [], type: undefined })
+  }
   useEffect(() => {
     getBranch()
   }, [])
@@ -284,8 +286,9 @@ export default function Promotion() {
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}><Input
               placeholder="Tìm kiếm khuyến mãi"
-              onChange={(e) => getPromotions({ keyword: e.target.value })}
+              onChange={(e) => { setSearchFilter({ ...searchFilter, keyword: e.target.value }); getPromotions({ keyword: e.target.value }) }}
               allowClear
+              value={searchFilter.keyword}
             /></div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
@@ -296,23 +299,26 @@ export default function Promotion() {
                   Today: [moment(), moment()],
                   'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
-                onChange={onChange}
+                value={searchFilter.date}
+                onChange={(a, b) => {
+                  setSearchFilter({ ...searchFilter, date: a });
+                  onChange(a, b)
+                }}
               />
             </div>
           </Col>
+
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Lọc theo hình thức khuyến mãi" onChange={handleChange}>
+              <Select style={{ width: '100%' }} allowClear placeholder="Lọc theo hình thức khuyến mãi" value={searchFilter.type} onChange={(e) => { setSearchFilter({ ...searchFilter, type: e }); handleChange(e) }}>
                 <Option value="percent">Phần trăm</Option>
                 <Option value="value">Giá trị</Option>
               </Select>
             </div>
           </Col>
+        </Row>
+        <Row style={{ width: '100%', marginTop: 20 }} justify="end">
+          <Button type="primary" onClick={resetFilter}>Xóa bộ lọc</Button>
         </Row>
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
           <Table rowKey='promotion_id' rowSelection={rowSelection} loading={loading} pagination={{ onChange: changePagi }} columns={columnsPromotion} dataSource={listPromotion} scroll={{ y: 500 }} />
@@ -328,7 +334,7 @@ export default function Promotion() {
         }
       </div>
       <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
+        title="Thông tin khuyến mãi"
         centered
         footer={null}
         width={1000}
@@ -336,21 +342,7 @@ export default function Promotion() {
         onOk={() => modal2VisibleModal(false)}
         onCancel={() => modal2VisibleModal(false)}
       >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-            <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
-          </div>
-          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}>
-            <Table scroll={{ y: 500 }} loading={loading} columns={columns} dataSource={data} />
-          </div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
-          {/* 
-          <div onClick={() => modal2VisibleModal(false)} style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-       */}
-        </div>
+
       </Modal>
       <Drawer
         title="Chỉnh sửa chương trình khuyến mãi"

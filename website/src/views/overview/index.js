@@ -276,7 +276,7 @@ const Overview = () => {
                         <div>
                           <ShoppingCartOutlined />
                         </div>
-                        <div className={styles['order']}>Tổng chi phí bán được</div>
+                        <div className={styles['order']}>Tổng giá vốn</div>
                       </div>
                       <Popover content={contentRevenue} >
                         <div
