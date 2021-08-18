@@ -5406,6 +5406,14 @@ export default function Product() {
               statusCount === 4 ? (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600', color: 'rgba(254, 146, 146, 1)' }} onClick={() => filterProductMainFunc('out_stock', 4)}> Out stock &nbsp;</div>) : (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('out_stock', 4)}> Out stock &nbsp;</div>)
             }
           </Row>
+          {/* <Row style={{ width: "100%", marginBottom: 10 }}>
+            <Button style={{ marginBottom: '0.5rem', marginRight: '1rem', width: '5rem' }} type="primary">
+              Gộp
+            </Button>
+            <Button type="primary" style={{ width: '5rem', marginBottom: '0.5rem' }}>
+              Đơn lẻ
+            </Button>
+          </Row> */}
           <div className={styles['view_product_table']}>
             <Table
               className={styles['time-table-row-select']}
