@@ -249,6 +249,10 @@ export default function Product() {
   const [searchFilter, setSearchFilter] = useState({})
   const history = useHistory()
   const [form] = Form.useForm();
+  const [singleGroup, setSingleGroup] = useState(0)
+  const onClickGroup = (data) => {
+    setSingleGroup(data)
+  }
   const showDrawerCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(true)
   };
@@ -1201,22 +1205,40 @@ export default function Product() {
   const apiAllProductData = async (params) => {
     setLoading(true)
     try {
-
-      const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: pagination.page, page_size: pagination.pageSize }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize })
-      console.log(res)
-      console.log("____3333334444455555")
-      if (res.status === 200) {
-        if (viewMode === 1) {
-          setProductStore(res.data.data)
-          setProduct([])
-        } else {
-          setProductStore([])
-          setProduct(res.data.data)
+      if (singleGroup === 0) {
+        const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize })
+        console.log(res)
+        console.log("____3333334444455555")
+        if (res.status === 200) {
+          if (viewMode === 1) {
+            setProductStore(res.data.data)
+            setProduct([])
+          } else {
+            setProductStore([])
+            setProduct(res.data.data)
+          }
+          // setProduct(res.data.data)
+          setCount(res.data.count)
+          setSelectedRowKeys([])
+          setPaginationChecked(paginationChecked)
         }
-        // setProduct(res.data.data)
-        setCount(res.data.count)
-        setSelectedRowKeys([])
-        setPaginationChecked(paginationChecked)
+      } else {
+        const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: pagination.page, page_size: pagination.pageSize, merge: false }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize, merge: false })
+        console.log(res)
+        console.log("____3333334444455555")
+        if (res.status === 200) {
+          if (viewMode === 1) {
+            setProductStore(res.data.data)
+            setProduct([])
+          } else {
+            setProductStore([])
+            setProduct(res.data.data)
+          }
+          // setProduct(res.data.data)
+          setCount(res.data.count)
+          setSelectedRowKeys([])
+          setPaginationChecked(paginationChecked)
+        }
       }
       setLoading(false)
     } catch (error) {
@@ -1325,7 +1347,7 @@ export default function Product() {
   }
   useEffect(() => {
     apiAllProductData(viewLocation && viewLocation)
-  }, [viewMode, pagination])
+  }, [viewMode, pagination, singleGroup])
   useEffect(() => {
     loadingAll()
   }, [])
@@ -5199,7 +5221,7 @@ export default function Product() {
               <div style={{ width: '100%' }}>
 
                 <Select onChange={filterByTime} showSearch
-                  style={{ width: '100%', zIndex: '999999' }}
+                  style={{ width: '100%' }}
                   placeholder="Lọc theo thời gian"
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -5407,10 +5429,10 @@ export default function Product() {
             }
           </Row>
           {/* <Row style={{ width: "100%", marginBottom: 10 }}>
-            <Button style={{ marginBottom: '0.5rem', marginRight: '1rem', width: '5rem' }} type="primary">
+            <Button onClick={() => onClickGroup(0)} style={{ marginBottom: '0.5rem', marginRight: '1rem', width: '5rem' }} type="primary">
               Gộp
             </Button>
-            <Button type="primary" style={{ width: '5rem', marginBottom: '0.5rem' }}>
+            <Button onClick={() => onClickGroup(1)} type="primary" style={{ width: '5rem', marginBottom: '0.5rem' }}>
               Đơn lẻ
             </Button>
           </Row> */}
