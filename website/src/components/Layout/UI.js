@@ -770,7 +770,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={300}
+        width={250}
         style={{ backgroundColor: '#FFFFFF', height: '100%', }}
         collapsed={siderStatus}
         onCollapse={onCollapse}
@@ -986,7 +986,7 @@ const UI = (props) => {
             style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}
             icon={<SettingOutlined />}
           >
-            <Link style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }} to="/configuration-store/19">Cấu hình thông tin doanh nghiệp</Link>
+            <Link style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }} to="/configuration-store/19">Cấu hình thông tin</Link>
           </Menu.Item>
           <Menu.Item
             onClick={onClickMenuItem}

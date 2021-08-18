@@ -1178,7 +1178,7 @@ export default function Product() {
   function onChangeDate(dates, dateStrings) {
     setClear(-1)
 
-    
+
     setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
     setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
     setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
@@ -1187,13 +1187,13 @@ export default function Product() {
       dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
     )
 
-    if(dateStrings && dateStrings.length === 0) {
+    if (dateStrings && dateStrings.length === 0) {
       setTitleDate('chưa chọn')
     } else {
       setTitleDate(`${dateStrings && dateStrings.length > 0 ? dateStrings[0] : ''} - 
       ${dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''}`)
     }
-   
+
 
   }
   const [count, setCount] = useState(0)
@@ -1392,6 +1392,7 @@ export default function Product() {
 
   const onChangeImage = async (info, index3, record) => {
     console.log(info)
+    console.log("__________________00000")
     if (info.fileList && info.fileList.length > 0) {
 
       var image
@@ -1435,23 +1436,21 @@ export default function Product() {
                 console.log(productStore[index].variants[
                   index3
                 ].image)
-                console.log("_____3333")
                 array = [...productStore[index].variants[
                   index3
                 ].image]
-                // resultsMockup[0].data.data && resultsMockup[0].data.data.length > 0 && resultsMockup[0].data.data.forEach((values5, index5) => {
-                //   array.push(values5)
-                // })
-                array.unshift(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
-
-                var objectResult = { ...productStore[index].variants[index3], image: array }
+                var result = array.concat(resultsMockup[0].data.data)
+                console.log(result)
+                console.log("______________555666777")
+                var objectResult = { ...productStore[index].variants[index3], image: result.reverse() }
                 var arrayFinish = [...values.variants]
                 arrayFinish[index3] = objectResult
+
                 objectFinish = { ...values, variants: arrayFinish }
                 console.log(objectFinish)
+                console.log("______________555666777999")
+                apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
 
-                console.log("_________________________________456456456")
-                apiUpdateProductMultiMainStore(objectFinish, objectFinish.product_id)
               }
             })
 
@@ -1462,24 +1461,28 @@ export default function Product() {
             product.forEach((values, index) => {
               if (values._id === record._id) {
                 var array = []
-                console.log(product[index].variants[
-                  index3
-                ].image)
-                console.log("_____3333")
                 array = [...product[index].variants[
                   index3
                 ].image]
                 // resultsMockup[0].data.data && resultsMockup[0].data.data.length > 0 && resultsMockup[0].data.data.forEach((values5, index5) => {
                 //   array.push(values5)
                 // })
-                array.unshift(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
-
-                var objectResult = { ...product[index].variants[index3], image: array }
+                // array.unshift(resultsMockup[0].data.data)
+                console.log(resultsMockup[0].data.data)
+                console.log("______________555666888")
+                var result = array.concat(resultsMockup[0].data.data)
+                console.log(result)
+                console.log("______________555666777")
+                var objectResult = { ...product[index].variants[index3], image: result.reverse() }
                 var arrayFinish = [...values.variants]
                 arrayFinish[index3] = objectResult
+
                 objectFinish = { ...values, variants: arrayFinish }
                 console.log(objectFinish)
+                console.log("______________555666777999")
                 apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+
+
               }
             })
 
@@ -1530,9 +1533,10 @@ export default function Product() {
             productStore.forEach((values, index) => {
               if (values._id === record._id) {
                 var listImage = [...values.image]
-                listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
 
-                apiUpdateProductMultiMain({ ...values, image: listImage }, values.product_id)
+                // listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
+                var result = listImage.concat(resultsMockup[0].data.data)
+                apiUpdateProductMultiMain({ ...values, image: result.reverse() }, values.product_id)
               }
             })
         } else {
@@ -1541,9 +1545,10 @@ export default function Product() {
             product.forEach((values, index) => {
               if (values._id === record._id) {
                 var listImage = [...values.image]
-                listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
+                //   listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
 
-                apiUpdateProductMultiMain({ ...values, image: listImage }, values.product_id)
+                var result = listImage.concat(resultsMockup[0].data.data)
+                apiUpdateProductMultiMain({ ...values, image: result.reverse() }, values.product_id)
               }
             })
         }
@@ -1790,6 +1795,7 @@ export default function Product() {
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             listType="picture-card"
             multiple
+            fileList={[]}
             showUploadList={false}
             onChange={(e) => onChangeImageSimple(e, record)}
           // onPreview={onPreview}
@@ -1892,6 +1898,7 @@ export default function Product() {
             listType="picture-card"
             multiple
             showUploadList={false}
+            fileList={[]}
             onChange={(e) => onChangeImage(e, index, record)}
           // onPreview={onPreview}
           >
@@ -2846,7 +2853,7 @@ export default function Product() {
       title: 'Hình ảnh',
       align: 'center',
       dataIndex: 'image',
-      width: 250,
+      width: 275,
       render: (text, record) => (
         <Row
           style={{
@@ -3049,8 +3056,7 @@ export default function Product() {
                 )
               }
             })
-          ) :
-            record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
+          ) : record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
           }
         </Row>
       ),
@@ -5206,7 +5212,7 @@ export default function Product() {
                     timeFilter !== 'date' ?
                       <Option value="date">
                         <RangePicker
-allowClear={false}
+                          allowClear={false}
                           bordered={false}
                           // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                           value={
@@ -5232,7 +5238,7 @@ allowClear={false}
                       :
                       <Option value="date1">
                         <RangePicker
-allowClear={false}
+                          allowClear={false}
                           bordered={false}
                           // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                           value={
