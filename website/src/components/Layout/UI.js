@@ -804,7 +804,7 @@ const UI = (props) => {
             // className={slug && slug === '1' ? styles['active_key'] : styles['key']}
             icon={<MenuFoldOutlined className={styles["icon_parent"]} />}
           >
-            <div onClick={() => onClickMoveMenu('/overview/1')} style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}> Tổng quan</div>
+            <Link to="/overview/1" style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}> Tổng quan</Link>
           </Menu.Item>
           <Menu.Item
             onClick={onClickMenuItem}

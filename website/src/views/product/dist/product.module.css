@@ -1548,3 +1548,35 @@
 .hover_Image:hover .icon_hover {
   visibility: visible;
 }
+
+.product__group-select {
+  width: 100%;
+  height: 15rem;
+  max-height: 100%;
+  overflow: auto;
+  z-index: 999;
+  max-width: 100%;
+  box-shadow: -1px 2px 6px -1px black;
+  -webkit-box-shadow: -1px 2px 6px -1px black;
+  -moz-box-shadow: -1px 2px 6px -1px black;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.product__group-select > div {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: 1px solid #e0d5d5;
+}
+
+.product__group-select > div:hover {
+  padding: 0.5rem 1rem;
+  background-color: #e9d9d9;
+}

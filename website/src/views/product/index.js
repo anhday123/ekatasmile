@@ -18,6 +18,7 @@ import {
   Form,
   notification,
   Checkbox,
+  Dropdown,
   Button,
   Modal,
   Table,
@@ -247,6 +248,7 @@ export default function Product() {
   const [filter, setFilter] = useState({})
   const [searchFilter, setSearchFilter] = useState({})
   const history = useHistory()
+  const [form] = Form.useForm();
   const showDrawerCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(true)
   };
@@ -273,11 +275,12 @@ export default function Product() {
   }
   const showDrawerGroup = () => {
     setVisibleDrawer(true)
-
+    setSelectedRowKeys([])
   };
 
   const onCloseGroup = async () => {
     setVisibleDrawer(false)
+    setSelectedRowKeys([])
     await apiAllCategoryData()
   };
   const columnsCategory = [
@@ -310,19 +313,19 @@ export default function Product() {
     //   title: 'Mô tả',
     //   dataIndex: 'description',
     // },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'active',
-      fixed: 'right',
-      width: 100,
-      render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitchCategory(e, record)} /> : <Switch onChange={(e) => onChangeSwitchCategory(e, record)} />
-    },
+    // {
+    //   title: 'Trạng thái',
+    //   dataIndex: 'active',
+    //   fixed: 'right',
+    //   width: 100,
+    //   render: (text, record) => text ? <Switch defaultChecked  /> : <Switch onChange={(e) => onChangeSwitchCategory(e, record)} />
+    // },
   ];
   const openNotificationSuccessCategoryMain = (data) => {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description: data === 2 ? ('Vô hiệu hóa nhóm sản phẩm thành công.') : ('Kích hoạt nhóm sản phẩm thành công')
+      description: <div>Xóa nhóm sản phẩm <b>{data}</b> thành công</div>
     });
   };
   const openNotificationSuccessCategoryMainSuccess = () => {
@@ -330,6 +333,13 @@ export default function Product() {
       message: 'Thành công',
       duration: 3,
       description: 'Thêm nhóm sản phẩm thành công.'
+    });
+  };
+  const openNotificationSuccessCategoryMainError = (data) => {
+    notification.error({
+      message: 'Thất bại',
+      duration: 3,
+      description: <div>Nhóm sản phẩm <b>{data}</b> đã tồn tại</div>
     });
   };
   const apiAddCategoryDataMain = async (object) => {
@@ -342,7 +352,10 @@ export default function Product() {
       if (res.status === 200) {
         await apiAllCategoryData()
         setModal6Visible(false)
+        form.resetFields()
         openNotificationSuccessCategoryMainSuccess()
+      } else {
+        openNotificationSuccessCategoryMainError(object.name)
       }
       // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
@@ -353,7 +366,11 @@ export default function Product() {
       setLoading(false)
     }
   };
-  const apiUpdateCategoryData = async (object, id, data) => {
+  const onClickDate = () => {
+    alert('123')
+  }
+  const apiUpdateCategoryData = async (object, id, data, name) => {
+
     try {
       setLoading(true)
       // console.log(value);
@@ -363,7 +380,8 @@ export default function Product() {
       if (res.status === 200) {
         await apiAllCategoryData()
         setSelectedRowKeysCategory([])
-        openNotificationSuccessCategoryMain(data)
+        setSelectedRowKeys([])
+        openNotificationSuccessCategoryMain(name)
       }
       // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
@@ -383,12 +401,16 @@ export default function Product() {
     });
   };
 
-  function onChangeSwitchCategory(checked, record) {
+  function onChangeSwitchCategory(checked) {
     console.log(`switch to ${checked}`);
-    const object = {
-      active: checked
-    }
-    apiUpdateCategoryData(object, record.category_id, checked ? 1 : 2)
+    arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.forEach((values, index) => {
+      const object = {
+        active: false
+      }
+
+      apiUpdateCategoryData(object, values.category_id, checked ? 1 : 2, values.name)
+    })
+
     // setValueSwitch(checked)
     // updateStoreData({ ...record, active: checked }, record.store_id, checked ? 1 : 2)
   }
@@ -398,10 +420,16 @@ export default function Product() {
     try {
       setLoading(true)
 
-      const res = await apiAllCategory()
+      const res = await apiAllCategorySearch({ page: 1, page_size: 10 })
       if (res.status === 200) {
-        setCategory(res.data.data)
-        setCategorySelect(res.data.data)
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setCategory([...array])
+        setCategorySelect([...array])
       }
       setLoading(false)
     } catch (error) {
@@ -411,6 +439,10 @@ export default function Product() {
   const [modal5Visible, setModal5Visible] = useState(false)
   const modal5VisibleModal = (modal5Visible) => {
     setModal5Visible(modal5Visible)
+  }
+  const [modal50Visible, setModal50Visible] = useState(false)
+  const modal50VisibleModal = (modal50Visible) => {
+    setModal50Visible(modal50Visible)
 
   }
   const onClickGroupProductAdd = () => {
@@ -1013,6 +1045,7 @@ export default function Product() {
     }
   }
 
+  const [categoryProductGroup, setCategoryProductGroup] = useState([])
   const apiAllCategorySearchData = async (value) => {
     try {
       setLoading(true)
@@ -1023,8 +1056,16 @@ export default function Product() {
       console.log(res)
       console.log("___123")
       if (res.status === 200) {
-        setCategory(res.data.data)
 
+
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setCategoryProductGroup([...array])
+        setCategory([...array])
       }
       setLoading(false)
       // openNotification();
@@ -1118,6 +1159,10 @@ export default function Product() {
         setCount(res.data.count)
         setSelectedRowKeys([])
         setPaginationChecked(1)
+
+
+
+
       }
       setLoading(false)
       // openNotification();
@@ -1132,6 +1177,8 @@ export default function Product() {
   const dateFormat = 'YYYY/MM/DD'
   function onChangeDate(dates, dateStrings) {
     setClear(-1)
+
+    
     setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
     setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
     setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
@@ -1139,6 +1186,15 @@ export default function Product() {
       dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
       dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
     )
+
+    if(dateStrings && dateStrings.length === 0) {
+      setTitleDate('chưa chọn')
+    } else {
+      setTitleDate(`${dateStrings && dateStrings.length > 0 ? dateStrings[0] : ''} - 
+      ${dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''}`)
+    }
+   
+
   }
   const [count, setCount] = useState(0)
   const [productStore, setProductStore] = useState([])
@@ -1191,6 +1247,7 @@ export default function Product() {
       console.log(res)
       if (res.status === 200) {
         await apiAllProductData()
+        await apiAllCategoryData()
         setSelectedRowKeys([])
         setModal5Visible(false)
         openNotificationSuccessGroup()
@@ -1292,6 +1349,31 @@ export default function Product() {
     }
     console.log(object)
     apiAddCategoryData(object)
+  }
+  const [productGroupSelect, setProductGroupSelect] = useState('')
+  const onChangeCategoryValueSelect = async (e) => {
+    setProductGroupSelect(e)
+  }
+  const openNotificationProductGroupSelectError = () => {
+    notification.error({
+      message: 'Thất bại',
+      description:
+        'Bạn chưa chọn nhóm sản phẩm.',
+
+    });
+  };
+
+  const onClickGroupProductSelect = () => {
+    // productGroupName
+    if (productGroupSelect === '' || productGroupSelect === ' ' || productGroupSelect === 'default') {
+      openNotificationProductGroupSelectError()
+    } else {
+      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
+        apiUpdateProductMulti({ ...values, category: productGroupSelect }, values.product_id)
+      })
+
+    }
+
   }
   const onPreview = async file => {
     let src = file.url;
@@ -1655,11 +1737,55 @@ export default function Product() {
     })
     apiUpdateProductMultiMainDelete({ ...record, image: [...listImage] }, record.product_id)
   }
+  const contentFilterTime = (
+    <div style={{ zIndex: '999999' }}>
+      <RangePicker
+        style={{ zIndex: '999999' }}
+        // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
+        value={
+          clear === 1
+            ? []
+            : start !== ''
+              ? [
+                moment(start, dateFormat),
+                moment(end, dateFormat),
+              ]
+              : []
+        }
+        style={{ width: '100%' }}
+        ranges={{
+          Today: [moment(), moment()],
+          'This Month': [moment().startOf('month'), moment().endOf('month')],
+        }}
+        onChange={onChangeDate}
+      />
+    </div>
+  )
+  const contentProductGroup = (
+    <div className={styles['product__group-select']}>
+      {
+        categoryProductGroup && categoryProductGroup.length > 0 ? categoryProductGroup.map((values, index) => {
+          return (
+            <div onClick={() => onSearchProductGroupMain(values.name)}>
+              {values.name}
+            </div>
+          )
+        }) : category.map((values, index) => {
+          return (
+            <div onClick={() => onSearchProductGroupMain(values.name)}>
+              {values.name}
+            </div>
+          )
+        })
+      }
+    </div>
+  );
   const funcHoverImageSimple = (record) => {
     return (
 
-      <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+      <Row style={{ display: 'flex', padding: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div style={{ color: 'black', margin: '1rem 0 0 0', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{record.name}</div>
+        <Col style={{ width: '100%', marginTop: '1.25rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             listType="picture-card"
@@ -1679,7 +1805,7 @@ export default function Product() {
           record.image && record.image.length > 0 && record.image.map((values1, index1) => {
             return (
               <Popover placement="right" content={() => content(values1)} >
-                <Col xs={24} sm={24} md={11} lg={11} xl={11} className={styles['hover_Image']} style={{ border: '1px solid white', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+                <Col xs={24} sm={24} md={11} lg={11} xl={11} className={styles['hover_Image']} style={{ border: '1px solid white', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
                   <img src={values1} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
                   <div className={styles['icon_hover']}>
                     <a
@@ -1731,13 +1857,36 @@ export default function Product() {
   }
   console.log(skuSelectArray)
   console.log("___________________________123123123")
+  const [valueSearchProductGroup, setValueSearchProductGroup] = useState('')
+  const onSearchProductGroup = (e) => {
+    setValueSearchProductGroup(e.target.value)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value;
+      apiAllCategorySearchData(value);
+    }, 300);
+    // 
+  };
+  const onSearchProductGroupMain = (e) => {
+    setValueSearchProductGroup(e)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      // const value = e.target.value;
+      apiAllCategorySearchData(e);
+    }, 300);
+    // 
+  };
   const funcHoverImage = (list, index, record, sku) => {
 
 
     return (
 
-      <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+      <Row style={{ display: 'flex', margin: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <Col style={{ width: '100%', marginBottom: '0.25rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             listType="picture-card"
@@ -1812,7 +1961,7 @@ export default function Product() {
       title: 'Hình ảnh',
       align: 'center',
       dataIndex: 'image',
-      width: 250,
+      width: 275,
       render: (text, record) => (
         <Row
           style={{
@@ -1826,50 +1975,196 @@ export default function Product() {
             record.variants &&
             record.variants.length > 0 ? (
             record.variants.map((values, index) => {
-              return (
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                  style={{
-                    width: '100%',
-                    cursor: 'pointer',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <div
+              if (values.status === 'shipping_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
                     style={{
-                      color: 'black',
+                      backgroundColor: '#2F9BFF',
+                      width: '100%',
+                      cursor: 'pointer',
                       marginBottom: '1rem',
-                      fontWeight: '600',
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
                     }}
                   >
-                    {values.title}:{' '}
-                  </div>
-                  <Row
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'available_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+                      backgroundColor: '#24A700',
                       width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
                     }}
                   >
-                    {
-                      funcHoverImage(values.image, index, record, values.sku)
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
 
-                    }
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
 
-                  </Row>
-                </Col>
-              )
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'low_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
+                    style={{
+                      backgroundColor: '#A06000',
+                      width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'out_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
+                    style={{
+                      backgroundColor: '#FE9292',
+                      width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
             })
-          ) : funcHoverImageSimple(record)
+          ) : record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
           }
         </Row>
       ),
@@ -2565,51 +2860,197 @@ export default function Product() {
             record.variants &&
             record.variants.length > 0 ? (
             record.variants.map((values, index) => {
-              return (
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                  style={{
-                    width: '100%',
-                    cursor: 'pointer',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <div
+              if (values.status === 'shipping_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
                     style={{
-                      color: 'black',
+                      backgroundColor: '#2F9BFF',
+                      width: '100%',
+                      cursor: 'pointer',
                       marginBottom: '1rem',
-                      fontWeight: '600',
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
                     }}
                   >
-                    {values.title}:{' '}
-                  </div>
-                  <Row
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'available_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+                      backgroundColor: '#24A700',
                       width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
                     }}
                   >
-                    {
-                      funcHoverImage(values.image, index, record, values.sku)
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
 
-                    }
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
 
-                  </Row>
-                </Col>
-              )
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'low_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
+                    style={{
+                      backgroundColor: '#A06000',
+                      width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
+              if (values.status === 'out_stock') {
+                return (
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={24}
+                    lg={24}
+                    xl={24}
+                    style={{
+                      backgroundColor: '#FE9292',
+                      width: '100%',
+                      cursor: 'pointer',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        marginBottom: '1rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        marginTop: '1rem',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values.title}:{' '}
+                    </div>
+                    <Row
+                      style={{
+                        display: 'flex',
+
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {
+                        funcHoverImage(values.image, index, record, values.sku)
+
+                      }
+
+                    </Row>
+                  </Col>
+                )
+              }
             })
           ) :
-            funcHoverImageSimple(record)
+            record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
           }
         </Row>
       ),
@@ -3614,6 +4055,7 @@ export default function Product() {
         if (res.status === 200) {
           await apiAllProductData()
           setSelectedRowKeys([])
+          setModal50Visible(false)
           openNotificationSuccessUpdateProduct(object.name)
           onClose()
           onCloseUpdate()
@@ -3629,6 +4071,7 @@ export default function Product() {
           setSelectedRowKeys([])
           openNotificationSuccessUpdateProduct(object.name)
           onClose()
+          setModal50Visible(false)
           onCloseUpdate()
           setCheckboxValue(false)
         } else {
@@ -4368,6 +4811,11 @@ export default function Product() {
         setSelectedRowKeys([])
         setPaginationChecked(1)
         setCount(res.data.count)
+
+
+
+
+
       }
       setLoading(false)
     } catch (e) {
@@ -4375,14 +4823,27 @@ export default function Product() {
       setLoading(false)
     }
   }
+  const [titleDate, setTitleDate] = useState('')
   const [timeFilter, setTimeFilter] = useState("")
   const filterByTime = async (e) => {
+    if (e !== 'date' || e !== 'date1') {
+      setTitleDate(e)
+      setStart('')
+      setEnd('')
+      setTitleDate('chưa chọn')
+    }
+
     // console.log(JSON.parse(e));
     if (e === 'default') {
       await apiAllProductData()
     } else {
-      setTimeFilter(e)
-      filterProduct({ ...JSON.parse(e), page: 1, page_size: 10 })
+      if (e === 'date') {
+        setTimeFilter(e)
+      } else {
+        setTimeFilter(e)
+        filterProduct({ ...JSON.parse(e), page: 1, page_size: 10 })
+      }
+
     }
 
 
@@ -4528,6 +4989,7 @@ export default function Product() {
     }
     setCategoryValue(e)
   }
+
   console.log(warehouseList)
   console.log("______________________567567")
   return (
@@ -4646,6 +5108,7 @@ export default function Product() {
               lg={11}
               xl={11}
             >
+
               <Select showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
@@ -4662,6 +5125,7 @@ export default function Product() {
                   })
                 }
               </Select>
+
             </Col>
 
             <Col
@@ -4725,39 +5189,104 @@ export default function Product() {
               lg={11}
               xl={11}
             >
-              <Select value={timeFilter ? timeFilter : 'default'} onChange={filterByTime} showSearch
-                style={{ width: '100%' }}
-                placeholder="Lọc theo thời gian"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }>
-                <Option value="default">Lọc theo thời gian</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
-                }>Today</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'days').format('YYYY-MM-DD') })
-                }>Yesterday</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().startOf('week').format('YYYY-MM-DD'), to_date: moment().endOf('week').format('YYYY-MM-DD') })
-                }>This week</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD') })
-                }>Last week</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
-                }>This month</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD') })
-                }>Last Month</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().startOf('years').format('YYYY-MM-DD'), to_date: moment().endOf('years').format('YYYY-MM-DD') })
-                }>This year</Option>
-                <Option value={
-                  JSON.stringify({ from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD') })
-                }>Last year</Option>
-              </Select>
+
+              <div style={{ width: '100%' }}>
+
+                <Select onChange={filterByTime} showSearch
+                  style={{ width: '100%', zIndex: '999999' }}
+                  placeholder="Lọc theo thời gian"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }>
+                  {
+                    timeFilter === 'date' ? (<Option disabled value="date">Thời gian cố định: {(titleDate && titleDate !== '') || (titleDate && titleDate !== ' ') || (titleDate && titleDate !== 'default') ? titleDate : 'chưa chọn'}</Option>) : (<Option value="date1" disabled>Thời gian cố định: {(titleDate && titleDate !== '') || (titleDate && titleDate !== ' ') || (titleDate && titleDate !== 'default') ? titleDate : 'chưa chọn'}</Option>)
+                  }
+                  {
+                    timeFilter !== 'date' ?
+                      <Option value="date">
+                        <RangePicker
+allowClear={false}
+                          bordered={false}
+                          // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
+                          value={
+                            clear === 1
+                              ? []
+                              : start !== ''
+                                ? [
+                                  moment(start, dateFormat),
+                                  moment(end, dateFormat),
+                                ]
+                                : []
+                          }
+                          style={{ width: '100%' }}
+                          ranges={{
+                            Today: [moment(), moment()],
+                            'This Month': [moment().startOf('month'), moment().endOf('month')],
+                          }}
+                          onChange={onChangeDate}
+                        />
+
+
+                      </Option>
+                      :
+                      <Option value="date1">
+                        <RangePicker
+allowClear={false}
+                          bordered={false}
+                          // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
+                          value={
+                            clear === 1
+                              ? []
+                              : start !== ''
+                                ? [
+                                  moment(start, dateFormat),
+                                  moment(end, dateFormat),
+                                ]
+                                : []
+                          }
+                          style={{ width: '100%' }}
+                          ranges={{
+                            Today: [moment(), moment()],
+                            'This Month': [moment().startOf('month'), moment().endOf('month')],
+                          }}
+                          onChange={onChangeDate}
+                        />
+
+
+                      </Option>
+
+                  }
+
+
+                  <Option value={
+                    JSON.stringify({ from_date: moment().format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+                  }>Today</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'days').format('YYYY-MM-DD') })
+                  }>Yesterday</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().startOf('week').format('YYYY-MM-DD'), to_date: moment().endOf('week').format('YYYY-MM-DD') })
+                  }>This week</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD') })
+                  }>Last week</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+                  }>This month</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD') })
+                  }>Last Month</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().startOf('years').format('YYYY-MM-DD'), to_date: moment().endOf('years').format('YYYY-MM-DD') })
+                  }>This year</Option>
+                  <Option value={
+                    JSON.stringify({ from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD') })
+                  }>Last year</Option>
+                </Select>
+              </div>
+
+
             </Col>
             {/* 
             <Col
@@ -4837,6 +5366,10 @@ export default function Product() {
                 type="primary">
                 Tạo nhóm sản phẩm
               </Button>
+              <Button style={{ marginLeft: '1rem' }} onClick={() => modal50VisibleModal(true)}
+                type="primary">
+                Cập nhật nhóm sản phẩm
+              </Button>
             </Row>
           ) : (
             ''
@@ -4872,35 +5405,35 @@ export default function Product() {
               className={styles['time-table-row-select']}
               rowSelection={statusName === '' || statusName === ' ' || statusName === 'default' ? rowSelection : rowSelection}
               bordered
-              rowClassName={(record, index) =>
-                // record.has_variable && record.variants.length > 0 ? (record.variants.map((values, index) => {
-                //   return (
-                //     (parseInt(values && values.quantity && values.quantity !== null ? values.quantity : 0) + parseInt(values.available_stock_quantity)) > parseInt(values && values.status_check_value) ? styles['normal'] : styles['warm']
-                //   )
-                // })) : (record.available_stock_quantity > parseInt(record.status_check_value) ? styles['normal'] : styles['warm'])
-                record.has_variable && record.variants.length > 0 ? (record.variants.map((values, index) => {
-                  if (values.status.toLowerCase() === 'available_stock') {
-                    return (
-                      styles['available_stock']
-                    )
-                  } else if (values.status.toLowerCase() === 'low_stock') {
-                    return (
-                      styles['low_stock']
-                    )
-                  } else if (values.status.toLowerCase() === 'shipping_stock') {
-                    return (
-                      styles['shipping_stock']
-                    )
-                  } else {
-                    return (
-                      styles['out_stock']
-                    )
-                  }
-                  // return (
-                  //   (parseInt(values && values.quantity && values.quantity !== null ? values.quantity : 0) + parseInt(values.available_stock_quantity)) > 10 ? styles['normal'] : styles['warm']
-                  // )
-                })) : (record.status.toLowerCase() === 'available_stock' ? (styles['available_stock']) : (record.status.toLowerCase() === 'low_stock' ? (styles['low_stock']) : (record.status.toLowerCase() === 'shipping_stock' ? (styles['shipping_stock']) : (styles['out_stock']))))
-              }
+              // rowClassName={(record, index) =>
+              //   // record.has_variable && record.variants.length > 0 ? (record.variants.map((values, index) => {
+              //   //   return (
+              //   //     (parseInt(values && values.quantity && values.quantity !== null ? values.quantity : 0) + parseInt(values.available_stock_quantity)) > parseInt(values && values.status_check_value) ? styles['normal'] : styles['warm']
+              //   //   )
+              //   // })) : (record.available_stock_quantity > parseInt(record.status_check_value) ? styles['normal'] : styles['warm'])
+              //   record.has_variable && record.variants.length > 0 ? (record.variants.map((values, index) => {
+              //     if (values.status.toLowerCase() === 'available_stock') {
+              //       return (
+              //         styles['available_stock']
+              //       )
+              //     } else if (values.status.toLowerCase() === 'low_stock') {
+              //       return (
+              //         styles['low_stock']
+              //       )
+              //     } else if (values.status.toLowerCase() === 'shipping_stock') {
+              //       return (
+              //         styles['shipping_stock']
+              //       )
+              //     } else {
+              //       return (
+              //         styles['out_stock']
+              //       )
+              //     }
+              //     // return (
+              //     //   (parseInt(values && values.quantity && values.quantity !== null ? values.quantity : 0) + parseInt(values.available_stock_quantity)) > 10 ? styles['normal'] : styles['warm']
+              //     // )
+              //   })) : (record.status.toLowerCase() === 'available_stock' ? (styles['available_stock']) : (record.status.toLowerCase() === 'low_stock' ? (styles['low_stock']) : (record.status.toLowerCase() === 'shipping_stock' ? (styles['shipping_stock']) : (styles['out_stock']))))
+              // }
               rowKey="_id"
               columns={viewMode === 1 ? (statusName === '' || statusName === ' ' || statusName === 'default' ? columnsStore : columnsStore) : (statusName === '' || statusName === ' ' || statusName === 'default' ? columns : columns)}
               pagination={false}
@@ -6538,6 +7071,7 @@ export default function Product() {
       >
         
         </Drawer> */}
+
       <Modal
         title="Tạo nhóm sản phẩm"
         centered
@@ -6566,6 +7100,55 @@ export default function Product() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button onClick={onClickGroupProduct} type="primary" style={{ width: '7.5rem' }}>Tạo</Button></div>
 
       </Modal>
+
+      <Modal
+        title="Cập nhật nhóm sản phẩm"
+        centered
+        width={700}
+        footer={null}
+        visible={modal50Visible}
+        onOk={() => modal50VisibleModal(false)}
+        onCancel={() => modal50VisibleModal(false)}
+      >
+
+        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
+
+            <div style={{ width: '100%' }}>
+
+              <Select showSearch
+                style={{ width: '100%' }}
+                placeholder="Chọn nhóm sản phẩm"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                } onChange={onChangeCategoryValueSelect}>
+
+                {
+                  category && category.length > 0 && category.map((values, index) => {
+                    return (
+                      <Option value={values.category_id}>{values.name}</Option>
+                    )
+                  })
+                }
+              </Select>
+
+            </div>
+          </div>
+          {
+            arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
+              return (
+                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', marginBottom: '1rem', borderBottom: '1px solid rgb(235, 226, 226)', paddingBottom: '1rem' }}>{values.name}</div>
+              )
+            })
+          }
+
+
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button onClick={onClickGroupProductSelect} type="primary" style={{ width: '7.5rem' }}>Cập nhật</Button></div>
+
+      </Modal>
+
       <ProductInfo record={record} modal2Visible={modal2Visible} modal2VisibleModal={modal2VisibleModal} warranty={warranty} />
       {/* <UpdateProductSingle styles={styles} visible={visible} onClose={onClose} onCloseUpdateFunc={onCloseUpdateFunc} arrayUpdate={arrayUpdate} warranty={warranty} supplier={supplier} UploadImg={UploadImg} category={category} UploadImgChild={UploadImgChild} /> */}
 
@@ -6582,27 +7165,13 @@ export default function Product() {
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={11} xl={11}>
 
-              <Select
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn nhóm sản phẩm"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                onChange={onChangeCategoryMainDrawer}
 
-              >
-                <Option value="default">Tất cả nhóm sản phẩm</Option>
-                {
-                  categorySelect && categorySelect.length > 0 && categorySelect.map((values, index) => {
-                    return (
-                      <Option value={values.name}>{values.name}</Option>
-                    )
-                  })
-                }
-              </Select>
-
+              <div style={{ width: '100%' }}>
+                <Dropdown style={{ width: '100' }} trigger={['click']} overlay={contentProductGroup}>
+                  <Input style={{ width: '100%' }} name="name" value={valueSearchProductGroup} enterButton onChange={onSearchProductGroup} className={styles["orders_manager_content_row_col_search"]}
+                    placeholder="Tìm kiếm theo mã, theo tên" allowClear autocomplete="off" />
+                </Dropdown>
+              </div>
             </Col>
             <Col style={{ width: '100%', }} xs={24} sm={24} md={24} lg={11} xl={11}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
@@ -6617,8 +7186,11 @@ export default function Product() {
           </div> */}
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: "100%", marginTop: 20 }}>
-              <Button onClick={showDrawerCategoryGroupUpdate} value={1} type="primary" style={{ marginRight: '1rem' }}>
+              <Button onClick={showDrawerCategoryGroupUpdate} type="primary" style={{ marginRight: '1rem' }}>
                 Cập nhật nhóm sản phẩm
+              </Button>
+              <Button onClick={onChangeSwitchCategory} danger type="primary" style={{ marginRight: '1rem' }}>
+                Xóa
               </Button>
             </Row>
           ) : (
@@ -6646,6 +7218,7 @@ export default function Product() {
           className={styles["supplier_add_content"]}
           onFinish={onFinishCategory}
           layout="vertical"
+          form={form}
           onFinishFailed={onFinishFailedCategory}
         >
 
