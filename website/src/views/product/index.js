@@ -264,6 +264,7 @@ export default function Product() {
     setModal6Visible(modal6Visible)
 
   }
+  // tạo nhóm sản phẩm
   const onFinishCategory = (values) => {
     console.log('Success:', values);
     const object = {
@@ -404,7 +405,7 @@ export default function Product() {
         <div>Cập nhật thông tin nhóm sản phẩm <b>{data}</b> thành công</div>
     });
   };
-
+  // bật - tắt trang thái sản phẩm
   function onChangeSwitchCategory(checked) {
     console.log(`switch to ${checked}`);
     arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.forEach((values, index) => {
@@ -529,6 +530,7 @@ export default function Product() {
                 dispatch({ type: ACTION.LOADING, data: false });
                 setList(resultsMockup[0].data.data)
                 console.log(indexUpdate)
+                // chi nhánh
                 if (viewMode === 1) {
                   productStore &&
                     productStore.length > 0 &&
@@ -539,7 +541,7 @@ export default function Product() {
                         console.log(productStore[index])
                       }
                     })
-                } else {
+                } else { // kho
                   product &&
                     product.length > 0 &&
                     product.forEach((values, index) => {
@@ -780,6 +782,7 @@ export default function Product() {
                 dispatch({ type: ACTION.LOADING, data: false });
                 setList(resultsMockup[0].data.data)
                 console.log(indexUpdate)
+                // chi nhánh
                 if (viewMode === 1) {
                   productStore &&
                     productStore.length > 0 &&
@@ -795,7 +798,7 @@ export default function Product() {
                         )
                       }
                     })
-                } else {
+                } else { // kho
                   product &&
                     product.length > 0 &&
                     product.forEach((values, index) => {
@@ -986,6 +989,7 @@ export default function Product() {
     console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
     const array = []
+    // chi nhánh
     if (viewMode === 1) {
       productStore &&
         productStore.length > 0 &&
@@ -996,7 +1000,7 @@ export default function Product() {
             }
           })
         })
-    } else {
+    } else { // kho
       product &&
         product.length > 0 &&
         product.forEach((values, index) => {
@@ -1811,7 +1815,7 @@ export default function Product() {
     return (
 
       <Row style={{ display: 'flex', padding: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <div style={{ color: 'black', margin: '1rem 0 0 0', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{record.name}</div>
+        <div style={{ color: 'black', margin: '1rem 0 0 0', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{singleGroup === 0 ? record.name : record.title}</div>
         <Col style={{ width: '100%', marginTop: '1.25rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
@@ -2240,7 +2244,7 @@ export default function Product() {
         <>
           {
             (record.quantity && record.quantity > 0) || (record.available_stock_quantity && record.available_stock_quantity > 0) ? (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
                 {
                   record.available_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>Số lượng:</div>)
@@ -2308,7 +2312,7 @@ export default function Product() {
                 ) : ''
               }
             </div>
-          </div>) : <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+          </div>) : <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
         }
       </div>
     },
@@ -2365,16 +2369,16 @@ export default function Product() {
               }
             </div>
           </div>) : record.status === 'available_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
             <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
           </div>) : (record.status === 'low_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
             <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
           </div>) : (record.status === 'out_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
             <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
           </div>) : (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
+            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
             <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
           </div>)))
         }
@@ -4829,6 +4833,7 @@ export default function Product() {
       setLoading(false)
     }
   }
+  
   const filterProduct = async (params) => {
     try {
       setLoading(true)

@@ -700,9 +700,12 @@ export default function Branch(propsData) {
       openNotificationNotifycation()
     }
   }
+  const [confirmValue, setConfirmValue] = useState('')
   const [attentionAddBranch, setAttentionAddBranch] = useState(true)
   const onClickTurnOffAttentAddBranch = () => {
     setAttentionAddBranch(false)
+    setConfirmValue('1')
+    return (<BranchAdd confirmValue={confirmValue} state={state} branchChild={branchChild} />)
   }
   const [modalFinishValue, setModalFinishValue] = useState(false)
   const onClickFinishModal = () => {
@@ -716,7 +719,8 @@ export default function Branch(propsData) {
 
   return (
     <UI>
-      <Modal
+
+      {/* <Modal
         width={700}
         title="Hướng dẫn cài đặt chức năng trước khi thao tác bán hàng"
         centered
@@ -733,27 +737,9 @@ export default function Branch(propsData) {
             <Button onClick={onClickFinishModal} type="primary" style={{ width: '7.5rem' }}>Đã hiểu</Button>
           </div>
         </div>
-      </Modal>
-      {
-        state === '1' ? (<Modal
-          width={700}
-          title="Hướng dẫn cài đặt chức năng trước khi thao tác bán hàng"
-          centered
-          footer={null}
-          visible={attentionAddBranch}
+      </Modal> */}
 
-        >
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '900', color: 'black', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>Gồm 3 bước:</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black', textDecoration: 'line-through' }}>1. Chọn nút thêm cửa hàng ở góc trên cùng, phía bên phải để thêm một cửa hàng mới.</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black' }}>2. Chọn nút thêm chi nhánh ở góc trên cùng, phía bên phải để thêm một chi nhánh mới.</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600', }}>3. Tại giao diện danh sách nhân sự, thêm nhân sự vào chi nhánh kết thúc quá trình thao tác.</div>
-            <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Button onClick={onClickTurnOffAttentAddBranch} type="primary" style={{ width: '7.5rem' }}>Đã hiểu</Button>
-            </div>
-          </div>
-        </Modal>) : ''
-      }
+
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -762,7 +748,7 @@ export default function Branch(propsData) {
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Quản lý chi nhánh A</div>
 
           </Link>
-          <div onClick={onClickTutorial} className={styles["promotion_manager_button"]}>
+          <div className={styles["promotion_manager_button"]}>
             <BranchAdd state={state} branchChild={branchChild} />
           </div>
         </div>

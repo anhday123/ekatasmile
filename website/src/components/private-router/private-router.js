@@ -45,8 +45,13 @@ const PrivateRouter = ({ component: Component, ...rest }) => {
                             return <Component {...props} />;
                         }
                     } else {
-                        openNotification()
-                        return <Redirect to={`/overview/1`} />;
+                        if ((param.location.pathname.indexOf('branch')) || param.location.pathname.indexOf('store')) {
+                            return <Component {...props} />;
+                        }
+                        else {
+                            openNotification()
+                            return <Redirect to={`/overview/1`} />;
+                        }
                     }
                 } else {
                     return <Redirect to={`/`} />;
