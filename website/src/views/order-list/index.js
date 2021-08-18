@@ -327,6 +327,7 @@ export default function OrderList() {
   const [radioLocation, setRadioLocation] = useState('store')
   const onChangeRadioLocation = (e) => {
     setRadioLocation(e.target.value)
+    setSelectedRowKeys([])
   }
 
 
@@ -514,6 +515,7 @@ export default function OrderList() {
 
                 <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
                   <Table
+                    rowKey="_id"
                     loading={loading}
                     bordered
                     rowSelection={rowSelection}
@@ -717,6 +719,7 @@ export default function OrderList() {
                   <Table
                     loading={loading}
                     bordered
+                    rowKey="_id"
                     rowSelection={rowSelection}
                     expandable={{
                       expandedRowRender: record => {
@@ -916,6 +919,7 @@ export default function OrderList() {
                   <Table
                     loading={loading}
                     bordered
+                    rowKey="_id"
                     rowSelection={rowSelection}
                     expandable={{
                       expandedRowRender: record => {
@@ -1087,7 +1091,7 @@ export default function OrderList() {
               <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
             </div>
           </Popover>
-          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
+          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table rowKey="_id" scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
           {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
             <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
             <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
