@@ -2,8 +2,6 @@ const http = require(`http`);
 const https = require(`https`);
 const fs = require(`fs`);
 require(`dotenv`).config();
-
-const client = require(`./config/mongo/mongodb`);
 const app = require(`./app`);
 
 const Sentry = require('@sentry/node');

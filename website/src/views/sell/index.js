@@ -2142,7 +2142,7 @@ export default function Sell() {
                     <img src={values.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
                   </Popover>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}  >{values.name}</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}  >{values.name}</div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
                   <div>{`${formatCash(String(values.sale_price))}`}</div>
                   <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
@@ -2210,7 +2210,7 @@ export default function Sell() {
                         <img src={values.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
                       </Popover>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}  >{values.name}</div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}  >{values.name}</div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
                       <div>{`${formatCash(String(values.sale_price))}`}</div>
                       <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>

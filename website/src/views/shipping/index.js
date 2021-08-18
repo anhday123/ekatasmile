@@ -90,7 +90,15 @@ export default function Shipping() {
 
       const res = await apiSearchShipping({ from_date: start, to_date: end });
       console.log(res)
-      if (res.status === 200) setShipping(res.data.data)
+      if (res.status === 200) {
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
+      }
       setLoading(false)
       // openNotification();
       // history.push(ROUTES.NEWS);
@@ -114,7 +122,15 @@ export default function Shipping() {
 
       const res = await apiSearchShipping({ keyword: value });
 
-      if (res.status === 200) setShipping(res.data.data)
+      if (res.status === 200) {
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
+      }
       setLoading(false)
       // openNotification();
       // history.push(ROUTES.NEWS);
@@ -198,13 +214,13 @@ export default function Shipping() {
       fixed: 'right',
       render: (text, record) => <Popover placement="left" content={() => contentImage(record)} > <div>{<img src={text} style={{ cursor: 'pointer', width: '7.5rem', objectFit: 'contain', height: '7.5rem' }} alt="" />}</div></Popover>
     },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'active',
-      fixed: 'right',
-      width: 100,
-      render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
-    },
+    // {
+    //   title: 'Trạng thái',
+    //   dataIndex: 'active',
+    //   fixed: 'right',
+    //   width: 100,
+    //   render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
+    // },
   ];
   const content = (
     <div>
@@ -226,7 +242,14 @@ export default function Shipping() {
       const res = await apiAllShipping();
       console.log(res)
       if (res.status === 200) {
-        setShipping(res.data.data)
+
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
       }
       // if (res.status === 200) setUsers(res.data);
       setLoading(false)
@@ -241,7 +264,7 @@ export default function Shipping() {
   const openNotification = (data) => {
     notification.success({
       message: 'Thành công',
-      description: data === 2 ? ('Hủy liên kết đối tác vận chuyển thành công.') : ('Liên kết đối tác vận chuyển thành công.')
+      description: <div>Hủy liên kết đối tác vận chuyển <b>{data}</b> thành công.</div>
     });
   };
   const openNotificationUpdate = (data) => {
@@ -323,13 +346,13 @@ export default function Shipping() {
     })
   }
   const [valueSwitch, setValueSwitch] = useState(false)
-  function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
-    const object = {
-      active: checked
-    }
-    apiUpdateShippingData(object, record.transport_id, checked ? 1 : 2)
+  function onChangeSwitch() {
+    arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
+      const object = {
+        active: false
+      }
+      apiUpdateShippingData(object, values.transport_id, values.name)
+    })
   }
 
   function cancel(e) {
@@ -675,7 +698,15 @@ export default function Shipping() {
       setLoading(true)
       const res = await apiSearchShipping({ province: value });
 
-      if (res.status === 200) setShipping(res.data.data)
+      if (res.status === 200) {
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
+      }
       setLoading(false)
       // openNotification();
       // history.push(ROUTES.NEWS);
@@ -700,7 +731,15 @@ export default function Shipping() {
 
       const res = await apiSearchShipping({ district: value });
 
-      if (res.status === 200) setShipping(res.data.data)
+      if (res.status === 200) {
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
+      }
       setLoading(false)
       // openNotification();
       // history.push(ROUTES.NEWS);
@@ -715,7 +754,15 @@ export default function Shipping() {
 
       const res = await apiSearchShipping({ from_date: start, to_date: end });
 
-      if (res.status === 200) setShipping(res.data.data)
+      if (res.status === 200) {
+        var array = []
+        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
+          if (values.active) {
+            array.push(values)
+          }
+        })
+        setShipping([...array])
+      }
       setLoading(false)
       // openNotification();
       // history.push(ROUTES.NEWS);
@@ -907,32 +954,20 @@ export default function Shipping() {
 
         </Row> */}
         <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%', }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
+
         {
           selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Radio.Group style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', width: '100%' }} >
-              <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
-              <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-              {/* <Popconfirm
-                title="Bạn chắc chắn muốn xóa?"
-                onConfirm={confirm}
-                onCancel={cancel}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={3}>     Vô hiệu hóa</Radio>
-              </Popconfirm>
-              <Popconfirm
-                title="Bạn chắc chắn muốn kích hoạt lại?"
-                onConfirm={confirmActive}
-                onCancel={cancelActive}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={4}>Kích hoạt</Radio>
-              </Popconfirm> */}
-            </Radio.Group>
+            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+              <Button type="primary" onClick={showDrawer} style={{ width: '7.5rem', marginBottom: '1rem', marginRight: '1rem' }}>Cập nhật</Button>
+              <Button type="primary" danger onClick={onChangeSwitch} style={{ width: '7.5rem', marginBottom: '1rem' }}>Xóa</Button>
+            </div>
+            // <Radio.Group style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', width: '100%' }} >
+            //   <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
+            //   <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
+            // </Radio.Group>
           ) : ('')
         }
+
         <div style={{ marginTop: '0.25rem' }} className={styles["shipping_manager_table"]}>
           <Table
             rowKey="_id" loading={loading} rowSelection={rowSelection} bordered columns={columns} dataSource={shipping} scroll={{ y: 500 }}

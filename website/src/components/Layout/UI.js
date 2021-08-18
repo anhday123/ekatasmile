@@ -770,7 +770,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={300}
+        width={250}
         style={{ backgroundColor: '#FFFFFF', height: '100%', }}
         collapsed={siderStatus}
         onCollapse={onCollapse}
@@ -804,7 +804,7 @@ const UI = (props) => {
             // className={slug && slug === '1' ? styles['active_key'] : styles['key']}
             icon={<MenuFoldOutlined className={styles["icon_parent"]} />}
           >
-            <div onClick={() => onClickMoveMenu('/overview/1')} style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}> Tổng quan</div>
+            <Link to="/overview/1" style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}> Tổng quan</Link>
           </Menu.Item>
           <Menu.Item
             onClick={onClickMenuItem}
@@ -986,7 +986,7 @@ const UI = (props) => {
             style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}
             icon={<SettingOutlined />}
           >
-            <Link style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }} to="/configuration-store/19">Cấu hình thông tin doanh nghiệp</Link>
+            <Link style={slug && slug === '19' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }} to="/configuration-store/19">Cấu hình thông tin</Link>
           </Menu.Item>
           <Menu.Item
             onClick={onClickMenuItem}

@@ -512,6 +512,12 @@
   font-weight: 600;
 }
 
+.product_show {
+  height: 30rem;
+  max-height: 100%;
+  overflow: auto;
+}
+
 .variant {
   display: flex;
   justify-content: flex-start;
