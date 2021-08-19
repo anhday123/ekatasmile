@@ -30,7 +30,7 @@ for (let i = 0; i < 46; i++) {
     phoneNumber: `038494349${i}`,
   });
 }
-export default function BranchAdd({ branchChild, state }) {
+export default function BranchAdd({ branchChild, state, confirmValue }) {
   const dispatch = useDispatch()
   const { Search } = Input;
   const [form] = Form.useForm();
@@ -380,106 +380,350 @@ export default function BranchAdd({ branchChild, state }) {
     console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
+  const onClickTurnOffAttentAddBranch = () => {
+    modal2VisibleModal(true)
+  }
+  useEffect(() => {
+    if (confirmValue === 1 || confirmValue === '1') {
+      modal2VisibleModal(true)
+    }
+  }, [])
+  const [attentionAddBranch, setAttentionAddBranch] = useState(true)
   return (
     <>
-
+      {
+        state === '1' ? (
+          <Modal
+            // title="Xin chào"
+            centered
+            width={700}
+            footer={null}
+            visible={attentionAddBranch}
+          // onOk={() => setAttentionModal(false)}
+          // onCancel={() => setAttentionModal(false)}
+          >
+            <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>Chào mừng bạn sử dụng Admin Order, tạo 1 cửa hàng để bắt đầu công việc kinh doanh của mình nhé.</div>
+            <div style={{ fontSize: '1rem', marginTop: '1rem' }}><b style={{ color: 'red' }}>Gợi ý:</b> tạo 1 chi nhánh ( điểm bán hàng ) để sử dụng chức năng bán hàng.</div>
+            <div onClick={onClickTurnOffAttentAddBranch} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button type="primary" style={{ width: '7.5rem' }}>Tiếp tục</Button>
+            </div>
+          </Modal>
+        ) : ''
+      }
       <div onClick={() => modal2VisibleModal(true)}>
         <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm chi nhánh</Button>
       </div>
+      {
+        state === 1 || state === '1' ? (
+          <Modal
+            title="Thêm chi nhánh"
+            centered
+            width={1000}
+            footer={null}
+            visible={modal2Visible}
+          // onOk={() => modal2VisibleModal(false)}
+          // onCancel={() => modal2VisibleModal(false)}
+          >
 
-      <Modal
-        title="Thêm chi nhánh"
-        centered
-        width={1000}
-        footer={null}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
+            <Form
+              className={styles["supplier_add_content"]}
+              onFinish={onFinish}
+              form={form}
+              layout="vertical"
+              onFinishFailed={onFinishFailed}
+            >
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <Form.Item
 
-        <Form
-          className={styles["supplier_add_content"]}
-          onFinish={onFinish}
-          form={form}
-          layout="vertical"
-          onFinishFailed={onFinishFailed}
-        >
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <Form.Item
-
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Tên chi nhánh</div>}
-                  name="branchName"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập tên chi nhánh" />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Địa chỉ</div>
-                <Form.Item
-
-
-                  name="address"
-                // rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập địa chỉ" />
-                </Form.Item>
-
-              </div>
-            </Col>
-          </Row>
-
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <Form.Item
-
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                  name="phoneNumber"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập liên hệ" />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-
-                <Form.Item
-                  name="city"
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select
-                    onChange={handleChangeCity}
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn tỉnh/thành phố"
-                    optionFilterProp="children"
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Tên chi nhánh</div>}
+                      name="branchName"
+                      rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập tên chi nhánh" />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Địa chỉ</div>
+                    <Form.Item
 
 
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {
-                      province && province.length > 0 && province.map((values, index) => {
-                        return <Option value={values.province_name}>{values.province_name}</Option>
-                      })
-                    }
+                      name="address"
+                    // rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập địa chỉ" />
+                    </Form.Item>
 
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  </div>
+                </Col>
+              </Row>
+
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <Form.Item
+
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                      name="phoneNumber"
+                      rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập liên hệ" />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+
+                    <Form.Item
+                      name="city"
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
+                      hasFeedback
+                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                    >
+                      <Select
+                        onChange={handleChangeCity}
+                        showSearch
+                        style={{ width: '100%' }}
+                        placeholder="Chọn tỉnh/thành phố"
+                        optionFilterProp="children"
+
+
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                      >
+                        {
+                          province && province.length > 0 && province.map((values, index) => {
+                            return <Option value={values.province_name}>{values.province_name}</Option>
+                          })
+                        }
+
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </Col>
+              </Row>
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã chi nhánh</div>
+                    <Form.Item
+    
+                      className={styles["supplier_add_content_supplier_code_input"]}
+                      name="branchCode"
+                      rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập mã chi nhánh" />
+                    </Form.Item>
+                  </div>
+                </Col> */}
+
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <Form.Item
+                      name="store"
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Cửa hàng</div>}
+                      hasFeedback
+                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                    >
+                      <Select placeholder="Chọn cửa hàng">
+                        {
+                          store.map((values, index) => {
+                            return (
+                              <Option value={values.store_id}>{values.name}</Option>
+                            )
+                          })
+                        }
+
+
+                      </Select>
+                    </Form.Item>
+
+                  </div>
+                </Col>
+
+                {
+                  districtMain && districtMain.length > 0 ? (
+
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                      <div>
+                        <Form.Item
+                          name="district"
+                          label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
+                          hasFeedback
+                          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                        >
+                          <Select showSearch
+                            style={{ width: '100%' }}
+                            placeholder="Select a person"
+                            optionFilterProp="children"
+
+
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }>
+                            {
+                              districtMain && districtMain.length > 0 && districtMain.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>{values.district_name}</Option>
+                                )
+                              })
+                            }
+
+
+                          </Select>
+
+
+                        </Form.Item>
+                      </div>
+                    </Col>
+
+                  ) : ('')
+
+                }
+
+                {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Zip code</div>
+                    <Form.Item
+    
+                      className={styles["supplier_add_content_supplier_code_input"]}
+                      name="fax"
+                    // rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập zip code" />
+                    </Form.Item>
+                  </div>
+                </Col> */}
+              </Row>
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+
+              </Row>
+              {/* <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+    
+                    <Form.Item name="defaultStore" valuePropName="checked" >
+                      <Checkbox>Chi nhánh mặc định</Checkbox>
+                    </Form.Item>
+                  </div>
+                </Col>
+              </Row> */}
+              <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+                {/* <Col onClick={() => modal2VisibleModal(false)} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+                  <Form.Item >
+                    <Button style={{ width: '7.5rem' }} type="primary" danger>
+                      Hủy
+                    </Button>
+                  </Form.Item>
+                </Col> */}
+                <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+                  <Form.Item>
+                    <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+                      Thêm
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+
+          </Modal>
+        ) : (
+          <Modal
+            title="Thêm chi nhánh"
+            centered
+            width={1000}
+            footer={null}
+            visible={modal2Visible}
+            onOk={() => modal2VisibleModal(false)}
+            onCancel={() => modal2VisibleModal(false)}
+          >
+
+            <Form
+              className={styles["supplier_add_content"]}
+              onFinish={onFinish}
+              form={form}
+              layout="vertical"
+              onFinishFailed={onFinishFailed}
+            >
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <Form.Item
+
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Tên chi nhánh</div>}
+                      name="branchName"
+                      rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập tên chi nhánh" />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Địa chỉ</div>
+                    <Form.Item
+
+
+                      name="address"
+                    // rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập địa chỉ" />
+                    </Form.Item>
+
+                  </div>
+                </Col>
+              </Row>
+
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+                    <Form.Item
+
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                      name="phoneNumber"
+                      rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                    >
+                      <Input placeholder="Nhập liên hệ" />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                  <div>
+
+                    <Form.Item
+                      name="city"
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
+                      hasFeedback
+                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                    >
+                      <Select
+                        onChange={handleChangeCity}
+                        showSearch
+                        style={{ width: '100%' }}
+                        placeholder="Chọn tỉnh/thành phố"
+                        optionFilterProp="children"
+
+
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                      >
+                        {
+                          province && province.length > 0 && province.map((values, index) => {
+                            return <Option value={values.province_name}>{values.province_name}</Option>
+                          })
+                        }
+
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </Col>
+              </Row>
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã chi nhánh</div>
                 <Form.Item
@@ -493,71 +737,71 @@ export default function BranchAdd({ branchChild, state }) {
               </div>
             </Col> */}
 
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <Form.Item
-                  name="store"
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Cửa hàng</div>}
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="Chọn cửa hàng">
-                    {
-                      store.map((values, index) => {
-                        return (
-                          <Option value={values.store_id}>{values.name}</Option>
-                        )
-                      })
-                    }
-
-
-                  </Select>
-                </Form.Item>
-
-              </div>
-            </Col>
-
-            {
-              districtMain && districtMain.length > 0 ? (
-
                 <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                   <div>
                     <Form.Item
-                      name="district"
-                      label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
+                      name="store"
+                      label={<div style={{ color: 'black', fontWeight: '600' }}>Cửa hàng</div>}
                       hasFeedback
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
-                      <Select showSearch
-                        style={{ width: '100%' }}
-                        placeholder="Select a person"
-                        optionFilterProp="children"
-
-
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }>
+                      <Select placeholder="Chọn cửa hàng">
                         {
-                          districtMain && districtMain.length > 0 && districtMain.map((values, index) => {
+                          store.map((values, index) => {
                             return (
-                              <Option value={values.district_name}>{values.district_name}</Option>
+                              <Option value={values.store_id}>{values.name}</Option>
                             )
                           })
                         }
 
 
                       </Select>
-
-
                     </Form.Item>
+
                   </div>
                 </Col>
 
-              ) : ('')
+                {
+                  districtMain && districtMain.length > 0 ? (
 
-            }
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+                      <div>
+                        <Form.Item
+                          name="district"
+                          label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
+                          hasFeedback
+                          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                        >
+                          <Select showSearch
+                            style={{ width: '100%' }}
+                            placeholder="Select a person"
+                            optionFilterProp="children"
 
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }>
+                            {
+                              districtMain && districtMain.length > 0 && districtMain.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>{values.district_name}</Option>
+                                )
+                              })
+                            }
+
+
+                          </Select>
+
+
+                        </Form.Item>
+                      </div>
+                    </Col>
+
+                  ) : ('')
+
+                }
+
+                {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Zip code</div>
                 <Form.Item
@@ -570,11 +814,11 @@ export default function BranchAdd({ branchChild, state }) {
                 </Form.Item>
               </div>
             </Col> */}
-          </Row>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              </Row>
+              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
 
-          </Row>
-          {/* <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              </Row>
+              {/* <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
 
@@ -584,26 +828,27 @@ export default function BranchAdd({ branchChild, state }) {
               </div>
             </Col>
           </Row> */}
-          <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            {/* <Col onClick={() => modal2VisibleModal(false)} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+              <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+                {/* <Col onClick={() => modal2VisibleModal(false)} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item >
                 <Button style={{ width: '7.5rem' }} type="primary" danger>
                   Hủy
                 </Button>
               </Form.Item>
             </Col> */}
-            <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
-                  Thêm
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
+                <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+                  <Form.Item>
+                    <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+                      Thêm
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
 
-      </Modal>
-
+          </Modal>
+        )
+      }
     </>
   );
 }

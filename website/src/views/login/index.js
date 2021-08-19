@@ -37,6 +37,7 @@ export default function Login() {
       if (res.status === 200) {
         openNotificationLoginSuccess()
         history.push('/overview/1');
+
         window.location.reload();
         const actions = loginAccessToken(res.data.data)
         dispatch(actions)
@@ -251,6 +252,7 @@ export default function Login() {
                     username: nonAccentVietnamese(values.usernameRegister.toLowerCase().trim()),
                     password: values.passwordRegister.trim(),
                     role: " ",
+                    store: " ",
                     phone: values.phoneNumberRegister.trim(),
                     email: values.emailRegister.trim(),
                     avatar: " ",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "antd/dist/antd.css"; // or 'antd/dist/antd.less'
 import { useDispatch, useSelector } from "react-redux";
 import * as types from "./../../consts/index";
@@ -533,10 +533,19 @@ const UI = (props) => {
   }
   const [attentionModal, setAttentionModal] = useState(false)
   const onClickAttention = () => {
-    //   to = {{ pathname: "/store/19", state: '1' }
-    // }
     setAttentionModal(true)
   }
+  useEffect(() => {
+    if (slug === '1' || slug === 1) {
+      const branch_id = JSON.parse(localStorage.getItem('branch_id'))
+      var result = branch_id && branch_id.data && branch_id.data.branch && branch_id.data.branch.branch_id && branch_id.data.branch.branch_id ? branch_id.data.branch.branch_id : ''
+      if ((result && result.name !== '') || (result && result.name !== ' ') || (result && result.name !== 'default') || (result && result.name !== null)) {
+
+      } else {
+        setAttentionModal(true)
+      }
+    }
+  }, [])
   const onClickConfirmAttention = () => {
     history.push({ pathname: "/store/19", state: '1' })
     setAttentionModal(false)
@@ -770,7 +779,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={250}
+        width={275}
         style={{ backgroundColor: '#FFFFFF', height: '100%', }}
         collapsed={siderStatus}
         onCollapse={onCollapse}
@@ -1093,12 +1102,13 @@ const UI = (props) => {
           width={700}
           footer={null}
           visible={attentionModal}
-          onOk={() => setAttentionModal(false)}
-          onCancel={() => setAttentionModal(false)}
+        // onOk={() => setAttentionModal(false)}
+        // onCancel={() => setAttentionModal(false)}
         >
           <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>Chào mừng bạn sử dụng Admin Order, tạo 1 cửa hàng để bắt đầu công việc kinh doanh của mình nhé.</div>
           <div onClick={onClickConfirmAttention} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button type="primary" style={{ width: '7.5rem' }}>Tiếp tục</Button>
-          </div></Modal>
+          </div>
+        </Modal>
       </Layout>
     </Layout>
   );
