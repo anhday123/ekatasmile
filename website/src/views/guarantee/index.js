@@ -1,6 +1,6 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../guarantee/guarantee.module.scss";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Popconfirm, message, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover } from "antd";
 import {
   BrowserRouter as Router,
@@ -13,6 +13,7 @@ import {
 } from "react-router-dom";
 import { AudioOutlined, FileExcelOutlined, EditOutlined, PlusCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import moment from 'moment';
+import { apiAllWarranty } from "../../apis/warranty";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const columns = [
@@ -44,28 +45,21 @@ const columns = [
 ];
 
 const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
+function removeFalse(a) {
+  return Object.keys(a)
+    .filter(key => a[key] !== '' && a[key] !== undefined)
+    .reduce((res, key) => (res[key] = a[key], res), {})
 }
 export default function Guarantee() {
   const { Search } = Input;
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-
-  const onSearch = (value) => console.log(value);
+  const [warrantyList, setWarrantyList] = useState([])
+  const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
+  const [filter, setFilter] = useState({ keyword: '', from_date: undefined, to_date: undefined })
+  const onSearch = (value) => setFilter({ ...filter, keyword: value.target.value })
   function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
+    setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
   }
   function handleChange(value) {
     console.log(`selected ${value}`);
@@ -73,49 +67,39 @@ export default function Guarantee() {
   const columnsPromotion = [
     {
       title: 'STT',
-      dataIndex: 'stt',
-      width: 150,
+      width: 50,
+      render(data, record, index) {
+        return ((pagination.page - 1) * pagination.page_size) + index + 1
+      }
     },
     {
       title: 'Mã phiếu',
-      dataIndex: 'ticketCode',
+      dataIndex: 'code',
       width: 150,
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
+      title: 'Tên bảo hành',
+      dataIndex: 'name',
       width: 150,
     },
     {
-      title: 'Sản phẩm',
-      dataIndex: 'product',
-      width: 150,
-    },
-    {
-      title: 'Mã SKU',
-      dataIndex: 'skuCode',
-      width: 150,
-    },
-    {
-      title: 'Mã đơn hàng',
-      dataIndex: 'orderCode',
-      width: 150,
-    },
-    {
-      title: 'Tên khách hàng',
-      dataIndex: 'customerName',
+      title: 'Loại bảo hành',
+      dataIndex: 'type',
       width: 150,
     },
     {
       title: 'Thời hạn bảo hành',
-      dataIndex: 'guaranteeTime',
+      dataIndex: 'time',
       width: 150,
+      render(data) {
+        return data + ' tháng'
+      }
     },
     {
-      title: 'Action',
-      dataIndex: 'action',
-      width: 100,
-    },
+      title: 'Mô tả',
+      dataIndex: 'description',
+      width: 150,
+    }
   ];
 
   const dataPromotion = [];
@@ -164,6 +148,22 @@ export default function Guarantee() {
       <div>Gợi ý 2</div>
     </div>
   );
+
+  const changePagi = (page, page_size) => setPagination({ page, page_size })
+  const getWarranty = async (params) => {
+    try {
+      const res = await apiAllWarranty({ ...params, ...pagination })
+      if (res.status == 200) {
+        setWarrantyList(res.data.data)
+      }
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
+  useEffect(() => {
+    getWarranty({ ...removeFalse(filter) })
+  }, [filter])
   return (
     <UI>
       <div className={styles["promotion_manager"]}>
@@ -177,13 +177,13 @@ export default function Guarantee() {
         </div>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <Popover placement="bottomLeft" content={content} trigger="click">
-              <div style={{ width: '100%' }}><Search
+            <div style={{ width: '100%' }}>
+              <Input
                 placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
+                onChange={onSearch}
                 enterButton
-              /></div>
-            </Popover>
+              />
+            </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
@@ -195,11 +195,6 @@ export default function Guarantee() {
                 }}
                 onChange={onChange}
               />
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
             </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
@@ -224,18 +219,11 @@ export default function Guarantee() {
             </Row>
           </Col>
         </Row>
+
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowSelection={rowSelection} columns={columnsPromotion} dataSource={dataPromotion} scroll={{ y: 500 }} />
+          <Table rowSelection={rowSelection} rowKey="_id" columns={columnsPromotion} pagination={{ onChange: changePagi }} dataSource={warrantyList} scroll={{ y: 500 }} />
         </div>
-        {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa bảo hành</Button></Popconfirm></div>) : ('')
-        }
+
       </div>
       <Modal
         title="Danh sách khách hàng dùng khuyến mãi"

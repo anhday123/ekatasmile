@@ -1,7 +1,7 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../shipping-product/shipping-product.module.scss";
 import React, { useEffect, useState } from "react";
-import { Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover } from "antd";
+import { Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, Upload } from "antd";
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,6 +14,8 @@ import {
 import { AudioOutlined, PlusCircleOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import { getDelivery } from "../../apis/delivery";
+import ImportModal from "../../components/ExportCSV/importModal";
+import exportToCSV from "../../components/ExportCSV/export";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -37,7 +39,10 @@ export default function ShippingProduct() {
   const [pageSize, setPageSize] = useState(10)
   const [deliveryList, setDelivery] = useState([])
   const [loading, setLoading] = useState(false)
+  const [importVisible, setImportVisible] = useState(false)
+  const [exportVisible, setExportVisible] = useState(false)
   const history = useHistory()
+
   const columns = [
     {
       title: 'STT',
@@ -122,7 +127,7 @@ export default function ShippingProduct() {
       width: 150,
     },
     {
-      title: 'Chi nhánh chuyển',
+      title: 'Nơi chuyển',
       dataIndex: 'from',
       width: 150,
       render(data) {
@@ -154,7 +159,7 @@ export default function ShippingProduct() {
       }
     },
     {
-      title: 'Chi nhánh nhận',
+      title: 'Nơi nhận',
       dataIndex: 'to',
       width: 150,
       render(data) {
@@ -204,6 +209,24 @@ export default function ShippingProduct() {
       <div>Gợi ý 2</div>
     </div>
   );
+  const ImportButton = () => (<Upload>
+    <Button>Nhập excel</Button>
+  </Upload>
+  )
+  const ExportExcel = () => {
+    exportToCSV(deliveryList.map(e => {
+      return {
+        code: e.code,
+        status: e.status,
+        from: e.from.name,
+        to: e.to.name,
+        create_date: moment(e.create_date).format('DD-MM-YYYY hh:mm'),
+        creator: e._creator
+      }
+    }), 'chuyen_hang')
+    setExportVisible(false)
+  }
+  const ExportButton = () => (<Button onClick={ExportExcel}>Xuất excel</Button>)
   useEffect(() => {
     getAllDelivery()
   }, [])
@@ -260,10 +283,10 @@ export default function ShippingProduct() {
           <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
               <Col style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }}>Nhập excel</Button>
+                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }} onClick={() => setImportVisible(true)}>Nhập excel</Button>
               </Col>
               <Col style={{ width: '100%', marginTop: '1rem', display: 'flex', marginLeft: '1rem', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#008816', color: 'white' }}>Xuất excel</Button>
+                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#008816', color: 'white' }} onClick={() => setExportVisible(true)}>Xuất excel</Button>
               </Col>
             </Row>
           </Col>
@@ -293,6 +316,8 @@ export default function ShippingProduct() {
           </div> */}
         </div>
       </Modal>
+      <ImportModal visible={importVisible} onCancel={() => setImportVisible(false)} columns={columnsPromotion} actionComponent={<ImportButton />} />
+      <ImportModal visible={exportVisible} onCancel={() => setExportVisible(false)} dataSource={deliveryList} columns={columnsPromotion} actionComponent={<ExportButton />} />
     </UI>
   );
 }

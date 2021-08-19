@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LayoutMain from './../../components/Layout/UI'
 import styles from "./overview.module.scss";
 import ChartBar from "react-google-charts";
@@ -15,9 +15,16 @@ import {
   InfoCircleOutlined,
   PlusOutlined
 } from "@ant-design/icons";
+import { getStatis } from "../../apis/statis";
 
 const { RangePicker } = DatePicker;
+function formatCash(str) {
+  return str.toString().split('').reverse().reduce((prev, next, index) => {
+    return ((index % 3) ? next : (next + ',')) + prev
+  })
+}
 const Overview = () => {
+  const [statis, setStatis] = useState({})
   function onChange(date, dateString) {
     console.log(date, dateString);
   }
@@ -73,6 +80,20 @@ const Overview = () => {
       Number of Orders in this app including line items in each
     </div>
   );
+  const getAllStatis = async () => {
+    try {
+      const res = await getStatis()
+      if (res.status) {
+        setStatis(res.data.data)
+      }
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
+  useEffect(() => {
+    getAllStatis()
+  }, [])
   return (
     <LayoutMain>
       <div className={styles["dashboard_manager"]}>
@@ -81,7 +102,6 @@ const Overview = () => {
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <div style={{ width: '100%' }}>
                 <Row gutter={20}>
-
                   <Col
                     className={styles["dashboard_manager_date_row_col"]}
                     style={{ width: '100%' }}
@@ -216,7 +236,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>0 VNĐ</div>
+                      <div>{statis.order_amount || 0}</div>
                     </div>
                   </div>
                 </div>
@@ -297,7 +317,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>0 VNĐ</div>
+                      <div>{statis.total_base_cost ? formatCash(statis.total_base_cost) : 0} VNĐ</div>
                     </div>
                   </div>
                 </div>
@@ -381,7 +401,7 @@ const Overview = () => {
                       }
                     >
 
-                      <div>0 VNĐ</div>
+                      <div>{statis.total_sale ? formatCash(statis.total_sale) : 0} VNĐ</div>
                     </div>
                   </div>
 
@@ -465,7 +485,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>0 VNĐ</div>
+                      <div>{statis.gross_profit ? formatCash(statis.gross_profit) : 0} VNĐ</div>
                     </div>
                   </div>
 
@@ -515,16 +535,16 @@ const Overview = () => {
                   </div> */}
                 </div>
                 <div style={{ width: '100%' }}>
-                  {[...Array(5).keys()].map((e, index) => {
+                  {statis.product_rank && statis.product_rank.slice(0, 5).map((e, index) => {
                     return <Row align="middle" style={index % 2 ? { marginBottom: 8, background: "#F7F8FA" } : { marginBottom: 8 }}>
                       <Col span={5}>
-                        <img src='https://storage.googleapis.com/viesoftware0710/1628583247537_viesoftware0710.jpg' width="50px" />
+                        <img src={e[0].image && e[0].image[0]} width="50px" />
                       </Col>
                       <Col span={13}>
-                        <Row>Áo thun DoDo</Row>
-                        <Row style={{ fontWeight: 500 }}>Đã bán 156 sản phẩm</Row>
+                        <Row>{(e[0].name || e[0].title) && (e[0].name || e[0].title)}</Row>
+                        <Row style={{ fontWeight: 500 }}>Đã bán {e[1].quantity} sản phẩm</Row>
                       </Col>
-                      <Col span={6} style={{ fontSize: 15 }}>5.852.000 &#8363;</Col>
+                      <Col span={6} style={{ fontSize: 15 }}>{formatCash(e[1].cost)} &#8363;</Col>
                     </Row>
                   })}
                 </div>

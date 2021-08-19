@@ -321,7 +321,7 @@ export default function Promotion() {
           <Button type="primary" onClick={resetFilter}>Xóa bộ lọc</Button>
         </Row>
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowKey='promotion_id' rowSelection={rowSelection} loading={loading} pagination={{ onChange: changePagi }} columns={columnsPromotion} dataSource={listPromotion} scroll={{ y: 500 }} />
+          <Table rowKey='promotion_id' loading={loading} pagination={{ onChange: changePagi }} columns={columnsPromotion} dataSource={listPromotion} scroll={{ y: 500 }} />
         </div>
         {
           selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm

@@ -64,7 +64,7 @@ export default function Promotion() {
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
   const [customerListUpdate, setCustomerListUpdate] = useState([])
   const onSearch = (value) => {
-    getAllCustomer({ keyword: value })
+    getAllCustomer({ _full_name: value })
     changeFilter('search', value)
   }
   function onChange(dates, dateStrings) {

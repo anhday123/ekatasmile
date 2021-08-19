@@ -14,22 +14,27 @@ export default function DeliveryUpdate() {
   const columns = [
     {
       title: 'STT',
-      dataIndex: 'stt',
       width: 20,
+      render(data, record, index) {
+        return index + 1
+      }
     },
     {
       title: 'Mã hàng',
-      dataIndex: 'productCode',
+      dataIndex: 'sku',
       width: 150,
     },
     {
       title: 'Tên sản phẩm',
-      dataIndex: 'productName',
+      dataIndex: 'name',
       width: 150,
+      render(data, record) {
+        return data || record.title
+      }
     },
     {
       title: 'Tồn kho',
-      dataIndex: 'inventory',
+      dataIndex: 'available_stock_quantity',
       width: 150,
     },
     {

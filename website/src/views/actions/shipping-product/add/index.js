@@ -1,14 +1,16 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useEffect, useState } from "react";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Popover, Table, Modal, Drawer, notification, AutoComplete, InputNumber, Radio } from "antd";
+import { Select, Button, Input, Form, Row, Col, Upload, Popover, Table, Modal, Drawer, notification, AutoComplete, InputNumber, Radio } from "antd";
 import { Link, useHistory } from "react-router-dom";
 import { ArrowLeftOutlined, AudioOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from "@ant-design/icons";
 import { getAllBranch } from "../../../../apis/branch";
-import { apiSearchProduct, apiProductSeller } from "../../../../apis/product";
+import { apiSearchProduct, apiProductSeller, apiAllProduct } from "../../../../apis/product";
 import { addDelivery } from "../../../../apis/delivery";
 import { useDispatch } from "react-redux";
 import { apiAllInventory } from "../../../../apis/inventory";
+import XLSX from 'xlsx'
+import ImportModal from "../../../../components/ExportCSV/importModal";
 const { Option } = Select;
 const { Search } = Input;
 export default function ShippingProduct() {
@@ -22,7 +24,10 @@ export default function ShippingProduct() {
   const [warehouseList, setWarehouseList] = useState([])
   const [productList, setProductList] = useState([])
   const [productDelivery, setProductDelivery] = useState([])
+  const [modalImportVisible, setModalImportVisible] = useState(false)
   const [options, setOptions] = useState([])
+  const [ImportData, setImportData] = useState([])
+  const [importLoading, setImportLoading] = useState(false)
   const history = useHistory()
   const dispatch = useDispatch()
 
@@ -114,12 +119,15 @@ export default function ShippingProduct() {
       title: 'Tên sản phẩm',
       dataIndex: 'name',
       width: 150,
+      render(data, record) {
+        return record.title || data
+      }
     },
     {
       title: 'Tồn kho',
       width: 150,
       render(data) {
-        return data.quantity || data.available_stock_quantity
+        return data.available_stock_quantity
       }
     },
     {
@@ -242,8 +250,58 @@ export default function ShippingProduct() {
       }}
     />
   );
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
+  const settings = {
+    name: 'file',
+    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    headers: {
+      authorization: 'authorization-text',
+    },
+    maxCount: 1,
+    onChange(info) {
+      if (info.file.status !== 'uploading') {
+        setImportLoading(true)
+      }
+      if (info.file.status === 'done') {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+
+          const bstr = e.target.result;
+          const workBook = XLSX.read(bstr, { type: 'binary' });
+          const workSheetname = workBook.SheetNames[0];
+          const workSheet = workBook.Sheets[workSheetname];
+
+          const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 0 });
+
+          console.log('fileData', fileData);
+
+          // initialTable(fileData);
+          const productList = await Promise.all(fileData.map(e => {
+            return deliveryFlow.fromtype == "BRANCH" ? apiProductSeller({
+              branch: deliveryFlow.from,
+              sku: e.sku,
+              product_id: e.product_id,
+              merge: false
+            }) :
+              apiAllProduct({
+                warehouse: deliveryFlow.from,
+                sku: e.sku,
+                product_id: e.product_id,
+                merge: false
+              })
+          }))
+          console.log('productList', productList);
+          if (productList.reduce((a, b) => a && b.data.success, true)) {
+            setImportData(productList.map((e, index) => { return { ...e.data.data[0], quantity: fileData[index].quantity } }))
+          }
+          else {
+            notification.error({ message: "Thất bại" })
+          }
+          setImportLoading(false)
+        };
+
+        reader.readAsBinaryString(info.file.originFileObj);
+      }
+    },
   }
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
@@ -272,13 +330,6 @@ export default function ShippingProduct() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const onFinishUpdateQuantity = (values) => {
-    console.log('Success:', values);
-  };
-
-  const onFinishFailedUpdateQuantity = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
   const getBranch = async () => {
     try {
       const res = await getAllBranch()
@@ -303,19 +354,8 @@ export default function ShippingProduct() {
 
     }
   }
-  const getProductList = async params => {
-    try {
-      const res = await apiProductSeller(params && params)
-      if (res.status == 200) {
-        setProductList(res.data.data)
-      }
-    }
-    catch (e) {
-      console.log(e);
-    }
-  }
   const handleSearch = async (value) => {
-    const res = await apiProductSeller({ keyword: value, page: 1, page_size: 20 })
+    const res = deliveryFlow.fromtype == "BRANCH" ? await apiProductSeller({ keyword: value, branch: deliveryFlow.from, page: 1, page_size: 20 }) : await apiAllProduct({ keyword: value, warehouse: deliveryFlow.from, page: 1, page_size: 20 })
     if (res.status == 200) {
       res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
     }
@@ -346,6 +386,11 @@ export default function ShippingProduct() {
     console.log(JSON.parse(value));
     setProductDelivery([...productDelivery, JSON.parse(value)])
   };
+  const ImportButton = () => (
+    <Upload {...settings}>
+      <Button>Nhập Excel</Button>
+    </Upload>
+  )
   useEffect(() => {
     getWarehouse()
     getBranch()
@@ -392,11 +437,12 @@ export default function ShippingProduct() {
                     deliveryFlow.fromtype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
+                      onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
                       optionFilterProp="children"
                     >
                       {
 
-                        branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                        branchList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
                       }
                     </Select> :
                       <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
@@ -405,7 +451,7 @@ export default function ShippingProduct() {
                         optionFilterProp="children"
                       >
                         {
-                          warehouseList.map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
+                          warehouseList.filter(e => e.active).map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
                         }
                       </Select>
                   }
@@ -444,11 +490,12 @@ export default function ShippingProduct() {
                     deliveryFlow.totype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
+                      onChange={(e) => setDeliveryFlow({ ...deliveryFlow, to: e })}
                       optionFilterProp="children"
                     >
                       {
 
-                        branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                        branchList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
                       }
                     </Select> :
 
@@ -459,7 +506,7 @@ export default function ShippingProduct() {
                       >
                         {
 
-                          warehouseList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                          warehouseList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
                         }
                       </Select>
                   }
@@ -509,7 +556,7 @@ export default function ShippingProduct() {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
               <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
                 <Col style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                  <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }}>Nhập excel</Button>
+                  <Button icon={<FileExcelOutlined />} onClick={() => setModalImportVisible(true)} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }}>Nhập excel</Button>
                 </Col>
 
               </Row>
@@ -655,7 +702,7 @@ export default function ShippingProduct() {
             </Row>
           </Form>
         </Modal>
-
+        <ImportModal visible={modalImportVisible} dataSource={ImportData} importLoading={importLoading} columns={columns} actionComponent={<ImportButton />} downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629306829254_ecomfullfillment.xlsx" onCancel={() => setModalImportVisible(false)} />
       </div>
     </UI>
   );
