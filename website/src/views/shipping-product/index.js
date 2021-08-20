@@ -209,10 +209,6 @@ export default function ShippingProduct() {
       <div>Gợi ý 2</div>
     </div>
   );
-  const ImportButton = () => (<Upload>
-    <Button>Nhập excel</Button>
-  </Upload>
-  )
   const ExportExcel = () => {
     exportToCSV(deliveryList.map(e => {
       return {
@@ -282,9 +278,6 @@ export default function ShippingProduct() {
         <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }} onClick={() => setImportVisible(true)}>Nhập excel</Button>
-              </Col>
               <Col style={{ width: '100%', marginTop: '1rem', display: 'flex', marginLeft: '1rem', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
                 <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#008816', color: 'white' }} onClick={() => setExportVisible(true)}>Xuất excel</Button>
               </Col>
@@ -316,7 +309,6 @@ export default function ShippingProduct() {
           </div> */}
         </div>
       </Modal>
-      <ImportModal visible={importVisible} onCancel={() => setImportVisible(false)} columns={columnsPromotion} actionComponent={<ImportButton />} />
       <ImportModal visible={exportVisible} onCancel={() => setExportVisible(false)} dataSource={deliveryList} columns={columnsPromotion} actionComponent={<ExportButton />} />
     </UI>
   );

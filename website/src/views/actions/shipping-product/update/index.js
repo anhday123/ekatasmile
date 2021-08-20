@@ -95,7 +95,7 @@ export default function DeliveryUpdate() {
           <span style={{ marginRight: 20, fontSize: 16 }}>Trạng thái:</span> <Radio.Group onChange={(e) => setStatus(e.target.value)} defaultValue={history.location.state.status}>
             <Radio value="PROGRESSING" >Chờ chuyển</Radio>
             <Radio value="SHIPPING">Đang chuyển</Radio>
-            <Radio value="CANCEL">Đang hủy</Radio>
+            {/* <Radio value="CANCEL">Đang hủy</Radio> */}
             <Radio value="CANCEL_FINISH">Đã Hủy</Radio>
             <Radio value="COMPLETE">Hoàn thành</Radio>
           </Radio.Group>

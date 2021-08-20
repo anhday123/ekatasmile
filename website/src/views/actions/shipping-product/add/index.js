@@ -132,6 +132,7 @@ export default function ShippingProduct() {
     },
     {
       title: 'Số lượng',
+      dataIndex: "quantity",
       key: 'deliveryQuantity',
       width: 150,
     },
@@ -339,9 +340,9 @@ export default function ShippingProduct() {
     }
     catch (e) {
       console.log(e);
-
     }
   }
+
   const getWarehouse = async () => {
     try {
       const res = await apiAllInventory()
@@ -351,13 +352,26 @@ export default function ShippingProduct() {
     }
     catch (e) {
       console.log(e);
-
+    }
+  }
+  const handleImport = () => {
+    if (ImportData.reduce((a, b) => a && b.available_stock_quantity >= b.quantity, true)) {
+      setProductDelivery([...productDelivery, ...ImportData])
+      setModalImportVisible(false)
+    }
+    else {
+      notification.error({ message: "Số lượng không hợp lệ" })
     }
   }
   const handleSearch = async (value) => {
-    const res = deliveryFlow.fromtype == "BRANCH" ? await apiProductSeller({ keyword: value, branch: deliveryFlow.from, page: 1, page_size: 20 }) : await apiAllProduct({ keyword: value, warehouse: deliveryFlow.from, page: 1, page_size: 20 })
-    if (res.status == 200) {
-      res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
+    if (deliveryFlow.from) {
+      const res = deliveryFlow.fromtype == "BRANCH" ? await apiProductSeller({ keyword: value, branch: deliveryFlow.from, page: 1, page_size: 20 }) : await apiAllProduct({ keyword: value, warehouse: deliveryFlow.from, page: 1, page_size: 20 })
+      if (res.status == 200) {
+        res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
+      }
+    }
+    else {
+      notification.warning({ message: "Vui lòng chọn nơi chuyển!" })
     }
   };
 
@@ -593,7 +607,7 @@ export default function ShippingProduct() {
                 if (e.key === 'deliveryQuantity')
                   return {
                     ...e, render(data, record, index) {
-                      return !data.has_variable && <InputNumber onBlur={(e) => {
+                      return !record.has_variable && <InputNumber defaultValue={data} onBlur={(e) => {
                         productDelivery[index].quantity = parseInt(e.target.value)
                       }
                       } />
@@ -702,7 +716,7 @@ export default function ShippingProduct() {
             </Row>
           </Form>
         </Modal>
-        <ImportModal visible={modalImportVisible} dataSource={ImportData} importLoading={importLoading} columns={columns} actionComponent={<ImportButton />} downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629306829254_ecomfullfillment.xlsx" onCancel={() => setModalImportVisible(false)} />
+        <ImportModal visible={modalImportVisible} onOk={handleImport} dataSource={ImportData} importLoading={importLoading} columns={columns} actionComponent={<ImportButton />} downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629443650598_ecomfullfillment.xlsx" onCancel={() => setModalImportVisible(false)} />
       </div>
     </UI>
   );

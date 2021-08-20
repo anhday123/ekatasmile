@@ -1,19 +1,13 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../guarantee/guarantee.module.scss";
 import React, { useEffect, useState } from "react";
-import { Popconfirm, message, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover } from "antd";
+import { Popconfirm, Switch, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
-import { AudioOutlined, FileExcelOutlined, EditOutlined, PlusCircleOutlined, ExclamationCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { FileExcelOutlined, EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import moment from 'moment';
-import { apiAllWarranty } from "../../apis/warranty";
+import { apiAllWarranty, updateWarranty } from "../../apis/warranty";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const columns = [
@@ -64,10 +58,23 @@ export default function Guarantee() {
   function handleChange(value) {
     console.log(`selected ${value}`);
   }
+  const warrantyUpdate = async (id, data) => {
+    try {
+      console.log(data);
+      const res = await updateWarranty(id, data)
+      if (res.data.success) {
+        notification.success({ message: "Thành công", description: `${data.active ? "Kích hoạt" : "Vô hiệu hóa"} thành công` })
+      }
+    }
+    catch (e) {
+      console.log(e);
+      notification.error({ message: "Thất bại", description: `${data.active ? "Kích hoạt" : "Vô hiệu hóa"} thất bại` })
+    }
+  }
   const columnsPromotion = [
     {
       title: 'STT',
-      width: 50,
+      width: 60,
       render(data, record, index) {
         return ((pagination.page - 1) * pagination.page_size) + index + 1
       }
@@ -99,6 +106,14 @@ export default function Guarantee() {
       title: 'Mô tả',
       dataIndex: 'description',
       width: 150,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "active",
+      width: 150,
+      render(data, record) {
+        return <Switch defaultChecked={data} onChange={e => warrantyUpdate(record.warranty_id, { active: e })} />
+      }
     }
   ];
 
