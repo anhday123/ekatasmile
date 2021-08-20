@@ -121,15 +121,6 @@ export default function Guarantee() {
       </div>
     });
   }
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
-
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }

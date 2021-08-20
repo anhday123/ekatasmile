@@ -1106,7 +1106,9 @@ const UI = (props) => {
           onCancel={() => setAttentionModal(false)}
         >
           <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>Chào mừng bạn sử dụng Admin Order, tạo 1 cửa hàng để bắt đầu công việc kinh doanh của mình nhé.</div>
-          <div onClick={onClickConfirmAttention} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button type="primary" style={{ width: '7.5rem' }}>Tiếp tục</Button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}>
+            <Button type="primary" style={{ width: '7.5rem', marginRight: 15 }} onClick={() => setAttentionModal(false)}>Để sau</Button>
+            <Button type="primary" style={{ width: '7.5rem' }} onClick={onClickConfirmAttention}>Tiếp tục</Button>
           </div>
         </Modal>
       </Layout>

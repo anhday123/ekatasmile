@@ -184,9 +184,9 @@ export default function BranchAdd({ branchChild, state, confirmValue }) {
       if (res.status === 200) {
         await getAllBranchData()
         openNotification()
-        if (state && state === '1') {
-          openNotificationTutorial(res.data.data.code)
-        }
+        // if (state && state === '1') {
+        //   openNotificationTutorial(res.data.data.code)
+        // }
 
         modal2VisibleModal(false)
         form.resetFields();
@@ -399,8 +399,8 @@ export default function BranchAdd({ branchChild, state, confirmValue }) {
             width={700}
             footer={null}
             visible={attentionAddBranch}
-          // onOk={() => setAttentionModal(false)}
-          // onCancel={() => setAttentionModal(false)}
+            onOk={() => setAttentionAddBranch(false)}
+            onCancel={() => setAttentionAddBranch(false)}
           >
             <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>Chào mừng bạn sử dụng Admin Order, tạo 1 cửa hàng để bắt đầu công việc kinh doanh của mình nhé.</div>
             <div style={{ fontSize: '1rem', marginTop: '1rem' }}><b style={{ color: 'red' }}>Gợi ý:</b> tạo 1 chi nhánh ( điểm bán hàng ) để sử dụng chức năng bán hàng.</div>
@@ -420,8 +420,8 @@ export default function BranchAdd({ branchChild, state, confirmValue }) {
             width={1000}
             footer={null}
             visible={modal2Visible}
-          // onOk={() => modal2VisibleModal(false)}
-          // onCancel={() => modal2VisibleModal(false)}
+            onOk={() => modal2VisibleModal(false)}
+            onCancel={() => modal2VisibleModal(false)}
           >
 
             <Form

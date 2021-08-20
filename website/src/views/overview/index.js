@@ -236,7 +236,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>{statis.order_amount || 0}</div>
+                      <div>{statis && statis.order_amount || 0}</div>
                     </div>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>{statis.total_base_cost ? formatCash(statis.total_base_cost) : 0} VNĐ</div>
+                      <div>{statis && statis.total_base_cost ? formatCash(statis.total_base_cost) : 0} VNĐ</div>
                     </div>
                   </div>
                 </div>
@@ -401,7 +401,7 @@ const Overview = () => {
                       }
                     >
 
-                      <div>{statis.total_sale ? formatCash(statis.total_sale) : 0} VNĐ</div>
+                      <div>{statis && statis.total_sale ? formatCash(statis.total_sale) : 0} VNĐ</div>
                     </div>
                   </div>
 
@@ -485,7 +485,7 @@ const Overview = () => {
                         ]
                       }
                     >
-                      <div>{statis.gross_profit ? formatCash(statis.gross_profit) : 0} VNĐ</div>
+                      <div>{statis && statis.gross_profit ? formatCash(statis.gross_profit) : 0} VNĐ</div>
                     </div>
                   </div>
 
@@ -535,7 +535,7 @@ const Overview = () => {
                   </div> */}
                 </div>
                 <div style={{ width: '100%' }}>
-                  {statis.product_rank && statis.product_rank.slice(0, 5).map((e, index) => {
+                  {statis && statis.product_rank && statis.product_rank.slice(0, 5).map((e, index) => {
                     return <Row align="middle" style={index % 2 ? { marginBottom: 8, background: "#F7F8FA" } : { marginBottom: 8 }}>
                       <Col span={5}>
                         <img src={e[0].image && e[0].image[0]} width="50px" />
