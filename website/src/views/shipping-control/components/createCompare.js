@@ -1,17 +1,40 @@
-import { Drawer, Row, Col, Form, Input, Select, DatePicker, InputNumber } from "antd";
+import { Drawer, Row, Col, Form, Input, Select, DatePicker, InputNumber, Button, notification } from "antd";
 import { useEffect, useState } from "react";
+import { addCompare } from "../../../apis/compare";
 import { apiAllShipping } from "../../../apis/shipping";
-
+import moment from 'moment'
 export default function CreateCompare(props) {
     const { visible, onClose } = props
     const [transportList, setTransportList] = useState([])
-    const onFinish = (value) => {
-
+    const [transport, setTransport] = useState('')
+    const onFinish = async (value) => {
+        try {
+            const obj = {
+                type: "single",
+                link: " ",
+                compares: [
+                    {
+                        ...value,
+                        complete_date: moment(value.complete_date).format('YYYY-MM-DD'),
+                        revice_date: moment(value.revice_date).format('YYYY-MM-DD')
+                    }
+                ]
+            }
+            const res = await addCompare(obj)
+            if (res.data.success) {
+                notification.success({ message: "Thành công" })
+                onClose()
+            }
+        }
+        catch (e) {
+            console.log(e)
+            notification.error({ message: "Thất bại", description: e.data && e.data.message })
+        }
     }
     const getTransport = async () => {
         try {
             const res = await apiAllShipping()
-            if (res.data.status) {
+            if (res.data.success) {
                 setTransportList(res.data.data)
             }
         }
@@ -25,16 +48,16 @@ export default function CreateCompare(props) {
     }, [])
     return (
         <Drawer visible={visible} onClose={onClose} width={1100} title="Tạo đối soát">
-            <Form>
+            <Form onFinish={onFinish}>
                 <Row justify="space-between">
                     <Col span={11}>
                         <Row>
                             <Col span={8}>Đơn vị vận chuyển</Col>
                             <Col span={16}>
-                                <Form.Item>
+                                <Form.Item name="shipping_company">
                                     <Select>
                                         {
-                                            transportList.map(e => (<Select.Option value={e.transport_id}>{e.name}</Select.Option>))
+                                            transportList.filter(e => e.active).map(e => (<Select.Option value={e.transport_id}>{e.name}</Select.Option>))
                                         }
                                     </Select>
                                 </Form.Item>
@@ -100,6 +123,20 @@ export default function CreateCompare(props) {
                             <Col span={8}>Phí chuyển hoàn</Col>
                             <Col span={16} >
                                 <Form.Item name="delivery_cost">
+                                    <InputNumber
+                                        style={{ width: "100%" }}
+                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col span={11}>
+                        <Row>
+                            <Col span={8}>Tiền chuyển khoản</Col>
+                            <Col span={16} >
+                                <Form.Item name="card_cost">
                                     <InputNumber
                                         style={{ width: "100%" }}
                                         formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -193,6 +230,12 @@ export default function CreateCompare(props) {
                         </Row>
 
                     </Col>
+                </Row>
+                <Row justify="end">
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">Lưu</Button>
+                    </Form.Item>
+
                 </Row>
             </Form>
         </Drawer>

@@ -1,7 +1,11 @@
 import { Table, Drawer } from "antd"
+import { useEffect, useState } from "react"
+import { getCompare } from "../../../apis/compare"
 
 export default function SessionHistory(props) {
-    const { compareList, visible, onClose, data } = props
+    const { visible, onClose, data } = props
+    const [compareList, setCompareList] = useState([])
+    const [loading, setLoading] = useState(false)
     const columns = [
         {
             title: "Mã đơn hàng",
@@ -85,6 +89,23 @@ export default function SessionHistory(props) {
             dataIndex: "status"
         }
     ]
+    const getAllCompare = async (params) => {
+        try {
+            setLoading(true)
+            const res = await getCompare(params)
+            if (res.data.success) {
+                setCompareList(res.data.data)
+            }
+            setLoading(false)
+        }
+        catch (e) {
+            console.log(e);
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
+        getAllCompare({ session: data.session_id })
+    }, [data])
     return (
         <Drawer title={"Danh sách đối soát trong phiên " + data.code} visible={visible} onClose={onClose} width={1000}>
             <Table columns={columns} scroll={{ x: "max-content" }} dataSource={compareList} />

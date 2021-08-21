@@ -11,14 +11,22 @@ import PenddingCompare from "./components/penddingCompare";
 import Compared from "./components/compared";
 import CompareHistory from "./components/compareHistory";
 import CreateCompare from "./components/createCompare";
+import { getAllBranch } from "../../apis/branch";
 
 const { TabPane } = Tabs;
+function removeNull(a) {
+  return Object.keys(a)
+    .filter(key => a[key] !== '' && a[key] !== undefined)
+    .reduce((res, key) => (res[key] = a[key], res), {})
+}
 export default function ShippingControl() {
 
   const [compareList, setCompareList] = useState([])
   const [sessionList, setSessionList] = useState([])
   const [showCreate, setShowCreate] = useState(false)
-  const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
+  const [branchList, setBranchList] = useState([])
+  const [filter, setFilter] = useState({})
+  const [currentTab, setCurrentTab] = useState(1)
 
   const getAllCompare = async params => {
     try {
@@ -44,7 +52,20 @@ export default function ShippingControl() {
     }
   }
 
+  const getBranch = async (params) => {
+    try {
+      const res = await getAllBranch(params)
+      if (res.data.success) {
+        setBranchList(res.data.data)
+      }
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
+
   const changeTab = (e) => {
+    setCurrentTab(e)
     if (e == 3) {
       getAllSession()
     }
@@ -54,8 +75,17 @@ export default function ShippingControl() {
   }
 
   useEffect(() => {
-    getAllCompare()
+    // getAllCompare()
+    getBranch()
   }, [])
+  useEffect(() => {
+    if (currentTab == 3) {
+      getAllSession({ ...removeNull(filter) })
+    }
+    else {
+      getAllCompare({ ...removeNull(filter) })
+    }
+  }, [filter])
   return (
     <UI>
       <div className={styles["promotion_manager"]}>
@@ -67,13 +97,13 @@ export default function ShippingControl() {
         </div>
         <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
           <TabPane tab={<span style={{ fontSize: 18, fontWeight: 500 }}>Đơn chờ đối soát</span>} key="1">
-            <PenddingCompare compareList={compareList} />
+            <PenddingCompare compareList={compareList} branchList={branchList} setFilter={setFilter} />
           </TabPane>
           <TabPane tab={<span style={{ fontSize: 18, fontWeight: 500 }}>Đơn đã đối soát thành công</span>} key="2">
-            <Compared compareList={compareList} />
+            <Compared compareList={compareList} branchList={branchList} setFilter={setFilter} />
           </TabPane>
           <TabPane tab={<span style={{ fontSize: 18, fontWeight: 500 }}>Lịch sử đối soát</span>} key="3">
-            <CompareHistory compareList={sessionList} />
+            <CompareHistory compareList={sessionList} branchList={branchList} setFilter={setFilter} />
           </TabPane>
         </Tabs>
       </div>

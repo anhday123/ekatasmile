@@ -1,17 +1,12 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../shipping-product/shipping-product.module.scss";
 import React, { useEffect, useState } from "react";
-import { Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, Upload } from "antd";
+import { Input, Button, Row, Col, DatePicker, Select, Table } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, FileExcelOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import { getDelivery } from "../../apis/delivery";
 import ImportModal from "../../components/ExportCSV/importModal";
@@ -19,76 +14,29 @@ import exportToCSV from "../../components/ExportCSV/export";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
 export default function ShippingProduct() {
-  const { Search } = Input;
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
+  const [totalRecord, setTotalRecord] = useState(0)
   const [deliveryList, setDelivery] = useState([])
   const [loading, setLoading] = useState(false)
-  const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
+  const [isOpenSelect, setIsOpenSelect] = useState(false)
+  const [filter, setFilter] = useState({ keyword: '', from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const history = useHistory()
 
-  const columns = [
-    {
-      title: 'STT',
-      width: 150,
-      render(data, record, index) {
-        return ((page - 1) * pageSize) + index + 1
-      }
-    },
-    {
-      title: 'Tên khách hàng',
-      dataIndex: '_creator',
-      width: 150,
-    },
-    {
-      title: 'Mã khách hàng',
-      dataIndex: 'creator',
-      width: 150,
-      render(data) {
-        return data.user_id
-      }
-    },
-    {
-      title: 'Loại khách hàng',
-      dataIndex: 'customerType',
-      width: 150,
-    },
-    {
-      title: 'Liên hệ',
-      dataIndex: 'creator',
-      width: 150,
-      render(data) {
-        return data.phone
-      }
-    },
-  ];
-  const changePage = (page, pageSize) => {
-    setPage(page)
-    setPageSize(pageSize)
+  const changePage = (page, page_size) => {
+    setPagination({ page, page_size })
   }
 
   const getAllDelivery = async (params) => {
     try {
       setLoading(true)
-      const res = await getDelivery(params)
+      const res = await getDelivery({ ...params, page: pagination.page, page_size: pagination.page_size })
       if (res.status == 200) {
         setDelivery(res.data.data)
+        setTotalRecord(res.data.count)
       }
       setLoading(false)
     } catch (e) {
@@ -98,18 +46,8 @@ export default function ShippingProduct() {
   }
 
   const onSearch = (value) => {
-    getAllDelivery({ keyword: value })
+    setFilter({ ...filter, keyword: value })
   };
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-    getAllDelivery({ 'from_date': dateStrings[0], 'to_date': dateStrings[1] })
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-    getAllDelivery({ create_date: dateString })
-
-  }
   function handleChange(value) {
     console.log(`selected ${value}`);
   }
@@ -118,7 +56,7 @@ export default function ShippingProduct() {
       title: 'STT',
       width: 150,
       render(data, record, index) {
-        return ((page - 1) * pageSize) + index + 1
+        return ((pagination.page - 1) * pagination.page_size) + index + 1
       }
     },
     {
@@ -140,7 +78,7 @@ export default function ShippingProduct() {
       width: 150,
       render(data, record) {
         switch (data) {
-          case 'PROGRESSING': {
+          case 'PROCESSING': {
             return <div onClick={() => onClickStatus(record)} style={{ color: '#FF9D0A', fontWeight: '600', cursor: 'pointer' }}>Chờ chuyển</div>
           }
           case "SHIPPING": {
@@ -187,15 +125,8 @@ export default function ShippingProduct() {
   ];
   const onClickStatus = (data) => {
     history.push({ pathname: '/actions/shipping-product/update/9', state: data })
-    // alert('Chưa có API nên để thông báo này')
   }
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = value => console.log(value);
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
@@ -203,12 +134,6 @@ export default function ShippingProduct() {
     onChange: onSelectChange,
 
   };
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
   const ExportExcel = () => {
     exportToCSV(deliveryList.map(e => {
       return {
@@ -223,9 +148,47 @@ export default function ShippingProduct() {
     setExportVisible(false)
   }
   const ExportButton = () => (<Button onClick={ExportExcel}>Xuất excel</Button>)
+
+  const changeRange = (date, dateString) => {
+    setFilter({ ...filter, from_date: dateString[0], to_date: dateString[1] })
+  }
+  const changeTimeOption = (value) => {
+    switch (value) {
+      case "to_day":
+        setFilter({ ...filter, from_date: moment().format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+        break
+      case "yesterday":
+        setFilter({ ...filter, from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'days').format('YYYY-MM-DD') })
+        break
+      case "this_week":
+        setFilter({ ...filter, from_date: moment().startOf('week').format('YYYY-MM-DD'), to_date: moment().endOf('week').format('YYYY-MM-DD') })
+        break
+      case "last_week":
+        setFilter({ ...filter, from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD') })
+        break
+      case "this_month":
+        setFilter({ ...filter, from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+        break
+      case "last_month":
+        setFilter({ ...filter, from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD') })
+        break
+      case "this_year":
+        setFilter({ ...filter, from_date: moment().startOf('years').format('YYYY-MM-DD'), to_date: moment().endOf('years').format('YYYY-MM-DD') })
+        break
+      case "last_year":
+        setFilter({ ...filter, from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD') })
+        break
+      default:
+        setFilter({ ...filter, from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
+        break;
+    }
+  }
   useEffect(() => {
     getAllDelivery()
   }, [])
+  useEffect(() => {
+    getAllDelivery({ ...filter })
+  }, [filter, pagination])
   return (
     <UI>
       <div className={styles["promotion_manager"]}>
@@ -241,36 +204,59 @@ export default function ShippingProduct() {
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
 
             <div style={{ width: '100%' }}>
-              <Search
+              <Input
                 placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
+                onChange={onSearch}
                 enterButton
                 allowClear
-              /></div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                onChange={onChange}
               />
             </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
-            </div>
+            <Select
+              open={isOpenSelect}
+              defaultValue="this_month"
+              onBlur={() => {
+                if (isOpenSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!isOpenSelect) toggleOpenSelect()
+              }}
+              style={{ width: 380 }}
+              placeholder="Choose time"
+              allowClear
+              onChange={async (value) => {
+                if (isOpenSelect) toggleOpenSelect()
+                changeTimeOption(value)
+              }}
+              dropdownRender={(menu) => (
+                <div>
+                  <RangePicker
+                    onFocus={() => {
+                      if (!isOpenSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (isOpenSelect) toggleOpenSelect()
+                    }}
+                    style={{ width: '100%' }}
+                    onChange={changeRange}
+                  />
+                  {menu}
+                </div>
+              )}>
+              <Option value="to_day">Today</Option>
+              <Option value="yesterday">Yesterday</Option>
+              <Option value="this_week">This week</Option>
+              <Option value="last_week">Last week</Option>
+              <Option value="last_month">Last month</Option>
+              <Option value="this_month">This month</Option>
+              <Option value="this_year">This year</Option>
+              <Option value="last_year">Last year</Option>
+            </Select>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select style={{ width: '100%' }} placeholder="Lọc phiếu chuyển" onChange={handleChange}>
-                <Option value="ticket1">Phiếu chuyển 1</Option>
-                <Option value="ticket2">Phiếu chuyển 2</Option>
-                <Option value="ticket3">Phiếu chuyển 3</Option>
               </Select>
             </div>
           </Col>
@@ -285,30 +271,9 @@ export default function ShippingProduct() {
           </Col>
         </Row>
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowSelection={rowSelection} loading={loading} columns={columnsPromotion} rowKey="_id" pagination={{ onChange: changePage }} dataSource={deliveryList} scroll={{ y: 500 }} />
+          <Table rowSelection={rowSelection} loading={loading} columns={columnsPromotion} rowKey="_id" pagination={{ onChange: changePage, total: totalRecord }} dataSource={deliveryList} scroll={{ y: 500 }} />
         </div>
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
-            </div></Popover>
-          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
-        </div>
-      </Modal>
       <ImportModal visible={exportVisible} onCancel={() => setExportVisible(false)} dataSource={deliveryList} columns={columnsPromotion} actionComponent={<ExportButton />} />
     </UI>
   );

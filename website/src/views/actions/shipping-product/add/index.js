@@ -1,21 +1,20 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useEffect, useState } from "react";
-import { Select, Button, Input, Form, Row, Col, Upload, Popover, Table, Modal, Drawer, notification, AutoComplete, InputNumber, Radio } from "antd";
+import { Select, Button, Input, Form, Row, Col, Upload, Modal, notification, AutoComplete, InputNumber, Radio, DatePicker, Table } from "antd";
 import { Link, useHistory } from "react-router-dom";
-import { ArrowLeftOutlined, AudioOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, FileExcelOutlined } from "@ant-design/icons";
 import { getAllBranch } from "../../../../apis/branch";
-import { apiSearchProduct, apiProductSeller, apiAllProduct } from "../../../../apis/product";
+import { apiProductSeller, apiAllProduct } from "../../../../apis/product";
 import { addDelivery } from "../../../../apis/delivery";
 import { useDispatch } from "react-redux";
 import { apiAllInventory } from "../../../../apis/inventory";
 import XLSX from 'xlsx'
 import ImportModal from "../../../../components/ExportCSV/importModal";
+import moment from 'moment'
 const { Option } = Select;
 const { Search } = Input;
 export default function ShippingProduct() {
-  const [visible, setVisible] = useState(false)
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [modal3Visible, setModal3Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
@@ -28,6 +27,7 @@ export default function ShippingProduct() {
   const [options, setOptions] = useState([])
   const [ImportData, setImportData] = useState([])
   const [importLoading, setImportLoading] = useState(false)
+  const [flag, setFlag] = useState(0)
   const history = useHistory()
   const dispatch = useDispatch()
 
@@ -67,6 +67,8 @@ export default function ShippingProduct() {
           "from": values.from,
           "to": values.to,
           "products": productSend,
+          ship_time: moment(values.ship_date).format(),
+          status: flag ? 'processing' : 'shipping',
           note: values.note,
           tag: values.tag
         }
@@ -84,13 +86,7 @@ export default function ShippingProduct() {
       }
     }
   };
-  const showDrawer = () => {
-    setVisible(true)
-  };
 
-  const onClose = () => {
-    setVisible(false)
-  };
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -98,10 +94,7 @@ export default function ShippingProduct() {
         'Thêm sản phẩm thành công',
     });
   };
-  const onClickAddProduct = () => {
-    setVisible(false)
-    openNotification()
-  }
+
   const columns = [
     {
       title: 'STT',
@@ -134,38 +127,6 @@ export default function ShippingProduct() {
       title: 'Số lượng',
       dataIndex: "quantity",
       key: 'deliveryQuantity',
-      width: 150,
-    },
-    // {
-    //   title: 'Action',
-    //   dataIndex: 'action',
-    //   width: 150,
-    // },
-  ];
-  const columnsAddProduct = [
-    {
-      title: 'STT',
-      dataIndex: 'stt',
-      width: 150,
-    },
-    {
-      title: 'Mã hàng',
-      dataIndex: 'productCode',
-      width: 150,
-    },
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'productName',
-      width: 150,
-    },
-    {
-      title: 'Tồn kho',
-      dataIndex: 'inventory',
-      width: 150,
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'available_stock_quantity',
       width: 150,
     },
     // {
@@ -240,17 +201,7 @@ export default function ShippingProduct() {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  );
+
   const settings = {
     name: 'file',
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
@@ -272,9 +223,6 @@ export default function ShippingProduct() {
           const workSheet = workBook.Sheets[workSheetname];
 
           const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 0 });
-
-          console.log('fileData', fileData);
-
           // initialTable(fileData);
           const productList = await Promise.all(fileData.map(e => {
             return deliveryFlow.fromtype == "BRANCH" ? apiProductSeller({
@@ -292,7 +240,17 @@ export default function ShippingProduct() {
           }))
           console.log('productList', productList);
           if (productList.reduce((a, b) => a && b.data.success, true)) {
-            setImportData(productList.map((e, index) => { return { ...e.data.data[0], quantity: fileData[index].quantity } }))
+            setImportData(productList.filter((e, index) => {
+              if (e.data.data.length)
+                return true
+              else {
+                notification.error({ message: "Thất bại", description: `Không tìm thấy sản phẩm id ${fileData[index].product_id}` })
+                return false
+              }
+            }).map((e, index) => {
+              return { ...e.data.data[0], quantity: fileData[index].quantity }
+            })
+            )
           }
           else {
             notification.error({ message: "Thất bại" })
@@ -308,13 +266,6 @@ export default function ShippingProduct() {
     setModal3Visible(modal3Visible)
   }
   const onSearch = value => console.log(value);
-  const onSearchAddProduct = value => console.log(value);
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
   const onSelectChangeMain = selectedRowKeys => {
     console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeysMain(selectedRowKeys)
@@ -364,7 +315,8 @@ export default function ShippingProduct() {
     }
   }
   const handleSearch = async (value) => {
-    if (deliveryFlow.from) {
+    console.log(deliveryFlow);
+    if (deliveryFlow.from != '') {
       const res = deliveryFlow.fromtype == "BRANCH" ? await apiProductSeller({ keyword: value, branch: deliveryFlow.from, page: 1, page_size: 20 }) : await apiAllProduct({ keyword: value, warehouse: deliveryFlow.from, page: 1, page_size: 20 })
       if (res.status == 200) {
         res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
@@ -431,7 +383,12 @@ export default function ShippingProduct() {
         >
 
           <div style={{ display: 'flex', marginBottom: '0.75rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu chuyển</div>
-
+          <Row style={{ width: '100%' }}>
+            <span style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Đặt thời gian : &nbsp;</span>
+            <Form.Item name="ship_date">
+              <DatePicker style={{ width: 250 }} showTime defaultValue={moment()} />
+            </Form.Item>
+          </Row>
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
@@ -448,7 +405,7 @@ export default function ShippingProduct() {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   {
-                    deliveryFlow.fromtype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
+                    deliveryFlow.fromtype === "BRANCH" ? <Select placeholder="Chọn nơi chuyển" showSearch filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                       onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
@@ -459,9 +416,11 @@ export default function ShippingProduct() {
                         branchList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
                       }
                     </Select> :
-                      <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
+                      <Select placeholder="Chọn nơi chuyển" showSearch
+                        onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
                         optionFilterProp="children"
                       >
                         {
@@ -516,11 +475,12 @@ export default function ShippingProduct() {
                       <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
+                        onChange={(e) => setDeliveryFlow({ ...deliveryFlow, to: e })}
                         optionFilterProp="children"
                       >
                         {
 
-                          warehouseList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                          warehouseList.filter(e => e.active).map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
                         }
                       </Select>
                   }
@@ -622,59 +582,24 @@ export default function ShippingProduct() {
             selectedRowKeysMain && selectedRowKeysMain.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></div>) : ('')
           }
           <Row style={{ marginTop: '1rem' }} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+            <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
+                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit" onClick={() => setFlag(1)}>
+                  Lưu
                 </Button>
               </Form.Item>
-            </Col> */}
+            </Col>
             <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit" >
-                  Tạo
+                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit" onClick={() => setFlag(0)}>
+                  Chuyển
                 </Button>
               </Form.Item>
             </Col>
           </Row>
 
         </Form>
-        <Drawer
-          title="Thêm sản phẩm"
-          width={720}
-          onClose={onClose}
-          visible={visible}
-          bodyStyle={{ paddingBottom: 80 }}
-        >
 
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            <Popover placement="bottomLeft" content={content} trigger="click">
-              <div style={{ display: 'flex', margin: '1rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo mã, theo tên" onSearch={onSearchAddProduct} enterButton /></div>
-            </Popover>
-            <div style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}>
-              <Table rowSelection={rowSelection} columns={columnsAddProduct} dataSource={dataAddProuct} scroll={{ y: 500 }} />
-
-            </div>
-          </div>
-          <Row style={{}} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col onClick={onClose} style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-
-              <Button style={{ width: '7.5rem' }} type="primary" danger>
-                Hủy
-              </Button>
-
-            </Col> */}
-            <Col onClick={onClickAddProduct} style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-
-              <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
-                Xác nhận
-              </Button>
-
-            </Col>
-          </Row>
-
-        </Drawer>
         <Modal
           title="Cập nhật số lượng sản phẩm"
           centered
