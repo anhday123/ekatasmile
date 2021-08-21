@@ -11,14 +11,6 @@ export const decodeJWT = (_token) => {
     }
     try {
         const payload = JSON.parse(atob(_splitToken[1]))
-        // if (payload.role === 'client') {
-        //   if (!payload.permissions) {
-        //     payload.permissions = []
-        //   }
-        //   payload.permissions = [
-        //     ...payload.permissions,
-        //   ]
-        // }
         return payload
     } catch (error) {
         return null
