@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React from "react";
 import { Input, Space, Button, Row, Col, notification, Form, Checkbox, Radio } from "antd";
@@ -28,7 +27,7 @@ export default function AccumulatePointSetting() {
     console.log('Failed:', errorInfo);
   };
   return (
-    <UI>
+    <>
 
       <Form
         className={styles["promotion_manager"]}
@@ -201,6 +200,6 @@ export default function AccumulatePointSetting() {
         </div>
       </Form>
 
-    </UI>
+    </>
   );
 }

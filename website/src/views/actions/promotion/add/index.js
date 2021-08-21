@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
 
   Link,
@@ -159,7 +158,7 @@ export default function PromotionAdd() {
     getBranch()
   }, [])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_add"]}>
         <Link className={styles["promotion_add_title"]} to="/promotion/20">
 
@@ -462,6 +461,6 @@ export default function PromotionAdd() {
         </Modal>
 
       </div>
-    </UI>
+    </>
   );
 }

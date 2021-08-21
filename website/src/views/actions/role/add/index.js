@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import {
 
@@ -136,7 +135,7 @@ export default function RoleAdd() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["role_add"]}>
         <Row className={styles["role_add_title_parent"]}>
           <Col
@@ -339,6 +338,6 @@ export default function RoleAdd() {
           </Col>
         </Row>
       </div>
-    </UI>
+    </>
   );
 }

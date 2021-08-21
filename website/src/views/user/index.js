@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../user/user.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import moment from 'moment'
@@ -616,7 +615,7 @@ export default function User() {
     setRoleSelect(e)
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -1039,6 +1038,6 @@ export default function User() {
         }
 
       </Drawer>
-    </UI>
+    </>
   );
 }

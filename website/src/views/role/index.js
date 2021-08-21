@@ -1,4 +1,3 @@
-import UI from './../../components/Layout/UI';
 import styles from "./../role/role.module.scss";
 import React, { useState, useEffect } from "react";
 import { ACTION } from './../../consts/index'
@@ -259,7 +258,7 @@ export default function Role() {
    
   }
   return (
-    <UI>
+    <>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', padding: '1rem', margin: '1rem', backgroundColor: 'white' }}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(230, 220, 220)', paddingBottom: '1rem', marginBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={11} xl={11}>
@@ -417,6 +416,6 @@ export default function Role() {
           </div>
         </div>
       </Drawer>
-    </UI>
+    </>
   );
 }

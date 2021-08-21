@@ -1,11 +1,11 @@
-import React from "react";
-import { decodeJWT } from "utils";
+import React from 'react'
+import { decodeToken } from 'react-jwt'
 
 const Permission = ({ permissions, children, ...props }) => {
   try {
     const context =
       localStorage.getItem('accessToken') &&
-      decodeJWT(localStorage.getItem('accessToken'))
+      decodeToken(localStorage.getItem('accessToken'))
 
     if (!context) {
       return null
@@ -14,15 +14,13 @@ const Permission = ({ permissions, children, ...props }) => {
     if (
       !permissions ||
       permissions.length === 0 ||
-      permissions.filter((p) => context.permission.includes(p))
-        .length
+      permissions.filter((p) => context.data.role.menu_list.includes(p)).length
     ) {
       return React.cloneElement(children, props)
     }
 
     return null
   } catch (error) {
-
     return null
   }
 }

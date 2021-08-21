@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../customer/customer.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
@@ -477,7 +476,7 @@ export default function Branch(propsData) {
 
 
   return (
-    <UI>
+    <>
 
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -967,6 +966,6 @@ export default function Branch(propsData) {
         }
       </Drawer>
 
-    </UI >
+    </ >
   );
 }

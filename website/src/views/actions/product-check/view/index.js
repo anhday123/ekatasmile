@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import loading from './../../../../assets/img/loading.png'
 import styles from "./../view/view.module.scss";
 import { Popconfirm, Button, Input, Form, Row, Col, Typography, message, Table, Modal, notification } from "antd";
@@ -103,7 +102,7 @@ export default function ProductCheckView() {
     modal2VisibleModal(true)
   }
   return (
-    <UI>
+    <>
       <Form style={{ margin: '1rem' }} 
          className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -253,6 +252,6 @@ export default function ProductCheckView() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

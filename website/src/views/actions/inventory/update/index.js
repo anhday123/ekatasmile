@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import React from "react";
 import { ACTION } from './../../../../consts/index'
@@ -103,7 +102,7 @@ export default function InventoryUpdate(propsData) {
   const dateFormat = 'YYYY/MM/DD';
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/inventory/7">
 
@@ -279,6 +278,6 @@ export default function InventoryUpdate(propsData) {
         </Form>
 
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,17 +1,11 @@
 import React from 'react'
 
-import {
-  Switch,
-  Route,
-  Redirect,
-  BrowserRouter,
-
-} from 'react-router-dom'
+import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
 import { ROUTES } from './../consts/index'
 
 //base layout
 import UI from './../components/Layout/UI'
-// import Authentication from 'components/authentication'
+import Authentication from 'components/authentication'
 //views
 import Login from './login/index'
 import ReportImport from './report-import/index'
@@ -63,9 +57,9 @@ import ProductView from './actions/product/view'
 
 import InventoryView from './actions/inventory/view'
 import InventoryUpdate from './actions/inventory/update'
-import CardAccumulatePoint from "./actions/card-accumulate-point/view";
+import CardAccumulatePoint from './actions/card-accumulate-point/view'
 
-import AccumulatePointSettingView from "./actions/accumulate-point-setting/view";
+import AccumulatePointSettingView from './actions/accumulate-point-setting/view'
 import CardAccumulatePointAdd from './actions/card-accumulate-point/add'
 import AccumulatePointEditView from './actions/accumulate-point-edit/view'
 import AccumulatePointEditAdd from './actions/accumulate-point-edit/add'
@@ -616,12 +610,10 @@ const AUTH_ROUTER = [
   },
 ]
 
-
 export default function Views() {
   return (
     <BrowserRouter>
       <Switch>
-
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>
             <Authentication {...rest}>
@@ -631,22 +623,22 @@ export default function Views() {
         ))} */}
 
         <Route path="/" exact={true}>
-          <Redirect to={ROUTES.LOGIN} />
+          <Redirect to={ROUTES.OVERVIEW} />
         </Route>
+
+        {DEFINE_ROUTER.map(({ Component, ...rest }, index) => (
+          <Route {...rest} key={index}>
+            <Authentication {...rest}>
+              <UI>
+                <Component />
+              </UI>
+            </Authentication>
+          </Route>
+        ))}
 
         {AUTH_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>
             <Component />
-          </Route>
-        ))}
-
-        {DEFINE_ROUTER.map(({ Component, ...rest }, index) => (
-          <Route {...rest} key={index}>
-            {/* <Authentication {...rest}> */}
-            <UI>
-              <Component />
-            </UI>
-            {/* </Authentication> */}
           </Route>
         ))}
 

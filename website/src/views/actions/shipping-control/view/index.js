@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Select, Button, Input, Row, Col, Popover, DatePicker, Form, Table, Typography } from "antd";
@@ -120,7 +119,7 @@ export default function ShippingControlView() {
     });
   }
   return (
-    <UI>
+    <>
       <Form
         onFinish={onFinish}
         className={styles['shipping_control_add']}
@@ -286,6 +285,6 @@ export default function ShippingControlView() {
           }
         </div>
       </Form>
-    </UI>
+    </>
   );
 }

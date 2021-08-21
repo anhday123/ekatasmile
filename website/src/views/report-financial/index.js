@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../report-financial/report-financial.module.scss";
 import React from "react";
 import {  Row, Col, } from "antd";
@@ -24,7 +23,7 @@ for (let i = 0; i < 46; i++) {
 export default function ReportFinancial() {
 
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid grey', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Báo cáo tài chính</div>
@@ -53,6 +52,6 @@ export default function ReportFinancial() {
 
       </div>
 
-    </UI>
+    </>
   );
 }

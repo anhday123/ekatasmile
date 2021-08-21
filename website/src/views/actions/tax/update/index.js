@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import { Button, Input, Form, Row, Col,  notification } from "antd";
 import {
@@ -23,7 +22,7 @@ export default function TaxUpdate() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/tax/19">
 
@@ -111,6 +110,6 @@ export default function TaxUpdate() {
         </Form>
 
       </div>
-    </UI>
+    </>
   );
 }

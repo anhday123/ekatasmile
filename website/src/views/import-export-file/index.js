@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../import-export-file/import-export-file.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Input, Button, Row, Col, DatePicker, Popover, Select, Table, Modal, } from "antd";
@@ -107,7 +106,7 @@ export default function ImportExportFile() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', width: '100%' }}>
           <Col xs={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_title"]}>            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -195,6 +194,6 @@ export default function ImportExportFile() {
        
         </div>
       </Modal>
-    </UI >
+    </ >
   );
 }

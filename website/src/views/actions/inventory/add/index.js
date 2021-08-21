@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import { useDispatch } from 'react-redux'
 import { ACTION } from './../../../../consts/index'
 import styles from "./../add/add.module.scss";
@@ -172,7 +171,7 @@ export default function InventoryAdd() {
   data.district = districtMain && districtMain.length > 0 ? districtMain[districtMain.length - 2].district_name : '';
   data.inventoryType = 'chung'
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/inventory/7">
 
@@ -366,6 +365,6 @@ export default function InventoryAdd() {
           </Row>
         </Form>
       </div >
-    </UI >
+    </ >
   );
 }

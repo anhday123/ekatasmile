@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import moment from "moment";
 import {
@@ -37,7 +36,7 @@ export default function RevenExpenAdd() {
 
 
   return (
-    <UI>
+    <>
       <div className={styles["reven_add"]}>
         <Link  className={styles["reven_add_title"]} to="/reven-expen/12">
    
@@ -352,6 +351,6 @@ export default function RevenExpenAdd() {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

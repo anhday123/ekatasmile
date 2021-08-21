@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useEffect, useState } from "react";
 import { Select, Button, Input, Form, Row, Col, Upload, Modal, notification, AutoComplete, InputNumber, Radio, DatePicker, Table } from "antd";
@@ -366,7 +365,7 @@ export default function ShippingProduct() {
       setProductDelivery(history.location.state)
   }, [])
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/shipping-product/9">
 
@@ -643,6 +642,6 @@ export default function ShippingProduct() {
         </Modal>
         <ImportModal visible={modalImportVisible} onOk={handleImport} dataSource={ImportData} importLoading={importLoading} columns={columns} actionComponent={<ImportButton />} downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629443650598_ecomfullfillment.xlsx" onCancel={() => setModalImportVisible(false)} />
       </div>
-    </UI>
+    </>
   );
 }

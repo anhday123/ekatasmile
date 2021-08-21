@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../inventory/inventory.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
@@ -504,7 +503,7 @@ export default function Inventory() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý kho</div>
@@ -1051,6 +1050,6 @@ export default function Inventory() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

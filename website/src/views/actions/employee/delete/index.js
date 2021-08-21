@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import React from "react";
 import styles from "./../delete/delete.module.scss";
 import {
@@ -145,7 +144,7 @@ export default function EmployeeDelete() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["employee_manager"]}>
         <div className={styles["employee_manager_top"]}>
           <div className={styles["employee_manager_top_select"]}>
@@ -311,6 +310,6 @@ export default function EmployeeDelete() {
           </Row>
         </div>
       </div>
-    </UI>
+    </>
   );
 }

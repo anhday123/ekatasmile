@@ -1,4 +1,3 @@
-import UI from "./../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, Input, Button, Row, Col, DatePicker, Select, Popover, Table, Modal, Typography } from "antd";
@@ -92,7 +91,7 @@ export default function SaleDetailView() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <Link style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(238, 227, 227)', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} className={styles["supplier_information_title"]} to="/report-financial/16">
 
@@ -235,6 +234,6 @@ export default function SaleDetailView() {
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../exchange/exchange.module.scss";
 import {
   Input,
@@ -81,7 +80,7 @@ export default function Exchange() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["exchange_manager"]}>
         <div className={styles["exchange_manager_title"]}>Quản lý đổi trả</div>
         <Row className={styles["exchange_manager_select"]}>
@@ -126,6 +125,6 @@ export default function Exchange() {
           />
         </div>
       </div>
-    </UI>
+    </>
   );
 }

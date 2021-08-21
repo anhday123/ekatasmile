@@ -1,4 +1,3 @@
-import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
 import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, notification, Popover, Steps,  message, Tree, Table, Modal } from "antd";
 import {
@@ -197,7 +196,7 @@ export default function OrderCreateShippingAdd() {
     modal4VisibleModal(false)
   }
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -589,6 +588,6 @@ export default function OrderCreateShippingAdd() {
           </div>
         </Modal>
       </Form>
-    </UI >
+    </ >
   );
 }

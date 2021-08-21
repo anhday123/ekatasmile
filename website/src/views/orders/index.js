@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../orders/orders.module.scss";
 import {
 
@@ -94,7 +93,7 @@ export default function Orders() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["orders_manager"]}>
         <div className={styles["orders_manager_title"]}>Tổng quan đơn hàng</div>
         <div className={styles["orders_manager_search"]}>
@@ -206,6 +205,6 @@ export default function Orders() {
           />
         </div>
       </div>
-    </UI>
+    </>
   );
 }

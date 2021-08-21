@@ -1,4 +1,3 @@
-import UI from './../../components/Layout/UI'
 import styles from "./../order-create-shipping/order-create-shipping.module.scss";
 import { Popconfirm, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Space, Radio, Tree, Table, Modal } from "antd";
 import {
@@ -148,7 +147,7 @@ export default function OrderCreateShipping() {
   const code = form.getFieldValue()
   code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         form={form}
         className={styles['product_check_add']}>
@@ -333,6 +332,6 @@ export default function OrderCreateShipping() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

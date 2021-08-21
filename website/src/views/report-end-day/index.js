@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../report-end-day/report-end-day.module.scss";
 import React from "react";
 import { Input, Row, Col, DatePicker, Select, Button, Popover } from "antd";
@@ -18,7 +17,7 @@ export default function ReportEndDay() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <Row style={{ width: '100%', display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.5rem', justifyContent: 'space-between', alignItems: 'center', }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={12} lg={12} xl={12}>
@@ -117,6 +116,6 @@ export default function ReportEndDay() {
         </Row>
       </div>
 
-    </UI>
+    </>
   );
 }

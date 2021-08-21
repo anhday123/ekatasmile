@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import store from './../../assets/img/store.png'
 import { Link, useHistory } from 'react-router-dom'
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import { Row, Col, Form, Input, Button, notification, Checkbox } from 'antd'
 import {
   UserOutlined,
@@ -33,11 +33,12 @@ export default function Login() {
       console.log(res)
       if (res.status === 200) {
         openNotificationLoginSuccess()
-        history.push('/overview/1')
 
-        window.location.reload()
         const actions = loginAccessToken(res.data.data)
         dispatch(actions)
+
+        history.push(ROUTES.OVERVIEW)
+
       } else {
         if (res.data.message === 'User has not activated!') {
           openNotificationLoginErrorActive()
@@ -56,7 +57,6 @@ export default function Login() {
     }
   }
   const onFinish = (values) => {
-    console.log('Finish:', values)
     const object = {
       username: values.emailLogin.trim(),
       password: values.passwordLogin.trim(),

@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import {
 
@@ -35,7 +34,7 @@ export default function OrdersAdd() {
     form.resetFields();
   };
   return (
-    <UI>
+    <>
       <div className={styles["add_orders"]}>
         <Link className={styles["add_orders_title"]} to="/orders/4">
 
@@ -415,6 +414,6 @@ export default function OrdersAdd() {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

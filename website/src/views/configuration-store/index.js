@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../configuration-store/configuration-store.module.scss";
 import React from "react";
 import { Input, Row, Col, Popover } from "antd";
@@ -22,7 +21,7 @@ export default function ConfigurationStore() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles['configuration']}>
         <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', borderBottom: '1px solid grey', paddingBottom: '0.5rem' }}>Cấu hình</div>
         <Popover placement="bottomLeft" content={content} trigger="click">
@@ -125,6 +124,6 @@ export default function ConfigurationStore() {
         </div>
 
       </div>
-    </UI>
+    </>
   );
 }

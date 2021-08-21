@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import React from "react";
 import {
   Link,
@@ -16,7 +15,7 @@ export default function ProductView(propsData) {
 
   let { slug } = useParams();
   return (
-    <UI>
+    <>
       <div className={styles["product_manager"]}>
         <Link className={styles["product_manager_title"]} to={slug === '6' ? ("/product/6") : ("/actions/branch/view/19")}>
 
@@ -69,6 +68,6 @@ export default function ProductView(propsData) {
         </Row>
 
       </div>
-    </UI>
+    </>
   );
 }

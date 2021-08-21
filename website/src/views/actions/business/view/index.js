@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
   Link,
 
@@ -8,7 +7,7 @@ import { Input, Row, Col } from "antd";
 import { ArrowLeftOutlined, ShopOutlined, ShoppingCartOutlined, BranchesOutlined, FormOutlined, TeamOutlined } from "@ant-design/icons";
 export default function BusinessView() {
   return (
-    <UI>
+    <>
       <div className={styles['business']}>
         <Link to="/business/5" className={styles['business_title']}>
           <div><ArrowLeftOutlined /></div>
@@ -62,6 +61,6 @@ export default function BusinessView() {
           </Col >
         </Row>
       </div>
-    </UI >
+    </ >
   );
 }

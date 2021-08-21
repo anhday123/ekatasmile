@@ -1,6 +1,3 @@
-import UI from "../../../../components/Layout/UI";
-import { useDispatch } from 'react-redux'
-import { ACTION } from './../../../../consts/index'
 import styles from "./../update/update.module.scss";
 import { Select, Button, Input, Form, Row, Col, notification } from "antd";
 import {
@@ -27,7 +24,7 @@ export default function BusinessUpdate() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/business/5">
 
@@ -144,6 +141,6 @@ export default function BusinessUpdate() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

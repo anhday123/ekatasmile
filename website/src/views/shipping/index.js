@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import React, { useState, useEffect, useRef } from "react";
 import {
 
@@ -659,7 +658,7 @@ export default function Shipping() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["shipping_manager"]}>
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgb(235, 223, 223)', paddingBottom: '1rem', alignItems: 'center', width: '100%' }}>
           <div className={styles["shipping_manager_title"]}>
@@ -1401,6 +1400,6 @@ export default function Shipping() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../store/store.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
@@ -573,7 +572,6 @@ export default function Store(propsData) {
     try {
       setLoading(true)
       const res = await apiFilterCity({ keyword: object });
-      console.log(res)
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
@@ -585,17 +583,15 @@ export default function Store(propsData) {
     }
   };
   function handleChangeCity(value) {
-    console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
-  console.log(districtMainAPI)
-  console.log("|||11111111111111")
+
   const [attentionAddStore, setAttentionAddStore] = useState(true)
   const onClickTurnOffAttentAddStore = () => {
     setAttentionAddStore(false)
   }
   return (
-    <UI>
+    <>
       {
         state === '1' ? (<Modal
           width={700}
@@ -1179,6 +1175,6 @@ export default function Store(propsData) {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

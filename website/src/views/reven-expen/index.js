@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import {
 
   Link,
@@ -110,7 +109,7 @@ export default function RevenExpend() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["reven_manager"]}>
         <div className={styles["reven_manager_title"]}>
           <div>Quản lý thu chi</div>
@@ -247,6 +246,6 @@ export default function RevenExpend() {
           </Button>
         </div>
       </div>
-    </UI>
+    </>
   );
 }

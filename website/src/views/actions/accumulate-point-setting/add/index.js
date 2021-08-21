@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
 import {
@@ -11,7 +10,7 @@ export default function SupplierAdd() {
     console.log(date, dateString);
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/17">
 
@@ -211,6 +210,6 @@ export default function SupplierAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../accumulate-point/accumulate-point.module.scss";
 import React, { useState } from "react";
 import { Input, Row, Col, Drawer, Form, Radio, Button, Space, Checkbox, notification } from "antd";
@@ -35,7 +34,7 @@ export default function AccumulatePoint() {
     console.log('Failed:', errorInfo);
   };
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid grey', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -249,6 +248,6 @@ export default function AccumulatePoint() {
           </div>
         </Form>
       </Drawer>
-    </UI>
+    </>
   );
 }

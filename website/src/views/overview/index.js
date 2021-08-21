@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import LayoutMain from './../../components/Layout/UI'
 import styles from "./overview.module.scss";
 
 import { LineChart } from "react-chartkick";
@@ -57,7 +56,7 @@ const Overview = () => {
     getAllStatis()
   }, [])
   return (
-    <LayoutMain>
+    <>
       <div className={styles["dashboard_manager"]}>
         <div className={styles["dashboard_manager_date"]}>
           <Row className={styles["dashboard_manager_date_row"]}>
@@ -511,7 +510,7 @@ const Overview = () => {
 
 
       </div>
-    </LayoutMain>
+    </>
   );
 };
 export default Overview;

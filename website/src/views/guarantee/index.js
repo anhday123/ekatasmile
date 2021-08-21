@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../guarantee/guarantee.module.scss";
 import React, { useEffect, useState } from "react";
 import {  Switch, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, notification } from "antd";
@@ -151,7 +150,7 @@ export default function Guarantee() {
     getWarranty({ ...removeFalse(filter) })
   }, [filter])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '0.75rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý bảo hành</div>
@@ -229,6 +228,6 @@ export default function Guarantee() {
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

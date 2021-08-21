@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../shipping-product/shipping-product.module.scss";
 import React, { useEffect, useState } from "react";
 import { Input, Button, Row, Col, DatePicker, Select, Table } from "antd";
@@ -190,7 +189,7 @@ export default function ShippingProduct() {
     getAllDelivery({ ...filter })
   }, [filter, pagination])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý chuyển hàng</div>
@@ -275,6 +274,6 @@ export default function ShippingProduct() {
         </div>
       </div>
       <ImportModal visible={exportVisible} onCancel={() => setExportVisible(false)} dataSource={deliveryList} columns={columnsPromotion} actionComponent={<ExportButton />} />
-    </UI>
+    </>
   );
 }

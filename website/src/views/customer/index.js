@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../customer/customer.module.scss";
 import React, { useEffect, useState } from "react";
 import { Switch, Input, Button, Row, Col, DatePicker, Select, Table, notification, Radio } from "antd";
@@ -202,7 +201,7 @@ export default function Promotion() {
     getAllCustomer()
   }, [])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý khách hàng</div>
@@ -259,6 +258,6 @@ export default function Promotion() {
       </div>
       <CustomerInfo visible={modal2Visible} onCancel={() => modal2VisibleModal(false)} infoCustomer={infoCustomer} />
       <CustomerUpdate customerData={customerListUpdate} visible={customerUpdateDrawer} onClose={() => { setCustomerUpdateDrawer(false) }} />
-    </UI>
+    </>
   );
 }

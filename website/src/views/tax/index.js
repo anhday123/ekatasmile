@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../tax/tax.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
@@ -335,7 +334,7 @@ export default function Tax() {
     },
   ];
   return (
-    <UI>
+    <>
       <div className={styles["supplier_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -733,6 +732,6 @@ export default function Tax() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

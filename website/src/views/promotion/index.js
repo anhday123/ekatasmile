@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../promotion/promotion.module.scss";
 import React, { useEffect, useState } from "react";
 import { Popconfirm, Input, Button, Row, Col, DatePicker, Select, Table, Modal, notification, Drawer, Form,  InputNumber, Switch } from "antd";
@@ -239,7 +238,7 @@ export default function Promotion() {
     getPromotions()
   }, [pagination])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Khuyến mãi</div>
@@ -617,6 +616,6 @@ export default function Promotion() {
         </Modal>
 
       </Drawer>
-    </UI>
+    </>
   );
 }

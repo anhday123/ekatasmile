@@ -1,41 +1,16 @@
-import UI from "../../../../components/Layout/UI";
-import React, { useState } from "react";
+import React from "react";
 import {
 
   Link,
 
 } from "react-router-dom";
 import styles from "./../view-product/view-product.module.scss";
-import { Select, Upload, message, Row, Col } from "antd";
+import {  Upload, message, Row, Col } from "antd";
 import {
   ArrowLeftOutlined,
   FileImageOutlined,
 
 } from "@ant-design/icons";
-const provinceDataProductType = ["Zhejiang", "Jiangsu"];
-const cityDataProductType = {
-  Zhejiang: [
-    "Nhập loại sản phẩm",
-    "Áo sơ mi",
-    "Nước hoa",
-    "Hộp quà tặng",
-    "Giày dép",
-    "Gấu bông",
-    "Túi xách",
-  ],
-};
-const provinceDataSupplier = ["Zhejiang", "Jiangsu"];
-const cityDataSupplier = {
-  Zhejiang: [
-    "Nhập nhà cung cấp",
-    "An Phát",
-    "Minh Anh",
-    "Hồng Hà",
-    "Phát Đạt",
-    "An An",
-    "Thiên An",
-  ],
-};
 
 export default function OrderInformationViewProduct() {
   const { Dragger } = Upload;
@@ -60,7 +35,7 @@ export default function OrderInformationViewProduct() {
     },
   };
   return (
-    <UI>
+    <>
       <div className={styles["product_manager"]}>
         <Link className={styles["product_manager_title"]} to="/actions/order-information/view/4">
 
@@ -116,6 +91,6 @@ export default function OrderInformationViewProduct() {
 
         </Row>
       </div>
-    </UI>
+    </>
   );
 }

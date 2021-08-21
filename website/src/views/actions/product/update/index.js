@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
 import { ACTION,} from './../../../../consts/index'
@@ -174,7 +173,7 @@ export default function ProductUpdate(propsData) {
     apiAllSupplierData();
   }, []);
   return (
-    <UI>
+    <>
       <div className={styles["product_manager"]}>
         <Link className={styles["product_manager_title"]} to={slug === '6' ? ("/product/6") : ("/actions/branch/view/19")}>
 
@@ -448,6 +447,6 @@ export default function ProductUpdate(propsData) {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

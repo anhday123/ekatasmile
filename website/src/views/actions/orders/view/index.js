@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import {
 
@@ -13,7 +12,7 @@ import {
 } from "@ant-design/icons";
 export default function OrdersView() {
   return (
-    <UI>
+    <>
       <div className={styles["view_orders"]}>
         <div className={styles["view_orders_title"]}>
           <div>
@@ -296,6 +295,6 @@ export default function OrdersView() {
           </div>
         </div>
       </div>
-    </UI>
+    </>
   );
 }

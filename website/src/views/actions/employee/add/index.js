@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { ACTION } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
@@ -309,7 +308,7 @@ export default function EmployeeAdd() {
     setStoreValue(e)
   }
   return (
-    <UI>
+    <>
       <div className={styles["employee_add_parent"]}>
         <Link style={{ borderBottom: '1px solid rgb(233, 240, 240)', paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/employee/19">
 
@@ -1096,6 +1095,6 @@ export default function EmployeeAdd() {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

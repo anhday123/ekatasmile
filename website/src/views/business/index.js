@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../business/business.module.scss";
 import React, { useEffect, useState } from "react";
 import { Popconfirm, message, Input, Row, Col, Select, Popover, Table, Modal, Button } from "antd";
@@ -168,7 +167,7 @@ export default function Business() {
     getAllBussiness({ role: 2, ...removeFalse(filter) })
   }, [filter])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Danh sách business</div>
@@ -258,6 +257,6 @@ export default function Business() {
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

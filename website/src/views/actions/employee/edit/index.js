@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../edit/edit.module.scss";
 import React from "react";
 import {
@@ -26,7 +25,7 @@ export default function EmployeeEdit() {
   const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
 
   return (
-    <UI>
+    <>
       <div className={styles["employee_add_parent"]}>
         <Link style={{ display: 'flex', borderBottom: '1px solid rgb(228, 217, 217)', paddingBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} className={styles["supplier_information_title"]} to="/employee/19">
 
@@ -497,6 +496,6 @@ export default function EmployeeEdit() {
         </Row>
 
       </div>
-    </UI>
+    </>
   );
 }

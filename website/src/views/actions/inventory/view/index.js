@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
   Link,
 
@@ -105,7 +104,7 @@ export default function InventoryView(propsData) {
 
   const onSearch = value => console.log(value);
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/inventory/7">
 
@@ -364,6 +363,6 @@ export default function InventoryView(propsData) {
           </div>
         </Modal>
       </div>
-    </UI >
+    </ >
   );
 }

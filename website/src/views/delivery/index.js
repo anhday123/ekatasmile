@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import React, { useState } from "react";
 import styles from "./../delivery/delivery.module.scss";
 import moment from "moment";
@@ -503,7 +502,7 @@ export default function Delivery() {
     console.log(`selected ${value}`);
   }
   return (
-    <UI>
+    <>
       <div className={styles["import_manager"]}>
         <Row className={styles["import_manager_title"]}>
           <Col
@@ -896,6 +895,6 @@ export default function Delivery() {
           </Tabs>
         </div>
       </div>
-    </UI >
+    </ >
   );
 }

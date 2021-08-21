@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../sell/sell.module.scss";
 import emptyProduct from "./../../assets/img/emptyProduct.png";
 import user from './../../assets/img/user.png'
@@ -12,7 +11,7 @@ import { apiCheckPromotion, getAllPromotion, getPromoton } from './../../apis/pr
 import moment from 'moment'
 import { addCustomer, getCustomer } from './../../apis/customer'
 import {  apiProductCategoryMerge, apiProductSeller,  } from "../../apis/product";
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import React, { useState, useRef, useEffect } from "react";
 import FunctionShortcut from './../../components/sell/function-shortcut/index'
 import "react-multi-carousel/lib/styles.css";
@@ -51,6 +50,7 @@ import { apiDistrict, apiProvince } from "../../apis/information";
 import { getAllPayment } from "../../apis/payment";
 import { apiAllOrder,  apiOrderVoucher } from "../../apis/order";
 import { apiAllUser } from "../../apis/user";
+import { decodeToken } from 'react-jwt'
 const ButtonGroup = Button.Group;
 const { TabPane } = Tabs;
 
@@ -59,6 +59,8 @@ const { Option } = Select;
 
 export default function Sell() {
   const [form] = Form.useForm()
+  const dataUser = localStorage.getItem('accessToken') ? decodeToken(localStorage.getItem('accessToken')) : {}
+
   const [shipping, setShipping] = useState([])
   const [customerOddMain, setCustomerOddMain] = useState(false)
   const [customerName, setCustomerName] = useState('')
@@ -68,7 +70,6 @@ export default function Sell() {
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const [customerOnClick, setCustomerOnClick] = useState([])
   const [selectedRowKeysOrderList, setSelectedRowKeysOrderList] = useState([])
-
   const [objectVariant, setObjectVariant] = useState({})
   const [record, setRecord] = useState({})
   const typingTimeoutRef = useRef(null);
@@ -150,12 +151,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiDistrictData();
-  }, []);
-  useEffect(() => {
-    apiProvinceData();
-  }, []);
+
   const getAllCustomerData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
@@ -174,9 +170,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    getAllCustomerData()
-  }, [])
+
   const apiProductCategoryDataMerge = async (value) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
@@ -197,9 +191,6 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiProductCategoryDataMerge()
-  }, [])
 
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
@@ -237,10 +228,6 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiAllShippingData()
-  }, [])
-
 
   const showDrawerOrderList = () => {
     setVisibleOrderList(true)
@@ -292,12 +279,7 @@ export default function Sell() {
       setLoadingTable(false)
     }
   };
-  useEffect(() => {
-    getAllPromotionData()
-  }, [])
-  useEffect(() => {
-    apiAllOrderData()
-  }, [])
+
   const apiAllUserData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
@@ -321,9 +303,6 @@ export default function Sell() {
     }
   };
 
-  useEffect(() => {
-    apiAllUserData();
-  }, []);
   const apiAllTaxData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
@@ -337,9 +316,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiAllTaxData()
-  }, [])
+
   const onChangeNote = (e) => {
     setNote(e.target.value)
   }
@@ -478,10 +455,6 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  useEffect(() => {
-    getAllPaymentData()
-  }, [])
-
 
   const onClickMarkVariant = (index) => {
 
@@ -984,27 +957,34 @@ export default function Sell() {
     });
   };
 
-
-
-
   const [roleName, setRoleName] = useState('')
+
   useEffect(() => {
-    const branch_id = JSON.parse(localStorage.getItem('branch_id'))
-    setRoleName(branch_id.data.role.name.toLowerCase())
-    setBranchId(branch_id.data.branch.branch_id)
-
-
+    setRoleName(dataUser.data.role.name.toLowerCase() || '')
+    setBranchId(dataUser.data.role.branch ? dataUser.data.role.branch.branch_id : '')
   }, [])
+
+  useEffect(() => {
+    apiAllTaxData()
+    apiAllOrderData()
+    apiAllShippingData()
+    apiProductCategoryDataMerge()
+    getAllCustomerData()
+    apiDistrictData();
+    getAllPromotionData()
+    apiProvinceData();
+    apiAllUserData();
+    getAllPaymentData()
+    getAllBranchData();
+    apiProductSellerData()
+  }, [])
+
   const [productSelect, setProductSelect] = useState([])
   const apiProductSellerData = async (e) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiProductSeller({ branch: branchId, page: 1, page_size: 50 });
       if (res.status === 200) {
-        var array = []
-
-        const branch_id = JSON.parse(localStorage.getItem('branch_id'))
-
         setProductSelect(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false });
@@ -1026,9 +1006,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiProductSellerData()
-  }, [])
+
   const handleChange = (e) => {
     setBranchId(e)
     apiProductSellerDataMain(e)
@@ -1059,9 +1037,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    getAllBranchData();
-  }, []);
+
   const [billIndex, setBillIndex] = useState(0)
   const [billQuantityStatus, setBillQuantityStatus] = useState(1)
   const [billName, setBillName] = useState('')
@@ -3239,7 +3215,7 @@ export default function Sell() {
 
 
   return (
-    <UI>
+    <>
       <Online>
 
         <div className={styles["sell_manager"]}>
@@ -4906,6 +4882,6 @@ export default function Sell() {
       </Online>
 
 
-    </UI >
+    </ >
   );
 }

@@ -1,4 +1,3 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../report-import/report-import.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, Input, Button, Row, Col, DatePicker, Popover, Table, Typography } from "antd";
@@ -82,7 +81,7 @@ export default function ReportImport() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Báo cáo nhập hàng</div>
@@ -208,6 +207,6 @@ export default function ReportImport() {
           ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa báo cáo</Button></Popconfirm></div>) : ('')
         }
       </div>
-    </UI>
+    </>
   );
 }

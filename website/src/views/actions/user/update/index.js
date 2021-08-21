@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import React from "react";
 import { updateUser } from "./../../../../apis/user";
@@ -103,17 +102,11 @@ export default function UserUpdate(propsData) {
       openNotificationRegisterFailMail()
     }
   };
-  const { RangePicker } = DatePicker;
 
   const dateFormat = 'YYYY/MM/DD';
-  const monthFormat = 'YYYY/MM';
-
-  const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
-
-  const customFormat = value => `custom format: ${value.format(dateFormat)}`;
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/user/19">
 
@@ -243,6 +236,6 @@ export default function UserUpdate(propsData) {
         </Form>
 
       </div>
-    </UI>
+    </>
   );
 }

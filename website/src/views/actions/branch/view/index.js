@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
   Link,
   useParams,
@@ -118,14 +117,6 @@ export default function BranchView(propsData) {
   };
 
   const [record, setRecord] = useState({})
-
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Cập nhật thông tin nhân sự thành công.',
-    });
-  };
 
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`);
@@ -749,7 +740,7 @@ export default function BranchView(propsData) {
     employeeName.push(values.role.name)
   })
   return (
-    <UI>
+    <>
 
       <div style={{ paddingBottom: '1rem' }} className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/branch/19">
@@ -1704,6 +1695,6 @@ export default function BranchView(propsData) {
         </div>
       </div>
 
-    </UI >
+    </ >
   );
 }

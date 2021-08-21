@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
 
   Link,
@@ -12,7 +11,7 @@ export default function SupplierInformation(propsData) {
 
   console.log(dataSupplier)
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/supplier/10">
 
@@ -182,6 +181,6 @@ export default function SupplierInformation(propsData) {
           </Row>
         </div>
       </div>
-    </UI >
+    </ >
   );
 }

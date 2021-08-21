@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import {  Button, Input, Form, Row, Col,} from "antd";
 import {
@@ -10,7 +9,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 export default function TaxView() {
  
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/tax/17">
 
@@ -102,6 +101,6 @@ export default function TaxView() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

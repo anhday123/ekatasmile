@@ -1,4 +1,3 @@
-import UI from './../../components/Layout/UI'
 import styles from './../product/product.module.scss'
 import {
   Link, useHistory,
@@ -3435,7 +3434,7 @@ export default function Product() {
   }
 
   return (
-    <UI>
+    <>
       <div>
         <div className={styles['view_product']}>
           <Row
@@ -5567,6 +5566,6 @@ export default function Product() {
         }
       </Drawer>
 
-    </UI >
+    </ >
   )
 }

@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState } from "react";
 import { apiCreateUserMenu } from "./../../../../apis/user";
@@ -105,7 +104,7 @@ export default function UserAdd() {
   }
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/user/19">
 
@@ -284,6 +283,6 @@ export default function UserAdd() {
         </Form>
 
       </div>
-    </UI>
+    </>
   );
 }

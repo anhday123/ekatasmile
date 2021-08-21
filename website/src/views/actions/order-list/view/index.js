@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
   Link,
 } from "react-router-dom";
@@ -85,7 +84,7 @@ export default function OrderListView() {
     });
   }
   return (
-    <UI>
+    <>
       <div className={styles['order_information']}>
         <Link to="/order-list/4" className={styles['order_information_title']}>
           <div><ArrowLeftOutlined /></div>
@@ -211,6 +210,6 @@ export default function OrderListView() {
           </Col>
         </Row>
       </div>
-    </UI >
+    </ >
   );
 }

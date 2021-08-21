@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../detail/detail.module.scss";
 import React, { useState } from "react";
 import { Button, message, Popconfirm, notification, Input, Form, Row, Popover, Col, Table, Modal } from "antd";
@@ -148,7 +147,7 @@ export default function AccumulatePointEditDetail() {
     message.error('Click on No');
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/actions/accumulate-point-edit/view/19">
 
@@ -270,6 +269,6 @@ export default function AccumulatePointEditDetail() {
           </Row>
         </Modal>
       </div >
-    </UI >
+    </ >
   );
 }

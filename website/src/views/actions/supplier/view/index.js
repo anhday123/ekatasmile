@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import {
   Link,
@@ -111,7 +110,7 @@ export default function SupplierView() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["view_product"]}>
         <Row style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 228, 228)', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
@@ -209,6 +208,6 @@ export default function SupplierView() {
           <Button type="primary">Lưu</Button>
         </div> */}
       </div>
-    </UI>
+    </>
   );
 }

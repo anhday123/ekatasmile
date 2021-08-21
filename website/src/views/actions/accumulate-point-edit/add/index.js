@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState } from "react";
 import { Select, Button, Input, Form, Row, Col, Table, Modal, Popover } from "antd";
@@ -127,7 +126,7 @@ export default function AccumulatePointEditAdd() {
   const onSearch = value => console.log(value);
   const onSearchAddProduct = value => console.log(value);
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/actions/accumulate-point-edit/view">
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
@@ -268,6 +267,6 @@ export default function AccumulatePointEditAdd() {
           </Row>
         </Modal>
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../supplier/supplier.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { apiAllSupplier, apiSearch, apiUpdateSupplier } from "../../apis/supplier";
@@ -446,7 +445,7 @@ export default function Supplier() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["supplier_manager_title"]}>Quản lý nhà cung cấp</div>
@@ -957,6 +956,6 @@ export default function Supplier() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

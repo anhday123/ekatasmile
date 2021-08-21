@@ -13,7 +13,6 @@ import {
 } from "react-router-dom";
 import pgc from "./../../assets/img/logo.png";
 import { Form, Input, Button, notification } from "antd";
-import { } from "@ant-design/icons";
 export default function UID() {
   var username = JSON.parse(localStorage.getItem('registerAccount'))
   var usernameLocal = JSON.parse(localStorage.getItem('username'))

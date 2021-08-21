@@ -1,4 +1,3 @@
-import UI from "./../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React from "react";
 import { Input,  Button, Row, Col, Popover, DatePicker, Select } from "antd";
@@ -21,7 +20,7 @@ export default function RevenueDetailView() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <Link style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(238, 227, 227)', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} className={styles["supplier_information_title"]} to="/report-financial/16">
 
@@ -136,6 +135,6 @@ export default function RevenueDetailView() {
         </Row>
       </div>
 
-    </UI>
+    </>
   );
 }

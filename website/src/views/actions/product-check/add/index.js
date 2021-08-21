@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Popconfirm, Select, Button, Input, Form, Row, Col, Popover, Steps, message, Tree, Table, Modal, InputNumber } from "antd";
 import {
@@ -145,7 +144,7 @@ export default function ProductCheckAdd() {
     setSelectedKeys(selectedKeysValue);
   };
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -277,6 +276,6 @@ export default function ProductCheckAdd() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

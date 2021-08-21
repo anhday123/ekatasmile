@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../payment/payment.module.scss";
 import {
   Card,
@@ -71,7 +70,7 @@ export default function Payment() {
     setIconVietcombank(data)
   }
   return (
-    <UI>
+    <>
       <div className={styles["payment_method"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(233, 223, 223)', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={12} lg={12} xl={12}>
@@ -547,6 +546,6 @@ export default function Payment() {
           </Space>
         </Radio.Group>
       </Modal>
-    </UI>
+    </>
   );
 }

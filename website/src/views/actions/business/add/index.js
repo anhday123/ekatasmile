@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Select, Button, Input, Form, Row, Col, notification } from "antd";
 import {
@@ -29,7 +28,7 @@ export default function BusinessAdd() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/business/5">
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
@@ -147,6 +146,6 @@ export default function BusinessAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

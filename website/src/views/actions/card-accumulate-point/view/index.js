@@ -1,4 +1,3 @@
-import UI from "./../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Input, Space, Button, Row, Col, DatePicker, Form, Popover, Checkbox, Select, Table, Modal, Drawer, notification } from "antd";
@@ -169,7 +168,7 @@ export default function Promotion() {
     message.error('Click on No');
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link to="/accumulate-point/19" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -323,6 +322,6 @@ export default function Promotion() {
         </Form>
 
       </Drawer>
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
 
   Link,
@@ -78,7 +77,7 @@ export default function OrderInformationView() {
     });
   }
   return (
-    <UI>
+    <>
       <div className={styles['order_information']}>
         <Link to="/order-list/4" className={styles['order_information_title']}>
           <div><ArrowLeftOutlined /></div>
@@ -197,6 +196,6 @@ export default function OrderInformationView() {
           </Col>
         </Row>
       </div>
-    </UI >
+    </ >
   );
 }

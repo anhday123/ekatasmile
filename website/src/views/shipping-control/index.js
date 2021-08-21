@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../shipping-control/shipping-control.module.scss";
 import React, { useEffect, useState } from "react";
 import { Button, Tabs } from "antd";
@@ -87,7 +86,7 @@ export default function ShippingControl() {
     }
   }, [filter])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Đối soát vận chuyển</div>
@@ -108,6 +107,6 @@ export default function ShippingControl() {
         </Tabs>
       </div>
       <CreateCompare visible={showCreate} onClose={() => setShowCreate(false)} />
-    </UI>
+    </>
   );
 }

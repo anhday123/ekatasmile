@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Button, Input, Form, Row, Col, Checkbox, notification } from "antd";
 import {
@@ -22,7 +21,7 @@ export default function CardAccumulatePointAdd() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/actions/card-accumulate-point/view">
 
@@ -129,6 +128,6 @@ export default function CardAccumulatePointAdd() {
         </Form>
 
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,8 +1,8 @@
-import { loginAccessTokenConst, ACTION } from "./../../consts/index.js";
+import { ACTION } from "./../../consts/index.js";
 export const loginAccessToken = (data) => {
 
     return {
-        type: loginAccessTokenConst.LOGIN_ACCESSTOKEN,
+        type: ACTION.LOGIN,
         data: data,
     };
 };

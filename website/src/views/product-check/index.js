@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../product-check/product-check.module.scss";
 import React, { useState } from "react";
 import { Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover } from "antd";
@@ -148,7 +147,7 @@ export default function ProductCheck() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Danh sách phiếu kiểm hàng</div>
@@ -230,6 +229,6 @@ export default function ProductCheck() {
      
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

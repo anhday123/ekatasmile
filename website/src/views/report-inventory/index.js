@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../report-inventory/report-inventory.module.scss";
 import React, { useState } from "react";
 import { Popconfirm,  Input, Button, Row, Col, DatePicker, Select, Table, Modal, Typography, Popover } from "antd";
@@ -80,7 +79,7 @@ export default function ReportInventory() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Báo cáo tồn kho</div>
@@ -223,6 +222,6 @@ export default function ReportInventory() {
        
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

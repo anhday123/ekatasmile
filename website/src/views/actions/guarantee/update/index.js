@@ -1,4 +1,3 @@
-import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
 import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, Steps, Tree, Table, Modal } from "antd";
 import {
@@ -156,7 +155,7 @@ export default function GuaranteeUpdate() {
   const code = form.getFieldValue()
   code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         form={form}
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
@@ -342,6 +341,6 @@ export default function GuaranteeUpdate() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

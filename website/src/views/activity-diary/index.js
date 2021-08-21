@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../activity-diary/activity-diary.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import moment from 'moment';
@@ -284,7 +283,7 @@ export default function ActivityDiary() {
     setProperties('default')
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -383,6 +382,6 @@ export default function ActivityDiary() {
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

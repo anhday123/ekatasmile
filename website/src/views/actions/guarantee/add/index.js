@@ -1,4 +1,3 @@
-import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
 import { Form, notification, Row, Col, Input, InputNumber, Button } from "antd";
 import {
@@ -39,7 +38,7 @@ export default function GuaranteeAdd() {
   };
 
   return (
-    <UI>
+    <>
       <Form
         onFinish={onFinish}
         form={form}
@@ -80,6 +79,6 @@ export default function GuaranteeAdd() {
           <Button type="primary" htmlType="submit">Tạo</Button>
         </Row>
       </Form>
-    </UI>
+    </>
   );
 }

@@ -1,39 +1,47 @@
-import { ACTION, ROUTES, loginAccessTokenConst } from './../../../consts/index';
-import { isExpired, decodeToken } from "react-jwt";
+import { ACTION } from './../../../consts/index'
+import { decodeToken } from 'react-jwt'
 // nhận data từ server
 const initialState = {
   dataUser: {},
   loading: false,
   username: '',
   objectUsername: {},
-
+  branchName: '',
 }
 var login = (state = initialState, action) => {
   switch (action.type) {
-    case loginAccessTokenConst.LOGIN_ACCESSTOKEN: {
+    case ACTION.LOGIN: {
       var data = decodeToken(action.data.accessToken)
       console.log(data)
-      console.log("|||999")
       if (data) {
         localStorage.setItem('accessToken', action.data.accessToken)
         localStorage.setItem('refreshToken', action.data.refreshToken)
-        localStorage.setItem('username', action.data.username)
-        localStorage.setItem('permission_list', JSON.stringify(action.data.role.permission_list))
-        localStorage.setItem('menu_list', JSON.stringify(action.data.role.menu_list))
-        localStorage.setItem('branch_id', JSON.stringify(data))
-        // if (action.data.user) var { username, role, balance } = action.data.user
-        // if (username) localStorage.setItem('username', username)
-        // var { balance, username, role } = data
-        // if (balance) localStorage.setItem('balance', JSON.stringify(balance))
-        // if (username) localStorage.setItem('username', JSON.stringify(username))
-        // if (role) localStorage.setItem('role', JSON.stringify(role))
+        localStorage.setItem('username', data.data.username)
+        localStorage.setItem(
+          'permission_list',
+          JSON.stringify(data.data.role.permission_list || [])
+        )
+        localStorage.setItem(
+          'menu_list',
+          JSON.stringify(data.data.role.menu_list || [])
+        )
+        return {
+          ...state,
+          dataUser: data,
+          username: data.data.username,
+          objectUsername: data.data,
+        }
       }
 
       return {
         ...state,
-        dataUser: decodeToken(action.data.accessToken),
-        username: action.data.username,
-        objectUsername: data.data
+      }
+    }
+
+    case 'SAVE_BRANCH_NAME': {
+      return {
+        ...state,
+        branchName: action.data || '',
       }
     }
 
@@ -41,7 +49,7 @@ var login = (state = initialState, action) => {
       localStorage.clear()
       return {
         ...state,
-        dataUser: {}
+        dataUser: {},
       }
     }
     case ACTION.LOADING: {

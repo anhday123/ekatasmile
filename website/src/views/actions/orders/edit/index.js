@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../edit/edit.module.scss";
 import React, { useState } from "react";
 // import Link from "next/link";
@@ -105,7 +104,7 @@ export default function OrdersEdit() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["orders_edit"]}>
           <div className={styles["orders_edit_title"]}>
             <div>
@@ -548,6 +547,6 @@ export default function OrdersEdit() {
           </Row>
         </div>
       </div>
-    </UI>
+    </>
   );
 }

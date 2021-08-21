@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import React, { useState, useEffect } from "react";
 import { ACTION } from './../../../../consts/index'
 import {
@@ -162,7 +161,7 @@ export default function ProductAdd() {
   }, []);
 
   return (
-    <UI>
+    <>
       <div className={styles["product_manager"]}>
         <Link className={styles["product_manager_title"]} to="/product/6">
 
@@ -193,6 +192,6 @@ export default function ProductAdd() {
           </TabPane>
         </Tabs>
       </div>
-    </UI >
+    </ >
   );
 }

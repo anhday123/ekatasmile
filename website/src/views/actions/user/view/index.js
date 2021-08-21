@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
 
   Link,
@@ -9,7 +8,7 @@ import { Row, Col } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 export default function CustomerView() {
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/customer/17">
 
@@ -270,6 +269,6 @@ export default function CustomerView() {
 
         </div>
       </div>
-    </UI >
+    </ >
   );
 }

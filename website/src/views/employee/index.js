@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
 import moment from 'moment'
@@ -490,7 +489,7 @@ export default function Employee() {
     employeeName.push(values.role.name)
   })
   return (
-    <UI>
+    <>
       <div className={styles["employee_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(231, 224, 224)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["employee_manager_title"]}>
@@ -1521,6 +1520,6 @@ export default function Employee() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

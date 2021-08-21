@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../order-list/order-list.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import {  Input, Button, Tabs, Popover, Pagination, Row, Col, Radio, DatePicker,  Table, Modal } from "antd";
@@ -358,7 +357,7 @@ export default function OrderList() {
     apiAllOrderDataTableOrderDetailDate(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', width: '100%' }}>
           <Col xs={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_title"]}>Danh sách đơn hàng</Col>
@@ -880,6 +879,6 @@ export default function OrderList() {
        
         </div>
       </Modal>
-    </UI >
+    </ >
   );
 }
