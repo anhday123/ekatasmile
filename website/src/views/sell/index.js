@@ -3,7 +3,6 @@ import styles from "./../sell/sell.module.scss";
 import emptyProduct from "./../../assets/img/emptyProduct.png";
 import user from './../../assets/img/user.png'
 import { ACTION, } from './../../consts/index'
-import { uploadImg, uploadImgs } from "./../../apis/upload";
 import { apiFilterCity, getAllBranch } from './../../apis/branch'
 import _ from 'lodash'
 import { Offline, Online } from "react-detect-offline";
@@ -11,15 +10,14 @@ import { apiAllTax } from './../../apis/tax'
 import { apiAllShipping } from './../../apis/shipping'
 import { apiCheckPromotion, getAllPromotion, getPromoton } from './../../apis/promotion'
 import moment from 'moment'
-import { addCustomer, getAllCustomer, getCustomer } from './../../apis/customer'
-import { apiAllProduct, apiProductCategory, apiProductCategoryMerge, apiProductSeller, apiSearchProduct, apiUpdateProduct, } from "../../apis/product";
+import { addCustomer, getCustomer } from './../../apis/customer'
+import {  apiProductCategoryMerge, apiProductSeller,  } from "../../apis/product";
 import { useDispatch } from 'react-redux'
 import React, { useState, useRef, useEffect } from "react";
 import FunctionShortcut from './../../components/sell/function-shortcut/index'
 import "react-multi-carousel/lib/styles.css";
 import {
   PlusCircleOutlined,
-  AudioOutlined,
   AlertOutlined,
   CheckOutlined,
   MinusOutlined,
@@ -34,104 +32,31 @@ import {
   Select,
   Pagination,
   Dropdown,
-  DatePicker,
   Drawer,
   notification,
   Button,
   Radio,
   Checkbox,
-  Steps,
   Table,
   Input,
   Popover,
   InputNumber,
   Row,
-  Typography,
-  Space,
-  Tabs,
   Modal,
   Form,
   Col,
+  Tabs
 } from "antd";
-import { Markunread, TrainRounded } from "@material-ui/icons";
 import { apiDistrict, apiProvince } from "../../apis/information";
 import { getAllPayment } from "../../apis/payment";
-import { apiAllOrder, apiOrderPromotion, apiOrderVoucher } from "../../apis/order";
+import { apiAllOrder,  apiOrderVoucher } from "../../apis/order";
 import { apiAllUser } from "../../apis/user";
 const ButtonGroup = Button.Group;
 const { TabPane } = Tabs;
-const { RangePicker } = DatePicker;
-const { Text } = Typography;
-const { Step } = Steps;
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Mã SKU',
-    dataIndex: 'skuCode', width: 150,
-  },
-  {
-    title: 'Tên sản phẩm',
-    dataIndex: 'productName', width: 150,
-  },
-  {
-    title: 'Đơn vị',
-    dataIndex: 'unit', width: 150,
-  },
-  {
-    title: 'Số lượng',
-    dataIndex: 'quantity', width: 150,
-  },
-  {
-    title: 'Đơn giá',
-    dataIndex: 'bill', width: 150,
-  },
-  {
-    title: 'Thành tiền',
-    dataIndex: 'moneyTotal', width: 150,
-  },
-  {
-    title: '',
-    dataIndex: 'actions', width: 150,
-  },
-];
 
-const data = [];
 
-const data2 = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: `${i}`,
-    skuCode: `PNH ${i}`,
-    productName: `sản phẩm ${i}`,
-    unit: `${i} cái`,
-    quantity: 'UI là input nhập vào nhưng để tạm này nha, có API xử lý sau',
-    bill: ` ${i}00.000 VNĐ`,
-    moneyTotal: `${i}00.000 VNĐ`,
-    actions: <div><DeleteOutlined style={{ color: 'red', fontSize: '1.5rem' }} /></div>
-  });
-}
-for (let i = 0; i < 46; i++) {
-  data2.push({
-    key: i,
-    stt: `${i} Bill 2`,
-    skuCode: `PNH ${i} Bill 2`,
-    productName: `sản phẩm ${i} Bill 2`,
-    unit: `${i} cái Bill 2`,
-    quantity: 'UI là input nhập vào nhưng để tạm này nha, có API xử lý sau Bill 2',
-    bill: ` ${i}00.000 VNĐ Bill 2`,
-    moneyTotal: `${i}00.000 VNĐ Bill 2`,
-    actions: <div><DeleteOutlined style={{ color: 'red', fontSize: '1.5rem' }} /></div>
-  });
-}
 const { Option } = Select;
-function callback(key) {
-  console.log(key);
-}
+
 export default function Sell() {
   const [form] = Form.useForm()
   const [shipping, setShipping] = useState([])
@@ -140,34 +65,22 @@ export default function Sell() {
   const [randomPhoneValue, setRandomPhoneValue] = useState()
   const [modal3Visible, setModal3Visible] = useState(false)
   const [category, setCategory] = useState([])
-  const [paymentStatus, setPaymentStatus] = useState("")
-  const [shippingStatus, setShippingStatus] = useState("")
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const [customerOnClick, setCustomerOnClick] = useState([])
   const [selectedRowKeysOrderList, setSelectedRowKeysOrderList] = useState([])
-  const [selectedRowKeysOrderDetail, setSelectedRowKeysOrderDetail] = useState([])
-  const [loadingOrderList, setLoadingOrderList] = useState(false)
-  const [listMoney, setListMoney] = useState([])
+
   const [objectVariant, setObjectVariant] = useState({})
   const [record, setRecord] = useState({})
-  const [recordMini, setRecordMini] = useState([])
   const typingTimeoutRef = useRef(null);
   const [valueSearchCustomer, setValueSearchCustomer] = useState('')
   const [valueSearch, setValueSearch] = useState('')
   const [orderToday, setOrderToday] = useState()
   const [visibleOrderList, setVisibleOrderList] = useState(false)
-  const [start, setStart] = useState('')
-  const [formatMoney, setFormatMoney] = useState('');
-  const [mark, setMark] = useState([])
   const [customer, setCustomer] = useState([])
   const [customerBackup, setCustomerBackup] = useState([])
   const [indexMark, setIndexMark] = useState('')
-  const { Search } = Input;
-  const [status, setStatus] = useState(0);
   const [countTable, setCountTable] = useState(0)
-  const [end, setEnd] = useState('')
   const [userEmployee, setUserEmployee] = useState({})
-  const [clear, setClear] = useState(-1)
   const [taxDefault, setTaxDefault] = useState(['VAT'])
   const [loadingTable, setLoadingTable] = useState(false)
   const [valueSearchOrderDetail, setValueSearchOrderDetail] = useState('')
@@ -177,7 +90,6 @@ export default function Sell() {
   const [paymentMethod, setPaymentMethod] = useState('1')
   const [taxMoneyValue, setTaxMoneyValue] = useState(0)
   const [visibleOrder, setVisibleOrder] = useState(false)
-  const [order, setOrder] = useState([])
   const [voucher, setVoucher] = useState("")
   const [discount, setDiscount] = useState(0)
   const [orderDetail, setOrderDetail] = useState([])
@@ -185,34 +97,27 @@ export default function Sell() {
   const [paymentForm, setPaymentForm] = useState()
   const [discountMoney, setDiscountMoney] = useState(0)
   const [moneyTemp, setMoneyTemp] = useState(0)
-  const [moneyFinishBackup, setMoneyFinishBackup] = useState(0)
   const [promotionValue, setPromotionValue] = useState('default')
   const [visible, setVisible] = useState(false)
-  const [colorChoose, setColorChoose] = useState('')
   const [voucherSave, setVoucherSave] = useState('')
   const [voucherSaveCheck, setVoucherSaveCheck] = useState(-1)
-  const [sizeChoose, setSizeChoose] = useState('')
   const [tax, setTax] = useState([])
   const [branchId, setBranchId] = useState('')
   const dispatch = useDispatch()
   const [promotion, setPromotion] = useState([])
-  const [promotionMain, setPromotionMain] = useState([])
   const [value, setValue] = useState('18');
   const [valueSex, setValueSex] = useState('Nam');
   const [branch, setBranch] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
-  const [product, setProduct] = useState([])
   const [note, setNote] = useState('')
   const [districtMain, setDistrictMain] = useState([])
   const apiDistrictData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiDistrict();
-      console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -236,11 +141,9 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiProvince();
-      console.log(res)
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -258,8 +161,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await getCustomer({ page: 1, page_size: 50 });
-      console.log(res)
-      console.log("__________312")
+   
       if (res.status === 200) {
 
         setCustomerBackup(res.data.data)
@@ -267,8 +169,6 @@ export default function Sell() {
 
       }
 
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -283,8 +183,7 @@ export default function Sell() {
       const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
       const res = await apiProductCategoryMerge({ branch: branch_id.data.branch.branch_id });
-      console.log(res)
-      console.log("_________________________________________________7777777777777777777777777")
+   
       if (res.status === 200) {
 
 
@@ -292,8 +191,7 @@ export default function Sell() {
 
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+    
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -307,7 +205,6 @@ export default function Sell() {
     setModal3Visible(modal3Visible)
   }
   const onSelectChangeOrderList = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeysOrderList(selectedRowKeys)
 
   };
@@ -320,8 +217,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await apiAllShipping(value);
-      console.log(res)
-      console.log('___________123123')
+
       if (res.status === 200) {
         var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
@@ -335,8 +231,7 @@ export default function Sell() {
         openNotificationErrorAddCustomer()
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+  
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -345,21 +240,12 @@ export default function Sell() {
   useEffect(() => {
     apiAllShippingData()
   }, [])
-  const onSelectChangeOrderDetail = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
-    setSelectedRowKeysOrderDetail(selectedRowKeys)
 
-  };
-  const rowSelectionOrderDetail = {
-    selectedRowKeysOrderDetail,
-    onChange: onSelectChangeOrderDetail,
-  };
+
   const showDrawerOrderList = () => {
     setVisibleOrderList(true)
   };
-  function callbackOrderList(key) {
-    console.log(key);
-  }
+
   const onCloseOrderList = () => {
     setVisibleOrderList(false)
   };
@@ -367,8 +253,7 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await getAllPromotion();
-      console.log(res)
-      console.log("___________11111111111_____")
+  
       if (res.status === 200) {
 
         var array = []
@@ -378,7 +263,6 @@ export default function Sell() {
           }
         })
         setPromotion([...array])
-        setPromotionMain(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
@@ -389,15 +273,11 @@ export default function Sell() {
 
   const apiAllOrderData = async () => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoadingTable(true)
       const res = await apiAllOrder({ page: 1, page_size: 10 });
-      console.log(res)
-
-      console.log("___________11111111111222222222222_____")
+  
       if (res.status === 200) {
         setCountTable(res.data.count)
-        setOrder(res.data.data)
         let now = moment();
         var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
@@ -407,11 +287,9 @@ export default function Sell() {
         })
         setOrderToday([...array])
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoadingTable(false)
     } catch (error) {
       setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   useEffect(() => {
@@ -424,11 +302,9 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAllUser();
-      console.log(res)
-      console.log("991")
+   
       if (res.status === 200) {
         const username = localStorage.getItem("username")
-        var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
           if (username === values.username) {
             setUserEmployee(values)
@@ -437,11 +313,7 @@ export default function Sell() {
 
 
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+     
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -456,11 +328,9 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAllTax();
-      console.log(res)
       if (res.status === 200) {
         setTax(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -474,11 +344,9 @@ export default function Sell() {
     setNote(e.target.value)
   }
   const onChangeBirthday = e => {
-    console.log('radio checked', e.target.value);
     setValue(e.target.value);
   };
   const onChangeSex = e => {
-    console.log('radio checked', e.target.value);
     setValueSex(e.target.value);
   };
   const showDrawerOrder = () => {
@@ -498,11 +366,6 @@ export default function Sell() {
     setVisible(false)
   };
 
-  const onChangeFormatMoney = (e) => {
-    const { value } = e.target;
-    const format = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    setFormatMoney(format);
-  }
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -559,7 +422,6 @@ export default function Sell() {
 
   const onSearchCustomer = (e) => {
     if (e.target.value === "" || e.target.value === "default" || e.target.value === " ") {
-      // setProductSearch([])
       setValueSearchCustomer("")
       setCustomerOnClick([])
       setCustomer([])
@@ -595,53 +457,13 @@ export default function Sell() {
     }
 
   }
-  const onClickStatus = (data) => {
-    setStatus(data);
 
-  };
-  const onFinish = (values) => {
-    console.log("Received values of form: ", values);
-  };
-  const onClickProduct = () => {
-    setProduct([])
-  }
-
-  function onChangeCustomerMoney(value) {
-    console.log('changed', value);
-  }
-  const contentFormatMoney = (
-    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      <div style={{ color: 'black', fontWeight: '600' }}>{formatMoney ? `${formatMoney} VNĐ` : `0 VNĐ`}</div>
-    </div>
-  );
-  const [count, setCount] = useState(0)
-  const apiAllProductData = async () => {
-    // setLoading(true)
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiSearchProduct({ page: 1, page_size: 10 })
-      console.log(res)
-      console.log('--------------------------')
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-      }
-      // setLoading(false)
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
-      // setLoading(false)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
   const [payment, setPayment] = useState([])
   const getAllPaymentData = async () => {
-    // setLoading(true)
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await getAllPayment()
-      console.log(res)
-      console.log('--------------------------')
+    
       if (res.status === 200) {
         var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
@@ -651,58 +473,20 @@ export default function Sell() {
         })
         setPayment([...array])
       }
-      // setLoading(false)
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
-      // setLoading(false)
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
   useEffect(() => {
     getAllPaymentData()
   }, [])
-  useEffect(() => {
-    apiAllProductData()
-  }, [])
-  const apiSearchProductDataPage = async (data, data1) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiSearchProduct({ page: data, page_size: data1 })
-      console.log(res)
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-      // openNotification();
-      // history.push(ROUTES.NEWS);
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-  function onShowSizeChange(current, pageSize) {
-    console.log(current, pageSize)
-    if (current && pageSize) {
-      apiSearchProductDataPage(current, pageSize)
-    }
-  }
-  function onChangeWork(pageNumber) {
-    console.log('Page: ', pageNumber)
-    apiSearchProductDataPage(pageNumber, 10)
-  }
 
   const onClickMarkVariant = (index) => {
 
     setIndexMark(index)
-    // if (billQuantity && billQuantity.length > 0) {
-    //   var array = [...mark]
-    //   array.push(index)
-    //   setMark([...array])
-    // } else {
-
-    // }
+  
 
   }
   const onClickMark = (index) => {
@@ -710,7 +494,6 @@ export default function Sell() {
     if (billQuantity && billQuantity.length > 0) {
       var array = [...billQuantity[billIndex][0].mark]
       array.push(index)
-      setMark([...array])
       var arrayBillQuantity = [...billQuantity]
       arrayBillQuantity[billIndex][0].mark = array
       setBillQuantity([...arrayBillQuantity])
@@ -742,13 +525,7 @@ export default function Sell() {
         'Chỉ tạo được tối đa 5 hóa đơn.',
     });
   };
-  const openNotificationVoucherErrorNew = () => {
-    notification.warning({
-      message: 'Nhắc nhở',
-      description:
-        'Hóa đơn mới tạo không thể xóa.',
-    });
-  };
+
   const [arrayRandom, setArrayRandom] = useState([1, 2, 3, 4, 5])
   const [billQuantity, setBillQuantity] = useState([])
   const onClickCreateBill = () => {
@@ -795,13 +572,10 @@ export default function Sell() {
               if (values40.name === values41) {
                 var numberValue = values40.value.split('%')[0]
 
-                console.log(numberValue)
                 taxPercent += parseInt(numberValue)
               }
             })
           })
-          console.log(taxPercent)
-          console.log("____555")
           var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
           var result = moneyTotalTemp - moneyTotalItem;
           setTaxPercentValue(taxPercent)
@@ -816,9 +590,7 @@ export default function Sell() {
   }
   const [confirm, setConfirm] = useState(-1)
   const onClickDeleteBillQuantity = (index, randomName) => {
-    console.log(index)
-    console.log(billIndex)
-    console.log("______________________neeeeeeeeeeee")
+
     setMoneyPredict([])
     setOrderStatus("order now")
     setPaidCustomerMoney("")
@@ -829,20 +601,15 @@ export default function Sell() {
     setVoucher("")
     setPromotionValue("default")
     var array = [...billQuantity]
-    console.log(index)
     setValueSearchCustomer("")
-    console.log(array[array.length - 1])
     array.splice(index, 1)
-    console.log(array)
-    console.log(array.length)
-    console.log("_______666")
+
 
 
 
     if (array && array.length === 0) {
       setBillName('')
     }
-    //&& index !== 0
     if (array.length > 0) {
       var checkValue = 0;
       array.forEach((values1, index1) => {
@@ -1019,13 +786,10 @@ export default function Sell() {
             if (values40.name === values41) {
               var numberValue = values40.value.split('%')[0]
 
-              console.log(numberValue)
               taxPercent += parseInt(numberValue)
             }
           })
         })
-        console.log(taxPercent)
-        console.log("____555")
         var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
         var result = moneyTotalTemp - moneyTotalItem;
         setTaxPercentValue(taxPercent)
@@ -1056,13 +820,11 @@ export default function Sell() {
   const [quantity, setQuantity] = useState(1)
   const [color, setColor] = useState(-1)
   const [colorSizeArray, setColorSizeArray] = useState([])
-  const [sizeArrray, setSizeArray] = useState([])
   const [checkVariantColor, setCheckVariantColor] = useState([])
   const [checkVariantSize, setCheckVariantSize] = useState([])
   const [checkQuantity, setCheckQuantity] = useState([])
   const onClickColor = (index, data1) => {
     setColor(index)
-    setColorChoose(data1)
     var array = [...colorSizeArray]
     array.push(data1)
     setColorSizeArray([...array])
@@ -1083,7 +845,6 @@ export default function Sell() {
   const [size, setSize] = useState(-1)
   const onClickSize = (index, data1) => {
     setSize(index)
-    setSizeChoose(data1)
     var array = [...colorSizeArray]
     array.push(data1)
     setColorSizeArray([...array])
@@ -1099,10 +860,7 @@ export default function Sell() {
         }
       }
     })
-    console.log(objectVariant)
-    console.log(data1)
-    console.log(count)
-    console.log("------------------")
+
   }
   const increase = () => {
     let quantity1 = parseInt(quantity) + 1;
@@ -1110,9 +868,7 @@ export default function Sell() {
       openNotificationErrorQuantityCheck()
     } else {
       setQuantity(quantity1)
-      var quantityCheck = []
-      console.log(objectVariant.quantity)
-      console.log("___123")
+    
       var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(quantity1)) {
@@ -1124,12 +880,10 @@ export default function Sell() {
           }
         }
         else {
-          console.log(objectVariant)
-          console.log("___123123")
+       
           setQuantity(quantityTotal)
           openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
-          // quantityCheck.push(1)
-          // setCheckQuantity([...quantityCheck])
+       
         }
       } else {
         if (parseInt(quantity1) <= 0) {
@@ -1153,8 +907,6 @@ export default function Sell() {
     } else {
       setQuantity(quantity1)
       var quantityCheck = []
-      console.log(objectVariant.quantity)
-      console.log("___123")
       var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(quantity1)) {
@@ -1166,8 +918,6 @@ export default function Sell() {
           }
         }
         else {
-          console.log(objectVariant)
-          console.log("___123123")
           setQuantity(quantityTotal)
           openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
           quantityCheck.push(1)
@@ -1185,25 +935,7 @@ export default function Sell() {
 
 
   }
-  // const decline = () => {
-  //   let quantity1 = quantity - 1;
-  //   if (quantity1 === 0 || quantity1 === 1) {
-  //     quantity1 = 1;
-  //   }
-  //   var quantityCheck = []
-  //   console.log(objectVariant.quantity)
-  //   console.log("___123")
-  //   setQuantity(quantity1)
-  //   var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
-  //   if (quantityTotal >= parseInt(quantity1)) {
-  //     setCheckQuantity([])
-
-  //   }
-  //   else {
-  //     quantityCheck.push(1)
-  //     setCheckQuantity([...quantityCheck])
-  //   }
-  // };
+  
   const openNotificationErrorQuantityCheck = () => {
     notification.error({
       message: 'Thất bại',
@@ -1216,9 +948,6 @@ export default function Sell() {
       openNotificationErrorQuantityCheck()
     } else {
       setQuantity(e.target.value)
-      var quantityCheck = []
-      console.log(objectVariant.quantity)
-      console.log("___123")
       var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(e.target.value)) {
@@ -1230,12 +959,9 @@ export default function Sell() {
           }
         }
         else {
-          console.log(objectVariant)
-          console.log("___123123")
           setQuantity(quantityTotal)
           openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
-          // quantityCheck.push(1)
-          // setCheckQuantity([...quantityCheck])
+         
         }
       } else {
         setCheckQuantity([])
@@ -1274,23 +1000,13 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiProductSeller({ branch: branchId, page: 1, page_size: 50 });
-      console.log(res)
-      console.log("|||0000001112222222222")
       if (res.status === 200) {
         var array = []
 
         const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   console.log(values)
-        //   if (values.branch === branch_id.data.branch.branch_id) {
-        //     array.push(values)
-        //   }
-        // })
-        console.log("|||000000222")
         setProductSelect(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1301,12 +1017,9 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiProductSeller({ branch: e });
-      console.log(res)
-      console.log("|||000000111")
       if (res.status === 200) {
         setProductSelect(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1321,41 +1034,25 @@ export default function Sell() {
     apiProductSellerDataMain(e)
   }
   const [city, setCity] = useState('')
-  const handleChangeCustomer = async (value) => {
-    console.log(`selected ${value}`);
-    // setCity(value)
-    // if (value !== 'default') {
-    //   apiSearchProvinceData(value)
-    // } else {
-    //   await getAllStoreData()
-    // }
-  }
+
   const [branchDetail, setBranchDetail] = useState({})
   const getAllBranchData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await getAllBranch();
-      console.log(res)
-      console.log("|||000000111")
       if (res.status === 200) {
         var object = {}
         const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
         res.data.data && res.data.data.forEach((values, index) => {
-          console.log(values)
-          console.log(branchId)
-          console.log('_______66666')
           if (values.branch_id === branch_id.data.branch.branch_id) {
             object = values
 
           }
         })
         setBranchDetail(object)
-        console.log(object)
-        console.log("_______________________99988877666")
         setBranch(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1365,8 +1062,6 @@ export default function Sell() {
   useEffect(() => {
     getAllBranchData();
   }, []);
-  console.log(branchId)
-  console.log("---333")
   const [billIndex, setBillIndex] = useState(0)
   const [billQuantityStatus, setBillQuantityStatus] = useState(1)
   const [billName, setBillName] = useState('')
@@ -1388,22 +1083,16 @@ export default function Sell() {
     setMoneyTotal(moneyTotalItem)
 
 
-
-
-
     var taxPercent = 0;
     tax && tax.length > 0 && tax.forEach((values40, index40) => {
       taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
         if (values40.name === values41) {
           var numberValue = values40.value.split('%')[0]
 
-          console.log(numberValue)
           taxPercent += parseInt(numberValue)
         }
       })
     })
-    console.log(taxPercent)
-    console.log("____555")
     var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
     var result = moneyTotalTemp - moneyTotalItem;
     setTaxPercentValue(taxPercent)
@@ -1438,7 +1127,6 @@ export default function Sell() {
   const [paidCustomerMoney, setPaidCustomerMoney] = useState('')
   const [indexPaymentMoney, setIndexPaymentMoney] = useState(-1)
   const onClickPredictMoney = (e, index) => {
-    console.log(e)
     setIndexPaymentMoney(index)
     setMoneyPredictValue(e)
     var result = parseInt(e) - parseInt(moneyFinish)
@@ -1446,8 +1134,6 @@ export default function Sell() {
   }
 
   const onClickAddProductSimple = (record1) => {
-    console.log(record1)
-    console.log("___________456456")
     var quantityTotal = parseInt(record1.available_stock_quantity) + parseInt(record1.low_stock_quantity)
     if (quantityTotal > 0) {
       if (billQuantity && billQuantity.length > 0) {
@@ -1474,13 +1160,10 @@ export default function Sell() {
               if (values40.name === values41) {
                 var numberValue = values40.value.split('%')[0]
 
-                console.log(numberValue)
                 taxPercent += parseInt(numberValue)
               }
             })
           })
-          console.log(taxPercent)
-          console.log("____555")
           var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
           var result = moneyTotalTemp - moneyTotalItem;
           setTaxPercentValue(taxPercent)
@@ -1512,13 +1195,10 @@ export default function Sell() {
                   if (values40.name === values41) {
                     var numberValue = values40.value.split('%')[0]
 
-                    console.log(numberValue)
                     taxPercent += parseInt(numberValue)
                   }
                 })
               })
-              console.log(taxPercent)
-              console.log("____555")
               var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
               var result = moneyTotalTemp - moneyTotalItem;
               setTaxPercentValue(taxPercent)
@@ -1549,77 +1229,15 @@ export default function Sell() {
     }
 
   }
-  const onClickAddProduct = (objectVariant1, record1) => {
-    // setModal2Visible(false)
-    console.log(record1)
-    console.log("123123123")
-    if (billQuantity && billQuantity.length > 0) {
-      var array = [...billQuantity]
-      setRecord(record1)
-      console.log(colorChoose)
-      console.log(sizeChoose)
-      console.log("---123")
-      // array[billIndex].forEach((values1, index1) => {
-      //   if (values1.product_id === objectVariant1.product_id) {
-      //     array[billIndex][index1] = { ...values1, quantity: objectVariant1.quantity + 1 }
-      //   } else {
-
-      //   }
-      // })
-
-      if (array[billIndex].length === 0) {
-        array[billIndex].push({ sale_price: objectVariant1.sale_price, title: objectVariant1.title, product_id: record1.product_id, sku: objectVariant1.sku, supplier: objectVariant1.supplier, options: objectVariant1.options, quantity: objectVariant1.quantity, total_cost: objectVariant1.quantity * objectVariant1.sale_price, voucher: '', discount: 0, final_cost: 0 })
-        openNotificationAddProductErrorAddProductSuccess()
-        setBillQuantity([...array])
-      } else {
-        var count = 0;
-        array[billIndex].forEach((values1, index1) => {
-          if (values1.sku === objectVariant1.sku) {
-            count++
-          }
-          console.log(values1.sku)
-          console.log("|||0009999")
-          console.log(objectVariant1.sku)
-          var result = array[billIndex].findIndex(x => x.sku === objectVariant1.sku)
-          if (result === -1) {
-            array[billIndex].push({ sale_price: objectVariant1.sale_price, title: objectVariant1.title, product_id: record1.product_id, sku: objectVariant1.sku, supplier: objectVariant1.supplier, options: objectVariant1.options, quantity: objectVariant1.quantity, total_cost: objectVariant1.quantity * objectVariant1.sale_price, voucher: '', discount: 0, final_cost: 0 })
-            setBillQuantity([...array])
-            openNotificationAddProductErrorAddProductSuccess()
-          }
-
-
-        })
-        if (count > 0) {
-          openNotificationAddProductErrorAddProduct()
-        }
-
-      }
-
-    } else {
-      openNotificationAddProductError()
-    }
-
-  }
+ 
   const onClickAddProductVariant = () => {
-    // setModal2Visible(false)
-    console.log(record)
-    console.log("123123123")
     var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
     if (orderStatus === 'order now') {
       if (quantityTotal > 0) {
         if (billQuantity && billQuantity.length > 0) {
           var array = [...billQuantity]
           setRecord(record)
-          console.log(colorChoose)
-          console.log(sizeChoose)
-          console.log("---123")
-          // array[billIndex].forEach((values1, index1) => {
-          //   if (values1.product_id === objectVariant1.product_id) {
-          //     array[billIndex][index1] = { ...values1, quantity: objectVariant1.quantity + 1 }
-          //   } else {
-
-          //   }
-          // })
+       
 
           if (array[billIndex].length === 0) {
             array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
@@ -1634,7 +1252,6 @@ export default function Sell() {
             if (billQuantity && billQuantity.length > 0) {
               var array9 = [...billQuantity[billIndex][0].mark]
               array9.push(indexMark)
-              setMark([...array9])
 
               var arrayBillQuantity = [...billQuantity]
               arrayBillQuantity[billIndex][0].mark = array9
@@ -1659,13 +1276,10 @@ export default function Sell() {
                   if (values40.name === values41) {
                     var numberValue = values40.value.split('%')[0]
 
-                    console.log(numberValue)
                     taxPercent += parseInt(numberValue)
                   }
                 })
               })
-              console.log(taxPercent)
-              console.log("____555")
               var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
               var result = moneyTotalTemp - moneyTotalItem;
               setTaxPercentValue(taxPercent)
@@ -1681,9 +1295,6 @@ export default function Sell() {
               if (values1.sku === objectVariant.sku) {
                 count++
               }
-              console.log(values1.sku)
-              console.log("|||0009999")
-              console.log(objectVariant.sku)
               var result = array[billIndex].findIndex(x => x.sku === objectVariant.sku)
               if (result === -1) {
                 array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
@@ -1694,7 +1305,6 @@ export default function Sell() {
                 if (billQuantity && billQuantity.length > 0) {
                   var array9 = [...billQuantity[billIndex][0].mark]
                   array9.push(indexMark)
-                  setMark([...array9])
                   var arrayBillQuantity = [...billQuantity]
                   arrayBillQuantity[billIndex][0].mark = array9
                   setBillQuantity([...arrayBillQuantity])
@@ -1715,13 +1325,10 @@ export default function Sell() {
                       if (values40.name === values41) {
                         var numberValue = values40.value.split('%')[0]
 
-                        console.log(numberValue)
                         taxPercent += parseInt(numberValue)
                       }
                     })
                   })
-                  console.log(taxPercent)
-                  console.log("____555")
                   var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
                   var result = moneyTotalTemp - moneyTotalItem;
                   setTaxPercentValue(taxPercent)
@@ -1751,16 +1358,6 @@ export default function Sell() {
       if (billQuantity && billQuantity.length > 0) {
         var array = [...billQuantity]
         setRecord(record)
-        console.log(colorChoose)
-        console.log(sizeChoose)
-        console.log("---123")
-        // array[billIndex].forEach((values1, index1) => {
-        //   if (values1.product_id === objectVariant1.product_id) {
-        //     array[billIndex][index1] = { ...values1, quantity: objectVariant1.quantity + 1 }
-        //   } else {
-
-        //   }
-        // })
 
         if (array[billIndex].length === 0) {
           array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
@@ -1775,7 +1372,6 @@ export default function Sell() {
           if (billQuantity && billQuantity.length > 0) {
             var array9 = [...billQuantity[billIndex][0].mark]
             array9.push(indexMark)
-            setMark([...array9])
 
             var arrayBillQuantity = [...billQuantity]
             arrayBillQuantity[billIndex][0].mark = array9
@@ -1800,13 +1396,11 @@ export default function Sell() {
                 if (values40.name === values41) {
                   var numberValue = values40.value.split('%')[0]
 
-                  console.log(numberValue)
                   taxPercent += parseInt(numberValue)
                 }
               })
             })
-            console.log(taxPercent)
-            console.log("____555")
+         
             var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
             var result = moneyTotalTemp - moneyTotalItem;
             setTaxPercentValue(taxPercent)
@@ -1822,9 +1416,6 @@ export default function Sell() {
             if (values1.sku === objectVariant.sku) {
               count++
             }
-            console.log(values1.sku)
-            console.log("|||0009999")
-            console.log(objectVariant.sku)
             var result = array[billIndex].findIndex(x => x.sku === objectVariant.sku)
             if (result === -1) {
               array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
@@ -1835,7 +1426,6 @@ export default function Sell() {
               if (billQuantity && billQuantity.length > 0) {
                 var array9 = [...billQuantity[billIndex][0].mark]
                 array9.push(indexMark)
-                setMark([...array9])
                 var arrayBillQuantity = [...billQuantity]
                 arrayBillQuantity[billIndex][0].mark = array9
                 setBillQuantity([...arrayBillQuantity])
@@ -1856,13 +1446,10 @@ export default function Sell() {
                     if (values40.name === values41) {
                       var numberValue = values40.value.split('%')[0]
 
-                      console.log(numberValue)
                       taxPercent += parseInt(numberValue)
                     }
                   })
                 })
-                console.log(taxPercent)
-                console.log("____555")
                 var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
                 var result = moneyTotalTemp - moneyTotalItem;
                 setTaxPercentValue(taxPercent)
@@ -1898,7 +1485,6 @@ export default function Sell() {
     });
   };
   const onChangeQuantityBill = (value, index1, index2) => {
-    setCount(0)
     setDiscount(0)
     setPromotionValue('default')
     if (value <= 0) {
@@ -1906,7 +1492,6 @@ export default function Sell() {
       var array = [...billQuantity]
       array[index1][index2].quantity = value
       array[index1][index2].total_cost = value * array[index1][index2].sale_price
-      console.log(array[index1][index2].quantity)
       setBillQuantity([...array])
 
 
@@ -1926,13 +1511,10 @@ export default function Sell() {
           if (values40.name === values41) {
             var numberValue = values40.value.split('%')[0]
 
-            console.log(numberValue)
             taxPercent += parseInt(numberValue)
           }
         })
       })
-      console.log(taxPercent)
-      console.log("____555")
       var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
       var result = moneyTotalTemp - moneyTotalItem;
       setTaxPercentValue(taxPercent)
@@ -1943,7 +1525,6 @@ export default function Sell() {
       if (orderStatus === 'pre-order' || orderStatus === 'order list') {
         array[index1][index2].quantity = value
         array[index1][index2].total_cost = value * array[index1][index2].sale_price
-        console.log(array[index1][index2].quantity)
         setBillQuantity([...array])
 
 
@@ -1963,13 +1544,10 @@ export default function Sell() {
             if (values40.name === values41) {
               var numberValue = values40.value.split('%')[0]
 
-              console.log(numberValue)
               taxPercent += parseInt(numberValue)
             }
           })
         })
-        console.log(taxPercent)
-        console.log("____555")
         var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
         var result = moneyTotalTemp - moneyTotalItem;
         setTaxPercentValue(taxPercent)
@@ -1985,7 +1563,6 @@ export default function Sell() {
 
           array[index1][index2].quantity = value
           array[index1][index2].total_cost = value * array[index1][index2].sale_price
-          console.log(array[index1][index2].quantity)
           setBillQuantity([...array])
 
 
@@ -2005,13 +1582,10 @@ export default function Sell() {
               if (values40.name === values41) {
                 var numberValue = values40.value.split('%')[0]
 
-                console.log(numberValue)
                 taxPercent += parseInt(numberValue)
               }
             })
           })
-          console.log(taxPercent)
-          console.log("____555")
           var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
           var result = moneyTotalTemp - moneyTotalItem;
           setTaxPercentValue(taxPercent)
@@ -2061,13 +1635,10 @@ export default function Sell() {
         if (values40.name === values41) {
           var numberValue = values40.value.split('%')[0]
 
-          console.log(numberValue)
           taxPercent += parseInt(numberValue)
         }
       })
     })
-    console.log(taxPercent)
-    console.log("____555")
     var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
     var result = moneyTotalTemp - moneyTotalItem;
     setTaxPercentValue(taxPercent)
@@ -2082,7 +1653,6 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await apiProductSeller({ keyword: value, branch: branchId, page: 1, page_size: 50 });
-      console.log(res)
       if (res.status === 200) {
         setProductSearch(res.data.data)
       }
@@ -2240,9 +1810,7 @@ export default function Sell() {
 
     </div >
   );
-  function randomFunc(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-  }
+
   const openNotificationSuccessAddCustomer = () => {
     notification.success({
       message: 'Thành công',
@@ -2284,8 +1852,6 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await addCustomer(value);
-      console.log(res)
-      console.log('___________123123')
       if (res.status === 200) {
         setCustomer(res.data.data)
         await getAllCustomerData()
@@ -2298,29 +1864,18 @@ export default function Sell() {
         openNotificationErrorAddCustomer()
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+     
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
 
-
-  function isValid(string) {
-    var re = /^([a-zA-Z]|[-._](?![-._])){2,30}$/
-    return re.test(string)
-  }
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
   const onFinishAddCustomer = (values) => {
-    console.log('Success:', values);
-    // onClose()
     var now = moment().get('year');
-    console.log(customerName)
-    console.log(now)
-    console.log(value)
+  
     now -= parseInt(value)
-    console.log(`${now}/01/01`)
     if (customerName && customerName !== "" || customerName && customerName !== " " || customerName && customerName !== "default") {
       if (!isNaN(customerName) || isNaN(randomPhoneValue)) {
         if (!isNaN(customerName)) {
@@ -2344,7 +1899,6 @@ export default function Sell() {
             province: values.ward,
             balance: []
           }
-          console.log(object)
           addCustomerData(object)
         } else {
           if (!regex.test(randomPhoneValue)) {
@@ -2359,55 +1913,19 @@ export default function Sell() {
 
   };
 
-  const onFinishFailedAddCustomer = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-
-
-
-  // const apiProductCategoryData = async (value) => {
-  //   try {
-  //     dispatch({ type: ACTION.LOADING, data: true });
-
-  //     const res = await apiProductCategory();
-  //     console.log(res)
-
-  //     if (res.status === 200) {
-
-
-  //       setCategory(res.data.data)
-
-  //     }
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //     // openNotification();
-  //     // history.push(ROUTES.NEWS);
-  //   } catch (error) {
-
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //   }
-  // };
-  // useEffect(() => {
-  //   apiProductCategoryData()
-  // }, [])
-
-
-
   const getCustomerData = async (data) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await getCustomer({ keyword: data, page: 1, page_size: 50 });
-      console.log(res)
-      console.log("__________312")
+     
       if (res.status === 200) {
 
-        // setCustomerBackup(res.data.data)
         setCustomer(res.data.data)
 
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+     
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -2419,14 +1937,10 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await getCustomer({ keyword: 'Khách lẻ', page: 1, page_size: 50 });
-      console.log(res)
-      console.log("__________312")
+  
       if (res.status === 200) {
 
-        // setCustomerBackup(res.data.data)
-        //   setCustomer(res.data.data)
-        //    var array = []
-        //    array.push(values)
+    
         setCustomerOnClick([...res.data.data])
         setValueSearchCustomer(`${res.data.data[0].first_name} - ${res.data.data[0].phone}`)
 
@@ -2437,8 +1951,7 @@ export default function Sell() {
         setBillQuantity([...arrayCustomerSelect])
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -2446,8 +1959,7 @@ export default function Sell() {
   };
 
   const onChangeCustomerOdd = (e) => {
-    console.log(e)
-    console.log("_____________5555555555")
+   
     setCustomerOddMain(e.target.checked)
     if (e.target.checked) {
       setValueSearchCustomer('Khách lẻ')
@@ -2465,15 +1977,12 @@ export default function Sell() {
   const onChangeCustomerName = (e) => {
     setCustomerName(e.target.value)
   }
-  console.log(branchDetail)
-  console.log("______________+++")
 
 
   const apiFilterCityData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiFilterCity({ keyword: object });
-      console.log(res)
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
@@ -2485,7 +1994,6 @@ export default function Sell() {
     }
   };
   function handleChangeCity(value) {
-    console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
 
@@ -2551,7 +2059,6 @@ export default function Sell() {
   }
 
   const onChangeTax = (e) => {
-    console.log(e)
     setTaxDefault(e)
     var taxPercent = 0;
 
@@ -2560,7 +2067,6 @@ export default function Sell() {
         if (values40.name === values41) {
           var numberValue = values40.value.split('%')[0]
 
-          console.log(numberValue)
           taxPercent += parseInt(numberValue)
         }
       })
@@ -2572,11 +2078,6 @@ export default function Sell() {
     var result = moneyTotalTemp - moneyTotal;
     setTaxPercentValue(taxPercent)
     setTaxMoneyValue(result)
-    console.log(taxPercent)
-    console.log(moneyTotalTemp)
-    console.log(moneyFinish)
-    console.log(result)
-    console.log("____555")
     setMoneyFinish(moneyTotalTemp)
   }
 
@@ -2585,17 +2086,12 @@ export default function Sell() {
       try {
         dispatch({ type: ACTION.LOADING, data: true });
         const res = await apiCheckPromotion(object);
-        console.log(res)
-        console.log("-----------------------------------------------")
         if (res.status === 200) {
           setVoucherSaveCheck(count)
           setVoucherSave(object.voucher)
           await getAllPromotionData()
           var taxPercent1 = 0;
-          console.log("-----------")
           taxPercent1 += res.data.data.value
-          console.log(taxPercent1)
-          console.log(typeof taxPercent1)
 
           setDiscount(taxPercent1)
           var discountMoneyValue = (taxPercent1 * moneyTotal) / 100
@@ -2606,16 +2102,10 @@ export default function Sell() {
           // var moneyTotalTemp = moneyFinish - ((taxPercent1 * moneyFinish) / 100)
           var moneyTempItem = moneyFinish - moneyTotalTemp
 
-          setMoneyFinishBackup(moneyFinish)
           setMoneyFinish(Math.round(moneyTotalTemp))
           setMoneyTemp(moneyTempItem)
 
           setDiscountMoney(Math.round(discountMoneyValue))
-          console.log(moneyTotal)
-          console.log(moneyFinish)
-          console.log(Math.round(moneyTotalTemp))
-          console.log(discountMoneyValue)
-          console.log("______7777")
         } else {
           openNotificationAddProductErrorBill()
 
@@ -2630,17 +2120,12 @@ export default function Sell() {
       try {
         dispatch({ type: ACTION.LOADING, data: true });
         const res = await getPromoton({ name: object });
-        console.log(res)
-        console.log("-----------------------------------------------")
         if (res.status === 200) {
           setVoucherSaveCheck(count)
           setVoucherSave(object.voucher)
           await getAllPromotionData()
           var taxPercent1 = 0;
-          console.log("-----------")
           taxPercent1 += res.data.data[0].value
-          console.log(taxPercent1)
-          console.log(typeof taxPercent1)
 
           setDiscount(taxPercent1)
           var discountMoneyValue = (taxPercent1 * moneyTotal) / 100
@@ -2651,16 +2136,10 @@ export default function Sell() {
           // var moneyTotalTemp = moneyFinish - ((taxPercent1 * moneyFinish) / 100)
           var moneyTempItem = moneyFinish - moneyTotalTemp
 
-          setMoneyFinishBackup(moneyFinish)
           setMoneyFinish(Math.round(moneyTotalTemp))
           setMoneyTemp(moneyTempItem)
 
           setDiscountMoney(Math.round(discountMoneyValue))
-          console.log(moneyTotal)
-          console.log(moneyFinish)
-          console.log(Math.round(moneyTotalTemp))
-          console.log(discountMoneyValue)
-          console.log("______7777")
         } else {
           openNotificationAddProductErrorBill()
 
@@ -2676,7 +2155,6 @@ export default function Sell() {
   };
 
   const onChangePromotionValue = async (e) => {
-    console.log(e)
 
 
     setVoucherSave(e)
@@ -2690,27 +2168,9 @@ export default function Sell() {
       apiCheckPromotionData({ voucher: e }, 2)
     }
   }
-  const predictMoney = (money) => {
-    var array = [1, 2, 5, 10, 20, 50, 100, 200, 500]
-    var array1 = [money]
-    array.forEach((values, index) => {
-      if (values > money) {
-        array1.push(values)
-      }
-    })
-    var array2 = []
-    array.forEach((values, index) => {
-      money += values
-      array2.push(money)
-    })
-    return [...array2]
 
-  }
-  console.log(predictMoney(148))
-  console.log("______________567567")
 
   const onChangeReceiveMethod = (e) => {
-    console.log(e)
     setReceiveMethod(e.target.value)
   }
 
@@ -2739,13 +2199,9 @@ export default function Sell() {
     });
   };
   const apiOrderVoucherData = async (object, randomFinish) => {
-    console.log(object)
-    console.log("________________5675567")
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiOrderVoucher(object);
-      console.log(res)
-      console.log("________________44444444444444")
       if (res.status === 200) {
         await apiAllOrderData()
         setOrderStatus("order now")
@@ -2758,7 +2214,6 @@ export default function Sell() {
         setVoucher("")
         setPromotionValue("default")
         setValueSearchCustomer("")
-        console.log(billQuantity)
         var array = [...billQuantity]
         array.splice(billIndex, 1)
         if (array && array.length === 0) {
@@ -2941,13 +2396,10 @@ export default function Sell() {
                 if (values40.name === values41) {
                   var numberValue = values40.value.split('%')[0]
 
-                  console.log(numberValue)
                   taxPercent += parseInt(numberValue)
                 }
               })
             })
-            console.log(taxPercent)
-            console.log("____555")
             var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
             var result = moneyTotalTemp - moneyTotalItem;
             setTaxPercentValue(taxPercent)
@@ -2964,9 +2416,6 @@ export default function Sell() {
 
           setBillIndex(array && array.length > 0 ? array.length - 1 : 0)
         }
-        console.log(billIndex)
-        console.log(array)
-        console.log("_____________________77777777777777")
 
         var random = [...arrayRandom]
 
@@ -2985,29 +2434,7 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   }
-  const apiOrderPromotionData = async (object) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiOrderPromotion(object);
-      console.log(res)
-      console.log("________________44444444444444")
-      if (res.status === 200) {
 
-        var array = [...billQuantity]
-        array.splice(billIndex, 1)
-        setBillQuantity([...array])
-        modal3VisibleModal(false)
-        openNotificationSuccessOrder()
-      } else {
-        openNotificationErrorOrder()
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
   const openNotificationErrorBillQuantityNotChoose = () => {
     notification.error({
       message: 'Thất bại',
@@ -3043,17 +2470,9 @@ export default function Sell() {
         'Bạn chưa chọn thuế.',
     });
   };
-  const openNotificationErrorVoucher = () => {
-    notification.warning({
-      message: 'Nhắc nhở',
-      description:
-        'Bạn chưa chọn chương trình khuyến mãi hoặc nhập voucher.',
-    });
-  };
+
 
   const onClickPayment = () => {
-    console.log(customerOnClick)
-    console.log("__________123456")
     if (billQuantity && billQuantity.length > 0) {
       var count = 0;
       billQuantity.forEach((values, index) => {
@@ -3072,8 +2491,6 @@ export default function Sell() {
           if (customerOnClick && customerOnClick.length === 0) {
             openNotificationErrorCustomerId()
           } else {
-            console.log(voucherSave)
-            console.log("___________555")
 
             if ((taxDefault && taxDefault.length === 0) || ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) || ((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
               if ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) {
@@ -3085,10 +2502,7 @@ export default function Sell() {
               if (taxDefault && taxDefault.length === 0) {
                 openNotificationErrorTax()
               }
-              // if ((voucherSave === '') || (voucherSave === ' ') || (voucherSave === 'default')) {
-              //   openNotificationErrorVoucher()
-
-              // }
+           
             } else {
 
               var arrayFinish = [...billQuantity]
@@ -3124,9 +2538,6 @@ export default function Sell() {
                   discountMoneyVoucher = 0;
                 }
               })
-              console.log(arrayVoucher)
-              console.log(discountMoneyVoucher)
-              console.log("______________777111")
               payment && payment.length > 0 && payment.forEach((values, index) => {
                 if (values.payment_id === paymentMethod) {
                   setPaymentForm(values.name)
@@ -3153,7 +2564,6 @@ export default function Sell() {
                   longtitude: "",
                   note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
                 }
-                console.log(object)
                 modal3VisibleModal(true)
 
 
@@ -3174,7 +2584,6 @@ export default function Sell() {
                   longtitude: "",
                   note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
                 }
-                console.log(object)
                 modal3VisibleModal(true)
                 setOrderDetail(object.order_details)
               }
@@ -3194,8 +2603,6 @@ export default function Sell() {
     }
   }
   const onClickPaymentFinish = () => {
-    console.log(customerOnClick)
-    console.log("__________123456")
     if (billQuantity && billQuantity.length > 0) {
       var count = 0;
       billQuantity.forEach((values, index) => {
@@ -3214,8 +2621,6 @@ export default function Sell() {
           if (customerOnClick && customerOnClick.length === 0) {
             openNotificationErrorCustomerId()
           } else {
-            console.log(voucherSave)
-            console.log("___________555")
 
             if ((taxDefault && taxDefault.length === 0) || ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) || ((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
               if ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) {
@@ -3227,10 +2632,7 @@ export default function Sell() {
               if (taxDefault && taxDefault.length === 0) {
                 openNotificationErrorTax()
               }
-              // if ((voucherSave === '') || (voucherSave === ' ') || (voucherSave === 'default')) {
-              //   openNotificationErrorVoucher()
-
-              // }
+           
             } else {
 
               var arrayFinish = [...billQuantity]
@@ -3276,9 +2678,6 @@ export default function Sell() {
                   }
                 })
               })
-              console.log(arrayVoucher)
-              console.log(discountMoneyVoucher)
-              console.log("______________777111")
               payment && payment.length > 0 && payment.forEach((values, index) => {
                 if (values.payment_id === paymentMethod) {
                   setPaymentForm(values.name)
@@ -3314,10 +2713,8 @@ export default function Sell() {
                   longtitude: "",
                   note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
                 }
-                console.log(object)
 
 
-                console.log("__________________________33333333333333")
                 apiOrderVoucherData(object, randomFinish)
               } else {
                 var taxNewFinish = []
@@ -3350,9 +2747,7 @@ export default function Sell() {
                   type: orderStatus,
                   note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
                 }
-                console.log(object)
 
-                console.log("__________________________33333333333333")
                 apiOrderVoucherData(object, randomFinish)
                 //  apiOrderPromotionData(object)
               }
@@ -3371,24 +2766,6 @@ export default function Sell() {
       openNotificationErrorBillQuantity()
     }
   }
-  // useEffect(() => {
-  //   var countTimeout = 0
-  //   const timer = setTimeout(() => {
-
-  //     countTimeout++;
-  //     if (countTimeout === 7) {
-  //       alert('het 7s')
-  //       dispatch({ type: ACTION.LOADING, data: false });
-  //     } else {
-  //       if (product.length > 0 && tax.length > 0 && promotion.length > 0 && productSelect.length > 0 && branch.length > 0 && category.length > 0 && customerBackup.length > 0) {
-  //         dispatch({ type: ACTION.LOADING, data: false });
-  //       } else {
-  //         dispatch({ type: ACTION.LOADING, data: true });
-  //       }
-  //     }
-  //   }, 7000);
-  //   return () => clearTimeout(timer);
-  // }, []);
 
   const columnsTable = [
     {
@@ -3435,21 +2812,11 @@ export default function Sell() {
       render: (text, record) => record && record.discount > 0 ? text : ('')
     },
   ];
-  console.log(voucherSaveCheck)
-  console.log("______________555555555555")
 
   const onChangeOrderStatus = (e) => {
-    console.log(e.target.value)
     setOrderStatus(e.target.value)
   }
 
-
-
-  // IF React
-  // export default TienThoi;
-
-  // If Nodejs
-  // module.exports = { TienThoi };
 
   var sumOutput = [];
 
@@ -3603,8 +2970,6 @@ export default function Sell() {
 
     return result;
   };
-  console.log(moneyPredict)
-  console.log("____________________________________________123456789")
   const contentCustomerOrderList = (text) => {
     return (
       <div className={styles['customer__information-view']}>
@@ -3746,16 +3111,7 @@ export default function Sell() {
       dataIndex: 'status',
       render: (text, record) => text ? <div style={{ color: '#50D648' }}>{record.status}</div> : ''
     },
-    // {
-    //   title: 'Thanh toán',
-    //   dataIndex: '_payment_status',
-    //   render: (text, record) => text === 'Đã thanh toán' ? <div style={{ color: '#04B000' }}>Đã thanh toán</div> : <div style={{ color: '#FF9900' }}>Chờ xử lý</div>
-    // },
-    // {
-    //   title: 'Giao hàng',
-    //   dataIndex: '_shipping',
-    //   render: (text, record) => text === 'Đã giao' ? <div style={{ color: '#04B000' }}>Đã giao</div> : <div style={{ color: '#FF9900' }}>Chưa giao hàng</div>
-    // },
+  
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
@@ -3832,32 +3188,22 @@ export default function Sell() {
   ];
   const apiAllOrderDataTable = async (page, page_size) => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoadingTable(true)
       const res = await apiAllOrder({ page: page, page_size: page_size });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
       if (res.status === 200) {
         setCountTable(res.data.count)
-        setOrder(res.data.data)
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoadingTable(false)
     } catch (error) {
       setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   const apiAllOrderDataTableOrderDetail = async (e) => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoadingTable(true)
       const res = await apiAllOrder({ keyword: e, page: 1, page_size: 10 });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
       if (res.status === 200) {
         setCountTable(res.data.count)
-        setOrder(res.data.data)
         let now = moment();
         var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
@@ -3867,19 +3213,15 @@ export default function Sell() {
         })
         setOrderToday([...array])
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoadingTable(false)
     } catch (error) {
       setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   function onShowSizeChangeTable(current, pageSize) {
-    console.log(current, pageSize);
     apiAllOrderDataTable(current, pageSize)
   }
   function onChangeTable(pageNumber) {
-    console.log('Page: ', pageNumber);
     apiAllOrderDataTable(pageNumber, 10)
   }
 
@@ -3894,132 +3236,7 @@ export default function Sell() {
     }, 300);
     // 
   };
-  const dateFormat = 'YYYY/MM/DD';
-  const apiAllOrderDataTableOrderDetailDate = async (start, end) => {
-    try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
-      setLoadingTable(true)
-      const res = await apiAllOrder({ from_date: start, to_date: end });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-        setOrder(res.data.data)
-        let now = moment();
-        var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-            array.push(values)
-          }
-        })
-        setOrderToday([...array])
-      }
-      //dispatch({ type: ACTION.LOADING, data: false });
-      setLoadingTable(false)
-    } catch (error) {
-      setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
-  function onChangeDate(dates, dateStrings) {
-    setClear(-1)
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    apiAllOrderDataTableOrderDetailDate(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
-  }
-  const openNotificationClear = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Dữ liệu đã được reset về ban đầu.',
-    });
-  };
-  const onClickClear = async () => {
-    await apiAllOrderData()
-    openNotificationClear()
-    setValueSearchOrderDetail("")
-    setClear(1)
-    setSelectedRowKeysOrderDetail([])
-    setSelectedRowKeysOrderList([])
-    setShippingStatus("")
-    setPaymentStatus("")
-    setStart([])
-    setEnd([])
-  }
-  const apiAllOrderDataTablePaymentStatus = async (start) => {
-    try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
-      setLoadingTable(true)
-      const res = await apiAllOrder({ _payment_status: start });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-        setOrder(res.data.data)
-        let now = moment();
-        var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-            array.push(values)
-          }
-        })
-        setOrderToday([...array])
-      }
-      //dispatch({ type: ACTION.LOADING, data: false });
-      setLoadingTable(false)
-    } catch (error) {
-      setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
 
-  const onChangePaymentStatus = async (e) => {
-    console.log(e)
-    if (e === 'default') {
-      await apiAllOrderData()
-    } else {
-      setPaymentStatus(e)
-      apiAllOrderDataTablePaymentStatus(e)
-    }
-
-  }
-  const apiAllOrderDataTableShippingStatus = async (start) => {
-    try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
-      setLoadingTable(true)
-      const res = await apiAllOrder({ _shipping: start });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-        setOrder(res.data.data)
-        let now = moment();
-        var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-            array.push(values)
-          }
-        })
-        setOrderToday([...array])
-      }
-      //dispatch({ type: ACTION.LOADING, data: false });
-      setLoadingTable(false)
-    } catch (error) {
-      setLoadingTable(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
-
-  const onChangeShippingStatus = async (e) => {
-    console.log(e)
-    if (e === 'default') {
-      await apiAllOrderData()
-    } else {
-      setShippingStatus(e)
-      apiAllOrderDataTableShippingStatus(e)
-    }
-
-  }
 
   return (
     <UI>
@@ -4048,7 +3265,6 @@ export default function Sell() {
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         } value={branchId} onChange={handleChange}>
-                        {/* <Option value="default">Chọn cửa hàng</Option> */}
                         {
                           branch && branch.length > 0 && branch.map((values, index) => {
                             return (
@@ -4066,7 +3282,6 @@ export default function Sell() {
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         } value={branchId} onChange={handleChange}>
-                        {/* <Option value="default">Chọn cửa hàng</Option> */}
                         {
                           branch && branch.length > 0 && branch.map((values, index) => {
                             return (
@@ -4092,45 +3307,6 @@ export default function Sell() {
                 <FunctionShortcut />
               </Col>
 
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div>
-                  <Row
-                    className={styles["sell_manager_title_row_col_child_right"]}
-                  >
-                    <Col
-                      className={styles["sell_manager_title_row_col_user"]}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={12}
-                      xl={12}
-                    >
-                      {/* <div>
-                      <div
-                        className={
-                          styles["sell_manager_title_row_col_child_name"]
-                        }
-                      >
-                        <div>
-                          <UserOutlined
-                            style={{
-                              borderRadius: "50%",
-                              padding: "0.25rem",
-                              fontSize: "1rem",
-                              color: "#08c",
-                              backgroundColor: "white",
-                            }}
-                          />
-                        </div>
-                        <div>Nguyen Van Ty</div>
-                      </div>
-                    </div>
-                  */}
-                    </Col>
-
-                  </Row>
-                </div>
-              </Col>
 
             </Row>
             <Row className={styles["sell_manager_title_row_fix"]}>
@@ -4139,7 +3315,6 @@ export default function Sell() {
                   return (
                     billQuantityStatus === values[0].values ? (<Col
                       className={styles["sell_manager_title_row_col_item_active"]}
-                      // onClick={() => onClickStatus(1)}
                       xs={24}
                       sm={24}
                       md={3}
@@ -4163,7 +3338,6 @@ export default function Sell() {
 
                     </Col>) : (<Col
                       className={styles["sell_manager_title_row_col_item"]}
-                      // onClick={() => onClickStatus(1)}
                       xs={24}
                       sm={24}
                       md={3}
@@ -4193,7 +3367,6 @@ export default function Sell() {
               <Col
 
                 className={styles["sell_manager_title_row_col_item_add"]}
-                // onClick={onClickOrders}
                 xs={24}
                 sm={24}
                 md={5}
@@ -4250,7 +3423,6 @@ export default function Sell() {
                   <Radio.Group style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} onChange={onChangeOrderStatus} value={orderStatus}>
                     <Radio style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }} value="order now">Order now</Radio>
                     <Radio style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }} value="pre-order">Pre-order</Radio>
-                    {/* <Radio style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }} value="order list">Danh sách order</Radio> */}
                   </Radio.Group>
                   <Button onClick={showDrawerOrderList} type="primary" danger>Danh sách order</Button>
                 </div>
@@ -4258,10 +3430,6 @@ export default function Sell() {
               </Col>
             </Row>
           </div>
-          {/* <div>{JSON.stringify(billQuantity)}</div> */}
-          {/* 
-
-        {JSON.stringify(mark)} */}
 
           <div className={styles["sell_manager_content"]}>
             <Row className={styles["sell_manager_content_row"]}>
@@ -4290,20 +3458,7 @@ export default function Sell() {
                         lg={24}
                         xl={24}
                       >
-                        {/* <div
-                        className={styles["sell_manager_content_row_col_table"]}
-                      >
-                        <Table
-                          //   rowSelection={rowSelection}
-                          columns={columns}
-                          className={
-                            styles["sell_manager_content_row_col_table_child"]
-                          }
-                          dataSource={data}
-                          pagination={{ pageSize: 50 }}
-                          scroll={{ y: 300 }}
-                        />
-                      </div> */}
+                     
                         <div
                           className={
                             styles[
@@ -4391,7 +3546,7 @@ export default function Sell() {
                             xl={24}
                           >
                             <div className={styles['product_show']}>
-                              <Tabs defaultActiveKey="0" onChange={callback}>
+                              <Tabs defaultActiveKey="0" >
                                 {
                                   category && category.length > 0 && category.map((values20, index20) => {
                                     return (
@@ -4550,14 +3705,7 @@ export default function Sell() {
                               </Tabs>
 
                             </div>
-                            {/* <Pagination
-                            style={{ margin: '2rem 0 1rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}
-                            showSizeChanger
-                            onChange={onChangeWork}
-                            onShowSizeChange={onShowSizeChange}
-                            defaultCurrent={10}
-                            total={count}
-                          /> */}
+                       
                           </Col>
                         ) : ('')
                       }
@@ -4578,7 +3726,6 @@ export default function Sell() {
                   className={styles["sell_manager_content_row_col_right_parent"]}
                 >
                   <Form
-                    onFinish={onFinish}
                     className={
                       styles["sell_manager_content_row_col_right_parent_content"]
                     }
@@ -4640,10 +3787,7 @@ export default function Sell() {
 
                         </Col>
                       </Row>
-                      {/* <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                      <div style={{ paddingBottom: '1rem', color: 'black', fontWeight: '600' }}>Thuế</div>
-                      <div style={{ paddingBottom: '1rem', }}>0 VNĐ</div>
-                    </div> */}
+                   
                       {
                         billQuantity && billQuantity.length > 0 && billQuantity[billIndex][0].customer && billQuantity[billIndex][0].customer.length > 0 ? (
                           billQuantity[billIndex][0].customer.map((values, index) => {
@@ -4750,11 +3894,6 @@ export default function Sell() {
                         </Radio.Group>
 
                       </div>
-
-
-
-
-
 
 
                       <div
@@ -5025,11 +4164,6 @@ export default function Sell() {
                         )
                       }
 
-
-
-
-
-
                       <div
                         className={
                           styles[
@@ -5065,10 +4199,7 @@ export default function Sell() {
                             confirm === 1 && discount && billQuantity && billQuantity.length > 0 && discount > 0 && discountMoney && discountMoney > 0 ? (`-${formatCash(
                               String(discountMoney))} VNĐ`) : ('0 VNĐ')
                           }
-                          {/* {
-                          confirm === 1 && discount && billQuantity && billQuantity.length > 0 && discount > 0 && discountMoney && discountMoney > 0 ? (`-${formatCash(
-                            String(discountMoney))} VNĐ (-${discount}%)`) : ('0 VNĐ')
-                        } */}
+                         
                         </div>
                       </div>
                       <div
@@ -5089,10 +4220,7 @@ export default function Sell() {
                             confirm === 1 && taxPercentValue && billQuantity && billQuantity.length > 0 && taxPercentValue > 0 && taxMoneyValue && taxMoneyValue > 0 ? (`+${formatCash(
                               String(taxMoneyValue))} VNĐ`) : ('0 VNĐ')
                           }
-                          {/* {
-                          confirm === 1 && taxPercentValue && billQuantity && billQuantity.length > 0 && taxPercentValue > 0 && taxMoneyValue && taxMoneyValue > 0 ? (`+${formatCash(
-                            String(taxMoneyValue))} VNĐ (+${taxPercentValue}%)`) : ('0 VNĐ')
-                        } */}
+                    
                         </div>
                       </div>
                       <div
@@ -5115,30 +4243,6 @@ export default function Sell() {
                           }
                         </div>
                       </div>
-                      {/* <div
-                      className={
-                        styles[
-                        "sell_manager_content_row_col_right_parent_content_money_fix"
-                        ]
-                      }
-                    >
-                      <div style={{ fontWeight: '600', color: 'black', paddingBottom: '1.5rem' }}>Tiền khách đưa</div>
-                      <Form.Item
-                        // label="Username"
-                        name="customerMoney"
-                        rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                      >
-
-                        <InputNumber
-                          style={{ width: '100%' }}
-                          // defaultValue={1000}
-                          formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                          parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                          onChange={onChangeCustomerMoney}
-                        />
-
-                      </Form.Item>
-                    </div> */}
 
 
                     </div>
@@ -5151,9 +4255,7 @@ export default function Sell() {
                       }
                     >
                       <div>
-                        {/* <Button size="large" className={styles["button_background"]}>
-                        Đặt hàng
-                      </Button> */}
+                
                       </div>
                       <div>
                         <Button
@@ -5400,7 +4502,6 @@ export default function Sell() {
             initialValues={branchDetail}
             form={form}
             onFinish={onFinishAddCustomer}
-            onFinishFailed={onFinishFailedAddCustomer}
             style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
             <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
               <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -5432,7 +4533,7 @@ export default function Sell() {
 
                     filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    } value={city ? city : 'default'} onChange={(event) => { handleChangeCustomer(event); handleChangeCity(event) }}>
+                    } value={city ? city : 'default'} onChange={(event) => { handleChangeCity(event) }}>
                     <Option value="default">Tất cả tỉnh/thành phố</Option>
                     {
                       provinceMain && provinceMain.length > 0 && provinceMain.map((values, index) => {
@@ -5752,109 +4853,8 @@ export default function Sell() {
           bodyStyle={{ paddingBottom: 80 }}
 
         >
-          <Tabs defaultActiveKey="2" onChange={callbackOrderList}>
-            {/* 
-          <TabPane tab="Tất cả đơn hàng" key="1">
-
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <Input style={{ width: '100%' }} name="name" value={valueSearchOrderDetail} enterButton onChange={onSearchOrderDetail} className={styles["orders_manager_content_row_col_search"]}
-                    placeholder="Tìm kiếm theo mã, theo tên" allowClear />
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <RangePicker
-                    // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
-                    value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
-                    style={{ width: '100%' }}
-                    ranges={{
-                      Today: [moment(), moment()],
-                      'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    }}
-                    onChange={onChangeDate}
-                  />
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn trạng thái thanh toán"
-                    optionFilterProp="children"
-                    value={paymentStatus ? paymentStatus : 'default'}
-
-                    onChange={onChangePaymentStatus}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }>
-                    <Option value="default">Chọn trạng thái thanh toán</Option>
-                    <Option value="Đã thanh toán">Đã thanh toán</Option>
-                    <Option value="Chưa thanh toán">Chưa thanh toán</Option>
-                  </Select>
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn trạng thái giao hàng"
-                    optionFilterProp="children"
-
-                    value={shippingStatus ? shippingStatus : 'default'}
-
-                    onChange={onChangeShippingStatus}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }>
-                    <Option value="default">Chọn trạng thái giao hàng</Option>
-                    <Option value="Đã giao hàng">Đã giao hàng</Option>
-                    <Option value="Chưa giao hàng">Chưa giao hàng</Option>
-                    <Option value="Đang giao hàng">Đang giao hàng</Option>
-                  </Select>
-                </div>
-              </Col>
-            </Row>
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}></Col>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginBottom: '1rem' }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
-              </Col>
-            </Row>
-
-            <div style={{ width: '100%', border: '1px solid rgb(243, 234, 234)' }}>
-              <Table rowSelection={rowSelectionOrderList} bordered columns={columnsOrderList} dataSource={order} scroll={{ y: 300 }}
-                rowKey="_id"
-                pagination={false}
-                loading={loadingTable}
-
-                expandable={{
-                  expandedRowRender: record => {
-
-                    return (
-                      <div style={{ backgroundColor: 'white', border: '1px solid white' }}>
-                        < Table bordered columns={columnsDetailOrder} dataSource={record && record.order_details && record.order_details.length > 0 ? record.order_details : []} scroll={{ y: 500 }} />
-
-                      </div>)
-
-                  },
-                  expandedRowKeys: selectedRowKeysOrderList,
-                  expandIconColumnIndex: -1,
-                }}
-
-              />
-            </div>
-
-            <Pagination
-              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '1rem' }}
-              showSizeChanger
-              onShowSizeChange={onShowSizeChangeTable}
-              defaultCurrent={10}
-              onChange={onChangeTable}
-              total={countTable}
-            />
-          </TabPane> */}
+          <Tabs defaultActiveKey="2" >
+         
 
             <TabPane tab="Đơn hàng trong ngày" key="2">
 
@@ -5865,63 +4865,8 @@ export default function Sell() {
                       placeholder="Tìm kiếm theo mã, theo tên" allowClear />
                   </div>
                 </Col>
-                {/* <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <RangePicker
-                    // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
-                    value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
-                    style={{ width: '100%' }}
-                    ranges={{
-                      Today: [moment(), moment()],
-                      'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    }}
-                    onChange={onChangeDate}
-                  />
-                </div>
-              </Col> */}
-                {/* <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn trạng thái"
-                    optionFilterProp="children"
-                    value={paymentStatus ? paymentStatus : 'default'}
-
-                    onChange={onChangePaymentStatus}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }>
-                    <Option value="default">Chọn trạng thái</Option>
-                    <Option value="Đã thanh toán">Đã thanh toán</Option>
-                    <Option value="Chưa thanh toán">Chưa thanh toán</Option>
-                    <Option value="Đã giao hàng">Đã giao hàng</Option>
-                    <Option value="Chưa giao hàng">Chưa giao hàng</Option>
-                    <Option value="Đang giao hàng">Đang giao hàng</Option>
-                  </Select>
-                </div>
-              </Col> */}
-                {/* <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                <div style={{ width: '100%' }}>
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn trạng thái giao hàng"
-                    optionFilterProp="children"
-
-                    value={shippingStatus ? shippingStatus : 'default'}
-
-                    onChange={onChangeShippingStatus}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }>
-                    <Option value="default">Chọn trạng thái giao hàng</Option>
-                    <Option value="Đã giao hàng">Đã giao hàng</Option>
-                    <Option value="Chưa giao hàng">Chưa giao hàng</Option>
-                    <Option value="Đang giao hàng">Đang giao hàng</Option>
-                  </Select>
-                </div>
-              </Col> */}
+               
               </Row>
-              {/* <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginBottom: '1rem' }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div> */}
               <div style={{ width: '100%', border: '1px solid rgb(243, 234, 234)' }}>
                 <Table rowSelection={rowSelectionOrderList} bordered columns={columnsOrderList} dataSource={orderToday} scroll={{ y: 300 }}
                   rowKey="_id"

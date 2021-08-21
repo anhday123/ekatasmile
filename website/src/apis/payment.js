@@ -1,3 +1,3 @@
-import { get, patch, post } from './httpClient'
+import { get } from './httpClient'
 
 export const getAllPayment = () => get('/payment/getpayment');

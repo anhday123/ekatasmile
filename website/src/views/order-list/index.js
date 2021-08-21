@@ -1,22 +1,16 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../order-list/order-list.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { Popconfirm, message, Input, Button, Tabs, Popover, Pagination, Row, Col, Radio, DatePicker, Select, Table, Modal, Typography } from "antd";
+import {  Input, Button, Tabs, Popover, Pagination, Row, Col, Radio, DatePicker,  Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+ 
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+ 
 } from "react-router-dom";
-import { ExportCSV } from "./../../components/ExportCSV/ExportCSV";
-import { FileExcelOutlined, PlusCircleOutlined, StarOutlined } from "@ant-design/icons";
+import {  PlusCircleOutlined, StarOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import { apiAllOrder } from './../../apis/order'
-const { Option } = Select;
-const { Text } = Typography;
+
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
 const columns = [
@@ -64,15 +58,6 @@ export default function OrderList() {
   const [loading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
-
-  const onSearch = (value) => console.log(value);
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
   const contentShippingDone = (
     <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', marginBottom: '1rem' }}>2021-08-13 09:10, Giao hàng thành công</div>
@@ -80,9 +65,7 @@ export default function OrderList() {
       <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>2021-08-11 09:10, Đơn hàng đã đến kho TP.HCM</div>
     </div>
   );
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
+ 
   function formatCash(str) {
     return str
       .split('')
@@ -185,25 +168,7 @@ export default function OrderList() {
         String(text))} VNĐ`
     },
   ];
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      orderCode: <Link to="/actions/order-list/view/4">{`MĐH${i}`}</Link>,
-      customerCode: `MKH ${i}`,
-      employeeCode: <div>{`MNV ${i}`}</div>,
-      shippingCode: `MVC ${i}`,
-      shipping: `VC ${i}`,
-      status: `Đang xử lý ${i}`,
-      payment: `${i}00.000 VNĐ`,
-      createdDate: '2021/07/01, 15:33',
-    });
-  }
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
+
   const columnsDetailOrder = [
     {
       title: 'Giá bán',
@@ -276,42 +241,30 @@ export default function OrderList() {
       render: (text, record) => text ? <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>{`${formatCash(String(text))} VNĐ`}</div> : 0
     },
   ];
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
+ 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
   const apiAllOrderDataTable = async (page, page_size) => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoading(true)
       const res = await apiAllOrder({ page: page, page_size: page_size });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
       if (res.status === 200) {
         setCountTable(res.data.count)
         setOrder(res.data.data)
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoading(false)
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   function onShowSizeChangeTable(current, pageSize) {
-    console.log(current, pageSize);
     apiAllOrderDataTable(current, pageSize)
   }
   function onChangeTable(pageNumber) {
-    console.log('Page: ', pageNumber);
     apiAllOrderDataTable(pageNumber, 10)
   }
-  const onSearchCustomerChoose = value => console.log(value);
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
@@ -329,11 +282,6 @@ export default function OrderList() {
     setRadioLocation(e.target.value)
     setSelectedRowKeys([])
   }
-
-
-  function callback(key) {
-    console.log(key);
-  }
   const [order, setOrder] = useState([])
   const apiAllOrderData = async (object, id, data) => {
     try {
@@ -345,8 +293,7 @@ export default function OrderList() {
       }
 
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
       console.log(error);
       setLoading(false)
@@ -358,11 +305,9 @@ export default function OrderList() {
   const [countTable, setCountTable] = useState(0)
   const apiAllOrderDataTableOrderDetail = async (e) => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoading(true)
       const res = await apiAllOrder({ keyword: e, page: 1, page_size: 10 });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
+
       if (res.status === 200) {
         setCountTable(res.data.count)
         setOrder(res.data.data)
@@ -370,11 +315,9 @@ export default function OrderList() {
 
         setOrder(res.data.data)
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoading(false)
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   const typingTimeoutRef = useRef(null);
@@ -388,32 +331,20 @@ export default function OrderList() {
       const value = e.target.value;
       apiAllOrderDataTableOrderDetail(value);
     }, 300);
-    // 
   };
   const apiAllOrderDataTableOrderDetailDate = async (start, end) => {
     try {
-      //   dispatch({ type: ACTION.LOADING, data: true });
       setLoading(true)
       const res = await apiAllOrder({ from_date: start, to_date: end });
-      console.log(res)
-      console.log("___________11111111111222222222222_____")
+
       if (res.status === 200) {
         setCountTable(res.data.count)
 
-        let now = moment();
-        // var array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-        //     array.push(values)
-        //   }
-        // })
         setOrder(res.data.data)
       }
-      //dispatch({ type: ACTION.LOADING, data: false });
       setLoading(false)
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   const dateFormat = 'YYYY/MM/DD';
@@ -436,10 +367,7 @@ export default function OrderList() {
               <Button type="primary" icon={<PlusCircleOutlined />}>Tạo đơn hàng</Button>
             </Link>
           </Col>
-          {/* <Col style={{ marginBottom: '0.5rem' }} x
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
-            </Link>
-          </Col> */}
+         
         </Row>
         <Radio.Group style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', marginTop: '1rem' }} onChange={onChangeRadioLocation} value={radioLocation}>
           <Radio style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} value="store">Tại cửa hàng</Radio>
@@ -448,7 +376,7 @@ export default function OrderList() {
         </Radio.Group>
         {
           radioLocation === 'store' ? (
-            <Tabs style={{ width: '100%', }} defaultActiveKey="1" onChange={callback}>
+            <Tabs style={{ width: '100%', }} defaultActiveKey="1">
               <TabPane tab="Tất cả đơn hàng" key="1">
 
                 <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -472,45 +400,6 @@ export default function OrderList() {
                       />
                     </div>
                   </Col>
-                  {/* <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-                <div style={{ width: '100%' }}>
-                  <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-                    <Option value="default">Tất cả nhân viên</Option>
-                    <Option value="customer1">Nhân viên 1</Option>
-                    <Option value="customer2">Nhân viên 2</Option>
-                    <Option value="customer3">Nhân viên 3</Option>
-                  </Select>
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-                <div style={{ width: '100%' }}>
-                  <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-                    <Option value="default">Tất cả chi nhánh</Option>
-                    <Option value="branch1">Chi nhánh 1</Option>
-                    <Option value="branch2">Chi nhánh 2</Option>
-                    <Option value="branch3">Chi nhánh 3</Option>
-                  </Select>
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-                <div style={{ width: '100%' }}>
-                  <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-                    <Option value="default">Tất cả khách hàng</Option>
-                    <Option value="customer1">Khách hàng 1</Option>
-                    <Option value="customer2">Khách hàng 2</Option>
-                    <Option value="customer3">Khách hàng 3</Option>
-                  </Select>
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-                <div style={{ width: '100%' }}>
-                  <Select style={{ width: '100%' }} placeholder="Lọc theo trạng thái" onChange={handleChange}>
-                    <Option value="status1">Trạng thái 1</Option>
-                    <Option value="status2">Trạng thái 2</Option>
-                    <Option value="status3">Trạng thái 3</Option>
-                  </Select>
-                </div>
-              </Col> */}
                 </Row>
 
                 <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
@@ -524,7 +413,6 @@ export default function OrderList() {
 
                         return (
                           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                            {/* < Table bordered columns={columnsDetailOrder} dataSource={record && record.order_details && record.order_details.length > 0 ? record.order_details : []} scroll={{ y: 500 }} /> */}
 
                             <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
                               <Col style={{ width: '100%', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
@@ -650,7 +538,7 @@ export default function OrderList() {
             </Tabs>
           ) : (
 
-            radioLocation === 'website' ? (<Tabs style={{ width: '100%', }} defaultActiveKey="1" onChange={callback}>
+            radioLocation === 'website' ? (<Tabs style={{ width: '100%', }} defaultActiveKey="1" >
               <TabPane tab="Tất cả đơn hàng" key="1">
 
                 <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -674,45 +562,6 @@ export default function OrderList() {
                       />
                     </div>
                   </Col>
-                  {/* <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-        <div style={{ width: '100%' }}>
-          <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-            <Option value="default">Tất cả nhân viên</Option>
-            <Option value="customer1">Nhân viên 1</Option>
-            <Option value="customer2">Nhân viên 2</Option>
-            <Option value="customer3">Nhân viên 3</Option>
-          </Select>
-        </div>
-      </Col>
-      <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-        <div style={{ width: '100%' }}>
-          <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-            <Option value="default">Tất cả chi nhánh</Option>
-            <Option value="branch1">Chi nhánh 1</Option>
-            <Option value="branch2">Chi nhánh 2</Option>
-            <Option value="branch3">Chi nhánh 3</Option>
-          </Select>
-        </div>
-      </Col>
-      <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-        <div style={{ width: '100%' }}>
-          <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-            <Option value="default">Tất cả khách hàng</Option>
-            <Option value="customer1">Khách hàng 1</Option>
-            <Option value="customer2">Khách hàng 2</Option>
-            <Option value="customer3">Khách hàng 3</Option>
-          </Select>
-        </div>
-      </Col>
-      <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-        <div style={{ width: '100%' }}>
-          <Select style={{ width: '100%' }} placeholder="Lọc theo trạng thái" onChange={handleChange}>
-            <Option value="status1">Trạng thái 1</Option>
-            <Option value="status2">Trạng thái 2</Option>
-            <Option value="status3">Trạng thái 3</Option>
-          </Select>
-        </div>
-      </Col> */}
                 </Row>
 
                 <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
@@ -726,7 +575,6 @@ export default function OrderList() {
 
                         return (
                           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                            {/* < Table bordered columns={columnsDetailOrder} dataSource={record && record.order_details && record.order_details.length > 0 ? record.order_details : []} scroll={{ y: 500 }} /> */}
 
                             <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
                               <Col style={{ width: '100%', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
@@ -850,7 +698,7 @@ export default function OrderList() {
                 Chưa có
               </TabPane>
             </Tabs>
-            ) : <Tabs style={{ width: '100%', }} defaultActiveKey="1" onChange={callback}>
+            ) : <Tabs style={{ width: '100%', }} defaultActiveKey="1" >
               <TabPane tab="Tất cả đơn hàng" key="1">
 
                 <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -863,7 +711,6 @@ export default function OrderList() {
                   <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
                     <div style={{ width: '100%' }}>
                       <RangePicker
-                        // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                         value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                         style={{ width: '100%' }}
                         ranges={{
@@ -874,45 +721,6 @@ export default function OrderList() {
                       />
                     </div>
                   </Col>
-                  {/* <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-      <div style={{ width: '100%' }}>
-        <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-          <Option value="default">Tất cả nhân viên</Option>
-          <Option value="customer1">Nhân viên 1</Option>
-          <Option value="customer2">Nhân viên 2</Option>
-          <Option value="customer3">Nhân viên 3</Option>
-        </Select>
-      </div>
-    </Col>
-    <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-      <div style={{ width: '100%' }}>
-        <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-          <Option value="default">Tất cả chi nhánh</Option>
-          <Option value="branch1">Chi nhánh 1</Option>
-          <Option value="branch2">Chi nhánh 2</Option>
-          <Option value="branch3">Chi nhánh 3</Option>
-        </Select>
-      </div>
-    </Col>
-    <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-      <div style={{ width: '100%' }}>
-        <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
-          <Option value="default">Tất cả khách hàng</Option>
-          <Option value="customer1">Khách hàng 1</Option>
-          <Option value="customer2">Khách hàng 2</Option>
-          <Option value="customer3">Khách hàng 3</Option>
-        </Select>
-      </div>
-    </Col>
-    <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-      <div style={{ width: '100%' }}>
-        <Select style={{ width: '100%' }} placeholder="Lọc theo trạng thái" onChange={handleChange}>
-          <Option value="status1">Trạng thái 1</Option>
-          <Option value="status2">Trạng thái 2</Option>
-          <Option value="status3">Trạng thái 3</Option>
-        </Select>
-      </div>
-    </Col> */}
                 </Row>
 
                 <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
@@ -926,7 +734,6 @@ export default function OrderList() {
 
                         return (
                           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                            {/* < Table bordered columns={columnsDetailOrder} dataSource={record && record.order_details && record.order_details.length > 0 ? record.order_details : []} scroll={{ y: 500 }} /> */}
 
                             <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
                               <Col style={{ width: '100%', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
@@ -1053,28 +860,6 @@ export default function OrderList() {
           )
         }
 
-        {/* <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }}>Nhập excel</Button>
-              </Col>
-              <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                <Button icon={<FileExcelOutlined />} style={{ width: '7.5rem', backgroundColor: '#008816', color: 'white' }}>Xuất excel</Button>
-              </Col>
-            </Row>
-          </Col>
-        </Row> */}
-
-        {/* {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa đơn hàng</Button></Popconfirm></div>) : ('')
-        } */}
       </div>
       <Modal
         title="Danh sách khách hàng dùng khuyến mãi"
@@ -1088,14 +873,11 @@ export default function OrderList() {
         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
           <Popover placement="bottomLeft" content={content} trigger="click">
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
+              <Search placeholder="Tìm kiếm khách hàng"  enterButton />
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table rowKey="_id" scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
+       
         </div>
       </Modal>
     </UI >

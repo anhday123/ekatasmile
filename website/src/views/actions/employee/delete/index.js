@@ -1,10 +1,9 @@
 import UI from "../../../../components/Layout/UI";
-import React, { useState } from "react";
+import React from "react";
 import styles from "./../delete/delete.module.scss";
 import {
   Select,
   DatePicker,
-  Space,
   Row,
   Col,
   Input,
@@ -13,11 +12,6 @@ import {
   Button,
   Table,
 } from "antd";
-import {
-  AudioOutlined,
-  DeleteOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
 
 import moment from "moment";
 const { Option } = Select;
@@ -40,29 +34,7 @@ const cityDataShjft = {
 function onChange(e) {
   console.log(`checked = ${e.target.checked}`);
 }
-// const content = (
-//   <div className={styles["work_date"]}>
-//     <div className={styles["work_date_item"]}>
-//       <div className={styles["work_date_item_title"]}>Tên</div>
-//       <div>Nguyễn Văn A</div>
-//     </div>
-//     <div className={styles["work_date_item"]}>
-//       <div className={styles["work_date_item_title"]}>Chức vụ</div>
-//       <div>Trưởng phòng nhân sự</div>
-//     </div>
-//     <div className={styles["work_date_item"]}>
-//       <div className={styles["work_date_item_title"]}>Tổng giờ làm</div>
-//       <div>
-//         624 giờ{" "}
-//         <span className={styles["work_date_item_title_span"]}>( 78 ca )</span>
-//       </div>
-//     </div>
-//     <div className={styles["work_date_item"]}>
-//       <div className={styles["work_date_item_title"]}>Ngày vào làm</div>
-//       <div>20/01/2021</div>
-//     </div>
-//   </div>
-// );
+
 const effective = (
   <div className={styles["work_date"]}>
     <div className={styles["work_date_item"]}>
@@ -93,7 +65,6 @@ for (let i = 0; i < 46; i++) {
     stt: i,
     name: `name + ${i}`,
     option: `option + ${i}`,
-    // workdate:  <Popover content={content}>workdate</Popover>,
     contact: `contact + ${i}`,
     effective: <Popover content={effective}>Hiệu suất</Popover>,
     status:
@@ -113,8 +84,6 @@ for (let i = 0; i < 46; i++) {
 }
 export default function EmployeeDelete() {
   const [cities, setCities] = React.useState(cityData[provinceData[0]]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [secondCity, setSecondCity] = React.useState(
     cityData[provinceData[0]][0]
   );
@@ -130,42 +99,11 @@ export default function EmployeeDelete() {
   const onSecondCityChangeShjft = (value) => {
     setSecondCityShjft(value);
   };
-  const { RangePicker } = DatePicker;
 
-  const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
 
   const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
   const { Search } = Input;
-
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: "#1890ff",
-      }}
-    />
-  );
-
   const onSearch = (value) => console.log(value);
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
-  const hasSelected = selectedRowKeys.length > 0;
-  const onSelectChange = (selectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys);
-  };
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
   const columns = [
     {
       title: "STT",

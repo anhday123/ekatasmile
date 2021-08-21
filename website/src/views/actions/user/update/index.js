@@ -1,33 +1,24 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
-import React, { useState, useEffect } from "react";
-import { apiCreateUserMenu, updateUser } from "./../../../../apis/user";
+import React from "react";
+import { updateUser } from "./../../../../apis/user";
 import { ACTION } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
-import { Select, Button, Input, Form, Row, Col, DatePicker, Radio, notification } from "antd";
+import { Button, Input, Form, Row, Col, DatePicker, Radio, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-const { Option } = Select;
 export default function UserUpdate(propsData) {
   const dispatch = useDispatch()
   const [form] = Form.useForm();
   const state = propsData.location.state;
-  const [birthDay, setBirthDay] = useState(state.birthday)
-  console.log(state)
 
   let history = useHistory();
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -53,19 +44,14 @@ export default function UserUpdate(propsData) {
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-    setBirthDay(moment(dateString).format('YYYY-MM-DD'))
-  }
+
   const openNotificationRegisterFailMail = () => {
     notification.error({
       message: 'Thất bại',
@@ -141,7 +127,6 @@ export default function UserUpdate(propsData) {
           onFinish={onFinish}
           form={form}
           initialValues={state}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -208,26 +193,10 @@ export default function UserUpdate(propsData) {
 
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mật khẩu</div>
-                <Form.Item
-                  // label="Mã nhà cung cấp"
-
-                  name="password"
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input defaultValue="123456" />
-                </Form.Item>
-              </div>
-            </Col> */}
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Địa chỉ</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="address"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -239,26 +208,12 @@ export default function UserUpdate(propsData) {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ngày sinh</div>
-                <DatePicker style={{ width: '100%' }} value={moment(state.create_date, dateFormat)} onChange={onChange} format={dateFormat} />
+                <DatePicker style={{ width: '100%' }} value={moment(state.create_date, dateFormat)} format={dateFormat} />
               </div>
             </Col>
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Facebook link</div>
-                <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  name="username"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input defaultValue="facebook.com/vanty28052019" />
-                </Form.Item>
-              </div>
-            </Col> */}
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Role</div>
@@ -274,44 +229,8 @@ export default function UserUpdate(propsData) {
               </div>
             </Col>
           </Row>
-          {/* <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ghi chú</div>
-                <Form.Item
-                  name="note"
-
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input.TextArea defaultValue="ghi chú nè" rows={4} />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Role</div>
-                <Form.Item name="role" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }} >
-                  <Radio.Group defaultValue="admin">
-                    <Radio checked style={{ marginRight: '1.5rem', marginBottom: '1rem' }} value="admin">Admin</Radio>
-                    <Radio style={{ marginRight: '1.5rem', marginBottom: '1rem' }} value="business">Business</Radio>
-                    <Radio style={{ marginRight: '1.5rem', marginBottom: '1rem' }} value="accountant">Accountant</Radio>
-                    <Radio style={{ marginRight: '1.5rem', marginBottom: '1rem' }} value="employee">Employee</Radio>
-                    <Radio style={{ marginRight: '1.5rem', marginBottom: '1rem' }} value="customer">Customer</Radio>
-                  </Radio.Group>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row> */}
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

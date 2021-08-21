@@ -4,21 +4,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
-import { uploadImg } from "./../../apis/upload";
 import axios from 'axios';
 import noimage from './../../assets/img/noimage.jpg'
-import { Popconfirm, message, Tag, Switch, Modal, Input, Upload, Row, Radio, Drawer, DatePicker, Col, notification, Select, Table, Form, Popover, Button } from "antd";
+import {  Switch, Modal, Input, Upload, Row, Radio, Drawer, DatePicker, Col, notification, Select, Table, Form, Popover, Button } from "antd";
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, PlusOutlined, CheckOutlined, ExclamationCircleOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import { addStore, apiSearch, getAllStore, updateStore } from "../../apis/store";
-import StoreInformationUpdate from './../../components/store/store-information-update/index'
+import {  apiSearch, getAllStore, updateStore } from "../../apis/store";
 import StoreInformationView from "../../components/store/store-information-view";
 import StoreInformationAdd from "../../components/store/store-information-add";
 import { apiDistrict, apiProvince } from "../../apis/information";
@@ -27,15 +22,12 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 export default function Store(propsData) {
   const state = propsData.location.state;
-  const { Dragger } = Upload;
   const dispatch = useDispatch()
-  const { Search } = Input;
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [store, setStore] = useState([])
-  const [form] = Form.useForm();
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const typingTimeoutRef = useRef(null);
   const apiSearchData = async (value) => {
@@ -46,8 +38,7 @@ export default function Store(propsData) {
 
       if (res.status === 200) setStore(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+  
     } catch (error) {
 
       setLoading(false)
@@ -60,8 +51,6 @@ export default function Store(propsData) {
 
       if (res.status === 200) setStore(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -75,8 +64,6 @@ export default function Store(propsData) {
 
       if (res.status === 200) setStore(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -90,8 +77,6 @@ export default function Store(propsData) {
 
       if (res.status === 200) setStore(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -140,20 +125,7 @@ export default function Store(propsData) {
       </div>
     });
   }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
-  const openNotificationSuccessStore = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description:
-        'Thêm thông tin cửa hàng thành công.',
-    });
-  };
+
   const openNotificationSuccessStoreDelete = (data) => {
     notification.success({
       message: 'Thành công',
@@ -162,28 +134,9 @@ export default function Store(propsData) {
     });
   };
 
-  // const openNotificationSell = () => {
-  //   notification.warning({
-  //     message: 'Nhắc nhở',
-  //     duration: 7,
-  //     description:
-  //       'Chưa có hướng dẫn.',
-  //   });
-  // };
-  // console.log(state)
-  // console.log("_______________________-3456")
-  // // if (state === '1') {
-  // //   openNotificationSell()
-  // // }
-  // useEffect(() => {
-  //   if (state === '1') {
-  //     openNotificationSell()
-  //   }
-  // }, [])
   const updateStoreData = async (object, id, data) => {
     try {
       setLoading(true)
-      // console.log(value);
       const res = await updateStore(object, id);
       console.log(res);
       if (res.status === 200) {
@@ -191,102 +144,19 @@ export default function Store(propsData) {
         setSelectedRowKeys([])
         openNotificationSuccessStoreDelete(data)
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       setLoading(false)
     }
   };
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Cửa hàng đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Cửa hàng đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    // message.success('Click on Yes');
-    store && store.length > 0 && store.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            updateStoreData(object, values.store_id, 1)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
+
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     updateStoreData({ ...record, active: checked }, record.store_id, checked ? 1 : 2)
   }
-  function cancel(e) {
-    console.log(e);
-    // message.error('Click on No');
-  }
-  function confirmActive(e) {
-    console.log(e);
-    // message.success('Click on Yes');
-    store && store.length > 0 && store.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active) {
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-            const object = {
-              active: true
-            }
-            updateStoreData(object, values.store_id, 2)
-          }
-        }
-      })
-    })
-  }
 
-  function cancelActive(e) {
-    console.log(e);
-    // message.error('Click on No');
-  }
-  const addStoreData = async (object) => {
-    try {
-      setLoading(true)
-      // console.log(value);
-      const res = await addStore(object);
-      console.log(res);
-      if (res.status === 200) {
-        await getAllStoreData()
-        openNotificationSuccessStore()
-        form.resetFields();
-      }
-      // if (res.status === 200) setStatus(res.data.status);
-      setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
-    } catch (error) {
-      console.log(error);
-      setLoading(false)
-    }
-  };
-  const [district, setDistrict] = useState([]);
-  const [province, setProvince] = useState([]);
+
   const getAllStoreData = async () => {
     try {
       setLoading(true)
@@ -301,8 +171,7 @@ export default function Store(propsData) {
           arrayDistrict.push(values.district)
           arrayProvince.push(values.province)
         })
-        setDistrict([...arrayDistrict])
-        setProvince([...arrayProvince])
+
       }
       // if (res.status === 200) setUsers(res.data);
       setLoading(false)
@@ -333,14 +202,7 @@ export default function Store(propsData) {
       </div>,
     });
   }
-  const storeUpdateChild = (data) => {
-    console.log(data)
-    // alert('123')
-    if (data === 1) {
-      getAllStoreData()
-    }
 
-  }
   const contentImage = (data) => (
     <div>
       <img src={data} style={{ width: '25rem', height: '15rem', objectFit: 'contain' }} alt="" />
@@ -400,21 +262,12 @@ export default function Store(propsData) {
       width: 100,
       render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
     },
-    // {
-    //   title: 'Cửa hàng mặc định',
-    //   dataIndex: 'default',
-    //   width: 100,
-    //   render: (text, record) => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{text ? <CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#0400DE' }} /> : ''}</div>
-    // },
+  
   ];
   const storeChild = (data) => {
     setStore(data)
-    // alert('123')
   }
-  console.log(district)
-  console.log("|||123123")
-  const uniqueDistrict = [...new Set(district)]
-  const uniqueProvince = [...new Set(province)]
+
   const showDrawer = () => {
     setVisible(true)
   };
@@ -489,16 +342,11 @@ export default function Store(propsData) {
         openNotificationSuccessStoreUpdate(object.name)
         onClose()
         onCloseUpdate()
-        // modal5VisibleModal(false)
-        // modal3VisibleModal(false)
-        // form.resetFields();
+      
       } else {
         openNotificationErrorStore()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -527,11 +375,7 @@ export default function Store(propsData) {
               district: values.district,
               province: values.province
             }, values.store_id)
-            // openNotificationSuccessStore()
-            // modal5VisibleModal(false)
-            // modal3VisibleModal(false)
-            // form.resetFields();
-            // addStoreData(object)
+      
           } else {
             openNotificationErrorStoreRegexPhone('Liên hệ')
           }
@@ -564,11 +408,7 @@ export default function Store(propsData) {
               province: arrayUpdate[0].province,
               logo: arrayUpdate[0].logo,
             }, values.store_id)
-            // openNotificationSuccessStore()
-            // modal5VisibleModal(false)
-            // modal3VisibleModal(false)
-            // form.resetFields();
-            // addStoreData(object)
+           
           } else {
             openNotificationErrorStoreRegexPhone('Liên hệ')
           }
@@ -878,24 +718,7 @@ export default function Store(propsData) {
             <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
               <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
               <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-              {/* <Popconfirm
-                title="Bạn chắc chắn muốn xóa?"
-                onConfirm={confirm}
-                onCancel={cancel}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={3}>     Vô hiệu hóa</Radio>
-              </Popconfirm>
-              <Popconfirm
-                title="Bạn chắc chắn muốn kích hoạt lại?"
-                onConfirm={confirmActive}
-                onCancel={cancelActive}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={4}>Kích hoạt</Radio>
-              </Popconfirm> */}
+            
             </Radio.Group>
           ) : ('')
         }
@@ -951,16 +774,9 @@ export default function Store(propsData) {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Ảnh</div>
 
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -977,16 +793,9 @@ export default function Store(propsData) {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên cửa hàng</div>
 
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1035,14 +844,11 @@ export default function Store(propsData) {
                           style={{ width: '100%' }}
                           placeholder="Select a person"
                           optionFilterProp="children"
-                          // onChange={handleChangeCity}
 
                           filterOption={(input, option) =>
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] = event; handleChangeCity(event)
                           }}>
                           {
@@ -1074,8 +880,6 @@ export default function Store(propsData) {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -1177,7 +981,6 @@ export default function Store(propsData) {
                   style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                   className={styles["supplier_add_content"]}
 
-                  // form={form}
                   layout="vertical"
                   initialValues={values}
 
@@ -1196,16 +999,9 @@ export default function Store(propsData) {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Ảnh</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1222,16 +1018,9 @@ export default function Store(propsData) {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên cửa hàng</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1280,14 +1069,11 @@ export default function Store(propsData) {
                             style={{ width: '100%' }}
                             placeholder="Select a person"
                             optionFilterProp="children"
-                            // onChange={handleChangeCity}
 
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] = event; handleChangeCity(event)
                             }}>
                             {
@@ -1319,8 +1105,6 @@ export default function Store(propsData) {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event;
                             }}>

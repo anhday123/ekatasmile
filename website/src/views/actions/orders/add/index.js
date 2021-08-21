@@ -1,27 +1,19 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import React, { useState } from "react";
+import React from "react";
 import {
   Select,
   DatePicker,
-  Space,
   Row,
   Col,
   Form,
   Input,
-  Checkbox,
-  Popover,
   Button,
-  Table,
 } from "antd";
 import moment from "moment";
 import { ArrowLeftOutlined } from "@ant-design/icons";

@@ -1,32 +1,24 @@
 import UI from "../../components/Layout/UI";
 import styles from "./../tax/tax.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { apiAllSupplier, apiSearch, apiUpdateSupplier } from "../../apis/supplier";
 import { ACTION } from './../../consts/index'
 import moment from 'moment';
 import { useDispatch } from 'react-redux'
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+ 
 } from "react-router-dom";
-import { Popconfirm, DatePicker, Switch, Radio, message, Select, InputNumber, Input, Button, notification, Table, Row, Form, Col, Typography, Popover, Drawer } from "antd";
+import {  DatePicker, Switch, Radio,  InputNumber, Input, Button, notification, Table, Row, Form, Col, Typography,  Drawer } from "antd";
 import {
   PlusCircleOutlined,
-  DeleteOutlined,
   EditOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { apiAddTax, apiAllTax, apiSearchTax, apiUpdateTax } from "../../apis/tax";
 import Checkbox from "antd/lib/checkbox/Checkbox";
-const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
-
-// onClick={showDrawerUpdate}
 export default function Tax() {
   const dispatch = useDispatch()
   const { TextArea } = Input;
@@ -37,10 +29,8 @@ export default function Tax() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [loading, setLoading] = useState(false)
   const [defaultActive, setDefaultActive] = useState(false)
-  const { Search } = Input;
   const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     tax && tax.length > 0 && tax.forEach((values, index) => {
@@ -85,8 +75,6 @@ export default function Tax() {
 
       if (res.status === 200) setTax(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -105,18 +93,6 @@ export default function Tax() {
     }, 300);
     // 
   };
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
-
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
   const data = [];
   for (let i = 0; i < 46; i++) {
     data.push({
@@ -128,7 +104,6 @@ export default function Tax() {
       value: `1000`,
       action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
         <div onClick={showDrawerUpdate} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
       </div>,
     });
   }
@@ -139,12 +114,7 @@ export default function Tax() {
         'Thêm thông tin thuế thành công.',
     });
   };
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
+
   const openNotificationUpdateTax = () => {
     notification.error({
       message: 'Thất bại',
@@ -161,7 +131,6 @@ export default function Tax() {
   }
   const apiAllTaxData = async () => {
     try {
-      // setLoading(true)
       setLoading(true)
       const res = await apiAllTax();
       console.log(res);
@@ -169,14 +138,8 @@ export default function Tax() {
         setTax(res.data.data)
       }
       setLoading(false)
-      // if (res.status === 200) setStatus(res.data.status);
-      // setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
-      console.log(error);
       setLoading(false)
-      // setLoading(false)
     }
   };
   useEffect(() => {
@@ -186,7 +149,6 @@ export default function Tax() {
     try {
       setLoading(true)
       const res = await apiAddTax(object);
-      console.log(res);
       if (res.status === 200) {
         await apiAllTaxData()
         setVisible(false)
@@ -194,17 +156,12 @@ export default function Tax() {
       } else {
         openNotificationUpdateTaxError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
-      console.log(error);
       setLoading(false)
     }
   };
   const onFinish = (values) => {
-    console.log("Success123:", values);
 
     if (!isNaN(values.taxName)) {
       openNotificationUpdateTax()
@@ -219,25 +176,6 @@ export default function Tax() {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  const openNotificationUpdate = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Cập nhật thông tin thuế thành công.',
-    });
-  }
-  const onFinishUpdate = (values) => {
-    console.log("Success:", values);
-    setVisibleUpdate(false)
-    openNotificationUpdate()
-  };
-
-  const onFinishFailedUpdate = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
   function onChange(value) {
     console.log('changed', value);
   }
@@ -254,7 +192,6 @@ export default function Tax() {
       description: data === 2 ? ('Vô hiệu hóa thuế thành công.') : ('Kích hoạt thuế thành công')
     });
   };
-  const [valueSwitch, setValueSwitch] = useState(false)
   const apiUpdateTaxDataStatus = async (object, id, data) => {
     try {
       setLoading(true)
@@ -263,31 +200,18 @@ export default function Tax() {
       console.log(res)
       console.log("1111222")
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
         await apiAllTaxData()
         openNotificationDeleteSupplier(data)
-        // onCloseUpdate()
-        // setSelectedRowKeys([])
-        // onCloseUpdateMulti()
       } else {
         openNotificationUpdateTaxError()
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
     }
   };
   function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     const object = {
       active: checked
     }
@@ -298,15 +222,8 @@ export default function Tax() {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await apiUpdateTax(object, id);
-      console.log(res)
-      console.log("1111222")
+
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
         await apiAllTaxData()
         openNotificationUpdateMulti(object.name)
         onCloseUpdate()
@@ -316,8 +233,6 @@ export default function Tax() {
         openNotificationUpdateTaxError()
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -328,20 +243,11 @@ export default function Tax() {
       setLoading(true)
 
       const res = await apiSearchTax({ from_date: start, to_date: end });
-      console.log(res)
-      console.log("1111222")
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
+       
         setTax(res.data.data)
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -353,8 +259,6 @@ export default function Tax() {
   const [clear, setClear] = useState(-1)
   function onChangeDate(dates, dateStrings) {
     setClear(0)
-    console.log(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
-    console.log("---")
     setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '')
     setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
     apiSearchDateData(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
@@ -410,16 +314,7 @@ export default function Tax() {
       dataIndex: "name",
       width: 150,
     },
-    // {
-    //   title: "Mã thuế",
-    //   dataIndex: "taxCode",
-    //   width: 150,
-    // },
-    // {
-    //   title: "Thuế suất",
-    //   dataIndex: "tax",
-    //   width: 150,
-    // },
+   
     {
       title: "Giá trị",
       dataIndex: "value",
@@ -455,7 +350,6 @@ export default function Tax() {
               type="primary"
               icon={<PlusCircleOutlined />}
 
-            // onClick={() => this.enterLoading(1)}
             >
               Thêm thuế
             </Button>
@@ -474,7 +368,6 @@ export default function Tax() {
           <Col style={{ width: '100%', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
-                // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                 style={{ width: '100%' }}
                 ranges={{
@@ -511,7 +404,6 @@ export default function Tax() {
               console.log(pageData)
               pageData.filter(e => e.active).forEach((values, index) => {
                 totalTax += parseInt(values.value);
-                // totalValue += parseInt(values.value);
               })
 
               return (
@@ -520,7 +412,6 @@ export default function Tax() {
                     <Table.Summary.Cell></Table.Summary.Cell>
                     <Table.Summary.Cell >
                       <Text><div style={{ color: 'black', fontWeight: '600' }}>Tổng cộng:</div></Text>
-                      {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text><div style={{ color: 'black', fontWeight: '600' }}>{`${totalTax}%`}</div></Text>
@@ -541,16 +432,7 @@ export default function Tax() {
           />
         </div>
 
-        {/* <div className={styles["supplier_manager_search_delete"]}>
-            <Button
-              danger
-              type="primary"
-              loading={loadings[1]}
-            // onClick={() => this.enterLoading(1)}
-            >
-              Xóa
-            </Button>
-          </div> */}
+      
 
       </div>
       <Drawer
@@ -565,7 +447,6 @@ export default function Tax() {
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
           layout="vertical"
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -586,7 +467,6 @@ export default function Tax() {
               <div>
 
                 <Form.Item
-                  // label="Mã nhà cung cấp"
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Giá trị</div>}
                   name="value"
 
@@ -607,7 +487,6 @@ export default function Tax() {
               <div>
                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Mô tả</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
 
                   name="description"
 
@@ -617,51 +496,15 @@ export default function Tax() {
                 </Form.Item>
               </div>
             </Col>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã</div>
-                <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  name="taxCode"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập mã thuế." />
-                </Form.Item>
-              </div>
-            </Col> */}
+          
           </Row>
 
-          {/* <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Thuế suất</div>
-                <Form.Item
-             
-
-                  name="tax"
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập thuế suất" />
-                </Form.Item>
-              </div>
-            </Col>
-
-          </Row> */}
           <Row>
             <Checkbox onChange={(e) => setDefaultActive(e.target.checked)}>Kích hoạt</Checkbox>
           </Row>
           <div style={{ display: 'flex', maxWidth: '100%', overflow: 'auto', margin: '1rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa giá trị thuế khi đã sử dụng thuế đó trong một đơn hàng.</div>
 
           <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -701,7 +544,6 @@ export default function Tax() {
                 style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                 className={styles["supplier_add_content"]}
 
-                // form={form}
                 layout="vertical"
                 initialValues={values}
 
@@ -721,15 +563,9 @@ export default function Tax() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
+                             
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên thuế</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -738,15 +574,12 @@ export default function Tax() {
                         const InputName = () => <InputNumber
                           style={{ width: '100%' }} defaultValue={values[data]}
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
 
                             arrayUpdate[index][data] =
                               isNaN(event) ? 0 : event === 0 ? 0 : event;
                           }}
                           formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                           parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                        // onChange={onChange}
                         />
                         return (
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -839,15 +672,8 @@ export default function Tax() {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-  
-                                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                  name="phone"
-                                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                                > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên thuế</div>
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -856,15 +682,12 @@ export default function Tax() {
                           const InputName = () => <InputNumber
                             style={{ width: '100%' }} defaultValue={values[data]}
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
 
                               arrayUpdate[index][data] =
                                 isNaN(event) ? 0 : event === 0 ? 0 : event;
                             }}
                             formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                          // onChange={onChange}
                           />
                           return (
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>

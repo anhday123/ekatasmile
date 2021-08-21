@@ -1,17 +1,12 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, notification } from "antd";
+import {  Button, Input, Form, Row, Col, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-const { Option } = Select;
 export default function TaxAdd() {
   let history = useHistory();
   const openNotification = () => {
@@ -27,12 +22,7 @@ export default function TaxAdd() {
     history.push("/tax/19");
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
+
   return (
     <UI>
       <div className={styles["supplier_add"]}>
@@ -46,7 +36,6 @@ export default function TaxAdd() {
         <Form
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -111,13 +100,7 @@ export default function TaxAdd() {
           <div style={{ display: 'flex', maxWidth: '100%', overflow: 'auto', marginBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa giá trị thuế khi đã sử dụng thuế đó trong một đơn hàng.</div>
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
+    
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

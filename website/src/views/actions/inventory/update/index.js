@@ -1,18 +1,13 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
-import React, { useState } from "react";
+import React from "react";
 import { ACTION } from './../../../../consts/index'
-import axios from 'axios';
 import { useDispatch } from 'react-redux'
 import { Select, Button, Input, Form, Row, Col, DatePicker, notification, InputNumber } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import moment from 'moment';
@@ -52,10 +47,8 @@ export default function InventoryUpdate(propsData) {
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -76,7 +69,6 @@ export default function InventoryUpdate(propsData) {
     });
   };
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-  const [date, setDate] = useState(state.create_date)
   const onFinish = (values) => {
     console.log("Success:", values);
     if (isNaN(values.phone) || isNaN(values.monthly_cost)) {
@@ -108,13 +100,6 @@ export default function InventoryUpdate(propsData) {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-    setDate(dateString)
-  }
   const dateFormat = 'YYYY/MM/DD';
 
   return (
@@ -133,7 +118,6 @@ export default function InventoryUpdate(propsData) {
           form={form}
           layout="vertical"
           initialValues={state}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -235,22 +219,7 @@ export default function InventoryUpdate(propsData) {
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Chi nhánh</div>
-                <Form.Item
-                  name="branch"
-
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="branch1">
-                    <Option value="branch1">Chi nhánh 1</Option>
-                    <Option value="branch2">Chi nhánh 2</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col> */}
+         
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
@@ -278,7 +247,6 @@ export default function InventoryUpdate(propsData) {
                     defaultValue={100000000}
                     formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                    onChange={onChange}
                   />
 
                 </Form.Item>
@@ -290,27 +258,15 @@ export default function InventoryUpdate(propsData) {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ngày tạo</div>
-                {/* <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  name="create_date_data"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                > */}
-                <DatePicker style={{ width: '100%' }} value={moment(state.create_date, dateFormat)} onChange={onChange} format={dateFormat} />
-                {/* </Form.Item> */}
+                
+                <DatePicker style={{ width: '100%' }} value={moment(state.create_date, dateFormat)} format={dateFormat} />
 
               </div>
             </Col>
           </Row>
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ marginTop: '1rem', width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
+          
             <Col style={{ marginTop: '1rem', width: '100%', display: 'flex', marginLeft: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

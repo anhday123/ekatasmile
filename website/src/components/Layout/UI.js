@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import "antd/dist/antd.css"; // or 'antd/dist/antd.less'
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as types from "./../../consts/index";
 import axios from 'axios'
 import { ACTION } from './../../consts/index'
 import avatar from "./../../assets/img/icon_header_right.png";
-import { Layout, Menu, Spin, Select, DatePicker, Radio, notification, Upload, Checkbox, Space, Button, Input, Popover, Modal, Form } from "antd";
+import { Layout, Menu, Select, Radio, notification, Upload, Checkbox, Button, Input, Popover, Modal, Form } from "antd";
 import {
   MenuOutlined,
   FileImageOutlined,
@@ -41,48 +40,20 @@ import GraphicEqIcon from "@material-ui/icons/GraphicEq";
 import ReplyAllIcon from "@material-ui/icons/ReplyAll";
 import cart from './../../assets/img/cart.png'
 import {
-  BrowserRouter as Router,
-  Switch,
   useParams,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { Row, Col } from "antd";
 import { logoutAction } from "../../actions/login";
 import { getStoreSelectValue } from './../../actions/store/index'
 import { apiAllRole, apiAllUser, updateUser } from "../../apis/user";
 import { getAllStore } from "../../apis/store";
-const { Header, Content, Footer, Sider } = Layout;
+const { Sider } = Layout;
 const { SubMenu } = Menu;
 const { Option } = Select;
-const data = [];
 const { Dragger } = Upload;
-for (let i = 0; i < 46; i++) {
-  data.push({
-    checkbox: <Checkbox />,
-    stt: i,
-    productCode: (
-      <Input className={styles["table_input"]} defaultValue="productCode" />
-    ),
-    productName: (
-      <Input className={styles["table_input"]} defaultValue="productName" />
-    ),
-    productImage: <FileImageOutlined />,
-    productPrice: (
-      <Input className={styles["table_input"]} defaultValue="productPrice" />
-    ),
-    productType: (
-      <Input className={styles["table_input"]} defaultValue="productType" />
-    ),
-    productQuantity: "productQuantity",
-    productSupplier: (
-      <Input className={styles["table_input"]} defaultValue="productSupplier" />
-    ),
-  });
-}
+
 const UI = (props) => {
   let history = useHistory();
   const storeReducer = useSelector((state) => state.store)
@@ -96,7 +67,6 @@ const UI = (props) => {
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
-  const [clickToSell, setClickToSell] = useState(false)
   const pathnameIgnoreLoading = ['/customer/12', '/employee/19', '/shipping-product/9', '/product/6', '/promotion/20']
   var toggle = (data) => {
     if (count === 0) {
@@ -112,32 +82,16 @@ const UI = (props) => {
   const apiAllUserData = async () => {
     try {
       if (pathnameIgnoreLoading.indexOf(history.location.pathname) == -1) {
-        //   dispatch({ type: ACTION.LOADING, data: true });
       }
-
-
-
-
       const res = await apiAllUser();
-      console.log(res)
-      console.log("991")
       if (res.status === 200) {
         const username = localStorage.getItem("username")
-        var array = []
         res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
           if (username === values.username) {
             setUser(values)
           }
         })
-
-
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
-      // <Spin size="large" spinning={false} />
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -157,28 +111,20 @@ const UI = (props) => {
   var toggle = () => {
     setCollapsed(!collapsed);
     dispatch({ type: ACTION.CHANGE_SIDER, value: !siderStatus });
-
   };
 
   const onCollapse = (collapsed) => {
-    console.log(collapsed);
-    console.log("|||123")
     setCollapsed({ collapsed });
   };
-  // Correct
+
   const [key, setKey] = useState([]);
   const onOpenChange = (data) => {
-    console.log(data);
-    console.log("|||")
     localStorage.setItem("key", JSON.stringify(data));
     setKey(data);
-    // props.onKey(data);
   };
   useEffect(() => {
     setKey(JSON.parse(localStorage.getItem("key")));
-    console.log(key);
   }, []);
-  console.log(key);
   const onClickMenuItem = () => {
     localStorage.removeItem("key");
   };
@@ -199,56 +145,25 @@ const UI = (props) => {
   };
   const apiAllRoleData = async () => {
     try {
-      if (pathnameIgnoreLoading.indexOf(history.location.pathname) == -1) {
-        //  dispatch({ type: ACTION.LOADING, data: true });
-      }
-
       const res = await apiAllRole();
-      console.log(res)
-      console.log("|||777")
       if (res.status === 200) {
         setRole(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
-
+      console.log(error)
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   useEffect(() => {
     apiAllRoleData();
   }, []);
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const normFile = (e) => {
-    console.log('Upload event:', e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
+
   const onClickSignout = () => {
     const actions = logoutAction('123');
     dispatch(actions)
   }
-  const onClickMoveMenu = (menu) => {
 
-    // const menu_list = JSON.parse(localStorage.getItem('menu_list'))
-    // menu_list && menu_list.length > 0 && menu_list.forEach((values, index) => {
-    //   if (values.indexOf(menu) !== -1) {
-    //     history.push(menu_list)
-    //   } else {
-    //     alert('123')
-    //   }
-    // })
-  }
-  console.log(typeof slug)
   const [username, setUsername] = useState('')
   useEffect(() => {
     const username = localStorage.getItem('username')
@@ -276,7 +191,6 @@ const UI = (props) => {
     console.log(user)
     console.log("||0000")
     if (user) {
-      // user.forEach((values, index) => {
       data.firstName = user.first_name
       data.lastName = user.last_name
       data.phoneNumber = user.phone;
@@ -284,7 +198,6 @@ const UI = (props) => {
       data.workPlace = user.company_name;
       data.role = user.role.role_id;
       data.address = user.address
-      // })
     } else {
       data.firstName = login.objectUsername.first_name
       data.lastName = login.objectUsername.last_name
@@ -304,67 +217,22 @@ const UI = (props) => {
         await apiAllUserData();
         modal1VisibleModal(false)
         openNotification()
-        // history.push("/user/19");
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  const [store, setStore] = useState([])
-  const getAllStoreData = async () => {
-    try {
-      if (pathnameIgnoreLoading.indexOf(history.location.pathname) == -1) {
-        //   dispatch({ type: ACTION.LOADING, data: true });
-      }
 
-      const res = await getAllStore();
-      console.log(res)
-      if (res.status === 200) {
-        setStore(res.data.data)
-
-        // var arrayDistrict = []
-        // var arrayProvince = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   arrayDistrict.push(values.district)
-        //   arrayProvince.push(values.province)
-        // })
-        // setDistrict([...arrayDistrict])
-        // setProvince([...arrayProvince])
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
-
-  useEffect(() => {
-    getAllStoreData();
-  }, []);
   const [storeValue, setStoreValue] = useState('')
   function handleChange(value) {
     setStoreValue(value)
     const actions = getStoreSelectValue(value)
     dispatch(actions)
-    // store && store.forEach((values, index) => {
-    //   if (values.name === value) {
-    //     if (values.bussiness_id && values && values.bussiness_id.username) {
-    //       setCity(values.bussiness_id.username)
-    //     } else {
-    //       setCity('Chưa Có Doanh Nghiệp')
-    //     }
-
-    //   }
-    // })
   }
-  console.log(user)
-  console.log("881")
+
   const [list, setList] = useState('')
   const propsMain = {
     name: 'file',
@@ -403,17 +271,6 @@ const UI = (props) => {
           }
         }
       }
-      // if (status !== 'uploading') {
-      //     console.log(info.file, info.fileList);
-      // }
-      // if (status === 'done') {
-      //     message.success(`${info.file.name} file uploaded successfully.`);
-      // } else if (status === 'error') {
-      //     message.error(`${info.file.name} file upload failed.`);
-      // }
-    },
-    onDrop(e) {
-      //   console.log('Dropped files', e.dataTransfer.files);
     },
   };
   useEffect(() => {
@@ -427,8 +284,6 @@ const UI = (props) => {
     console.log(role)
     if (list !== 'default') {
       if (user.avatar !== "default") {
-        // user.forEach((values6, index6) => {
-
         updateUserData({
           ...values, role: values.role,
           phone: values.phoneNumber,
@@ -448,7 +303,6 @@ const UI = (props) => {
           tax_code: " ",
           fax: " "
         }, user.user_id)
-        // })
       } else {
 
         updateUserData({
@@ -472,8 +326,6 @@ const UI = (props) => {
       }
     } else {
       if (user.avatar !== "default") {
-        // user.forEach((values6, index6) => {
-
         updateUserData({
           ...values, role: values.role,
           phone: values.phoneNumber,
@@ -492,7 +344,6 @@ const UI = (props) => {
           tax_code: " ",
           fax: " "
         }, user.user_id)
-        // })
       } else {
 
         updateUserData({
@@ -564,59 +415,10 @@ const UI = (props) => {
           style={{ display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', width: '100%' }}
           onFinish={onFinish}
           form={form}
-          onFinishFailed={onFinishFailed}
         >
-          {/* <Form.Item >
-            <Form.Item name="imageUpdateInformation" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
-              <Upload.Dragger name="files" action="/upload.do">
-                <img src={user.avatar === "" ? "" : user.avatar} style={{ width: '7.5rem', height: '7.5rem', objectFit: 'contain' }} alt="" />
-              </Upload.Dragger>
-            </Form.Item>
-          </Form.Item>
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={7} md={7} lg={7} xl={7}>
               <div>
-                <Dragger {...propsMain}>
-                  {
-                    list ? (<p style={{ marginTop: '1.25rem', }} className="ant-upload-drag-icon">
-
-                      <img src={list} style={{ width: '7.5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-
-                    </p>) : (user.avatar !== "" ? (<p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-
-                      <img src={user.avatar} style={{ width: '7.5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-
-                    </p>) : (<p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-
-                      <PlusOutlined />
-
-                      <div>Thêm ảnh</div>
-
-                    </p>))
-                  }
-                </Dragger>
-              </div>
-            </Col>
-          </Row> */}
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={7} md={7} lg={7} xl={7}>
-              <div>
-                {/* <Dragger {...propsMain}>
-                  {
-                    user && user.avatar === 'default' ? (<p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-
-                      <PlusOutlined />
-
-                      <div>Thêm ảnh</div>
-
-                    </p>) : (<p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-
-                      <img src={user.avatar} style={{ width: '7.5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-
-                    </p>)
-
-                  }
-                </Dragger> */}
                 <Dragger {...propsMain}>
                   {
                     list ? (<p style={{ marginTop: '1.25rem', }} className="ant-upload-drag-icon">
@@ -643,7 +445,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Họ</div>
               <Form.Item
-                // label="Username"
                 name="lastName"
 
               >
@@ -653,7 +454,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Tên</div>
               <Form.Item
-                // label="Username"
                 name="firstName"
 
               >
@@ -663,7 +463,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Liên hệ</div>
               <Form.Item
-                // label="Username"
                 name="phoneNumber"
                 rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
@@ -673,7 +472,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Email</div>
               <Form.Item
-                // label="Username"
                 name="email"
                 rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
@@ -683,7 +481,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Tên công ty</div>
               <Form.Item
-                // label="Username"
                 name="workPlace"
                 rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
@@ -709,7 +506,6 @@ const UI = (props) => {
             <div className={styles['information_user_modal']}>
               <div>Địa chỉ</div>
               <Form.Item
-                // label="Username"
                 name="address"
 
               >
@@ -751,20 +547,6 @@ const UI = (props) => {
               <div>{`Chức vụ: ${user && user.role_id && user.role_id.name ? user.role_id.name : ''}`}</div>
               <div>{`Địa chỉ: ${user.address}`}</div>
             </div>)
-
-              // user.map((values, index) => {
-              //   return (
-              // <div className={styles['information_user_modal']}>
-              //   <div>{`Họ tên: ${user.first_name} ${user.last_name}`}</div>
-              //   <div>{`Liên hệ: ${user.phone}`}</div>
-              //   <div>{`Email: ${user.email}`}</div>
-              //   <div>{`Tên công ty: ${user.company_name}`}</div>
-              //   <div>{`Chức vụ: ${user && user.role_id && user.role_id.name ? user.role_id.name : ''}`}</div>
-              //   <div>{`Địa chỉ: ${user.address}`}</div>
-              // </div>
-              // )
-              // }
-
               : (<div className={styles['information_user_modal']}>
                 <div>{`Họ tên: ${login.objectUsername.first_name} ${login.objectUsername.last_name}`}</div>
                 <div>{`Liên hệ: ${login.objectUsername.phone}`}</div>
@@ -810,7 +592,6 @@ const UI = (props) => {
             key="1"
             style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}
             onClick={onClickMenuItem}
-            // className={slug && slug === '1' ? styles['active_key'] : styles['key']}
             icon={<MenuFoldOutlined className={styles["icon_parent"]} />}
           >
             <Link to="/overview/1" style={slug && slug === '1' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}> Tổng quan</Link>
@@ -835,35 +616,6 @@ const UI = (props) => {
           >
             <Link to="/order-list/4" style={slug && slug === '4' ? { color: '#000000', fontSize: '1rem', backgroundColor: '#e7e9fb' } : { fontSize: '1rem' }}>Danh sách đơn hàng</Link>
           </Menu.Item>
-          {/* <Menu.Item
-              icon={<DescriptionIcon />}
-              style={{ fontSize: '1rem' }}
-              key="3"
-            >
-              <Link to="/order-create-shipping/3">Tạo đơn và giao hàng</Link>
-            </Menu.Item> */}
-          {/* <SubMenu
-            style={{ fontSize: '1rem' }}
-            key="sub1"
-            icon={<FormOutlined />}
-            title="Quản lý đơn hàng"
-          >
-            <Menu.Item
-              icon={<DescriptionIcon />}
-              style={{ fontSize: '1rem' }}
-              key="3"
-            >
-              <Link to="/order-create-shipping/3">Tạo đơn và giao hàng</Link>
-            </Menu.Item>
-            <Menu.Item
-              icon={<NoteAddIcon />}
-              style={{ fontSize: '1rem' }}
-              key="4"
-            >
-              <Link to="/order-list/4">Danh sách đơn hàng</Link>
-            </Menu.Item> */}
-          {/* </SubMenu> */}
-
           <Menu.Item
             onClick={onClickMenuItem}
             key="5"
@@ -1030,12 +782,7 @@ const UI = (props) => {
             <div style={{ backgroundColor: '#5B6BE8', width: '100%' }} className={styles["navbar"]}>
               <div className={styles["navbar_left"]}>
                 <div className={styles["navbar_left_parent"]}>
-                  {/* <img src="/img/icon_header_left.png" alt="" />
-                  <div className={styles["header_navbar_left_name"]}>
-                    Company name
-                  </div> */}
                   <div>
-                    {" "}
                     <MenuOutlined
                       onClick={toggle}
                       className={styles["header_navbar_left_icon"]}
@@ -1046,7 +793,6 @@ const UI = (props) => {
                 <div className={styles["navbar_right_select"]}>
                   {
                     storeReducer && storeReducer.length > 0 ? (<Select
-                      // defaultValue={storeReducer[0].name}
                       value={storeValue ? storeValue : storeReducer[0].data[0].store_id}
                       style={{ width: 300 }}
                       onChange={handleChange}
@@ -1064,8 +810,6 @@ const UI = (props) => {
                 </div>
               </div>
               <div className={styles["navbar_right"]}>
-                {/* <div><BellOutlined style={{ color: 'black', fontSize: '1.5rem' }} /></div> */}
-
                 <Popover placement="bottomRight" content={content}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }}>
                     <div style={{ padding: '0 0.75rem 0 0.5rem' }}>
@@ -1123,12 +867,6 @@ const mapDispatchToProps = (dispatch, props) => {
     onKey: (data) => {
       dispatch(actions.key(data));
     },
-    // onProductAPI: () => {
-    //   dispatch(actions.productAPI());
-    // },
-    // onCart: (data) => {
-    //   dispatch(actions.cartReducers(data));
-    // },
   };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(UI);

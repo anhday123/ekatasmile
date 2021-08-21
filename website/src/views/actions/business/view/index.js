@@ -1,18 +1,12 @@
 import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import styles from "./../view/view.module.scss";
-import { Select, Button, Input, Row, Col } from "antd";
-import { ArrowLeftOutlined, InboxOutlined, ShopOutlined, ShoppingCartOutlined, BranchesOutlined, FormOutlined, TeamOutlined, ShoppingOutlined } from "@ant-design/icons";
+import { Input, Row, Col } from "antd";
+import { ArrowLeftOutlined, ShopOutlined, ShoppingCartOutlined, BranchesOutlined, FormOutlined, TeamOutlined } from "@ant-design/icons";
 export default function BusinessView() {
-  const { Search } = Input;
   return (
     <UI>
       <div className={styles['business']}>

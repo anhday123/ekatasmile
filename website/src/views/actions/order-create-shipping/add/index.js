@@ -1,14 +1,10 @@
 import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, notification, Popover, Steps, Space, message, Radio, Tree, Table, Modal } from "antd";
+import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, notification, Popover, Steps,  message, Tree, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import user from './../../../../assets/img/user.png'
 import { ArrowLeftOutlined, AudioOutlined, PrinterOutlined } from "@ant-design/icons";
@@ -17,20 +13,7 @@ import moment from 'moment';
 const { Option } = Select;
 const { Step } = Steps;
 const dateFormat = 'YYYY/MM/DD';
-const steps = [
-  {
-    title: 'First',
-    content: 'First-content',
-  },
-  {
-    title: 'Second',
-    content: 'Second-content',
-  },
-  {
-    title: 'Last',
-    content: 'Last-content',
-  },
-];
+
 const columns = [
   {
     title: 'STT',
@@ -118,9 +101,7 @@ export default function OrderCreateShippingAdd() {
   const [checkedKeys, setCheckedKeys] = useState(['']);
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const next = () => {
-    setCurrent(current + 1);
-  };
+
   const onSelectChange = selectedRowKeys => {
     setSelectedRowKeys(selectedRowKeys)
   };
@@ -128,9 +109,7 @@ export default function OrderCreateShippingAdd() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const prev = () => {
-    setCurrent(current - 1);
-  };
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -140,10 +119,7 @@ export default function OrderCreateShippingAdd() {
   const modal4VisibleModal = (modal4Visible) => {
     setModal4Visible(modal4Visible)
   }
-  const onChange = current => {
-    console.log('onChange:', current);
-    setCurrent(current)
-  };
+
   const onFinish = (values) => {
     console.log('Success:', values);
   };
@@ -153,16 +129,6 @@ export default function OrderCreateShippingAdd() {
   };
   const { Search } = Input;
 
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  );
-
-  const onSearch = value => console.log(value);
 
   const onExpand = (expandedKeysValue) => {
     console.log('onExpand', expandedKeysValue);
@@ -198,9 +164,7 @@ export default function OrderCreateShippingAdd() {
   const onFinishFailedPaymentConfirm = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
-  function onChangePaymentDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -243,25 +207,7 @@ export default function OrderCreateShippingAdd() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Đơn hàng MONB223</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
+       
         </Row>
         <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
           <Steps size="small" style={{ height: '20rem', paddingTop: '1rem' }} direction="vertical" current={current}
@@ -361,12 +307,10 @@ export default function OrderCreateShippingAdd() {
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
             <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <Popover placement="bottomLeft" content={contentSearch} trigger="click">
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
+                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" enterButton />
               </Popover>
             </Col>
-            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col> */}
+      
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />

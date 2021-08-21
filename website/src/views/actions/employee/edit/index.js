@@ -1,106 +1,30 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../edit/edit.module.scss";
-import React, { useState } from "react";
+import React from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import {
   Select,
   DatePicker,
-  Space,
-  Upload,
-  message,
   Row,
   Col,
   Input,
-  Checkbox,
-  Popover,
-  Button,
-  Table,
+
 } from "antd";
 
 import moment from "moment";
 import {
-  AudioOutlined,
-  DeleteOutlined,
-  LoadingOutlined,
-  UploadOutlined,
-  CheckCircleOutlined,
-  UserDeleteOutlined,
-  PlusOutlined,
-  ArrowLeftOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
-function getBase64(img, callback) {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result));
-  reader.readAsDataURL(img);
-}
-const { Option } = Select;
-function beforeUpload(file) {
-  const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-  if (!isJpgOrPng) {
-    message.error("You can only upload JPG/PNG file!");
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error("Image must smaller than 2MB!");
-  }
-  return isJpgOrPng && isLt2M;
-}
-export default function EmployeeEdit() {
-  const { TextArea } = Input;
-  const [value, setValue] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { RangePicker } = DatePicker;
-  const handleChange = (info) => {
-    if (info.file.status === "uploading") {
-      // this.setState({ loading: true });
-      setLoading(true);
-      return;
-    }
-    if (info.file.status === "done") {
-      // Get this url from response in real world.
-      getBase64(info.file.originFileObj, (imageUrl) =>
-        setLoading({ imageUrl: imageUrl, loading: false })
-      );
-    }
-  };
-  const uploadButton = (
-    <div>
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  );
-  const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
 
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
+
+const { Option } = Select;
+
+export default function EmployeeEdit() {
   const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
 
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
-  const props = {
-    action: "//jsonplaceholder.typicode.com/posts/",
-    listType: "picture",
-    previewFile(file) {
-      console.log("Your upload file:", file);
-      // Your process logic. Here we just mock to the same file
-      return fetch("https://next.json-generator.com/api/json/get/4ytyBoLK8", {
-        method: "POST",
-        body: file,
-      })
-        .then((res) => res.json())
-        .then(({ thumbnail }) => thumbnail);
-    },
-  };
-  const onChange = ({ target: { value } }) => {
-    setValue(value);
-  };
   return (
     <UI>
       <div className={styles["employee_add_parent"]}>

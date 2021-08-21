@@ -1,17 +1,11 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Checkbox, notification } from "antd";
+import { Button, Input, Form, Row, Col, Checkbox, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-const { Option } = Select;
 export default function CardAccumulatePointAdd() {
   let history = useHistory();
   const openNotification = () => {
@@ -27,12 +21,6 @@ export default function CardAccumulatePointAdd() {
     history.push("/actions/card-accumulate-point/view");
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
   return (
     <UI>
       <div className={styles["supplier_add"]}>
@@ -46,7 +34,6 @@ export default function CardAccumulatePointAdd() {
         <Form
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -131,13 +118,6 @@ export default function CardAccumulatePointAdd() {
             <Checkbox>Áp dụng hạng thẻ cho cửa hàng</Checkbox>
           </Form.Item>
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

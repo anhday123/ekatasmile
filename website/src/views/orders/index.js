@@ -1,15 +1,10 @@
 import UI from "./../../components/Layout/UI";
 import styles from "./../orders/orders.module.scss";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import React, { useState } from "react";
 import moment from "moment";
 import {
   Select,
@@ -91,12 +86,6 @@ export default function Orders() {
   const onSearch = (value) => console.log(value);
 
   const dateFormat = "YYYY/MM/DD";
-  function handleChangeStatus(value) {
-    console.log(`selected ${value}`);
-  }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
 
   const content = (
     <div>
@@ -172,7 +161,6 @@ export default function Orders() {
                       <Select
                         defaultValue="status0"
                         style={{ width: 150 }}
-                        onChange={handleChangeStatus}
                       >
                         <Option value="status0">Trạng thái</Option>
                         <Option value="status1">Chờ giao hàng</Option>
@@ -194,7 +182,6 @@ export default function Orders() {
                       <DatePicker
                         defaultValue={moment("2015/01/01", dateFormat)}
                         style={{ width: 150 }}
-                        onChange={onChangeDate}
                       />
                     </div>
                   </Col>
@@ -213,8 +200,6 @@ export default function Orders() {
         </div>
         <div className={styles["orders_manager_table"]}>
           <Table
-
-            // rowSelection={rowSelection}
             columns={columns}
             dataSource={data}
             scroll={{ y: 500 }}

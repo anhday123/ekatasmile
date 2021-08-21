@@ -1,11 +1,8 @@
 import axios from 'axios'
 import { notification } from 'antd'
 import { stringify } from 'querystring'
-// import { useJwt } from "react-jwt";
-import { isExpired, decodeToken } from "react-jwt";
-// import { decodeToken } from 'utils'
-// const token = localStorage.getItem('refreshToken');
-// const { decodeToken, isExpired } = useJwt(token);
+import { decodeToken } from "react-jwt";
+
 export const getNewToken = () => {
     if (
         decodeToken(localStorage.getItem('refreshToken')).exp <
@@ -87,12 +84,7 @@ export const FetchAPI = async (
         if (error.response && error.response.status !== 401) {
             return error.response
         }
-        localStorage.clear()
-        // window.location.reload()
-        notification.error({
-            message: 'Hệ thống đang lỗi',
-            description: 'Vui lòng thử lại!',
-        })
+     
         return {
             status: 401,
         }

@@ -2,27 +2,14 @@ import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Option } = Select;
 export default function StoreAdd() {
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
+ 
   return (
     <UI>
       <div className={styles["supplier_add"]}>
@@ -35,8 +22,6 @@ export default function StoreAdd() {
 
         <Form
           className={styles["supplier_add_content"]}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -62,7 +47,7 @@ export default function StoreAdd() {
                   name="birthDay"
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
                 >
-                  <DatePicker style={{ width: '100%' }} onChange={onChange} />
+                  <DatePicker style={{ width: '100%' }}  />
                 </Form.Item>
 
               </div>
@@ -74,8 +59,6 @@ export default function StoreAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã khách hàng</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="customerCode"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -88,8 +71,6 @@ export default function StoreAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Liên hệ</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="phoneNumber"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -106,8 +87,6 @@ export default function StoreAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Loại khách hàng</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="customerType"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -120,8 +99,6 @@ export default function StoreAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Địa chỉ</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="address"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}

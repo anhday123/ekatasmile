@@ -1,185 +1,19 @@
 import UI from "./../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
-import React, { useState } from "react";
-import { Input, Space, Button, Row, Col, Popover, DatePicker, Select, Table, Modal } from "antd";
+import React from "react";
+import { Input,  Button, Row, Col, Popover, DatePicker, Select } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, FileExcelOutlined } from "@ant-design/icons";
+import {  ArrowLeftOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-];
 
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
 export default function RevenueDetailView() {
   const { Search } = Input;
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: "#1890ff",
-      }}
-    />
-  );
-
-  const onSearch = (value) => console.log(value);
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
-  const columnsPromotion = [
-    {
-      title: 'STT',
-      dataIndex: 'stt',
-      width: 150,
-    },
-    {
-      title: 'Mã khách hàng',
-      dataIndex: 'customerCode',
-      width: 150,
-    },
-    {
-      title: 'Tên khách hàng',
-      dataIndex: 'customerName',
-      width: 150,
-    },
-    {
-      title: 'Loại khách hàng',
-      dataIndex: 'customerType',
-      width: 150,
-    },
-    {
-      title: 'Chi nhánh',
-      dataIndex: 'branch',
-      width: 150,
-    },
-    {
-      title: 'Ngày sinh',
-      dataIndex: 'birthDay',
-      width: 150,
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      width: 150,
-    },
-    {
-      title: 'Liên hệ',
-      dataIndex: 'phoneNumber',
-      width: 150,
-    },
-
-
-
-    {
-      title: 'Địa chỉ',
-      dataIndex: 'address',
-      width: 150,
-    },
-    {
-      title: 'Quận/huyện',
-      dataIndex: 'district',
-      width: 150,
-    },
-    {
-      title: 'Thành phố',
-      dataIndex: 'city',
-      width: 150,
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      width: 150,
-    },
-  ];
-
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      customerCode: <Link to="/actions/customer/view" style={{ color: '#2400FF' }}>GH {i}</Link>,
-      customerName: `Văn Tỷ ${i}`,
-      customerType: `Tiềm năng ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28 ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = value => console.log(value);
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys)
-  };
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
   const content = (
     <div>
       <div>Gợi ý 1</div>
@@ -202,7 +36,6 @@ export default function RevenueDetailView() {
             <Popover placement="bottomLeft" content={content} trigger="click">
               <div style={{ width: '100%' }}><Search
                 placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
                 enterButton
               /></div>
             </Popover>
@@ -215,18 +48,17 @@ export default function RevenueDetailView() {
                   Today: [moment(), moment()],
                   'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
-                onChange={onChange}
               />
             </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
+              <DatePicker style={{ width: '100%' }} />
             </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Lọc theo kho" onChange={handleChange}>
+              <Select style={{ width: '100%' }} placeholder="Lọc theo kho">
                 <Option value="warehouse1">Kho 1</Option>
                 <Option value="warehouse2">Kho 2</Option>
                 <Option value="warehouse3">Kho 3</Option>
@@ -235,7 +67,7 @@ export default function RevenueDetailView() {
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} defaultValue="default" onChange={handleChange}>
+              <Select style={{ width: '100%' }} defaultValue="default" >
                 <Option value="default">Tất cả mã lô hàng</Option>
                 <Option value="goods1">Lô hàng 1</Option>
                 <Option value="goods2">Lô hàng 2</Option>

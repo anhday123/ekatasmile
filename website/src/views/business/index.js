@@ -1,17 +1,13 @@
 import UI from "./../../components/Layout/UI";
 import styles from "./../business/business.module.scss";
 import React, { useEffect, useState } from "react";
-import { Popconfirm, message, Input, Row, Col, DatePicker, Select, Popover, Table, Modal, Button } from "antd";
+import { Popconfirm, message, Input, Row, Col, Select, Popover, Table, Modal, Button } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { DeleteOutlined, ExclamationCircleOutlined, PlusCircleOutlined, EditOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import { apiAllUser } from "../../apis/user";
 import { apiDistrict, apiProvince } from "../../apis/information";
 const { Option } = Select;
@@ -119,23 +115,6 @@ export default function Business() {
     },
   ];
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      businessCode: <Link to="/actions/business/view/5" >GH {i}</Link>,
-      businessName: <div >Doanh nghiệp {i}</div>,
-      phoneNumber: `038494349${i}`,
-      district: `Bình thạnh ${i}`,
-      city: `Hồ chí minh ${i}`,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        {/* <div style={{ marginRight: '0.5rem' }}><ExclamationCircleOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#096E00' }} /></div> */}
-        <Link to="/actions/business/update/5" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-      </div>
-    });
-  }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -277,10 +256,6 @@ export default function Business() {
               <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
             </div></Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
         </div>
       </Modal>
     </UI>

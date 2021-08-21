@@ -1,92 +1,31 @@
 import UI from "../../../../components/Layout/UI";
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
-import { ACTION, ROUTES } from './../../../../consts/index'
+import { ACTION,} from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
   useParams,
-  useLocation
 } from "react-router-dom";
 import styles from "./../update/update.module.scss";
-import { Select, Button, Checkbox, Input, Upload, message, Form, Row, Col, notification, InputNumber } from "antd";
+import { Select, Button, Input, Upload, Form, Row, Col, notification, InputNumber } from "antd";
 import {
   ArrowLeftOutlined,
-  LoadingOutlined,
-  FileImageOutlined,
   BarcodeOutlined,
-  PlusOutlined,
-  InboxOutlined,
+
 } from "@ant-design/icons";
 import { apiAllSupplier } from "../../../../apis/supplier";
 import { apiUpdateProduct } from "../../../../apis/product";
 const { Option } = Select;
-const provinceDataProductType = ["Zhejiang", "Jiangsu"];
-const cityDataProductType = {
-  Zhejiang: [
-    "Nhập loại sản phẩm",
-    "Áo sơ mi",
-    "Nước hoa",
-    "Hộp quà tặng",
-    "Giày dép",
-    "Gấu bông",
-    "Túi xách",
-  ],
-};
-const provinceDataSupplier = ["Zhejiang", "Jiangsu"];
-const cityDataSupplier = {
-  Zhejiang: [
-    "Nhập nhà cung cấp",
-    "An Phát",
-    "Minh Anh",
-    "Hồng Hà",
-    "Phát Đạt",
-    "An An",
-    "Thiên An",
-  ],
-};
-function beforeUpload(file) {
-  const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-  if (!isJpgOrPng) {
-    message.error("You can only upload JPG/PNG file!");
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error("Image must smaller than 2MB!");
-  }
-  return isJpgOrPng && isLt2M;
-}
-function onChange(e) {
-  console.log(`checked = ${e.target.checked}`);
-}
 export default function ProductUpdate(propsData) {
   const dispatch = useDispatch()
   let { slug } = useParams();
   const state = propsData.location.state;
   let history = useHistory();
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [citiesProductType, setCitiesProductType] = React.useState(
-    cityDataProductType[provinceDataProductType[0]]
-  );
-  const [citiesSupplier, setCitiesSupplier] = React.useState(
-    cityDataSupplier[provinceDataSupplier[0]]
-  );
-  const [secondCitySupplier, setSecondCitySupplier] = React.useState(
-    cityDataSupplier[provinceDataSupplier[0]][0]
-  );
-  const [secondCityProductType, setSecondCityProductType] = React.useState(
-    cityDataProductType[provinceDataProductType[0]][0]
-  );
-  const onSecondCityChangeProductType = (value) => {
-    setSecondCityProductType(value);
-    console.log(value);
-  };
+
   const normFile = (e) => {
     console.log("Upload event:", e);
     if (Array.isArray(e)) {
@@ -125,10 +64,8 @@ export default function ProductUpdate(propsData) {
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -218,10 +155,6 @@ export default function ProductUpdate(propsData) {
 
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  console.log(state)
   const [supplier, setSupplier] = useState([])
   const apiAllSupplierData = async () => {
     try {
@@ -229,10 +162,7 @@ export default function ProductUpdate(propsData) {
       const res = await apiAllSupplier();
       console.log(res)
       setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -258,7 +188,6 @@ export default function ProductUpdate(propsData) {
           onFinish={onFinish}
           initialValues={state}
           form={form}
-          onFinishFailed={onFinishFailed}
           className={styles["product_manager_content"]}
         >
 
@@ -268,7 +197,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Mã sản phẩm</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="sku"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -276,25 +204,11 @@ export default function ProductUpdate(propsData) {
                 </Form.Item>
               </div>
             </Col>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-                <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Mã SKU</div>
-                <Form.Item
-                  style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
-                  name="skuCode"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input placeholder="ABC" />
-                </Form.Item>
-              </div>
-            </Col> */}
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Tên sản phẩm</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="name"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -307,7 +221,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Giá bán sỉ</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="wholesale_price"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -326,7 +239,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Giá bán lẻ</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="retail_price"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -345,7 +257,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Giá nhập thuế</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="import_price"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -367,7 +278,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Kích thước (chiều dài)</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="length"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -380,7 +290,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Kích thước (chiều rộng)</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="width"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -393,7 +302,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Kích thước (chiều cao)</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="height"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -406,7 +314,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Cân nặng (g)</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="weight"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -424,8 +331,6 @@ export default function ProductUpdate(propsData) {
             </div>
             <div className={styles["product_manager_content_image_child"]}>
               <Form.Item
-
-              //  label="Dragger"
               >
                 <Form.Item
 
@@ -441,42 +346,9 @@ export default function ProductUpdate(propsData) {
                     <p className={styles['ant-upload-text']}>
                       Kéo file ảnh vào đây để thêm ảnh mới
                     </p>
-                    {/* <p className="ant-upload-hint">
-                      Support for a single or bulk upload.
-                    </p> */}
                   </Upload.Dragger>
                 </Form.Item>
               </Form.Item>
-              {/* <div
-                className={styles["product_manager_content_image_child_upload"]}
-              >
-                <Upload
-                  name="avatar"
-                  listType="picture-card"
-                  className="avatar-uploader"
-                  showUploadList={false}
-                  action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                  beforeUpload={beforeUpload}
-                  onChange={handleChange}
-                >
-                  {loading.imageUrl ? (
-                    <img
-                      src={loading.imageUrl}
-                      alt="avatar"
-                      style={{ width: "100%" }}
-                    />
-                  ) : (
-                    uploadButton
-                  )}
-                </Upload>
-              </div> */}
-              {/* <div
-                className={
-                  styles["product_manager_content_image_child_upload_title"]
-                }
-              >
-
-              </div> */}
             </div>
           </div>
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -485,7 +357,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Mã barcode</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="barcode"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -505,7 +376,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Số lượng cung cấp</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="quantity"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -518,7 +388,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Đơn vị</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="unit"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -530,41 +399,10 @@ export default function ProductUpdate(propsData) {
           </Row>
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Phân loại</div>
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-                <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Loại sản phẩm</div>
-                <Form.Item
-                  style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
-                  name="supplier_id"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select
-                    // className={
-                    //   styles["product_manager_content_product_type_left_content"]
-                    // }
-                    style={{ width: '100%' }}
-                    defaultValue={state.name}
-                  >
-                    <Option value="type1">Loại sản phẩm 1</Option>
-                    <Option value="type2">Loại sản phẩm 2</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col> */}
             <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Nhà cung cấp</div>
-                {/* <Form.Item
-                  style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
-                  name="supplier_id1"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                > */}
                 <Select
-                  // className={
-                  //   styles["product_manager_content_product_type_left_content"]
-                  // }
                   style={{ width: '100%' }}
                   value={select}
                   onChange={onChangeSelect}
@@ -577,7 +415,6 @@ export default function ProductUpdate(propsData) {
                     })
                   }
                 </Select>
-                {/* </Form.Item> */}
               </div>
             </Col>
 
@@ -588,7 +425,6 @@ export default function ProductUpdate(propsData) {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Chính sách bảo hành</div>
                 <Form.Item
                   style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
-                  // label="Username"
                   name="warranty"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -604,20 +440,6 @@ export default function ProductUpdate(propsData) {
               styles["product_manager_content_product_code_product_type_button"]
             }
           >
-            {/* <Form.Item>
-              <Button
-                style={{ width: '5rem' }}
-                className={
-                  styles[
-                  "product_manager_content_product_code_product_type_button_left"
-                  ]
-                }
-                type="primary"
-                danger
-              >
-                Hủy
-              </Button>
-            </Form.Item> */}
             <Form.Item>
               <Button style={{ width: '5rem' }} htmlType="submit" type="primary">
                 Lưu

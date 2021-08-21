@@ -27,7 +27,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 
-import { apiAllEmployee, apiFilterRoleEmployee, apiUpdateEmployee } from "../../apis/employee";
+import { apiFilterRoleEmployee } from "../../apis/employee";
 import { apiAllRole, apiSearch, updateUser } from "../../apis/user";
 import { apiFilterCity, getAllBranch } from "../../apis/branch";
 import { apiDistrict, apiProvince } from "../../apis/information";
@@ -43,13 +43,7 @@ export default function Employee() {
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [loading, setLoading] = useState(false)
-  const onFinish = (values) => {
-    console.log('Success:', values);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -58,50 +52,12 @@ export default function Employee() {
     setModal2Visible(modal2Visible)
     setRecord(record)
   }
-
-  function onChangeDateDouble(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeDateAlone(date, dateString) {
-    console.log(date, dateString);
-  }
   const { RangePicker } = DatePicker;
 
-  const { Search } = Input;
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Cập nhật thông tin nhân sự thành công.',
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    employee && employee.length > 0 && employee.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            updateUserData(object, values.user_id, 1)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
   function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
-  function cancel(e) {
-    console.log(e);
-  }
+ 
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
@@ -109,22 +65,11 @@ export default function Employee() {
       const res = await apiSearch({ keyword: value });
 
       if (res.status === 200) {
-        var array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.bussiness_id.username === username) {
-
-        //     if (values.role_id.name === "EMPLOYEE") {
-        //       array.push(values)
-        //       console.log(values)
-        //       console.log("------------------------")
-        //     }
-        //   }
-        // })
+     
         setEmployee(res.data.data)
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
 
       setLoading(false)
@@ -141,50 +86,15 @@ export default function Employee() {
       const value = e.target.value;
       apiSearchData(value);
     }, 300);
-    // 
   };
   const changePagi = (page, page_size) => setPagination({ page, page_size })
-  const onClickUpdate = () => {
-    setVisible(false)
-    openNotification()
-  }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
-  const data = [];
-  // for (let i = 0; i < 46; i++) {
-  //   data.push({
-  //     key: i,
-  //     stt: i,
-  //     employeeCode: <div style={{ color: '#40A9FF', cursor: 'pointer' }} onClick={() => modal2VisibleModal(true)}>{`JKB ${i}`}</div>,
-  //     employeeName: `Văn tỷ + ${i}`,
-  //     role: `Nhân viên + ${i}`,
-  //     branch: `Chi nhánh ${i}`,
-  //     birthDay: `2021/06/28`,
-  //     email: 'anhhung_so11@yahoo.com',
-  //     phoneNumber: `038494349${i}`,
-  //     address: `27/27, ngô y linh`,
-  //     district: `Bình Tân ${i}`,
-  //     city: `Hồ chí minh`,
-  //     action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-  //       <div onClick={showDrawer} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-  //       {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-  //     </div>
-  //   });
-  // }
+
   const [monthSix, setMonthSix] = useState(0)
   var temp = 0;
   const [employeeTemp, setEmployeeTemp] = useState([])
   const [employeeCount, setEmployeeCount] = useState([])
   const apiAllEmployeeData = async () => {
     try {
-      //      setLoading(true)
       setLoading(true)
       const res = await apiSearch({ page: pagination.page, page_size: pagination.page_size });
       console.log(res)
@@ -196,9 +106,7 @@ export default function Employee() {
 
             if (values._role === "EMPLOYEE") {
               array.push(values)
-              console.log(values)
-              console.log("------------------------")
-              console.log(values.create_date)
+       
               let now = moment()
               let days = now.diff(values.create_date, 'days')
               if (days > 180) {
@@ -214,11 +122,9 @@ export default function Employee() {
         setEmployeeCount(res.data.data)
       }
       setLoading(false)
-      // if (res.status === 200) setUsers(res.data);
-      //           setLoading(false)
+ 
     } catch (error) {
       setLoading(false)
-      //           setLoading(false)
     }
   };
   useEffect(() => {
@@ -264,13 +170,7 @@ export default function Employee() {
       width: 150,
       render: (text, record) => <div>
         {text.name}
-        {/* {
-          record && record.branch_id.length > 0 && record.branch_id.map((values, index) => {
-            return (
-              <div>{`-${values.name}`}</div>
-            )
-          })
-        } */}
+    
       </div>
     },
     {
@@ -279,13 +179,6 @@ export default function Employee() {
       width: 150,
       render: (text, record) => <div>
         {text.name}
-        {/* {
-          record && record.branch_id.length > 0 && record.branch_id.map((values, index) => {
-            return (
-              <div>{`-${values.name}`}</div>
-            )
-          })
-        } */}
       </div>
     },
     {
@@ -324,22 +217,11 @@ export default function Employee() {
       const res = await apiSearch({ from_date: start, to_date: end, page: pagination.page, page_size: pagination.page_size });
 
       if (res.status === 200) {
-        var array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.bussiness_id.username === username) {
-
-        //     if (values.role_id.name === "EMPLOYEE") {
-        //       array.push(values)
-        //       console.log(values)
-        //       console.log("------------------------")
-        //     }
-        //   }
-        // })
+ 
         setEmployee(res.data.data)
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+     
     } catch (error) {
 
       setLoading(false)
@@ -406,15 +288,11 @@ export default function Employee() {
         setSelectedRowKeys([])
         onClose()
         onCloseUpdate()
-        // setVisibleUpdate(false)
-        // history.push("/user/19");
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -429,59 +307,18 @@ export default function Employee() {
         await apiAllEmployeeData();
         openNotificationUpdate(data)
         setSelectedRowKeys([])
-        // setVisibleUpdate(false)
-        // history.push("/user/19");
+ 
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
       console.log(error);
       setLoading(false)
     }
   };
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Nhân viên đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Nhân viên đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirmActive(e) {
-    console.log(e);
-    employee && employee.length > 0 && employee.forEach((values, index) => {
 
-      selectedRowKeys.forEach((values1, index1) => {
-
-        if (values._id === values1) {
-          if (values.active) {
-
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-
-            const object = {
-              active: true
-            }
-            updateUserData(object, values.user_id, 2)
-          }
-        }
-      })
-    })
-  }
-  function cancelActive(e) {
-    console.log(e);
-
-  }
   const showDrawer = () => {
     setVisible(true)
   };
@@ -494,22 +331,7 @@ export default function Employee() {
   const showDrawerUpdate = () => {
     setVisibleUpdate(true)
   };
-  const openNotificationErrorStoreRegexPhone = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        `${data} phải là số và có độ dài là 10`,
-    });
-  };
-  const openNotificationErrorStoreRegex = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        `${data} phải là số`,
-    });
-  };
+
   const [store, setStore] = useState([])
   const getAllStoreData = async () => {
     try {
@@ -520,7 +342,6 @@ export default function Employee() {
         setStore(res.data.data)
 
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -531,174 +352,9 @@ export default function Employee() {
   useEffect(() => {
     getAllStoreData();
   }, []);
-  const openNotificationRegisterFailMailRegexUpdate = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        `${data} phải là số và có độ dài là 10`,
-    });
-  };
-  const openNotificationRegisterFailMailUpdate = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Gmail phải ở dạng @gmail.com.',
-    });
-  };
-  const openNotificationRegisterFailMailPhone = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Tên đăng nhập phải là số điện thoại và có độ dài là 10',
-    });
-  };
-  const openNotificationRegisterFailMail = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Gmail phải ở dạng @gmail.com.',
-    });
-  };
-  const openNotificationError = () => {
-    notification.error({
-      message: 'Thất bại',
-      description:
-        'Tên đăng nhập đã tồn tại.',
-    });
-  };
-  const apiUpdateEmployeeData = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiUpdateEmployee(object);
-      console.log(res)
-      if (res.status === 200) {
-        // openNotification()
-        // history.push("/employee/19");
-      } else {
-        openNotificationError()
-      }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
-    } catch (error) {
 
-      setLoading(false)
-    }
-  };
-  function validateEmail(email) {
-    const re = /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/;
-    return re.test(String(email).toLowerCase());
-  }
-  const openNotificationRegisterFailMailPhoneMain = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Liên hệ chưa đúng định dạng',
-    });
-  };
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-  const regexCheck = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-  const onCloseUpdateFunc = (data) => {
-    if (data === 1) {
-      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-        if (validateEmail(values.email)) {
-          if (regex.test(values.phone)) {
-
-            updateUserUpdateData({
-              ...values,
-              role: values && values.role && values.role.role_id ? values.role.role_id : values.role, //
-              branch: values && values.branch && values.branch.branch_id ? values.branch.branch_id : values.branch, //
-              store: values && values.store && values.store.store_id ? values.store.store_id : values.store, //
-              phone: values.phone,
-
-              email: values.email, //
-
-              avatar: " ",
-              first_name: values && values.first_name ? values.first_name : '',
-              last_name: values && values.last_name ? values.last_name : '',
-              birthday: '',
-              address: values && values.address ? values.address : '',
-              ward: " ",
-              district: values && values.district ? values.district : '',
-              province: values && values.province ? values.province : '',
-              company_name: " ",
-              company_website: " ",
-              tax_code: " ",
-              fax: " ",
-            }, values.user_id)
-          } else {
-            openNotificationRegisterFailMailPhoneMain()
-          }
-          console.log(values)
-
-          console.log("------------------999")
-
-          // if (isNaN(values.username)) {
-          //   openNotificationRegisterFailMailPhone()
-          // } else {
-          //   if (regexCheck.test(values.username)) {
-
-
-          //   } else {
-          //     openNotificationRegisterFailMailPhone()
-          //   }
-          // }
-        } else {
-          openNotificationRegisterFailMail()
-        }
-      })
-    } else {
-      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-        if (validateEmail(values.email)) {
-          if (regex.test(values.phone)) {
-            updateUserUpdateData({
-              ...values,
-              role: arrayUpdate[0] && arrayUpdate[0].role && arrayUpdate[0].role.role_id ? arrayUpdate[0].role.role_id : arrayUpdate[0].role, //
-              branch: arrayUpdate[0] && arrayUpdate[0].branch && arrayUpdate[0].branch.branch_id ? arrayUpdate[0].branch.branch_id : arrayUpdate[0].branch, //
-              store: arrayUpdate[0] && arrayUpdate[0].store && arrayUpdate[0].store.store_id ? arrayUpdate[0].store.store_id : arrayUpdate[0].store, //
-              phone: values.phone,
-              email: values.email, //
-
-              avatar: " ",
-              first_name: values && values.first_name ? values.first_name : '',
-              last_name: values && values.last_name ? values.last_name : '',
-              birthday: '',
-              address: arrayUpdate[0] && arrayUpdate[0].address ? arrayUpdate[0].address : '',
-              ward: " ",
-              district: arrayUpdate[0] && arrayUpdate[0].district ? arrayUpdate[0].district : '',
-              province: arrayUpdate[0] && arrayUpdate[0].province ? arrayUpdate[0].province : '',
-              company_name: " ",
-              company_website: " ",
-              tax_code: " ",
-              fax: " ",
-            }, values.user_id)
-          } else {
-            openNotificationRegisterFailMailPhoneMain()
-          }
-
-          // if (isNaN(values.username)) {
-          //   openNotificationRegisterFailMailPhone()
-          // } else {
-          //   if (regexCheck.test(values.username)) {
-
-
-          //   } else {
-          //     openNotificationRegisterFailMailPhone()
-          //   }
-          // }
-        } else {
-          openNotificationRegisterFailMail()
-        }
-      })
-    }
-  }
   const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     employee && employee.length > 0 && employee.forEach((values, index) => {
@@ -708,8 +364,7 @@ export default function Employee() {
         }
       })
     })
-    console.log(array)
-    console.log("|||113")
+
     setArrayUpdate([...array])
   };
   const rowSelection = {
@@ -721,16 +376,11 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await apiAllRole();
-      console.log("|||123123")
-      console.log(res)
+  
       if (res.status === 200) {
         setPermission(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+     
       setLoading(false)
     } catch (error) {
 
@@ -749,7 +399,6 @@ export default function Employee() {
       if (res.status === 200) {
         setBranch(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -764,11 +413,9 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await apiDistrict();
-      console.log(res)
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -780,18 +427,15 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await apiProvince();
-      console.log(res)
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
       setLoading(false)
     }
   };
-  const [roleFilter, setRoleFilter] = useState([])
   const apiFilterRoleEmployeeData = async data => {
     try {
       setLoading(true)
@@ -801,7 +445,6 @@ export default function Employee() {
       if (res.status === 200) {
         setEmployee(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -829,11 +472,9 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await apiFilterCity({ keyword: object });
-      console.log(res)
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -848,7 +489,6 @@ export default function Employee() {
   employeeTemp && employeeTemp.length > 0 && employeeTemp.forEach((values, index) => {
     employeeName.push(values.role.name)
   })
-  const unique = [...new Set(employeeName)]
   return (
     <UI>
       <div className={styles["employee_manager"]}>
@@ -940,75 +580,10 @@ export default function Employee() {
                 </Select>
               </div>
             </Col>
-            {/*             
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles["employee_manager_search_row_col"]}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <DatePicker style={{ width: '100%' }} onChange={onChangeDateAlone} />
-            </Col>
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles["employee_manager_search_row_col"]}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <Select placeholder="Lọc theo vai trò" style={{ width: '100%' }} onChange={handleChange}>
-                <Option value="employee">Nhân viên</Option>
-                <Option value="manager">Giám đốc</Option>
-
-              </Select>
-            </Col>
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles["employee_manager_search_row_col"]}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <Select placeholder="Lọc theo chi nhánh" style={{ width: '100%' }} onChange={handleChange}>
-                <Option value="branch1">Chi nhanh 1</Option>
-                <Option value="branch2">Chi nhanh 2</Option>
-
-              </Select>
-            </Col>
-        */}
           </Row>
         </div>
         <div className={styles["employee_manager_top"]}>
           <Row className={styles["employee_manager_top_center"]}>
-            {/* <Col
-              style={{ marginTop: '1.25rem' }}
-              className={styles["employee_manager_top_center_col"]}
-              xs={20}
-              sm={10}
-              md={10}
-              lg={6}
-              xl={6}
-            >
-              <div className={styles["employee_manager_top_center_item"]}>
-                <div
-                  style={{ fontSize: '1.5rem', fontWeight: '600' }}
-
-                >
-                  500
-                </div>
-                <div className={styles["employee_manager_top_center_item_top"]}>
-                  Tổng ca làm
-                </div>
-
-              </div>
-            </Col> */}
             <Col
               style={{ marginTop: '1.25rem' }}
               className={styles["employee_manager_top_center_col"]}
@@ -1062,25 +637,6 @@ export default function Employee() {
               <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
                 <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
                 <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-                {/* <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn xóa?"
-                  onConfirm={confirm}
-                  onCancel={cancel}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={3}>     Vô hiệu hóa</Radio>
-                </Popconfirm>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn kích hoạt lại?"
-                  onConfirm={confirmActive}
-                  onCancel={cancelActive}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={4}>Kích hoạt</Radio>
-                </Popconfirm> */}
               </Radio.Group>
             ) : ('')
           }
@@ -1128,7 +684,7 @@ export default function Employee() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
+             
             </Col>
             <Col
               xs={24}
@@ -1148,11 +704,6 @@ export default function Employee() {
                 </Col>
               </Row>
 
-
-              {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
             </Col>
 
           </Row>
@@ -1176,8 +727,6 @@ export default function Employee() {
 
               </Row>
 
-
-              {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
             </Col>
             <Col
               xs={24}
@@ -1198,7 +747,6 @@ export default function Employee() {
 
               </Row>
 
-              {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
             </Col>
           </Row>
 
@@ -1223,7 +771,6 @@ export default function Employee() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -1245,7 +792,6 @@ export default function Employee() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -1270,7 +816,6 @@ export default function Employee() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
             <Col
               xs={24}
@@ -1292,7 +837,6 @@ export default function Employee() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
           </Row>
 
@@ -1317,7 +861,6 @@ export default function Employee() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -1341,7 +884,7 @@ export default function Employee() {
               textAlign: 'right',
             }}
           >
-            <Button onClick={() => onCloseUpdateFunc(1)} type="primary">
+            <Button type="primary">
               Cập nhật
             </Button>
           </div>
@@ -1355,11 +898,9 @@ export default function Employee() {
               <Form
                 style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                 className={styles["supplier_add_content"]}
-                onFinish={onFinish}
                 // form={form}
                 layout="vertical"
                 initialValues={values}
-                onFinishFailed={onFinishFailed}
               >
                 <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   {
@@ -1375,16 +916,8 @@ export default function Employee() {
                         return (
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
-
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đăng nhập</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1401,15 +934,8 @@ export default function Employee() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1446,8 +972,7 @@ export default function Employee() {
                           }
 
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
+                         
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -1480,8 +1005,6 @@ export default function Employee() {
                           }
 
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -1515,8 +1038,6 @@ export default function Employee() {
                           }
 
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
 
                             arrayUpdate[index][data] =
                               event;
@@ -1607,8 +1128,6 @@ export default function Employee() {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] =
                               event; handleChangeCity(event)
                           }}>
@@ -1640,8 +1159,6 @@ export default function Employee() {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -1690,7 +1207,7 @@ export default function Employee() {
               textAlign: 'right',
             }}
           >
-            <Button onClick={() => onCloseUpdateFunc(2)} type="primary">
+            <Button type="primary">
               Cập nhật
             </Button>
           </div>
@@ -1705,11 +1222,8 @@ export default function Employee() {
                 <Form
                   style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                   className={styles["supplier_add_content"]}
-                  onFinish={onFinish}
-                  // form={form}
                   layout="vertical"
                   initialValues={values}
-                  onFinishFailed={onFinishFailed}
                 >
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     {
@@ -1726,15 +1240,8 @@ export default function Employee() {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đăng nhập</div>
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1751,15 +1258,8 @@ export default function Employee() {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-  
-                                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                  name="phone"
-                                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                                > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1777,8 +1277,7 @@ export default function Employee() {
                             }
 
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                           
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1830,8 +1329,7 @@ export default function Employee() {
                             }
 
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                        
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1863,8 +1361,7 @@ export default function Employee() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                       
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1954,8 +1451,7 @@ export default function Employee() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                             
                               arrayUpdate[index][data] =
                                 event; handleChangeCity(event)
                             }}>
@@ -1987,8 +1483,7 @@ export default function Employee() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                              
                               arrayUpdate[index][data] =
                                 event;
                             }}>

@@ -1,13 +1,8 @@
-import React, { Component } from "react";
-import { Row, Col, Form, Input, Button, notification, Checkbox } from "antd";
+import React from "react";
 import {
-    BrowserRouter as Router,
-    Switch,
     Route,
-    Link,
     Redirect,
     useHistory,
-    useParams
 } from "react-router-dom";
 const CheckRouter = ({ component: Component, ...rest }) => {
     let param = useHistory();

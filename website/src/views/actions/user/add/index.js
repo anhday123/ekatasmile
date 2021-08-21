@@ -1,22 +1,16 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiCreateUserMenu } from "./../../../../apis/user";
 import { ACTION } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
-import { Select, Button, Input, Form, Row, Col, DatePicker, Radio, notification } from "antd";
+import { Button, Input, Form, Row, Col, DatePicker, Radio, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-const { Option } = Select;
 export default function UserAdd() {
   const dispatch = useDispatch()
   let history = useHistory();
@@ -46,10 +40,8 @@ export default function UserAdd() {
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+     
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -76,7 +68,6 @@ export default function UserAdd() {
     return re.test(String(email).toLowerCase());
   }
   const onFinish = (values) => {
-    console.log("Success:", values);
     if (validateEmail(values.email)) {
       if (isNaN(values.phoneNumber)) {
         openNotificationRegisterFailMailRegex('Liên hệ')
@@ -108,9 +99,6 @@ export default function UserAdd() {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
   function onChange(date, dateString) {
     console.log(date, dateString);
     setBirthDay(dateString)
@@ -129,7 +117,6 @@ export default function UserAdd() {
         <Form
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -285,13 +272,6 @@ export default function UserAdd() {
           </Row>
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

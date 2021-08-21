@@ -1,26 +1,15 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Space } from "antd";
+import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import moment from 'moment';
 
-const { RangePicker } = DatePicker;
-
 const dateFormat = 'YYYY/MM/DD';
-const monthFormat = 'YYYY/MM';
-
-const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
-
-const customFormat = value => `custom format: ${value.format(dateFormat)}`;
 const { Option } = Select;
 export default function CustomerUpdate() {
   const onFinish = (values) => {

@@ -3,18 +3,14 @@ import styles from "./../inventory/inventory.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
 import moment from 'moment';
-import axios from 'axios';
 import { useDispatch } from 'react-redux'
-import { Popconfirm, message, Switch, Drawer, Tag, Radio, Form, Input, InputNumber, Button, Row, notification, Col, DatePicker, Popover, Select, Table, Modal } from "antd";
+import {  Switch, Drawer, Radio, Form, Input, InputNumber, Button, Row, notification, Col, DatePicker, Popover, Select, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {  PlusCircleOutlined } from "@ant-design/icons";
 import { apiAllInventory, apiSearch, apiUpdateInventory } from "../../apis/inventory";
 import { apiDistrict, apiProvince } from "../../apis/information";
 import { apiFilterCity } from "../../apis/branch";
@@ -48,23 +44,11 @@ const columns = [
 ];
 const { RangePicker } = DatePicker;
 const { Search } = Input;
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
+
 export default function Inventory() {
   const dispatch = useDispatch()
-  const [form] = Form.useForm();
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
-  const [searchQuery, setSearchQuery] = useState({})
   const [modal2Visible, setModal2Visible] = useState(false)
   const [inventory, setInventory] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -92,7 +76,6 @@ export default function Inventory() {
   const apiUpdateInventoryData = async (object, id, data) => {
     try {
       setLoading(true)
-      // console.log(value);
       const res = await apiUpdateInventory(object, id);
       console.log(res);
       if (res.status === 200) {
@@ -100,82 +83,22 @@ export default function Inventory() {
         setSelectedRowKeys([])
         openNotificationDelete(data)
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       console.log(error);
       setLoading(false)
     }
   };
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Kho đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Kho đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
 
-  function confirmActive(e) {
-    console.log(e);
-    inventory && inventory.length > 0 && inventory.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active) {
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-            const object = {
-              active: true
-            }
-            apiUpdateInventoryData(object, values.warehouse_id, 2)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     const object = {
       active: checked
     }
     apiUpdateInventoryData(object, record.warehouse_id, checked ? 1 : 2)
   }
-  function cancelActive(e) {
-    console.log(e);
-
-  }
-  function confirm(e) {
-    console.log(e);
-    inventory && inventory.length > 0 && inventory.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            apiUpdateInventoryData(object, values.warehouse_id, 1)
-          }
-        }
-      })
-    })
-  }
-
-  function cancel(e) {
-    console.log(e);
-
-  }
+ 
   const apiSearchDateData = async (start, end) => {
     try {
       setLoading(true)
@@ -184,8 +107,6 @@ export default function Inventory() {
       console.log(res)
       if (res.status === 200) setInventory(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -199,8 +120,6 @@ export default function Inventory() {
       console.log(res)
       if (res.status === 200) setInventory(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -214,10 +133,9 @@ export default function Inventory() {
       clearTimeout(typingTimeoutRef.current)
     }
     typingTimeoutRef.current = setTimeout(() => {
-      const { value, name } = e.target;
+      const { value } = e.target;
       apiSearchData(value);
     }, 300);
-    // 
   };
   function formatCash(str) {
     console.log(str)
@@ -290,26 +208,6 @@ export default function Inventory() {
     },
   ];
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      inventoryCode: <Link to="/actions/inventory/view/10" style={{ color: '#2400FF' }}>GH {i}</Link>,
-      inventoryName: `Văn Tỷ ${i}`,
-      inventoryType: `Kho riêng ${i}`,
-      phoneNumber: '0384943497',
-      size: i,
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/inventory/view/10"><ExclamationCircleOutlined style={{ fontSize: '1.25rem', marginRight: '0.5rem', cursor: 'pointer', color: '#096E00' }} /></Link>
-        <Link to="/actions/inventory/update/10" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -317,25 +215,17 @@ export default function Inventory() {
 
   const apiAllInventoryData = async () => {
     try {
-      // dispatch({ type: ACTION.LOADING, data: true });
       setLoading(true)
       const res = await apiAllInventory();
       console.log(res)
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
+      
         setInventory(res.data.data)
       }
       setLoading(false)
-      // if (res.status === 200) setUsers(res.data);
-      // dispatch({ type: ACTION.LOADING, data: false });
+
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
 
@@ -348,7 +238,6 @@ export default function Inventory() {
       <div>Gợi ý 2</div>
     </div>
   );
-  var currentDate = moment().format();
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [clear, setClear] = useState(-1)
@@ -374,7 +263,6 @@ export default function Inventory() {
 
   const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     inventory && inventory.length > 0 && inventory.forEach((values, index) => {
@@ -384,71 +272,14 @@ export default function Inventory() {
         }
       })
     })
-    console.log(array)
-    console.log("|||113")
+
     setArrayUpdate([...array])
   };
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Cập nhật thông tin kho thành công.',
-    });
-  };
-  const openNotificationError = () => {
-    notification.error({
-      message: 'Thất bại',
-      description:
-        'Lỗi cập nhật thông tin kho.',
-    });
-  };
-  // const apiUpdateInventoryDataMain = async (object) => {
-  //   try {
-  //     dispatch({ type: ACTION.LOADING, data: true });
-  //     // console.log(value);
-  //     const res = await apiUpdateInventory(object, state.warehouse_id);
-  //     console.log(res);
-  //     if (res.status === 200) {
-  //       openNotification()
-  //       // history.push("/inventory/7");
-  //     } else {
-  //       openNotificationError()
-  //     }
-  //     // if (res.status === 200) setStatus(res.data.status);
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //     // openNotification();
-  //     // history.push(ROUTES.NEWS);
-  //   } catch (error) {
-  //     console.log(error);
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //   }
-  // };
-  const openNotificationErrorFormat = (data) => {
-    notification.error({
-      message: 'Lỗi',
-      description:
-        `${data} phải là số`,
-    });
-  };
-  const warehouseSearch = async (key, val) => {
-    try {
-      setLoading(true)
-      const res = await apiSearch({ ...searchQuery, [key]: val })
-      if (res.data.success) {
-        setInventory(res.data.data)
-        setSearchQuery({ ...searchQuery, [key]: val })
-      }
-      setLoading(false)
-    }
-    catch (e) {
-      console.log(e);
-      setLoading(false)
-    }
-  }
+
   const openNotificationErrorFormatPhone = (data) => {
     notification.error({
       message: 'Lỗi',
@@ -457,19 +288,10 @@ export default function Inventory() {
     });
   };
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  const [dataCheck, setDataCheck] = useState(0)
-  var countCheck = 0;
   const apiUpdateInventoryDataUpdate = async (object, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
-      // console.log(value);
       const res = await apiUpdateInventory(object, id);
       console.log(res);
       if (res.status === 200) {
@@ -484,10 +306,8 @@ export default function Inventory() {
         openNotificationUpdateError()
       }
 
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+    
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -504,7 +324,6 @@ export default function Inventory() {
         } else {
           if (regex.test(values.phone)) {
             const object = {
-              // code: values.code.toLowerCase(),
               name: values.name.toLowerCase(),
               type: values.type.toLowerCase(),
               phone: values.phone,
@@ -532,7 +351,6 @@ export default function Inventory() {
         } else {
           if (regex.test(values.phone)) {
             const object = {
-              // code: values.code.toLowerCase(),
               name: values.name.toLowerCase(),
               type: arrayUpdate[0].type.toLowerCase(),
               phone: values.phone,
@@ -573,12 +391,7 @@ export default function Inventory() {
     setStart([])
     setEnd([])
   }
-  const onChangeRadio = e => {
-    console.log('radio checked', e.target.value);
-
-  };
-  // data.city = province && province.length > 0 ? province[province.length - 2].province_name : '';
-  // data.district = district && district.length > 0 ? district[district.length - 2].district_name : '';
+ 
   const [district, setDistrict] = useState([])
   const apiDistrictData = async () => {
     try {
@@ -588,7 +401,6 @@ export default function Inventory() {
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -604,7 +416,6 @@ export default function Inventory() {
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -626,7 +437,6 @@ export default function Inventory() {
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -648,10 +458,6 @@ export default function Inventory() {
     }
 
   }
-  const [districtMain, setDistrictMain] = useState([])
-
-  const [provinceMain, setProvinceMain] = useState([])
-
   const apiSearchProvinceData = async (value) => {
     try {
       setLoading(true)
@@ -659,8 +465,6 @@ export default function Inventory() {
 
       if (res.status === 200) setInventory(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -674,8 +478,6 @@ export default function Inventory() {
 
       if (res.status === 200) setInventory(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -714,18 +516,14 @@ export default function Inventory() {
         </div>
         <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            {/* <Popover placement="bottomLeft" content={content} trigger="click"> */}
             <div style={{ width: '100%' }}>
               <Input style={{ width: '100%' }} enterButton name="name" value={valueSearch} onChange={onSearch} className={styles["orders_manager_content_row_col_search"]}
                 placeholder="Tìm kiếm theo mã, theo tên" allowClear />
             </div>
-            {/* </Popover> */}
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            {/* <Popover placement="bottomLeft" content={content} trigger="click"> */}
             <div style={{ width: '100%' }}>
               <RangePicker
-                // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                 style={{ width: '100%' }}
                 ranges={{
@@ -735,7 +533,6 @@ export default function Inventory() {
                 onChange={onChangeDate}
               />
             </div>
-            {/* </Popover> */}
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
@@ -828,11 +625,7 @@ export default function Inventory() {
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
               <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
             </div></Popover>
-          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
+          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns}  /></div>
         </div>
       </Modal>
 
@@ -862,11 +655,8 @@ export default function Inventory() {
               <Form
                 style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                 className={styles["supplier_add_content"]}
-                onFinish={onFinish}
-                // form={form}
                 layout="vertical"
                 initialValues={values}
-                onFinishFailed={onFinishFailed}
               >
                 <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   {
@@ -883,15 +673,8 @@ export default function Inventory() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -937,8 +720,7 @@ export default function Inventory() {
                       if (data === 'type') {
                         const InputName = () => <Select style={{ width: '100%' }} defaultValue={values[data]}
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
+                     
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -969,8 +751,7 @@ export default function Inventory() {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
+                      
                             arrayUpdate[index][data] =
                               event; handleChangeCity(event)
                           }}>
@@ -1001,12 +782,7 @@ export default function Inventory() {
                           filterOption={(input, option) =>
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
-                          onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
-                            arrayUpdate[index][data] =
-                              event;
-                          }}>
+                         >
                           {
                             districtMainAPI && districtMainAPI.length > 0 ? (districtMainAPI && districtMainAPI.length > 0 && districtMainAPI.map((values, index) => {
                               return (
@@ -1033,15 +809,11 @@ export default function Inventory() {
                         const InputName = () => <InputNumber
                           style={{ width: '100%' }} defaultValue={values[data]}
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
-
                             arrayUpdate[index][data] =
                               isNaN(event) ? 0 : event === 0 ? 0 : event;
                           }}
                           formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                           parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                        // onChange={onChange}
                         />
                         return (
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -1093,11 +865,8 @@ export default function Inventory() {
                 <Form
                   style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                   className={styles["supplier_add_content"]}
-                  onFinish={onFinish}
-                  // form={form}
                   layout="vertical"
                   initialValues={values}
-                  onFinishFailed={onFinishFailed}
                 >
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     {
@@ -1113,16 +882,8 @@ export default function Inventory() {
                           return (
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
-
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1168,8 +929,6 @@ export default function Inventory() {
                         if (data === 'type') {
                           const InputName = () => <Select style={{ width: '100%' }} defaultValue={values[data]}
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1200,8 +959,6 @@ export default function Inventory() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event; handleChangeCity(event)
                             }}>
@@ -1233,8 +990,6 @@ export default function Inventory() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1264,8 +1019,6 @@ export default function Inventory() {
                           const InputName = () => <InputNumber
                             style={{ width: '100%' }} defaultValue={values[data]}
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
 
                               arrayUpdate[index][data] =
                                 isNaN(event) ? 0 : event === 0 ? 0 : event;

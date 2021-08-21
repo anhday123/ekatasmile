@@ -1,45 +1,26 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-  useHistory,
-  useLocation
-} from "react-router-dom";
-import {
-  Select,
-  DatePicker,
-  Space,
+
   Row,
   Col,
-  Input,
-  Checkbox,
-  Popover,
+
   Button,
-  Table,
 } from "antd";
 import {
-  AudioOutlined,
   FileImageOutlined,
-  DeleteOutlined,
   ArrowLeftOutlined,
-  PlusCircleOutlined,
 } from "@ant-design/icons";
 export default function OrdersView() {
   return (
     <UI>
       <div className={styles["view_orders"]}>
-        {/* <Link href="/actions/customer/add/customer"> */}
         <div className={styles["view_orders_title"]}>
           <div>
             <ArrowLeftOutlined />
           </div>
           <div>Xem đơn hàng</div>
         </div>
-        {/* </Link> */}
         <div className={styles["view_orders_row"]}>
           <Row className={styles["view_orders_row_child"]}>
             <Col

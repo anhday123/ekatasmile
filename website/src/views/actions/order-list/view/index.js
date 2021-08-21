@@ -1,20 +1,13 @@
 import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Select, Button, Input, Row, Col, Typography, Table } from "antd";
-import { ArrowLeftOutlined, TeamOutlined, BranchesOutlined, FileDoneOutlined, CarOutlined, FileImageOutlined, WarningOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, TeamOutlined, BranchesOutlined, FileDoneOutlined, CarOutlined, FileImageOutlined,} from "@ant-design/icons";
 const { Text } = Typography;
 export default function OrderListView() {
-  const { Search } = Input;
   const columns = [
     {
       title: "STT",
@@ -58,16 +51,7 @@ export default function OrderListView() {
     },
   ];
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
-  const { Option } = Select;
+
   const onSelectChange = (selectedRowKeys) => {
     console.log("selectedRowKeys changed: ", selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys);
@@ -174,7 +158,6 @@ export default function OrderListView() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>Tổng cộng:</Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
 
@@ -191,15 +174,12 @@ export default function OrderListView() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>{totalDiscount}</Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text></Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>{total}</Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                     </Table.Summary.Row>
                   </Table.Summary>

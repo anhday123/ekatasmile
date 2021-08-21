@@ -4,7 +4,7 @@ import styles from '../add.module.scss'
 import { PlusOutlined } from '@ant-design/icons'
 import { useDispatch } from 'react-redux'
 import { apiAddProduct } from "../../../../../apis/product";
-import { ACTION, ROUTES } from '../../../../../consts/index'
+import { ACTION } from '../../../../../consts/index'
 import axios from 'axios'
 import { useHistory } from 'react-router'
 const { Option } = Select
@@ -15,7 +15,6 @@ export default function SingleProduct(props) {
   const history = useHistory()
   const [guarantee, setGuarantee] = useState(false)
   const [supplierSimple, setSupplierSimple] = useState(props.supplier && props.supplier.length > 0 ? props.supplier[0].supplier_id : '1')
-  const [supplier, setSupplier] = useState([])
   const [list, setList] = useState('')
   const [checkboxValue, setCheckboxValue] = useState(false)
   const propsMain = {
@@ -114,19 +113,7 @@ export default function SingleProduct(props) {
     setCategory(e)
   }
   const onChangeSupplierSimple = (e) => {
-    // var array = []
-    // console.log(e)
-    // e && e.length > 0 && e.forEach((values, index) => {
-    //   const object = {
-    //     supplier_id: values,
-    //     import_price: 0,
-    //     quantity: 0
-    //   }
-    //   array.push(object)
-    // })
-    // console.log(array)
-    // console.log("-----------")
-    // var arrayFinal = [...array]
+   
     setSupplierSimple(e)
   }
   const openNotificationForgetImage = () => {
@@ -152,20 +139,14 @@ export default function SingleProduct(props) {
       const res = await apiAddProduct(object);
       console.log(res);
       if (res.status === 200) {
-        // await getAllStoreData()
-        // openNotificationSuccessStore()
-        // modal5VisibleModal(false)
-        // modal3VisibleModal(false)
-        // form.resetFields();
+      
         openNotification()
         history.push("/product/6");
       } else {
         openNotificationForgetImageError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+ 
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -212,18 +193,6 @@ export default function SingleProduct(props) {
     if (values.size1 === "" && values.size2 === "" && values.size3 === "" && values.size4 === "" && values.unit === "") {
       if (list.length > 0 && list) {
         if (isNaN(values.priceWholeSale) || category === "" || supplierSimple === "" || warehouse === "" || isNaN(values.priceRetail) || isNaN(values.provideQuantity)) {
-          // if (isNaN(values.size1)) {
-          //   openNotificationNumber('Chiều dài')
-          // }
-          // if (isNaN(values.size2)) {
-          //   openNotificationNumber('Chiều rộng')
-          // }
-          // if (isNaN(values.size3)) {
-          //   openNotificationNumber('Chiều cao')
-          // }
-          // if (isNaN(values.size4)) {
-          //   openNotificationNumber('Cân nặng')
-          // }
           if (category === "") {
             openNotificationSimpleCategory()
           }
@@ -243,9 +212,6 @@ export default function SingleProduct(props) {
           if (isNaN(values.priceWholeSale)) {
             openNotificationNumber('Giá cơ bản')
           }
-          // if (isNaN(values.unit)) {
-          //   openNotificationNumber('Đơn vị')
-          // }
         } else {
           var count1 = 0;
           if (count1 > 0) {
@@ -392,23 +358,6 @@ export default function SingleProduct(props) {
             </Form.Item>
 
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                  <Form.Item
-                    label={<div style={{ color: 'black', fontWeight: '600' }}>Giá nhập</div>}
-                    // label="Username"
-                    name="priceTax"
-                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                  >
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      placeholder="Nhập giá nhập"
-                      // defaultValue={1000}
-                      formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
-
-                    />
-                  </Form.Item>
-                </Col> */}
           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
             <Form.Item
               label={<div style={{ color: 'black', fontWeight: '600' }}>Giá cơ bản</div>}
@@ -616,17 +565,10 @@ export default function SingleProduct(props) {
 
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            {/* <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Loại sản phẩm</div>}
-              // label="Username"
-              name="productType"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-            > */}
+           
             <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Loại sản phẩm</div>
             <Select
-              // className={
-              //   styles["product_manager_content_product_type_left_content"]
-              // }
+             
               value={category}
               onChange={onChangeCategory}
               style={{ width: '100%' }}
@@ -641,22 +583,13 @@ export default function SingleProduct(props) {
               }
 
             </Select>
-            {/* </Form.Item> */}
           </Col>
           <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            {/* <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Nhà cung cấp</div>}
-              // label="Username"
-              name="supplier"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-            > */}
+           
             <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Nhà cung cấp</div>
             <Select
               onChange={onChangeSupplierSimple}
-              // mode="multiple"
-              // className={
-              //   styles["product_manager_content_product_type_left_content"]
-              // }
+             
               style={{ width: '100%' }}
               value={supplierSimple}
               placeholder="Chọn nhà cung cấp"
@@ -670,15 +603,9 @@ export default function SingleProduct(props) {
                 })
               }
             </Select>
-            {/* </Form.Item> */}
           </Col>
           <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            {/* <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Chọn kho</div>}
-              // label="Username"
-              name="warehouse"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-            > */}
+          
             <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Chọn kho</div>
             <Select
               value={warehouse}
@@ -708,39 +635,13 @@ export default function SingleProduct(props) {
               <div style={{ color: 'black', fontWeight: '600' }}></div>
               <Form.Item
 
-                // label="Username"
                 name="policy"
-              // rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
-                {/* <Select style={{ width: '100%' }} placeholder="Chọn chính sách bảo hành">
-                        {
-                          warranty && warranty.length > 0 && warranty.map((values, index) => {
-                            return (
-                              <Option value={values.warranty_id}>{values.name}</Option>
-                            )
-                          })
-                        }
-
-                      </Select> */}
+          
                 <Select
                   mode="multiple"
-                  // optionLabelProp="label"
                   style={{ width: '100%' }} placeholder="Chọn chính sách bảo hành"
-                // dropdownRender={menu => (
-                //   <div>
-                //     {menu}
-                //     <Divider style={{ margin: '4px 0' }} />
-                //     <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
-                //       <Input style={{ flex: 'auto' }} value={name} onChange={onNameChange} />
-                //       <a
-                //         style={{ flex: 'none', padding: '8px', display: 'block', cursor: 'pointer' }}
-                //         onClick={addItem}
-                //       >
-                //         <PlusOutlined /> Thêm chính sách
-                //       </a>
-                //     </div>
-                //   </div>
-                // )}
+              
                 >
                   {props.warranty && props.warranty.length > 0 && props.warranty.map(values => (
                     <Option value={values.warranty_id}>{values.name}</Option>

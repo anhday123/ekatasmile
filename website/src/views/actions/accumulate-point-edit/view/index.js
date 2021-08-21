@@ -1,17 +1,12 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
-import { Popconfirm, message, Input, Space, Button, Row, Col, DatePicker, Popover, notification, Drawer, Form, Select, Table, Modal } from "antd";
+import { Popconfirm, message, Input, Button, Row, Col,Popover, notification, Drawer, Form, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 const columns = [
   {
     title: 'STT',
@@ -125,9 +120,7 @@ export default function AccumulatePointEditView() {
       updateDate: `09:30, 2021/07/01`,
     });
   }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -210,10 +203,6 @@ export default function AccumulatePointEditView() {
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
         </div>
       </Modal>
       <Drawer
@@ -297,7 +286,6 @@ export default function AccumulatePointEditView() {
               <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo mã, theo tên" onSearch={onSearch} enterButton />
             </div>
           </Popover>
-          {/* <div onClick={() => modal2VisibleModal(true)} style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem', display: 'flex', justifyContent: 'center' }}>Thêm sản phẩm</Button></div> */}
           <div style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
 
@@ -312,13 +300,6 @@ export default function AccumulatePointEditView() {
             ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa phiếu</Button></Popconfirm></div>) : ('')
           }
           <Row style={{ marginTop: '1rem' }} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col onClick={onClose} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col onClick={onCloseAdd} style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">

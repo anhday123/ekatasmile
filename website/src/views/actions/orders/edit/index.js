@@ -6,22 +6,16 @@ import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 import {
   Select,
   DatePicker,
-  Space,
   Row,
   Col,
   Input,
-  Checkbox,
   Popover,
-  Button,
-  Table,
+
 } from "antd";
 import moment from "moment";
 import {
-  AudioOutlined,
-  FileImageOutlined,
-  DeleteOutlined,
+
   ArrowLeftOutlined,
-  PlusCircleOutlined,
 } from "@ant-design/icons";
 const { Option } = Select;
 const provinceData = ["Zhejiang", "Jiangsu"];
@@ -72,11 +66,6 @@ export default function OrdersEdit() {
     cityData[provinceData[0]][0]
   );
 
-  const handleProvinceChange = (value) => {
-    setCities(cityData[value]);
-    setSecondCity(cityData[value][0]);
-  };
-
   const onSecondCityChange = (value) => {
     setSecondCity(value);
   };
@@ -86,11 +75,6 @@ export default function OrdersEdit() {
   const [secondCityProvince, setSecondCityProvince] = React.useState(
     cityDataProvince[provinceDataProvince[0]][0]
   );
-
-  const handleProvinceChangeProvince = (value) => {
-    setCitiesProvince(cityDataProvince[value]);
-    setSecondCityProvince(cityDataProvince[value][0]);
-  };
 
   const onSecondCityChangeProvince = (value) => {
     setSecondCityProvince(value);
@@ -106,23 +90,14 @@ export default function OrdersEdit() {
   const onClick = (data) => {
     setTemp(data);
   };
-  const handleDistrictChangeDistrict = (value) => {
-    setCitiesDistrict(cityDataDistrict[value]);
-    setSecondCityDistrict(cityDataDistrict[value][0]);
-  };
+
 
   const onSecondCityChangeDistrict = (value) => {
     setSecondCityDistrict(value);
   };
 
-  const { RangePicker } = DatePicker;
 
   const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
-
-  const dateFormatList = ["DD/MM/YYYY", "DD/MM/YY"];
-
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
   const content = (
     <div>
       <p>Gợi ý sản phẩm 1</p>
@@ -132,14 +107,12 @@ export default function OrdersEdit() {
   return (
     <UI>
       <div className={styles["orders_edit"]}>
-        {/* <Link href="/actions/orders/view/show"> */}
           <div className={styles["orders_edit_title"]}>
             <div>
               <ArrowLeftOutlined />
             </div>
             <div>Sửa đơn hàng</div>
           </div>
-        {/* </Link> */}
         <div className={styles["orders_edit_bottom"]}>
           <Row className={styles["orders_edit_bottom_row"]}>
             <Col

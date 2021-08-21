@@ -1,18 +1,11 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../detail/detail.module.scss";
 import React, { useState } from "react";
-import { Select, Button, message, Popconfirm, notification, Input, Form, Row, Popover, Col, DatePicker, Table, Modal } from "antd";
+import { Button, message, Popconfirm, notification, Input, Form, Row, Popover, Col, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
-import { ArrowLeftOutlined, AudioOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-const { Option } = Select;
+import { ArrowLeftOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 const { Search } = Input;
 export default function AccumulatePointEditDetail() {
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -102,8 +95,6 @@ export default function AccumulatePointEditDetail() {
       inventory: i,
       quantity: `Số lượng ${i}`,
       action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        {/* <Link style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link> */}
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
       </div>
     });
   }
@@ -136,7 +127,6 @@ export default function AccumulatePointEditDetail() {
     setModal2Visible(modal2Visible)
   }
 
-  const onSearch = value => console.log(value);
   const onSearchAddProduct = value => console.log(value);
   const openNotification = () => {
     notification.success({

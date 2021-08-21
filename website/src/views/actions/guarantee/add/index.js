@@ -5,8 +5,8 @@ import {
   Link,
   useHistory,
 } from "react-router-dom";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState, useEffect } from "react";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import React from "react";
 import { addWarranty } from '../../../../apis/warranty';
 
 export default function GuaranteeAdd() {

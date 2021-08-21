@@ -1,28 +1,14 @@
 import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
+import {  Button, Input, Form, Row, Col,} from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-const { Option } = Select;
 export default function TaxView() {
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
+ 
   return (
     <UI>
       <div className={styles["supplier_add"]}>
@@ -34,8 +20,7 @@ export default function TaxView() {
         </Link>
         <Form
           className={styles["supplier_add_content"]}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
+        
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>

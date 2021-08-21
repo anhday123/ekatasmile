@@ -1,25 +1,19 @@
 import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import moment from 'moment'
 import styles from "./../view/view.module.scss";
 import React, { useEffect, useState } from "react";
-import { Select, Table, Button, Input, Row, Col, Popover, Modal, Typography, DatePicker } from "antd";
-import { ArrowLeftOutlined, FileImageOutlined, WarningOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {  Table,  Input, Row, Col, Modal, } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiSearchProduct } from "../../../../apis/product";
 export default function InventoryView(propsData) {
   const state = propsData.location.state;
   console.log(state)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [loading, setLoading] = useState(false)
   const [warehousePrroduct, setWarehouseProduct] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const { Search } = Input;
@@ -34,8 +28,7 @@ export default function InventoryView(propsData) {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const { Text } = Typography;
-  const { RangePicker } = DatePicker;
+
   const columns = [
     {
       title: "STT",
@@ -108,48 +101,8 @@ export default function InventoryView(propsData) {
   useEffect(() => {
     getProductWarehouse()
   }, [pagination])
-  const content = (
-    <div className={styles['shadow']} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', textAlign: 'center' }}>Số lượng báo động: 10</div>
-  );
-  const contentAttention = (
-    <div className={styles['shadow']} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', textAlign: 'center', color: 'red' }}>Số lượng báo động: 20</div>
-  );
-  const data = [];
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      productcode: <div>{i}</div>,
-      productname: `tên sản phẩm ${i}`,
-      productpicture: <FileImageOutlined />,
-      productprice: `${i} VNĐ`,
-      producttype: "Quà lưu niệm",
-      productquantity: <div>
-        {
-          i % 2 === 0 ? (<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-            <Popover placement="bottom" content={content} >
-              <div style={{ display: 'flex', cursor: 'pointer', justifyContent: 'center', alignItems: 'center', width: '100%' }}><WarningOutlined style={{ fontSize: '1.75rem', color: 'black' }} /></div>
-            </Popover>
-          </div>) : (<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-            <Popover placement="bottom" content={contentAttention} >
-              <div style={{ display: 'flex', cursor: 'pointer', justifyContent: 'center', alignItems: 'center', width: '100%' }}><WarningOutlined style={{ fontSize: '1.75rem', color: 'red' }} /></div>
-            </Popover>
-          </div>)
-        }
-      </div>,
-      supplier: 'An Phát',
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   <Link to="/actions/product/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
-    });
-  }
-  const contentSearch = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
+
+
   const onSearch = value => console.log(value);
   return (
     <UI>
@@ -182,7 +135,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
             </Col>
             <Col
               xs={24}
@@ -203,10 +155,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
             </Col>
 
           </Row>
@@ -231,7 +179,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
             </Col>
             <Col
               xs={24}
@@ -252,7 +199,6 @@ export default function InventoryView(propsData) {
 
               </Row>
 
-              {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
             </Col>
           </Row>
 
@@ -277,7 +223,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -299,7 +244,6 @@ export default function InventoryView(propsData) {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -324,7 +268,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -345,33 +288,11 @@ export default function InventoryView(propsData) {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
           <Row className={styles["supplier_information_content_main"]}>
-            {/* <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles["supplier_information_content_child_right"]}
-            >
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <div
-
-                  >
-                    <b>Chi nhánh:</b> chi nhánh 1
-                  </div>
-                </Col>
-
-              </Row>
-
-
-  
-            </Col> */}
+           
             <Col
               xs={24}
               sm={24}
@@ -392,7 +313,6 @@ export default function InventoryView(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
             <Col
               xs={24}
@@ -412,43 +332,10 @@ export default function InventoryView(propsData) {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
-          {/* <Row className={styles["supplier_information_content_main"]}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles["supplier_information_content_child_right"]}
-            >
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <div
-
-                  >
-                    <b>Dung lượng:</b> {`${state.capacity}`}
-                  </div>
-                </Col>
-
-              </Row>
-
-
-          
-            </Col>
-
-
-          </Row> */}
-
-
-
-
-
-          {/* <div onClick={() => modal2VisibleModal(true)} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '10rem' }}>Danh sách sản phẩm</Button></div> */}
-
+         
         </div>
         <Modal
           title="Danh sách sản phẩm"
@@ -471,50 +358,7 @@ export default function InventoryView(propsData) {
 
                 dataSource={warehousePrroduct}
                 scroll={{ y: 500 }}
-              // summary={pageData => {
-              //   let totalPrice = 0;
-
-              //   console.log(pageData)
-              //   pageData.forEach((values, index) => {
-              //     totalPrice += parseInt(values.productprice);
-
-              //   })
-
-              //   return (
-              //     <Table.Summary fixed>
-              //       <Table.Summary.Row>
-              //         <Table.Summary.Cell>
-              //           <Text></Text></Table.Summary.Cell>
-              //         <Table.Summary.Cell >
-              //           <Text>Tổng cộng:</Text>
-              //           {/* <Text type="danger">456</Text> */}
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell>
-              //           <Text></Text>
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell>
-              //           <Text></Text>
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell>
-              //           <Text>{`${totalPrice}`}</Text>
-
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell >
-              //           <Text></Text>
-              //           {/* <Text type="danger">456</Text> */}
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell >
-              //           <Text></Text>
-              //           {/* <Text type="danger">456</Text> */}
-              //         </Table.Summary.Cell>
-              //         <Table.Summary.Cell >
-              //           <Text></Text>
-              //           {/* <Text type="danger">456</Text> */}
-              //         </Table.Summary.Cell>
-              //       </Table.Summary.Row>
-              //     </Table.Summary>
-              //   );
-              // }}
+              
               />
             </div>
           </div>

@@ -1,19 +1,13 @@
 import UI from './../../../../components/Layout/UI'
 import styles from "./../view/view.module.scss";
-import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Steps, Space, Radio, Tree, Table, Modal } from "antd";
+import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, Tree, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState, useEffect } from "react";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
 const { Option } = Select;
-const { Step } = Steps;
 
 const treeData = [
   {
@@ -37,7 +31,6 @@ const treeData = [
 ];
 export default function GuaranteeView() {
   let history = useHistory();
-  const [current, setCurrent] = useState(0)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
   const [checkedKeys, setCheckedKeys] = useState(['']);
@@ -45,7 +38,6 @@ export default function GuaranteeView() {
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [loading, setLoading] = useState(false)
   const onSelectChange = selectedRowKeys => {
     console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
@@ -124,7 +116,6 @@ export default function GuaranteeView() {
   const { Search } = Input;
 
 
-
   const onSearch = value => console.log(value);
 
   const onExpand = (expandedKeysValue) => {
@@ -144,9 +135,7 @@ export default function GuaranteeView() {
     console.log('onSelect', info);
     setSelectedKeys(selectedKeysValue);
   };
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const content = (
     <div>
       <div>Gợi ý 1</div>
@@ -179,49 +168,9 @@ export default function GuaranteeView() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Thông tin phiếu BGHY2365</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
+        
         </Row>
-        {/* 
-        <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Steps size="small" style={{ height: '20rem', paddingTop: '2rem' }} direction="vertical" current={current}
-          // onChange={onChange}
-          >
-            <Step title="Đặt hàng"
-            // description="This is a description."
-            />
-            <Step title="Duyệt"
-            // description="This is a description."
-            />
-            <Step title="Đóng gói"
-            // description="This is a description."
-            />
-            <Step title="Xuất kho"
-            // description="This is a description."
-            />
-            <Step title="Hoàn thành"
-            // description="This is a description."
-            />
-          </Steps>
-        </div>
-        */}
+      
         <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', backgroundColor: 'white', }} xs={24} sm={24} md={24} lg={24} xl={24}>
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
@@ -320,9 +269,7 @@ export default function GuaranteeView() {
                 <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
               </Popover>
             </Col>
-            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col> */}
+          
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />

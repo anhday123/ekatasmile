@@ -1,5 +1,4 @@
 import { Modal, Table, Row } from 'antd'
-import { Link } from 'react-router-dom'
 export default function ImportModal(props) {
 
     const { visible, onCancel, onOk, columns, dataSource, downTemplate, actionComponent, importLoading } = props

@@ -1,19 +1,12 @@
-import React, { Component } from "react";
-import { Row, Col, Form, Input, Button, notification, Checkbox } from "antd";
+import React from "react";
+import { notification } from "antd";
 import {
-    BrowserRouter as Router,
-    Switch,
     Route,
-    Link,
     Redirect,
     useHistory,
-    useParams
 } from "react-router-dom";
 const PrivateRouter = ({ component: Component, ...rest }) => {
     let param = useHistory();
-
-    console.log("||||||||||||||||||||||||||||||888")
-    console.log(param)
     var temp = 0;
     const openNotification = () => {
         notification.warning({
@@ -28,7 +21,6 @@ const PrivateRouter = ({ component: Component, ...rest }) => {
             component={(props) => {
                 const data = localStorage.getItem("accessToken");
                 const menu_list = JSON.parse(localStorage.getItem('menu_list'))
-                const permission_list = JSON.parse(localStorage.getItem('permission_list'))
                 if (data) {
                     if (menu_list && menu_list.length > 0) {
                         console.log("||||||||||||||||||||||||||||||999")

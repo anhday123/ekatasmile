@@ -4,17 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { ACTION } from './../../consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
-import { Popconfirm, message, Switch, Tag, Radio, Drawer, Input, Row, Col, DatePicker, notification, Popover, Select, Table, Modal, Form, Upload, Checkbox, Button } from "antd";
+import {Switch,Radio, Drawer, Input, Row, Col, DatePicker, notification, Select, Table, Form,  Button } from "antd";
 import {
-  BrowserRouter as Router,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, ArrowLeftOutlined, DeleteOutlined, EditOutlined, CheckOutlined, FileImageOutlined, BorderVerticleOutlined } from "@ant-design/icons";
-import { addBranch, apiFilterCity, apiSearch, apiUpdateBranch, getAllBranch } from "../../apis/branch";
+import { ArrowLeftOutlined, } from "@ant-design/icons";
+import { apiFilterCity, apiSearch, apiUpdateBranch, getAllBranch } from "../../apis/branch";
 import { getAllStore } from '../../apis/store'
 import BranchAdd from "../../components/branch/branch-add";
 import { apiDistrict, apiProvince } from "../../apis/information";
@@ -35,13 +31,9 @@ export default function Branch(propsData) {
   const state = propsData.location.state;
   const history = useHistory()
   const dispatch = useDispatch()
-  const { Search } = Input;
-  const [form] = Form.useForm();
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [modal3Visible, setModal3Visible] = useState(false)
   const [store, setStore] = useState([])
   const [branch, setBranch] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -51,15 +43,11 @@ export default function Branch(propsData) {
     if (data === 1) {
       try {
         setLoading(true)
-
         const res = await apiSearch({ keyword: value });
 
         if (res.status === 200) setBranch(res.data.data)
         setLoading(false)
-        // openNotification();
-        // history.push(ROUTES.NEWS);
       } catch (error) {
-
         setLoading(false)
       }
     } else {
@@ -70,8 +58,6 @@ export default function Branch(propsData) {
         console.log(res)
         if (res.status === 200) setBranch(res.data.data)
         setLoading(false)
-        // openNotification();
-        // history.push(ROUTES.NEWS);
       } catch (error) {
 
         setLoading(false)
@@ -86,8 +72,6 @@ export default function Branch(propsData) {
       console.log(res)
       if (res.status === 200) setBranch(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -112,34 +96,17 @@ export default function Branch(propsData) {
       const value = e.target.value;
       apiSearchData(value, 1);
     }, 300);
-    // 
   };
-  const openNotificationErrorNotBranch = (code, name) => {
-    notification.warning({
-      message: 'Nhắc nhở',
-      duration: 20,
-      description:
-        <div>Tại giao diện <b>Danh sách nhân sự</b> bạn sẽ thấy được những nhân sự mà bạn đang quản lý. Tích chọn vào ô vuông phía bên trái cột <b>Mã nhân sự</b> để phân những nhân sự này vào chi nhánh <b>{name}</b> .Kết thúc thao tác bằng các chọn vào ô tròn có tên <b>Phân nhân sự vào chi nhánh.</b></div>
-    });
-  };
-  const [modalFinish, setModalFinish] = useState(0)
-  const [objectFinish, setObjectFinish] = useState({})
-  const [recordFinish, setRecordFinish] = useState({})
+
+
   const onClickNotBranch = (code, name, record) => {
     if (state && state === '1') {
-      setObjectFinish({ code: code, name: name })
-      setModalFinishValue(true)
-      setRecordFinish(record)
+ 
     } else {
       history.push({ pathname: "/actions/branch/view/19/1", state: record })
     }
   }
   const columnsPromotion = [
-    // {
-    //   title: 'STT',
-    //   dataIndex: 'stt',
-    //   width: 150,
-    // },
     {
       title: 'Mã chi nhánh',
       dataIndex: 'code',
@@ -185,11 +152,7 @@ export default function Branch(propsData) {
       dataIndex: 'ward',
       width: 150,
     },
-    // {
-    //   title: 'Zip code',
-    //   dataIndex: 'zipcode',
-    //   width: 150,
-    // },
+
     {
       title: 'Trạng thái',
       dataIndex: 'active',
@@ -197,51 +160,9 @@ export default function Branch(propsData) {
       width: 100,
       render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
     },
-    // {
-    //   title: 'Action',
-    //   dataIndex: 'action',
-    //   width: 100,
-    //   render: (text, record) => <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-    //     <div onClick={() => modal3VisibleModalUpdate(true, record)} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-    //     {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-    //   </div>
-    // },
+ 
   ];
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      branchCode: <Link to="/actions/branch/view/19" style={{ color: '#2400FF' }}>CN {i}</Link>,
-      branchName: <Link to="/actions/branch/view/19" style={{ color: '#2400FF' }}>Chi nhánh {i}</Link>,
-      address: `Địa chỉ ${i}`,
-      district: `Bình thạnh ${i}`,
-      city: `Hồ chí minh ${i}`,
-      branchDefault: <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{i === 2 ? (<CheckOutlined style={{ color: '#0400DE', fontSize: '1.5rem' }} />) : ('')}</div>,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <div onClick={() => modal3VisibleModal(true)} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const [record, setRecord] = useState({})
-  const modal3VisibleModalUpdate = (modal, record) => {
-    setModal3Visible(modal)
-    setRecord(record)
-    console.log(record)
-    const update = form.getFieldValue()
-    update.branchName = record.name;
-    update.address = record.address;
-    update.city = record.ward;
-    update.branchCode = record.code;
-    update.district = record.district;
-    update.defaultStore = record.default;
-  }
-  const onSearchCustomerChoose = value => console.log(value);
   const [arrayUpdate, setArrayUpdate] = useState([])
   const openNotification = (check) => {
     notification.success({
@@ -257,14 +178,7 @@ export default function Branch(propsData) {
       description: <div>Cập nhật thông tin chi nhánh <b>{data}</b> thành công</div>
     });
   };
-  const openNotificationDelete = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description:
-        'Xóa chi nhánh thành công.',
-    });
-  };
+
   const openNotificationError = () => {
     notification.error({
       message: 'Thất bại',
@@ -273,80 +187,26 @@ export default function Branch(propsData) {
         'Lỗi cập nhật thông tin chi nhánh.',
     });
   };
-  const addBranchData = async (object) => {
-    try {
-      setLoading(true)
-      // console.log(value);
-      const res = await addBranch(object);
-      console.log(res);
-      // if (res.status === 200) setStatus(res.data.status);
-      if (res.status === 200) {
-        await getAllBranchData()
-        openNotification()
-        modal2VisibleModal(false)
-        form.resetFields();
-      }
-      setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
-    } catch (error) {
-      console.log(error);
-      setLoading(false)
-    }
-  };
+
   const apiUpdateBranchData = async (object, id, check) => {
     try {
       setLoading(true)
-      // console.log(value);
       const res = await apiUpdateBranch(object, id);
-      console.log(res);
-      // if (res.status === 200) setStatus(res.data.status);
       if (res.status === 200) {
         await getAllBranchData()
         openNotification(check)
         setSelectedRowKeys([])
-        modal3VisibleModal(false)
-        // form.resetFields();
       } else {
         openNotificationError()
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       console.log(error);
       setLoading(false)
     }
   };
-  const onFinish = (values) => {
-    console.log('Success:', values);
-    const object = {
-      // code: values.branchCode.toLowerCase(),
-      name: values.branchName.toLowerCase(),
-      phone: record.phone,
-      latitude: ' ',
-      longtitude: ' ',
-      default: values.defaultStore,
-      address: values.address.toLowerCase(),
-      ward: values.city.toLowerCase(),
-      district: values.district.toLowerCase(),
-      province: ' ',
-      store_id: record.store_id.store_id,
-    }
-    console.log(object)
-    apiUpdateBranchData(object, record.branch_id, 1);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const normFile = (e) => {
-    console.log('Upload event:', e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
   const getAllBranchData = async () => {
     try {
       setLoading(true)
@@ -356,71 +216,13 @@ export default function Branch(propsData) {
       if (res.status === 200) {
         setBranch(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
       setLoading(false)
     }
   };
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Chi nhánh đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Chi nhánh đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    branch && branch.length > 0 && branch.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            apiUpdateBranchData(object, values.branch_id, 1)
-          }
-        }
-      })
-    })
-  }
-
-  function cancel(e) {
-    console.log(e);
-
-  }
-  function confirmActive(e) {
-    console.log(e);
-    branch && branch.length > 0 && branch.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active) {
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-            const object = {
-              active: true
-            }
-            apiUpdateBranchData(object, values.branch_id, 2)
-          }
-        }
-      })
-    })
-  }
-
-  function cancelActive(e) {
-    console.log(e);
-
-  }
+ 
   useEffect(() => {
     getAllBranchData();
   }, []);
@@ -432,7 +234,6 @@ export default function Branch(propsData) {
       if (res.status === 200) {
         setStore(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -446,16 +247,8 @@ export default function Branch(propsData) {
   const branchChild = (data) => {
     setBranch(data)
   }
-  console.log(dataPromotion)
-  const modal3VisibleModal = (modal2Visible) => {
-    setModal3Visible(modal2Visible)
-  }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
+
+
   const showDrawer = () => {
     setVisible(true)
   };
@@ -663,7 +456,6 @@ export default function Branch(propsData) {
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -674,71 +466,18 @@ export default function Branch(propsData) {
     console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
-  console.log(districtMain)
-  console.log("|||11111111111111")
+
   const [valueSwitch, setValueSwitch] = useState(false)
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`);
     setValueSwitch(checked)
-    // const object = {
-    //   active: checked
-    // }
+    
     apiUpdateBranchData({ ...record, active: checked }, record.branch_id, checked ? 1 : 2)
   }
-  const [checkedValue, setCheckedValue] = useState(0)
-  const openNotificationNotifycation = () => {
-    notification.warning({
-      message: 'Nhắc nhở',
-      duration: 15,
-      description:
-        'Tại giao diện thêm chi nhánh, thêm một cửa hàng mà bạn muốn vào chi nhánh này.',
-    });
-  };
-  const onClickTutorial = () => {
-    if (state === '1' && checkedValue === 0) {
-      setCheckedValue(1)
-      openNotificationNotifycation()
-    }
-  }
-  const [confirmValue, setConfirmValue] = useState('')
-  const [attentionAddBranch, setAttentionAddBranch] = useState(true)
-  const onClickTurnOffAttentAddBranch = () => {
-    setAttentionAddBranch(false)
-    setConfirmValue('1')
-    return (<BranchAdd confirmValue={confirmValue} state={state} branchChild={branchChild} />)
-  }
-  const [modalFinishValue, setModalFinishValue] = useState(false)
-  const onClickFinishModal = () => {
-    if (state && state === '1') {
-      openNotificationErrorNotBranch(objectFinish.code, objectFinish.name)
-      setModalFinish(1)
-      setModalFinishValue(false)
-      history.push({ pathname: "/actions/branch/view/19/2", state: recordFinish })
-    }
-  }
+
 
   return (
     <UI>
-
-      {/* <Modal
-        width={700}
-        title="Hướng dẫn cài đặt chức năng trước khi thao tác bán hàng"
-        centered
-        footer={null}
-        visible={modalFinishValue}
-
-      >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '900', color: 'black', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>Gồm 3 bước:</div>
-          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black', textDecoration: 'line-through' }}>1. Chọn nút thêm cửa hàng ở góc trên cùng, phía bên phải để thêm một cửa hàng mới.</div>
-          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black', textDecoration: 'line-through' }}>2. Chọn nút thêm chi nhánh ở góc trên cùng, phía bên phải để thêm một chi nhánh mới.</div>
-          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black' }}>3. Tại giao diện danh sách nhân sự, thêm nhân sự vào chi nhánh kết thúc quá trình thao tác.</div>
-          <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <Button onClick={onClickFinishModal} type="primary" style={{ width: '7.5rem' }}>Đã hiểu</Button>
-          </div>
-        </div>
-      </Modal> */}
-
 
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -754,18 +493,14 @@ export default function Branch(propsData) {
         </div>
         <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            {/* <Popover placement="bottomLeft" content={content} trigger="click"> */}
             <div style={{ width: '100%' }}>
               <Input style={{ width: '100%' }} name="name" value={valueSearch} enterButton onChange={onSearch} className={styles["orders_manager_content_row_col_search"]}
                 placeholder="Tìm kiếm theo mã, theo tên" allowClear />
             </div>
-            {/* </Popover> */}
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            {/* <Popover placement="bottomLeft" content={content} trigger="click"> */}
             <div style={{ width: '100%' }}>
               <RangePicker
-                // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                 style={{ width: '100%' }}
                 ranges={{
@@ -775,7 +510,6 @@ export default function Branch(propsData) {
                 onChange={onChangeDate}
               />
             </div>
-            {/* </Popover> */}
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
@@ -798,32 +532,7 @@ export default function Branch(propsData) {
               </Select>
             </div>
           </Col>
-          {/* <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Tất cả chi nhánh" onChange={handleChange}>
-                <Option value="branch1">Chi nhánh 1</Option>
-                <Option value="branch2">Chi nhánh 2</Option>
-                <Option value="branch3">Chi nhánh 3</Option>
-              </Select>
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Quận" onChange={handleChange}>
-                <Option value="branch1">Branch 1</Option>
-                <Option value="branch2">Branch 2</Option>
-                <Option value="branch3">Branch 3</Option>
-              </Select>
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Thành phố" onChange={handleChange}>
-                <Option value="haNoi">Hà nội</Option>
-                <Option value="hoChiMinh">Hồ chí minh</Option>
-              </Select>
-            </div>
-          </Col> */}
+     
         </Row>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
         {
@@ -834,24 +543,7 @@ export default function Branch(propsData) {
             <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
               <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
               <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-              {/* <Popconfirm
-                  title="Bạn chắc chắn muốn xóa?"
-                  onConfirm={confirm}
-                  onCancel={cancel}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={3}>     Vô hiệu hóa</Radio>
-                </Popconfirm>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn kích hoạt lại?"
-                  onConfirm={confirmActive}
-                  onCancel={cancelActive}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={4}>Kích hoạt</Radio>
-                </Popconfirm> */}
+            
             </Radio.Group>
 
 
@@ -890,7 +582,6 @@ export default function Branch(propsData) {
                 style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                 className={styles["supplier_add_content"]}
 
-                // form={form}
                 layout="vertical"
                 initialValues={values}
 
@@ -910,16 +601,9 @@ export default function Branch(propsData) {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên chi nhánh</div>
 
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -935,17 +619,9 @@ export default function Branch(propsData) {
                         return (
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
-
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
 
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1134,17 +810,9 @@ export default function Branch(propsData) {
                           return (
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
-
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên chi nhánh</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1161,16 +829,9 @@ export default function Branch(propsData) {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1200,14 +861,11 @@ export default function Branch(propsData) {
                             style={{ width: '100%' }}
                             placeholder="Select a person"
                             optionFilterProp="children"
-                            // onChange={handleChangeCity}
 
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] = event; handleChangeCity(event)
                             }}>
                             {
@@ -1239,8 +897,6 @@ export default function Branch(propsData) {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1278,8 +934,6 @@ export default function Branch(propsData) {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event;
                             }}>

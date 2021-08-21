@@ -3,129 +3,38 @@ import styles from "./../add/add.module.scss";
 import { ACTION } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-// import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import {
   Select,
-  DatePicker,
-  Space,
-  Upload,
-  message,
   notification,
   Row,
   Col,
   Input,
   Form,
   Checkbox,
-  Popover,
   Button,
-  Table,
 } from "antd";
-import moment from "moment";
 import {
-  AudioOutlined,
-  DeleteOutlined,
-  LoadingOutlined,
-  UploadOutlined,
-  CheckCircleOutlined,
-  PlusOutlined,
   ArrowLeftOutlined,
-  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { apiFilterCity, getAllBranch } from "../../../../apis/branch";
-import { apiDistrict, apiProvince } from "../../../../apis/information";
+import { apiProvince } from "../../../../apis/information";
 import { apiAllRole, apiAllUser } from "../../../../apis/user";
 import { apiUpdateEmployee } from "../../../../apis/employee";
 import { getAllStore } from "../../../../apis/store";
-function getBase64(img, callback) {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result));
-  reader.readAsDataURL(img);
-}
-const { RangePicker } = DatePicker;
-function beforeUpload(file) {
-  const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-  if (!isJpgOrPng) {
-    message.error("You can only upload JPG/PNG file!");
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error("Image must smaller than 2MB!");
-  }
-  return isJpgOrPng && isLt2M;
-}
-const normFile = (e) => {
-  console.log("Upload event:", e);
-  if (Array.isArray(e)) {
-    return e;
-  }
-  return e && e.fileList;
-};
+
 export default function EmployeeAdd() {
   const dispatch = useDispatch()
   let history = useHistory();
   const [form] = Form.useForm();
-  const { TextArea } = Input;
   const [branch, setBranch] = useState([])
-  const [value, setValue] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { RangePicker } = DatePicker;
-  const handleChange = (info) => {
-    if (info.file.status === "uploading") {
-      // this.setState({ loading: true });
-      setLoading(true);
-      return;
-    }
-    if (info.file.status === "done") {
-      // Get this url from response in real world.
-      getBase64(info.file.originFileObj, (imageUrl) =>
-        setLoading({ imageUrl: imageUrl, loading: false })
-      );
-    }
-  };
-  const uploadButton = (
-    <div>
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  );
-  const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
+
   const { Option } = Select;
-  const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
 
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
-  const props = {
-    action: "//jsonplaceholder.typicode.com/posts/",
-    listType: "picture",
-    previewFile(file) {
-      console.log("Your upload file:", file);
-      // Your process logic. Here we just mock to the same file
-      return fetch("https://next.json-generator.com/api/json/get/4ytyBoLK8", {
-        method: "POST",
-        body: file,
-      })
-        .then((res) => res.json())
-        .then(({ thumbnail }) => thumbnail);
-    },
-  };
 
-  const onChange = ({ target: { value } }) => {
-    setValue(value);
-  };
-  const [date, setDate] = useState('')
-  function onChangeDateAlone(date, dateString) {
-    console.log(date, dateString);
-    setDate(dateString)
-  }
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
@@ -154,7 +63,6 @@ export default function EmployeeAdd() {
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -163,14 +71,10 @@ export default function EmployeeAdd() {
   };
   function password_validate(password) {
     var re = {
-      // 'capital': /[A-Z]/,
-      // 'digit': /[0-9]/,
       'full': /^(?=.*[A-Za-z0-9])(?=.*[!@#$%^&*()?])[A-Za-z0-9\d!@#$%^&*()?]{8,}$/
     };
     return re.full.test(password);
-    // return re.capital.test(password) &&
-    //   re.digit.test(password) &&
-    //   re.full.test(password);
+
   }
   const openNotificationRegisterFailMail = () => {
     notification.error({
@@ -205,8 +109,7 @@ export default function EmployeeAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAllUser();
-      console.log(res)
-      console.log("991")
+ 
       if (res.status === 200) {
         const username = localStorage.getItem("username")
         var array = []
@@ -219,11 +122,7 @@ export default function EmployeeAdd() {
 
 
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+  
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -237,26 +136,13 @@ export default function EmployeeAdd() {
   const [store, setStore] = useState([])
   const getAllStoreData = async () => {
     try {
-      setLoading(true)
       const res = await getAllStore();
       console.log(res)
       if (res.status === 200) {
         setStore(res.data.data)
-
-        // var arrayDistrict = []
-        // var arrayProvince = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   arrayDistrict.push(values.district)
-        //   arrayProvince.push(values.province)
-        // })
-        // setDistrict([...arrayDistrict])
-        // setProvince([...arrayProvince])
       }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
     } catch (error) {
 
-      setLoading(false)
     }
   };
 
@@ -273,7 +159,6 @@ export default function EmployeeAdd() {
   };
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
   const onFinish = (value) => {
-    console.log(value)
     if (validateEmail(value.email)) {
       if (password_validate(value.password)) {
         if (isNaN(value.username)) {
@@ -294,7 +179,7 @@ export default function EmployeeAdd() {
                 first_name: value && value.name ? value.name : ' ',
                 last_name: value && value.surname ? value.surname : ' ',
                 branch: value && value.branch ? value.branch : " ", //
-                birthday: date ? date : ' ',
+                birthday: '',
                 address: value && value.address ? value.address : ' ',
                 ward: " ",
                 district: value && value.district ? value.district : ' ',
@@ -304,8 +189,7 @@ export default function EmployeeAdd() {
                 tax_code: " ",
                 fax: " "
               }
-              console.log(object)
-              console.log("----------------------444")
+        
               apiUpdateEmployeeData(object)
             } else {
               openNotificationRegisterFailMailPhoneMain()
@@ -330,12 +214,7 @@ export default function EmployeeAdd() {
 
     }
   };
-  function onChangeDateWork(date, dateString) {
-    console.log(date, dateString);
-  }
-  function onChangeDateBirdthday(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const getAllBranchData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
@@ -354,22 +233,7 @@ export default function EmployeeAdd() {
   useEffect(() => {
     getAllBranchData();
   }, []);
-  const [districtMain, setDistrictMain] = useState([])
-  const apiDistrictData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiDistrict();
-      console.log(res)
-      if (res.status === 200) {
-        setDistrictMain(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
 
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
   const [provinceMain, setProvinceMain] = useState([])
   const apiProvinceData = async () => {
     try {
@@ -379,7 +243,6 @@ export default function EmployeeAdd() {
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -387,7 +250,6 @@ export default function EmployeeAdd() {
     }
   };
   useEffect(() => {
-    apiDistrictData();
   }, []);
   useEffect(() => {
     apiProvinceData();
@@ -402,11 +264,7 @@ export default function EmployeeAdd() {
       if (res.status === 200) {
         setPermission(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -430,7 +288,6 @@ export default function EmployeeAdd() {
       if (res.status === 200) {
         setDistrictMainSelect(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -733,39 +590,6 @@ export default function EmployeeAdd() {
                       </Col>
                     </Row>
                   </Col>
-
-                  {/* <Col
-              className={styles["employee_add_parent_col"]}
-              xs={24}
-              sm={11}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <Row className={styles["employee_add_parent_col_row_child"]}>
-                <Col
-                  className={styles["employee_add_parent_col_row_child_input"]}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <Form.Item
-                    label={<div style={{ color: 'black', fontWeight: '600' }}>Xác nhận mật khẩu</div>}
-                    name="passwordConfirm"
-                    rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                  >
-                    <Input.Password placeholder="Nhập mật khẩu xác nhận" />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col> */}
-
-
-
-
-
 
                 </Row>
 
@@ -1261,53 +1085,9 @@ export default function EmployeeAdd() {
 
             )
           }
-          {/*
-          <Row className={styles["employee_add_parent_row"]}>
-
-
-
-
-
-            <Col
-              className={styles["employee_add_parent_col"]}
-              xs={24}
-              sm={11}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <Row className={styles["employee_add_parent_col_row_child"]}>
-                <Col
-                  className={styles["employee_add_parent_col_row_child_input"]}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <Form.Item
-                    label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                    name="phoneNumber"
-                    rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                  >
-                    <Input placeholder="Nhập liên hệ" />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col>
-          </Row> */}
-
-          {/* <div className={styles["button"]}>
-            <Button type="primary" icon={<CheckCircleOutlined />}>
-              Thêm nhân viên
-            </Button>
-          </div> */}
+        
           <div className={styles["button"]}>
-            {/* <Form.Item>
-              <Button type="primary" style={{ width: '5rem' }} danger>
-                Hủy
-              </Button>
-            </Form.Item> */}
+        
             <Form.Item>
               <Button type="primary" style={{ width: '7.5rem' }} htmlType="submit">
                 Thêm
