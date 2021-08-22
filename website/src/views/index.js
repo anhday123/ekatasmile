@@ -6,6 +6,10 @@ import { ROUTES } from './../consts/index'
 //base layout
 import UI from './../components/Layout/UI'
 import Authentication from 'components/authentication'
+
+//modal intro
+import ModalIntro from 'components/introduction'
+
 //views
 import Login from './login/index'
 import ReportImport from './report-import/index'
@@ -613,6 +617,8 @@ const AUTH_ROUTER = [
 export default function Views() {
   return (
     <BrowserRouter>
+      <ModalIntro />
+
       <Switch>
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>

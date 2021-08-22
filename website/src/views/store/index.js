@@ -20,7 +20,6 @@ import { apiFilterCity } from "../../apis/branch";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 export default function Store(propsData) {
-  const state = propsData.location.state;
   const dispatch = useDispatch()
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [visible, setVisible] = useState(false)
@@ -102,28 +101,7 @@ export default function Store(propsData) {
     }, 300);
     // 
   };
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      customerCode: <Link to="/actions/customer/view" style={{ color: '#2400FF' }}>GH {i}</Link>,
-      customerName: `Văn Tỷ ${i}`,
-      customerType: `Tiềm năng ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28 ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <div><ExclamationCircleOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#096E00' }} /></div>
-        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
+
 
   const openNotificationSuccessStoreDelete = (data) => {
     notification.success({
@@ -592,28 +570,26 @@ export default function Store(propsData) {
   }
   return (
     <>
-      {
-        state === '1' ? (<Modal
-          width={700}
-          title="Hướng dẫn thêm thông tin cần thiết trước khi thao tác bán hàng"
-          centered
-          footer={null}
-          visible={attentionAddStore}
+      <Modal
+        width={700}
+        title="Hướng dẫn thêm thông tin cần thiết trước khi thao tác bán hàng"
+        centered
+        footer={null}
+        visible={attentionAddStore}
 
-        >
+      >
 
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '900', color: 'black', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>Gồm 3 bước:</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black' }}>1. Chọn nút thêm cửa hàng ở góc trên cùng, phía bên phải để thêm một cửa hàng mới.</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600', }}>2. Chọn nút thêm chi nhánh ở góc trên cùng, phía bên phải để thêm một chi nhánh mới.</div>
-            <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600', }}>3. Tại giao diện danh sách nhân sự, thêm nhân sự vào chi nhánh kết thúc quá trình thao tác.</div>
-            <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Button onClick={onClickTurnOffAttentAddStore} type="primary" style={{ width: '7.5rem' }}>Đã hiểu</Button>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
+          <div style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: '900', color: 'black', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>Gồm 3 bước:</div>
+          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '900', color: 'black' }}>1. Chọn nút thêm cửa hàng ở góc trên cùng, phía bên phải để thêm một cửa hàng mới.</div>
+          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600', }}>2. Chọn nút thêm chi nhánh ở góc trên cùng, phía bên phải để thêm một chi nhánh mới.</div>
+          <div style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600', }}>3. Tại giao diện danh sách nhân sự, thêm nhân sự vào chi nhánh kết thúc quá trình thao tác.</div>
+          <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+            <Button onClick={onClickTurnOffAttentAddStore} type="primary" style={{ width: '7.5rem' }}>Đã hiểu</Button>
           </div>
+        </div>
 
-        </Modal>) : ''
-      }
+      </Modal>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -623,7 +599,7 @@ export default function Store(propsData) {
 
           </Link>
           <div className={styles["promotion_manager_button"]}>
-            <StoreInformationAdd state={state} storeChild={storeChild} />
+            <StoreInformationAdd storeChild={storeChild} />
           </div>
         </div>
 

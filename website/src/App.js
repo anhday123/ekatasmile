@@ -4,6 +4,8 @@ import { ACTION } from './consts/index'
 import { getAllStore } from './apis/store'
 import { getStore } from './actions/store'
 
+import Loading from 'components/loading/Loading'
+
 //views
 import Views from 'views'
 
@@ -39,7 +41,12 @@ function App() {
     getAllStoreData()
   }, [])
 
-  return <Views />
+  return (
+    <>
+      <Loading />
+      <Views />
+    </>
+  )
 }
 
 export default App
