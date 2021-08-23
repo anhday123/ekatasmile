@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../payment/payment.module.scss";
 import {
   Card,
@@ -55,10 +54,6 @@ export default function Payment() {
   };
   const [value, setValue] = React.useState(1);
 
-  const onChange = (e) => {
-    console.log("radio checked", e.target.value);
-    setValue(e.target.value);
-  };
   const showStatusMethod = (status) => {
     setTemp(status);
   };
@@ -75,7 +70,7 @@ export default function Payment() {
     setIconVietcombank(data)
   }
   return (
-    <UI>
+    <>
       <div className={styles["payment_method"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(233, 223, 223)', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={12} lg={12} xl={12}>
@@ -106,12 +101,6 @@ export default function Payment() {
           </Col>
         </Row>
 
-        {/* <Row style={{ display: 'flex', marginTop: '1rem', alignItems: 'center', justifyContent: 'flex-start', width: '100%' }}>
-          <Col xs={24} sm={12} md={12} lg={12} xl={12}>
-            <Popover placement="bottomLeft" content={content} trigger="click"> <Search placeholder="Tìm kiếm" onSearch={onSearch} enterButton />
-            </Popover>
-          </Col>
-        </Row> */}
         <Row style={{ marginTop: '50px' }} className={styles["payment_method_payment"]}>
           <Col
             className={styles["payment_method_payment_parent"]}
@@ -557,6 +546,6 @@ export default function Payment() {
           </Space>
         </Radio.Group>
       </Modal>
-    </UI>
+    </>
   );
 }

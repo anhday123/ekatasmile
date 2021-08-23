@@ -1,22 +1,12 @@
-import UI from "../../../../components/Layout/UI";
-import { useDispatch } from 'react-redux'
-import { ACTION } from './../../../../consts/index'
 import styles from "./../add/add.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, notification } from "antd";
+import { Select, Button, Input, Form, Row, Col, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { apiAddInventory } from "../../../../apis/inventory";
 const { Option } = Select;
 export default function BusinessAdd() {
-  const dispatch = useDispatch()
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -24,41 +14,9 @@ export default function BusinessAdd() {
         'Thêm business thành công',
     });
   };
-  const openNotificationError = (data) => {
-    notification.error({
-      message: 'Lỗi',
-      description:
-        `${data} phải là số`,
-    });
-  };
-  const openNotificationErrorCode = () => {
-    notification.error({
-      message: 'Thất bại',
-      description:
-        'Mã kho đã tồn tại',
-    });
-  };
+
   let history = useHistory();
-  const apiAddInventoryData = async (object) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiAddInventory(object);
-      console.log(res);
-      // if (res.status === 200) setStatus(res.data.status);
-      if (res.status === 200) {
-        openNotification()
-        history.push("/inventory/7");
-      } else {
-        openNotificationErrorCode()
-      }
-      dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
-    } catch (error) {
-      console.log(error);
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
+
   const onFinish = (values) => {
     console.log("Success:", values);
     openNotification()
@@ -68,17 +26,13 @@ export default function BusinessAdd() {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
+
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/business/5">
-
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Thêm business</div>
-
         </Link>
         <Form
           className={styles["supplier_add_content"]}
@@ -182,13 +136,6 @@ export default function BusinessAdd() {
           </Row>
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', display: 'flex', marginLeft: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -199,6 +146,6 @@ export default function BusinessAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

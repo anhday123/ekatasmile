@@ -1,12 +1,11 @@
-import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
 import { Form, notification, Row, Col, Input, InputNumber, Button } from "antd";
 import {
   Link,
   useHistory,
 } from "react-router-dom";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState, useEffect } from "react";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import React from "react";
 import { addWarranty } from '../../../../apis/warranty';
 
 export default function GuaranteeAdd() {
@@ -39,7 +38,7 @@ export default function GuaranteeAdd() {
   };
 
   return (
-    <UI>
+    <>
       <Form
         onFinish={onFinish}
         form={form}
@@ -80,6 +79,6 @@ export default function GuaranteeAdd() {
           <Button type="primary" htmlType="submit">Tạo</Button>
         </Row>
       </Form>
-    </UI>
+    </>
   );
 }

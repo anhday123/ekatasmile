@@ -1,15 +1,11 @@
 import styles from './../password-new/password-new.module.scss'
 import 'antd/dist/antd.css'
-import React, { useState } from 'react'
+import React from 'react'
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useParams,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import pgc from './../../assets/img/logo.png'
 import { changePasswordMain } from "../../apis/changePassword";
@@ -23,7 +19,6 @@ export default function PasswordNew() {
   let { slug } = useParams();
   var username = slug
   const dispatch = useDispatch()
-  // const router = useRouter()
   const [form] = Form.useForm()
   let history = useHistory()
   const changePasswordData = async (object) => {
@@ -35,13 +30,11 @@ export default function PasswordNew() {
         if (res.data.success) {
           history.push('/');
           openNotificationLoginSuccess()
-          // localStorage.removeItem("password-new");
-          // localStorage.removeItem("forget-password");
+     
         }
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+    
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -49,32 +42,23 @@ export default function PasswordNew() {
   };
   function password_validate(password) {
     var re = {
-      // 'capital': /[A-Z]/,
-      // 'digit': /[0-9]/,
       'full': /^(?=.*[A-Za-z0-9])(?=.*[!@#$%^&*()?])[A-Za-z0-9\d!@#$%^&*()?]{8,}$/
     };
     return re.full.test(password);
-    // return re.capital.test(password) &&
-    //   re.digit.test(password) &&
-    //   re.full.test(password);
+
   }
   const onFinishRegister = (values) => {
-    console.log('Finish:', values)
     if (username) {
       if (values.passwordRegister.trim() === values.RepasswordRegister.trim() && password_validate(values.passwordRegister.trim())) {
         const object1 = {
           username: username.trim(),
           password: values.passwordRegister.trim()
         }
-        console.log(object1)
         changePasswordData(object1);
       } else {
         openNotificationLoginError()
       }
-      // form.resetFields()
-      // openNotificationLoginSuccess()
-      // openNotificationLoginError()
-      // history.push('/')
+   
     } else {
       openNotificationLoginErrorPasswordUsername()
       history.push('/forget-password')
@@ -87,13 +71,7 @@ export default function PasswordNew() {
       description: 'Thay đổi mật khẩu thành công'
     })
   }
-  const openNotificationLoginErrorPassword = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Mật khẩu phải có độ dài lớn hơn 5 ký tự'
-    })
-  }
+
   const openNotificationLoginErrorPasswordUsername = () => {
     notification.warning({
       message: 'Nhắc nhở',
@@ -112,7 +90,6 @@ export default function PasswordNew() {
     <div className={styles['login']}>
       <div className={styles['login_img_parent']}>
         <img className={styles['login_img']} src={pgc} alt="" />
-        {/* <div>Vie</div> */}
       </div>
       <div className={styles['login_forget']}>
         <div
@@ -175,9 +152,6 @@ export default function PasswordNew() {
         </div>
       </Form>
 
-      {/* <div className={styles["copyright"]}>
-        <div>Copyright © 2021 Vie. All rights reserved.</div>
-      </div> */}
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../user/user.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import moment from 'moment'
@@ -6,16 +5,12 @@ import { apiAllRole, apiCreateUserMenu, apiSearch, updateUser } from "./../../ap
 import { apiAllUser } from "../../apis/user";
 import { ACTION } from './../../consts/index'
 import { useDispatch } from 'react-redux'
-import { Popconfirm, Switch, message, Tag, Input, Button, Row, Col, DatePicker, notification, Radio, Select, Drawer, Form, Table, Modal, Popover } from "antd";
+import { Switch,  Input, Button, Row, Col, DatePicker, notification, Radio, Select, Drawer, Form, Table, Modal, Popover } from "antd";
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { apiFilterRoleEmployee } from "../../apis/employee";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -62,9 +57,7 @@ export default function User() {
   const dispatch = useDispatch()
   const { Search } = Input;
   const [loading, setLoading] = useState(false)
-  let history = useHistory();
   const [visible, setVisible] = useState(false)
-  const [form] = Form.useForm();
   const [formAdd] = Form.useForm();
   const [modal2Visible, setModal2Visible] = useState(false)
   const [birthDay, setBirthDay] = useState('')
@@ -77,17 +70,7 @@ export default function User() {
   };
   const dateFormat = 'YYYY/MM/DD';
   const [record, setRecord] = useState({})
-  const showDrawerUpdateMain = (record) => {
-    setVisibleUpdate(true)
-    setRecord(record)
-    const data = form.getFieldValue()
-    data.first_name = record.first_name;
-    data.last_name = record.last_name;
-    data.address = record.address;
-    data.email = record.email;
-    data.phone = record.phone;
-    data.role = record && record.role_id ? record.role_id.role_id : ''
-  };
+
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
   };
@@ -113,8 +96,6 @@ export default function User() {
 
       if (res.status === 200) setUser(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -128,8 +109,6 @@ export default function User() {
 
       if (res.status === 200) setUser(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -146,7 +125,6 @@ export default function User() {
       const value = e.target.value;
       apiSearchData(value);
     }, 300);
-    // 
   };
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
@@ -160,7 +138,6 @@ export default function User() {
   function onChangeAdd(dates, dateStrings) {
     console.log(dateStrings)
     setBirthDay(dateStrings)
-    // apiSearchDateData(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '');
   }
   const showDrawer = () => {
     setVisible(true)
@@ -169,12 +146,7 @@ export default function User() {
   const onClose = () => {
     setVisible(false)
   };
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
+
   const columnsPromotion = [
     {
       title: 'Tên đăng nhập',
@@ -231,61 +203,11 @@ export default function User() {
       <div>Gợi ý 2</div>
     </div>
   );
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Người dùng đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Người dùng đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    user && user.length > 0 && user.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            updateUserData(object, values.user_id, 1)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
+
   function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
-    console.log()
     updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
-  function confirmActive(e) {
-    console.log(e);
-    user && user.length > 0 && user.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active) {
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-            const object = {
-              active: true
-            }
-            updateUserData(object, values.user_id, 2)
-          }
-        }
-      })
-    })
-  }
+
   const openNotificationRegisterFailMailRegexUpdate = (data) => {
     notification.error({
       message: 'Thất bại',
@@ -314,13 +236,7 @@ export default function User() {
       description: <div>Cập nhật thông tin người dùng <b>{`${data} ${data2}`}</b> thành công</div>
     });
   };
-  const openNotificationUpdateDelete = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Vô hiệu hóa người dùng thành công.',
-    });
-  };
+
   const openNotificationErrorUpdate = () => {
     notification.error({
       message: 'Thất bại',
@@ -345,14 +261,10 @@ export default function User() {
         openNotificationUpdate(data)
         setSelectedRowKeys([])
         setVisibleUpdate(false)
-        // history.push("/user/19");
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       setLoading(false)
@@ -368,45 +280,15 @@ export default function User() {
         openNotificationUpdateMain(object.first_name, object.last_name)
         setSelectedRowKeys([])
         setVisibleUpdate(false)
-        // history.push("/user/19");
       } else {
         openNotificationErrorUpdateMain()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  function cancelActive(e) {
-    console.log(e);
-
-  }
-  function cancel(e) {
-    console.log(e);
-
-  }
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      userName: `Văn Tỷ ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      createdDate: `2021/06/28 ${i}`,
-      level: `Cấp độ ${i}`,
-      role: `Admin ${i}`,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/user/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -418,19 +300,10 @@ export default function User() {
       const res = await apiAllUser();
       console.log(res)
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
+        
         setUser(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+     
       setLoading(false)
     } catch (error) {
 
@@ -446,11 +319,7 @@ export default function User() {
       if (res.status === 200) {
         setRole(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
+    
       setLoading(false)
     } catch (error) {
 
@@ -489,14 +358,10 @@ export default function User() {
         openNotification()
         setVisible(false)
         formAdd.resetFields()
-        // history.push("/user/19");
       } else {
         openNotificationError()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       setLoading(false)
@@ -504,14 +369,9 @@ export default function User() {
   };
   function password_validate(password) {
     var re = {
-      // 'capital': /[A-Z]/,
-      // 'digit': /[0-9]/,
       'full': /^(?=.*[A-Za-z0-9])(?=.*[!@#$%^&*()?])[A-Za-z0-9\d!@#$%^&*()?]{8,}$/
     };
     return re.full.test(password);
-    // return re.capital.test(password) &&
-    //   re.digit.test(password) &&
-    //   re.full.test(password);
   }
   const openNotificationRegisterFail = () => {
     notification.error({
@@ -615,7 +475,6 @@ export default function User() {
       console.log("00000")
       if (values.phone === "default" || values.phone === "" || values.phone === ' ' || typeof values.phone === 'undefined') {
         if (validateEmail(values.email)) {
-          // if (password_validate(values.passwordRegister)) {
           if (values.phone === "default" || values.phone === "" || values.phone === ' ' || typeof values.phone === 'undefined') {
             openNotificationRegisterFailMailRegexUpdate('Liên hệ')
           } else {
@@ -641,34 +500,9 @@ export default function User() {
                 tax_code: " ",
                 fax: " "
               }, values.user_id)
-            } else {
-              // openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-              // const object = {
-              //   role_id: values && values.role_id && values.role_id.target && values.role_id.target.value ? values.role_id.target.value : values && values.role_id && values.role_id.role_id ? values.role_id.role_id : '1',
-              //   phone: '',
-              //   email: values.email,
-              //   avatar: " ",
-              //   branch_id: " ",
-              //   first_name: values.first_name.toLowerCase(),
-              //   last_name: values.last_name.toLowerCase(),
-              //   birthday: " ",
-              //   address: values.address.toLowerCase(),
-              //   ward: " ",
-              //   district: " ",
-              //   province: " ",
-              //   company_name: " ",
-              //   company_website: " ",
-              //   tax_code: " ",
-              //   fax: " "
-              // }
-              // console.log(object)
-
-              // updateUserDataUpdate(object, values.user_id)
-            }
+            } 
           }
-          // } else {
-          //   openNotificationRegisterFail()
-          // }
+        
         } else {
           openNotificationRegisterFailMailUpdate()
         }
@@ -706,74 +540,17 @@ export default function User() {
               }, values.user_id)
             } else {
               openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-              // const object = {
-              //   role_id: values && values.role_id && values.role_id.target && values.role_id.target.value ? values.role_id.target.value : values && values.role_id && values.role_id.role_id ? values.role_id.role_id : '1',
-              //   phone: '',
-              //   email: values.email,
-              //   avatar: " ",
-              //   branch_id: " ",
-              //   first_name: values.first_name.toLowerCase(),
-              //   last_name: values.last_name.toLowerCase(),
-              //   birthday: " ",
-              //   address: values.address.toLowerCase(),
-              //   ward: " ",
-              //   district: " ",
-              //   province: " ",
-              //   company_name: " ",
-              //   company_website: " ",
-              //   tax_code: " ",
-              //   fax: " "
-              // }
-              // console.log(object)
-
-              // updateUserDataUpdate(object, values.user_id)
+            
             }
           }
-          // } else {
-          //   openNotificationRegisterFail()
-          // }
+          
         } else {
           openNotificationRegisterFailMailUpdate()
         }
       }
     })
   }
-  const onFinishUpdate = (values) => {
-    console.log("Success:", values);
-    if (validateEmail(values.email)) {
-      if (isNaN(values.phone)) {
-        openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-      } else {
-        if (regexCheck.test(values.phone)) {
-          const object = {
-            role_id: values.role,
-            phone: values.phone,
-            email: values.email,
-            avatar: " ",
-            first_name: values.first_name.toLowerCase(),
-            last_name: values.last_name.toLowerCase(),
-            birthday: " ",
-            address: values.address.toLowerCase(),
-            ward: " ",
-            district: " ",
-            province: " ",
-            company_name: " ",
-            company_website: " ",
-            tax_code: " ",
-            fax: " "
-          }
-          console.log(object)
-
-          updateUserData(object, record.user_id, 1)
-        } else {
-          openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-        }
-      }
-
-    } else {
-      openNotificationRegisterFailMailUpdate()
-    }
-  };
+ 
   const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = selectedRowKeys => {
     console.log('selectedRowKeys changed: ', selectedRowKeys);
@@ -786,8 +563,7 @@ export default function User() {
         }
       })
     })
-    console.log(array)
-    console.log("|||11112222")
+ 
     setArrayUpdate([...array])
   };
   const rowSelection = {
@@ -839,7 +615,7 @@ export default function User() {
     setRoleSelect(e)
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -866,7 +642,6 @@ export default function User() {
           <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
-                // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                 style={{ width: '100%' }}
                 ranges={{
@@ -898,44 +673,14 @@ export default function User() {
               </Select>
             </div>
           </Col>
-          {/* <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Lọc theo vai trò" onChange={handleChange}>
-                <Option value="admin">Admin</Option>
-                <Option value="seller">Seller</Option>
-              </Select>
-            </div>
-          </Col> */}
+         
         </Row>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
         {
           selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
-              {/* <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio> */}
               <Radio onClick={showDrawerUpdate} value={2}>Cập nhật riêng lẻ</Radio>
-              {/* <Popconfirm
-                title="Bạn chắc chắn muốn xóa?"
-                onConfirm={confirm}
-                onCancel={cancel}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={3}>     Vô hiệu hóa</Radio>
-              </Popconfirm>
-              <Popconfirm
-                title="Bạn chắc chắn muốn kích hoạt lại?"
-                onConfirm={confirmActive}
-                onCancel={cancelActive}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Radio value={4}>Kích hoạt</Radio>
-              </Popconfirm> */}
+         
             </Radio.Group>
           ) : ('')
         }
@@ -959,10 +704,7 @@ export default function User() {
               <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
             </div></Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
+        
         </div>
       </Modal>
       <Drawer
@@ -1016,7 +758,6 @@ export default function User() {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Email</div>}
                   name="emailAdd"
                   className={styles["supplier_add_content_supplier_code_input"]}
@@ -1029,7 +770,6 @@ export default function User() {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
 
                   name="phoneNumber"
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
@@ -1046,7 +786,6 @@ export default function User() {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
 
                   name="password"
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Mật khẩu</div>}
@@ -1060,7 +799,6 @@ export default function User() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Địa chỉ</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
 
                   name="addressAdd"
                   className={styles["supplier_add_content_supplier_code_input"]}
@@ -1099,19 +837,7 @@ export default function User() {
             </Col>
           </Row>
           <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ghi chú</div>
-                <Form.Item
-                  name="note"
-
-                  hasFeedback
-
-                >
-                  <Input.TextArea placeholder="Nhập ghi chú" rows={4} />
-                </Form.Item>
-              </div>
-            </Col> */}
+          
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item label={<div style={{ color: 'black', fontWeight: '600' }}>Vai trò</div>} name="roleAdd" rules={[{ required: true, message: "Giá trị rỗng!" }]}>
@@ -1130,13 +856,7 @@ export default function User() {
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
+         
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -1197,15 +917,9 @@ export default function User() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
+                             
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1222,15 +936,8 @@ export default function User() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Họ</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1331,6 +1038,6 @@ export default function User() {
         }
 
       </Drawer>
-    </UI>
+    </>
   );
 }

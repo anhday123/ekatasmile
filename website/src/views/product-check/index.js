@@ -1,17 +1,11 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../product-check/product-check.module.scss";
 import React, { useState } from "react";
 import { Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { PlusCircleOutlined, DeleteOutlined, EditOutlined, FileExcelOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -85,17 +79,14 @@ export default function ProductCheck() {
     },
     {
       title: 'Tổng SL thực tế',
-      // dataIndex: 'warehouseCheck',
       width: 150,
     },
     {
       title: 'Tổng SL hệ thống',
-      // dataIndex: 'warehouseCheck',
       width: 150,
     },
     {
       title: 'Đơn vị',
-      // dataIndex: 'warehouseCheck',
       width: 150,
     },
     {
@@ -118,11 +109,7 @@ export default function ProductCheck() {
       dataIndex: 'note',
       width: 150,
     },
-    // {
-    //   title: 'Action',
-    //   dataIndex: 'action',
-    //   width: 150,
-    // },
+  
   ];
 
   const dataPromotion = [];
@@ -137,10 +124,7 @@ export default function ProductCheck() {
       checkDate: `07:30, 2021/07/01 ${i}`,
       createdEmployee: `Nguyễn Văn Tỷ`,
       note: `không có ${i}`,
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   {/* <Link to="/actions/product-check/view/8" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link> */}
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
+
     });
   }
 
@@ -163,7 +147,7 @@ export default function ProductCheck() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Danh sách phiếu kiểm hàng</div>
@@ -242,12 +226,9 @@ export default function ProductCheck() {
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
+     
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

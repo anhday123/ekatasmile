@@ -1,30 +1,16 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Option } = Select;
 export default function SupplierAdd() {
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/17">
 
@@ -34,8 +20,6 @@ export default function SupplierAdd() {
         </Link>
         <Form
           className={styles["supplier_add_content"]}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -61,7 +45,7 @@ export default function SupplierAdd() {
                   name="birthDay"
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
                 >
-                  <DatePicker style={{ width: '100%' }} onChange={onChange} />
+                  <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
 
               </div>
@@ -226,6 +210,6 @@ export default function SupplierAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,20 +1,14 @@
-import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import styles from "./../view/view.module.scss";
-import { Select, Button, Input, Row, Col } from "antd";
+import { Row, Col } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 export default function EmployeeView() {
-  const { Search } = Input;
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/employee/19">
 
@@ -44,7 +38,6 @@ export default function EmployeeView() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
             </Col>
             <Col
               xs={24}
@@ -64,11 +57,6 @@ export default function EmployeeView() {
                 </Col>
               </Row>
 
-
-              {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
             </Col>
 
           </Row>
@@ -92,8 +80,6 @@ export default function EmployeeView() {
 
               </Row>
 
-
-              {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
             </Col>
             <Col
               xs={24}
@@ -114,7 +100,6 @@ export default function EmployeeView() {
 
               </Row>
 
-              {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
             </Col>
           </Row>
 
@@ -139,7 +124,6 @@ export default function EmployeeView() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -161,7 +145,6 @@ export default function EmployeeView() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -186,7 +169,6 @@ export default function EmployeeView() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -207,7 +189,6 @@ export default function EmployeeView() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -232,7 +213,6 @@ export default function EmployeeView() {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -254,7 +234,6 @@ export default function EmployeeView() {
                 </Col>
 
               </Row>
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
 
@@ -265,6 +244,6 @@ export default function EmployeeView() {
         </div>
 
       </div>
-    </UI >
+    </ >
   );
 }

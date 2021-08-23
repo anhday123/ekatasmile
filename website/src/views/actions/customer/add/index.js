@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Radio } from "antd";
 import {
@@ -78,7 +77,7 @@ export default function CustomerAdd() {
     getAddress(apiProvince, setLocation, 'province')
   }, [])
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/customer/12">
 
@@ -119,27 +118,6 @@ export default function CustomerAdd() {
                 </Form.Item>
               </div>
             </Col>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}> */}
-            {/* <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Tên khách hàng</div>
-                <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  name="first_name"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Họ" />
-                </Form.Item>
-                <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  name="last_name"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Tên" />
-                </Form.Item>
-              </div> */}
-            {/* </Col> */}
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ngày sinh</div>
@@ -153,20 +131,6 @@ export default function CustomerAdd() {
 
               </div>
             </Col>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div> */}
-            {/* <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã khách hàng</div> */}
-            {/* <Form.Item
-                  // label="Mã nhà cung cấp"
-
-                  name="code"
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập mã khách hàng" />
-                </Form.Item> */}
-            {/* </div>
-            </Col> */}
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}><span style={{ color: '#ff4d4f' }}>*</span> Liên hệ</div>
@@ -263,13 +227,6 @@ export default function CustomerAdd() {
             </Radio.Group>
           </Row>
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -280,6 +237,6 @@ export default function CustomerAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,24 +1,15 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
-import { Popconfirm, message, Select, Button, Table, Input, Space, Popover, Row, Col, DatePicker } from "antd";
+import { Popconfirm, message, Select, Button, Table, Input, Popover, Row, Col, DatePicker } from "antd";
 import React, { useState } from "react";
 import {
   ArrowLeftOutlined,
   AudioOutlined,
-  EditOutlined,
-  WarningOutlined,
+
   FileExcelOutlined,
-  DeleteOutlined,
-  PlusCircleOutlined,
+
   FileImageOutlined,
 } from "@ant-design/icons";
 import moment from 'moment';
@@ -82,12 +73,7 @@ function cancel(e) {
 }
 const { Search } = Input;
 const data = [];
-const content = (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', textAlign: 'center' }}>Số lượng báo động: 10</div>
-);
-const contentAttention = (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', textAlign: 'center', color: 'red' }}>Số lượng báo động: 20</div>
-);
+
 for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
@@ -99,33 +85,14 @@ for (let i = 0; i < 46; i++) {
     producttype: "Quà lưu niệm",
     productquantity: i,
     supplier: 'An Phát',
-    // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-    //   {/* <div style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div> */}
-    //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-    // </div>
+
   });
 }
-const suffix = (
-  <AudioOutlined
-    style={{
-      fontSize: 16,
-      color: "#1890ff",
-    }}
-  />
-);
 
 const onSearch = (value) => console.log(value);
 export default function SupplierView() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
+
   const { Option } = Select;
   const onSelectChange = (selectedRowKeys) => {
     console.log("selectedRowKeys changed: ", selectedRowKeys);
@@ -135,23 +102,7 @@ export default function SupplierView() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const hasSelected = selectedRowKeys.length > 0;
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
-  function handleChangeProductType(value) {
-    console.log(`selected ${value}`);
-  }
-  function handleChangeProductStatus(value) {
-    console.log(`selected ${value}`);
-  }
-  function handleChangeProductBrand(value) {
-    console.log(`selected ${value}`);
-  }
+
   const content = (
     <div>
       <div>Gợi ý 1</div>
@@ -159,7 +110,7 @@ export default function SupplierView() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["view_product"]}>
         <Row style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 228, 228)', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
@@ -207,26 +158,25 @@ export default function SupplierView() {
                 Today: [moment(), moment()],
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
               }}
-              onChange={onChange}
             />
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
-            <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
+            <DatePicker style={{ width: '100%' }}  />
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
-            <Select style={{ width: '100%' }} placeholder="Loại sản phẩm" onChange={handleChangeProductType}>
+            <Select style={{ width: '100%' }} placeholder="Loại sản phẩm" >
               <Option value="productType1">Loại 1</Option>
               <Option value="productType2">Loại 2</Option>
             </Select>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
-            <Select style={{ width: '100%' }} placeholder="Lọc theo trạng thái sản phẩm" onChange={handleChangeProductStatus}>
+            <Select style={{ width: '100%' }} placeholder="Lọc theo trạng thái sản phẩm" >
               <Option value="productStatus1">Trạng thái 1</Option>
               <Option value="productStatus2">Trạng thái 2</Option>
             </Select>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={7} xl={7}>
-            <Select style={{ width: '100%' }} placeholder="Lọc sản phẩm theo nhãn hiệu" onChange={handleChangeProductBrand}>
+            <Select style={{ width: '100%' }} placeholder="Lọc sản phẩm theo nhãn hiệu" >
               <Option value="productBrand1">Nhãn hiệu 1</Option>
               <Option value="productBrand2">Nhãn hiệu 2</Option>
             </Select>
@@ -258,6 +208,6 @@ export default function SupplierView() {
           <Button type="primary">Lưu</Button>
         </div> */}
       </div>
-    </UI>
+    </>
   );
 }

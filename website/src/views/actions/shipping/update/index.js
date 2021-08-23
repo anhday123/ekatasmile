@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import { Select, Button, Input, Form, Row, Col, DatePicker, Space, notification } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -97,7 +96,7 @@ export default function CustomerUpdate(propsData) {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/shipping/18">
 
@@ -219,6 +218,6 @@ export default function CustomerUpdate(propsData) {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

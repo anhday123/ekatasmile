@@ -1,10 +1,7 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import moment from "moment";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
   useParams
 } from "react-router-dom";
@@ -12,74 +9,34 @@ import React, { useState } from "react";
 import {
   Select,
   DatePicker,
-  Space,
   Row,
   Form,
   Col,
   Input,
-  Checkbox,
-  Popover,
+
   Button,
-  Table,
 } from "antd";
 import {
-  AudioOutlined,
-  FileImageOutlined,
-  DeleteOutlined,
-  ArrowLeftOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
-const { TextArea } = Input;
-const { Option } = Select;
-const provinceData = ["Zhejiang", "Jiangsu"];
-const cityData = {
-  Zhejiang: ["Lọc", "Doanh thu", "Chi phí"],
-  Jiangsu: ["Nanjing", "Suzhou", "Zhenjiang"],
-};
 
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
+const { Option } = Select;
 export default function RevenExpenAdd() {
   let {slug} = useParams();
-  console.log(slug)
-  const [value, setValue] = useState("");
-  const [cities, setCities] = React.useState(cityData[provinceData[0]]);
-  const [secondCity, setSecondCity] = React.useState(
-    cityData[provinceData[0]][0]
-  );
-
-  const handleProvinceChange = (value) => {
-    setCities(cityData[value]);
-    setSecondCity(cityData[value][0]);
-  };
-
-  const onSecondCityChange = (value) => {
-    setSecondCity(value);
-  };
-  const { RangePicker } = DatePicker;
 
   const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
 
-  const dateFormatList = ["DD/MM/YYYY", "DD/MM/YY"];
-
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
-  const onChange = ({ target: { value } }) => {
-    setValue({ value });
-  };
-  // console.log(router);
   var  show  = slug;
   const onFinish = (fieldsValue) => {
     const values = {
       ...fieldsValue,
       "date-picker": fieldsValue["date-picker"].format("YYYY-MM-DD"),
     };
-    console.log("Received values of form: ", values);
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+
   return (
-    <UI>
+    <>
       <div className={styles["reven_add"]}>
         <Link  className={styles["reven_add_title"]} to="/reven-expen/12">
    
@@ -95,7 +52,6 @@ export default function RevenExpenAdd() {
         <Form
           onFinish={onFinish}
           className={styles["reven_add_bottom"]}
-          onFinishFailed={onFinishFailed}
         >
           <Row className={styles["reven_add_bottom_row"]}>
             <Col
@@ -395,6 +351,6 @@ export default function RevenExpenAdd() {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './../ExportCSV/exportcsv.module.scss'
-import { Select, Button, } from "antd";
-import { ToTopOutlined, FileExcelOutlined } from '@ant-design/icons'
+import { Button, } from "antd";
+import { FileExcelOutlined } from '@ant-design/icons'
 
 import * as FileSaver from 'file-saver'
 import * as XLSX from 'xlsx'

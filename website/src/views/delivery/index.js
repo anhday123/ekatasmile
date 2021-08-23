@@ -1,11 +1,8 @@
-import UI from "./../../components/Layout/UI";
 import React, { useState } from "react";
 import styles from "./../delivery/delivery.module.scss";
 import moment from "moment";
 
 import {
-  DownloadOutlined,
-  AudioOutlined,
   FileExcelOutlined,
   FileImageOutlined,
 } from "@ant-design/icons";
@@ -13,41 +10,18 @@ import {
   Select,
   Row,
   Col,
-  Radio,
   DatePicker,
   Tabs,
   Popover,
   Input,
-  Space,
   Cascader,
   Table,
   Button,
 } from "antd";
 const { Option } = Select;
-const provinceData = ["Zhejiang", "Jiangsu"];
-const cityData = {
-  Zhejiang: ["Chọn cửa hàng", "Cửa hàng A", "Cửa hàng B", "Cửa hàng C"],
-  Jiangsu: ["Nanjing", "Suzhou", "Zhenjiang"],
-};
-const provinceDataFilter = ["Zhejiang", "Jiangsu"];
-const cityDataFilter = {
-  Zhejiang: [
-    "Lọc phiếu giao hàng",
-    "Trạng thái",
-    "Trạng thái thu hộ",
-    "Trạng thái giao hàng",
-    "Ngày tạo",
-    "Đã được tag với",
-    "Địa chỉ giao hàng",
-    "Nhà vận chuyển",
-    "Sản phẩm",
-  ],
-  Jiangsu: ["Nanjing", "Suzhou", "Zhenjiang"],
-};
+
 const { TabPane } = Tabs;
-function callback(key) {
-  console.log(key);
-}
+
 const columns = [
   {
     title: "Mã giao hàng",
@@ -137,92 +111,20 @@ const cityDataProduct = {
 };
 export default function Delivery() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [cities, setCities] = React.useState(cityData[provinceData[0]]);
-  const [secondCity, setSecondCity] = React.useState(
-    cityData[provinceData[0]][0]
-  );
-  const [mode, setMode] = useState("top");
-
-  const [citiesFilter, setCitiesFilter] = React.useState(
-    cityDataFilter[provinceDataFilter[0]]
-  );
-  const [secondCityFilter, setSecondCityFilter] = React.useState(
-    cityDataFilter[provinceDataFilter[0]][0]
-  );
-
-  const handleProvinceChangeFilter = (value) => {
-    setCitiesFilter(cityDataFilter[value]);
-    setSecondCityFilter(cityDataFilter[value][0]);
-  };
-
-  const onSecondCityChangeFilter = (value) => {
-    setSecondCityFilter(value);
-  };
-
-  const handleProvinceChange = (value) => {
-    setCities(cityData[value]);
-    setSecondCity(cityData[value][0]);
-  };
-
-  const onSecondCityChange = (value) => {
-    setSecondCity(value);
-  };
-  const [value, setValue] = React.useState(1);
-  const [size, setSize] = useState("small");
-  const onChange = (e) => {
-    console.log("radio checked", e.target.value);
-    setValue(e.target.value);
-  };
-  const handleModeChange = (e) => {
-    const mode = e.target.value;
-    setMode({ mode });
-  };
-  // const onChange = (e) => {
-  //   setSize({ size: e.target.value });
-  //   // this.setState({ size: e.target.value });
-  // };
+ 
   const { Search } = Input;
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: "#1890ff",
-      }}
-    />
-  );
-
-  const onSearch = (value) => console.log(value);
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
 
   const onSelectChange = (selectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys);
   };
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const hasSelected = selectedRowKeys.length > 0;
-
-  function onChangeCascader(value) {
-    console.log(value);
-  }
-  const { RangePicker } = DatePicker;
 
   const dateFormat = "YYYY/MM/DD";
-  const monthFormat = "YYYY/MM";
 
-  const dateFormatList = ["DD/MM/YYYY", "DD/MM/YY"];
 
-  const customFormat = (value) => `custom format: ${value.format(dateFormat)}`;
   const content = (
     <div className={styles["date_delivery"]}>
       <div>Hiển thị phiếu giao hàng theo</div>
@@ -245,10 +147,6 @@ export default function Delivery() {
     cityDataDate[provinceDataDate[0]][0]
   );
 
-  const handleProvinceChangeDate = (value) => {
-    setCitiesDate(cityDataDate[value]);
-    setSecondCityDate(cityDataDate[value][0]);
-  };
 
   const onSecondCityChangeDate = (value) => {
     setSecondCityDate(value);
@@ -260,10 +158,6 @@ export default function Delivery() {
     cityDataTag[provinceDataTag[0]][0]
   );
 
-  const handleProvinceChangeTag = (value) => {
-    setCitiesTag(cityDataTag[value]);
-    setSecondCityTag(cityDataTag[value][0]);
-  };
 
   const onSecondCityChangeTag = (value) => {
     setSecondCityTag(value);
@@ -275,10 +169,6 @@ export default function Delivery() {
     cityDataAddress[provinceDataAddress[0]][0]
   );
 
-  // const handleProvinceChangyAddress = (value) => {
-  //   setCitieyAddress(cityDatyAddress[value]);
-  //   setSecondCityAddress(cityDatyAddress[value][0]);
-  // };
 
   const onSecondCityChangeAddress = (value) => {
     setSecondCityAddress(value);
@@ -290,11 +180,6 @@ export default function Delivery() {
     cityDataProvince[provinceDataProvince[0]][0]
   );
 
-  const handleProvinceChangyProvince = (value) => {
-    setCitieyProvince(cityDataProvince[value]);
-    setSecondCityProvince(cityDataProvince[value][0]);
-  };
-
   const onSecondCityChangeProvince = (value) => {
     setSecondCityProvince(value);
   };
@@ -305,10 +190,6 @@ export default function Delivery() {
     cityDataDistrict[provinceDataDistrict[0]][0]
   );
 
-  const handleDistrictChangyDistrict = (value) => {
-    setCitieyDistrict(cityDataDistrict[value]);
-    setSecondCityDistrict(cityDataDistrict[value][0]);
-  };
 
   const onSecondCityChangeDistrict = (value) => {
     setSecondCityDistrict(value);
@@ -320,10 +201,6 @@ export default function Delivery() {
     cityDataProduct[provinceDataProduct[0]][0]
   );
 
-  const handleDistrictChangyProduct = (value) => {
-    setCitieyProduct(cityDataProduct[value]);
-    setSecondCityProduct(cityDataProduct[value][0]);
-  };
 
   const onSecondCityChangeProduct = (value) => {
     setSecondCityProduct(value);
@@ -625,7 +502,7 @@ export default function Delivery() {
     console.log(`selected ${value}`);
   }
   return (
-    <UI>
+    <>
       <div className={styles["import_manager"]}>
         <Row className={styles["import_manager_title"]}>
           <Col
@@ -667,7 +544,7 @@ export default function Delivery() {
           </Col>
         </Row>
         <div className={styles["card-container"]}>
-          <Tabs defaultActiveKey="1" onChange={callback}>
+          <Tabs defaultActiveKey="1" >
             <TabPane tab="Tất cả phiếu giao hàng" key="1">
               <div className={styles["import_manager_tabs"]}>
                 <Row className={styles["import_manager_tabs_row"]}>
@@ -685,19 +562,8 @@ export default function Delivery() {
                         // expandTrigger="hover"
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
                     </div>
                   </Col>
                   <Col
@@ -712,7 +578,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -744,23 +609,12 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
+                      
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
+                     
                     </div>
                   </Col>
                   <Col
@@ -775,7 +629,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -806,23 +659,11 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
+                      
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
                     </div>
                   </Col>
                   <Col
@@ -837,7 +678,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -868,23 +708,11 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
+                       
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
                     </div>
                   </Col>
                   <Col
@@ -899,7 +727,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -930,23 +757,11 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
+                     
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
                     </div>
                   </Col>
                   <Col
@@ -961,7 +776,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -992,23 +806,10 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
                     </div>
                   </Col>
                   <Col
@@ -1023,7 +824,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -1055,23 +855,12 @@ export default function Delivery() {
                   >
                     <div>
                       <Cascader
-                        // autoFocus="true"
-                        // expandTrigger="hover"
+                
                         className={styles["import_manager_tabs_col_child"]}
                         options={optionsCascader}
-                        onChange={onChangeCascader}
                         placeholder="Chọn điều kiện lọc phiếu giao hàng"
                       />
-                      ,
-                      {/* <Select
-                        className={styles["import_manager_tabs_col_child"]}
-                        value={secondCityFilter}
-                        onChange={onSecondCityChangeFilter}
-                      >
-                        {citiesFilter.map((city) => (
-                          <Option key={city}>{city}</Option>
-                        ))}
-                      </Select> */}
+                    
                     </div>
                   </Col>
                   <Col
@@ -1086,7 +875,6 @@ export default function Delivery() {
                       <div>
                         <Search
                           placeholder="Tìm kiếm phiếu giao hàng"
-                          onSearch={onSearch}
                           enterButton
                         />
                       </div></Popover>
@@ -1107,6 +895,6 @@ export default function Delivery() {
           </Tabs>
         </div>
       </div>
-    </UI >
+    </ >
   );
 }

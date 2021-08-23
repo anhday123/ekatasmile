@@ -1,121 +1,35 @@
-import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Route,
   Link,
-  Redirect,
   useParams,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { apiAllEmployee, apiFilterRoleEmployee, apiUpdateEmployee } from "../../../../apis/employee";
+import { apiFilterRoleEmployee} from "../../../../apis/employee";
 import { apiAllRole, apiSearch, updateUser } from "../../../../apis/user";
 import { apiFilterCity, getAllBranch } from "../../../../apis/branch";
 import { apiDistrict, apiProvince } from "../../../../apis/information";
 import styles from "./../view/view.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { ACTION, } from './../../../../consts/index'
-import { ExportCSV } from './../../../../components/ExportCSV/ExportCSV'
 import { apiAllProduct, } from "../../../../apis/product";
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
-import { Popconfirm, Switch, message, Select, Tag, Radio, Form, Button, Input, Row, Col, Popover, Drawer, Collapse, Table, Space, notification, DatePicker, Modal, Typography } from "antd";
-import { ArrowLeftOutlined, PlusCircleOutlined, FileImageOutlined, CheckOutlined, DeleteOutlined, AudioOutlined, FileExcelOutlined, EditOutlined, WarningOutlined } from "@ant-design/icons";
+import { Switch, Select, Radio, Form, Button, Input, Row, Col, Popover, Drawer, Collapse, Table, notification, DatePicker, Modal, Typography } from "antd";
+import { ArrowLeftOutlined, FileImageOutlined, CheckOutlined, DeleteOutlined, AudioOutlined, EditOutlined, WarningOutlined } from "@ant-design/icons";
 import { logoutAction } from "../../../../actions/login";
 export default function BranchView(propsData) {
   const state = propsData.location.state;
   const history = useHistory()
-  console.log(state)
-  console.log("|||123456999")
+
   const [modal2Visible, setModal2Visible] = useState(false)
-  const [modal3Visible, setModal3Visible] = useState(false)
   let { slug2 } = useParams();
   const [visible, setVisible] = useState(false)
-  const { Panel } = Collapse;
   const { Option } = Select;
-  const [product, setProduct] = useState([])
   const dispatch = useDispatch()
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const { RangePicker } = DatePicker;
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const modal3VisibleModal = (modal3Visible) => {
-    setModal3Visible(modal3Visible)
-  }
-  const { Text } = Typography;
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function callback(key) {
-    console.log(key);
-  }
-  const contentImage = (data) => {
-    return (
-      <div>
-        <img src={data} style={{ width: '25rem', height: '14.5rem', objectFit: 'contain' }} alt="" />
-      </div>
-    )
-  }
-  const contentProduct = (url) => {
-    return (
-      <img style={{ width: '35rem', height: '30rem', objectFit: 'contain' }} src={url} alt="" />
-    )
-  }
-  function formatCash(str) {
-    return str.split('').reverse().reduce((prev, next, index) => {
-      return ((index % 3) ? next : (next + ',')) + prev
-    })
-  }
-
-  const columnsAddProduct = [
-    {
-      title: "STT",
-      dataIndex: "stt",
-      width: 150,
-    },
-    {
-      title: "Mã sản phẩm",
-      dataIndex: "productcode",
-      width: 150,
-    },
-    {
-      title: "Tên sản phẩm",
-      dataIndex: "productname",
-      width: 150,
-    },
-    {
-      title: "Hình ảnh",
-      dataIndex: "productpicture",
-      width: 150,
-    },
-    {
-      title: "Giá (VNĐ)",
-      dataIndex: "productprice",
-      width: 150,
-    },
-    {
-      title: "Loại",
-      dataIndex: "producttype",
-      width: 150,
-    },
-    // {
-    //   title: "Số lượng",
-    //   dataIndex: "productquantity",
-    //   width: 150,
-    // },
-    {
-      title: "Nhà cung cấp",
-      dataIndex: "supplier",
-      width: 150,
-    },
-    // {
-    //   title: "Action",
-    //   dataIndex: "action",
-    //   width: 150,
-    // },
-  ];
 
   const data = [];
   const content = (
@@ -124,7 +38,6 @@ export default function BranchView(propsData) {
   const contentAttention = (
     <div className={styles['shadow']} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', textAlign: 'center', color: 'red' }}>Số lượng báo động: 20</div>
   );
-  const dataAddProduct = [];
   for (let i = 0; i < 46; i++) {
     data.push({
       key: i,
@@ -148,55 +61,9 @@ export default function BranchView(propsData) {
         }
       </div>,
       supplier: 'An Phát',
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   {/* <div style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div> */}
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
     });
   }
-  for (let i = 0; i < 46; i++) {
-    dataAddProduct.push({
-      key: i,
-      stt: i,
-      productcode: <div>{i}</div>,
-      productname: `tên sản phẩm ${i}`,
-      productpicture: <FileImageOutlined />,
-      productprice: `${i} VNĐ`,
-      producttype: "Quà lưu niệm",
-      // productquantity: <div>
-      //   {
-      //     `cho nay la input`
-      //   }
-      // </div>,
-      supplier: 'An Phát',
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   <div style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
-    });
-  }
-  function onChangeDateAlone(date, dateString) {
-    console.log(date, dateString);
-  }
-  function handleChangeProductType(value) {
-    console.log(`selected ${value}`);
-  }
-  function handleChangeProductStatus(value) {
-    console.log(`selected ${value}`);
-  }
-  function handleChangeProductBrand(value) {
-    console.log(`selected ${value}`);
-  }
-  const { Search } = Input;
 
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  );
   const dataPromotion = [];
   for (let i = 0; i < 46; i++) {
     dataPromotion.push({
@@ -215,140 +82,6 @@ export default function BranchView(propsData) {
     });
   }
 
-
-  const columnsEmployee = [
-    {
-      title: "STT",
-      dataIndex: "stt",
-      width: 150,
-    },
-    {
-      title: "Mã nhân viên",
-      dataIndex: "employeeCode",
-      width: 150,
-    },
-    {
-      title: "Tên nhân viên",
-      dataIndex: "employeeName",
-      width: 150,
-    },
-    {
-      title: "Chức vụ",
-      dataIndex: "role",
-      width: 150,
-    },
-    {
-      title: "Chi nhánh",
-      dataIndex: "branch",
-      width: 150,
-    },
-    {
-      title: "Ngày sinh",
-      dataIndex: "birthDay",
-      width: 150,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      width: 150,
-    },
-    {
-      title: "Liên hệ",
-      dataIndex: "phoneNumber",
-      width: 150,
-    },
-    {
-      title: "Địa chỉ",
-      dataIndex: "address",
-      width: 150,
-    },
-    {
-      title: "Quận/huyện",
-      dataIndex: "district",
-      width: 150,
-    },
-
-    {
-      title: "Tỉnh/thành phố",
-      dataIndex: "city",
-      width: 150,
-    },
-    {
-      title: "Tên công ty",
-      dataIndex: "workPlace",
-      width: 150,
-    },
-    // {
-    //   title: "Action",
-    //   dataIndex: "action",
-    //   width: 150,
-    // },
-  ];
-  const columnsEmployeeModal = [
-    {
-      title: "STT",
-      dataIndex: "stt",
-      width: 150,
-    },
-    {
-      title: "Mã nhân viên",
-      dataIndex: "employeeCode",
-      width: 150,
-    },
-    {
-      title: "Tên nhân viên",
-      dataIndex: "employeeName",
-      width: 150,
-    },
-    {
-      title: "Chức vụ",
-      dataIndex: "role",
-      width: 150,
-    },
-    {
-      title: "Chi nhánh",
-      dataIndex: "branch",
-      width: 150,
-    },
-    {
-      title: "Ngày sinh",
-      dataIndex: "birthDay",
-      width: 150,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      width: 150,
-    },
-    {
-      title: "Liên hệ",
-      dataIndex: "phoneNumber",
-      width: 150,
-    },
-    {
-      title: "Địa chỉ",
-      dataIndex: "address",
-      width: 150,
-    },
-    {
-      title: "Quận/huyện",
-      dataIndex: "district",
-      width: 150,
-    },
-
-    {
-      title: "Tỉnh/thành phố",
-      dataIndex: "city",
-      width: 150,
-    },
-
-    // {
-    //   title: "Action",
-    //   dataIndex: "action",
-    //   width: 150,
-    // },
-  ];
-  const dataEmployee = [];
   const dataEmployeeModal = [];
 
   for (let i = 0; i < 46; i++) {
@@ -372,39 +105,6 @@ export default function BranchView(propsData) {
       </div>
     });
   }
-  const onClickAddEmployee = () => {
-    openNotification()
-    modal3VisibleModal(false)
-  }
-  const onClickAddProduct = () => {
-    openNotification()
-    modal2VisibleModal(false)
-  }
-  const contentSearch = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
-  const apiAllProductData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiAllProduct();
-      console.log(res)
-      if (res.status === 200) {
-        setProduct(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
-
-  useEffect(() => {
-    apiAllProductData();
-  }, []);
   const username = localStorage.getItem("username");
   const [employee, setEmployee] = useState([])
   const [visibleUpdate, setVisibleUpdate] = useState(false)
@@ -417,77 +117,21 @@ export default function BranchView(propsData) {
   };
 
   const [record, setRecord] = useState({})
-  const modal2VisibleModalMain = (modal2Visible, record) => {
-    setModal2Visible(modal2Visible)
-    setRecord(record)
-  }
 
-  function onChangeDateDouble(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeDateAlone(date, dateString) {
-    console.log(date, dateString);
-  }
-
-
-
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Cập nhật thông tin nhân sự thành công.',
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    employee && employee.length > 0 && employee.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            updateUserData(object, values.user_id, 1)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
-  function cancel(e) {
-    console.log(e);
-  }
+
   const apiSearchData = async (value) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
-
       const res = await apiSearch({ keyword: value });
-
       if (res.status === 200) {
-        var array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.bussiness_id.username === username) {
-
-        //     if (values.role_id.name === "EMPLOYEE") {
-        //       array.push(values)
-        //       console.log(values)
-        //       console.log("------------------------")
-        //     }
-        //   }
-        // })
         setEmployee(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -504,35 +148,7 @@ export default function BranchView(propsData) {
       const value = e.target.value;
       apiSearchData(value);
     }, 300);
-    // 
-  };
-  const onClickUpdate = () => {
-    setVisible(false)
-    openNotification()
-  }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
-  // for (let i = 0; i < 46; i++) {
-  //   data.push({
-  //     key: i,
-  //     stt: i,
-  //     employeeCode: <div style={{ color: '#40A9FF', cursor: 'pointer' }} onClick={() => modal2VisibleModal(true)}>{`JKB ${i}`}</div>,
-  //     employeeName: `Văn tỷ + ${i}`,
-  //     role: `Nhân viên + ${i}`,
-  //     branch: `Chi nhánh ${i}`,
-  //     birthDay: `2021/06/28`,
-  //     email: 'anhhung_so11@yahoo.com',
-  //     phoneNumber: `038494349${i}`,
-  //     address: `27/27, ngô y linh`,
-  //     district: `Bình Tân ${i}`,
-  //     city: `Hồ chí minh`,
-  //     action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-  //       <div onClick={showDrawer} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-  //       {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-  //     </div>
-  //   });
-  // }
+}
   const [monthSix, setMonthSix] = useState(0)
   var temp = 0;
   const [employeeTemp, setEmployeeTemp] = useState([])
@@ -543,7 +159,6 @@ export default function BranchView(propsData) {
       dispatch({ type: ACTION.LOADING, data: true });
 
       const res = await apiSearch({ page: pagination.page, page_size: pagination.page_size });
-      console.log(res)
       if (res.status === 200) {
 
         var array = []
@@ -552,13 +167,9 @@ export default function BranchView(propsData) {
 
             if (values._role === "EMPLOYEE") {
               array.push(values)
-              console.log(values)
-              console.log("------------------------")
-              console.log(values.create_date)
               let now = moment()
               let days = now.diff(values.create_date, 'days')
               if (days > 180) {
-
                 temp++;
               }
             }
@@ -570,7 +181,6 @@ export default function BranchView(propsData) {
         setEmployeeCount(res.data.data)
       }
 
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -599,13 +209,6 @@ export default function BranchView(propsData) {
       width: 150,
       render: (text, record) => <div>
         {text.name}
-        {/* {
-          record && record.branch_id.length > 0 && record.branch_id.map((values, index) => {
-            return (
-              <div>{`-${values.name}`}</div>
-            )
-          })
-        } */}
       </div>
     },
     {
@@ -662,21 +265,9 @@ export default function BranchView(propsData) {
 
       if (res.status === 200) {
         var array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.bussiness_id.username === username) {
-
-        //     if (values.role_id.name === "EMPLOYEE") {
-        //       array.push(values)
-        //       console.log(values)
-        //       console.log("------------------------")
-        //     }
-        //   }
-        // })
         setEmployee(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       dispatch({ type: ACTION.LOADING, data: false });
@@ -741,15 +332,11 @@ export default function BranchView(propsData) {
         setSelectedRowKeys([])
         onClose()
         onCloseUpdate()
-        // setVisibleUpdate(false)
-        // history.push("/user/19");
+     
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -764,15 +351,11 @@ export default function BranchView(propsData) {
         await apiAllEmployeeData();
         openNotificationUpdate(data)
         setSelectedRowKeys([])
-        // setVisibleUpdate(false)
-        // history.push("/user/19");
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
       // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -793,11 +376,8 @@ export default function BranchView(propsData) {
     });
   };
   function confirmActive(e) {
-    console.log(e);
     employee && employee.length > 0 && employee.forEach((values, index) => {
-
       selectedRowKeys.forEach((values1, index1) => {
-
         if (values._id === values1) {
           if (values.active) {
 
@@ -813,10 +393,7 @@ export default function BranchView(propsData) {
       })
     })
   }
-  function cancelActive(e) {
-    console.log(e);
 
-  }
   const showDrawer = () => {
     setVisible(true)
   };
@@ -914,7 +491,6 @@ export default function BranchView(propsData) {
       console.log(res)
       console.log("1111111")
       if (res.status === 200) {
-        // openNotification()
 
         if (slug2 && slug2 === '2') {
           openNotificationSuccessSell()
@@ -929,7 +505,6 @@ export default function BranchView(propsData) {
       } else {
         openNotificationErrorMove()
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -950,7 +525,6 @@ export default function BranchView(propsData) {
             branch: values && values.branch && values.branch.branch_id ? values.branch.branch_id : values.branch_id, //
             phone: '',
             email: values.email, //
-
             avatar: " ",
             first_name: values && values.first_name ? values.first_name : '',
             last_name: values && values.last_name ? values.last_name : '',
@@ -964,20 +538,8 @@ export default function BranchView(propsData) {
             tax_code: " ",
             fax: " ",
           }
-          console.log(values)
-          console.log(object)
-          console.log("------------------999")
           updateUserUpdateData(object, values.user_id)
-          // if (isNaN(values.username)) {
-          //   openNotificationRegisterFailMailPhone()
-          // } else {
-          //   if (regexCheck.test(values.username)) {
-
-
-          //   } else {
-          //     openNotificationRegisterFailMailPhone()
-          //   }
-          // }
+    
         } else {
           openNotificationRegisterFailMail()
         }
@@ -1008,16 +570,6 @@ export default function BranchView(propsData) {
           console.log(object)
           console.log("------------------999")
           updateUserUpdateData(object, values.user_id)
-          // if (isNaN(values.username)) {
-          //   openNotificationRegisterFailMailPhone()
-          // } else {
-          //   if (regexCheck.test(values.username)) {
-
-
-          //   } else {
-          //     openNotificationRegisterFailMailPhone()
-          //   }
-          // }
         } else {
           openNotificationRegisterFailMail()
         }
@@ -1026,7 +578,6 @@ export default function BranchView(propsData) {
   }
   const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     employee && employee.length > 0 && employee.forEach((values, index) => {
@@ -1036,8 +587,7 @@ export default function BranchView(propsData) {
         }
       })
     })
-    console.log(array)
-    console.log("|||113")
+
     setArrayUpdate([...array])
   };
   const openNotificationErrorNotEmployee = (data) => {
@@ -1056,17 +606,12 @@ export default function BranchView(propsData) {
   };
   const onClickMove = () => {
     arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-      console.log(values)
-      console.log('1')
-      console.log(state)
-      console.log("___________________555")
       if (values.active) {
         if (values.branch.branch_id === state.branch_id) {
           openNotificationErrorNotEmployeeError(`${values.first_name} ${values.last_name}`, values.branch.name)
         } else {
           updateUserDataMove({ ...values, branch: state.branch_id }, values.user_id)
         }
-
       }
       else {
         openNotificationErrorNotEmployee(`${values.first_name} ${values.last_name}`)
@@ -1083,22 +628,10 @@ export default function BranchView(propsData) {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAllRole();
-      console.log("|||123123")
-      console.log(res)
       if (res.status === 200) {
         var array = []
-        // if(res.data.data && res.data.data.length > 0) {
-        //   res.data.data.forEach((values, index) => {
-        //     array.push(values.name)
-        //   })
-        // } 
         setPermission(res.data.data)
       }
-      // setSupplier(res.data.data)
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1117,7 +650,6 @@ export default function BranchView(propsData) {
       if (res.status === 200) {
         setBranch(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1132,11 +664,9 @@ export default function BranchView(propsData) {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiDistrict();
-      console.log(res)
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1148,11 +678,9 @@ export default function BranchView(propsData) {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiProvince();
-      console.log(res)
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1164,12 +692,9 @@ export default function BranchView(propsData) {
     try {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiFilterRoleEmployee({ _role: data });
-      console.log(res)
-      console.log("-----------")
       if (res.status === 200) {
         setEmployee(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -1186,11 +711,10 @@ export default function BranchView(propsData) {
     }
     setRoleSelect(e)
   }
-  useEffect(() => {
-    apiDistrictData();
-  }, []);
+
   useEffect(() => {
     apiProvinceData();
+    apiDistrictData();
   }, []);
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
@@ -1209,7 +733,6 @@ export default function BranchView(propsData) {
     }
   };
   function handleChangeCity(value) {
-    console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
   var employeeName = []
@@ -1217,7 +740,7 @@ export default function BranchView(propsData) {
     employeeName.push(values.role.name)
   })
   return (
-    <UI>
+    <>
 
       <div style={{ paddingBottom: '1rem' }} className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/branch/19">
@@ -1263,7 +786,6 @@ export default function BranchView(propsData) {
                 >
                   <div style={{ width: '100%' }}>
                     <RangePicker
-                      // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                       value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                       style={{ width: '100%' }}
                       ranges={{
@@ -1407,28 +929,7 @@ export default function BranchView(propsData) {
               {
                 selectedRowKeys && selectedRowKeys.length > 0 ? (
                   <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
-                    {/* <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
-                    <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio> */}
                     <Radio onClick={onClickMove} value={3}>Phân nhân sự vào chi nhánh</Radio>
-                    {/* <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn xóa?"
-                  onConfirm={confirm}
-                  onCancel={cancel}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={3}>     Vô hiệu hóa</Radio>
-                </Popconfirm>
-                <Popconfirm
-                  title="Bạn chắc chắn muốn kích hoạt lại?"
-                  onConfirm={confirmActive}
-                  onCancel={cancelActive}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Radio value={4}>Kích hoạt</Radio>
-                </Popconfirm> */}
                   </Radio.Group>
                 ) : ('')
               }
@@ -1472,9 +973,6 @@ export default function BranchView(propsData) {
                       <b>Tên nhân sự:</b> {`${record.first_name} ${record.last_name}`}
                     </div></Col>
                   </Row>
-
-
-                  {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
                 </Col>
                 <Col
                   xs={24}
@@ -1493,14 +991,7 @@ export default function BranchView(propsData) {
                       </div>
                     </Col>
                   </Row>
-
-
-                  {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
                 </Col>
-
               </Row>
               <Row className={styles["supplier_information_content_main"]}>
                 <Col
@@ -1514,16 +1005,12 @@ export default function BranchView(propsData) {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div
-
                       >
                         <b>Chức vụ:</b> {record && record.role ? record.role.name : ''}
                       </div>
                     </Col>
-
                   </Row>
 
-
-                  {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
                 </Col>
                 <Col
                   xs={24}
@@ -1541,10 +1028,7 @@ export default function BranchView(propsData) {
                         <b>Liên hệ:</b> {record.username}
                       </div>
                     </Col>
-
                   </Row>
-
-                  {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
                 </Col>
               </Row>
 
@@ -1560,16 +1044,11 @@ export default function BranchView(propsData) {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div
-
                       >
                         <b>Ngày tạo:</b> {moment(record.create_date).format('YYYY-MM-DD')}
                       </div>
                     </Col>
-
                   </Row>
-
-
-                  {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
                 </Col>
 
                 <Col
@@ -1584,14 +1063,12 @@ export default function BranchView(propsData) {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div
-
                       >
                         <b>Địa chỉ:</b> {record.address}
                       </div>
                     </Col>
 
                   </Row>
-                  {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
                 </Col>
               </Row>
 
@@ -1609,14 +1086,12 @@ export default function BranchView(propsData) {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div
-
                       >
                         <b>Quận/huyện:</b> {record.district}
                       </div>
                     </Col>
 
                   </Row>
-                  {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
                 </Col>
                 <Col
                   xs={24}
@@ -1634,11 +1109,7 @@ export default function BranchView(propsData) {
                         <b>Chi nhánh làm việc:</b> {record.branch_id}
                       </div>
                     </Col>
-
                   </Row>
-
-
-                  {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
                 </Col>
               </Row>
 
@@ -1655,7 +1126,6 @@ export default function BranchView(propsData) {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div
-
                       >
                         <b>Tỉnh/thành phố:</b> {record.province}
 
@@ -1663,7 +1133,6 @@ export default function BranchView(propsData) {
                     </Col>
 
                   </Row>
-                  {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
                 </Col>
               </Row>
 
@@ -1722,15 +1191,8 @@ export default function BranchView(propsData) {
                               <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                                 <div>
 
-                                  {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                   <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đăng nhập</div>
                                   <InputName />
-                                  {/* </Form.Item> */}
                                 </div>
                               </Col>
                             )
@@ -1767,8 +1229,7 @@ export default function BranchView(propsData) {
                               }
 
                               onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
+                             
                                 arrayUpdate[index][data] =
                                   event;
                               }}>
@@ -1800,8 +1261,7 @@ export default function BranchView(propsData) {
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
+                             
                                 arrayUpdate[index][data] =
                                   event;
                               }}>
@@ -1891,8 +1351,6 @@ export default function BranchView(propsData) {
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
                                 arrayUpdate[index][data] =
                                   event; handleChangeCity(event)
                               }}>
@@ -1924,8 +1382,6 @@ export default function BranchView(propsData) {
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
                                 arrayUpdate[index][data] =
                                   event;
                               }}>
@@ -2010,15 +1466,8 @@ export default function BranchView(propsData) {
                                 <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                                   <div>
 
-                                    {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                                     <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đăng nhập</div>
                                     <InputName />
-                                    {/* </Form.Item> */}
                                   </div>
                                 </Col>
                               )
@@ -2055,8 +1504,6 @@ export default function BranchView(propsData) {
                                 }
 
                                 onChange={(event) => {
-                                  // const value =
-                                  //   event.target.value;
                                   arrayUpdate[index][data] =
                                     event;
                                 }}>
@@ -2088,8 +1535,6 @@ export default function BranchView(propsData) {
                                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
-                                  // const value =
-                                  //   event.target.value;
                                   arrayUpdate[index][data] =
                                     event;
                                 }}>
@@ -2179,8 +1624,6 @@ export default function BranchView(propsData) {
                                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
-                                  // const value =
-                                  //   event.target.value;
                                   arrayUpdate[index][data] =
                                     event; handleChangeCity(event)
                                 }}>
@@ -2212,8 +1655,6 @@ export default function BranchView(propsData) {
                                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
-                                  // const value =
-                                  //   event.target.value;
                                   arrayUpdate[index][data] =
                                     event;
                                 }}>
@@ -2254,6 +1695,6 @@ export default function BranchView(propsData) {
         </div>
       </div>
 
-    </UI >
+    </ >
   );
 }

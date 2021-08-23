@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import {
   BrowserRouter as Router,
   Switch,
@@ -15,7 +14,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 export default function ShippingView() {
   const { Search } = Input;
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/shipping/18">
 
@@ -198,6 +197,6 @@ export default function ShippingView() {
         </div>
 
       </div>
-    </UI >
+    </ >
   );
 }

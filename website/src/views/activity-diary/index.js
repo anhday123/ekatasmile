@@ -1,20 +1,11 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../activity-diary/activity-diary.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { ACTION } from './../../consts/index'
-import { useDispatch } from 'react-redux'
 import moment from 'moment';
 import { apiAllActivityDiary, apiSearchActivityDiary } from './../../apis/activity-diary'
-import { Popconfirm, notification, message, Input, Row, Col, DatePicker, Select, Table, Modal, Popover, Button } from "antd";
+import { notification, message, Input, Row, Col, DatePicker, Select, Table, Modal, Popover, Button } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
 import { TramOutlined } from "@material-ui/icons";
 const { Option } = Select;
@@ -60,7 +51,6 @@ for (let i = 0; i < 46; i++) {
   });
 }
 export default function ActivityDiary() {
-  const dispatch = useDispatch()
   const { Search } = Input;
   const [loading, setLoading] = useState(false)
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -70,18 +60,13 @@ export default function ActivityDiary() {
   const [valueSearch, setValueSearch] = useState('')
   const apiSearchData = async (value) => {
     try {
-      // dispatch({ type: ACTION.LOADING, data: true });
       setLoading(true)
       const res = await apiSearchActivityDiary({ keyword: value });
 
       if (res.status === 200) setActivityDiary(res.data.data)
-      // dispatch({ type: ACTION.LOADING, data: false });
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   const onSearch = (e) => {
@@ -93,45 +78,29 @@ export default function ActivityDiary() {
       const value = e.target.value;
       apiSearchData(value);
     }, 300);
-    // 
   };
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const apiSearchProvinceData = async (value, data) => {
     if (data === 1) {
       try {
-        // dispatch({ type: ACTION.LOADING, data: true });
         setLoading(true)
         const res = await apiSearchActivityDiary({ type: value });
         console.log(res)
         if (res.status === 200) setActivityDiary(res.data.data)
         setLoading(false)
-        // dispatch({ type: ACTION.LOADING, data: false });
-        // openNotification();
-        // history.push(ROUTES.NEWS);
       } catch (error) {
         setLoading(false)
-        // dispatch({ type: ACTION.LOADING, data: false });
       }
     } else {
       try {
-        // dispatch({ type: ACTION.LOADING, data: true });
         setLoading(true)
         const res = await apiSearchActivityDiary({ properties: value });
         console.log(res)
         if (res.status === 200) setActivityDiary(res.data.data)
         setLoading(false)
-        // dispatch({ type: ACTION.LOADING, data: false });
-        // openNotification();
-        // history.push(ROUTES.NEWS);
+   
       } catch (error) {
         setLoading(false)
-        // dispatch({ type: ACTION.LOADING, data: false });
       }
     }
   };
@@ -229,19 +198,15 @@ export default function ActivityDiary() {
   const [clear, setClear] = useState(-1)
   const apiSearchDateData = async (start, end) => {
     try {
-      // dispatch({ type: ACTION.LOADING, data: true });
       setLoading(TramOutlined)
 
       const res = await apiSearchActivityDiary({ from_date: start, to_date: end });
       console.log(res)
       if (res.status === 200) setActivityDiary(res.data.data)
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   function onChangeDate(dates, dateStrings) {
@@ -274,7 +239,6 @@ export default function ActivityDiary() {
   const apiAllActivityDiaryData = async () => {
     try {
       setLoading(true)
-      // dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAllActivityDiary();
 
       if (res.status === 200) {
@@ -289,12 +253,9 @@ export default function ActivityDiary() {
         setPropertiesAll([...arrayProperties])
       }
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       setLoading(false)
-      // dispatch({ type: ACTION.LOADING, data: false });
     }
   };
   useEffect(() => {
@@ -322,7 +283,7 @@ export default function ActivityDiary() {
     setProperties('default')
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
@@ -331,11 +292,6 @@ export default function ActivityDiary() {
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Nhật ký hoạt động</div>
 
           </Link>
-          {/* <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/customer/add/show">
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
-            </Link>
-          </div> */}
         </div>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
@@ -407,15 +363,6 @@ export default function ActivityDiary() {
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
           <Table rowKey="_id" loading={loading} bordered columns={columnsPromotion} dataSource={activityDiary} scroll={{ y: 500 }} />
         </div>
-        {/* {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa nhật ký</Button></Popconfirm></div>) : ('')
-        } */}
       </div>
       <Modal
         title="Danh sách khách hàng dùng khuyến mãi"
@@ -433,12 +380,8 @@ export default function ActivityDiary() {
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

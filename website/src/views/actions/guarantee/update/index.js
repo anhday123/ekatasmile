@@ -1,19 +1,13 @@
-import UI from './../../../../components/Layout/UI'
 import styles from "./../add/add.module.scss";
-import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Steps, Space, Radio, Tree, Table, Modal } from "antd";
+import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, Steps, Tree, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState, useEffect } from "react";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import React, { useState} from "react";
 const { Option } = Select;
-const { Step } = Steps;
 const columns = [
   {
     title: 'STT',
@@ -81,7 +75,6 @@ const treeData = [
 ];
 export default function GuaranteeUpdate() {
   let history = useHistory();
-  const [current, setCurrent] = useState(0)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
   const [checkedKeys, setCheckedKeys] = useState(['']);
@@ -89,7 +82,6 @@ export default function GuaranteeUpdate() {
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [loading, setLoading] = useState(false)
   const onSelectChange = selectedRowKeys => {
     console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
@@ -141,9 +133,7 @@ export default function GuaranteeUpdate() {
     console.log('onSelect', info);
     setSelectedKeys(selectedKeysValue);
   };
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const content = (
     <div>
       <div>Gợi ý 1</div>
@@ -165,7 +155,7 @@ export default function GuaranteeUpdate() {
   const code = form.getFieldValue()
   code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         form={form}
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
@@ -176,49 +166,9 @@ export default function GuaranteeUpdate() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Chỉnh sửa phiếu BGHY2365</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
+     
         </Row>
-        {/* 
-        <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Steps size="small" style={{ height: '20rem', paddingTop: '2rem' }} direction="vertical" current={current}
-          // onChange={onChange}
-          >
-            <Step title="Đặt hàng"
-            // description="This is a description."
-            />
-            <Step title="Duyệt"
-            // description="This is a description."
-            />
-            <Step title="Đóng gói"
-            // description="This is a description."
-            />
-            <Step title="Xuất kho"
-            // description="This is a description."
-            />
-            <Step title="Hoàn thành"
-            // description="This is a description."
-            />
-          </Steps>
-        </div>
-        */}
+     
         <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', backgroundColor: 'white', }} xs={24} sm={24} md={24} lg={24} xl={24}>
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
@@ -331,9 +281,7 @@ export default function GuaranteeUpdate() {
                 <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
               </Popover>
             </Col>
-            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col> */}
+         
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
@@ -353,13 +301,7 @@ export default function GuaranteeUpdate() {
         <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              {/* <Col style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <Button style={{ width: '10rem' }} type="primary" danger>
-                    Hủy
-                  </Button>
-                </Form.Item>
-              </Col> */}
+           
               <Col style={{ display: 'flex', marginLeft: '2rem', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={7} lg={7} xl={7}>
                 <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                   <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -399,6 +341,6 @@ export default function GuaranteeUpdate() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch } from 'react-redux'
@@ -328,7 +327,7 @@ export default function ShippingAdd() {
   // dataValue.city = province && province.length > 0 ? province[province.length - 2].province_name : '';
   dataValue.district = districtMain && districtMain.length > 0 ? districtMain[districtMain.length - 2].district_name : '';
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/shipping/18">
 
@@ -511,6 +510,6 @@ export default function ShippingAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

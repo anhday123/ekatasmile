@@ -1,81 +1,23 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../report-import/report-import.module.scss";
 import React, { useState } from "react";
-import { Popconfirm, message, Input, Button, Row, Col, DatePicker, Select, Popover, Table, Typography } from "antd";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-  useHistory,
-  useLocation
-} from "react-router-dom";
-import { AudioOutlined, DeleteOutlined, EditOutlined, FileExcelOutlined } from "@ant-design/icons";
+import { Popconfirm, Input, Button, Row, Col, DatePicker, Popover, Table, Typography } from "antd";
+
+import { FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
+
 export default function ReportImport() {
   const { Search } = Input;
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const onSearch = (value) => console.log(value);
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      customerCode: <div>GH {i}</div>,
-      customerName: `Văn Tỷ ${i}`,
-      customerType: `Tiềm năng ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28 ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
-
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
   const columns = [
     {
       title: "STT",
@@ -139,7 +81,7 @@ export default function ReportImport() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Báo cáo nhập hàng</div>
@@ -154,7 +96,6 @@ export default function ReportImport() {
             <Popover placement="bottomLeft" content={content} trigger="click">
               <div style={{ width: '100%' }}><Search
                 placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
                 enterButton
               /></div></Popover>
           </Col>
@@ -166,13 +107,12 @@ export default function ReportImport() {
                   Today: [moment(), moment()],
                   'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
-                onChange={onChange}
               />
             </div>
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} onChange={onChangeMain} />
+              <DatePicker style={{ width: '100%' }}/>
             </div>
           </Col>
         </Row>
@@ -194,11 +134,7 @@ export default function ReportImport() {
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Danh sách đơn hàng nhập</div>
-          {/* <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/customer/add/show">
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
-            </Link>
-          </div> */}
+         
         </div>
         <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
@@ -235,7 +171,6 @@ export default function ReportImport() {
                     </Table.Summary.Cell>
                     <Table.Summary.Cell >
                       <Text>Tổng cộng:</Text>
-                      {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
@@ -249,15 +184,12 @@ export default function ReportImport() {
                     </Table.Summary.Cell>
                     <Table.Summary.Cell >
                       <Text></Text>
-                      {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell >
                       <Text></Text>
-                      {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell >
                       <Text></Text>
-                      {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </Table.Summary>
@@ -270,13 +202,11 @@ export default function ReportImport() {
         {
           selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
             title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
             okText="Yes"
             cancelText="No"
           ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa báo cáo</Button></Popconfirm></div>) : ('')
         }
       </div>
-    </UI>
+    </>
   );
 }

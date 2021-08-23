@@ -1,23 +1,17 @@
-import UI from "../../../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import styles from "./../information/information.module.scss";
-import { Select, Button, Input, Row, Col } from "antd";
+import {Row, Col } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 export default function SupplierInformation(propsData) {
-  const { Search } = Input;
   const dataSupplier = propsData.location.state;
 
   console.log(dataSupplier)
   return (
-    <UI>
+    <>
       <div className={styles["supplier_information"]}>
         <Link className={styles["supplier_information_title"]} to="/supplier/10">
 
@@ -47,9 +41,6 @@ export default function SupplierInformation(propsData) {
                 </div></Col>
 
               </Row>
-
-
-              {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
             </Col>
             <Col
 
@@ -72,10 +63,6 @@ export default function SupplierInformation(propsData) {
               </Row>
 
 
-              {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
             </Col>
 
           </Row>
@@ -100,7 +87,6 @@ export default function SupplierInformation(propsData) {
               </Row>
 
 
-              {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
             </Col>
             <Col
               xs={24}
@@ -121,7 +107,6 @@ export default function SupplierInformation(propsData) {
 
               </Row>
 
-              {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
             </Col>
           </Row>
           <Row className={styles["supplier_information_content_main"]}>
@@ -145,7 +130,6 @@ export default function SupplierInformation(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
             </Col>
 
             <Col
@@ -168,7 +152,6 @@ export default function SupplierInformation(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
             </Col>
           </Row>
           <Row className={styles["supplier_information_content_main"]}>
@@ -192,13 +175,12 @@ export default function SupplierInformation(propsData) {
               </Row>
 
 
-              {/* <Input style={{ width: "100%" }} defaultValue="0384943497" /> */}
             </Col>
 
             {/*  */}
           </Row>
         </div>
       </div>
-    </UI >
+    </ >
   );
 }

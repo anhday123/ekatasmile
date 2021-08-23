@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from "react";
-import LayoutMain from './../../components/Layout/UI'
 import styles from "./overview.module.scss";
-import ChartBar from "react-google-charts";
-import Chart from './../../components/chart-page/ChartPage'
-// import { ACTION, PERMISSIONS } from "consts";
-import { BarChart, LineChart } from "react-chartkick";
+
+import { LineChart } from "react-chartkick";
 import "chartkick/chart.js";
 //components antd
-import { Select, DatePicker, Row, Col, Popover, Divider, Button, Input } from "antd";
+import { Select, DatePicker, Row, Col, Popover,  } from "antd";
 
 //icons antd
 import {
   ShoppingCartOutlined,
   InfoCircleOutlined,
-  PlusOutlined
 } from "@ant-design/icons";
 import { getStatis } from "../../apis/statis";
 
@@ -25,36 +21,10 @@ function formatCash(str) {
 }
 const Overview = () => {
   const [statis, setStatis] = useState({})
-  function onChange(date, dateString) {
-    console.log(date, dateString);
-  }
-  const { Option } = Select;
-  // const searchSitesData = async (value) => {
-  //   try {
-  //     dispatch({ type: ACTION.LOADING, data: true });
-  //     console.log(value);
-  //     const res = await searchSites({sites : value});
-  //     console.log(res);
-  //     // if (res.status === 200) setStatus(res.data.status);
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //   } catch (error) {
-  //     console.log(error);
-  //     dispatch({ type: ACTION.LOADING, data: false });
-  //   }
-  // };
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-    // searchSitesData(value);
-  }
 
-  function onChangeDateFA(date, dateString) {
-    console.log(date, dateString);
-  }
-  const contentTotalCustomTransaction = (
-    <div>
-      Total custom transaction
-    </div>
-  );
+  const { Option } = Select;
+
+ 
   const contentProfit = (
     <div>
       Profit = Seller's Revenue - Total Base cost
@@ -65,16 +35,7 @@ const Overview = () => {
       Revenue = SUM OF [Sale price * Line Item Quantity]
     </div>
   );
-  const contentTotalBaseCost = (
-    <div>
-      Total Base cost =SUM OF [(Base cost - Discount + Extra Shipping Fee) * Line Item Quantity]
-    </div>
-  );
-  const contentBalance = (
-    <div>
-      The money amount that is available for charging orders
-    </div>
-  );
+
   const contentOrder = (
     <div>
       Number of Orders in this app including line items in each
@@ -95,7 +56,7 @@ const Overview = () => {
     getAllStatis()
   }, [])
   return (
-    <LayoutMain>
+    <>
       <div className={styles["dashboard_manager"]}>
         <div className={styles["dashboard_manager_date"]}>
           <Row className={styles["dashboard_manager_date_row"]}>
@@ -118,7 +79,6 @@ const Overview = () => {
                           styles["dashboard_manager_date_row_col_select"]
                         }
                         defaultValue="default"
-                        onChange={handleChange}
                       >
                         <Option value="default">Tất cả chi nhánh</Option>
                         <Option value="branch1">
@@ -143,7 +103,6 @@ const Overview = () => {
                         className={
                           styles["dashboard_manager_date_row_col_select"]
                         }
-                        onChange={onChange}
                       />
                     </div>
                   </Col>
@@ -154,9 +113,7 @@ const Overview = () => {
         </div>
         <div className={styles["dashboard_manager_balance"]}>
           <div className={styles["dashboard_manager_balance_title"]}>
-            {/* <div>
-              <WalletOutlined />
-            </div> */}
+          
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
           <div className={styles["dashboard_manager_balance_parent"]}>
@@ -530,9 +487,7 @@ const Overview = () => {
                   }
                 >
                   <div>Sản phẩm bán chạy</div>
-                  {/* <div>
-                    <InfoCircleOutlined />
-                  </div> */}
+              
                 </div>
                 <div style={{ width: '100%' }}>
                   {statis && statis.product_rank && statis.product_rank.slice(0, 5).map((e, index) => {
@@ -555,7 +510,7 @@ const Overview = () => {
 
 
       </div>
-    </LayoutMain>
+    </>
   );
 };
 export default Overview;

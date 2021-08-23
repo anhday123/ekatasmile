@@ -1,12 +1,7 @@
-import UI from "./../../components/Layout/UI";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import {
   Input,
@@ -114,7 +109,7 @@ export default function RevenExpend() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["reven_manager"]}>
         <div className={styles["reven_manager_title"]}>
           <div>Quản lý thu chi</div>
@@ -151,8 +146,7 @@ export default function RevenExpend() {
                   <Button
                     type="primary"
                     icon={<PlusCircleOutlined />}
-                  //   loading={loadings[1]}
-                  //   onClick={() => this.enterLoading(1)}
+               
                   >
                     Thêm phiếu thu chi
                   </Button>
@@ -163,27 +157,6 @@ export default function RevenExpend() {
         </div>
         <div className={styles["reven_manager_select"]}>
           <Row className={styles["reven_manager_select_row"]}>
-            {/* <Col
-              xs={20}
-              sm={20}
-              md={4}
-              lg={4}
-              xl={4}
-              className={styles["reven_manager_search_row_col"]}
-            >
-              <div>
-                <Select
-                  defaultValue="store0"
-                  className={styles["reven_manager_search_row_col_select"]}
-                  onChange={handleChange}
-                >
-                  <Option value="store0">Chọn cửa hàng</Option>
-                  <Option value="store1">Cửa hàng A</Option>
-                  <Option value="store2">Cửa hàng B</Option>
-                  <Option value="store3">Cửa hàng C</Option>
-                </Select>
-              </div>
-            </Col> */}
             <Col
               xs={20}
               sm={20}
@@ -273,6 +246,6 @@ export default function RevenExpend() {
           </Button>
         </div>
       </div>
-    </UI>
+    </>
   );
 }

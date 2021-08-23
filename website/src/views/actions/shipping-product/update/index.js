@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import { Select, Button, Table, Row, Col, Radio, Space, notification } from "antd";
 import {
@@ -62,7 +61,7 @@ export default function DeliveryUpdate() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <div className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }}>
 
@@ -110,6 +109,6 @@ export default function DeliveryUpdate() {
           <Button type="primary" onClick={updateDelivery}>Lưu</Button>
         </Row>
       </div>
-    </UI>
+    </>
   );
 }

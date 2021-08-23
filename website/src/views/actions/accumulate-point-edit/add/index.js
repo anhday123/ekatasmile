@@ -1,18 +1,10 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState } from "react";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Table, Modal, Popover } from "antd";
+import { Select, Button, Input, Form, Row, Col, Table, Modal, Popover } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
-import { ArrowLeftOutlined, AudioOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-const { Option } = Select;
+import { ArrowLeftOutlined,EditOutlined, DeleteOutlined } from "@ant-design/icons";
 const { Search } = Input;
 export default function AccumulatePointEditAdd() {
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -134,15 +126,12 @@ export default function AccumulatePointEditAdd() {
   const onSearch = value => console.log(value);
   const onSearchAddProduct = value => console.log(value);
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/actions/accumulate-point-edit/view">
-
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Tạo phiếu điều chỉnh tích điểm</div>
-
         </Link>
-
         <Form
           style={{}}
           className={styles["supplier_add_content"]}
@@ -278,6 +267,6 @@ export default function AccumulatePointEditAdd() {
           </Row>
         </Modal>
       </div>
-    </UI>
+    </>
   );
 }

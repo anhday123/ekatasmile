@@ -1,61 +1,25 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import {
-  Layout,
-  Menu,
+
   Col,
   Row,
-  Tabs,
-  Popover,
+ 
   Tree,
-  DatePicker,
-  Drawer,
-  Space,
-  Table,
+
   Form,
   Button,
-  Modal,
-  Select,
+  
   Input,
 } from "antd";
-// import Link from "next/link";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import React, { useState } from "react";
 import {
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
-  LogoutOutlined,
-  FilterOutlined,
-  DownloadOutlined,
-  UserOutlined,
-  InfoCircleOutlined,
-  BellOutlined,
-  ToTopOutlined,
-  AudioOutlined,
-  DashboardOutlined,
-  EyeOutlined,
-  ChromeOutlined,
-  AppstoreOutlined,
   ArrowLeftOutlined,
-  UnorderedListOutlined,
-  NotificationOutlined,
-  ShoppingCartOutlined,
-  LinkOutlined,
-  DollarOutlined,
-  CloudUploadOutlined,
-  VideoCameraOutlined,
-  QuestionCircleOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
-const { TextArea } = Input;
 const treeData = [
   {
     title: "Order",
@@ -142,13 +106,6 @@ export default function RoleAdd() {
   const onChange = ({ target: { value } }) => {
     setValue(value);
   };
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
 
   const [expandedKeys, setExpandedKeys] = useState([
     "order",
@@ -178,7 +135,7 @@ export default function RoleAdd() {
   };
 
   return (
-    <UI>
+    <>
       <div className={styles["role_add"]}>
         <Row className={styles["role_add_title_parent"]}>
           <Col
@@ -220,8 +177,6 @@ export default function RoleAdd() {
           </Col>
         </Row>
         <Form
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           className={styles["role_add_bottom"]}
         >
           <div className={styles["role_add_bottom_title"]}>
@@ -383,6 +338,6 @@ export default function RoleAdd() {
           </Col>
         </Row>
       </div>
-    </UI>
+    </>
   );
 }

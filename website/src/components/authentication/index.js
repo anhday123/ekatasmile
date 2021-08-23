@@ -2,7 +2,7 @@ import React, { cloneElement } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 import { notification } from 'antd'
-import { decodeJWT } from 'utils'
+import { decodeToken } from 'react-jwt'
 
 /**
  *
@@ -11,41 +11,42 @@ import { decodeJWT } from 'utils'
  * @param {React.ReactChildren} props.children
  */
 const Authentication = ({ permissions, title, children, ...props }) => {
-    const history = useHistory()
-    const payload = decodeJWT(localStorage.getItem('refreshToken'))
+  const history = useHistory()
+  const payload =
+    localStorage.getItem('refreshToken') &&
+    decodeToken(localStorage.getItem('refreshToken'))
+  //modify title
+  document.title = title
 
-    //modify title
-    document.title = title
-
-    //check đã đăng nhập chưa hoặc token còn hạn -> vào trang home
-    if (!permissions) {
-        if (!payload || new Date(payload.exp * 1000).getTime() < Date.now()) {
-            return cloneElement(children, props)
-        }
-        return <Redirect to={ROUTES.DASHBOARD} />
+  //check đã đăng nhập chưa hoặc token còn hạn -> vào trang home
+  if (!permissions) {
+    if (!payload || new Date(payload.exp * 1000).getTime() < Date.now()) {
+      return cloneElement(children, props)
     }
+    return <Redirect to={ROUTES.OVERVIEW} />
+  }
 
-    //check login ?
-    if (!payload) {
-        return <Redirect to={ROUTES.LOGIN} />
-    }
+  //check login ?
+  if (!payload) {
+    return <Redirect to={ROUTES.LOGIN} />
+  }
 
-    // permissions.length = 0 -> screen public
-    // permissions.length > 0 -> check user có quyền truy cập vào màn hình này
-    if (
-        permissions.length === 0 ||
-        permissions.filter((p) => payload.permissions.includes(p)).length > 0
-    ) {
-        return cloneElement(children, props)
-    }
+  // permissions.length = 0 -> screen public
+  // permissions.length > 0 -> check user có quyền truy cập vào màn hình này
+  if (
+    permissions.length === 0 ||
+    permissions.filter((p) => payload.data.role.menu_list.includes(p)).length > 0
+  ) {
+    return cloneElement(children, props)
+  }
 
-    notification.warning({
-        message: 'Permission Denied',
-    })
+  notification.warning({
+    message: 'Permission Denied',
+  })
 
-    history.goBack()
+  history.goBack()
 
-    return <div />
+  return <div />
 }
 
 export default Authentication

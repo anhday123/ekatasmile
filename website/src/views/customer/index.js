@@ -1,64 +1,23 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../customer/customer.module.scss";
 import React, { useEffect, useState } from "react";
-import { Switch, message, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, notification, Radio } from "antd";
+import { Switch, Input, Button, Row, Col, DatePicker, Select, Table, notification, Radio } from "antd";
 import {
   Link,
 } from "react-router-dom";
-import { PlusCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, EditOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import { getCustomer, updateCustomer } from "../../apis/customer";
 import CustomerInfo from "./components/customerInfo";
 import CustomerUpdate from "../actions/customer/update";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-];
 
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
 export default function Promotion() {
-  const { Search } = Input;
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [customerList, setCustomerList] = useState([])
   const [pagination, setPagination] = useState({ page: 1, size: 10 })
   const [tableLoading, setTableLoading] = useState(false)
-  const [options, setOptions] = useState([])
   const [infoCustomer, setInfoCustomer] = useState({})
   const [customerFilter, setCustomerFilter] = useState({ search: '', date: [], category: undefined })
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
@@ -71,9 +30,7 @@ export default function Promotion() {
     getAllCustomer({ from_date: dateStrings[0], to_date: dateStrings[1] })
     changeFilter('date', [moment(dateStrings[0]), moment(dateStrings[1])])
   }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
+
   function handleChange(value) {
     getAllCustomer({ type: value })
     changeFilter('category', value)
@@ -99,13 +56,7 @@ export default function Promotion() {
     setCustomerFilter(e => { return { ...e, [key]: val } })
   }
   const columnsPromotion = [
-    // {
-    //   title: 'STT',
-    //   width: 150,
-    //   render(data, record, index) {
-    //     return ((pagination.page - 1) * pagination.size) + index + 1
-    //   }
-    // },
+  
     {
       title: 'Mã khách hàng',
       dataIndex: 'code',
@@ -180,17 +131,7 @@ export default function Promotion() {
         return <Switch defaultChecked={data} onChange={(e) => changeActiveCustomer(record.customer_id, e)} />
       }
     }
-    // {
-    //   title: 'Action',
-    //   // dataIndex: 'action',
-    //   width: 100,
-    //   render(data) {
-    //     return <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-    //       <Link to={{ pathname: "/actions/customer/update/12", state: data }} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-
-    //     </div>
-    //   }
-    // },
+  
   ];
   const changePagi = (page, size) => setPagination({ page, size })
 
@@ -211,7 +152,6 @@ export default function Promotion() {
       city: 'Hồ Chí Minh',
       action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
         <Link to="/actions/customer/update/12" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
       </div>
     });
   }
@@ -219,9 +159,7 @@ export default function Promotion() {
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onSearchCustomerChoose = value => console.log(value);
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
@@ -242,26 +180,7 @@ export default function Promotion() {
       setTableLoading(false)
     }
   }
-  const handleSearch = (value) => {
-    const tmpValue = customerList.filter(e => e.code.toLowerCase().includes(value.toLowerCase()) || `${e.first_name} ${e.last_name}`.toLowerCase().includes(value.toLowerCase()))
-    // if(value === ''){
 
-    // }
-    // else
-    setOptions(
-      !tmpValue.length
-        ? []
-        : tmpValue.map(e => { return { value: e.code } }),
-    );
-  };
-
-  const handleKeyPress = (ev) => {
-    console.log('handleKeyPress', ev);
-  };
-
-  const onSelect = (value) => {
-    console.log('onSelect', value);
-  };
   const clearFilter = () => {
     getAllCustomer()
     setCustomerFilter({ search: '', date: [], category: undefined })
@@ -282,7 +201,7 @@ export default function Promotion() {
     getAllCustomer()
   }, [])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý khách hàng</div>
@@ -335,18 +254,10 @@ export default function Promotion() {
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
           <Table rowSelection={rowSelection} rowKey="_id" loading={tableLoading} pagination={{ onChange: changePagi }} columns={columnsPromotion} dataSource={customerList} scroll={{ y: 500 }} />
         </div>
-        {/* {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Xóa khách hàng</Button></Popconfirm></div>) : ('')
-        } */}
+       
       </div>
       <CustomerInfo visible={modal2Visible} onCancel={() => modal2VisibleModal(false)} infoCustomer={infoCustomer} />
       <CustomerUpdate customerData={customerListUpdate} visible={customerUpdateDrawer} onClose={() => { setCustomerUpdateDrawer(false) }} />
-    </UI>
+    </>
   );
 }

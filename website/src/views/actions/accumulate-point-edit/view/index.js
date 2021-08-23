@@ -1,17 +1,22 @@
-import UI from "../../../../components/Layout/UI";
-import styles from "./../view/view.module.scss";
-import React, { useState } from "react";
-import { Popconfirm, message, Input, Space, Button, Row, Col, DatePicker, Popover, notification, Drawer, Form, Select, Table, Modal } from "antd";
+import styles from './../view/view.module.scss'
+import React, { useState } from 'react'
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-  useHistory,
-  useLocation
-} from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
+  Popconfirm,
+  message,
+  Input,
+  Button,
+  Row,
+  Col,
+  Popover,
+  notification,
+  Drawer,
+  Form,
+  Table,
+  Modal,
+} from 'antd'
+import { Link } from 'react-router-dom'
+import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+
 const columns = [
   {
     title: 'STT',
@@ -38,9 +43,9 @@ const columns = [
     dataIndex: 'phoneNumber',
     width: 150,
   },
-];
+]
 
-const data = [];
+const data = []
 for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
@@ -49,37 +54,37 @@ for (let i = 0; i < 46; i++) {
     customerCode: `PRX ${i}`,
     customerType: `Tiềm năng ${i}`,
     phoneNumber: `038494349${i}`,
-  });
+  })
 }
+
+const { Search } = Input
 export default function AccumulatePointEditView() {
-  const { Search } = Input;
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [visible, setVisible] = useState(false)
   const showDrawer = () => {
     setVisible(true)
-  };
+  }
   const content = (
     <div>
       <div>Gợi ý 1</div>
       <div>Gợi ý 2</div>
     </div>
-  );
+  )
   const openNotification = () => {
     notification.success({
       message: 'Success',
-      description:
-        'Thêm phiếu điều chỉnh thành công.',
-    });
-  };
+      description: 'Thêm phiếu điều chỉnh thành công.',
+    })
+  }
   const onClose = () => {
     setVisible(false)
-  };
+  }
   const onCloseAdd = () => {
     setVisible(false)
     openNotification()
-  };
-  const onSearch = (value) => console.log(value);
+  }
+  const onSearch = (value) => console.log(value)
   const columnsPromotion = [
     {
       title: 'STT',
@@ -111,88 +116,185 @@ export default function AccumulatePointEditView() {
       dataIndex: 'updateDate',
       width: 150,
     },
-  ];
+  ]
 
-  const dataPromotion = [];
+  const dataPromotion = []
   for (let i = 0; i < 46; i++) {
     dataPromotion.push({
       key: i,
       stt: i,
-      ticketCode: <Link to="/actions/accumulate-point-edit/detail/19" style={{ color: '#2400FF' }}>GH {i}</Link>,
-      status: i % 2 === 0 ? (<Link to="/actions/accumulate-point-edit/detail/19" style={{ color: '#009C22' }}>Đã điều chỉnh {i}</Link>) : (<Link to="/actions/accumulate-point-edit/detail/19" style={{ color: '#FF7A00' }}>Đang điều chỉnh {i}</Link>),
+      ticketCode: (
+        <Link
+          to="/actions/accumulate-point-edit/detail/19"
+          style={{ color: '#2400FF' }}
+        >
+          GH {i}
+        </Link>
+      ),
+      status:
+        i % 2 === 0 ? (
+          <Link
+            to="/actions/accumulate-point-edit/detail/19"
+            style={{ color: '#009C22' }}
+          >
+            Đã điều chỉnh {i}
+          </Link>
+        ) : (
+          <Link
+            to="/actions/accumulate-point-edit/detail/19"
+            style={{ color: '#FF7A00' }}
+          >
+            Đang điều chỉnh {i}
+          </Link>
+        ),
       createdDate: `09:30, 2021/07/01`,
       editDate: `09:30, 2021/07/01`,
       updateDate: `09:30, 2021/07/01`,
-    });
+    })
   }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onSearchCustomerChoose = value => console.log(value);
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  const onSearchCustomerChoose = (value) => console.log(value)
+  const onSelectChange = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
-  };
+  }
   const onFinish = (values) => {
-    console.log("Success:", values);
-  };
+    console.log('Success:', values)
+  }
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+    console.log('Failed:', errorInfo)
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
   function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
+    console.log(e)
+    message.success('Click on Yes')
   }
 
   function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
+    console.log(e)
+    message.error('Click on No')
   }
   return (
-    <UI>
-      <div className={styles["promotion_manager"]}>
-        <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link to="/accumulate-point/19" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            <div style={{ marginRight: '0.5rem' }}><ArrowLeftOutlined style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} /></div>
-            <div className={styles["promotion_manager_title"]}>Phiếu điều chỉnh tích điểm</div>
+    <>
+      <div className={styles['promotion_manager']}>
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid rgb(236, 226, 226)',
+            paddingBottom: '0.75rem',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Link
+            to="/accumulate-point/19"
+            style={{
+              display: 'flex',
+              cursor: 'pointer',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <div style={{ marginRight: '0.5rem' }}>
+              <ArrowLeftOutlined
+                style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
+              />
+            </div>
+            <div className={styles['promotion_manager_title']}>
+              Phiếu điều chỉnh tích điểm
+            </div>
           </Link>
 
-          <div onClick={showDrawer} className={styles["promotion_manager_button"]}>
-            <div >
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Tạo phiếu điều chỉnh</Button>
+          <div
+            onClick={showDrawer}
+            className={styles['promotion_manager_button']}
+          >
+            <div>
+              <Button
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+              >
+                Tạo phiếu điều chỉnh
+              </Button>
             </div>
           </div>
         </div>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <Popover placement="bottomLeft" content={content} trigger="click">
-              <div style={{ width: '100%' }}><Search
-                placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
-                enterButton
-              /></div>
+              <div style={{ width: '100%' }}>
+                <Search
+                  placeholder="Tìm kiếm theo mã, theo tên"
+                  onSearch={onSearch}
+                  enterButton
+                />
+              </div>
             </Popover>
           </Col>
         </Row>
-        <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowSelection={rowSelection} columns={columnsPromotion.filter(values => values.dataIndex !== '')} dataSource={dataPromotion} scroll={{ y: 500 }} />
+        <div
+          style={{
+            width: '100%',
+            marginTop: '1rem',
+            border: '1px solid rgb(243, 234, 234)',
+          }}
+        >
+          <Table
+            rowSelection={rowSelection}
+            columns={columnsPromotion.filter(
+              (values) => values.dataIndex !== ''
+            )}
+            dataSource={dataPromotion}
+            scroll={{ y: 500 }}
+          />
         </div>
-        {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-            title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa phiếu</Button></Popconfirm></div>) : ('')
-        }
+        {selectedRowKeys && selectedRowKeys.length > 0 ? (
+          <div
+            style={{
+              marginTop: '1rem',
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Popconfirm
+              title="Bạn chắc chắn muốn xóa?"
+              onConfirm={confirm}
+              onCancel={cancel}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" danger style={{ width: '7.5rem' }}>
+                Xóa phiếu
+              </Button>
+            </Popconfirm>
+          </div>
+        ) : (
+          ''
+        )}
       </div>
       <Modal
         title="Danh sách khách hàng dùng khuyến mãi"
@@ -203,17 +305,48 @@ export default function AccumulatePointEditView() {
         onOk={() => modal2VisibleModal(false)}
         onCancel={() => modal2VisibleModal(false)}
       >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
           <Popover placement="bottomLeft" content={content} trigger="click">
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Search
+                placeholder="Tìm kiếm khách hàng"
+                onSearch={onSearchCustomerChoose}
+                enterButton
+              />
             </div>
           </Popover>
-          <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
+          <div
+            style={{
+              marginTop: '1rem',
+              border: '1px solid rgb(209, 191, 191)',
+              width: '100%',
+              maxWidth: '100%',
+              overflow: 'auto',
+            }}
+          >
+            {' '}
+            <Table
+              scroll={{ y: 500 }}
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={data}
+            />
+          </div>
         </div>
       </Modal>
       <Drawer
@@ -223,66 +356,148 @@ export default function AccumulatePointEditView() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
       >
-
         <Form
           style={{}}
-          className={styles["supplier_add_content"]}
+          className={styles['supplier_add_content']}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
+          <div
+            style={{
+              display: 'flex',
+              marginBottom: '0.75rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin phiếu
+          </div>
 
-          <div style={{ display: 'flex', marginBottom: '0.75rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu</div>
-
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã phiếu</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Mã phiếu
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="ticketCode"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Input placeholder="Nhập mã phiếu" />
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ghi chú</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Ghi chú
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="note"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Input placeholder="Nhập ghi chú" />
                 </Form.Item>
               </div>
             </Col>
           </Row>
-          <Row style={{ borderBottom: '1px solid rgb(236, 226, 226)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Row
+            style={{
+              borderBottom: '1px solid rgb(236, 226, 226)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Nhân viên tạo</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Nhân viên tạo
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="createdEmployee"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Input placeholder="Nhập tên nhân viên tạo" />
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Tag</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Tag
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="tag"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Input placeholder="Nhập tag" />
                 </Form.Item>
@@ -290,47 +505,105 @@ export default function AccumulatePointEditView() {
             </Col>
           </Row>
 
-
-          <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin khách hàng</div>
+          <div
+            style={{
+              display: 'flex',
+              marginTop: '1rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin khách hàng
+          </div>
           <Popover placement="bottomLeft" content={content} trigger="click">
-            <div style={{ display: 'flex', margin: '1rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo mã, theo tên" onSearch={onSearch} enterButton />
+            <div
+              style={{
+                display: 'flex',
+                margin: '1rem 0',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Search
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                onSearch={onSearch}
+                enterButton
+              />
             </div>
           </Popover>
-          {/* <div onClick={() => modal2VisibleModal(true)} style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem', display: 'flex', justifyContent: 'center' }}>Thêm sản phẩm</Button></div> */}
-          <div style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}>
-            <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
-
+          <div
+            style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}
+          >
+            <Table
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={data}
+              scroll={{ y: 500 }}
+            />
           </div>
-          {
-            selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-              title="Bạn chắc chắn muốn xóa"
-              onConfirm={confirm}
-              onCancel={cancel}
-              okText="Yes"
-              cancelText="No"
-            ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa phiếu</Button></Popconfirm></div>) : ('')
-          }
-          <Row style={{ marginTop: '1rem' }} className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col onClick={onClose} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
+          {selectedRowKeys && selectedRowKeys.length > 0 ? (
+            <div
+              style={{
+                marginTop: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Popconfirm
+                title="Bạn chắc chắn muốn xóa"
+                onConfirm={confirm}
+                onCancel={cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger style={{ width: '7.5rem' }}>
+                  Xóa phiếu
                 </Button>
-              </Form.Item>
-            </Col> */}
-            <Col onClick={onCloseAdd} style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+              </Popconfirm>
+            </div>
+          ) : (
+            ''
+          )}
+          <Row
+            style={{ marginTop: '1rem' }}
+            className={styles['supplier_add_content_supplier_button']}
+          >
+            <Col
+              onClick={onCloseAdd}
+              style={{
+                width: '100%',
+                marginLeft: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+              }}
+              xs={24}
+              sm={24}
+              md={5}
+              lg={4}
+              xl={3}
+            >
               <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+                <Button
+                  style={{ width: '7.5rem' }}
+                  type="primary"
+                  htmlType="submit"
+                >
                   Lưu
                 </Button>
               </Form.Item>
             </Col>
           </Row>
-
         </Form>
-
       </Drawer>
-    </UI>
-  );
+    </>
+  )
 }

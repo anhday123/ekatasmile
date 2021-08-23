@@ -1,8 +1,5 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../exchange/exchange.module.scss";
 import {
-  Select,
-
   Input,
   Row,
   Col,
@@ -83,7 +80,7 @@ export default function Exchange() {
     </div>
   );
   return (
-    <UI>
+    <>
       <div className={styles["exchange_manager"]}>
         <div className={styles["exchange_manager_title"]}>Quản lý đổi trả</div>
         <Row className={styles["exchange_manager_select"]}>
@@ -113,36 +110,14 @@ export default function Exchange() {
                 onChange={onChange}
                 className={styles["exchange_manager_select_col_calendar"]}
                 defaultValue={moment("2021/04/26", dateFormatList[0])}
-              // format={dateFormatList}
               />
             </div>
           </Col>
-          {/* <Col
-            className={styles["exchange_manager_select_col"]}
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-          >
-            <div>
-              <Select
-                defaultValue="store0"
-                className={styles["exchange_manager_select_col_right"]}
-                onChange={handleChange}
-              >
-                <Option value="store0">Chọn cửa hàng</Option>
-                <Option value="store1">Cửa hàng A</Option>
-                <Option value="store2">Cửa hàng B</Option>
-                <Option value="store3">Cửa hàng C</Option>
-              </Select>
-            </div>
-          </Col> */}
+         
         </Row>
         <div className={styles["exchange_manager_table"]}>
           <Table
 
-            // rowSelection={rowSelection}
             columns={columns}
             dataSource={data}
 
@@ -150,6 +125,6 @@ export default function Exchange() {
           />
         </div>
       </div>
-    </UI>
+    </>
   );
 }

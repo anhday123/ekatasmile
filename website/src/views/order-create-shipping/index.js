@@ -1,19 +1,12 @@
-import UI from './../../components/Layout/UI'
 import styles from "./../order-create-shipping/order-create-shipping.module.scss";
-import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Steps, Space, Radio, Tree, Table, Modal } from "antd";
+import { Popconfirm, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Space, Radio, Tree, Table, Modal } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 const { Option } = Select;
-const { Step } = Steps;
 const columns = [
   {
     title: 'STT',
@@ -87,7 +80,6 @@ const treeData = [
 ];
 export default function OrderCreateShipping() {
   let history = useHistory();
-  const [current, setCurrent] = useState(0)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
   const [checkedKeys, setCheckedKeys] = useState(['']);
@@ -96,7 +88,6 @@ export default function OrderCreateShipping() {
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
@@ -106,15 +97,7 @@ export default function OrderCreateShipping() {
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
 
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -123,19 +106,13 @@ export default function OrderCreateShipping() {
     });
   };
   const onFinish = (values) => {
-    console.log('Success:', values);
     openNotification()
     history.push('/order-list/4')
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
+ 
   const { Search } = Input;
 
-
-
-  const onSearch = value => console.log(value);
 
   const onExpand = (expandedKeysValue) => {
     console.log('onExpand', expandedKeysValue);
@@ -170,10 +147,10 @@ export default function OrderCreateShipping() {
   const code = form.getFieldValue()
   code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         form={form}
-        onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
+        className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
             <Link to="/order-list/4" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -181,56 +158,16 @@ export default function OrderCreateShipping() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo đơn hàng</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
+      
         </Row>
-        {/* 
-        <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Steps size="small" style={{ height: '20rem', paddingTop: '2rem' }} direction="vertical" current={current}
-          // onChange={onChange}
-          >
-            <Step title="Đặt hàng"
-            // description="This is a description."
-            />
-            <Step title="Duyệt"
-            // description="This is a description."
-            />
-            <Step title="Đóng gói"
-            // description="This is a description."
-            />
-            <Step title="Xuất kho"
-            // description="This is a description."
-            />
-            <Step title="Hoàn thành"
-            // description="This is a description."
-            />
-          </Steps>
-        </div>
-        */}
+       
         <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', backgroundColor: 'white', marginBottom: '1rem', padding: '1rem', }} xs={24} sm={24} md={24} lg={24} xl={24}>
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin khách hàng</div>
               <div style={{ display: 'flex', marginTop: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
                 <Popover content={content} trigger="click" placement="bottomLeft">
-                  <Search style={{ width: '100%' }} placeholder="Tìm kiếm khách hàng" onSearch={onSearch} enterButton />
+                  <Search style={{ width: '100%' }} placeholder="Tìm kiếm khách hàng" enterButton />
                 </Popover>
               </div>
             </div>
@@ -244,7 +181,6 @@ export default function OrderCreateShipping() {
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Mã đơn hàng</div>
                     <Form.Item
-                      // label="Username"
                       name="orderCode"
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
@@ -256,7 +192,6 @@ export default function OrderCreateShipping() {
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Ngày hẹn giao</div>
                     <Form.Item
-                      // label="Username"
                       name="date"
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
@@ -271,7 +206,6 @@ export default function OrderCreateShipping() {
                     <div style={{ marginBottom: '0.5rem' }}>Chi nhánh</div>
                     <Form.Item
                       name="branch"
-                      // label="Select"
                       hasFeedback
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
@@ -286,7 +220,6 @@ export default function OrderCreateShipping() {
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Tên nhân viên</div>
                     <Form.Item
-                      // label="Username"
                       name="employeeName"
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
@@ -308,12 +241,9 @@ export default function OrderCreateShipping() {
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
             <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <Popover content={content} trigger="click" placement="bottomLeft">
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
+                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" enterButton />
               </Popover>
             </Col>
-            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col> */}
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
@@ -321,8 +251,6 @@ export default function OrderCreateShipping() {
           {
             selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
               title="Bạn chắc chắn muốn xóa?"
-              onConfirm={confirm}
-              onCancel={cancel}
               okText="Yes"
               cancelText="No"
             ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
@@ -365,13 +293,6 @@ export default function OrderCreateShipping() {
         <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              {/* <Col style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <Button style={{ width: '10rem' }} type="primary" danger>
-                    Hủy
-                  </Button>
-                </Form.Item>
-              </Col> */}
               <Col style={{ display: 'flex', marginLeft: '2rem', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={7} lg={7} xl={7}>
                 <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                   <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -411,6 +332,6 @@ export default function OrderCreateShipping() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

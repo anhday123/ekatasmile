@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 import { apiAddProduct } from "../../../../../apis/product";
-import { ACTION, ROUTES } from '../../../../../consts/index'
+import { ACTION } from '../../../../../consts/index'
 import { useHistory } from 'react-router-dom'
 
 const { Option } = Select
@@ -26,7 +26,6 @@ export default function GroupProduct(props) {
   const [lengthValue, setLengthValue] = useState("")
   const [widthValue, setWidthValue] = useState("")
   const [heightValue, setHeightValue] = useState("")
-  const [listGroup, setListGroup] = useState('')
   const [warehouse, setWarehouse] = useState(props.warehouse && props.warehouse.length > 0 ? props.warehouse[0].warehouse_id : '1')
   const [category, setCategory] = useState(props.category && props.category.length > 0 ? props.category[0].category_id : '1')
   const onChangeCategory = (e) => {
@@ -49,9 +48,8 @@ export default function GroupProduct(props) {
   };
 
   const onChangeSkuMain = (e, index) => {
-    var { name, value } = e.target;
+    var { value } = e.target;
     var arrayTemp = [...options]
-    var temp = 0;
     if (value.indexOf('-') !== -1) {
       arrayTemp[0].array[index].sku = value ? value : ''
     } else {
@@ -84,7 +82,6 @@ export default function GroupProduct(props) {
     openNotificationDynamicDeleteSuccess()
     // setOptions([...array])
 
-    var arrayDelete = [...options]
     var arrayTest = []
     if (array.length === 2) {
       array.forEach((values3, index3) => {
@@ -488,7 +485,6 @@ export default function GroupProduct(props) {
     console.log('+++---------')
     if (info.fileList && info.fileList.length > 0) {
       var image;
-      var array = []
       let formData = new FormData();
       info.fileList.forEach((values, index) => {
         image = values.originFileObj
@@ -510,7 +506,7 @@ export default function GroupProduct(props) {
           .then((resp) => resp);
         let resultsMockup = await Promise.all([a]);
         dispatch({ type: ACTION.LOADING, data: false });
-        setListGroup(resultsMockup[0].data.data)
+  
         var arrayOptions = [...options]
         arrayOptions[0].array[index].image = resultsMockup[0].data.data
         setOptions([...arrayOptions])

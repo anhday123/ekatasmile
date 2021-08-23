@@ -1,34 +1,12 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, Popover, Steps, message, Tree, Table, Modal, InputNumber } from "antd";
+import { Popconfirm, Select, Button, Input, Form, Row, Col, Popover, Steps, message, Tree, Table, Modal, InputNumber } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined, AudioOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 const { Option } = Select;
-const { Step } = Steps;
 
-const steps = [
-  {
-    title: 'First',
-    content: 'First-content',
-  },
-  {
-    title: 'Second',
-    content: 'Second-content',
-  },
-  {
-    title: 'Last',
-    content: 'Last-content',
-  },
-];
 const columns = [
   {
     title: 'STT',
@@ -115,9 +93,7 @@ export default function ProductCheckAdd() {
   const [checkedKeys, setCheckedKeys] = useState(['']);
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const next = () => {
-    setCurrent(current + 1);
-  };
+
   const onSelectChange = selectedRowKeys => {
     setSelectedRowKeys(selectedRowKeys)
   };
@@ -125,16 +101,11 @@ export default function ProductCheckAdd() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const prev = () => {
-    setCurrent(current - 1);
-  };
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onChange = current => {
-    console.log('onChange:', current);
-    setCurrent(current)
-  };
+
   const onFinish = (values) => {
     console.log('Success:', values);
   };
@@ -144,14 +115,6 @@ export default function ProductCheckAdd() {
   };
   const { Search } = Input;
 
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  );
 
   const onSearch = value => console.log(value);
 
@@ -181,7 +144,7 @@ export default function ProductCheckAdd() {
     setSelectedKeys(selectedKeysValue);
   };
   return (
-    <UI>
+    <>
       <Form onFinish={onFinish}
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -191,25 +154,6 @@ export default function ProductCheckAdd() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo phiếu kiểm hàng</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
         </Row>
 
 
@@ -254,7 +198,6 @@ export default function ProductCheckAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Ghi chú</div>
                 <Form.Item
-                  // label="Username"
                   name="note"
 
                 >
@@ -266,7 +209,6 @@ export default function ProductCheckAdd() {
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Tag</div>
                 <Form.Item
-                  // label="Username"
                   name="tag"
                 >
                   <Input placeholder="Nhập tag" />
@@ -285,9 +227,6 @@ export default function ProductCheckAdd() {
                 <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
               </Popover>
             </Col>
-            {/* <Col onClick={() => modal2VisibleModal(true)} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '12.5rem' }}>Thêm nhanh sản phẩm</Button></div>
-            </Col> */}
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
             <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
@@ -302,11 +241,6 @@ export default function ProductCheckAdd() {
             ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
           }
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            {/* <Form.Item style={{ marginTop: '1rem' }}>
-              <Button type="primary" danger>
-                Hủy
-              </Button>
-            </Form.Item> */}
             <Form.Item style={{ marginLeft: '1rem', marginTop: '1rem' }}>
               <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
                 Tạo
@@ -342,6 +276,6 @@ export default function ProductCheckAdd() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

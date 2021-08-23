@@ -1,27 +1,18 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import React, { useState } from "react";
+import React from "react";
 import {
   Select,
   DatePicker,
-  Space,
   Row,
   Col,
   Form,
   Input,
-  Checkbox,
-  Popover,
   Button,
-  Table,
 } from "antd";
 import moment from "moment";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -43,7 +34,7 @@ export default function OrdersAdd() {
     form.resetFields();
   };
   return (
-    <UI>
+    <>
       <div className={styles["add_orders"]}>
         <Link className={styles["add_orders_title"]} to="/orders/4">
 
@@ -423,6 +414,6 @@ export default function OrdersAdd() {
           </div>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

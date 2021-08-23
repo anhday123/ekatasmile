@@ -1,14 +1,11 @@
-import UI from "./../../components/Layout/UI";
 import styles from "./../promotion/promotion.module.scss";
 import React, { useEffect, useState } from "react";
-import { Popconfirm, message, Input, Button, Row, Col, DatePicker, Checkbox, Select, Table, Modal, notification, Popover, Drawer, Form, Radio, InputNumber, Switch } from "antd";
+import { Popconfirm, Input, Button, Row, Col, DatePicker, Select, Table, Modal, notification, Drawer, Form,  InputNumber, Switch } from "antd";
 import {
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { PlusCircleOutlined, DeleteOutlined, EditOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, EditOutlined, } from "@ant-design/icons";
 import moment from 'moment';
 import { getPromoton, updatePromotion } from "../../apis/promotion";
 import { getAllBranch } from "../../apis/branch";
@@ -70,9 +67,7 @@ export default function Promotion() {
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [listPromotion, setListPromotion] = useState()
   const [listBranch, setListBranch] = useState([])
-  const [PromotionInfo, setPromotionInfo] = useState({})
   const [form] = Form.useForm();
-  const [valueCheckbox, setValueCheckbox] = useState(false);
   const [loading, setLoading] = useState(false)
   const [searchFilter, setSearchFilter] = useState({ keyword: '', date: [], type: undefined })
   const dispatch = useDispatch()
@@ -94,9 +89,7 @@ export default function Promotion() {
   function onChange(dates, dateStrings) {
     getPromotions({ from_date: dateStrings[0], to_date: dateStrings[1] })
   }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
+
   function handleChange(value) {
     getPromotions({ type: value })
   }
@@ -105,13 +98,6 @@ export default function Promotion() {
       title: 'Tên chương trình khuyến mãi',
       dataIndex: 'name',
       width: 200,
-      // render(data, record) {
-      //   return <span style={{ color: "#42A5F5", cursor: "pointer" }} onClick={() => {
-      //     setPromotionInfo(record);
-      //     setTiomeout(()=>modal2VisibleModal(true), 200)
-      //     }}>
-      //       {data}</span>
-      // }
     },
     {
       title: 'Loại khuyến mãi',
@@ -164,14 +150,10 @@ export default function Promotion() {
       description: `Mô tả ${i}`,
       action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
         <div onClick={showDrawer} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
       </div>
     });
   }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
-  const dateFormatList = ["YYYY/MM/DD", "DD/MM/YY"];
+
   const openNotification = (e) => {
     notification.success({
       message: 'Thành công',
@@ -179,10 +161,7 @@ export default function Promotion() {
         'Kích hoạt chương trình khuyến mãi thành công.' : "Vô hiệu hóa chương trình khuyến mãi thành công.",
     });
   };
-  const onChangeCheckbox = (e) => {
-    console.log(`checked = ${e.target.checked}`);
-    setValueCheckbox(e.target.checked);
-  };
+
   const onFinish = async (id, values) => {
     try {
       dispatch({ type: "LOADING", data: true })
@@ -205,31 +184,18 @@ export default function Promotion() {
 
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onSearchCustomerChoose = value => console.log(value);
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
   };
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
-  }
 
-  function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
-  }
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getPromotions = async (params) => {
     try {
@@ -272,7 +238,7 @@ export default function Promotion() {
     getPromotions()
   }, [pagination])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Khuyến mãi</div>
@@ -326,8 +292,6 @@ export default function Promotion() {
         {
           selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
             title="Bạn chắc chắn muốn xóa?"
-            onConfirm={confirm}
-            onCancel={cancel}
             okText="Yes"
             cancelText="No"
           ><Button type="primary" danger style={{ width: '7.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Xóa khuyến mãi</Button></Popconfirm></div>) : ('')
@@ -355,7 +319,6 @@ export default function Promotion() {
         <Form
           className={styles["promotion_add_form_parent"]}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
           form={form}
         >
           <Row className={styles["promotion_add_name"]}>
@@ -615,185 +578,13 @@ export default function Promotion() {
                 <Input.TextArea style={{ width: '100%', height: '100%' }} rows={4} placeholder="Nhập mô tả" />
               </div>
             </Col>
-            {/*             
-            <Col
-              style={{ marginTop: '1rem' }}
-              className={styles["promotion_add_name_col"]}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div className={styles["promotion_add_name_col_child"]}>
-                <div className={styles["promotion_add_form_left_title_parent"]}>
-                  Thời gian
-                </div>
-                <Row className={styles["promotion_add_option"]}>
-                  <Col
-                    className={styles["promotion_add_option_col"]}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles["promotion_add_option_col_left"]}>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles["promotion_add_option_col_left_title"]
-                        }
-                      >
-                        Ngày bắt đầu
-                      </div>
-
-                      <Form.Item
-                        className={
-                          styles["promotion_add_option_col_left_percent"]
-                        }
-                        name="date-picker_date_start"
-                      >
-                        <DatePicker
-                          style={{ width: '100% ' }}
-                          onChange={onChangeDate}
-                          initialValues={moment("2021/04/26", dateFormatList[0])}
-                        />
-                      </Form.Item>
-                    </div>
-                  </Col>
-                  <Col
-                    className={styles["promotion_add_option_col"]}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles["promotion_add_option_col_left"]}>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles["promotion_add_option_col_left_title_left"]
-                        }
-                      >
-                        Thời gian
-                      </div>
-                      <Form.Item
-                        className={
-                          styles["promotion_add_option_col_left_percent"]
-                        }
-                        name="date-picker_date_1"
-                      >
-                        <DatePicker
-                          style={{ width: '100% ' }}
-                          onChange={onChangeDate}
-                          initialValues={moment("2021/04/26", dateFormatList[0])}
-                          format={dateFormatList}
-                        />
-                      </Form.Item>
-                    </div>
-                  </Col>
-                  <Col></Col>
-                </Row>
-                <Row className={styles["promotion_add_option"]}>
-                  <Col
-                    className={styles["promotion_add_option_col"]}
-                    xs={22}
-                    sm={22}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles["promotion_add_option_col_left"]}>
-                      <div
-                        className={
-                          styles["promotion_add_option_col_left_title"]
-                        }
-                      >
-                        <div style={{ marginBottom: '0.5rem' }}>Ngày kết thúc</div>
-                        <div style={{ marginBottom: '0.5rem' }}>
-                          <Checkbox onChange={onChangeCheckbox}></Checkbox>
-                        </div>
-                      </div>
-                      {valueCheckbox ? (
-                        <Form.Item
-                          className={
-                            styles["promotion_add_option_col_left_percent"]
-                          }
-                          name="date-picker_date_finish"
-                        >
-                          <DatePicker
-                            style={{ width: '100%' }}
-                            onChange={onChangeDate}
-                            initialValues={moment(
-                              "2021/04/26",
-                              dateFormatList[0]
-                            )}
-                            format={dateFormatList}
-                          />
-                        </Form.Item>
-                      ) : (
-                        <div></div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col
-                    className={styles["promotion_add_option_col"]}
-                    xs={22}
-                    sm={22}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles["promotion_add_option_col_left"]}>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles["promotion_add_option_col_left_title_left"]
-                        }
-                      >
-                        Thời gian
-                      </div>
-                      {valueCheckbox === true ? (
-                        <Form.Item
-                          className={
-                            styles["promotion_add_option_col_left_percent"]
-                          }
-                          name="date-picker_date_2"
-                        >
-                          <DatePicker
-                            style={{ width: '100%' }}
-                            onChange={onChangeDate}
-                            initialValues={moment(
-                              "2021/04/26",
-                              dateFormatList[0]
-                            )}
-                            format={dateFormatList}
-                          />
-                        </Form.Item>
-                      ) : (
-                        <div></div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col></Col>
-                </Row>
-              </div>
-            </Col> */}
+            
 
           </Row>
-          {/* 
-          <Row className={styles["promotion_add_name"]}>
-
-          </Row> */}
+       
 
           <div className={styles["promotion_add_button"]}>
-            {/* <Form.Item style={{ marginRight: '1rem' }}>
-              <Button style={{ width: '5rem' }} type="primary" danger>
-                Hủy
-              </Button>
-            </Form.Item> */}
+       
 
             <Form.Item>
               <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -814,7 +605,7 @@ export default function Promotion() {
         >
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <Search placeholder="Tìm kiếm khách hàng" onSearch={onSearchCustomerChoose} enterButton />
+              <Search placeholder="Tìm kiếm khách hàng" enterButton />
             </div>
             <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
             <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
@@ -825,6 +616,6 @@ export default function Promotion() {
         </Modal>
 
       </Drawer>
-    </UI>
+    </>
   );
 }

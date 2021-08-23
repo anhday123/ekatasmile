@@ -1,19 +1,13 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState, useEffect } from "react";
-import { ACTION, ROUTES } from './../../../../consts/index'
+import { ACTION} from './../../../../consts/index'
 import { apiDistrict, apiProvince } from "../../../../apis/information";
 import { useDispatch } from 'react-redux'
 import { apiAddSupplier } from "../../../../apis/supplier";
 import { Select, Button, Input, Form, Row, Col, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiFilterCity } from "../../../../apis/branch";
@@ -115,22 +109,7 @@ export default function SupplierAdd() {
     });
   };
   const data = form.getFieldValue()
-  const [district, setDistrict] = useState([])
-  const apiDistrictData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiDistrict();
-      console.log(res)
-      if (res.status === 200) {
-        setDistrict(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
 
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
   const [province, setProvince] = useState([])
   const apiProvinceData = async () => {
     try {
@@ -147,9 +126,7 @@ export default function SupplierAdd() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    apiDistrictData();
-  }, []);
+
   useEffect(() => {
     apiProvinceData();
   }, []);
@@ -173,10 +150,9 @@ export default function SupplierAdd() {
     console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
-  // data.city = province && province.length > 0 ? province[province.length - 2].province_name : '';
   data.district = districtMain && districtMain.length > 0 ? districtMain[districtMain.length - 2].district_name : '';
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/10">
 
@@ -221,20 +197,7 @@ export default function SupplierAdd() {
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Mã nhà cung cấp</div>
-                <Form.Item
-                  // label="Mã nhà cung cấp"
-
-                  name="supplierCode"
-                  className={styles["supplier_add_content_supplier_code_input"]}
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input placeholder="Nhập mã nhà cung cấp" />
-                </Form.Item>
-              </div>
-            </Col> */}
+           
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
@@ -355,6 +318,6 @@ export default function SupplierAdd() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

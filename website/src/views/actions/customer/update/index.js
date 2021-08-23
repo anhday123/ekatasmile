@@ -1,14 +1,8 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Space, Drawer } from "antd";
+import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Drawer } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import moment from 'moment';
@@ -16,23 +10,11 @@ import { useEffect, useState } from "react";
 import { updateCustomer } from "../../../../apis/customer";
 import { apiProvince, apiDistrict } from "../../../../apis/information";
 
-const { RangePicker } = DatePicker;
 
 const dateFormat = 'YYYY/MM/DD';
-const monthFormat = 'YYYY/MM';
-
-const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY'];
-
-const customFormat = value => `custom format: ${value.format(dateFormat)}`;
 const { Option } = Select;
-const removeUndefined = (a) => {
-  Object.keys(a)
-    .filter(key => a[key] === undefined)
-    .reduce((res, key) => (res[key] = a[key], res), {});
-}
 export default function CustomerUpdate(props) {
   let history = useHistory();
-  const location = useLocation()
   const [Address, setAddress] = useState({ province: [], district: [] })
   const [form] = Form.useForm()
   const openNotification = () => {
@@ -85,7 +67,6 @@ export default function CustomerUpdate(props) {
       console.log(e);
     }
   }
-
 
   useEffect(() => {
     form.setFieldsValue({

@@ -1,4 +1,3 @@
-import UI from "./../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Input, Space, Button, Row, Col, DatePicker, Form, Popover, Checkbox, Select, Table, Modal, Drawer, notification } from "antd";
@@ -11,10 +10,7 @@ import {
   useHistory,
   useLocation
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
-import moment from 'moment';
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+import { AudioOutlined, PlusCircleOutlined, ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
 const columns = [
   {
     title: 'STT',
@@ -59,14 +55,7 @@ export default function Promotion() {
   const { Search } = Input;
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: "#1890ff",
-      }}
-    />
-  );
+
   const showDrawer = () => {
     setVisible(true)
   };
@@ -75,16 +64,7 @@ export default function Promotion() {
     setVisible(false)
   };
   const onSearch = (value) => console.log(value);
-  function onChange(dates, dateStrings) {
-    console.log('From: ', dates[0], ', to: ', dates[1]);
-    console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  }
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
+
   const columnsPromotion = [
     {
       title: 'STT',
@@ -121,11 +101,7 @@ export default function Promotion() {
       dataIndex: 'apply',
       width: 100,
     },
-    // {
-    //   title: 'Action',
-    //   dataIndex: 'action',
-    //   width: 150,
-    // },
+
   ];
 
   const dataPromotion = [];
@@ -141,15 +117,9 @@ export default function Promotion() {
       apply: <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
         {i === 2 ? (<CheckOutlined style={{ fontSize: '1.5rem', color: '#0018EF' }} />) : ('')}
       </div>,
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   {/* <div style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div> */}
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
     });
   }
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -163,15 +133,6 @@ export default function Promotion() {
     onChange: onSelectChange,
   };
 
-
-
-
-
-
-
-
-
-  let history = useHistory();
   const openNotification = () => {
     notification.success({
       message: 'Success',
@@ -185,9 +146,6 @@ export default function Promotion() {
     onClose()
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
   const content = (
     <div>
       <div>Gợi ý 1</div>
@@ -210,7 +168,7 @@ export default function Promotion() {
     message.error('Click on No');
   }
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Link to="/accumulate-point/19" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -262,10 +220,6 @@ export default function Promotion() {
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
         </div>
       </Modal>
       <Drawer
@@ -279,7 +233,6 @@ export default function Promotion() {
         <Form
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -316,8 +269,6 @@ export default function Promotion() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Thời gian áp dụng ưu đãi</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="timeApply"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -330,8 +281,6 @@ export default function Promotion() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Giá trị tối thiểu đơn</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="valueMini"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -348,8 +297,6 @@ export default function Promotion() {
               <div>
                 <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Chiết khấu</div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
-
                   name="discount"
                   className={styles["supplier_add_content_supplier_code_input"]}
                   rules={[{ required: true, message: "Giá trị rỗng!" }]}
@@ -364,13 +311,6 @@ export default function Promotion() {
             <Checkbox>Áp dụng hạng thẻ cho cửa hàng</Checkbox>
           </Form.Item>
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -382,6 +322,6 @@ export default function Promotion() {
         </Form>
 
       </Drawer>
-    </UI>
+    </>
   );
 }

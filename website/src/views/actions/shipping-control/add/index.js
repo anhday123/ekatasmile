@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Select, Button, Input, Row, Col, notification, Popover, DatePicker, Form, Table, Typography } from "antd";
@@ -135,7 +134,7 @@ export default function ShippingControlAdd() {
   const code = form.getFieldValue()
   code.ticketCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form
         onFinish={onFinish}
         form={form}
@@ -295,6 +294,6 @@ export default function ShippingControlAdd() {
           </div>
         </div>
       </Form>
-    </UI>
+    </>
   );
 }

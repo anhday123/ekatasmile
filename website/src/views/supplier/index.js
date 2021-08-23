@@ -1,4 +1,3 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../supplier/supplier.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { apiAllSupplier, apiSearch, apiUpdateSupplier } from "../../apis/supplier";
@@ -7,23 +6,17 @@ import moment from 'moment';
 import { apiDistrict, apiProvince } from "../../apis/information";
 import { useDispatch } from 'react-redux'
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
-import { Popconfirm, Switch, message, Tag, Radio, DatePicker, Form, Drawer, Select, notification, Input, Button, Table, Row, Col, Popover } from "antd";
+import {  Switch, Radio, DatePicker, Form, Drawer, Select, notification, Input, Button, Table, Row, Col, } from "antd";
 import {
   PlusCircleOutlined,
-  DeleteOutlined,
-  EditOutlined,
 } from "@ant-design/icons";
 import { apiFilterCity } from "../../apis/branch";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-
 export default function Supplier() {
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
@@ -31,47 +24,30 @@ export default function Supplier() {
   const [supplier, setSupplier] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [loading, setLoading] = useState(false)
-  const [locationSearch, setLocationSearch] = useState({})
-  const { Search } = Input;
   const typingTimeoutRef = useRef(null);
   const apiSearchData = async (value) => {
     try {
-      //    setLoading(true)
       setLoading(true)
       const res = await apiSearch({ keyword: value });
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
-      //    setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
       setLoading(false)
-      //    setLoading(false)
     }
   };
   const apiSearchDateData = async (start, end) => {
     try {
-      //    setLoading(true)
       setLoading(true)
 
       const res = await apiSearch({ from_date: start, to_date: end });
       if (res.status === 200) {
-        // const array = []
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
         setSupplier(res.data.data)
       }
       setLoading(false)
-      //    setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       setLoading(false)
-      //    setLoading(false)
     }
   };
   const [start, setStart] = useState('')
@@ -79,8 +55,7 @@ export default function Supplier() {
   const [clear, setClear] = useState(-1)
   function onChangeDate(dates, dateStrings) {
     setClear(0)
-    console.log(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
-    console.log("---")
+
     setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '')
     setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
     apiSearchDateData(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
@@ -95,63 +70,22 @@ export default function Supplier() {
       const value = e.target.value;
       apiSearchData(value);
     }, 300);
-    // 
   };
 
   const [arrayUpdate, setArrayUpdate] = useState([])
-  const data = [];
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      supplierCode: <Link to="/actions/supplier/information/show/10" style={{ color: '#0019FF' }}>{`${i}HGN`}</Link>,
-      supplierName: <Link to="/actions/supplier/information/show/10" style={{ color: '#0019FF' }}>{`An phát ${i}`}</Link>,
-      email: <div>gmail@gmail.com</div>,
-      phoneNumber: <div>{`038494349${i}`}</div>,
-      address: <div>{`Kinh dương vương ${i}`}</div>,
-      district: <div>{`Bình tân ${i}`}</div>,
-      city: <div>{`Hồ Chí Minh ${i}`}</div>,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/supplier/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>,
-      productview: (
-        <Link to="/actions/supplier/view/show">
-          <div className={styles["product_view"]}>Xem sản phẩm</div>
-        </Link>
-      ),
-      // information: (
-      //   <Link to="/actions/supplier/information/show">
-      //     <IssuesCloseOutlined height="1rem" width="1rem" />
-      //   </Link>
-      // ),
-    });
-  }
+ 
   const apiAllSupplierData = async () => {
     try {
-      //    setLoading(true)
       setLoading(true)
       const res = await apiAllSupplier();
       console.log(res)
       if (res.status === 200) {
-        // const array = [];
-        // res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-        //   if (values.active) {
-        //     array.push(values)
-        //   }
-        // })
         setSupplier(res.data.data)
       }
       setLoading(false)
 
-      // if (res.status === 200) {
-      //   setBranch(res.data.data)
-      // }
-      // if (res.status === 200) setUsers(res.data);
-      //    setLoading(false)
     } catch (error) {
       setLoading(false)
-      //    setLoading(false)
     }
   };
   const openNotificationDeleteSupplier = (data) => {
@@ -162,7 +96,6 @@ export default function Supplier() {
   };
   const apiUpdateSupplierData = async (object, id, data) => {
     try {
-      //    setLoading(true)
       setLoading(true)
       const res = await apiUpdateSupplier(object, id);
       console.log(res);
@@ -172,99 +105,23 @@ export default function Supplier() {
         setSelectedRowKeys([])
       }
       setLoading(false)
-      // if (res.status === 200) {
-      //   openNotification()
-      //   history.push("/supplier/10")
-      // } else {
-      //   openNotificationError()
-      // }
-      // if (res.status === 200) setStatus(res.data.status);
-      //    setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
       console.log(error);
       setLoading(false)
-      //    setLoading(false)
     }
   };
-  const openNotificationDeleteSupplierErrorActive = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Nhà cung cấp đang hoạt động. Không thể thực hiện chức năng này.'
-    });
-  };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Nhà cung cấp đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirmActive(e) {
-    console.log(e);
-    // message.success('Click on Yes');
-    supplier && supplier.length > 0 && supplier.forEach((values, index) => {
-      selectedRowKeys && selectedRowKeys.length > 0 && selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active) {
-            openNotificationDeleteSupplierErrorActive()
-          } else {
-            const object = {
-              active: true,
-            }
-            apiUpdateSupplierData(object, values.supplier_id, 2)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
+  
   function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
-    setValueSwitch(checked)
     const object = {
       active: checked
     }
     apiUpdateSupplierData(object, record.supplier_id, checked ? 1 : 2)
   }
-  function cancelActive(e) {
-    console.log(e);
-    // message.error('Click on No');
-  }
-  function confirm(e) {
-    console.log(e);
-    // message.success('Click on Yes');
-    supplier && supplier.length > 0 && supplier.forEach((values, index) => {
-      selectedRowKeys && selectedRowKeys.length > 0 && selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false,
-            }
-            apiUpdateSupplierData(object, values.supplier_id, 1)
-          }
-        }
-      })
-    })
-  }
 
-  function cancel(e) {
-    console.log(e);
-    // message.error('Click on No');
-  }
   useEffect(() => {
     apiAllSupplierData();
   }, []);
-  const content = (
-    <div>
-      <p>Gợi ý 1</p>
-      <p>Gợi ý 2</p>
-    </div>
-  );
+
   const showDrawer = () => {
     setVisible(true)
   };
@@ -340,10 +197,8 @@ export default function Supplier() {
       } else {
         openNotificationErrorUpdate()
       }
-      // if (res.status === 200) setStatus(res.data.status);
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -364,7 +219,6 @@ export default function Supplier() {
             if (regex.test(values.phone)) {
               const object = {
                 name: values.name.toLowerCase(),
-                // code: values.code.toLowerCase(),
                 email: values.email,
                 phone: values.phone,
                 address: values && values.address ? values.address.toLowerCase() : '',
@@ -392,7 +246,6 @@ export default function Supplier() {
             if (regex.test(values.phone)) {
               const object = {
                 name: values.name.toLowerCase(),
-                // code: values.code.toLowerCase(),
                 email: values.email,
                 phone: values.phone,
                 address: arrayUpdate[0] && arrayUpdate[0].address ? arrayUpdate[0].address.toLowerCase() : '',
@@ -444,7 +297,6 @@ export default function Supplier() {
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -460,7 +312,6 @@ export default function Supplier() {
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -520,14 +371,6 @@ export default function Supplier() {
       width: 150,
     },
 
-    // {
-    //   title: "",
-    //   dataIndex: "productview",
-    //   width: 150,
-    //   render: (text, record) => <Link to="/actions/supplier/view/10">
-    //     <div className={styles["product_view"]}>Xem sản phẩm</div>
-    //   </Link>
-    // },
     {
       title: 'Trạng thái',
       dataIndex: 'active',
@@ -535,11 +378,7 @@ export default function Supplier() {
       width: 100,
       render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
     },
-    // {
-    //   title: "",
-    //   dataIndex: "information",
-    //   width: 150,
-    // },
+  
   ];
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
@@ -550,7 +389,6 @@ export default function Supplier() {
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -561,20 +399,7 @@ export default function Supplier() {
     console.log(`selected ${value}`);
     apiFilterCityData(value)
   }
-  const searchByLocation = async (key, val) => {
-    try {
-      const res = await apiSearch({ ...locationSearch, [key]: val })
-      if (res.status == 200) {
-        setSupplier(res.data.data)
-        setLocationSearch({ ...locationSearch, [key]: val })
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  const [districtMain, setDistrictMain] = useState([])
-
-  const [provinceMain, setProvinceMain] = useState([])
+ 
   const apiSearchProvinceData = async (value) => {
     try {
       setLoading(true)
@@ -582,8 +407,6 @@ export default function Supplier() {
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -597,8 +420,6 @@ export default function Supplier() {
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
     } catch (error) {
 
       setLoading(false)
@@ -616,7 +437,6 @@ export default function Supplier() {
   }
   const [districtSelect, setDistrictSelect] = useState('')
   const handleChangeDistrict = async (value) => {
-    console.log(`selected ${value}`);
     setDistrictSelect(value)
     if (value !== 'default') {
       apiSearchDistrictData(value)
@@ -625,7 +445,7 @@ export default function Supplier() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["supplier_manager_title"]}>Quản lý nhà cung cấp</div>
@@ -787,15 +607,9 @@ export default function Supplier() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
+                              
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên nhà cung cấp</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -996,7 +810,6 @@ export default function Supplier() {
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên nhà cung cấp</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1143,6 +956,6 @@ export default function Supplier() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

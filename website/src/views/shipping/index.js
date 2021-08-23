@@ -1,46 +1,22 @@
-import UI from "./../../components/Layout/UI";
 import React, { useState, useEffect, useRef } from "react";
 import {
-  BrowserRouter as Router,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ACTION } from './../../consts/index'
 import moment from 'moment';
 import axios from 'axios';
 import { useDispatch } from 'react-redux'
 import styles from "./../shipping/shipping.module.scss";
-import ghn from "./../../assets/img/ghn.png";
-import viettelpost from "./../../assets/img/viettelpost.png";
-import lalamove from "./../../assets/img/lalamove.png";
-import ghtk from "./../../assets/img/ghtk.png";
-import { Popconfirm, message, Drawer, Upload, Switch, Form, Modal, notification, Radio, Tag, Input, Button, Row, Col, Table, Select, DatePicker, Popover } from "antd";
-import { PlusCircleOutlined, PlusOutlined, EditOutlined, DeleteOutlined, DatabaseFilled } from "@ant-design/icons";
+
+import {  Drawer, Upload, Form, Modal, notification, Input, Button, Row, Col, Table, Select, DatePicker, Popover } from "antd";
+import { PlusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 import { apiAllShipping, apiSearchShipping, apiUpdateShipping } from "../../apis/shipping";
 import { apiDistrict, apiProvince } from "../../apis/information";
 import { apiFilterCity } from "../../apis/branch";
-import { uploadImg } from "../../apis/upload";
 
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerCode: <Link to="/actions/shipping/view/18">{`GNH ${i}`}</Link>,
-    customerName: `Nguyễn Văn Tỷ ${i}`,
-    numberPhone: `038494349${i}`,
-    address: `27/27, đường Ngô Y Linh`,
-    district: `Bình tân ${i}`,
-    city: `Hồ chí minh ${i}`,
-    action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      <Link to="/actions/shipping/update/18" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-      {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-    </div>
-  });
-}
+
 export default function Shipping() {
   const { RangePicker } = DatePicker;
   const dispatch = useDispatch()
@@ -50,7 +26,6 @@ export default function Shipping() {
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
   const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     shipping && shipping.length > 0 && shipping.forEach((values, index) => {
@@ -81,9 +56,7 @@ export default function Shipping() {
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
   };
-  const showDrawerUpdate = () => {
-    setVisibleUpdate(true)
-  };
+
   const apiSearchShippingDateData = async (start, end) => {
     try {
       setLoading(true)
@@ -100,8 +73,7 @@ export default function Shipping() {
         setShipping([...array])
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+    
     } catch (error) {
 
       setLoading(false)
@@ -132,14 +104,12 @@ export default function Shipping() {
         setShipping([...array])
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
 
       setLoading(false)
     }
   };
-  const { Search } = Input;
   const typingTimeoutRef = useRef(null);
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -151,16 +121,10 @@ export default function Shipping() {
       const value = e.target.value;
       apiSearchShippingData(value);
     }, 300);
-    // 
   };
 
-  function onChangeMain(date, dateString) {
-    console.log(date, dateString);
-  }
   const contentImage = (record) => {
     return (<img src={record.image} style={{ width: '30rem', height: '25rem', objectFit: 'contain' }} alt="" />)
-
-
   }
 
   const columns = [
@@ -214,20 +178,9 @@ export default function Shipping() {
       fixed: 'right',
       render: (text, record) => <Popover placement="left" content={() => contentImage(record)} > <div>{<img src={text} style={{ cursor: 'pointer', width: '7.5rem', objectFit: 'contain', height: '7.5rem' }} alt="" />}</div></Popover>
     },
-    // {
-    //   title: 'Trạng thái',
-    //   dataIndex: 'active',
-    //   fixed: 'right',
-    //   width: 100,
-    //   render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
-    // },
+   
   ];
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
+
   const [record, setRecord] = useState({})
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -251,7 +204,6 @@ export default function Shipping() {
         })
         setShipping([...array])
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -287,8 +239,7 @@ export default function Shipping() {
       }
 
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+  
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -306,8 +257,7 @@ export default function Shipping() {
       }
 
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+   
     } catch (error) {
       console.log(error);
       setLoading(false)
@@ -320,32 +270,8 @@ export default function Shipping() {
       description: 'Đối tác vận chuyển đang hoạt động. Không thể thực hiện chức năng này.'
     });
   };
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Đối tác vận chuyển đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.'
-    });
-  };
-  function confirm(e) {
-    console.log(e);
-    // message.success('Click on Yes');
-    shipping && shipping.length > 0 && shipping.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          if (values.active === false) {
-            openNotificationDeleteSupplierError()
-          } else {
-            const object = {
-              active: false
-            }
-            apiUpdateShippingData(object, values.transport_id, 1)
-          }
-        }
-      })
-    })
-  }
-  const [valueSwitch, setValueSwitch] = useState(false)
+
+
   function onChangeSwitch() {
     arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
       const object = {
@@ -355,9 +281,6 @@ export default function Shipping() {
     })
   }
 
-  function cancel(e) {
-    console.log(e);
-  }
   const openNotificationClear = () => {
     notification.success({
       message: 'Thành công',
@@ -376,12 +299,9 @@ export default function Shipping() {
     setSelectedRowKeys([])
     setStart([])
     setEnd([])
-    // setCity('default')
-    // setDistrictSelect('default')
   }
   function confirmActive(e) {
     console.log(e);
-    // message.success('Click on Yes');
     shipping && shipping.length > 0 && shipping.forEach((values, index) => {
       selectedRowKeys.forEach((values1, index1) => {
         if (values._id === values1) {
@@ -398,10 +318,7 @@ export default function Shipping() {
     })
   }
 
-  function cancelActive(e) {
-    console.log(e);
-    // message.error('Click on No');
-  }
+ 
   const openNotificationRegisterFailMailPhone = () => {
     notification.error({
       message: 'Thất bại',
@@ -523,7 +440,6 @@ export default function Shipping() {
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -545,7 +461,6 @@ export default function Shipping() {
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
 
@@ -580,9 +495,6 @@ export default function Shipping() {
                   district: values.district,
                   province: values.province
                 }
-                console.log(values)
-                console.log(object)
-                console.log("-------------------------")
                 alert('123')
                 apiUpdateShippingDataUpdate(object, values.transport_id)
               } else {
@@ -606,9 +518,6 @@ export default function Shipping() {
                   district: values.district,
                   province: values.province
                 }
-                console.log(values)
-                console.log(object)
-                console.log("-------------------------")
                 alert('456')
                 apiUpdateShippingDataUpdate(object, values.transport_id)
               } else {
@@ -637,9 +546,6 @@ export default function Shipping() {
                   district: values.district,
                   province: values.province
                 }
-                console.log(values)
-                console.log(object)
-                console.log("-------------------------")
                 apiUpdateShippingDataUpdate(object, values.transport_id)
               } else {
                 openNotificationRegisterFailMailPhone()
@@ -662,9 +568,6 @@ export default function Shipping() {
                   district: values.district,
                   province: values.province
                 }
-                console.log(values)
-                console.log(object)
-                console.log("-------------------------")
                 apiUpdateShippingDataUpdate(object, values.transport_id)
               } else {
                 openNotificationRegisterFailMailPhone()
@@ -686,9 +589,6 @@ export default function Shipping() {
           district: arrayUpdate[0].district,
           province: arrayUpdate[0].province
         }
-        console.log(values)
-        console.log(object)
-        console.log("-------------------------")
         apiUpdateShippingDataUpdate(object, values.transport_id)
       })
     }
@@ -708,8 +608,7 @@ export default function Shipping() {
         setShipping([...array])
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+     
     } catch (error) {
 
       setLoading(false)
@@ -741,36 +640,13 @@ export default function Shipping() {
         setShipping([...array])
       }
       setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+    
     } catch (error) {
 
       setLoading(false)
     }
   };
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearchShipping({ from_date: start, to_date: end });
-
-      if (res.status === 200) {
-        var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
-        setShipping([...array])
-      }
-      setLoading(false)
-      // openNotification();
-      // history.push(ROUTES.NEWS);
-    } catch (error) {
-
-      setLoading(false)
-    }
-  };
+ 
   const [districtSelect, setDistrictSelect] = useState('')
   const handleChangeDistrict = async (value) => {
     console.log(`selected ${value}`);
@@ -782,7 +658,7 @@ export default function Shipping() {
     }
   }
   return (
-    <UI>
+    <>
       <div className={styles["shipping_manager"]}>
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgb(235, 223, 223)', paddingBottom: '1rem', alignItems: 'center', width: '100%' }}>
           <div className={styles["shipping_manager_title"]}>
@@ -883,7 +759,6 @@ export default function Shipping() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
-                // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
                 style={{ width: '100%' }}
                 ranges={{
@@ -895,64 +770,8 @@ export default function Shipping() {
             </div>
           </Col>
 
-          {/*
-          <Col
-            style={{ marginTop: '1.25rem' }}
-            className={styles["shipping_manager_search_col"]}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={7}
-            xl={7}
-          >
-            <DatePicker onChange={onChangeMain} style={{ width: '100%' }} />
-          </Col>
-          <Col
-            style={{ marginTop: '1.25rem' }}
-            className={styles["shipping_manager_search_col"]}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={7}
-            xl={7}
-          >
-            <Select placeholder="Lọc đối tác" style={{ width: '100%' }} onChange={handleChange}>
-              <Option value="partnerA">Đối tác A</Option>
-              <Option value="partnerB">Đối tác B</Option>
-              <Option value="partnerC">Đối tác C</Option>
-            </Select>
-          </Col>
-      */}
         </Row>
-        {/* <Row style={{ marginTop: '0.25rem' }} className={styles["shipping_manager_shipping"]}>
-          {
-            shipping && shipping.length > 0 && shipping.map((values, index) => {
-              if (values.active) {
-                return (
-                  <Col
-                    style={{ marginTop: '0.25rem', marginRight: '1rem' }}
-                    className={styles["shipping_manager_shipping_col"]}
-                    xs={24}
-                    sm={11}
-                    md={5}
-                    lg={5}
-                    xl={5}
-                  >
-                    <div style={{ borderRadius: '0.5rem', border: '2.5px solid #074F80' }} className={styles["shipping_manager_shipping_col_parent"]}>
-                      <img
-                        className={styles["shipping_manager_shipping_col_img"]}
-                        src={values.image}
-                        alt=""
-                      />
-                    </div>
-                  </Col>
-                )
-              }
-
-            })
-          }
-
-        </Row> */}
+       
         <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%', }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
 
         {
@@ -961,10 +780,7 @@ export default function Shipping() {
               <Button type="primary" onClick={showDrawer} style={{ width: '7.5rem', marginBottom: '1rem', marginRight: '1rem' }}>Cập nhật</Button>
               <Button type="primary" danger onClick={onChangeSwitch} style={{ width: '7.5rem', marginBottom: '1rem' }}>Xóa</Button>
             </div>
-            // <Radio.Group style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', width: '100%' }} >
-            //   <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
-            //   <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-            // </Radio.Group>
+         
           ) : ('')
         }
 
@@ -1010,7 +826,6 @@ export default function Shipping() {
                 </Row>
 
 
-                {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
               </Col>
 
             </Row>
@@ -1038,7 +853,6 @@ export default function Shipping() {
                 </Row>
 
 
-                {/* <Input disabled="true" style={{ width: "100%" }} defaultValue="MNT200" /> */}
               </Col>
               <Col
                 style={{ marginBottom: '1rem' }}
@@ -1060,7 +874,6 @@ export default function Shipping() {
 
                 </Row>
 
-                {/* <Input style={{ width: "100%" }} defaultValue="Gò Vấp" /> */}
               </Col>
 
               <Col
@@ -1083,11 +896,6 @@ export default function Shipping() {
 
                 </Row>
 
-
-                {/* <Input
-                style={{ width: "100%" }}
-                defaultValue="Số 2, đường số 10, Gò Vấp"
-              /> */}
               </Col>
 
             </Row>
@@ -1115,7 +923,6 @@ export default function Shipping() {
                 </Row>
 
 
-                {/* <Input style={{ width: "100%" }} defaultValue="vanty@gmail.com" /> */}
               </Col>
 
               <Col
@@ -1137,7 +944,6 @@ export default function Shipping() {
                 </Row>
 
 
-                {/* <Input style={{ width: "100%" }} defaultValue="An Phát" /> */}
               </Col>
 
               <Col
@@ -1158,7 +964,6 @@ export default function Shipping() {
                   </Col>
 
                 </Row>
-                {/* <Input style={{ width: "100%" }} defaultValue="TNHH An Phát" /> */}
               </Col>
             </Row>
           </Col>
@@ -1222,16 +1027,10 @@ export default function Shipping() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
+                             
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Ảnh</div>
 
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1248,15 +1047,8 @@ export default function Shipping() {
                           <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                             <div>
 
-                              {/* <Form.Item
-
-                                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                name="phone"
-                                rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                              > */}
                               <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đối tác</div>
                               <InputName />
-                              {/* </Form.Item> */}
                             </div>
                           </Col>
                         )
@@ -1312,8 +1104,6 @@ export default function Shipping() {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] = event; handleChangeCity(event)
                           }}>
                           {
@@ -1345,8 +1135,6 @@ export default function Shipping() {
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
                             arrayUpdate[index][data] =
                               event;
                           }}>
@@ -1431,7 +1219,6 @@ export default function Shipping() {
                   style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
                   className={styles["supplier_add_content"]}
 
-                  // form={form}
                   layout="vertical"
                   initialValues={values}
 
@@ -1439,31 +1226,7 @@ export default function Shipping() {
                   <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     {
                       obj.map((data) => {
-                        // if (data === 'logo') {
-                        //   const InputName = () => <UploadImg
-                        //     imageUrl={values[data]}
-                        //     indexUpdate={index}
-
-                        //   />
-                        //   return (
-                        //     <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                        //       <div>
-
-                        //         {/* <Form.Item
-
-                        //           label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                        //           name="phone"
-                        //           rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                        //         > */}
-                        //         <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Ảnh</div>
-
-                        //         <InputName />
-                        //         {/* </Form.Item> */}
-                        //       </div>
-                        //     </Col>
-                        //   )
-                        // }
-
+                        
                         if (data === 'province') {
                           const InputName = () => <Select defaultValue={values[data]}
                             showSearch
@@ -1476,8 +1239,6 @@ export default function Shipping() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
                               arrayUpdate[index][data] =
                                 event; handleChangeCity(event)
                             }}>
@@ -1509,8 +1270,7 @@ export default function Shipping() {
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                             }
                             onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
+                             
                               arrayUpdate[index][data] =
                                 event;
                             }}>
@@ -1546,16 +1306,9 @@ export default function Shipping() {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-  
-                                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                  name="phone"
-                                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                                > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Ảnh</div>
 
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1572,15 +1325,8 @@ export default function Shipping() {
                             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
 
-                                {/* <Form.Item
-  
-                                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                  name="phone"
-                                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                                > */}
                                 <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên đối tác</div>
                                 <InputName />
-                                {/* </Form.Item> */}
                               </div>
                             </Col>
                           )
@@ -1654,6 +1400,6 @@ export default function Shipping() {
         }
       </Drawer>
 
-    </UI>
+    </>
   );
 }

@@ -1,78 +1,15 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
-import React, { useState } from "react";
-import { Input, Space, Button, Row, Col, notification, DatePicker, Select, Table, Modal, Typography, Form, Checkbox, Radio } from "antd";
+import React from "react";
+import { Input, Space, Button, Row, Col, notification, Form, Checkbox, Radio } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
-import { AudioOutlined, PlusCircleOutlined, DeleteOutlined, EditOutlined, FileExcelOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
-}
 export default function AccumulatePointSetting() {
   let history = useHistory();
-  const { Search } = Input;
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      customerCode: <Link to="/actions/customer/view" style={{ color: '#2400FF' }}>GH {i}</Link>,
-      customerName: `Văn Tỷ ${i}`,
-      customerType: `Tiềm năng ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28 ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys)
-  };
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-  const data = [];
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      productCode: <div style={{ color: '#0036F3', cursor: 'pointer' }}>{i}</div>,
-      productName: `tên sản phẩm ${i}`,
-      productQuantity: i,
-      goodsCode: `BS5426${i}`,
-      code: `8546${i}`,
-      supplier: `Hưng Thịnh`,
-      importDate: "2021/07/02",
-    });
-  }
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -90,7 +27,7 @@ export default function AccumulatePointSetting() {
     console.log('Failed:', errorInfo);
   };
   return (
-    <UI>
+    <>
 
       <Form
         className={styles["promotion_manager"]}
@@ -101,11 +38,6 @@ export default function AccumulatePointSetting() {
         <Link to="/accumulate-point/19" style={{ display: 'flex', borderBottom: '1px solid grey', cursor: 'pointer', paddingBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
           <div style={{ marginRight: '0.5rem' }}><ArrowLeftOutlined style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} /></div>
           <div className={styles["promotion_manager_title"]}>Cấu hình tích điểm</div>
-          {/* <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/customer/add/show">
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
-            </Link>
-          </div> */}
         </Link>
 
 
@@ -260,11 +192,6 @@ export default function AccumulatePointSetting() {
           </Col>
         </Row>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-          {/* <Form.Item style={{ marginTop: '1rem' }}>
-            <Button style={{ width: '5rem' }} type="primary" danger>
-              Hủy
-            </Button>
-          </Form.Item> */}
           <Form.Item style={{ marginTop: '1rem' }}>
             <Button style={{ width: '5rem', marginLeft: '1rem' }} type="primary" htmlType="submit">
               Lưu
@@ -273,6 +200,6 @@ export default function AccumulatePointSetting() {
         </div>
       </Form>
 
-    </UI>
+    </>
   );
 }

@@ -1,96 +1,20 @@
-import UI from "../../../../components/Layout/UI";
-import React, { useState } from "react";
+import React from "react";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import styles from "./../view-product/view-product.module.scss";
-import { Select, Button, Checkbox, Input, Upload, message, Form, Row, Col } from "antd";
+import {  Upload, message, Row, Col } from "antd";
 import {
   ArrowLeftOutlined,
-  LoadingOutlined,
   FileImageOutlined,
-  BarcodeOutlined,
-  PlusOutlined,
-  InboxOutlined,
-} from "@ant-design/icons";
-const { Option } = Select;
-const provinceDataProductType = ["Zhejiang", "Jiangsu"];
-const cityDataProductType = {
-  Zhejiang: [
-    "Nhập loại sản phẩm",
-    "Áo sơ mi",
-    "Nước hoa",
-    "Hộp quà tặng",
-    "Giày dép",
-    "Gấu bông",
-    "Túi xách",
-  ],
-};
-const provinceDataSupplier = ["Zhejiang", "Jiangsu"];
-const cityDataSupplier = {
-  Zhejiang: [
-    "Nhập nhà cung cấp",
-    "An Phát",
-    "Minh Anh",
-    "Hồng Hà",
-    "Phát Đạt",
-    "An An",
-    "Thiên An",
-  ],
-};
-function beforeUpload(file) {
-  const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-  if (!isJpgOrPng) {
-    message.error("You can only upload JPG/PNG file!");
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error("Image must smaller than 2MB!");
-  }
-  return isJpgOrPng && isLt2M;
-}
-function onChange(e) {
-  console.log(`checked = ${e.target.checked}`);
-}
-export default function OrderInformationViewProduct() {
-  const [loading, setLoading] = useState(false);
-  const [citiesProductType, setCitiesProductType] = React.useState(
-    cityDataProductType[provinceDataProductType[0]]
-  );
-  const [citiesSupplier, setCitiesSupplier] = React.useState(
-    cityDataSupplier[provinceDataSupplier[0]]
-  );
-  const [secondCitySupplier, setSecondCitySupplier] = React.useState(
-    cityDataSupplier[provinceDataSupplier[0]][0]
-  );
-  const [secondCityProductType, setSecondCityProductType] = React.useState(
-    cityDataProductType[provinceDataProductType[0]][0]
-  );
-  const onSecondCityChangeProductType = (value) => {
-    setSecondCityProductType(value);
-    console.log(value);
-  };
-  const { Dragger } = Upload;
-  const normFile = (e) => {
-    console.log("Upload event:", e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+} from "@ant-design/icons";
+
+export default function OrderInformationViewProduct() {
+  const { Dragger } = Upload;
+
   const props = {
     name: 'file',
     multiple: true,
@@ -111,7 +35,7 @@ export default function OrderInformationViewProduct() {
     },
   };
   return (
-    <UI>
+    <>
       <div className={styles["product_manager"]}>
         <Link className={styles["product_manager_title"]} to="/actions/order-information/view/4">
 
@@ -167,6 +91,6 @@ export default function OrderInformationViewProduct() {
 
         </Row>
       </div>
-    </UI>
+    </>
   );
 }

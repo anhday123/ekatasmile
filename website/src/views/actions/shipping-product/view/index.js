@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../view/view.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Select, Button, Input, Form, Row, Col, Popover, DatePicker, Table, Modal, notification } from "antd";
@@ -171,7 +170,7 @@ export default function ShippingProduct() {
     openNotificationConfirm()
   }
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/actions/shipping-product/add/9">
 
@@ -291,6 +290,6 @@ export default function ShippingProduct() {
           </Row>
         </Modal>
       </div >
-    </UI >
+    </ >
   );
 }

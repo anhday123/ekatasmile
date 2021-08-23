@@ -1,35 +1,16 @@
-import UI from "../../../../components/Layout/UI";
 import loading from './../../../../assets/img/loading.png'
 import styles from "./../view/view.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Row, Col, DatePicker, Typography, Steps, message, Tree, Table, Modal, notification } from "antd";
+import { Popconfirm, Button, Input, Form, Row, Col, Typography, message, Table, Modal, notification } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
-  useHistory,
-  useLocation
+
 } from "react-router-dom";
 import { ArrowLeftOutlined, AudioOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
-const { Option } = Select;
-const { Step } = Steps;
+
 const { Text } = Typography;
-const steps = [
-  {
-    title: 'First',
-    content: 'First-content',
-  },
-  {
-    title: 'Second',
-    content: 'Second-content',
-  },
-  {
-    title: 'Last',
-    content: 'Last-content',
-  },
-];
+
 const columns = [
   {
     title: 'STT',
@@ -81,37 +62,11 @@ for (let i = 0; i < 46; i++) {
     deviationAmount: i
   });
 }
-const treeData = [
-  {
-    title: 'Tất cả sản phẩm (tối đa 1000 sản phẩm)',
-    key: 'productAll',
-  },
-  {
-    title: 'Tất cả các nhóm sản phẩm',
-    key: 'productGroupAll',
-    children: [
-      {
-        title: 'Tất cả loại sản phẩm',
-        key: 'productAllType',
-      },
-      {
-        title: 'Tất cả nhãn sản phẩm',
-        key: 'productAllBranch',
-      },
-    ],
-  },
-];
+
 export default function ProductCheckView() {
-  const [current, setCurrent] = useState(0)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
-  const [checkedKeys, setCheckedKeys] = useState(['']);
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const next = () => {
-    setCurrent(current + 1);
-  };
+
   const onSelectChange = selectedRowKeys => {
     setSelectedRowKeys(selectedRowKeys)
   };
@@ -119,24 +74,12 @@ export default function ProductCheckView() {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const prev = () => {
-    setCurrent(current - 1);
-  };
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onChange = current => {
-    console.log('onChange:', current);
-    setCurrent(current)
-  };
-  const onFinish = (values) => {
-    console.log('Success:', values);
-  };
+ 
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const { Search } = Input;
   function confirm(e) {
     console.log(e);
     message.success('Click on Yes');
@@ -146,34 +89,7 @@ export default function ProductCheckView() {
     console.log(e);
     message.error('Click on No');
   }
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  );
 
-  const onSearch = value => console.log(value);
-
-  const onExpand = (expandedKeysValue) => {
-    console.log('onExpand', expandedKeysValue);
-    // if not set autoExpandParent to false, if children expanded, parent can not collapse.
-    // or, you can remove all expanded children keys.
-    setExpandedKeys(expandedKeysValue);
-    setAutoExpandParent(false);
-  };
-
-  const onCheck = (checkedKeysValue) => {
-    console.log('onCheck', checkedKeysValue);
-    setCheckedKeys(checkedKeysValue);
-  };
-
-  const onSelect = (selectedKeysValue, info) => {
-    console.log('onSelect', info);
-    setSelectedKeys(selectedKeysValue);
-  };
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -186,9 +102,9 @@ export default function ProductCheckView() {
     modal2VisibleModal(true)
   }
   return (
-    <UI>
-      <Form style={{ margin: '1rem' }} onFinish={onFinish}
-        onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
+    <>
+      <Form style={{ margin: '1rem' }} 
+         className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={11} xl={11}>
             <Link to="/product-check/8" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
@@ -196,45 +112,8 @@ export default function ProductCheckView() {
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Phiếu kiểm hàng INA001</div>
             </Link>
           </Col>
-          {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={17} xl={17}>
-            <div>
-              <Steps current={current} onChange={onChange}>
-                <Step title="Lên danh sách kiểm"
-                // description="This is a description."
-                />
-                <Step title="Kiểm hàng"
-                // description="This is a description."
-                />
-                <Step title="Thống kê"
-                // description="This is a description."
-                />
-                <Step title="Hoàn thành!"
-                // description="This is a description."
-                />
-              </Steps>
-
-            </div>
-          </Col> */}
+        
         </Row>
-        {/* <div style={{ display: 'flex', backgroundColor: 'white', padding: '1rem', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Steps size="small" style={{ height: '17.5rem', paddingTop: '2rem' }} direction="vertical" current={current}
-          // onChange={onChange}
-          >
-            <Step title="Lên danh sách kiểm"
-            // description="This is a description."
-            />
-            <Step title="Kiểm hàng"
-            // description="This is a description."
-            />
-            <Step title="Thống kê"
-            // description="This is a description."
-            />
-            <Step title="Hoàn thành!"
-            // description="This is a description."
-            />
-          </Steps>
-        </div> */}
-
         <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 0.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu kiểm hàng</div>
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
@@ -308,7 +187,6 @@ export default function ProductCheckView() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>Tổng cộng:</Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
                         <Text></Text>
@@ -323,16 +201,13 @@ export default function ProductCheckView() {
                       <Table.Summary.Cell >
                         <Text>{`${totalBranchInventory}`}</Text>
 
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>{totalRealityInventory}</Text>
 
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell >
                         <Text>{totalDeviationAmount}</Text>
-                        {/* <Text type="danger">456</Text> */}
                       </Table.Summary.Cell>
                     </Table.Summary.Row>
                   </Table.Summary>
@@ -350,11 +225,6 @@ export default function ProductCheckView() {
             ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
           }
           <div onClick={checkFinish} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            {/* <Form.Item style={{ marginTop: '1rem' }}> */}
-            {/* <Button type="primary" danger>
-                Hủy
-              </Button>
-            </Form.Item> */}
             <Form.Item style={{ marginLeft: '1rem', marginTop: '1rem' }}>
               <Button type="primary" htmlType="submit">
                 Hoàn thành kiểm
@@ -382,6 +252,6 @@ export default function ProductCheckView() {
           </div>
         </Modal>
       </Form>
-    </UI>
+    </>
   );
 }

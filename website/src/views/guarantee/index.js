@@ -1,7 +1,6 @@
-import UI from "../../components/Layout/UI";
 import styles from "./../guarantee/guarantee.module.scss";
 import React, { useEffect, useState } from "react";
-import { Popconfirm, Switch, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, notification } from "antd";
+import {  Switch, Input, Button, Row, Col, DatePicker, Select, Table, Modal, Popover, notification } from "antd";
 import {
   Link,
 } from "react-router-dom";
@@ -55,9 +54,7 @@ export default function Guarantee() {
   function onChange(dates, dateStrings) {
     setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
   }
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
+
   const warrantyUpdate = async (id, data) => {
     try {
       console.log(data);
@@ -117,25 +114,7 @@ export default function Guarantee() {
     }
   ];
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      ticketCode: <Link to="/actions/guarantee/view/11">BGH {i}</Link>,
-      status: `Hoạt động ${i}`,
-      product: `Ly thủy tinh ${i}`,
-      skuCode: `63UIFJ ${i}`,
-      orderCode: `PV ${i}`,
-      customerName: `Van Ty`,
-      guaranteeTime: '30 ngày',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        {/* <Link to="/actions/guarantee/view/11"><ExclamationCircleOutlined style={{ fontSize: '1.25rem', marginRight: '0.5rem', cursor: 'pointer', color: '#096E00' }} /></Link> */}
-        <Link to="/actions/guarantee/update/11" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        {/* <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div> */}
-      </div>
-    });
-  }
+
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -171,7 +150,7 @@ export default function Guarantee() {
     getWarranty({ ...removeFalse(filter) })
   }, [filter])
   return (
-    <UI>
+    <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '0.75rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý bảo hành</div>
@@ -205,7 +184,7 @@ export default function Guarantee() {
           </Col>
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Lọc phiếu bảo hành" onChange={handleChange}>
+              <Select style={{ width: '100%' }} placeholder="Lọc phiếu bảo hành" >
                 <Option value="ticket1">Phiếu bảo hành 1</Option>
                 <Option value="ticket2">Phiếu bảo hành 2</Option>
                 <Option value="ticket3">Phiếu bảo hành 3</Option>
@@ -247,12 +226,8 @@ export default function Guarantee() {
             </div>
           </Popover>
           <div style={{ marginTop: '1rem', border: '1px solid rgb(209, 191, 191)', width: '100%', maxWidth: '100%', overflow: 'auto' }}> <Table scroll={{ y: 500 }} rowSelection={rowSelection} columns={columns} dataSource={data} /></div>
-          {/* <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div>
-            <div><Button type="primary" style={{ width: '7.5rem' }}>Xác nhận</Button></div>
-          </div> */}
         </div>
       </Modal>
-    </UI>
+    </>
   );
 }

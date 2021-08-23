@@ -1,4 +1,3 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
 import React, { useState } from "react";
 import { Popconfirm, message, Select, Button, Input, Row, Col, notification, Popover, DatePicker, Form, Table, Typography } from "antd";
@@ -138,7 +137,7 @@ export default function ShippingControlUpdate() {
   code.tag = 'A B C';
   code.ticketCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
-    <UI>
+    <>
       <Form
         onFinish={onFinish}
         form={form}
@@ -298,6 +297,6 @@ export default function ShippingControlUpdate() {
           </div>
         </div>
       </Form>
-    </UI>
+    </>
   );
 }

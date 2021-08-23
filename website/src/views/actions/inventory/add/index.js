@@ -1,17 +1,11 @@
-import UI from "../../../../components/Layout/UI";
 import { useDispatch } from 'react-redux'
 import { ACTION } from './../../../../consts/index'
 import styles from "./../add/add.module.scss";
 import React, { useState, useEffect } from "react";
-import { Select, Button, Input, Form, Row, Col, DatePicker, notification, InputNumber } from "antd";
+import { Select, Button, Input, Form, Row, Col, notification, InputNumber } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiAddInventory } from "../../../../apis/inventory";
@@ -28,38 +22,7 @@ export default function InventoryAdd() {
         'Thêm kho thành công',
     });
   };
-  const [branch, setBranch] = useState([])
-  const getAllBranchData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await getAllBranch();
-      console.log(res)
-      if (res.status === 200) {
-        setBranch(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
 
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
-  const [district, setDistrict] = useState([])
-  const apiDistrictData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiDistrict();
-      console.log(res)
-      if (res.status === 200) {
-        setDistrict(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
-    }
-  };
   const [province, setProvince] = useState([])
   const apiProvinceData = async () => {
     try {
@@ -76,12 +39,7 @@ export default function InventoryAdd() {
       dispatch({ type: ACTION.LOADING, data: false });
     }
   };
-  useEffect(() => {
-    getAllBranchData();
-  }, []);
-  useEffect(() => {
-    apiDistrictData();
-  }, []);
+ 
   useEffect(() => {
     apiProvinceData();
   }, []);
@@ -112,7 +70,6 @@ export default function InventoryAdd() {
       dispatch({ type: ACTION.LOADING, data: true });
       const res = await apiAddInventory(object);
       console.log(res);
-      // if (res.status === 200) setStatus(res.data.status);
       if (res.status === 200) {
         openNotification()
         history.push("/inventory/7");
@@ -120,8 +77,7 @@ export default function InventoryAdd() {
         openNotificationErrorCode()
       }
       dispatch({ type: ACTION.LOADING, data: false });
-      // openNotification();
-      // history.push(ROUTES.NEWS);
+
     } catch (error) {
       console.log(error);
       dispatch({ type: ACTION.LOADING, data: false });
@@ -201,7 +157,6 @@ export default function InventoryAdd() {
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       dispatch({ type: ACTION.LOADING, data: false });
     } catch (error) {
 
@@ -213,11 +168,10 @@ export default function InventoryAdd() {
     apiFilterCityData(value)
   }
   const data = form.getFieldValue()
-  // data.city = province && province.length > 0 ? province[province.length - 2].province_name : '';
   data.district = districtMain && districtMain.length > 0 ? districtMain[districtMain.length - 2].district_name : '';
   data.inventoryType = 'chung'
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/inventory/7">
 
@@ -234,18 +188,7 @@ export default function InventoryAdd() {
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div style={{ width: '100%' }}>
-                <Form.Item
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Ngày tạo</div>}
-                  name="createdDate"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <DatePicker style={{ width: '100%' }} onChange={onChange} />
-                </Form.Item>
-
-              </div>
-            </Col> */}
+     
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
 
@@ -262,7 +205,6 @@ export default function InventoryAdd() {
             </Col>
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
-                {/* <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Liên hệ</div> */}
                 <Form.Item
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
                   name="phoneNumber"
@@ -297,7 +239,6 @@ export default function InventoryAdd() {
                 <div style={{ display: 'flex', marginBottom: '0.5rem', color: 'black', fontWeight: '600 ', justifyContent: 'flex-start', alignItems: 'center', with: '100%' }}>Phí duy trì tháng</div>
                 <Form.Item
                   name="maintainCost"
-                // rules={[{ required: true, message: "Giá trị rỗng!" }]}
                 >
                   <InputNumber
                     style={{ width: '100%' }}
@@ -306,7 +247,6 @@ export default function InventoryAdd() {
                     parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     onChange={onChange}
                   />
-                  {/* <Input placeholder="Nhập phí duy trì tháng" /> */}
                 </Form.Item>
               </div>
             </Col>
@@ -373,28 +313,7 @@ export default function InventoryAdd() {
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-
-                <Form.Item
-                  name="branch"
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Chi nhánh</div>}
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="Chọn chi nhánh">
-                    {
-                      branch && branch.length > 0 && branch.map((values, index) => {
-                        return (
-                          <Option value={values.name}>{values.name}</Option>
-                        )
-                      })
-                    }
-
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col> */}
+       
             {
               districtMain && districtMain.length > 0 ?
                 (<Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -435,13 +354,7 @@ export default function InventoryAdd() {
 
           </Row>
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
+           
             <Col style={{ width: '100%', display: 'flex', marginLeft: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -452,6 +365,6 @@ export default function InventoryAdd() {
           </Row>
         </Form>
       </div >
-    </UI >
+    </ >
   );
 }

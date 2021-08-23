@@ -1,18 +1,13 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../add/add.module.scss";
-import React, { useState, useEffect } from "react";
-import { ACTION, ROUTES } from './../../../../consts/index'
+import React from "react";
+import { ACTION } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import { Select, Button, Input, Form, Row, Col, notification } from "antd";
 import { apiUpdateSupplier } from "../../../../apis/supplier";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
+
   Link,
-  Redirect,
   useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Option } = Select;
@@ -20,7 +15,6 @@ export default function SupplierUpdate(propsData) {
   const dispatch = useDispatch()
   const state = propsData.location.state;
   const [form] = Form.useForm();
-  console.log(state)
   let history = useHistory();
   const openNotification = () => {
     notification.success({
@@ -109,7 +103,7 @@ export default function SupplierUpdate(propsData) {
     console.log("Failed:", errorInfo);
   };
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/10">
 
@@ -154,23 +148,10 @@ export default function SupplierUpdate(propsData) {
           </Row>
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            {/* <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <div>
-                <Form.Item
-                  // label="Mã nhà cung cấp"
-
-                  name="code"
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Mã nhà cung cấp</div>}
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
-                  <Input disabled placeholder="123456789" />
-                </Form.Item>
-              </div>
-            </Col> */}
+            
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  // label="Mã nhà cung cấp"
 
                   name="phone"
                   label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
@@ -232,13 +213,7 @@ export default function SupplierUpdate(propsData) {
 
 
           <Row className={styles["supplier_add_content_supplier_button"]}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
+          
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
                 <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
@@ -249,6 +224,6 @@ export default function SupplierUpdate(propsData) {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }

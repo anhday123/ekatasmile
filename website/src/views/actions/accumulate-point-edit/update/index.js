@@ -1,14 +1,7 @@
-import UI from "../../../../components/Layout/UI";
 import styles from "./../update/update.module.scss";
-import { Select, Button, Input, Form, Row, Col, DatePicker, Space } from "antd";
+import { Select, Button, Input, Form, Row, Col, DatePicker } from "antd";
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  Redirect,
-  useHistory,
-  useLocation
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import moment from 'moment';
@@ -16,16 +9,10 @@ import moment from 'moment';
 const dateFormat = 'YYYY/MM/DD';
 const { Option } = Select;
 export default function CustomerUpdate() {
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
 
   return (
-    <UI>
+    <>
       <div className={styles["supplier_add"]}>
         <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/customer/17">
 
@@ -35,8 +22,6 @@ export default function CustomerUpdate() {
         </Link>
         <Form
           className={styles["supplier_add_content"]}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -229,6 +214,6 @@ export default function CustomerUpdate() {
           </Row>
         </Form>
       </div>
-    </UI>
+    </>
   );
 }
