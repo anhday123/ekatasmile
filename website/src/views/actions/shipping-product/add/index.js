@@ -1,26 +1,45 @@
-import styles from "./../add/add.module.scss";
-import React, { useEffect, useState } from "react";
-import { Select, Button, Input, Form, Row, Col, Upload, Modal, notification, AutoComplete, InputNumber, Radio, DatePicker, Table } from "antd";
-import { Link, useHistory } from "react-router-dom";
-import { ArrowLeftOutlined, FileExcelOutlined } from "@ant-design/icons";
-import { getAllBranch } from "../../../../apis/branch";
-import { apiProductSeller, apiAllProduct } from "../../../../apis/product";
-import { addDelivery } from "../../../../apis/delivery";
-import { useDispatch } from "react-redux";
-import { apiAllInventory } from "../../../../apis/inventory";
+import styles from './../add/add.module.scss'
+import React, { useEffect, useState } from 'react'
+import {
+  Select,
+  Button,
+  Input,
+  Form,
+  Row,
+  Col,
+  Upload,
+  Modal,
+  notification,
+  AutoComplete,
+  InputNumber,
+  Radio,
+  DatePicker,
+  Table,
+} from 'antd'
+import { Link, useHistory } from 'react-router-dom'
+import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons'
+import { getAllBranch } from '../../../../apis/branch'
+import { apiProductSeller, apiAllProduct } from '../../../../apis/product'
+import { addDelivery } from '../../../../apis/delivery'
+import { useDispatch } from 'react-redux'
+import { apiAllInventory } from '../../../../apis/inventory'
 import XLSX from 'xlsx'
-import ImportModal from "../../../../components/ExportCSV/importModal";
+import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
-const { Option } = Select;
-const { Search } = Input;
+const { Option } = Select
+const { Search } = Input
 export default function ShippingProduct() {
   const [modal3Visible, setModal3Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
   const [branchList, setBranchList] = useState([])
-  const [deliveryFlow, setDeliveryFlow] = useState({ from: "", fromtype: "BRANCH", to: "", totype: "BRANCH" })
+  const [deliveryFlow, setDeliveryFlow] = useState({
+    from: '',
+    fromtype: 'BRANCH',
+    to: '',
+    totype: 'BRANCH',
+  })
   const [warehouseList, setWarehouseList] = useState([])
-  const [productList, setProductList] = useState([])
   const [productDelivery, setProductDelivery] = useState([])
   const [modalImportVisible, setModalImportVisible] = useState(false)
   const [options, setOptions] = useState([])
@@ -33,26 +52,30 @@ export default function ShippingProduct() {
   const onFinish = async (values) => {
     var productSend = []
     var success = true
-    productDelivery.forEach(e => {
+    productDelivery.forEach((e) => {
       if (success)
         if (e.variants) {
-          e.variants.forEach(variant => {
+          e.variants.forEach((variant) => {
             if (variant.quantity <= variant.available_stock_quantity)
               productSend.push({ ...variant, product_id: e.product_id })
             else {
-              notification.error({ message: "Thất bại!", description: "Số lượng vượt quá số lượng hiện có" })
+              notification.error({
+                message: 'Thất bại!',
+                description: 'Số lượng vượt quá số lượng hiện có',
+              })
               success = false
-              return;
+              return
             }
           })
-        }
-        else {
-          if (e.quantity <= e.available_stock_quantity)
-            productSend.push(e)
+        } else {
+          if (e.quantity <= e.available_stock_quantity) productSend.push(e)
           else {
-            notification.error({ message: "Thất bại!", description: "Số lượng vượt quá số lượng hiện có" })
+            notification.error({
+              message: 'Thất bại!',
+              description: 'Số lượng vượt quá số lượng hiện có',
+            })
             success = false
-            return;
+            return
           }
         }
     })
@@ -60,39 +83,36 @@ export default function ShippingProduct() {
       try {
         dispatch({ type: 'LOADING', data: true })
         const obj = {
-          "type": `${deliveryFlow.fromtype}-${deliveryFlow.totype}`,
-          "user_ship": values.from,
-          "user_receive": values.to,
-          "from": values.from,
-          "to": values.to,
-          "products": productSend,
+          type: `${deliveryFlow.fromtype}-${deliveryFlow.totype}`,
+          user_ship: values.from,
+          user_receive: values.to,
+          from: values.from,
+          to: values.to,
+          products: productSend,
           ship_time: moment(values.ship_date).format(),
           status: flag ? 'processing' : 'shipping',
           note: values.note,
-          tag: values.tag
+          tag: values.tag,
         }
         const res = await addDelivery(obj)
         if (res.status == 200) {
-          notification.success({ message: "Thành công", description: "Thêm phiếu chuyển hàng thành công" })
-          history.push("/shipping-product/9")
+          notification.success({
+            message: 'Thành công',
+            description: 'Thêm phiếu chuyển hàng thành công',
+          })
+          history.push('/shipping-product/9')
         }
         dispatch({ type: 'LOADING', data: false })
-      }
-      catch (e) {
-        console.log(e);
-        notification.error({ message: "Thất bại", description: "Thêm phiếu chuyển hàng thất bại" })
+      } catch (e) {
+        console.log(e)
+        notification.error({
+          message: 'Thất bại',
+          description: 'Thêm phiếu chuyển hàng thất bại',
+        })
         dispatch({ type: 'LOADING', data: false })
       }
     }
-  };
-
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Thêm sản phẩm thành công',
-    });
-  };
+  }
 
   const columns = [
     {
@@ -100,7 +120,7 @@ export default function ShippingProduct() {
       width: 150,
       render(data, record, index) {
         return index + 1
-      }
+      },
     },
     {
       title: 'Mã hàng',
@@ -113,18 +133,18 @@ export default function ShippingProduct() {
       width: 150,
       render(data, record) {
         return record.title || data
-      }
+      },
     },
     {
       title: 'Tồn kho',
       width: 150,
       render(data) {
         return data.available_stock_quantity
-      }
+      },
     },
     {
       title: 'Số lượng',
-      dataIndex: "quantity",
+      dataIndex: 'quantity',
       key: 'deliveryQuantity',
       width: 150,
     },
@@ -133,46 +153,48 @@ export default function ShippingProduct() {
     //   dataIndex: 'action',
     //   width: 150,
     // },
-  ];
+  ]
   const columnsVariant = [
     {
-      title: "Hình ảnh",
-      dataIndex: "image",
+      title: 'Hình ảnh',
+      dataIndex: 'image',
       render(data) {
         return <img src={data[0]} width="80px" />
-      }
+      },
     },
     {
       title: 'SKU',
-      dataIndex: "sku"
+      dataIndex: 'sku',
     },
     {
       title: 'Giá nhập',
-      dataIndex: 'import_price'
+      dataIndex: 'import_price',
     },
     {
       title: 'Giá cơ bản',
-      dataIndex: "base_price"
+      dataIndex: 'base_price',
     },
     {
       title: 'Giá bán',
-      dataIndex: "sale_price"
+      dataIndex: 'sale_price',
     },
     {
       title: 'Số lượng tồn',
-      dataIndex: "available_stock_quantity"
+      dataIndex: 'available_stock_quantity',
     },
     {
       title: 'Số lượng chuyển',
       key: 'variantsNumber',
     },
   ]
-  const data = [];
+  const data = []
   for (let i = 0; i < 46; i++) {
     data.push({
       key: i,
       stt: i,
-      productCode: <Link to="/actions/shipping-product/view/9">{`DHN ${i}`}</Link>,
+      productCode: (
+        <Link to="/actions/shipping-product/view/9">{`DHN ${i}`}</Link>
+      ),
       productName: `Sản phẩm ${i}`,
       inventory: i,
       quantity: `Số lượng ${i}`,
@@ -180,9 +202,9 @@ export default function ShippingProduct() {
       //     {/* <Link style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link> */}
       //     <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
       //   </div>
-    });
+    })
   }
-  const dataAddProuct = [];
+  const dataAddProuct = []
   for (let i = 0; i < 46; i++) {
     dataAddProuct.push({
       key: i,
@@ -195,11 +217,8 @@ export default function ShippingProduct() {
       //   <div onClick={() => modal3VisibleModal(true)} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
       //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
       // </div>
-    });
+    })
   }
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
 
   const settings = {
     name: 'file',
@@ -213,83 +232,91 @@ export default function ShippingProduct() {
         setImportLoading(true)
       }
       if (info.file.status === 'done') {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = async (e) => {
+          const bstr = e.target.result
+          const workBook = XLSX.read(bstr, { type: 'binary' })
+          const workSheetname = workBook.SheetNames[0]
+          const workSheet = workBook.Sheets[workSheetname]
 
-          const bstr = e.target.result;
-          const workBook = XLSX.read(bstr, { type: 'binary' });
-          const workSheetname = workBook.SheetNames[0];
-          const workSheet = workBook.Sheets[workSheetname];
-
-          const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 0 });
+          const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 0 })
           // initialTable(fileData);
-          const productList = await Promise.all(fileData.map(e => {
-            return deliveryFlow.fromtype == "BRANCH" ? apiProductSeller({
-              branch: deliveryFlow.from,
-              sku: e.sku,
-              product_id: e.product_id,
-              merge: false
-            }) :
-              apiAllProduct({
-                warehouse: deliveryFlow.from,
-                sku: e.sku,
-                product_id: e.product_id,
-                merge: false
-              })
-          }))
-          console.log('productList', productList);
-          if (productList.reduce((a, b) => a && b.data.success, true)) {
-            setImportData(productList.filter((e, index) => {
-              if (e.data.data.length)
-                return true
-              else {
-                notification.error({ message: "Thất bại", description: `Không tìm thấy sản phẩm id ${fileData[index].product_id}` })
-                return false
-              }
-            }).map((e, index) => {
-              return { ...e.data.data[0], quantity: fileData[index].quantity }
+          const productList = await Promise.all(
+            fileData.map((e) => {
+              return deliveryFlow.fromtype == 'BRANCH'
+                ? apiProductSeller({
+                    branch: deliveryFlow.from,
+                    sku: e.sku,
+                    product_id: e.product_id,
+                    merge: false,
+                  })
+                : apiAllProduct({
+                    warehouse: deliveryFlow.from,
+                    sku: e.sku,
+                    product_id: e.product_id,
+                    merge: false,
+                  })
             })
+          )
+          console.log('productList', productList)
+          if (productList.reduce((a, b) => a && b.data.success, true)) {
+            setImportData(
+              productList
+                .filter((e, index) => {
+                  if (e.data.data.length) return true
+                  else {
+                    notification.error({
+                      message: 'Thất bại',
+                      description: `Không tìm thấy sản phẩm id ${fileData[index].product_id}`,
+                    })
+                    return false
+                  }
+                })
+                .map((e, index) => {
+                  return {
+                    ...e.data.data[0],
+                    quantity: fileData[index].quantity,
+                  }
+                })
             )
-          }
-          else {
-            notification.error({ message: "Thất bại" })
+          } else {
+            notification.error({ message: 'Thất bại' })
           }
           setImportLoading(false)
-        };
+        }
 
-        reader.readAsBinaryString(info.file.originFileObj);
+        reader.readAsBinaryString(info.file.originFileObj)
       }
     },
   }
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
   }
-  const onSearch = value => console.log(value);
-  const onSelectChangeMain = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  const onSearch = (value) => console.log(value)
+  const onSelectChangeMain = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeysMain(selectedRowKeys)
-  };
+  }
   const rowSelectionMain = {
     selectedRowKeysMain,
     onChange: onSelectChangeMain,
-  };
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  }
+  const onSelectChange = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
-  };
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
   const getBranch = async () => {
     try {
       const res = await getAllBranch()
       if (res.status == 200) {
         setBranchList(res.data.data)
       }
-    }
-    catch (e) {
-      console.log(e);
+    } catch (e) {
+      console.log(e)
     }
   }
 
@@ -299,58 +326,74 @@ export default function ShippingProduct() {
       if (res.status == 200) {
         setWarehouseList(res.data.data)
       }
-    }
-    catch (e) {
-      console.log(e);
+    } catch (e) {
+      console.log(e)
     }
   }
   const handleImport = () => {
-    if (ImportData.reduce((a, b) => a && b.available_stock_quantity >= b.quantity, true)) {
+    if (
+      ImportData.reduce(
+        (a, b) => a && b.available_stock_quantity >= b.quantity,
+        true
+      )
+    ) {
       setProductDelivery([...productDelivery, ...ImportData])
       setModalImportVisible(false)
-    }
-    else {
-      notification.error({ message: "Số lượng không hợp lệ" })
+    } else {
+      notification.error({ message: 'Số lượng không hợp lệ' })
     }
   }
   const handleSearch = async (value) => {
-    console.log(deliveryFlow);
+    console.log(deliveryFlow)
     if (deliveryFlow.from != '') {
-      const res = deliveryFlow.fromtype == "BRANCH" ? await apiProductSeller({ keyword: value, branch: deliveryFlow.from, page: 1, page_size: 20 }) : await apiAllProduct({ keyword: value, warehouse: deliveryFlow.from, page: 1, page_size: 20 })
+      const res =
+        deliveryFlow.fromtype == 'BRANCH'
+          ? await apiProductSeller({
+              keyword: value,
+              branch: deliveryFlow.from,
+              page: 1,
+              page_size: 20,
+            })
+          : await apiAllProduct({
+              keyword: value,
+              warehouse: deliveryFlow.from,
+              page: 1,
+              page_size: 20,
+            })
       if (res.status == 200) {
-        res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
+        res.data.data.length > 0
+          ? setOptions(searchResult(res.data.data))
+          : setOptions([])
       }
+    } else {
+      notification.warning({ message: 'Vui lòng chọn nơi chuyển!' })
     }
-    else {
-      notification.warning({ message: "Vui lòng chọn nơi chuyển!" })
-    }
-  };
+  }
 
   const searchResult = (query) => {
-    return query
-      .map((_, idx) => {
-        return {
-          value: JSON.stringify(_),
-          label: (
-            <div
-              style={{
-                display: 'flex',
-                // justifyContent: 'space-between',
-              }}
-            >
-              <img src={_.image[0]} width="100px" style={{ marginRight: 20 }} />
-              <span>{_.name}</span>
-              {/* <span>{_.sale_price}</span> */}
-            </div>
-          ),
-        };
-      });
+    return query.map((_, idx) => {
+      return {
+        value: JSON.stringify(_),
+        label: (
+          <div
+            style={{
+              display: 'flex',
+              // justifyContent: 'space-between',
+            }}
+          >
+            <img src={_.image[0]} width="100px" style={{ marginRight: 20 }} />
+            <span>{_.name}</span>
+            {/* <span>{_.sale_price}</span> */}
+          </div>
+        ),
+      }
+    })
   }
 
   const onSelect = (value) => {
-    console.log(JSON.parse(value));
+    console.log(JSON.parse(value))
     setProductDelivery([...productDelivery, JSON.parse(value)])
-  };
+  }
   const ImportButton = () => (
     <Upload {...settings}>
       <Button>Nhập Excel</Button>
@@ -361,81 +404,172 @@ export default function ShippingProduct() {
     getBranch()
   }, [])
   useEffect(() => {
-    if (history.location.state)
-      setProductDelivery(history.location.state)
+    if (history.location.state) setProductDelivery(history.location.state)
   }, [])
   return (
     <>
-      <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/shipping-product/9">
-
-          <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
-          <div className={styles["supplier_add_back"]}>Tạo phiếu chuyển hàng</div>
-
-        </Link>
+      <div className={styles['supplier_add']}>
+        <a
+          className={styles['supplier_add_back_parent']}
+          style={{
+            borderBottom: '1px solid rgb(233, 220, 220)',
+            paddingBottom: '1rem',
+          }}
+          onClick={() => history.goBack()}
+        >
+          <ArrowLeftOutlined
+            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
+          />
+          <div className={styles['supplier_add_back']}>
+            Tạo phiếu chuyển hàng
+          </div>
+        </a>
 
         <Form
           style={{}}
-          className={styles["supplier_add_content"]}
+          className={styles['supplier_add_content']}
           onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
         >
-
-          <div style={{ display: 'flex', marginBottom: '0.75rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu chuyển</div>
+          <div
+            style={{
+              display: 'flex',
+              marginBottom: '0.75rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin phiếu chuyển
+          </div>
           <Row style={{ width: '100%' }}>
-            <span style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Đặt thời gian : &nbsp;</span>
+            <span
+              style={{
+                marginBottom: '0.5rem',
+                color: 'black',
+                fontWeight: '600',
+              }}
+            >
+              Đặt thời gian : &nbsp;
+            </span>
             <Form.Item name="ship_date">
-              <DatePicker style={{ width: 250 }} showTime defaultValue={moment()} />
+              <DatePicker
+                style={{ width: 250 }}
+                showTime
+                defaultValue={moment()}
+              />
             </Form.Item>
           </Row>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Chuyển từ:&nbsp;
-                  <Radio.Group defaultValue="BRANCH" value={deliveryFlow.fromtype} onChange={(e) => setDeliveryFlow({ ...deliveryFlow, fromtype: e.target.value })}>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Chuyển từ:&nbsp;
+                  <Radio.Group
+                    defaultValue="BRANCH"
+                    value={deliveryFlow.fromtype}
+                    onChange={(e) =>
+                      setDeliveryFlow({
+                        ...deliveryFlow,
+                        fromtype: e.target.value,
+                      })
+                    }
+                  >
                     <Radio value="BRANCH">Chi nhánh</Radio>
                     <Radio value="WAREHOUSE">Kho</Radio>
                   </Radio.Group>
                 </div>
                 <Form.Item
                   name="from"
-
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  {
-                    deliveryFlow.fromtype === "BRANCH" ? <Select placeholder="Chọn nơi chuyển" showSearch filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                      onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
+                  {deliveryFlow.fromtype === 'BRANCH' ? (
+                    <Select
+                      placeholder="Chọn nơi chuyển"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(e) =>
+                        setDeliveryFlow({ ...deliveryFlow, from: e })
+                      }
                       optionFilterProp="children"
                     >
-                      {
-
-                        branchList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                      {branchList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Option value={e.branch_id}>{e.name}</Option>
+                        ))}
+                    </Select>
+                  ) : (
+                    <Select
+                      placeholder="Chọn nơi chuyển"
+                      showSearch
+                      onChange={(e) =>
+                        setDeliveryFlow({ ...deliveryFlow, from: e })
                       }
-                    </Select> :
-                      <Select placeholder="Chọn nơi chuyển" showSearch
-                        onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        optionFilterProp="children"
-                      >
-                        {
-                          warehouseList.filter(e => e.active).map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
-                        }
-                      </Select>
-                  }
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      optionFilterProp="children"
+                    >
+                      {warehouseList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Option value={e.warehouse_id}>{e.name}</Option>
+                        ))}
+                    </Select>
+                  )}
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Ghi chú</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Ghi chú
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="note"
                 >
                   <Input placeholder="Nhập ghi chú" />
@@ -443,69 +577,137 @@ export default function ShippingProduct() {
               </div>
             </Col>
           </Row>
-          <Row style={{ borderBottom: '1px solid rgb(236, 226, 226)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Row
+            style={{
+              borderBottom: '1px solid rgb(236, 226, 226)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Nhận ở:&nbsp;
-                  <Radio.Group defaultValue="BRANCH" value={deliveryFlow.totype} onChange={(e) => setDeliveryFlow({ ...deliveryFlow, totype: e.target.value })}>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Nhận ở:&nbsp;
+                  <Radio.Group
+                    defaultValue="BRANCH"
+                    value={deliveryFlow.totype}
+                    onChange={(e) =>
+                      setDeliveryFlow({
+                        ...deliveryFlow,
+                        totype: e.target.value,
+                      })
+                    }
+                  >
                     <Radio value="BRANCH">Chi nhánh</Radio>
                     <Radio value="WAREHOUSE">Kho</Radio>
                   </Radio.Group>
                 </div>
                 <Form.Item
                   name="to"
-
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  {
-                    deliveryFlow.totype === "BRANCH" ? <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                      onChange={(e) => setDeliveryFlow({ ...deliveryFlow, to: e })}
+                  {deliveryFlow.totype === 'BRANCH' ? (
+                    <Select
+                      placeholder="Chọn nơi nhận"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(e) =>
+                        setDeliveryFlow({ ...deliveryFlow, to: e })
+                      }
                       optionFilterProp="children"
                     >
-                      {
-
-                        branchList.filter(e => e.active).map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                      {branchList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Option value={e.branch_id}>{e.name}</Option>
+                        ))}
+                    </Select>
+                  ) : (
+                    <Select
+                      placeholder="Chọn nơi nhận"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
                       }
-                    </Select> :
-
-                      <Select placeholder="Chọn nơi nhận" showSearch filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      onChange={(e) =>
+                        setDeliveryFlow({ ...deliveryFlow, to: e })
                       }
-                        onChange={(e) => setDeliveryFlow({ ...deliveryFlow, to: e })}
-                        optionFilterProp="children"
-                      >
-                        {
-
-                          warehouseList.filter(e => e.active).map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
-                        }
-                      </Select>
-                  }
-
+                      optionFilterProp="children"
+                    >
+                      {warehouseList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Option value={e.warehouse_id}>{e.name}</Option>
+                        ))}
+                    </Select>
+                  )}
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <div>
-                <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600' }}>Tag</div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Tag
+                </div>
                 <Form.Item
-
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="tag"
                 >
-                  <Select
-                    mode="tags"
-                    style={{ width: '100%' }}>
-                  </Select>
+                  <Select mode="tags" style={{ width: '100%' }}></Select>
                 </Form.Item>
               </div>
             </Col>
           </Row>
 
-
-          <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin sản phẩm</div>
+          <div
+            style={{
+              display: 'flex',
+              marginTop: '1rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin sản phẩm
+          </div>
 
           <AutoComplete
             dropdownMatchSelectWidth={252}
@@ -517,112 +719,270 @@ export default function ShippingProduct() {
             onSearch={handleSearch}
             onFocus={handleSearch}
           >
-            <div style={{ display: 'flex', margin: '1rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo mã, theo tên" onSearch={onSearch} enterButton /></div>
+            <div
+              style={{
+                display: 'flex',
+                margin: '1rem 0',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Search
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                onSearch={onSearch}
+                enterButton
+              />
+            </div>
           </AutoComplete>
           {/*
           <div onClick={showDrawer} style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem', display: 'flex', justifyContent: 'center' }}>Thêm sản phẩm</Button></div>
-        */
-
-          }
-          <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-              <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} xs={24} sm={24} md={24} lg={24} xl={6}>
-                  <Button icon={<FileExcelOutlined />} onClick={() => setModalImportVisible(true)} style={{ width: '7.5rem', backgroundColor: '#004F88', color: 'white' }}>Nhập excel</Button>
+        */}
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={12}
+              lg={12}
+              xl={12}
+            >
+              <Row
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Col
+                  style={{
+                    width: '100%',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                  }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={24}
+                  xl={6}
+                >
+                  <Button
+                    icon={<FileExcelOutlined />}
+                    onClick={() => setModalImportVisible(true)}
+                    style={{
+                      width: '7.5rem',
+                      backgroundColor: '#004F88',
+                      color: 'white',
+                    }}
+                  >
+                    Nhập excel
+                  </Button>
                 </Col>
-
               </Row>
             </Col>
           </Row>
 
           <Row style={{ width: '100%' }}>
-            <div style={{ marginBottom: '0.5rem', color: 'black', fontWeight: '600', fontSize: 16 }}>Danh sách sản phẩm chuyển</div>
+            <div
+              style={{
+                marginBottom: '0.5rem',
+                color: 'black',
+                fontWeight: '600',
+                fontSize: 16,
+              }}
+            >
+              Danh sách sản phẩm chuyển
+            </div>
           </Row>
-          <div style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}>
-            <Table rowSelection={rowSelectionMain}
+          <div
+            style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}
+          >
+            <Table
+              rowSelection={rowSelectionMain}
               expandable={{
-                expandedRowRender: (record, indexRecord) => <Table
-                  size="small"
-                  pagination={false}
-                  dataSource={record.variants}
-                  columns={columnsVariant.map((e, indexVariant) => {
-                    if (e.key == 'variantsNumber')
-                      return {
-                        ...e, render(text, data, i) {
-                          return <InputNumber onBlur={(val) => {
-                            productDelivery[indexRecord].variants[i].quantity = parseInt(val.target.value)
-                          }} />
+                expandedRowRender: (record, indexRecord) => (
+                  <Table
+                    size="small"
+                    pagination={false}
+                    dataSource={record.variants}
+                    columns={columnsVariant.map((e, indexVariant) => {
+                      if (e.key == 'variantsNumber')
+                        return {
+                          ...e,
+                          render(text, data, i) {
+                            return (
+                              <InputNumber
+                                onBlur={(val) => {
+                                  productDelivery[indexRecord].variants[
+                                    i
+                                  ].quantity = parseInt(val.target.value)
+                                }}
+                              />
+                            )
+                          },
                         }
-                      }
-                    return e
-
-                  })}
-                />,
-                rowExpandable: record => record.variants,
+                      return e
+                    })}
+                  />
+                ),
+                rowExpandable: (record) => record.variants,
               }}
               rowKey="_id"
               columns={columns.map((e) => {
                 if (e.key === 'deliveryQuantity')
                   return {
-                    ...e, render(data, record, index) {
-                      return !record.has_variable && <InputNumber defaultValue={data} onBlur={(e) => {
-                        productDelivery[index].quantity = parseInt(e.target.value)
-                      }
-                      } />
-                    }
+                    ...e,
+                    render(data, record, index) {
+                      return (
+                        !record.has_variable && (
+                          <InputNumber
+                            defaultValue={data}
+                            onBlur={(e) => {
+                              productDelivery[index].quantity = parseInt(
+                                e.target.value
+                              )
+                            }}
+                          />
+                        )
+                      )
+                    },
                   }
                 return e
               })}
               dataSource={productDelivery}
-              scroll={{ y: 500 }} />
+              scroll={{ y: 500 }}
+            />
           </div>
-          {
-            selectedRowKeysMain && selectedRowKeysMain.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></div>) : ('')
-          }
-          <Row style={{ marginTop: '1rem' }} className={styles["supplier_add_content_supplier_button"]}>
-            <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit" onClick={() => setFlag(1)}>
+          {selectedRowKeysMain && selectedRowKeysMain.length > 0 ? (
+            <div
+              style={{
+                marginTop: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Button type="primary" danger style={{ width: '7.5rem' }}>
+                Xóa sản phẩm
+              </Button>
+            </div>
+          ) : (
+            ''
+          )}
+          <Row
+            style={{ marginTop: '1rem' }}
+            className={styles['supplier_add_content_supplier_button']}
+          >
+            <Col
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+              }}
+              xs={24}
+              sm={24}
+              md={5}
+              lg={4}
+              xl={3}
+            >
+              <Form.Item>
+                <Button
+                  style={{ width: '7.5rem' }}
+                  type="primary"
+                  htmlType="submit"
+                  onClick={() => setFlag(1)}
+                >
                   Lưu
                 </Button>
               </Form.Item>
             </Col>
-            <Col style={{ width: '100%', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+            <Col
+              style={{
+                width: '100%',
+                marginLeft: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+              }}
+              xs={24}
+              sm={24}
+              md={5}
+              lg={4}
+              xl={3}
+            >
               <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit" onClick={() => setFlag(0)}>
+                <Button
+                  style={{ width: '7.5rem' }}
+                  type="primary"
+                  htmlType="submit"
+                  onClick={() => setFlag(0)}
+                >
                   Chuyển
                 </Button>
               </Form.Item>
             </Col>
           </Row>
-
         </Form>
 
         <Modal
           title="Cập nhật số lượng sản phẩm"
           centered
           footer={null}
-
           visible={modal3Visible}
           onOk={() => modal3VisibleModal(false)}
           onCancel={() => modal3VisibleModal(false)}
         >
           <Form
-            style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
+            }}
             onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
           >
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Số lượng</div>
+            <div
+              style={{
+                display: 'flex',
+                marginBottom: '0.5rem',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              Số lượng
+            </div>
             <Form.Item
-              style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
               // label="Username"
               name="quantity"
               rules={[{ required: true, message: 'Giá trị rỗng!' }]}
             >
               <Input placeholder="Nhập số lượng cập nhật" />
             </Form.Item>
-            <Row style={{}} className={styles["supplier_add_content_supplier_button"]}>
+            <Row
+              style={{}}
+              className={styles['supplier_add_content_supplier_button']}
+            >
               {/* <Col onClick={() => modal2VisibleModal(false)} style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
 
                 <Button style={{ width: '7.5rem' }} type="primary" danger>
@@ -630,18 +990,44 @@ export default function ShippingProduct() {
                 </Button>
 
               </Col> */}
-              <Col onClick={() => modal3VisibleModal(false)} style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+              <Col
+                onClick={() => modal3VisibleModal(false)}
+                style={{
+                  width: '100%',
+                  marginTop: '1rem',
+                  marginLeft: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}
+                xs={24}
+                sm={24}
+                md={5}
+                lg={4}
+                xl={3}
+              >
+                <Button
+                  style={{ width: '7.5rem' }}
+                  type="primary"
+                  htmlType="submit"
+                >
                   Xác nhận
                 </Button>
-
               </Col>
             </Row>
           </Form>
         </Modal>
-        <ImportModal visible={modalImportVisible} onOk={handleImport} dataSource={ImportData} importLoading={importLoading} columns={columns} actionComponent={<ImportButton />} downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629443650598_ecomfullfillment.xlsx" onCancel={() => setModalImportVisible(false)} />
+        <ImportModal
+          visible={modalImportVisible}
+          onOk={handleImport}
+          dataSource={ImportData}
+          importLoading={importLoading}
+          columns={columns}
+          actionComponent={<ImportButton />}
+          downTemplate="https://ecomfullfillment.s3.ap-southeast-1.amazonaws.com/1629443650598_ecomfullfillment.xlsx"
+          onCancel={() => setModalImportVisible(false)}
+        />
       </div>
     </>
-  );
+  )
 }

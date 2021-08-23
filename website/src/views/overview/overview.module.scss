@@ -263,12 +263,7 @@
     align-items: center;
     width: 100%;
 }
-.dashboard_manager_bottom_row {
-    display: flex;
-    justify-content: space-between;
 
-    width: 100%;
-}
 .dashboard_manager_bottom_row_col_parent_chart_bottom {
     display: flex;
     justify-content: center;
@@ -392,21 +387,4 @@
     justify-content: flex-start;
     align-items: center;
 }
-.order {
-    cursor: pointer;
-}
-.order:hover {
-    color: #1890ff;
-}
-.balance {
-    cursor: pointer;
-}
-.balance:hover {
-    color: #ff9726;
-}
-.profit {
-    cursor: pointer;
-}
-.profit:hover {
-    color: #26cf51;
-}
+

@@ -15,7 +15,6 @@ import Login from './login/index'
 import ReportImport from './report-import/index'
 import User from './user/index'
 import ProductCheck from './product-check/index'
-import AccumulatePoint from './accumulate-point/index'
 import OrderList from './order-list/index'
 import ReportFinancial from './report-financial/index'
 import ReportInventory from './report-inventory'
@@ -61,13 +60,7 @@ import ProductView from './actions/product/view'
 
 import InventoryView from './actions/inventory/view'
 import InventoryUpdate from './actions/inventory/update'
-import CardAccumulatePoint from './actions/card-accumulate-point/view'
 
-import AccumulatePointSettingView from './actions/accumulate-point-setting/view'
-import CardAccumulatePointAdd from './actions/card-accumulate-point/add'
-import AccumulatePointEditView from './actions/accumulate-point-edit/view'
-import AccumulatePointEditAdd from './actions/accumulate-point-edit/add'
-import AccumulatePointEditDetail from './actions/accumulate-point-edit/detail'
 import ProductCheckAdd from './actions/product-check/add'
 import ProductCheckView from './actions/product-check/view'
 import OrderCreateShippingAdd from './actions/order-create-shipping/add'
@@ -113,13 +106,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.ACCUMULATE_POINT,
-    Component: () => <AccumulatePoint />,
-    title: 'Quản lý tích điểm',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.ORDER_LIST,
     Component: () => <OrderList />,
@@ -428,48 +415,6 @@ const AUTH_ROUTER = [
     path: ROUTES.INVENTORY_UPDATE,
     Component: () => <InventoryUpdate />,
     title: 'Cập nhật thông tin kho',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.CARD_ACCUMULATE_POINT,
-    Component: () => <CardAccumulatePoint />,
-    title: 'Xem chi tiết quản lý thẻ tích điểm',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ACCUMULATE_POINT_SETTING_VIEW,
-    Component: () => <AccumulatePointSettingView />,
-    title: 'Thiết lập xem chi tiết quản lý thẻ tích điểm',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.CARD_ACCUMULATE_POINT_ADD,
-    Component: () => <CardAccumulatePointAdd />,
-    title: 'Thêm quản lý thẻ tích điểm',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ACCUMULATE_POINT_EDIT_VIEW,
-    Component: () => <AccumulatePointEditView />,
-    title: 'Xem chi tiết cập nhật thẻ tích điểm',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ACCUMULATE_POINT_EDIT_ADD,
-    Component: () => <AccumulatePointEditAdd />,
-    title: 'Thêm cập nhật thẻ tích điểm',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ACCUMULATE_POINT_EDIT_DETAIL,
-    Component: () => <AccumulatePointEditDetail />,
-    title: 'Xem chi tiết cập nhật thẻ tích điểm.',
     permissions: [],
     exact: true,
   },

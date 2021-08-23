@@ -6,19 +6,18 @@ export const ACTION = {
   GET_STORE: 'GET_STORE',
   SELECT_VALUE: 'SELECT_VALUE',
   ERROR: 'ERROR',
-  CHANGE_SIDER: 'CHANGE_SIDER'
+  CHANGE_SIDER: 'CHANGE_SIDER',
 }
 export const authConstants = {
   TOGGLE: 'TOGGLE',
-  KEY: 'KEY'
-};
+  KEY: 'KEY',
+}
 
 export const ROUTES = {
   LOGIN: '/login',
   REPORT_IMPORT: '/report-import',
   USER: '/user',
   PRODUCT_CHECK: '/product-check',
-  ACCUMULATE_POINT: '/accumulate-point/:slug',
   ORDER_LIST: '/order-list',
   REPORT_FINANCIAL: '/report-financial',
   REPORT_INVENTORY: '/report-inventory',
@@ -62,10 +61,8 @@ export const ROUTES = {
   PRODUCT_VIEW: '/actions/product/view/:slug',
   INVENTORY_VIEW: '/actions/inventory/view/:slug',
   INVENTORY_UPDATE: '/actions/inventory/update/:slug',
-  CARD_ACCUMULATE_POINT: '/actions/card-accumulate-point/view',
   ACCUMULATE_POINT_SETTING_VIEW: '/actions/accumulate-point-setting/view',
   CARD_ACCUMULATE_POINT_ADD: '/actions/card-accumulate-point/add',
-  ACCUMULATE_POINT_EDIT_VIEW: '/actions/accumulate-point-edit/view',
   ACCUMULATE_POINT_EDIT_ADDD: '/actions/accumulate-point-edit/add',
   ACCUMULATE_POINT_EDIT_DETAIL: '/actions/accumulate-point-edit/detail',
   PRODUCT_CHECK_ADD: '/actions/product-check/add',

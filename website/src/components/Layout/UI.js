@@ -17,6 +17,7 @@ import {
   Modal,
   Form,
   Spin,
+  BackTop,
 } from 'antd'
 import {
   MenuOutlined,
@@ -455,9 +456,7 @@ const UI = (props) => {
     }
   }
 
-  const [storeValue, setStoreValue] = useState('')
   function handleChange(value) {
-    setStoreValue(value)
     const actions = getStoreSelectValue(value)
     dispatch(actions)
   }
@@ -643,6 +642,7 @@ const UI = (props) => {
 
   return (
     <Layout style={{ backgroundColor: '#FFFFFF', height: '100%' }}>
+      <BackTop style={{ right: '20px', bottom: '20px' }} />
       <Modal
         title="Chỉnh sửa thông tin cá nhân"
         centered

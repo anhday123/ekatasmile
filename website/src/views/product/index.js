@@ -1,11 +1,8 @@
 import styles from './../product/product.module.scss'
-import {
-  Link, useHistory,
-} from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import axios from 'axios'
 
 import {
-  Pagination,
   Switch,
   Drawer,
   Slider,
@@ -24,17 +21,16 @@ import {
   Col,
   DatePicker,
   Popover,
-  Radio
+  Radio,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import {
-  apiSearchProduct,
   apiUpdateProduct,
   apiProductSeller,
   apiAllProduct,
   apiUpdateProductStore,
-  apiProductCategoryMerge
+  apiProductCategoryMerge,
 } from '../../apis/product'
 import { useDispatch } from 'react-redux'
 import {
@@ -49,11 +45,14 @@ import {
 import moment from 'moment'
 import { apiAllWarranty } from '../../apis/warranty'
 import { apiAllSupplier } from '../../apis/supplier'
-import {  getAllBranchMain } from '../../apis/branch'
-import { apiAddCategory, apiAllCategorySearch, apiUpdateCategory } from '../../apis/category'
+import { getAllBranchMain } from '../../apis/branch'
+import {
+  apiAddCategory,
+  apiAllCategorySearch,
+  apiUpdateCategory,
+} from '../../apis/category'
 import { apiAllInventory } from '../../apis/inventory'
 import ProductInfo from './components/productInfo'
-
 
 const { RangePicker } = DatePicker
 const { Dragger } = Upload
@@ -180,10 +179,7 @@ for (let i = 0; i < 46; i++) {
           width: '100%',
         }}
       >
-        <Link
-          to="/actions/product/update"
-          style={{ marginRight: '0.5rem' }}
-        >
+        <Link to="/actions/product/update" style={{ marginRight: '0.5rem' }}>
           <EditOutlined
             style={{
               fontSize: '1.25rem',
@@ -209,55 +205,51 @@ for (let i = 0; i < 46; i++) {
 export default function Product() {
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 10,
-  })
+  const [isOpenSelect, setIsOpenSelect] = useState(false)
+  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
+  const [page, setPage] = useState(1)
+  const [page_size, setPageSize] = useState(20)
+  const [paramsFilter, setParamsFilter] = useState({})
   const [supplier, setSupplier] = useState([])
   const [product, setProduct] = useState([])
   const [visible, setVisible] = useState(false)
   const [warranty, setWarranty] = useState([])
   const [modal6Visible, setModal6Visible] = useState(false)
   const [visibleDrawer, setVisibleDrawer] = useState(false)
-  const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
   const [category, setCategory] = useState([])
-  const [paginationChecked, setPaginationChecked] = useState(0)
-  const [categorySearch, setCategorySearch] = useState('')
-  const [viewMode, setViewMode] = useState(0)
-  const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] = useState(false)
+  const [viewMode, setViewMode] = useState(0) //0 kho, 1 product seller
+  const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
+    useState(false)
+  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
   const [warehouseList, setWarehouseList] = useState([])
   const [branchList, setBranchList] = useState([])
-  const [viewLocation, setViewLocation] = useState(false)
-  const [filter, setFilter] = useState({})
-  const [searchFilter, setSearchFilter] = useState({})
   const history = useHistory()
-  const [form] = Form.useForm();
-  const [singleGroup, setSingleGroup] = useState(0)
+  const [form] = Form.useForm()
 
   const showDrawerCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(true)
-  };
+  }
 
   const onCloseCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(false)
-  };
+  }
   const modal6VisibleModal = (modal6Visible) => {
     setModal6Visible(modal6Visible)
-
   }
   // tạo nhóm sản phẩm
   const onFinishCategory = (values) => {
-    console.log('Success:', values);
     const object = {
       name: values.categoryName,
       type: '',
-      description: values.categoryDescription ? values.categoryDescription : ''
+      description: values.categoryDescription ? values.categoryDescription : '',
     }
     apiAddCategoryDataMain(object)
-  };
+  }
   const [productGroupName, setProductGroupName] = useState('')
   const onChangeGroupProduct = (e) => {
     setProductGroupName(e.target.value)
@@ -265,13 +257,13 @@ export default function Product() {
   const showDrawerGroup = () => {
     setVisibleDrawer(true)
     setSelectedRowKeys([])
-  };
+  }
 
   const onCloseGroup = async () => {
     setVisibleDrawer(false)
     setSelectedRowKeys([])
     await apiAllCategoryData()
-  };
+  }
   const columnsCategory = [
     {
       title: 'Mã nhóm',
@@ -292,35 +284,43 @@ export default function Product() {
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      render: (text, record) => text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : ''
+      render: (text, record) =>
+        text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
     },
-
-  ];
+  ]
   const openNotificationSuccessCategoryMain = (data) => {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description: <div>Xóa nhóm sản phẩm <b>{data}</b> thành công</div>
-    });
-  };
+      description: (
+        <div>
+          Xóa nhóm sản phẩm <b>{data}</b> thành công
+        </div>
+      ),
+    })
+  }
   const openNotificationSuccessCategoryMainSuccess = () => {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description: 'Thêm nhóm sản phẩm thành công.'
-    });
-  };
+      description: 'Thêm nhóm sản phẩm thành công.',
+    })
+  }
   const openNotificationSuccessCategoryMainError = (data) => {
     notification.error({
       message: 'Thất bại',
       duration: 3,
-      description: <div>Nhóm sản phẩm <b>{data}</b> đã tồn tại</div>
-    });
-  };
+      description: (
+        <div>
+          Nhóm sản phẩm <b>{data}</b> đã tồn tại
+        </div>
+      ),
+    })
+  }
   const apiAddCategoryDataMain = async (object) => {
     try {
       setLoading(true)
-      const res = await apiAddCategory(object);
+      const res = await apiAddCategory(object)
       if (res.status === 200) {
         await apiAllCategoryData()
         setModal6Visible(false)
@@ -330,20 +330,16 @@ export default function Product() {
         openNotificationSuccessCategoryMainError(object.name)
       }
       setLoading(false)
-     
     } catch (error) {
-      console.log(error);
+      console.log(error)
       setLoading(false)
     }
-  };
-  const onClickDate = () => {
-    alert('123')
   }
-  const apiUpdateCategoryData = async (object, id, data, name) => {
 
+  const apiUpdateCategoryData = async (object, id, data, name) => {
     try {
       setLoading(true)
-      const res = await apiUpdateCategory(object, id);
+      const res = await apiUpdateCategory(object, id)
       if (res.status === 200) {
         await apiAllCategoryData()
         setSelectedRowKeysCategory([])
@@ -352,29 +348,37 @@ export default function Product() {
       }
       setLoading(false)
     } catch (error) {
-      console.log(error);
+      console.log(error)
       setLoading(false)
     }
-  };
+  }
   const openNotificationSuccessStoreUpdate = (data) => {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description:
-        <div>Cập nhật thông tin nhóm sản phẩm <b>{data}</b> thành công</div>
-    });
-  };
+      description: (
+        <div>
+          Cập nhật thông tin nhóm sản phẩm <b>{data}</b> thành công
+        </div>
+      ),
+    })
+  }
   // bật - tắt trang thái sản phẩm
   function onChangeSwitchCategory(checked) {
-    console.log(`switch to ${checked}`);
-    arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.forEach((values, index) => {
-      const object = {
-        active: false
-      }
+    arrayUpdateCategory &&
+      arrayUpdateCategory.length > 0 &&
+      arrayUpdateCategory.forEach((values, index) => {
+        const object = {
+          active: false,
+        }
 
-      apiUpdateCategoryData(object, values.category_id, checked ? 1 : 2, values.name)
-    })
-
+        apiUpdateCategoryData(
+          object,
+          values.category_id,
+          checked ? 1 : 2,
+          values.name
+        )
+      })
   }
   const apiAllCategoryData = async () => {
     try {
@@ -383,11 +387,13 @@ export default function Product() {
       const res = await apiAllCategorySearch({ page: 1, page_size: 10 })
       if (res.status === 200) {
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (values.active) {
+              array.push(values)
+            }
+          })
         setCategory([...array])
       }
       setLoading(false)
@@ -402,9 +408,8 @@ export default function Product() {
   const [modal50Visible, setModal50Visible] = useState(false)
   const modal50VisibleModal = (modal50Visible) => {
     setModal50Visible(modal50Visible)
-
   }
- 
+
   const showDrawer = () => {
     setVisible(true)
     setIndexCheckbox([])
@@ -413,26 +418,22 @@ export default function Product() {
     try {
       setLoading(true)
       const res = await apiAllSupplier()
-      console.log(res)
       if (res.status === 200) {
         setSupplier(res.data.data)
       }
-   
+
       setLoading(false)
     } catch (error) {
       setLoading(false)
     }
   }
 
-
   const [checkboxValue, setCheckboxValue] = useState(false)
   function onChangeCheckbox(e) {
-    console.log(`checked = ${e.target.checked}`);
     setCheckboxValue(e.target.checked)
   }
 
   const UploadImg = ({ imageUrl, indexUpdate }) => {
-
     const [list, setList] = useState('')
     const propsMain = {
       name: 'file',
@@ -444,10 +445,8 @@ export default function Product() {
         if (status !== 'done') {
           status = 'done'
           if (status === 'done') {
-            console.log(info.file, info.fileList)
             if (info.fileList && info.fileList.length > 0) {
               var image
-              var array = []
               let formData = new FormData()
               info.fileList.forEach((values, index) => {
                 image = values.originFileObj
@@ -455,57 +454,34 @@ export default function Product() {
               })
 
               if (formData) {
-                dispatch({ type: ACTION.LOADING, data: true });
+                dispatch({ type: ACTION.LOADING, data: true })
                 let a = axios
                   .post(
                     'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
                     formData,
                     {
                       headers: {
-                        'Content-Type':
-                          'multipart/form-data',
+                        'Content-Type': 'multipart/form-data',
                       },
                     }
                   )
                   .then((resp) => resp)
                 let resultsMockup = await Promise.all([a])
-                console.log(resultsMockup)
-                console.log('|||99999999999999999999')
-                console.log(resultsMockup[0].data.data[0])
-                dispatch({ type: ACTION.LOADING, data: false });
+                dispatch({ type: ACTION.LOADING, data: false })
                 setList(resultsMockup[0].data.data)
-                console.log(indexUpdate)
-                // chi nhánh
-                if (viewMode === 1) {
-                  productStore &&
-                    productStore.length > 0 &&
-                    productStore.forEach((values, index) => {
-                      if (values._id === indexUpdate) {
-                        productStore[index].image =
-                          resultsMockup[0].data.data
-                        console.log(productStore[index])
-                      }
-                    })
-                } else { // kho
-                  product &&
-                    product.length > 0 &&
-                    product.forEach((values, index) => {
-                      if (values._id === indexUpdate) {
-                        product[index].image =
-                          resultsMockup[0].data.data
-                        console.log(product[index])
-                      }
-                    })
-                }
 
+                product.forEach((values, index) => {
+                  if (values._id === indexUpdate) {
+                    product[index].image = resultsMockup[0].data.data
+                    console.log(product[index])
+                  }
+                })
               }
             }
           }
         }
-     
       },
-      onDrop(e) {
-      },
+      onDrop(e) {},
     }
 
     return (
@@ -555,27 +531,42 @@ export default function Product() {
               list.length > 0 &&
               list.map((values, index) => {
                 return (
-
-                  <Popover placement="right" content={() => content(values)} >
-                    <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
-                      <a
-
-                        href={
-                          values
-                        }
-                        target="_blank"
-                      >
-
-                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
+                  <Popover placement="right" content={() => content(values)}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={6}
+                      lg={6}
+                      xl={6}
+                      style={{
+                        border: '1px solid rgb(230, 220, 220)',
+                        marginTop: '1rem',
+                        marginRight: '1rem',
+                        padding: '1rem',
+                        width: '6.5rem',
+                        height: '6.5rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <a href={values} target="_blank">
+                        <img
+                          src={values}
+                          style={{
+                            width: '5rem',
+                            height: '5rem',
+                            objectFit: 'contain',
+                            cursor: 'pointer',
+                          }}
+                          alt=""
+                        />
                       </a>
 
-                      <div className={styles['icon_hover']}>
-
-
-                      </div>
+                      <div className={styles['icon_hover']}></div>
                     </Col>
                   </Popover>
-
                 )
               })}
           </div>
@@ -594,41 +585,49 @@ export default function Product() {
               imageUrl.length > 0 &&
               imageUrl.map((values, index) => {
                 return (
-
-                  <Popover placement="right" content={() => content(values)} >
-                    <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
-                      <a
-
-                        href={
-                          values
-                        }
-                        target="_blank"
-                      >
-                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
-
+                  <Popover placement="right" content={() => content(values)}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={6}
+                      lg={6}
+                      xl={6}
+                      style={{
+                        border: '1px solid rgb(230, 220, 220)',
+                        marginTop: '1rem',
+                        marginRight: '1rem',
+                        padding: '1rem',
+                        width: '6.5rem',
+                        height: '6.5rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <a href={values} target="_blank">
+                        <img
+                          src={values}
+                          style={{
+                            width: '5rem',
+                            height: '5rem',
+                            objectFit: 'contain',
+                            cursor: 'pointer',
+                          }}
+                          alt=""
+                        />
                       </a>
-                      <div className={styles['icon_hover']}>
-
-
-
-                      </div>
-                    
+                      <div className={styles['icon_hover']}></div>
                     </Col>
                   </Popover>
-
                 )
               })}
           </div>
         )}
       </Row>
-
-    
     )
   }
   const UploadImgChild = ({ imageUrl, indexUpdate, index20 }) => {
-    const [imgUrl, setImgUrl] = useState(imageUrl)
-    const [imgFile, setImgFile] = useState(null)
-    const [start, setStart] = useState([imageUrl])
     const [list, setList] = useState('')
 
     const propsMain = {
@@ -652,66 +651,38 @@ export default function Product() {
               })
 
               if (formData) {
-                dispatch({ type: ACTION.LOADING, data: true });
+                dispatch({ type: ACTION.LOADING, data: true })
                 let a = axios
                   .post(
                     'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
                     formData,
                     {
                       headers: {
-                        'Content-Type':
-                          'multipart/form-data',
+                        'Content-Type': 'multipart/form-data',
                       },
                     }
                   )
                   .then((resp) => resp)
                 let resultsMockup = await Promise.all([a])
-                console.log(resultsMockup)
-                console.log('|||99999999999999999999')
-                console.log(resultsMockup[0].data.data[0])
-                dispatch({ type: ACTION.LOADING, data: false });
+
+                dispatch({ type: ACTION.LOADING, data: false })
                 setList(resultsMockup[0].data.data)
-                console.log(indexUpdate)
-                // chi nhánh
-                if (viewMode === 1) {
-                  productStore &&
-                    productStore.length > 0 &&
-                    productStore.forEach((values, index) => {
-                      if (values._id === indexUpdate) {
-                        productStore[index].variants[
-                          index20
-                        ].image = resultsMockup[0].data.data
-                        console.log(
-                          productStore[index].variants[
-                            index20
-                          ].image
-                        )
-                      }
-                    })
-                } else { // kho
-                  product &&
-                    product.length > 0 &&
-                    product.forEach((values, index) => {
-                      if (values._id === indexUpdate) {
-                        product[index].variants[
-                          index20
-                        ].image = resultsMockup[0].data.data
 
-                      }
-                    })
-                }
-
+                product.forEach((values, index) => {
+                  if (values._id === indexUpdate) {
+                    product[index].variants[index20].image =
+                      resultsMockup[0].data.data
+                  }
+                })
               }
             }
           }
         }
       },
-    
     }
     return (
       <Row>
         <Dragger
-
           style={{ width: '10rem', marginBottom: '1.25rem' }}
           {...propsMain}
         >
@@ -756,27 +727,41 @@ export default function Product() {
               list.length > 0 &&
               list.map((values, index) => {
                 return (
-
-                  <Popover placement="right" content={() => content(values)} >
-                    <Col xs={24} sm={24} md={16} lg={16} xl={16} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
-                      <a
-
-                        href={
-                          values
-                        }
-                        target="_blank"
-                      >
-                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
-
+                  <Popover placement="right" content={() => content(values)}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={16}
+                      lg={16}
+                      xl={16}
+                      style={{
+                        border: '1px solid rgb(230, 220, 220)',
+                        marginTop: '1rem',
+                        marginRight: '1rem',
+                        padding: '1rem',
+                        width: '6.5rem',
+                        height: '6.5rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <a href={values} target="_blank">
+                        <img
+                          src={values}
+                          style={{
+                            width: '5rem',
+                            height: '5rem',
+                            objectFit: 'contain',
+                            cursor: 'pointer',
+                          }}
+                          alt=""
+                        />
                       </a>
-                      <div className={styles['icon_hover']}>
-
-
-                      </div>
-                   
+                      <div className={styles['icon_hover']}></div>
                     </Col>
                   </Popover>
-
                 )
               })}
           </div>
@@ -795,23 +780,40 @@ export default function Product() {
               imageUrl.length > 0 &&
               imageUrl.map((values, index) => {
                 return (
-
-                  <Popover placement="right" content={() => content(values)} >
-                    <Col xs={24} sm={24} md={16} lg={16} xl={16} style={{ border: '1px solid rgb(230, 220, 220)', marginTop: '1rem', marginRight: '1rem', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
-                      <a
-
-                        href={
-                          values
-                        }
-                        target="_blank"
-                      >
-                        <img src={values} style={{ width: '5rem', height: '5rem', objectFit: 'contain', cursor: 'pointer' }} alt="" />
-
+                  <Popover placement="right" content={() => content(values)}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={16}
+                      lg={16}
+                      xl={16}
+                      style={{
+                        border: '1px solid rgb(230, 220, 220)',
+                        marginTop: '1rem',
+                        marginRight: '1rem',
+                        padding: '1rem',
+                        width: '6.5rem',
+                        height: '6.5rem',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <a href={values} target="_blank">
+                        <img
+                          src={values}
+                          style={{
+                            width: '5rem',
+                            height: '5rem',
+                            objectFit: 'contain',
+                            cursor: 'pointer',
+                          }}
+                          alt=""
+                        />
                       </a>
-              
                     </Col>
                   </Popover>
-
                 )
               })}
           </div>
@@ -823,45 +825,26 @@ export default function Product() {
     setVisible(false)
   }
 
-
   const [selectedRowKeysCategory, setSelectedRowKeysCategory] = useState([])
   const [arrayUpdateCategory, setArrayUpdateCategory] = useState([])
 
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
     const array = []
-    // chi nhánh
-    if (viewMode === 1) {
-      productStore &&
-        productStore.length > 0 &&
-        productStore.forEach((values, index) => {
-          selectedRowKeys.forEach((values1, index1) => {
-            if (values._id === values1) {
-              array.push(values)
-            }
-          })
-        })
-    } else { // kho
-      product &&
-        product.length > 0 &&
-        product.forEach((values, index) => {
-          selectedRowKeys.forEach((values1, index1) => {
-            if (values._id === values1) {
-              array.push(values)
-            }
-          })
-        })
-    }
+
+    product.forEach((values, index) => {
+      selectedRowKeys.forEach((values1, index1) => {
+        if (values._id === values1) {
+          array.push(values)
+        }
+      })
+    })
 
     setArrayUpdate([...array])
 
-
-
-
-
     const array1 = []
-    category && category.length > 0 && category.forEach((values, index) => {
+
+    category.forEach((values, index) => {
       selectedRowKeys.forEach((values1, index1) => {
         if (values._id === values1) {
           array1.push(values)
@@ -869,28 +852,6 @@ export default function Product() {
       })
     })
     setArrayUpdateCategory([...array1])
-  }
-  const apiSearchDataGroup = async (value) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearchProduct({
-        _category: value,
-        page: 1,
-        page_size: 10,
-      })
-      console.log(res)
-      console.log("___123")
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-        setSelectedRowKeys([])
-        setPaginationChecked(1)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
   }
 
   const [categoryProductGroup, setCategoryProductGroup] = useState([])
@@ -901,17 +862,15 @@ export default function Product() {
       const res = await apiAllCategorySearch({
         keyword: value,
       })
-      console.log(res)
-      console.log("___123")
       if (res.status === 200) {
-
-
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (values.active) {
+              array.push(values)
+            }
+          })
         setCategoryProductGroup([...array])
         setCategory([...array])
       }
@@ -920,26 +879,7 @@ export default function Product() {
       setLoading(false)
     }
   }
-  const apiSearchData = async (value) => {
-    try {
-      setLoading(true)
 
-      const res = await apiSearchProduct({
-        keyword: value,
-        page: 1,
-        page_size: 10,
-      })
-      console.log(res)
-      console.log("___123")
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
   const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -948,24 +888,20 @@ export default function Product() {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
     }
-    if (categorySearch) {
-      setSearchFilter({ [categorySearch]: e.target.value })
-      typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value
-        filterProduct({
-          [categorySearch]: value,
-          page: 1,
-          page_size: 10,
-        })
-      }, 300)
-    }
-    else
-      typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value
-        setSearchFilter({ keyword: e.target.value })
-        apiSearchData(value)
-      }, 300)
-    //
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value
+
+      setPage(1)
+
+      if (value) {
+        paramsFilter[optionSearchName] = value
+      } else {
+        delete paramsFilter[optionSearchName]
+      }
+
+      getAllProduct({ page: 1, page_size, ...paramsFilter })
+      setParamsFilter({ ...paramsFilter })
+    }, 750)
   }
   const [record, setRecord] = useState({})
   const modal2VisibleModalMain = (modal2Visible, record) => {
@@ -982,121 +918,26 @@ export default function Product() {
   }
 
   const { Option } = Select
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
 
-      const res = !viewMode ? await apiSearchProduct({ ...filter, ...searchFilter, from_date: start, to_date: end, page: pagination.page, page_size: pagination.pageSize }) : await apiProductSeller({ ...filter, ...searchFilter, from_date: start, to_date: end, page: pagination.page, page_size: pagination.pageSize })
-
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setCount(res.data.count)
-        setSelectedRowKeys([])
-        setPaginationChecked(1)
-
-
-
-
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
-  const [clear, setClear] = useState(-1)
-  const dateFormat = 'YYYY/MM/DD'
-  function onChangeDate(dates, dateStrings) {
-    setClear(-1)
-
-
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
-    apiSearchDateData(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
-
-    if (dateStrings && dateStrings.length === 0) {
-      setTitleDate('chưa chọn')
-    } else {
-      setTitleDate(`${dateStrings && dateStrings.length > 0 ? dateStrings[0] : ''} - 
-      ${dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''}`)
-    }
-
-
-  }
   const [count, setCount] = useState(0)
-  const [productStore, setProductStore] = useState([])
-  const apiAllProductData = async (params) => {
-    setLoading(true)
-    try {
-      if (singleGroup === 0) {
-        const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize })
-        console.log(res)
-        console.log("____3333334444455555")
-        if (res.status === 200) {
-          if (viewMode === 1) {
-            setProductStore(res.data.data)
-            setProduct([])
-          } else {
-            setProductStore([])
-            setProduct(res.data.data)
-          }
-          // setProduct(res.data.data)
-          setCount(res.data.count)
-          setSelectedRowKeys([])
-          setPaginationChecked(paginationChecked)
-        }
-      } else {
-        const res = viewMode === 0 ? await apiSearchProduct({ ...filter, ...searchFilter, ...params, page: pagination.page, page_size: pagination.pageSize, merge: false }) : await apiProductSeller({ ...params, page: paginationChecked ? paginationChecked : 1, page_size: pagination.pageSize, merge: false })
-        console.log(res)
-        console.log("____3333334444455555")
-        if (res.status === 200) {
-          if (viewMode === 1) {
-            setProductStore(res.data.data)
-            setProduct([])
-          } else {
-            setProductStore([])
-            setProduct(res.data.data)
-          }
-          // setProduct(res.data.data)
-          setCount(res.data.count)
-          setSelectedRowKeys([])
-          setPaginationChecked(paginationChecked)
-        }
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
+
   const openNotificationSuccessGroup = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Tạo nhóm thành công.',
-
-    });
-  };
+      description: 'Tạo nhóm thành công.',
+    })
+  }
   const openNotificationSuccessGroupError = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Tạo nhóm thất bại.',
-
-    });
-  };
+      description: 'Tạo nhóm thất bại.',
+    })
+  }
   const apiAddCategoryData = async (object) => {
     setLoading(true)
     try {
-
       const res = await apiAddCategory(object)
-      console.log(res)
       if (res.status === 200) {
-        await apiAllProductData()
         await apiAllCategoryData()
         setSelectedRowKeys([])
         setModal5Visible(false)
@@ -1113,9 +954,8 @@ export default function Product() {
   const apiProductCategoryMergeData = async () => {
     setLoading(true)
     try {
-
       const res = await apiProductCategoryMerge({ page: 1, page_size: 10 })
-  
+
       if (res.status === 200) {
       }
       setLoading(false)
@@ -1123,29 +963,19 @@ export default function Product() {
       setLoading(false)
     }
   }
-  const apiAllProductDataMain = async () => {
+  const getAllProduct = async (params) => {
     setLoading(true)
+    setSelectedRowKeys([])
+
     try {
-      if (viewMode === 1) {
-        const res = await apiProductSeller({ page: pagination.page, page_size: pagination.pageSize })
-        if (res.status === 200) {
-          setProductStore(res.data.data)
-          setProduct([])
-          setCount(res.data.count)
-          setStatusName('')
-          setSelectedRowKeys([])
-          setPaginationChecked(1)
-        }
-      } else {
-        const res = await apiAllProduct({ page: pagination.page, page_size: pagination.pageSize })
-        if (res.status === 200) {
-          setProduct(res.data.data)
-          setProductStore([])
-          setCount(res.data.count)
-          setStatusName('')
-          setSelectedRowKeys([])
-          setPaginationChecked(1)
-        }
+      let res
+      console.log(params)
+      if (viewMode === 1) res = await apiProductSeller(params)
+      else res = await apiAllProduct(params)
+      console.log(res)
+      if (res.status === 200) {
+        setProduct(res.data.data)
+        setCount(res.data.count)
       }
 
       setLoading(false)
@@ -1155,7 +985,6 @@ export default function Product() {
   }
 
   const loadingAll = async () => {
-
     try {
       setLoading(true)
       await apiAllSupplierData()
@@ -1169,9 +998,11 @@ export default function Product() {
       setLoading(false)
     }
   }
+
   useEffect(() => {
-    apiAllProductData(viewLocation && viewLocation)
-  }, [viewMode, pagination, singleGroup])
+    getAllProduct({ page: 1, page_size, ...paramsFilter })
+  }, [viewMode])
+
   useEffect(() => {
     loadingAll()
   }, [])
@@ -1186,9 +1017,11 @@ export default function Product() {
   const onClickGroupProduct = () => {
     // productGroupName
     var array = []
-    arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-      array.push(values.product_id)
-    })
+    arrayUpdate &&
+      arrayUpdate.length > 0 &&
+      arrayUpdate.forEach((values, index) => {
+        array.push(values.product_id)
+      })
     const object = {
       name: productGroupName ? productGroupName : '',
       product_list: [...array],
@@ -1196,37 +1029,49 @@ export default function Product() {
     console.log(object)
     apiAddCategoryData(object)
   }
-  const [productGroupSelect, setProductGroupSelect] = useState('')
-  const onChangeCategoryValueSelect = async (e) => {
+  const [productGroupSelect, setProductGroupSelect] = useState()
+  const onChangeCategory = async (e) => {
+    setPage(1)
     setProductGroupSelect(e)
+
+    if (e) {
+      paramsFilter.category = e
+    } else {
+      delete paramsFilter.category
+    }
+
+    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
   }
   const openNotificationProductGroupSelectError = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Bạn chưa chọn nhóm sản phẩm.',
-
-    });
-  };
+      description: 'Bạn chưa chọn nhóm sản phẩm.',
+    })
+  }
 
   const onClickGroupProductSelect = () => {
     // productGroupName
-    if (productGroupSelect === '' || productGroupSelect === ' ' || productGroupSelect === 'default') {
+    if (
+      productGroupSelect === '' ||
+      productGroupSelect === ' ' ||
+      productGroupSelect === 'default'
+    ) {
       openNotificationProductGroupSelectError()
     } else {
-      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-        apiUpdateProductMulti({ ...values, category: productGroupSelect }, values.product_id)
-      })
-
+      arrayUpdate &&
+        arrayUpdate.length > 0 &&
+        arrayUpdate.forEach((values, index) => {
+          apiUpdateProductMulti(
+            { ...values, category: productGroupSelect },
+            values.product_id
+          )
+        })
     }
-
   }
- 
 
   const onChangeImage = async (info, index3, record) => {
-
     if (info.fileList && info.fileList.length > 0) {
-
       var image
 
       let formData = new FormData()
@@ -1243,66 +1088,34 @@ export default function Product() {
             formData,
             {
               headers: {
-                'Content-Type':
-                  'multipart/form-data',
+                'Content-Type': 'multipart/form-data',
               },
             }
           )
           .then((resp) => resp)
         let resultsMockup = await Promise.all([a])
-  
+
         setLoading(false)
-       
+
         var objectFinish = {}
-        if (viewMode === 1) {
-          productStore &&
-            productStore.length > 0 &&
-            productStore.forEach((values, index) => {
-              if (values._id === record._id) {
-                var array = []
-               
-                array = [...productStore[index].variants[
-                  index3
-                ].image]
-                var result = array.concat(resultsMockup[0].data.data)
-             
-                var objectResult = { ...productStore[index].variants[index3], image: result.reverse() }
-                var arrayFinish = [...values.variants]
-                arrayFinish[index3] = objectResult
 
-                objectFinish = { ...values, variants: arrayFinish }
-            
-                apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+        product.forEach((values, index) => {
+          if (values._id === record._id) {
+            var array = []
+            array = [...product[index].variants[index3].image]
 
-              }
-            })
+            var result = array.concat(resultsMockup[0].data.data)
+            var objectResult = {
+              ...product[index].variants[index3],
+              image: result.reverse(),
+            }
+            var arrayFinish = [...values.variants]
+            arrayFinish[index3] = objectResult
 
-
-        } else {
-          product &&
-            product.length > 0 &&
-            product.forEach((values, index) => {
-              if (values._id === record._id) {
-                var array = []
-                array = [...product[index].variants[
-                  index3
-                ].image]
-            
-                var result = array.concat(resultsMockup[0].data.data)
-                var objectResult = { ...product[index].variants[index3], image: result.reverse() }
-                var arrayFinish = [...values.variants]
-                arrayFinish[index3] = objectResult
-
-                objectFinish = { ...values, variants: arrayFinish }
-                apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
-
-
-              }
-            })
-
-
-        }
-
+            objectFinish = { ...values, variants: arrayFinish }
+            apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+          }
+        })
       }
     }
   }
@@ -1325,44 +1138,27 @@ export default function Product() {
             formData,
             {
               headers: {
-                'Content-Type':
-                  'multipart/form-data',
+                'Content-Type': 'multipart/form-data',
               },
             }
           )
           .then((resp) => resp)
         let resultsMockup = await Promise.all([a])
-     
+
         setLoading(false)
-  
-        if (viewMode === 1) {
-          productStore &&
-            productStore.length > 0 &&
-            productStore.forEach((values, index) => {
-              if (values._id === record._id) {
-                var listImage = [...values.image]
 
-                // listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
-                var result = listImage.concat(resultsMockup[0].data.data)
-                apiUpdateProductMultiMain({ ...values, image: result.reverse() }, values.product_id)
-              }
-            })
-        } else {
-          product &&
-            product.length > 0 &&
-            product.forEach((values, index) => {
-              if (values._id === record._id) {
-                var listImage = [...values.image]
-                //   listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
+        product.forEach((values, index) => {
+          if (values._id === record._id) {
+            var listImage = [...values.image]
+            //   listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
 
-                var result = listImage.concat(resultsMockup[0].data.data)
-                apiUpdateProductMultiMain({ ...values, image: result.reverse() }, values.product_id)
-              }
-            })
-        }
-
-
-
+            var result = listImage.concat(resultsMockup[0].data.data)
+            apiUpdateProductMultiMain(
+              { ...values, image: result.reverse() },
+              values.product_id
+            )
+          }
+        })
       }
     }
   }
@@ -1386,7 +1182,9 @@ export default function Product() {
         <img
           style={{
             zIndex: '999999999',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             width: `${valueImage}rem`,
             height: `${valueImage - 10}rem`,
             objectFit: 'contain',
@@ -1394,80 +1192,98 @@ export default function Product() {
           src={url}
           alt=""
         />
-        <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'center', alignItems: 'center', width: '100%', color: 'black', fontSize: '1rem', fontWeight: '600' }}>Thay đổi kích thước ảnh</div>
-        <div style={{ backgroundColor: 'grey', padding: '0.25rem 0', marginTop: '1rem' }}> <Slider value={valueImage} min={20} max={70} onChange={onChangeHoverImage} /></div>
+        <div
+          style={{
+            display: 'flex',
+            marginTop: '1rem',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            color: 'black',
+            fontSize: '1rem',
+            fontWeight: '600',
+          }}
+        >
+          Thay đổi kích thước ảnh
+        </div>
+        <div
+          style={{
+            backgroundColor: 'grey',
+            padding: '0.25rem 0',
+            marginTop: '1rem',
+          }}
+        >
+          <Slider
+            value={valueImage}
+            min={20}
+            max={70}
+            onChange={onChangeHoverImage}
+          />
+        </div>
       </div>
-
     )
   }
   const [indexCheckbox, setIndexCheckbox] = useState([])
   const [skuSelect, setSkuSelect] = useState('')
   const [skuSelectArray, setSkuSelectArray] = useState([])
-  const onChangeSelectInventoryStore = async (e) => {
+  const onChangeTypeViewProduct = async (e) => {
     setViewMode(e.target.value)
-    setStatusCount(0)
-    await apiAllProductDataMain()
     setValueSearch('')
-    setCategoryValue("")
-    setClear(1)
+    setCategoryValue()
     setStatusName('')
-    setTimeFilter("")
-    setAllSelect("")
-    setSelectValue("")
+    setAllSelect()
     setSelectedRowKeys([])
-    setStart([])
-    setEnd([])
-    setFilter({})
-    setSearchFilter({})
+    setParamsFilter({})
   }
   const [arrayCheck, setArrayCheck] = useState([])
-  const onChangeCheckboxImage = (e, index, id, index3, sku, indexFinish, list) => {
+  const onChangeCheckboxImage = (
+    e,
+    index,
+    id,
+    index3,
+    sku,
+    indexFinish,
+    list
+  ) => {
     setSkuSelect(sku)
     if (e.target.checked) {
       var array = [...indexCheckbox]
       array.push(index)
       setIndexCheckbox([...array])
 
-
       setArrayCheck([...list])
-
-
 
       var array1 = [...skuSelectArray]
       if (skuSelectArray && skuSelectArray.length > 0) {
-        var result = skuSelectArray.findIndex(x => x.sku === sku)
+        var result = skuSelectArray.findIndex((x) => x.sku === sku)
         if (result === -1) {
           array1.push({ status: e.target.checked, sku: sku })
-          setSkuSelectArray([...array1])
-          ([...array1])
+          setSkuSelectArray([...array1])([...array1])
         }
-
       } else {
         array1.push({ status: e.target.checked, sku: sku })
-        setSkuSelectArray([...array1])
-        ([...array1])
+        setSkuSelectArray([...array1])([...array1])
       }
-
     } else {
       var array = [...indexCheckbox]
-      indexCheckbox && indexCheckbox.length > 0 && indexCheckbox.forEach((values1, index1) => {
-        if (values1 === index) {
-          array.splice(index1, 1)
-          setIndexCheckbox([...array])
-        }
-      })
-
-
-
+      indexCheckbox &&
+        indexCheckbox.length > 0 &&
+        indexCheckbox.forEach((values1, index1) => {
+          if (values1 === index) {
+            array.splice(index1, 1)
+            setIndexCheckbox([...array])
+          }
+        })
 
       var array1 = [...skuSelectArray]
-      skuSelectArray && skuSelectArray.length > 0 && skuSelectArray.forEach((values1, index1) => {
-        if (values1.sku === sku) {
-          array1.splice(index1, 1)
-          setSkuSelectArray([...array])
-          ([...array])
-        }
-      })
+      skuSelectArray &&
+        skuSelectArray.length > 0 &&
+        skuSelectArray.forEach((values1, index1) => {
+          if (values1.sku === sku) {
+            array1.splice(index1, 1)
+            setSkuSelectArray([...array])([...array])
+          }
+        })
     }
   }
   const [indexCheckboxSimple, setIndexCheckboxSimple] = useState([])
@@ -1480,86 +1296,119 @@ export default function Product() {
       setIndexCheckboxSimple([...array])
     } else {
       var array = [...indexCheckboxSimple]
-      indexCheckboxSimple && indexCheckboxSimple.length > 0 && indexCheckboxSimple.forEach((values1, index1) => {
-        if (values1 === index) {
-          array.splice(index1, 1)
-          setIndexCheckboxSimple([...array])
-        }
-      })
-
-
+      indexCheckboxSimple &&
+        indexCheckboxSimple.length > 0 &&
+        indexCheckboxSimple.forEach((values1, index1) => {
+          if (values1 === index) {
+            array.splice(index1, 1)
+            setIndexCheckboxSimple([...array])
+          }
+        })
     }
   }
   const onClickDeleteImageSimple = (index1, record) => {
     var listImage = [...record.image]
     listImage.splice(index1, 1)
-    apiUpdateProductMultiMainDelete({ ...record, image: listImage }, record.product_id)
+    apiUpdateProductMultiMainDelete(
+      { ...record, image: listImage },
+      record.product_id
+    )
   }
   const onClickDeleteImage = (index1, index2, record, list) => {
     var arrayVariant = [...record.variants]
     arrayVariant[index2].image.splice(index1, 1)
     record.variants = arrayVariant
-    console.log(record)
     apiUpdateProductMultiMainDeleteStore(record, record.product_id)
   }
   const onClickDeleteAllImage = (index2, record) => {
     var array = [...arrayCheck]
-    indexCheckbox && indexCheckbox.length > 0 && indexCheckbox.forEach((values, index) => {
-      var arrayVariant = [...record.variants]
-      arrayVariant[index2].image && arrayVariant[index2].image.length > 0 && arrayVariant[index2].image.forEach((values20, index20) => {
-        if (values20 === values) {
-          arrayVariant[index2].image.splice(index20, 1)
-          array.splice(index20, 1)
-          record.variants = arrayVariant
-          console.log(record)
-        }
+    indexCheckbox &&
+      indexCheckbox.length > 0 &&
+      indexCheckbox.forEach((values, index) => {
+        var arrayVariant = [...record.variants]
+        arrayVariant[index2].image &&
+          arrayVariant[index2].image.length > 0 &&
+          arrayVariant[index2].image.forEach((values20, index20) => {
+            if (values20 === values) {
+              arrayVariant[index2].image.splice(index20, 1)
+              array.splice(index20, 1)
+              record.variants = arrayVariant
+            }
+          })
       })
-
-
-    })
     setArrayCheck([...array])
     apiUpdateProductMultiMainDeleteStore(record, record.product_id)
   }
   const onClickDeleteAllImageSimple = (record) => {
     var listImage = [...record.image]
-    indexCheckboxSimple && indexCheckboxSimple.length > 0 && indexCheckboxSimple.forEach((values, index) => {
-
-
-      listImage && listImage.length > 0 && listImage.forEach((values5, index5) => {
-        if (values5 === values) {
-          listImage.splice(index5, 1)
-        }
+    indexCheckboxSimple &&
+      indexCheckboxSimple.length > 0 &&
+      indexCheckboxSimple.forEach((values, index) => {
+        listImage &&
+          listImage.length > 0 &&
+          listImage.forEach((values5, index5) => {
+            if (values5 === values) {
+              listImage.splice(index5, 1)
+            }
+          })
       })
-
-    })
-    apiUpdateProductMultiMainDelete({ ...record, image: [...listImage] }, record.product_id)
+    apiUpdateProductMultiMainDelete(
+      { ...record, image: [...listImage] },
+      record.product_id
+    )
   }
 
   const contentProductGroup = (
     <div className={styles['product__group-select']}>
-      {
-        categoryProductGroup && categoryProductGroup.length > 0 ? categoryProductGroup.map((values, index) => {
-          return (
-            <div onClick={() => onSearchProductGroupMain(values.name)}>
-              {values.name}
-            </div>
-          )
-        }) : category.map((values, index) => {
-          return (
-            <div onClick={() => onSearchProductGroupMain(values.name)}>
-              {values.name}
-            </div>
-          )
-        })
-      }
+      {categoryProductGroup && categoryProductGroup.length > 0
+        ? categoryProductGroup.map((values, index) => {
+            return (
+              <div onClick={() => onSearchProductGroupMain(values.name)}>
+                {values.name}
+              </div>
+            )
+          })
+        : category.map((values, index) => {
+            return (
+              <div onClick={() => onSearchProductGroupMain(values.name)}>
+                {values.name}
+              </div>
+            )
+          })}
     </div>
-  );
+  )
   const funcHoverImageSimple = (record) => {
     return (
-
-      <Row style={{ display: 'flex', padding: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <div style={{ color: 'black', margin: '1rem 0 0 0', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{singleGroup === 0 ? record.name : record.title}</div>
-        <Col style={{ width: '100%', marginTop: '1.25rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+      <Row
+        style={{
+          display: 'flex',
+          padding: '0 1rem 1rem 1rem',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            color: 'black',
+            margin: '1rem 0 0 0',
+            fontWeight: '600',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          {record.name}
+        </div>
+        <Col
+          style={{ width: '100%', marginTop: '1.25rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={11}
+        >
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             listType="picture-card"
@@ -1567,47 +1416,112 @@ export default function Product() {
             fileList={[]}
             showUploadList={false}
             onChange={(e) => onChangeImageSimple(e, record)}
-          // onPreview={onPreview}
+            // onPreview={onPreview}
           >
             + Upload
           </Upload>
         </Col>
 
-
-
-
-        {
-          record.image && record.image.length > 0 && record.image.map((values1, index1) => {
+        {record.image &&
+          record.image.length > 0 &&
+          record.image.map((values1, index1) => {
             return (
-              <Popover placement="right" content={() => content(values1)} >
-                <Col xs={24} sm={24} md={11} lg={11} xl={11} className={styles['hover_Image']} style={{ border: '1px solid white', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
-                  <img src={values1} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
+              <Popover placement="right" content={() => content(values1)}>
+                <Col
+                  xs={24}
+                  sm={24}
+                  md={11}
+                  lg={11}
+                  xl={11}
+                  className={styles['hover_Image']}
+                  style={{
+                    border: '1px solid white',
+                    padding: '1rem',
+                    width: '6.5rem',
+                    height: '6.5rem',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: '1rem',
+                  }}
+                >
+                  <img
+                    src={values1}
+                    style={{
+                      width: '5rem',
+                      height: '5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
                   <div className={styles['icon_hover']}>
-                    <a
-                      href={
-                        values1
-                      }
-                      target="_blank"
-                    >
-                      <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /></a>
-                    <DeleteOutlined onClick={() => onClickDeleteImageSimple(index1, record)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} />
+                    <a href={values1} target="_blank">
+                      <EyeOutlined
+                        style={{
+                          color: 'white',
+                          marginTop: '0.25rem',
+                          fontSize: '1.25rem',
+                          fontWeight: '600',
+                          marginRight: '0.5rem',
+                        }}
+                      />
+                    </a>
+                    <DeleteOutlined
+                      onClick={() => onClickDeleteImageSimple(index1, record)}
+                      style={{
+                        color: 'white',
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                      }}
+                    />
                   </div>
 
-                  <Checkbox onChange={(e) => onChangeCheckboxImageSimple(e, values1, record)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
+                  <Checkbox
+                    onChange={(e) =>
+                      onChangeCheckboxImageSimple(e, values1, record)
+                    }
+                    style={{
+                      zIndex: '99',
+                      top: '0',
+                      right: '0',
+                      position: 'absolute',
+                    }}
+                  ></Checkbox>
                 </Col>
               </Popover>
             )
-          })
-        }
-        {
-          idSelectSimple === record._id ? (indexCheckboxSimple && indexCheckboxSimple.length > 0 ? (<Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div onClick={() => onClickDeleteAllImageSimple(record)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}><Button style={{ width: '12.5rem' }} type="primary" danger>Xóa tất cả ảnh đã chọn</Button></div>
-          </Col>) : '') : ''
-        }
-
-
+          })}
+        {idSelectSimple === record._id ? (
+          indexCheckboxSimple && indexCheckboxSimple.length > 0 ? (
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
+              <div
+                onClick={() => onClickDeleteAllImageSimple(record)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button style={{ width: '12.5rem' }} type="primary" danger>
+                  Xóa tất cả ảnh đã chọn
+                </Button>
+              </div>
+            </Col>
+          ) : (
+            ''
+          )
+        ) : (
+          ''
+        )}
       </Row>
-
     )
   }
 
@@ -1618,11 +1532,11 @@ export default function Product() {
       clearTimeout(typingTimeoutRef.current)
     }
     typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value;
-      apiAllCategorySearchData(value);
-    }, 300);
-    // 
-  };
+      const value = e.target.value
+      apiAllCategorySearchData(value)
+    }, 300)
+    //
+  }
   const onSearchProductGroupMain = (e) => {
     setValueSearchProductGroup(e)
     if (typingTimeoutRef.current) {
@@ -1630,17 +1544,29 @@ export default function Product() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       // const value = e.target.value;
-      apiAllCategorySearchData(e);
-    }, 300);
-    // 
-  };
+      apiAllCategorySearchData(e)
+    }, 300)
+    //
+  }
   const funcHoverImage = (list, index, record, sku) => {
-
-
     return (
-
-      <Row style={{ display: 'flex', margin: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <Col style={{ width: '100%', marginBottom: '0.25rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+      <Row
+        style={{
+          display: 'flex',
+          margin: '0 1rem 1rem 1rem',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}
+      >
+        <Col
+          style={{ width: '100%', marginBottom: '0.25rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={11}
+        >
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             listType="picture-card"
@@ -1648,53 +1574,124 @@ export default function Product() {
             showUploadList={false}
             fileList={[]}
             onChange={(e) => onChangeImage(e, index, record)}
-          // onPreview={onPreview}
+            // onPreview={onPreview}
           >
             + Upload
           </Upload>
         </Col>
 
-
-        {
-          list && list.length > 0 && list.map((values1, index1) => {
+        {list &&
+          list.length > 0 &&
+          list.map((values1, index1) => {
             return (
-
-              <Popover placement="right" content={() => content(values1)} >
-                <Col xs={24} sm={24} md={11} lg={11} xl={11} className={styles['hover_Image']} style={{ border: '1px solid white', padding: '1rem', width: '6.5rem', height: '6.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
-
-                  <img src={values1} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-
+              <Popover placement="right" content={() => content(values1)}>
+                <Col
+                  xs={24}
+                  sm={24}
+                  md={11}
+                  lg={11}
+                  xl={11}
+                  className={styles['hover_Image']}
+                  style={{
+                    border: '1px solid white',
+                    padding: '1rem',
+                    width: '6.5rem',
+                    height: '6.5rem',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <img
+                    src={values1}
+                    style={{
+                      width: '5rem',
+                      height: '5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
 
                   <div className={styles['icon_hover']}>
-                    <a
-
-                      href={
-                        values1
+                    <a href={values1} target="_blank">
+                      <EyeOutlined
+                        style={{
+                          color: 'white',
+                          marginTop: '0.25rem',
+                          fontSize: '1.25rem',
+                          fontWeight: '600',
+                          marginRight: '0.5rem',
+                        }}
+                      />
+                    </a>
+                    <DeleteOutlined
+                      onClick={() =>
+                        onClickDeleteImage(index1, index, record, list)
                       }
-                      target="_blank"
-                    >
-                      <EyeOutlined style={{ color: 'white', marginTop: '0.25rem', fontSize: '1.25rem', fontWeight: '600', marginRight: '0.5rem' }} /></a>
-                    <DeleteOutlined onClick={() => onClickDeleteImage(index1, index, record, list)} style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600', }} />
-
+                      style={{
+                        color: 'white',
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                      }}
+                    />
                   </div>
-                
-                  <Checkbox onChange={(e) => onChangeCheckboxImage(e, values1, record._id, index, sku, index1, list)} style={{ zIndex: '99', top: '0', right: '0', position: 'absolute' }}></Checkbox>
 
+                  <Checkbox
+                    onChange={(e) =>
+                      onChangeCheckboxImage(
+                        e,
+                        values1,
+                        record._id,
+                        index,
+                        sku,
+                        index1,
+                        list
+                      )
+                    }
+                    style={{
+                      zIndex: '99',
+                      top: '0',
+                      right: '0',
+                      position: 'absolute',
+                    }}
+                  ></Checkbox>
                 </Col>
               </Popover>
-
             )
-          })
-        }
+          })}
 
-
-        {
-          skuSelect === sku ? (indexCheckbox && indexCheckbox.length > 0 ? (<Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div onClick={() => onClickDeleteAllImage(index, record)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}><Button style={{ width: '12.5rem' }} type="primary" danger>Xóa tất cả ảnh đã chọn</Button></div>
-          </Col>) : '') : ''
-        }
+        {skuSelect === sku ? (
+          indexCheckbox && indexCheckbox.length > 0 ? (
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
+              <div
+                onClick={() => onClickDeleteAllImage(index, record)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button style={{ width: '12.5rem' }} type="primary" danger>
+                  Xóa tất cả ảnh đã chọn
+                </Button>
+              </div>
+            </Col>
+          ) : (
+            ''
+          )
+        ) : (
+          ''
+        )}
       </Row>
-
     )
   }
   const columns = [
@@ -1712,9 +1709,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          {record &&
-            record.variants &&
-            record.variants.length > 0 ? (
+          {record && record.variants && record.variants.length > 0 ? (
             record.variants.map((values, index) => {
               if (values.status === 'shipping_stock') {
                 return (
@@ -1743,7 +1738,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {values.title}:{' '}
+                      {values.title}:
                     </div>
                     <Row
                       style={{
@@ -1754,11 +1749,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
+                      {funcHoverImage(values.image, index, record, values.sku)}
                     </Row>
                   </Col>
                 )
@@ -1790,7 +1781,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {values.title}:{' '}
+                      {values.title}:
                     </div>
                     <Row
                       style={{
@@ -1801,11 +1792,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
+                      {funcHoverImage(values.image, index, record, values.sku)}
                     </Row>
                   </Col>
                 )
@@ -1837,7 +1824,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {values.title}:{' '}
+                      {values.title}:
                     </div>
                     <Row
                       style={{
@@ -1848,11 +1835,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
+                      {funcHoverImage(values.image, index, record, values.sku)}
                     </Row>
                   </Col>
                 )
@@ -1884,7 +1867,7 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {values.title}:{' '}
+                      {values.title}:
                     </div>
                     <Row
                       style={{
@@ -1895,18 +1878,29 @@ export default function Product() {
                         width: '100%',
                       }}
                     >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
+                      {funcHoverImage(values.image, index, record, values.sku)}
                     </Row>
                   </Col>
                 )
               }
             })
-          ) : record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
-          }
+          ) : record.status === 'shipping_stock' ? (
+            <div style={{ backgroundColor: '#2F9BFF' }}>
+              {funcHoverImageSimple(record)}
+            </div>
+          ) : record.status === 'available_stock' ? (
+            <div style={{ backgroundColor: '#24A700' }}>
+              {funcHoverImageSimple(record)}
+            </div>
+          ) : record.status === 'low_stock' ? (
+            <div style={{ backgroundColor: '#A06000' }}>
+              {funcHoverImageSimple(record)}
+            </div>
+          ) : (
+            <div style={{ backgroundColor: '#FE9292' }}>
+              {funcHoverImageSimple(record)}
+            </div>
+          )}
         </Row>
       ),
     },
@@ -1915,76 +1909,227 @@ export default function Product() {
       title: 'Số lượng',
       dataIndex: 'quantityMain',
       width: 200,
-      render: (text, record) => record.variants && record.variants.length > 0 ? record.variants.map(e => (<>
-        <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{e.title}</div>
-        {
-          (e.quantity && e.quantity > 0) || (e.available_stock_quantity && e.available_stock_quantity > 0) ? (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            {
-              e.quantity && e.quantity <= 0 || e.available_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Số lượng:</div>)
-            }
+      render: (text, record) =>
+        record.variants && record.variants.length > 0 ? (
+          record.variants.map((e) => (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  marginBottom: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {e.title}
+              </div>
+              {(e.quantity && e.quantity > 0) ||
+              (e.available_stock_quantity && e.available_stock_quantity > 0) ? (
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {(e.quantity && e.quantity <= 0) ||
+                  e.available_stock_quantity <= 0 ? (
+                    ''
+                  ) : (
+                    <div
+                      style={{
+                        marginRight: '0.25rem',
+                        color: 'black',
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Số lượng:
+                    </div>
+                  )}
 
-            <div>
-              {
-                e.quantity && e.quantity > 0 ? e.quantity && e.quantity && `${formatCash(
-                  String(e.quantity)
-                )}.` : (e.available_stock_quantity > 0 ? e.available_stock_quantity && e.available_stock_quantity && `${formatCash(
-                  String(e.available_stock_quantity)
-                )}.` : '')
-              }
+                  <div>
+                    {e.quantity && e.quantity > 0
+                      ? e.quantity &&
+                        e.quantity &&
+                        `${formatCash(String(e.quantity))}.`
+                      : e.available_stock_quantity > 0
+                      ? e.available_stock_quantity &&
+                        e.available_stock_quantity &&
+                        `${formatCash(String(e.available_stock_quantity))}.`
+                      : ''}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {e.low_stock_quantity <= 0 ? (
+                    ''
+                  ) : (
+                    <div
+                      style={{
+                        marginRight: '0.25rem',
+                        color: 'black',
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Số lượng:
+                    </div>
+                  )}
 
+                  <div>
+                    {e.low_stock_quantity > 0
+                      ? e.low_stock_quantity &&
+                        `${formatCash(String(e.low_stock_quantity))}.`
+                      : ''}
+                  </div>
+                </div>
+              )}
+            </>
+          ))
+        ) : (
+          <>
+            {(record.quantity && record.quantity > 0) ||
+            (record.available_stock_quantity &&
+              record.available_stock_quantity > 0) ? (
+              <div
+                style={{
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  flexDirection: 'column',
+                }}
+              >
+                <div
+                  style={{
+                    marginRight: '0.25rem',
+                    color: 'black',
+                    fontWeight: '600',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {record.name}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {record.available_stock_quantity <= 0 ? (
+                    ''
+                  ) : (
+                    <div
+                      style={{
+                        marginRight: '0.25rem',
+                        color: 'black',
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Số lượng:
+                    </div>
+                  )}
 
-            </div>
-          </div>) : (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            {
-              e.low_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Số lượng:</div>)
-            }
-
-            <div>
-              {e.low_stock_quantity > 0 ? e.low_stock_quantity && `${formatCash(
-                String(e.low_stock_quantity)
-              )}.` : ''}
-            </div>
-          </div>)
-        }
-
-
-      </>)) : (
-        <>
-          {
-            (record.quantity && record.quantity > 0) || (record.available_stock_quantity && record.available_stock_quantity > 0) ? (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                {
-                  record.available_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>Số lượng:</div>)
-                }
-
-                <div>
-                  {record.available_stock_quantity > 0 ? record.available_stock_quantity && `${formatCash(
-                    String(record.available_stock_quantity)
-                  )}.` : ''}
+                  <div>
+                    {record.available_stock_quantity > 0
+                      ? record.available_stock_quantity &&
+                        `${formatCash(
+                          String(record.available_stock_quantity)
+                        )}.`
+                      : ''}
+                  </div>
                 </div>
               </div>
-            </div>) : (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                {
-                  record.low_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>Số lượng:</div>)
-                }
+            ) : (
+              <div
+                style={{
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  flexDirection: 'column',
+                }}
+              >
+                <div
+                  style={{
+                    marginRight: '0.25rem',
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {statusName !== ''
+                    ? record && record.variants && record.variants.length === 0
+                      ? record.title
+                      : record.name
+                    : record.name}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {record.low_stock_quantity <= 0 ? (
+                    ''
+                  ) : (
+                    <div
+                      style={{
+                        marginRight: '0.25rem',
+                        color: 'black',
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Số lượng:
+                    </div>
+                  )}
 
-                <div>
-                  {record.low_stock_quantity > 0 ? record.low_stock_quantity && `${formatCash(
-                    String(record.low_stock_quantity)
-                  )}.` : ''}
+                  <div>
+                    {record.low_stock_quantity > 0
+                      ? record.low_stock_quantity &&
+                        `${formatCash(String(record.low_stock_quantity))}.`
+                      : ''}
+                  </div>
                 </div>
               </div>
-
-            </div>)
-          }
-
-
-        </>
-
-      ),
+            )}
+          </>
+        ),
     },
 
     {
@@ -2004,154 +2149,490 @@ export default function Product() {
       title: 'Tên sản phẩm',
       dataIndex: 'name',
       width: 250,
-      render: (text, record) => <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-        {
-          record && record.variants && record.variants.length > 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{record.name}</div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', }}>Phiên bản:</div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              {
-                record && record.variants && record.variants.length > 0 ? (
-                  record && record.variants.map((values, index) => {
-                    return (
-                      <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>{`${values.title}.`}</div>
-                    )
-                  })
-                ) : ''
-              }
+      render: (text, record) => (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          {record && record.variants && record.variants.length > 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  marginBottom: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {record.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  marginBottom: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                Phiên bản:
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  marginBottom: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                  flexDirection: 'column',
+                }}
+              >
+                {record && record.variants && record.variants.length > 0
+                  ? record &&
+                    record.variants.map((values, index) => {
+                      return (
+                        <div
+                          style={{
+                            display: 'flex',
+                            marginBottom: '0.5rem',
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >{`${values.title}.`}</div>
+                      )
+                    })
+                  : ''}
+              </div>
             </div>
-          </div>) : <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-        }
-      </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                marginBottom: '0.5rem',
+                alignItems: 'center',
+                width: '100%',
+                color: 'black',
+                fontWeight: '600',
+              }}
+            >
+              {record.name}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       title: 'Nhóm sản phẩm',
       dataIndex: 'category',
       width: 125,
-      render: (text, record) =>
-        text.name
+      render: (text, record) => text.name,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'statusMain',
       width: 250,
-      render: (text, record) => <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-        {
-          record && record.variants && record.variants.length > 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              {
-                record && record.variants && record.variants.length > 0 ? (
-                  record && record.variants.map((values, index) => {
-                    if (values.status === 'available_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else if (values.status === 'low_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else if (values.status === 'out_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    }
-
-                  })
-                ) : ''
-              }
+      render: (text, record) => (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          {record && record.variants && record.variants.length > 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  marginBottom: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                  flexDirection: 'column',
+                }}
+              >
+                {record && record.variants && record.variants.length > 0
+                  ? record &&
+                    record.variants.map((values, index) => {
+                      if (values.status === 'available_stock') {
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'flex-start',
+                              alignItems: 'center',
+                              width: '100%',
+                              flexDirection: 'column',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                color: 'black',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.title}.`}</div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                textTransform: 'capitalize',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.status}`}</div>
+                          </div>
+                        )
+                      } else if (values.status === 'low_stock') {
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'flex-start',
+                              alignItems: 'center',
+                              width: '100%',
+                              flexDirection: 'column',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                color: 'black',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.title}.`}</div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                textTransform: 'capitalize',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.status}`}</div>
+                          </div>
+                        )
+                      } else if (values.status === 'out_stock') {
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'flex-start',
+                              alignItems: 'center',
+                              width: '100%',
+                              flexDirection: 'column',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                color: 'black',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.title}.`}</div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                textTransform: 'capitalize',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.status}`}</div>
+                          </div>
+                        )
+                      } else {
+                        return (
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'flex-start',
+                              alignItems: 'center',
+                              width: '100%',
+                              flexDirection: 'column',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                color: 'black',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.title}.`}</div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                marginBottom: '0.5rem',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                width: '100%',
+                                textTransform: 'capitalize',
+                                fontWeight: '600',
+                              }}
+                            >{`${values.status}`}</div>
+                          </div>
+                        )
+                      }
+                    })
+                  : ''}
+              </div>
             </div>
-          </div>) : record.status === 'available_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (record.status === 'low_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (record.status === 'out_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{singleGroup === 1 ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>)))
-        }
-      </div>
+          ) : record.status === 'available_stock' ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {record.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  textTransform: 'capitalize',
+                  fontWeight: '600',
+                }}
+              >{`${record.status}`}</div>
+            </div>
+          ) : record.status === 'low_stock' ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {record.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  textTransform: 'capitalize',
+                  fontWeight: '600',
+                }}
+              >{`${record.status}`}</div>
+            </div>
+          ) : record.status === 'out_stock' ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {record.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  textTransform: 'capitalize',
+                  fontWeight: '600',
+                }}
+              >{`${record.status}`}</div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                }}
+              >
+                {record.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  textTransform: 'capitalize',
+                  fontWeight: '600',
+                }}
+              >{`${record.status}`}</div>
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       title: 'Giá sản phẩm',
       dataIndex: 'sale_price',
       width: 250,
-      render: (text, record) => record.variants && record.variants.length > 0 ? record.variants.map(e => (<>
-        <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>{e.title}</div>
-        <div style={{ marginBottom: '0.5rem', }}>
-          {e.sale_price && `${formatCash(
-            String(e.sale_price)
-          )} VNĐ (giá bán),`}
-        </div>
-        <div style={{ marginBottom: '0.5rem', }}>
-          {e.base_price && `${formatCash(
-            String(e.base_price)
-          )} VNĐ (giá cơ bản).`}
-        </div>
-      </>)) : (
-        <>
-          <div style={{ marginBottom: '0.5rem', }}>
-            {record.sale_price && `${formatCash(
-              String(record.sale_price)
-            )} VNĐ (giá bán),`}
-          </div>
-          <div style={{ marginBottom: '0.5rem', }}>
-            {record.base_price && `${formatCash(
-              String(record.base_price)
-            )} VNĐ (giá cơ bản).`}
-          </div>
-        </>
-
-      ),
+      render: (text, record) =>
+        record.variants && record.variants.length > 0 ? (
+          record.variants.map((e) => (
+            <>
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                {e.title}
+              </div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                {e.sale_price &&
+                  `${formatCash(String(e.sale_price))} VNĐ (giá bán),`}
+              </div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                {e.base_price &&
+                  `${formatCash(String(e.base_price))} VNĐ (giá cơ bản).`}
+              </div>
+            </>
+          ))
+        ) : (
+          <>
+            <div style={{ marginBottom: '0.5rem' }}>
+              {record.sale_price &&
+                `${formatCash(String(record.sale_price))} VNĐ (giá bán),`}
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              {record.base_price &&
+                `${formatCash(String(record.base_price))} VNĐ (giá cơ bản).`}
+            </div>
+          </>
+        ),
     },
 
     {
-      title: "Ngày nhập",
-      dataIndex: "create_date",
+      title: 'Ngày nhập',
+      dataIndex: 'create_date',
       width: 150,
       render(data) {
-        return moment(data).format("DD-MM-YYYY")
-      }
+        return moment(data).format('DD-MM-YYYY')
+      },
     },
     {
       title: 'Nhà cung cấp',
       dataIndex: 'suppliers',
       width: 200,
-      render: (text, record) => (
-        <div>
-          {text.name}
-        </div>
-      ),
+      render: (text, record) => <div>{text.name}</div>,
     },
     {
       title: 'Kho',
       dataIndex: 'warehouse',
       width: 200,
-      render: (text, record) => (
-        <div>
-          {text ? text.name : ''}
-        </div>
-      ),
+      render: (text, record) => <div>{text ? text.name : ''}</div>,
     },
     {
       title: 'Mở bán',
@@ -2159,534 +2640,30 @@ export default function Product() {
       dataIndex: 'active',
       width: 100,
       render: (text, record) =>
-
         text ? (
-          <Switch
-            defaultChecked
-            onChange={(e) => onChangeSwitch(e, record)}
-          />
+          <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} />
         ) : (
           <Switch onChange={(e) => onChangeSwitch(e, record)} />
-        )
-    },
-  ]
- 
-  const columnsStore = [
-    {
-      title: 'Hình ảnh',
-      align: 'center',
-      dataIndex: 'image',
-      width: 275,
-      render: (text, record) => (
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          {record &&
-            record.variants &&
-            record.variants.length > 0 ? (
-            record.variants.map((values, index) => {
-              if (values.status === 'shipping_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#2F9BFF',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:{' '}
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'available_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#24A700',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:{' '}
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'low_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#A06000',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:{' '}
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'out_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#FE9292',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:{' '}
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {
-                        funcHoverImage(values.image, index, record, values.sku)
-
-                      }
-
-                    </Row>
-                  </Col>
-                )
-              }
-            })
-          ) : record.status === 'shipping_stock' ? (<div style={{ backgroundColor: '#2F9BFF' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'available_stock' ? (<div style={{ backgroundColor: '#24A700' }}>{funcHoverImageSimple(record)}</div>) : (record.status === 'low_stock' ? (<div style={{ backgroundColor: '#A06000' }}>{funcHoverImageSimple(record)}</div>) : (<div style={{ backgroundColor: '#FE9292' }}>{funcHoverImageSimple(record)}</div>)))
-          }
-        </Row>
-      ),
-    },
-
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantityMain',
-      width: 200,
-      render: (text, record) => record.variants && record.variants.length > 0 ? record.variants.map(e => (<>
-        <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{e.title}</div>
-        {
-          (e.quantity && e.quantity > 0) || (e.available_stock_quantity && e.available_stock_quantity > 0) ? (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            {
-              e.quantity && e.quantity <= 0 || e.available_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Số lượng:</div>)
-            }
-
-            <div>
-              {
-                e.quantity && e.quantity > 0 ? e.quantity && e.quantity && `${formatCash(
-                  String(e.quantity)
-                )}.` : (e.available_stock_quantity > 0 ? e.available_stock_quantity && e.available_stock_quantity && `${formatCash(
-                  String(e.available_stock_quantity)
-                )}.` : '')
-              }
-
-
-            </div>
-          </div>) : (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            {
-              e.low_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Số lượng:</div>)
-            }
-
-            <div>
-              {e.low_stock_quantity > 0 ? e.low_stock_quantity && `${formatCash(
-                String(e.low_stock_quantity)
-              )}.` : ''}
-            </div>
-          </div>)
-        }
-
-
-      </>)) : (
-        <>
-          {
-            (record.quantity && record.quantity > 0) || (record.available_stock_quantity && record.available_stock_quantity > 0) ? (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                {
-                  record.available_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>Số lượng:</div>)
-                }
-
-                <div>
-                  {record.available_stock_quantity > 0 ? record.available_stock_quantity && `${formatCash(
-                    String(record.available_stock_quantity)
-                  )}.` : ''}
-                </div>
-              </div>
-            </div>) : (<div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                {
-                  record.low_stock_quantity <= 0 ? ('') : (<div style={{ marginRight: '0.25rem', color: 'black', fontWeight: '600', fontSize: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>Số lượng:</div>)
-                }
-
-                <div>
-                  {record.low_stock_quantity > 0 ? record.low_stock_quantity && `${formatCash(
-                    String(record.low_stock_quantity)
-                  )}.` : ''}
-                </div>
-              </div>
-
-            </div>)
-          }
-
-
-        </>
-
-      ),
-    },
-
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      width: 100,
-      render: (text, record) => (
-        <div
-          onClick={() => modal2VisibleModalMain(true, record)}
-          style={{ color: '#0036F3', cursor: 'pointer' }}
-        >
-          {text ? text.toUpperCase() : ''}
-        </div>
-      ),
-    },
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'name',
-      width: 250,
-      render: (text, record) => <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-        {
-          record && record.variants && record.variants.length > 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{record.name}</div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', }}>Phiên bản:</div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              {
-                record && record.variants && record.variants.length > 0 ? (
-                  record && record.variants.map((values, index) => {
-                    return (
-                      <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>{`${values.title}.`}</div>
-                    )
-                  })
-                ) : ''
-              }
-            </div>
-          </div>) : <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-        }
-      </div>
-    },
-    {
-      title: 'Nhóm sản phẩm',
-      dataIndex: 'category',
-      width: 125,
-      render: (text, record) =>
-        text.name
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'statusMain',
-      width: 250,
-      render: (text, record) => <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-        {
-          record && record.variants && record.variants.length > 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              {
-                record && record.variants && record.variants.length > 0 ? (
-                  record && record.variants.map((values, index) => {
-                    if (values.status === 'available_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else if (values.status === 'low_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else if (values.status === 'out_stock') {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    } else {
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{`${values.title}.`}</div>
-                          <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${values.status}`}</div>
-                        </div>
-                      )
-                    }
-
-                  })
-                ) : ''
-              }
-            </div>
-          </div>) : record.status === 'available_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (record.status === 'low_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (record.status === 'out_stock' ? (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>) : (<div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600' }}>{statusName !== '' ? (record && record.variants && record.variants.length === 0 ? (record.title) : (record.name)) : (record.name)}</div>
-            <div style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', textTransform: 'capitalize', fontWeight: '600' }}>{`${record.status}`}</div>
-          </div>)))
-        }
-      </div>
-    },
-    {
-      title: 'Giá sản phẩm',
-      dataIndex: 'sale_price',
-      width: 250,
-      render: (text, record) => record.variants && record.variants.length > 0 ? record.variants.map(e => (<>
-        <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>{e.title}</div>
-        <div style={{ marginBottom: '0.5rem', }}>
-          {e.sale_price && `${formatCash(
-            String(e.sale_price)
-          )} VNĐ (giá bán),`}
-        </div>
-        <div style={{ marginBottom: '0.5rem', }}>
-          {e.base_price && `${formatCash(
-            String(e.base_price)
-          )} VNĐ (giá cơ bản).`}
-        </div>
-      </>)) : (
-        <>
-          <div style={{ marginBottom: '0.5rem', }}>
-            {record.sale_price && `${formatCash(
-              String(record.sale_price)
-            )} VNĐ (giá bán),`}
-          </div>
-          <div style={{ marginBottom: '0.5rem', }}>
-            {record.base_price && `${formatCash(
-              String(record.base_price)
-            )} VNĐ (giá cơ bản).`}
-          </div>
-        </>
-
-      ),
-    },
-
-    {
-      title: "Ngày nhập",
-      dataIndex: "create_date",
-      width: 150,
-      render(data) {
-        return moment(data).format("DD-MM-YYYY")
-      }
-    },
-    {
-      title: 'Nhà cung cấp',
-      dataIndex: 'suppliers',
-      width: 200,
-      render: (text, record) => (
-        <div>
-          {text.name}
-        </div>
-      ),
-    },
-    {
-      title: 'Chi nhánh',
-      dataIndex: 'branch',
-      width: 200,
-      render: (text, record) => (
-        <div>
-          {text ? text.name : ''}
-        </div>
-      ),
-    },
-    {
-      title: 'Mở bán',
-      // fixed: 'right',
-      dataIndex: 'active',
-      width: 100,
-      render: (text, record) =>
-
-        text ? (
-          <Switch
-            defaultChecked
-            onChange={(e) => onChangeSwitch(e, record)}
-          />
-        ) : (
-          <Switch onChange={(e) => onChangeSwitch(e, record)} />
-        )
+        ),
     },
   ]
 
-  const openNotificationClear = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Dữ liệu đã được reset về ban đầu.',
-    })
-  }
   const onClickClear = async () => {
-    if (statusName !== 'available_stock') {
-      await apiAllProductDataMain()
-      openNotificationClear()
-      setValueSearch('')
-      setCategoryValue("")
-      setClear(1)
-      setStatusName('')
-      setTimeFilter("")
-      setAllSelect("")
-      setSelectValue("")
-      setSelectedRowKeys([])
-      setStart([])
-      setEnd([])
-      setFilter({})
-      setSearchFilter({})
-    }
-
+    await getAllProduct({ page: 1, page_size })
+    setValueSearch('')
+    setStatusName('')
+    setCategoryValue()
+    setAllSelect()
+    setSelectedRowKeys([])
+    setParamsFilter({})
   }
 
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Sản phẩm đang ở trạng thái ngừng cung cấp. Không thể thực hiện chức năng này.',
-    })
-  }
   const openNotificationSuccessStoreDelete = (data) => {
     notification.success({
       message: 'Thành công',
       duration: 3,
       description:
-        data === 2
-          ? 'Sản phẩm đã ngừng bán.'
-          : 'Sản phẩm đã bán lại',
+        data === 2 ? 'Sản phẩm đã ngừng bán.' : 'Sản phẩm đã bán lại',
     })
   }
   const openNotificationSuccessStoreDeleteError = (data) => {
@@ -2728,36 +2705,25 @@ export default function Product() {
   }
   const apiUpdateProductMultiMainDeleteStore = async (object, id) => {
     try {
-   
       setLoading(true)
       if (viewMode === 1) {
         const res = await apiUpdateProductStore(object, id)
         console.log(res)
         if (res.status === 200) {
-
-
-          await apiAllProductData()
-
-
           setIndexCheckbox([])
 
           setSkuSelectArray([])
           setIndexCheckboxSimple([])
           openNotificationSuccessUpdateProductMainDelete(object.name)
-       
         }
       } else {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
-
-          await apiAllProductData()
-
           setIndexCheckbox([])
 
           setIndexCheckboxSimple([])
           openNotificationSuccessUpdateProductMainDelete(object.name)
-      
         }
       }
 
@@ -2769,17 +2735,23 @@ export default function Product() {
   }
   const apiUpdateProductMultiMainDelete = async (object, id) => {
     try {
-
       setLoading(true)
       if (viewMode === 1) {
         const res = await apiUpdateProductStore(object, id)
         console.log(res)
         if (res.status === 200) {
-
-          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
-            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          if (
+            statusName !== '' ||
+            statusName !== ' ' ||
+            statusName !== 'default'
+          ) {
+            await getAllProduct({
+              status: statusName,
+              page,
+              page_size,
+              ...paramsFilter,
+            })
           } else {
-            await apiAllProductData()
           }
 
           setIndexCheckbox([])
@@ -2787,22 +2759,28 @@ export default function Product() {
           setSkuSelectArray([])
           setIndexCheckboxSimple([])
           openNotificationSuccessUpdateProductMainDelete(object.name)
-      
         }
       } else {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
-          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
-            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          if (
+            statusName !== '' ||
+            statusName !== ' ' ||
+            statusName !== 'default'
+          ) {
+            await getAllProduct({
+              status: statusName,
+              page,
+              page_size,
+              ...paramsFilter,
+            })
           } else {
-            await apiAllProductData()
           }
           setIndexCheckbox([])
 
           setIndexCheckboxSimple([])
           openNotificationSuccessUpdateProductMainDelete(object.name)
-     
         }
       }
 
@@ -2815,36 +2793,44 @@ export default function Product() {
 
   const apiUpdateProductMultiMain = async (object, id) => {
     try {
-    
       setLoading(true)
 
       if (viewMode === 1) {
         const res = await apiUpdateProductStore(object, id)
-    
+
         if (res.status === 200) {
-
-          if (statusName !== '' || statusName !== ' ' || statusName !== 'default' || typeof statusName !== 'undefined') {
-
-            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
+          if (
+            statusName !== '' ||
+            statusName !== ' ' ||
+            statusName !== 'default' ||
+            typeof statusName !== 'undefined'
+          ) {
+            await getAllProduct({
+              status: statusName,
+              page,
+              page_size,
+              ...paramsFilter,
+            })
           } else {
-
-            await apiAllProductData()
           }
-        
         }
-       
       } else {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
-          if (statusName !== '' || statusName !== ' ' || statusName !== 'default') {
-            await (filterProductMain({ status: statusName, page: 1, page_size: 10 }))
-          } else {
-            await apiAllProductData()
+          if (
+            statusName !== '' ||
+            statusName !== ' ' ||
+            statusName !== 'default'
+          ) {
+            await getAllProduct({
+              status: statusName,
+              page,
+              page_size,
+              ...paramsFilter,
+            })
           }
-      
         }
-   
       }
 
       setLoading(false)
@@ -2855,13 +2841,12 @@ export default function Product() {
   }
   const apiUpdateProductMulti = async (object, id) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
       // console.log(value);
       if (viewMode === 1) {
         const res = await apiUpdateProductStore(object, id)
         console.log(res)
         if (res.status === 200) {
-          await apiAllProductData()
           setSelectedRowKeys([])
           setModal50Visible(false)
           openNotificationSuccessUpdateProduct(object.name)
@@ -2874,7 +2859,6 @@ export default function Product() {
         const res = await apiUpdateProduct(object, id)
         console.log(res)
         if (res.status === 200) {
-          await apiAllProductData()
           setSelectedRowKeys([])
           openNotificationSuccessUpdateProduct(object.name)
           onClose()
@@ -2885,10 +2869,10 @@ export default function Product() {
         }
       }
 
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
   const apiUpdateProductData = async (object, id, data) => {
@@ -2897,7 +2881,6 @@ export default function Product() {
       const res = await apiUpdateProduct(object, id)
       console.log(res)
       if (res.status === 200) {
-        await apiAllProductData()
         setSelectedRowKeys([])
         openNotificationSuccessStoreDelete(data)
       } else {
@@ -2911,8 +2894,11 @@ export default function Product() {
   }
 
   function onChangeSwitch(checked, record) {
-
-    apiUpdateProductData({ ...record, active: checked }, record.product_id, checked ? 1 : 2)
+    apiUpdateProductData(
+      { ...record, active: checked },
+      record.product_id,
+      checked ? 1 : 2
+    )
   }
 
   const openNotificationNumber = (data) => {
@@ -2939,11 +2925,7 @@ export default function Product() {
         arrayUpdate.length > 0 &&
         arrayUpdate.forEach((values, index) => {
           console.log(values)
-          if (
-            values &&
-            values.attributes &&
-            values.attributes.length > 0
-          ) {
+          if (values && values.attributes && values.attributes.length > 0) {
             if (
               values.length === '' &&
               values.width === '' &&
@@ -2960,26 +2942,21 @@ export default function Product() {
                 if (isNaN(values.provideQuantity)) {
                   openNotificationNumber('Số lượng cung cấp')
                 }
-              
               } else {
                 var array = []
                 values &&
                   values.suppliers &&
                   values.suppliers.length > 0 &&
-                  values.suppliers.forEach(
-                    (values10, index10) => {
-                      array.push(values10.supplier_id)
-                    }
-                  )
+                  values.suppliers.forEach((values10, index10) => {
+                    array.push(values10.supplier_id)
+                  })
                 const object = {
                   sku: values.sku,
                   name: values.name,
                   barcode: '',
                   category:
-                    typeof arrayUpdate[0].category ===
-                      'object'
-                      ? arrayUpdate[0].category
-                        .category_id
+                    typeof arrayUpdate[0].category === 'object'
+                      ? arrayUpdate[0].category.category_id
                       : arrayUpdate[0].category,
                   image: [],
                   length: 0,
@@ -2991,13 +2968,9 @@ export default function Product() {
                   unit: '',
                   has_variable: true,
                   suppliers:
-                    arrayUpdate[0] &&
-                      arrayUpdate[0].suppliers
-                      ? array
-                      : [],
+                    arrayUpdate[0] && arrayUpdate[0].suppliers ? array : [],
                   variants: arrayUpdate[0].variants,
                   attributes: arrayUpdate[0].attributes,
-               
                 }
                 apiUpdateProductMulti(object, values.product_id)
               }
@@ -3024,26 +2997,21 @@ export default function Product() {
                 if (isNaN(values.quantity)) {
                   openNotificationNumber('Số lượng cung cấp')
                 }
-         
               } else {
                 var array = []
                 arrayUpdate[0] &&
                   arrayUpdate[0].suppliers &&
                   arrayUpdate[0].suppliers.length > 0 &&
-                  arrayUpdate[0].suppliers.forEach(
-                    (values10, index10) => {
-                      array.push(values10.supplier_id)
-                    }
-                  )
+                  arrayUpdate[0].suppliers.forEach((values10, index10) => {
+                    array.push(values10.supplier_id)
+                  })
                 const object = {
                   sku: values.sku,
                   name: values.name,
                   barcode: '',
                   category:
-                    typeof arrayUpdate[0].category ===
-                      'object'
-                      ? arrayUpdate[0].category
-                        .category_id
+                    typeof arrayUpdate[0].category === 'object'
+                      ? arrayUpdate[0].category.category_id
                       : arrayUpdate[0].category,
                   image: [],
                   length: arrayUpdate[0].length,
@@ -3055,10 +3023,7 @@ export default function Product() {
                   unit: '',
                   has_variable: true,
                   suppliers:
-                    arrayUpdate[0] &&
-                      arrayUpdate[0].suppliers
-                      ? array
-                      : [],
+                    arrayUpdate[0] && arrayUpdate[0].suppliers ? array : [],
                   variants: arrayUpdate[0].variants,
                   attributes: arrayUpdate[0].attributes,
                 }
@@ -3084,17 +3049,14 @@ export default function Product() {
                 if (isNaN(values.provideQuantity)) {
                   openNotificationNumber('Số lượng cung cấp')
                 }
-           
               } else {
                 const object = {
                   sku: values.sku,
                   name: values.name,
                   barcode: arrayUpdate[0].barcode,
                   category:
-                    typeof arrayUpdate[0].category ===
-                      'object'
-                      ? arrayUpdate[0].category
-                        .category_id
+                    typeof arrayUpdate[0].category === 'object'
+                      ? arrayUpdate[0].category.category_id
                       : arrayUpdate[0].category,
                   image: arrayUpdate[0].image,
                   length: 0,
@@ -3102,16 +3064,14 @@ export default function Product() {
                   height: 0,
                   weight: 0,
                   warranty:
-                    arrayUpdate[0] &&
-                      arrayUpdate[0].warranty
+                    arrayUpdate[0] && arrayUpdate[0].warranty
                       ? arrayUpdate[0].warranty[-1]
                       : arrayUpdate[0].warranty,
                   quantity: arrayUpdate[0].quantity,
                   unit: arrayUpdate[0].unit,
                   has_variable: false,
                   suppliers:
-                    arrayUpdate[0] &&
-                      arrayUpdate[0].suppliers
+                    arrayUpdate[0] && arrayUpdate[0].suppliers
                       ? arrayUpdate[0].suppliers[-1]
                       : arrayUpdate[0].suppliers,
                   regular_price: arrayUpdate[0].regular_price,
@@ -3157,8 +3117,7 @@ export default function Product() {
                   regular_price: arrayUpdate[0].regular_price,
                   sale_price: arrayUpdate[0].sale_price,
                   warranty:
-                    arrayUpdate[0] &&
-                      arrayUpdate[0].warranty
+                    arrayUpdate[0] && arrayUpdate[0].warranty
                       ? arrayUpdate[0].warranty[-1]
                       : arrayUpdate[0].warranty,
                   quantity: arrayUpdate[0].quantity,
@@ -3168,15 +3127,13 @@ export default function Product() {
                       : '',
 
                   category:
-                    typeof arrayUpdate[0].category ===
-                      'object'
-                      ? arrayUpdate[0].category
-                        .category_id
+                    typeof arrayUpdate[0].category === 'object'
+                      ? arrayUpdate[0].category.category_id
                       : arrayUpdate[0].category,
                   suppliers:
                     arrayUpdate[0] &&
-                      arrayUpdate[0].suppliers &&
-                      arrayUpdate[0].suppliers
+                    arrayUpdate[0].suppliers &&
+                    arrayUpdate[0].suppliers
                       ? arrayUpdate[0].suppliers[-1]
                       : arrayUpdate[0].suppliers,
                   has_variable: false,
@@ -3191,32 +3148,39 @@ export default function Product() {
     }
   }
   const onCloseUpdateFuncCategory = () => {
-    arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.forEach((values, index) => {
-      if ((values.name === '' || values.name === ' ' || values.name === 'default')) {
-        if (values.name === '' || values.name === ' ' || values.name === 'default') {
-          openNotificationErrorCategory('tên')
+    arrayUpdateCategory &&
+      arrayUpdateCategory.length > 0 &&
+      arrayUpdateCategory.forEach((values, index) => {
+        if (
+          values.name === '' ||
+          values.name === ' ' ||
+          values.name === 'default'
+        ) {
+          if (
+            values.name === '' ||
+            values.name === ' ' ||
+            values.name === 'default'
+          ) {
+            openNotificationErrorCategory('tên')
+          }
+        } else {
+          const object = {
+            name: values.name,
+            type: '',
+            description: values.description ? values.description : '',
+          }
+          apiUpdateCategoryDataUpdate(object, values.category_id)
         }
-    
-      } else {
-        const object = {
-          name: values.name,
-          type: '',
-          description: values.description ? values.description : ''
-        }
-        apiUpdateCategoryDataUpdate(object, values.category_id)
-      }
-
-    })
+      })
   }
   const apiAllWarrantyData = async () => {
     try {
       setLoading(true)
       const res = await apiAllWarranty()
-      console.log(res)
       if (res.status === 200) {
         setWarranty(res.data.data)
       }
- 
+
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -3224,104 +3188,17 @@ export default function Product() {
   }
 
   const [statusName, setStatusName] = useState('')
-  const [productStatus, setProductStatus] = useState([])
-  const filterProductMain = async (params) => {
-    try {
-      setLoading(true)
-      if (viewMode === 1) {
-        const res = await apiProductSeller(params)
-        console.log(res)
-        if (res.status === 200) {
 
-          setProductStore(res.data.data)
-          setProduct([])
-          setCount(res.data.count)
-
-          setSelectedRowKeys([])
-          setProductStatus(res.data.data)
-          setStatusName(params.status.toLowerCase())
-          setPaginationChecked(1)
-        }
-      } else {
-        const res = await apiSearchProduct(params)
-        if (res.status === 200) {
-
-          setProduct(res.data.data)
-          setProductStore([])
-          setCount(res.data.count)
-
-          setSelectedRowKeys([])
-          setProductStatus(res.data.data)
-          setStatusName(params.status.toLowerCase())
-          setPaginationChecked(1)
-        }
-      }
-
-      setLoading(false)
-    } catch (e) {
-      console.log(e);
-      setLoading(false)
-    }
-  }
-  
-  const filterProduct = async (params) => {
-    try {
-      setLoading(true)
-      const res = !viewMode ? await apiSearchProduct(params) : await apiProductSeller(params)
-      console.log(res)
-      if (res.status === 200) {
-        setProduct(res.data.data)
-        setSelectedRowKeys([])
-        setPaginationChecked(1)
-        setCount(res.data.count)
-
-      }
-      setLoading(false)
-    } catch (e) {
-      console.log(e);
-      setLoading(false)
-    }
-  }
-  const [titleDate, setTitleDate] = useState('')
-  const [timeFilter, setTimeFilter] = useState("")
-  const filterByTime = async (e) => {
-    if (e !== 'date' || e !== 'date1') {
-      setTitleDate(e)
-      setStart('')
-      setEnd('')
-      setTitleDate('chưa chọn')
-    }
-
-    if (e === 'default') {
-      await apiAllProductData()
-    } else {
-      if (e === 'date') {
-        setTimeFilter(e)
-      } else {
-        setTimeFilter(e)
-        filterProduct({ ...JSON.parse(e), page: 1, page_size: 10 })
-      }
-
-    }
-
-
-  }
-  const [selectValue, setSelectValue] = useState("")
-  function onSelectSearch(val) {
-    setCategorySearch(val)
-    setSelectValue(val)
-  }
+  const [optionSearchName, setOptionSearchName] = useState('name')
 
   const getwarehouse = async () => {
     try {
       const res = await apiAllInventory()
       if (res.status == 200) {
-
         setWarehouseList(res.data.data)
       }
-    }
-    catch (e) {
-      console.log(e);
+    } catch (e) {
+      console.log(e)
     }
   }
 
@@ -3331,63 +3208,35 @@ export default function Product() {
       if (res.status == 200) {
         setBranchList(res.data.data)
       }
-    }
-    catch (e) {
-      console.log(e);
+    } catch (e) {
+      console.log(e)
     }
   }
 
-  const [allSelect, setAllSelect] = useState("")
+  const [allSelect, setAllSelect] = useState()
   const onChangeAllSelect = async (e) => {
     setAllSelect(e)
-    if (e === 'default') {
-      await apiAllProductDataMain()
-    } else {
+    setPage(1)
+
+    if (e) {
       if (viewMode) {
-        apiAllProductData({ branch: e });
-        setViewLocation({ branch: e })
+        paramsFilter.branch = e
       } else {
-        apiAllProductData({ warehouse: e });
-        setViewLocation({ warehouse: e })
+        paramsFilter.warehouse = e
       }
+    } else {
+      delete paramsFilter.branch
+      delete paramsFilter.warehouse
     }
+
+    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
   }
-  const apiAllProductPage = async (current, pageSize) => {
-    try {
-      setLoading(true)
-      if (viewMode === 1) {
-        const res = await apiProductSeller({
-          page: current,
-          page_size: pageSize,
-        })
 
-        if (res.status === 200) {
-          setProductStore(res.data.data)
-          setCount(res.data.count)
-          setSelectedRowKeys([])
-        }
-      } else {
-        const res = await apiSearchProduct({
-          page: current,
-          page_size: pageSize,
-        })
-
-        if (res.status === 200) {
-          setProduct(res.data.data)
-          setCount(res.data.count)
-          setSelectedRowKeys([])
-        }
-      }
-
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
   const apiUpdateCategoryDataUpdate = async (object, id) => {
     try {
       setLoading(true)
-      const res = await apiUpdateCategory(object, id);
+      const res = await apiUpdateCategory(object, id)
       if (res.status === 200) {
         await apiAllCategoryData()
         setSelectedRowKeysCategory([])
@@ -3401,36 +3250,28 @@ export default function Product() {
     } catch (error) {
       setLoading(false)
     }
-  };
-  function onShowSizeChange(current, pageSize) {
-    apiAllProductPage(current, pageSize)
-    setPaginationChecked(current)
   }
-  const onChangePage = page => {
-    apiAllProductPage(page, 10)
 
-    setPaginationChecked(page)
-  };
-  const [statusCount, setStatusCount] = useState(0)
-  const filterProductMainFunc = (data, count) => {
-    filterProductMain({ status: data, page: 1, page_size: 10 })
-    setStatusCount(count)
-  }
-  const onClickAll = async (count) => {
-
-    await apiAllProductDataMain()
-    setStatusName('')
-    setStatusCount(count)
-  }
-  const [categoryValue, setCategoryValue] = useState('')
-  const onChangeCategoryValue = async (e) => {
-    if (e === '' || e === ' ' || e === 'default') {
-      await apiAllProductData()
-    } else {
-
-      apiSearchDataGroup(e)
+  const filterProductByStatus = (data) => {
+    if (data) paramsFilter.status = data
+    else {
+      delete paramsFilter.status
     }
-    setCategoryValue(e)
+    setStatusName(data)
+    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
+  }
+  const [categoryValue, setCategoryValue] = useState()
+  const onChangeCategoryValue = async (id) => {
+    if (id) {
+      paramsFilter.category = id
+    } else {
+      delete paramsFilter.category
+    }
+
+    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
+    setCategoryValue(id)
   }
 
   return (
@@ -3455,11 +3296,7 @@ export default function Product() {
               xl={12}
             >
               <div className={styles['view_product_back']}>
-                <div
-                  className={
-                    styles['view_product_back_title']
-                  }
-                >
+                <div className={styles['view_product_back_title']}>
                   Danh sách sản phẩm
                 </div>
               </div>
@@ -3472,38 +3309,59 @@ export default function Product() {
               lg={12}
               xl={12}
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                <div style={{ display: 'flex', marginRight: '1rem', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    marginRight: '1rem',
+                    marginTop: '1rem',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                  }}
+                >
                   <Button
                     onClick={showDrawerGroup}
                     type="primary"
                     icon={<PlusCircleOutlined />}
                   >
                     Nhóm sản phẩm
-                  </Button></div>
-                <div style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', }}>
-                  <Link to="/actions/product/add/6">
-                    <Button
-
-                      type="primary"
-                      icon={<PlusCircleOutlined />}
-                    >
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    marginTop: '1rem',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Link to={ROUTES.PRODUCT_ADD}>
+                    <Button type="primary" icon={<PlusCircleOutlined />}>
                       Thêm sản phẩm
                     </Button>
                   </Link>
                 </div>
-
               </div>
-
             </Col>
           </Row>
-          <Row style={{ width: "100%", marginTop: 20 }}>
-            <Radio.Group defaultValue={viewMode} onChange={(e) => onChangeSelectInventoryStore(e)}>
-              <Radio style={{ marginBottom: '0.5rem' }} value={0}>Xem theo Kho</Radio>
+          <Row style={{ width: '100%', marginTop: 20 }}>
+            <Radio.Group
+              defaultValue={viewMode}
+              onChange={(e) => onChangeTypeViewProduct(e)}
+            >
+              <Radio style={{ marginBottom: '0.5rem' }} value={0}>
+                Xem theo Kho
+              </Radio>
               <Radio value={1}>Xem theo chi nhánh</Radio>
             </Radio.Group>
           </Row>
-
 
           <Row
             style={{
@@ -3524,18 +3382,26 @@ export default function Product() {
               lg={11}
               xl={11}
             >
-              <Select value={allSelect ? allSelect : 'default'} showSearch
+              <Select
+                value={allSelect}
+                showSearch
+                allowClear
                 style={{ width: '100%' }}
                 placeholder={!viewMode ? `Chọn kho` : 'Chọn chi nhánh'}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } onChange={onChangeAllSelect}>
-                <Option value="default">{!viewMode ? `Chọn kho` : 'Chọn chi nhánh'}</Option>)
-                {!viewMode ?
-                  warehouseList.map(e => <Option value={e.warehouse_id}>{e.name}</Option>)
-                  : branchList.map(e => <Option value={e.branch_id}>{e.name}</Option>)
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
                 }
+                onChange={onChangeAllSelect}
+              >
+                {!viewMode
+                  ? warehouseList.map((e) => (
+                      <Option value={e.warehouse_id}>{e.name}</Option>
+                    ))
+                  : branchList.map((e) => (
+                      <Option value={e.branch_id}>{e.name}</Option>
+                    ))}
               </Select>
             </Col>
             <Col
@@ -3549,24 +3415,25 @@ export default function Product() {
               lg={11}
               xl={11}
             >
-
-              <Select showSearch
+              <Select
+                showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
+                allowClear
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } value={categoryValue ? categoryValue : 'default'} onChange={onChangeCategoryValue}>
-                <Option value="default">Chọn nhóm sản phẩm</Option>
-                {
-                  category && category.length > 0 && category.map((values, index) => {
-                    return (
-                      <Option value={values.name}>{values.name}</Option>
-                    )
-                  })
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
                 }
+                value={categoryValue}
+                onChange={onChangeCategoryValue}
+              >
+                {category.map((values, index) => {
+                  return (
+                    <Option value={values.category_id}>{values.name}</Option>
+                  )
+                })}
               </Select>
-
             </Col>
 
             <Col
@@ -3584,12 +3451,9 @@ export default function Product() {
                       style={{ width: '100%' }}
                       name="name"
                       value={valueSearch}
-                      enterButton
                       onChange={onSearch}
                       className={
-                        styles[
-                        'orders_manager_content_row_col_search'
-                        ]
+                        styles['orders_manager_content_row_col_search']
                       }
                       placeholder="Tìm kiếm theo mã, theo tên"
                       allowClear
@@ -3601,16 +3465,19 @@ export default function Product() {
                       style={{ width: '100%' }}
                       placeholder="Chọn theo"
                       optionFilterProp="children"
-                      value={selectValue ? selectValue : 'default'}
-                      onChange={onSelectSearch}
+                      value={optionSearchName}
+                      onChange={(value) => {
+                        delete paramsFilter[optionSearchName]
+                        setOptionSearchName(value)
+                      }}
                       filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
                       }
                     >
-                      <Option value="default">Chọn theo</Option>
-                      <Option value="sku">SKU</Option>
                       <Option value="name">Tên sản phẩm</Option>
-                      <Option value="_category">Loại sản phẩm</Option>
+                      <Option value="sku">SKU</Option>
                     </Select>
                   </Col>
                 </Row>
@@ -3621,7 +3488,6 @@ export default function Product() {
               style={{
                 width: '100%',
                 marginTop: '1rem',
-
               }}
               xs={24}
               sm={24}
@@ -3629,118 +3495,148 @@ export default function Product() {
               lg={11}
               xl={11}
             >
-
               <div style={{ width: '100%' }}>
-
-                <Select onChange={filterByTime} showSearch
+                <Select
+                  open={isOpenSelect}
+                  onBlur={() => {
+                    if (isOpenSelect) toggleOpenSelect()
+                  }}
+                  onClick={() => {
+                    if (!isOpenSelect) toggleOpenSelect()
+                  }}
+                  allowClear
+                  showSearch
                   style={{ width: '100%' }}
                   placeholder="Lọc theo thời gian"
                   optionFilterProp="children"
                   filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }>
-                  {
-                    timeFilter === 'date' ? (<Option disabled value="date">Thời gian cố định: {(titleDate && titleDate !== '') || (titleDate && titleDate !== ' ') || (titleDate && titleDate !== 'default') ? titleDate : 'chưa chọn'}</Option>) : (<Option value="date1" disabled>Thời gian cố định: {(titleDate && titleDate !== '') || (titleDate && titleDate !== ' ') || (titleDate && titleDate !== 'default') ? titleDate : 'chưa chọn'}</Option>)
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                   }
-                  {
-                    timeFilter !== 'date' ?
-                      <Option value="date">
-                        <RangePicker
-                          allowClear={false}
-                          bordered={false}
-                          value={
-                            clear === 1
-                              ? []
-                              : start !== ''
-                                ? [
-                                  moment(start, dateFormat),
-                                  moment(end, dateFormat),
-                                ]
-                                : []
+                  value={valueTime}
+                  onChange={async (value) => {
+                    setValueTime(value)
+
+                    //khi search hoac filter thi reset page ve 1
+                    setPage(1)
+
+                    //xoa params search date hien tai
+                    const p = Object.keys(valueDateTimeSearch)
+                    if (p.length) delete paramsFilter[p[0]]
+
+                    setValueDateSearch(null)
+                    delete paramsFilter.startDate
+                    delete paramsFilter.endDate
+
+                    if (isOpenSelect) toggleOpenSelect()
+
+                    if (value) {
+                      const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+                      getAllProduct({
+                        page: 1,
+                        page_size,
+                        ...paramsFilter,
+                        ...searchDate,
+                      })
+                      setParamsFilter({ ...paramsFilter, ...searchDate })
+                      setValueDateTimeSearch({ ...searchDate })
+                    } else {
+                      getAllProduct({ page: 1, page_size, ...paramsFilter })
+                      setParamsFilter({ ...paramsFilter })
+                      setValueDateTimeSearch({})
+                    }
+                  }}
+                  dropdownRender={(menu) => (
+                    <>
+                      <RangePicker
+                        onFocus={() => {
+                          if (!isOpenSelect) toggleOpenSelect()
+                        }}
+                        onBlur={() => {
+                          if (isOpenSelect) toggleOpenSelect()
+                        }}
+                        value={valueDateSearch}
+                        onChange={(dates, dateStrings) => {
+                          //khi search hoac filter thi reset page ve 1
+                          setPage(1)
+
+                          if (isOpenSelect) toggleOpenSelect()
+
+                          //nếu search date thì xoá các params date
+                          delete paramsFilter.to_day
+                          delete paramsFilter.yesterday
+                          delete paramsFilter.this_week
+                          delete paramsFilter.last_week
+                          delete paramsFilter.last_month
+                          delete paramsFilter.this_month
+                          delete paramsFilter.this_year
+                          delete paramsFilter.last_year
+
+                          //Kiểm tra xem date có được chọn ko
+                          //Nếu ko thì thoát khỏi hàm, tránh cash app
+                          //và get danh sách order
+                          if (!dateStrings[0] && !dateStrings[1]) {
+                            delete paramsFilter.from_date
+                            delete paramsFilter.to_date
+
+                            setValueDateSearch(null)
+                            setValueTime()
+                          } else {
+                            const dateFirst = dateStrings[0]
+                            const dateLast = dateStrings[1]
+                            setValueDateSearch(dates)
+                            setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                            dateFirst.replace(/-/g, '/')
+                            dateLast.replace(/-/g, '/')
+
+                            paramsFilter.from_date = dateFirst
+                            paramsFilter.to_date = dateLast
                           }
-                          style={{ width: '100%' }}
-                          ranges={{
-                            Today: [moment(), moment()],
-                            'This Month': [moment().startOf('month'), moment().endOf('month')],
-                          }}
-                          onChange={onChangeDate}
-                        />
 
-
-                      </Option>
-                      :
-                      <Option value="date1">
-                        <RangePicker
-                          allowClear={false}
-                          bordered={false}
-                          value={
-                            clear === 1
-                              ? []
-                              : start !== ''
-                                ? [
-                                  moment(start, dateFormat),
-                                  moment(end, dateFormat),
-                                ]
-                                : []
-                          }
-                          style={{ width: '100%' }}
-                          ranges={{
-                            Today: [moment(), moment()],
-                            'This Month': [moment().startOf('month'), moment().endOf('month')],
-                          }}
-                          onChange={onChangeDate}
-                        />
-
-
-                      </Option>
-
-                  }
-
-
-                  <Option value={
-                    JSON.stringify({ from_date: moment().format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
-                  }>Today</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'days').format('YYYY-MM-DD') })
-                  }>Yesterday</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().startOf('week').format('YYYY-MM-DD'), to_date: moment().endOf('week').format('YYYY-MM-DD') })
-                  }>This week</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD') })
-                  }>Last week</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
-                  }>This month</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD') })
-                  }>Last Month</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().startOf('years').format('YYYY-MM-DD'), to_date: moment().endOf('years').format('YYYY-MM-DD') })
-                  }>This year</Option>
-                  <Option value={
-                    JSON.stringify({ from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'), to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD') })
-                  }>Last year</Option>
+                          getAllProduct({
+                            page: 1,
+                            page_size,
+                            ...paramsFilter,
+                          })
+                          setParamsFilter({ ...paramsFilter })
+                        }}
+                        style={{ width: '100%' }}
+                      />
+                      {menu}
+                    </>
+                  )}
+                >
+                  <Option value="today">Today</Option>
+                  <Option value="yesterday">Yesterday</Option>
+                  <Option value="this_week">This week</Option>
+                  <Option value="last_week">Last week</Option>
+                  <Option value="this_month">This month</Option>
+                  <Option value="last_month">Last Month</Option>
+                  <Option value="this_year">This year</Option>
+                  <Option value="last_year">Last year</Option>
                 </Select>
               </div>
-
-
             </Col>
-
           </Row>
 
-
-          <div
+          <Row
+            justify="space-between"
             style={{
-              display: 'flex',
-              marginTop: '1rem',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
+              marginTop: '30px',
               width: '100%',
               marginBottom: '1rem',
             }}
           >
-
+            <Radio.Group
+              onChange={(e) => {
+                console.log(e.target.value)
+              }}
+            >
+              <Radio value={1}>Hiện thị đơn</Radio>
+              <Radio value={2}>Hiện thị gộp</Radio>
+            </Radio.Group>
             <Button
               onClick={onClickClear}
               type="primary"
@@ -3748,1576 +3644,1435 @@ export default function Product() {
             >
               Xóa tất cả lọc
             </Button>
-          </div>
+          </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Row style={{ width: "100%", marginBottom: 10 }}>
-           
-              <Button onClick={showDrawer} value={1} type="primary" style={{ marginRight: '1rem' }}>
+            <Row style={{ width: '100%', marginBottom: 10 }}>
+              <Button
+                onClick={showDrawer}
+                value={1}
+                type="primary"
+                style={{ marginRight: '1rem' }}
+              >
                 Cập nhật
               </Button>
-              <Button onClick={() => {
-                history.push({
-                  pathname: '/actions/shipping-product/add/9',
-                  state: arrayUpdate
-                })
-              }} type="primary">
+              <Button
+                onClick={() => {
+                  history.push({
+                    pathname: ROUTES.SHIPPING_PRODUCT_ADD,
+                    state: arrayUpdate,
+                  })
+                }}
+                type="primary"
+              >
                 Tạo phiếu chuyển hàng
               </Button>
-              <Button style={{ marginLeft: '1rem' }} onClick={() => modal5VisibleModal(true)}
-                type="primary">
+              <Button
+                style={{ marginLeft: '1rem' }}
+                onClick={() => modal5VisibleModal(true)}
+                type="primary"
+              >
                 Tạo nhóm sản phẩm
               </Button>
-              <Button style={{ marginLeft: '1rem' }} onClick={() => modal50VisibleModal(true)}
-                type="primary">
+              <Button
+                style={{ marginLeft: '1rem' }}
+                onClick={() => modal50VisibleModal(true)}
+                type="primary"
+              >
                 Cập nhật nhóm sản phẩm
               </Button>
             </Row>
           ) : (
             ''
           )}
-          <Row style={{ width: "100%", backgroundColor: 'rgb(235, 224, 224)', marginTop: '0.25rem', padding: '0.5rem 1rem', marginBottom: '1rem' }}>
-            {
-              statusCount === 0 ? (<div onClick={() => onClickAll(0)} style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600', color: 'orange' }} >All &nbsp;</div>) : (<div onClick={() => onClickAll(0)} style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} >All &nbsp;</div>)
-            }
+          <Row
+            style={{
+              width: '100%',
+              backgroundColor: 'rgb(235, 224, 224)',
+              marginTop: '0.25rem',
+              padding: '0.5rem 1rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <div
+              onClick={() => filterProductByStatus('')}
+              style={{
+                cursor: 'pointer',
+                marginRight: 30,
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: !statusName && 'orange',
+              }}
+            >
+              All &nbsp;
+            </div>
 
-            <span style={{ width: 12, height: 12, background: "rgba(47, 155, 255, 1)", marginRight: 5, marginTop: '0.45rem' }}></span>
-            {
-              statusCount === 1 ? (<div style={{ cursor: "pointer", color: 'rgba(47, 155, 255, 1)', marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('shipping_stock', 1)}> Shipping &nbsp;</div>) : (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('shipping_stock', 1)}> Shipping &nbsp;</div>)
-            }
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: 'rgba(47, 155, 255, 1)',
+                marginRight: 5,
+                marginTop: '0.45rem',
+              }}
+            ></span>
+            <div
+              style={{
+                cursor: 'pointer',
+                color:
+                  statusName === 'shipping_stock' && 'rgba(47, 155, 255, 1)',
+                marginRight: 30,
+                fontSize: '1rem',
+                fontWeight: '600',
+              }}
+              onClick={() => filterProductByStatus('shipping_stock')}
+            >
+              Shipping stock
+            </div>
 
-            <span style={{ width: 12, height: 12, background: "#24A700", marginRight: 5, marginTop: '0.45rem' }}></span>
-            {
-              statusCount === 2 ? (<div style={{ cursor: "pointer", color: '#24A700', marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('available_stock', 2)}>   Available</div>) : (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('available_stock', 2)}>Available</div>)
-            }
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: '#24A700',
+                marginRight: 5,
+                marginTop: '0.45rem',
+              }}
+            ></span>
+            <div
+              style={{
+                cursor: 'pointer',
+                color: statusName === 'available_stock' && '#24A700',
+                marginRight: 30,
+                fontSize: '1rem',
+                fontWeight: '600',
+              }}
+              onClick={() => filterProductByStatus('available_stock')}
+            >
+              Available stock
+            </div>
 
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: '#A06000',
+                marginRight: 5,
+                marginTop: '0.45rem',
+              }}
+            ></span>
+            <div
+              style={{
+                cursor: 'pointer',
+                marginRight: 30,
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: statusName === 'low_stock' && '#A06000',
+              }}
+              onClick={() => filterProductByStatus('low_stock')}
+            >
+              Low stock
+            </div>
 
-            <span style={{ width: 12, height: 12, background: "#A06000", marginRight: 5, marginTop: '0.45rem' }}></span>
-            {
-              statusCount === 3 ? (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600', color: '#A06000' }} onClick={() => filterProductMainFunc('low_stock', 3)}> Low stock &nbsp;</div>) : (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('low_stock', 3)}> Low stock &nbsp;</div>)
-            }
-
-            <span style={{ width: 12, height: 12, background: "rgba(254, 146, 146, 1)", marginRight: 5, marginTop: '0.45rem' }}></span>
-            {
-              statusCount === 4 ? (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600', color: 'rgba(254, 146, 146, 1)' }} onClick={() => filterProductMainFunc('out_stock', 4)}> Out stock &nbsp;</div>) : (<div style={{ cursor: "pointer", marginRight: 30, fontSize: '1rem', fontWeight: '600' }} onClick={() => filterProductMainFunc('out_stock', 4)}> Out stock &nbsp;</div>)
-            }
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                background: 'rgba(254, 146, 146, 1)',
+                marginRight: 5,
+                marginTop: '0.45rem',
+              }}
+            ></span>
+            <div
+              style={{
+                cursor: 'pointer',
+                marginRight: 30,
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: statusName === 'out_stock' && 'rgba(254, 146, 146, 1)',
+              }}
+              onClick={() => filterProductByStatus('out_stock')}
+            >
+              Out stock
+            </div>
           </Row>
-         
+
           <div className={styles['view_product_table']}>
             <Table
-              className={styles['time-table-row-select']}
-              rowSelection={statusName === '' || statusName === ' ' || statusName === 'default' ? rowSelection : rowSelection}
+              rowSelection={rowSelection}
               bordered
-            
               rowKey="_id"
-              columns={viewMode === 1 ? (statusName === '' || statusName === ' ' || statusName === 'default' ? columnsStore : columnsStore) : (statusName === '' || statusName === ' ' || statusName === 'default' ? columns : columns)}
-              pagination={false}
+              columns={columns}
               loading={loading}
-              dataSource={productStore && productStore.length > 0 ? productStore : product}
-              scroll={{ y: 1000 }}
+              dataSource={product}
+              scroll={{ x: 'max-content' }}
+              size="small"
+              pagination={{
+                position: ['bottomLeft'],
+                current: page,
+                defaultPageSize: 20,
+                pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+                showQuickJumper: true,
+                onChange: (page, pageSize) => {
+                  setSelectedRowKeys([])
+                  setPage(page)
+                  setPageSize(pageSize)
+                  getAllProduct({ page, page_size: pageSize, ...paramsFilter })
+                },
+                total: count,
+              }}
             />
           </div>
-          <Pagination
-            style={{ marginTop: '1rem' }}
-            showSizeChanger
-            onChange={onChangePage}
-            onShowSizeChange={onShowSizeChange}
-            current={paginationChecked ? paginationChecked : 1}
-            total={count}
-          />
         </div>
       </div>
 
-      
-      {
-        viewMode === 1 ? (
-          <Drawer
-            style={{ zIndex: '999' }}
-            title="Cập nhật số lượng sản phẩm"
-            width='90%'
-            onClose={onClose}
-            visible={visible}
-            bodyStyle={{ paddingBottom: 80 }}
-            footer={
-              <div
-                style={{
-                  textAlign: 'right',
-                }}
-              >
-                <Button
-                  onClick={() => onCloseUpdateFunc(1)}
-                  type="primary"
-                >
-                  Cập nhật
-                </Button>
-              </div>
-            }
+      <Drawer
+        style={{ zIndex: '999' }}
+        title="Cập nhật số lượng sản phẩm"
+        width="90%"
+        onClose={onClose}
+        visible={visible}
+        bodyStyle={{ paddingBottom: 80 }}
+        footer={
+          <div
+            style={{
+              textAlign: 'right',
+            }}
           >
-            {
-              arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
-                const obj = Object.keys(values)
-                return values &&
-                  values.attributes &&
-                  values.attributes.length > 0 ? (
-
-                  <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <Col style={{ width: '100%', color: 'black', fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>Sản phẩm Variant</Col>
-                    {
-                      obj.map((data) => {
-                        if (data === 'suppliers') {
-                          const InputName = () => (
-                            <Select
-                              defaultValue={
-                                values[data].supplier_id
-                              }
-                              showSearch
-                              style={{ width: '100%' }}
-                              placeholder="Chọn nhà cung cấp"
-                              optionFilterProp="children"
-                              filterOption={(
-                                input,
-                                option
-                              ) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(
-                                    input.toLowerCase()
-                                  ) >= 0
-                              }
-                              onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
-                                arrayUpdate[index][
-                                  data
-                                ] = event
-                              }}
-                            >
-                              {supplier &&
-                                supplier.length > 0 &&
-                                supplier.map(
-                                  (values, index) => {
-                                    return (
-                                      <Option
-                                        value={
-                                          values.supplier_id
-                                        }
-                                      >
-                                        {
-                                          values.name
-                                        }
-                                      </Option>
-                                    )
-                                  }
-                                )}
-                            </Select>
-                          )
+            <Button onClick={() => onCloseUpdateFunc(1)} type="primary">
+              Cập nhật
+            </Button>
+          </div>
+        }
+      >
+        {arrayUpdate.map((values, index) => {
+          const obj = Object.keys(values)
+          return values && values.attributes && values.attributes.length > 0 ? (
+            <Row
+              style={{
+                display: 'flex',
+                marginTop: '1rem',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Col
+                style={{
+                  width: '100%',
+                  color: 'black',
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  marginBottom: '1rem',
+                }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
+              >
+                Sản phẩm Variant
+              </Col>
+              {obj.map((data) => {
+                if (data === 'suppliers') {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].supplier_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn nhà cung cấp"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {supplier &&
+                        supplier.length > 0 &&
+                        supplier.map((values, index) => {
                           return (
-                            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà cung cấp</div>
-                              <InputName />
-
-                            </Col>
+                            <Option value={values.supplier_id}>
+                              {values.name}
+                            </Option>
                           )
-                        }
-                        if (data === 'category') {
-                          const InputName = () => (
-                            <Select
-                              defaultValue={
-                                values[data].category_id
-                              }
-                              showSearch
-                              style={{ width: '100%' }}
-                              placeholder="Chọn loại sản phẩm"
-                              optionFilterProp="children"
-                              filterOption={(
-                                input,
-                                option
-                              ) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(
-                                    input.toLowerCase()
-                                  ) >= 0
-                              }
-                              onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
-                                arrayUpdate[index][
-                                  data
-                                ] = event
-                              }}
-                            >
-                              {category &&
-                                category.length > 0 &&
-                                category.map(
-                                  (values, index) => {
-                                    return (
-                                      <Option
-                                        value={
-                                          values.category_id
-                                        }
-                                      >
-                                        {
-                                          values.name
-                                        }
-                                      </Option>
-                                    )
-                                  }
-                                )}
-                            </Select>
-                          )
-                          return (
-                            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Loại sản phẩm</div>
-                              <InputName />
-
-                            </Col>
-                          )
-                        }
-
-
-                      })
-                    }
-
-                    <Col style={{ width: '100%' }}>
-                      <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', margin: '0.75rem 0 0.25rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Checkbox checked={checkboxValue} onChange={onChangeCheckbox}>Thông số sản phẩm (không bắt buộc)</Checkbox></div>
-                        {
-                          checkboxValue ? (obj.map((data) => {
-                            if (data === 'length') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].length = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều dài (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'width') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].width = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều rộng (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'height') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].height = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều cao (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'weight') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].weight = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Cân nặng (kg)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                          })) : ''
-                        }
-
-                      </Row>
+                        })}
+                    </Select>
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Nhà cung cấp
+                      </div>
+                      <InputName />
                     </Col>
-
-                    <div style={{ width: '100%' }}>
-                      <div style={{ color: 'black', padding: '1rem 1rem 1.5rem 0', fontSize: '1rem', fontWeight: '600' }}>Phiên bản:</div>
-                      <Row style={{ display: 'flex', backgroundColor: '#FAFAFA', padding: '0 1rem 1rem 1rem', border: '1px solid rgb(230, 219, 219)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Variants</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Hình ảnh</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Giá cơ bản</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Giá bán</Col>
-
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Số lượng</Col>
-                      </Row>
-                      {
-                        values.variants && values.variants.length > 0 && values.variants.map((values1, index1) => {
-                          const obj1 = Object.keys(values1)
+                  )
+                }
+                if (data === 'category') {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].category_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn loại sản phẩm"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {category &&
+                        category.length > 0 &&
+                        category.map((values, index) => {
                           return (
-                            <Row style={{ display: 'flex', borderBottom: '1px solid rgb(230, 219, 219)', borderLeft: '1px solid rgb(230, 219, 219)', borderRight: '1px solid rgb(230, 219, 219)', padding: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                              {
-                                obj1.map((data1) => {
-                                  if (data1 === 'title') {
-                                    const InputName = () => (
-                                      <Input
-                                        disabled
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-                                          const value =
-                                            event.target.value
-                                          arrayUpdate[index].variants[index1].title = value
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'available_stock_quantity') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={arrayUpdate[index].variants[index1].quantity !== null && arrayUpdate[index].variants[index1].quantity > 0 ? arrayUpdate[index].variants[index1].quantity : (arrayUpdate[index].variants[index1].available_stock_quantity > 0 ? arrayUpdate[index].variants[index1].available_stock_quantity : arrayUpdate[index].variants[index1].low_stock_quantity)}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].quantity = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'base_price') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].base_price = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'sale_price') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].sale_price = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'image') {
-                                    const InputName = () => <UploadImgChild
-                                      imageUrl={values1[data1]}
-                                      indexUpdate={values._id}
-                                      index20={index1}
-
-                                    />
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <div>
-                                          <InputName />
-                                        </div>
-                                      </Col>
-                                    )
-                                  }
-                                })
-                              }
-                            </Row>
+                            <Option value={values.category_id}>
+                              {values.name}
+                            </Option>
                           )
-                        })
+                        })}
+                    </Select>
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Loại sản phẩm
+                      </div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'warehouse' && viewMode === 0) {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].warehouse_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn kho"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
                       }
-                    </div>
+                      onChange={(event) => {
+                        // const value =
+                        //   event.target.value;
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {warehouseList &&
+                        warehouseList.length > 0 &&
+                        warehouseList.map((values, index) => {
+                          return (
+                            <Option value={values.warehouse_id}>
+                              {values.name}
+                            </Option>
+                          )
+                        })}
+                    </Select>
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Nhà Kho
+                      </div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+              })}
 
-                  </Row>
-                ) : <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <Col style={{ width: '100%', color: 'black', fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>Sản phẩm Simple</Col>
-                  {
-                    obj.map((data) => {
-                      if (data === 'suppliers') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].supplier_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn nhà cung cấp"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {supplier &&
-                              supplier.length > 0 &&
-                              supplier.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.supplier_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà cung cấp</div>
-                            <InputName />
+              <Col style={{ width: '100%' }}>
+                <Row
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      margin: '0.75rem 0 0.25rem 0',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <Checkbox
+                      checked={checkboxValue}
+                      onChange={onChangeCheckbox}
+                    >
+                      Thông số sản phẩm (không bắt buộc)
+                    </Checkbox>
+                  </div>
+                  {checkboxValue
+                    ? obj.map((data) => {
+                        if (data === 'length') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].length = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
+                                }}
+                              >
+                                Chiều dài (cm)
+                              </div>
 
-                          </Col>
-                        )
-                      }
-                      if (data === 'category') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].category_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn loại sản phẩm"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {category &&
-                              category.length > 0 &&
-                              category.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.category_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Loại sản phẩm</div>
-                            <InputName />
-
-                          </Col>
-                        )
-                      }
-
-                      if (data === 'warehouse') {
-
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].warehouse_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn kho"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {warehouseList &&
-                              warehouseList.length > 0 &&
-                              warehouseList.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.warehouse_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà Kho</div>
-                            <InputName />
-
-                          </Col>
-                        )
-
-
-
-
-
-                      }
-                      if (data === 'available_stock_quantity') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={arrayUpdate[index].available_stock_quantity}
-                            onChange={(event) => {
-
-                              arrayUpdate[index].quantity = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Số lượng</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'base_price') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-
-                              arrayUpdate[index][
-                                data
-                              ] = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Giá cơ bản</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'sale_price') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-
-                              arrayUpdate[index][
-                                data
-                              ] = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Giá bán</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'image') {
-                        const InputName = () => <UploadImg
-                          imageUrl={values[data]}
-                          indexUpdate={values._id}
-
-                        />
-                        return (
-                          <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-                              <div style={{ color: 'black', marginBottom: '0.5rem', fontWeight: '600' }}><b style={{ color: 'red' }}>*</b>Ảnh sản phẩm</div>
-                       
                               <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                    })
-                  }
-
-                  <Col style={{ width: '100%' }}>
-                    <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', margin: '1.5rem 0 0.25rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Checkbox checked={checkboxValue} onChange={onChangeCheckbox}>Thông số sản phẩm (không bắt buộc)</Checkbox></div>
-                      {
-                        checkboxValue ? (obj.map((data) => {
-                          if (data === 'length') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].length = parseInt(event)
+                            </Col>
+                          )
+                        }
+                        if (data === 'width') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].width = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
                                 }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều dài (cm)</div>
+                              >
+                                Chiều rộng (cm)
+                              </div>
 
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'width') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].width = parseInt(event)
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                        if (data === 'height') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].height = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
                                 }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều rộng (cm)</div>
+                              >
+                                Chiều cao (cm)
+                              </div>
 
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'height') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].height = parseInt(event)
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                        if (data === 'weight') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].weight = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
                                 }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều cao (cm)</div>
+                              >
+                                Cân nặng (kg)
+                              </div>
 
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'weight') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                      })
+                    : ''}
+                </Row>
+              </Col>
 
-                                  arrayUpdate[index].weight = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Cân nặng (kg)</div>
-
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                        })) : ''
-                      }
-
-                    </Row>
+              <div style={{ width: '100%' }}>
+                <div
+                  style={{
+                    color: 'black',
+                    padding: '1rem 1rem 1.5rem 0',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                  }}
+                >
+                  Phiên bản:
+                </div>
+                <Row
+                  style={{
+                    display: 'flex',
+                    backgroundColor: '#FAFAFA',
+                    padding: '0 1rem 1rem 1rem',
+                    border: '1px solid rgb(230, 219, 219)',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <Col
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      fontWeight: '600',
+                      color: 'black',
+                    }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={4}
+                  >
+                    Variants
+                  </Col>
+                  <Col
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      fontWeight: '600',
+                      color: 'black',
+                    }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={4}
+                  >
+                    Hình ảnh
+                  </Col>
+                  <Col
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      fontWeight: '600',
+                      color: 'black',
+                    }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={4}
+                  >
+                    Giá cơ bản
+                  </Col>
+                  <Col
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      fontWeight: '600',
+                      color: 'black',
+                    }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={4}
+                  >
+                    Giá bán
                   </Col>
 
-
-                </Row>
-              })
-            }
-          </Drawer>
-        ) : (
-          <Drawer
-            style={{ zIndex: '999' }}
-            title="Cập nhật số lượng sản phẩm"
-            width='90%'
-            onClose={onClose}
-            visible={visible}
-            bodyStyle={{ paddingBottom: 80 }}
-            footer={
-              <div
-                style={{
-                  textAlign: 'right',
-                }}
-              >
-                <Button
-                  onClick={() => onCloseUpdateFunc(1)}
-                  type="primary"
-                >
-                  Cập nhật
-                </Button>
-              </div>
-            }
-          >
-            {
-              arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
-                const obj = Object.keys(values)
-                return values &&
-                  values.attributes &&
-                  values.attributes.length > 0 ? (
-
-                  <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <Col style={{ width: '100%', color: 'black', fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>Sản phẩm Variant</Col>
-                    {
-                      obj.map((data) => {
-                        if (data === 'suppliers') {
-                          const InputName = () => (
-                            <Select
-                              defaultValue={
-                                values[data].supplier_id
-                              }
-                              showSearch
-                              style={{ width: '100%' }}
-                              placeholder="Chọn nhà cung cấp"
-                              optionFilterProp="children"
-                              filterOption={(
-                                input,
-                                option
-                              ) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(
-                                    input.toLowerCase()
-                                  ) >= 0
-                              }
-                              onChange={(event) => {
-                            
-                                arrayUpdate[index][
-                                  data
-                                ] = event
-                              }}
-                            >
-                              {supplier &&
-                                supplier.length > 0 &&
-                                supplier.map(
-                                  (values, index) => {
-                                    return (
-                                      <Option
-                                        value={
-                                          values.supplier_id
-                                        }
-                                      >
-                                        {
-                                          values.name
-                                        }
-                                      </Option>
-                                    )
-                                  }
-                                )}
-                            </Select>
-                          )
-                          return (
-                            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà cung cấp</div>
-                              <InputName />
-
-                            </Col>
-                          )
-                        }
-                        if (data === 'category') {
-                          const InputName = () => (
-                            <Select
-                              defaultValue={
-                                values[data].category_id
-                              }
-                              showSearch
-                              style={{ width: '100%' }}
-                              placeholder="Chọn loại sản phẩm"
-                              optionFilterProp="children"
-                              filterOption={(
-                                input,
-                                option
-                              ) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(
-                                    input.toLowerCase()
-                                  ) >= 0
-                              }
-                              onChange={(event) => {
-                             
-                                arrayUpdate[index][
-                                  data
-                                ] = event
-                              }}
-                            >
-                              {category &&
-                                category.length > 0 &&
-                                category.map(
-                                  (values, index) => {
-                                    return (
-                                      <Option
-                                        value={
-                                          values.category_id
-                                        }
-                                      >
-                                        {
-                                          values.name
-                                        }
-                                      </Option>
-                                    )
-                                  }
-                                )}
-                            </Select>
-                          )
-                          return (
-                            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Loại sản phẩm</div>
-                              <InputName />
-
-                            </Col>
-                          )
-                        }
-                        if (data === 'warehouse') {
-                          const InputName = () => (
-                            <Select
-                              defaultValue={
-                                values[data].warehouse_id
-                              }
-                              showSearch
-                              style={{ width: '100%' }}
-                              placeholder="Chọn kho"
-                              optionFilterProp="children"
-                              filterOption={(
-                                input,
-                                option
-                              ) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(
-                                    input.toLowerCase()
-                                  ) >= 0
-                              }
-                              onChange={(event) => {
-                                // const value =
-                                //   event.target.value;
-                                arrayUpdate[index][
-                                  data
-                                ] = event
-                              }}
-                            >
-                              {warehouseList &&
-                                warehouseList.length > 0 &&
-                                warehouseList.map(
-                                  (values, index) => {
-                                    return (
-                                      <Option
-                                        value={
-                                          values.warehouse_id
-                                        }
-                                      >
-                                        {
-                                          values.name
-                                        }
-                                      </Option>
-                                    )
-                                  }
-                                )}
-                            </Select>
-                          )
-                          return (
-                            <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà Kho</div>
-                              <InputName />
-
-                            </Col>
-                          )
-
-
-
-
-
-                        }
-
-                      })
-                    }
-
-                    <Col style={{ width: '100%' }}>
-                      <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', margin: '0.75rem 0 0.25rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Checkbox checked={checkboxValue} onChange={onChangeCheckbox}>Thông số sản phẩm (không bắt buộc)</Checkbox></div>
-                        {
-                          checkboxValue ? (obj.map((data) => {
-                            if (data === 'length') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].length = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều dài (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'width') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].width = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều rộng (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'height') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].height = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều cao (cm)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                            if (data === 'weight') {
-                              const InputName = () => (
-                                <InputNumber
-                                  style={{ width: '100%' }}
-                                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                  defaultValue={values[data]}
-                                  onChange={(event) => {
-
-                                    arrayUpdate[index].weight = parseInt(event)
-                                  }}
-                                />
-                              )
-                              return (
-                                <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                  <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Cân nặng (kg)</div>
-
-                                  <InputName />
-                                </Col>
-                              )
-                            }
-                          })) : ''
-                        }
-
-                      </Row>
-                    </Col>
-
-                    <div style={{ width: '100%' }}>
-                      <div style={{ color: 'black', padding: '1rem 1rem 1.5rem 0', fontSize: '1rem', fontWeight: '600' }}>Phiên bản:</div>
-                      <Row style={{ display: 'flex', backgroundColor: '#FAFAFA', padding: '0 1rem 1rem 1rem', border: '1px solid rgb(230, 219, 219)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Variants</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Hình ảnh</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Giá cơ bản</Col>
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Giá bán</Col>
-
-                        <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>Số lượng</Col>
-                      </Row>
-                      {
-                        values.variants && values.variants.length > 0 && values.variants.map((values1, index1) => {
-                          const obj1 = Object.keys(values1)
-                          return (
-                            <Row style={{ display: 'flex', borderBottom: '1px solid rgb(230, 219, 219)', borderLeft: '1px solid rgb(230, 219, 219)', borderRight: '1px solid rgb(230, 219, 219)', padding: '0 1rem 1rem 1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                              {
-                                obj1.map((data1) => {
-                                  if (data1 === 'title') {
-                                    const InputName = () => (
-                                      <Input
-                                        disabled
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-                                          const value =
-                                            event.target.value
-                                          arrayUpdate[index].variants[index1].title = value
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'available_stock_quantity') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={arrayUpdate[index].variants[index1].quantity !== null && arrayUpdate[index].variants[index1].quantity > 0 ? arrayUpdate[index].variants[index1].quantity : (arrayUpdate[index].variants[index1].available_stock_quantity > 0 ? arrayUpdate[index].variants[index1].available_stock_quantity : arrayUpdate[index].variants[index1].low_stock_quantity)}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].quantity = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'base_price') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].base_price = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'sale_price') {
-                                    const InputName = () => (
-                                      <InputNumber
-                                        style={{ width: '100%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                        defaultValue={values1[data1]}
-                                        onChange={(event) => {
-
-                                          arrayUpdate[index].variants[index1].sale_price = parseInt(event)
-                                        }}
-                                      />
-                                    )
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <InputName />
-                                      </Col>
-                                    )
-                                  }
-                                  if (data1 === 'image') {
-                                    const InputName = () => <UploadImgChild
-                                      imageUrl={values1[data1]}
-                                      indexUpdate={values._id}
-                                      index20={index1}
-
-                                    />
-
-
-                                    return (
-                                      <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={4}>
-                                        <div>
-
-                                          <InputName />
-                                        </div>
-                                      </Col>
-                                    )
-                                  }
-                                })
-                              }
-                            </Row>
-                          )
-                        })
-                      }
-                    </div>
-
-                  </Row>
-                ) : <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <Col style={{ width: '100%', color: 'black', fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>Sản phẩm Simple</Col>
-                  {
-                    obj.map((data) => {
-                      if (data === 'suppliers') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].supplier_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn nhà cung cấp"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {supplier &&
-                              supplier.length > 0 &&
-                              supplier.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.supplier_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà cung cấp</div>
-                            <InputName />
-
-                          </Col>
-                        )
-                      }
-                      if (data === 'category') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].category_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn loại sản phẩm"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {category &&
-                              category.length > 0 &&
-                              category.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.category_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Loại sản phẩm</div>
-                            <InputName />
-
-                          </Col>
-                        )
-                      }
-
-                      if (data === 'warehouse') {
-
-                        const InputName = () => (
-                          <Select
-                            defaultValue={
-                              values[data].warehouse_id
-                            }
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn kho"
-                            optionFilterProp="children"
-                            filterOption={(
-                              input,
-                              option
-                            ) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(
-                                  input.toLowerCase()
-                                ) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][
-                                data
-                              ] = event
-                            }}
-                          >
-                            {warehouseList &&
-                              warehouseList.length > 0 &&
-                              warehouseList.map(
-                                (values, index) => {
-                                  return (
-                                    <Option
-                                      value={
-                                        values.warehouse_id
-                                      }
-                                    >
-                                      {
-                                        values.name
-                                      }
-                                    </Option>
-                                  )
-                                }
-                              )}
-                          </Select>
-                        )
-
-                        return (
-                          <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red', marginRight: '0.25rem' }}>*</b>Nhà Kho</div>
-                            <InputName />
-
-                          </Col>
-                        )
-
-
-
-
-
-                      }
-                      if (data === 'available_stock_quantity') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={arrayUpdate[index].available_stock_quantity}
-                            onChange={(event) => {
-
-                              arrayUpdate[index].quantity = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Số lượng</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'base_price') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-
-                              arrayUpdate[index][
-                                data
-                              ] = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Giá cơ bản</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'sale_price') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-
-                              arrayUpdate[index][
-                                data
-                              ] = parseInt(event)
-                            }}
-                          />
-                        )
-                        return (
-                          <Col style={{ width: '100%', marginTop: '1rem', fontWeight: '600', color: 'black' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div style={{ marginBottom: '0.5rem' }}>Giá bán</div>
-                            <InputName />
-                          </Col>
-                        )
-                      }
-                      if (data === 'image') {
-                        const InputName = () => <UploadImg
-                          imageUrl={values[data]}
-                          indexUpdate={values._id}
-
-                        />
-                        return (
-                          <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-                              <div style={{ color: 'black', marginBottom: '0.5rem', fontWeight: '600' }}><b style={{ color: 'red' }}>*</b>Ảnh sản phẩm</div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                    })
-                  }
-
-                  <Col style={{ width: '100%' }}>
-                    <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', margin: '1.5rem 0 0.25rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Checkbox checked={checkboxValue} onChange={onChangeCheckbox}>Thông số sản phẩm (không bắt buộc)</Checkbox></div>
-                      {
-                        checkboxValue ? (obj.map((data) => {
-                          if (data === 'length') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].length = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều dài (cm)</div>
-
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'width') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].width = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều rộng (cm)</div>
-
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'height') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].height = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Chiều cao (cm)</div>
-
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data === 'weight') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                defaultValue={values[data]}
-                                onChange={(event) => {
-
-                                  arrayUpdate[index].weight = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col style={{ width: '100%', marginBottom: '0.5rem', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={5}>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Cân nặng (kg)</div>
-
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                        })) : ''
-                      }
-
-                    </Row>
+                  <Col
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      fontWeight: '600',
+                      color: 'black',
+                    }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={4}
+                  >
+                    Số lượng
                   </Col>
-
-
                 </Row>
-              })
-            }
-          </Drawer>
-        )
-      }
+                {values.variants &&
+                  values.variants.length > 0 &&
+                  values.variants.map((values1, index1) => {
+                    const obj1 = Object.keys(values1)
+                    return (
+                      <Row
+                        style={{
+                          display: 'flex',
+                          borderBottom: '1px solid rgb(230, 219, 219)',
+                          borderLeft: '1px solid rgb(230, 219, 219)',
+                          borderRight: '1px solid rgb(230, 219, 219)',
+                          padding: '0 1rem 1rem 1rem',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        {obj1.map((data1) => {
+                          if (data1 === 'title') {
+                            const InputName = () => (
+                              <Input
+                                disabled
+                                defaultValue={values1[data1]}
+                                onChange={(event) => {
+                                  const value = event.target.value
+                                  arrayUpdate[index].variants[index1].title =
+                                    value
+                                }}
+                              />
+                            )
+                            return (
+                              <Col
+                                style={{
+                                  width: '100%',
+                                  marginTop: '1rem',
+                                  fontWeight: '600',
+                                  color: 'black',
+                                }}
+                                xs={24}
+                                sm={24}
+                                md={11}
+                                lg={11}
+                                xl={4}
+                              >
+                                <InputName />
+                              </Col>
+                            )
+                          }
+                          if (data1 === 'available_stock_quantity') {
+                            const InputName = () => (
+                              <InputNumber
+                                style={{ width: '100%' }}
+                                formatter={(value) =>
+                                  `${value}`.replace(
+                                    /\B(?=(\d{3})+(?!\d))/g,
+                                    ','
+                                  )
+                                }
+                                parser={(value) =>
+                                  value.replace(/\$\s?|(,*)/g, '')
+                                }
+                                defaultValue={
+                                  arrayUpdate[index].variants[index1]
+                                    .quantity !== null &&
+                                  arrayUpdate[index].variants[index1].quantity >
+                                    0
+                                    ? arrayUpdate[index].variants[index1]
+                                        .quantity
+                                    : arrayUpdate[index].variants[index1]
+                                        .available_stock_quantity > 0
+                                    ? arrayUpdate[index].variants[index1]
+                                        .available_stock_quantity
+                                    : arrayUpdate[index].variants[index1]
+                                        .low_stock_quantity
+                                }
+                                onChange={(event) => {
+                                  arrayUpdate[index].variants[index1].quantity =
+                                    parseInt(event)
+                                }}
+                              />
+                            )
+                            return (
+                              <Col
+                                style={{
+                                  width: '100%',
+                                  marginTop: '1rem',
+                                  fontWeight: '600',
+                                  color: 'black',
+                                }}
+                                xs={24}
+                                sm={24}
+                                md={11}
+                                lg={11}
+                                xl={4}
+                              >
+                                <InputName />
+                              </Col>
+                            )
+                          }
+                          if (data1 === 'base_price') {
+                            const InputName = () => (
+                              <InputNumber
+                                style={{ width: '100%' }}
+                                formatter={(value) =>
+                                  `${value}`.replace(
+                                    /\B(?=(\d{3})+(?!\d))/g,
+                                    ','
+                                  )
+                                }
+                                parser={(value) =>
+                                  value.replace(/\$\s?|(,*)/g, '')
+                                }
+                                defaultValue={values1[data1]}
+                                onChange={(event) => {
+                                  arrayUpdate[index].variants[
+                                    index1
+                                  ].base_price = parseInt(event)
+                                }}
+                              />
+                            )
+                            return (
+                              <Col
+                                style={{
+                                  width: '100%',
+                                  marginTop: '1rem',
+                                  fontWeight: '600',
+                                  color: 'black',
+                                }}
+                                xs={24}
+                                sm={24}
+                                md={11}
+                                lg={11}
+                                xl={4}
+                              >
+                                <InputName />
+                              </Col>
+                            )
+                          }
+                          if (data1 === 'sale_price') {
+                            const InputName = () => (
+                              <InputNumber
+                                style={{ width: '100%' }}
+                                formatter={(value) =>
+                                  `${value}`.replace(
+                                    /\B(?=(\d{3})+(?!\d))/g,
+                                    ','
+                                  )
+                                }
+                                parser={(value) =>
+                                  value.replace(/\$\s?|(,*)/g, '')
+                                }
+                                defaultValue={values1[data1]}
+                                onChange={(event) => {
+                                  arrayUpdate[index].variants[
+                                    index1
+                                  ].sale_price = parseInt(event)
+                                }}
+                              />
+                            )
+                            return (
+                              <Col
+                                style={{
+                                  width: '100%',
+                                  marginTop: '1rem',
+                                  fontWeight: '600',
+                                  color: 'black',
+                                }}
+                                xs={24}
+                                sm={24}
+                                md={11}
+                                lg={11}
+                                xl={4}
+                              >
+                                <InputName />
+                              </Col>
+                            )
+                          }
+                          if (data1 === 'image') {
+                            const InputName = () => (
+                              <UploadImgChild
+                                imageUrl={values1[data1]}
+                                indexUpdate={values._id}
+                                index20={index1}
+                              />
+                            )
+
+                            return (
+                              <Col
+                                style={{ width: '100%', marginTop: '1rem' }}
+                                xs={24}
+                                sm={24}
+                                md={11}
+                                lg={11}
+                                xl={4}
+                              >
+                                <div>
+                                  <InputName />
+                                </div>
+                              </Col>
+                            )
+                          }
+                        })}
+                      </Row>
+                    )
+                  })}
+              </div>
+            </Row>
+          ) : (
+            <Row
+              style={{
+                display: 'flex',
+                marginTop: '1rem',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Col
+                style={{
+                  width: '100%',
+                  color: 'black',
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  marginBottom: '1rem',
+                }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
+              >
+                Sản phẩm Simple
+              </Col>
+              {obj.map((data) => {
+                if (data === 'suppliers') {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].supplier_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn nhà cung cấp"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {supplier &&
+                        supplier.length > 0 &&
+                        supplier.map((values, index) => {
+                          return (
+                            <Option value={values.supplier_id}>
+                              {values.name}
+                            </Option>
+                          )
+                        })}
+                    </Select>
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Nhà cung cấp
+                      </div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'category') {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].category_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn loại sản phẩm"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {category &&
+                        category.length > 0 &&
+                        category.map((values, index) => {
+                          return (
+                            <Option value={values.category_id}>
+                              {values.name}
+                            </Option>
+                          )
+                        })}
+                    </Select>
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Loại sản phẩm
+                      </div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+
+                if (data === 'warehouse') {
+                  const InputName = () => (
+                    <Select
+                      defaultValue={values[data].warehouse_id}
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn kho"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = event
+                      }}
+                    >
+                      {warehouseList &&
+                        warehouseList.length > 0 &&
+                        warehouseList.map((values, index) => {
+                          return (
+                            <Option value={values.warehouse_id}>
+                              {values.name}
+                            </Option>
+                          )
+                        })}
+                    </Select>
+                  )
+
+                  return (
+                    <Col
+                      style={{ width: '100%', marginBottom: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
+                          *
+                        </b>
+                        Nhà Kho
+                      </div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'available_stock_quantity') {
+                  const InputName = () => (
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      defaultValue={arrayUpdate[index].available_stock_quantity}
+                      onChange={(event) => {
+                        arrayUpdate[index].quantity = parseInt(event)
+                      }}
+                    />
+                  )
+                  return (
+                    <Col
+                      style={{
+                        width: '100%',
+                        marginTop: '1rem',
+                        fontWeight: '600',
+                        color: 'black',
+                      }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div style={{ marginBottom: '0.5rem' }}>Số lượng</div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'base_price') {
+                  const InputName = () => (
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      defaultValue={values[data]}
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = parseInt(event)
+                      }}
+                    />
+                  )
+                  return (
+                    <Col
+                      style={{
+                        width: '100%',
+                        marginTop: '1rem',
+                        fontWeight: '600',
+                        color: 'black',
+                      }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div style={{ marginBottom: '0.5rem' }}>Giá cơ bản</div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'sale_price') {
+                  const InputName = () => (
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      defaultValue={values[data]}
+                      onChange={(event) => {
+                        arrayUpdate[index][data] = parseInt(event)
+                      }}
+                    />
+                  )
+                  return (
+                    <Col
+                      style={{
+                        width: '100%',
+                        marginTop: '1rem',
+                        fontWeight: '600',
+                        color: 'black',
+                      }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div style={{ marginBottom: '0.5rem' }}>Giá bán</div>
+                      <InputName />
+                    </Col>
+                  )
+                }
+                if (data === 'image') {
+                  const InputName = () => (
+                    <UploadImg
+                      imageUrl={values[data]}
+                      indexUpdate={values._id}
+                    />
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginTop: '0.5rem' }}
+                      xs={24}
+                      sm={24}
+                      md={11}
+                      lg={11}
+                      xl={11}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            color: 'black',
+                            marginBottom: '0.5rem',
+                            fontWeight: '600',
+                          }}
+                        >
+                          <b style={{ color: 'red' }}>*</b>Ảnh sản phẩm
+                        </div>
+                        <InputName />
+                      </div>
+                    </Col>
+                  )
+                }
+              })}
+
+              <Col style={{ width: '100%' }}>
+                <Row
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      margin: '1.5rem 0 0.25rem 0',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <Checkbox
+                      checked={checkboxValue}
+                      onChange={onChangeCheckbox}
+                    >
+                      Thông số sản phẩm (không bắt buộc)
+                    </Checkbox>
+                  </div>
+                  {checkboxValue
+                    ? obj.map((data) => {
+                        if (data === 'length') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].length = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
+                                }}
+                              >
+                                Chiều dài (cm)
+                              </div>
+
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                        if (data === 'width') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].width = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
+                                }}
+                              >
+                                Chiều rộng (cm)
+                              </div>
+
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                        if (data === 'height') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].height = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
+                                }}
+                              >
+                                Chiều cao (cm)
+                              </div>
+
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                        if (data === 'weight') {
+                          const InputName = () => (
+                            <InputNumber
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, '')
+                              }
+                              defaultValue={values[data]}
+                              onChange={(event) => {
+                                arrayUpdate[index].weight = parseInt(event)
+                              }}
+                            />
+                          )
+                          return (
+                            <Col
+                              style={{
+                                width: '100%',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                              xs={24}
+                              sm={24}
+                              md={11}
+                              lg={11}
+                              xl={5}
+                            >
+                              <div
+                                style={{
+                                  color: 'black',
+                                  fontWeight: '600',
+                                  marginBottom: '0.5rem',
+                                }}
+                              >
+                                Cân nặng (kg)
+                              </div>
+
+                              <InputName />
+                            </Col>
+                          )
+                        }
+                      })
+                    : ''}
+                </Row>
+              </Col>
+            </Row>
+          )
+        })}
+      </Drawer>
 
       <Modal
         title="Tạo nhóm sản phẩm"
@@ -5328,24 +5083,78 @@ export default function Product() {
         onOk={() => modal5VisibleModal(false)}
         onCancel={() => modal5VisibleModal(false)}
       >
-
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-            <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600', width: '10rem' }}>Nhóm sản phẩm:</div>
-            <div style={{ marginLeft: '1rem', width: '100%' }}><Input style={{ width: '100%' }} onChange={onChangeGroupProduct} placeholder="Nhập tên nhóm sản phẩm" /></div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              marginBottom: '1rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                color: 'black',
+                fontSize: '1rem',
+                fontWeight: '600',
+                width: '10rem',
+              }}
+            >
+              Nhóm sản phẩm:
+            </div>
+            <div style={{ marginLeft: '1rem', width: '100%' }}>
+              <Input
+                style={{ width: '100%' }}
+                onChange={onChangeGroupProduct}
+                placeholder="Nhập tên nhóm sản phẩm"
+              />
+            </div>
           </div>
-          {
-            arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
+          {arrayUpdate &&
+            arrayUpdate.length > 0 &&
+            arrayUpdate.map((values, index) => {
               return (
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', marginBottom: '1rem', borderBottom: '1px solid rgb(235, 226, 226)', paddingBottom: '1rem' }}>{values.name}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginBottom: '1rem',
+                    borderBottom: '1px solid rgb(235, 226, 226)',
+                    paddingBottom: '1rem',
+                  }}
+                >
+                  {values.name}
+                </div>
               )
-            })
-          }
-
-
+            })}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button onClick={onClickGroupProduct} type="primary" style={{ width: '7.5rem' }}>Tạo</Button></div>
-
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Button
+            onClick={onClickGroupProduct}
+            type="primary"
+            style={{ width: '7.5rem' }}
+          >
+            Tạo
+          </Button>
+        </div>
       </Modal>
 
       <Modal
@@ -5357,47 +5166,91 @@ export default function Product() {
         onOk={() => modal50VisibleModal(false)}
         onCancel={() => modal50VisibleModal(false)}
       >
-
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              marginBottom: '1rem',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
+            }}
+          >
             <div style={{ width: '100%' }}>
-
-              <Select showSearch
+              <Select
+                showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } onChange={onChangeCategoryValueSelect}>
-
-                {
-                  category && category.length > 0 && category.map((values, index) => {
-                    return (
-                      <Option value={values.category_id}>{values.name}</Option>
-                    )
-                  })
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
                 }
+                onChange={onChangeCategory}
+                value={productGroupSelect}
+              >
+                {category.map((values, index) => {
+                  return (
+                    <Option value={values.category_id}>{values.name}</Option>
+                  )
+                })}
               </Select>
-
             </div>
           </div>
-          {
-            arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
+          {arrayUpdate &&
+            arrayUpdate.length > 0 &&
+            arrayUpdate.map((values, index) => {
               return (
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', marginBottom: '1rem', borderBottom: '1px solid rgb(235, 226, 226)', paddingBottom: '1rem' }}>{values.name}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                    marginBottom: '1rem',
+                    borderBottom: '1px solid rgb(235, 226, 226)',
+                    paddingBottom: '1rem',
+                  }}
+                >
+                  {values.name}
+                </div>
               )
-            })
-          }
-
-
+            })}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button onClick={onClickGroupProductSelect} type="primary" style={{ width: '7.5rem' }}>Cập nhật</Button></div>
-
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Button
+            onClick={onClickGroupProductSelect}
+            type="primary"
+            style={{ width: '7.5rem' }}
+          >
+            Cập nhật
+          </Button>
+        </div>
       </Modal>
 
-      <ProductInfo record={record} modal2Visible={modal2Visible} modal2VisibleModal={modal2VisibleModal} warranty={warranty} />
- 
+      <ProductInfo
+        record={record}
+        modal2Visible={modal2Visible}
+        modal2VisibleModal={modal2VisibleModal}
+        warranty={warranty}
+      />
+
       <Drawer
         title="Nhóm sản phẩm"
         width={1000}
@@ -5405,40 +5258,114 @@ export default function Product() {
         visible={visibleDrawer}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-
-
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={11}
+              xl={11}
+            >
               <div style={{ width: '100%' }}>
-                <Dropdown style={{ width: '100' }} trigger={['click']} overlay={contentProductGroup}>
-                  <Input style={{ width: '100%' }} name="name" value={valueSearchProductGroup} enterButton onChange={onSearchProductGroup} className={styles["orders_manager_content_row_col_search"]}
-                    placeholder="Tìm kiếm theo mã, theo tên" allowClear autocomplete="off" />
+                <Dropdown
+                  style={{ width: '100' }}
+                  trigger={['click']}
+                  overlay={contentProductGroup}
+                >
+                  <Input
+                    style={{ width: '100%' }}
+                    name="name"
+                    value={valueSearchProductGroup}
+                    enterButton
+                    onChange={onSearchProductGroup}
+                    className={styles['orders_manager_content_row_col_search']}
+                    placeholder="Tìm kiếm theo mã, theo tên"
+                    allowClear
+                    autocomplete="off"
+                  />
                 </Dropdown>
               </div>
             </Col>
-            <Col style={{ width: '100%', }} xs={24} sm={24} md={24} lg={11} xl={11}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                <Button onClick={() => modal6VisibleModal(true)} style={{ width: '10rem' }} type="primary">Tạo nhóm sản phẩm</Button>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button
+                  onClick={() => modal6VisibleModal(true)}
+                  style={{ width: '10rem' }}
+                  type="primary"
+                >
+                  Tạo nhóm sản phẩm
+                </Button>
               </div>
             </Col>
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Row style={{ width: "100%", marginTop: 20 }}>
-              <Button onClick={showDrawerCategoryGroupUpdate} type="primary" style={{ marginRight: '1rem' }}>
+            <Row style={{ width: '100%', marginTop: 20 }}>
+              <Button
+                onClick={showDrawerCategoryGroupUpdate}
+                type="primary"
+                style={{ marginRight: '1rem' }}
+              >
                 Cập nhật nhóm sản phẩm
               </Button>
-              <Button onClick={onChangeSwitchCategory} danger type="primary" style={{ marginRight: '1rem' }}>
+              <Button
+                onClick={onChangeSwitchCategory}
+                danger
+                type="primary"
+                style={{ marginRight: '1rem' }}
+              >
                 Xóa
               </Button>
             </Row>
           ) : (
             ''
           )}
-          <div style={{ width: '100%', marginTop: '1.25rem', border: '1px solid rgb(243, 234, 234)' }}>
-            <Table rowKey="_id" loading={loading}
+          <div
+            style={{
+              width: '100%',
+              marginTop: '1.25rem',
+              border: '1px solid rgb(243, 234, 234)',
+            }}
+          >
+            <Table
+              rowKey="_id"
+              loading={loading}
               rowSelection={rowSelection}
-              bordered columns={columnsCategory} dataSource={category} scroll={{ y: 500 }} />
+              bordered
+              columns={columnsCategory}
+              dataSource={category}
+              scroll={{ x: 'max-content' }}
+            />
           </div>
         </div>
       </Drawer>
@@ -5452,45 +5379,79 @@ export default function Product() {
         onOk={() => modal6VisibleModal(false)}
         onCancel={() => modal6VisibleModal(false)}
       >
-
         <Form
-          className={styles["supplier_add_content"]}
+          className={styles['supplier_add_content']}
           onFinish={onFinishCategory}
           layout="vertical"
           form={form}
         >
-
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
               <div>
-
                 <Form.Item
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Tên nhóm sản phẩm: </div>}
-                  className={styles["supplier_add_content_supplier_code_input"]}
+                  label={
+                    <div style={{ color: 'black', fontWeight: '600' }}>
+                      Tên nhóm sản phẩm:
+                    </div>
+                  }
+                  className={styles['supplier_add_content_supplier_code_input']}
                   name="categoryName"
-                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Input placeholder="Nhập tên nhóm sản phẩm" />
                 </Form.Item>
               </div>
             </Col>
-           
           </Row>
 
-
-
-
-          <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }} className={styles["supplier_add_content_supplier_button"]}>
-            <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+            className={styles['supplier_add_content_supplier_button']}
+          >
+            <Col
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+              }}
+              xs={24}
+              sm={24}
+              md={5}
+              lg={4}
+              xl={3}
+            >
               <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+                <Button
+                  style={{ width: '7.5rem' }}
+                  type="primary"
+                  htmlType="submit"
+                >
                   Tạo nhóm
                 </Button>
               </Form.Item>
             </Col>
           </Row>
         </Form>
-
       </Modal>
 
       <Drawer
@@ -5505,67 +5466,65 @@ export default function Product() {
               textAlign: 'right',
             }}
           >
-            <Button
-              onClick={onCloseUpdateFuncCategory}
-              type="primary"
-            >
+            <Button onClick={onCloseUpdateFuncCategory} type="primary">
               Cập nhật
             </Button>
           </div>
         }
       >
-        {
-          arrayUpdateCategory && arrayUpdateCategory.length > 0 && arrayUpdateCategory.map((values, index) => {
+        {arrayUpdateCategory &&
+          arrayUpdateCategory.length > 0 &&
+          arrayUpdateCategory.map((values, index) => {
             const obj = Object.keys(values)
             return (
-
-
-
-              <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                {
-                  obj.map((data) => {
-                    if (data === 'name') {
-                      const InputName = () => (
-                        <Input
-                          style={{ width: '100%' }}
-                          placeholder="Nhập tên nhóm"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-
-                            arrayUpdateCategory[index].name = event.target.value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                          <div>
-
-                            <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm: </div>
-                            <InputName />
-
+              <Row
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                {obj.map((data) => {
+                  if (data === 'name') {
+                    const InputName = () => (
+                      <Input
+                        style={{ width: '100%' }}
+                        placeholder="Nhập tên nhóm"
+                        defaultValue={values[data]}
+                        onChange={(event) => {
+                          arrayUpdateCategory[index].name = event.target.value
+                        }}
+                      />
+                    )
+                    return (
+                      <Col
+                        style={{ width: '100%', marginTop: '1rem' }}
+                        xs={24}
+                        sm={24}
+                        md={24}
+                        lg={24}
+                        xl={24}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              color: 'black',
+                              fontWeight: '600',
+                              marginBottom: '0.5rem',
+                            }}
+                          >
+                            <b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm:
                           </div>
-                        </Col>
-                      )
-                    }
-
-                  
-                  })
-                }
-
-
-
+                          <InputName />
+                        </div>
+                      </Col>
+                    )
+                  }
+                })}
               </Row>
-
-
-
-
-
-
             )
-          })
-        }
+          })}
       </Drawer>
-
-    </ >
+    </>
   )
 }
