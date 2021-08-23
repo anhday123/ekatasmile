@@ -402,6 +402,37 @@ export default function BranchAdd() {
               </div>
             </Col>
 
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div>
+                <Form.Item
+                  name="label"
+                  label={
+                    <div style={{ color: 'black', fontWeight: '600' }}>
+                      Label
+                    </div>
+                  }
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                >
+                  <Select
+                    mode="tags"
+                    placeholder="Please select"
+                    // onChange={handleChange}
+                    style={{ width: '100%' }}
+                  >
+                    {/* {children} */}
+                  </Select>
+                </Form.Item>
+              </div>
+            </Col>
+          </Row>
+          <Row style={{ width: '100%' }}>
             {districtMain && districtMain.length > 0 ? (
               <Col
                 style={{ width: '100%' }}
@@ -449,7 +480,6 @@ export default function BranchAdd() {
               ''
             )}
           </Row>
-
           <Row
             style={{
               display: 'flex',
