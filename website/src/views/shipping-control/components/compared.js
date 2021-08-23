@@ -33,7 +33,7 @@ export default function Compared(props) {
   const columns = [
     {
       title: 'Mã đơn hàng',
-      dataIndex: 'code',
+      dataIndex: 'order',
       key: 0
     },
     {

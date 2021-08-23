@@ -162,7 +162,7 @@ export default function CreateCompare(props) {
                         <Row>
                             <Col span={8}>Trạng thái vận chuyển</Col>
                             <Col span={16}>
-                                <Form.Item name="status">
+                                <Form.Item name="status" initialValue="PROCESSING">
                                     <Select>
                                         <Select.Option value="PROCESSING">Processing</Select.Option>
                                         <Select.Option value="REFUN">Refun</Select.Option>

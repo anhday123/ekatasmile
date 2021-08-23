@@ -14,7 +14,7 @@ export default function PenddingCompare(props) {
     const penddingCompareColumns = [
         {
             title: 'Mã đơn hàng',
-            dataIndex: 'code',
+            dataIndex: 'order',
             width: 150,
         },
         {

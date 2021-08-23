@@ -43,6 +43,7 @@ export const ROUTES = {
   TAX_UPDATE: '/actions/tax/update',
   BRANCH_VIEW: '/actions/branch/view/:slug',
   SHIPPING_PRODUCT_ADD: '/actions/shipping-product/add',
+  SHIPPING_PRODUCT_UPDATE: '/actions/shipping-product/update',
   ORDER_CREATE_SHIPPING: '/order-create-shipping/:slug',
   INVENTORY: '/inventory',
   PRODUCT: '/product',

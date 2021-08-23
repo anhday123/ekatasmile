@@ -28,7 +28,7 @@ export default function DeliveryUpdate() {
       dataIndex: 'name',
       width: 150,
       render(data, record) {
-        return data || record.title
+        return record.title || data
       }
     },
     {
@@ -65,7 +65,7 @@ export default function DeliveryUpdate() {
       <div className={styles["supplier_add"]}>
         <div className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }}>
 
-          <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} onClick={() => history.push('/shipping-product/9')} />
+          <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} onClick={() => history.push('/shipping-product')} />
           <div className={styles["supplier_add_back"]}>Cập nhật phiếu chuyển hàng</div>
 
         </div>
@@ -91,8 +91,9 @@ export default function DeliveryUpdate() {
           </Col>
         </Row>
         <Row style={{ width: '100%', paddingLeft: 5, marginTop: 10 }}>
-          <span style={{ marginRight: 20, fontSize: 16 }}>Trạng thái:</span> <Radio.Group onChange={(e) => setStatus(e.target.value)} defaultValue={history.location.state.status}>
-            <Radio value="PROGRESSING" >Chờ chuyển</Radio>
+          <span style={{ marginRight: 20, fontSize: 16 }}>Trạng thái:</span>
+          <Radio.Group onChange={(e) => setStatus(e.target.value)} defaultValue={history.location.state.status}>
+            <Radio value="PROCESSING" >Chờ chuyển</Radio>
             <Radio value="SHIPPING">Đang chuyển</Radio>
             {/* <Radio value="CANCEL">Đang hủy</Radio> */}
             <Radio value="CANCEL_FINISH">Đã Hủy</Radio>

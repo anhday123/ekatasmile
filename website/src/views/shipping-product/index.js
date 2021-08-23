@@ -1,15 +1,16 @@
 import styles from "./../shipping-product/shipping-product.module.scss";
 import React, { useEffect, useState } from "react";
-import { Input, Button, Row, Col, DatePicker, Select, Table } from "antd";
+import { Input, Button, Row, Col, DatePicker, Select, Table, notification } from "antd";
 import {
   Link,
   useHistory,
 } from "react-router-dom";
 import { PlusCircleOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
-import { getDelivery } from "../../apis/delivery";
+import { getDelivery, UpdateDelivery } from "../../apis/delivery";
 import ImportModal from "../../components/ExportCSV/importModal";
 import exportToCSV from "../../components/ExportCSV/export";
+import ChangeStatusModal from "components/shipping-product/changeStatus";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -20,6 +21,7 @@ export default function ShippingProduct() {
   const [deliveryList, setDelivery] = useState([])
   const [loading, setLoading] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
+  const [showMultiUpdate, setShowMultiUpdate] = useState(false)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const [filter, setFilter] = useState({ keyword: '', from_date: moment().startOf('month').format('YYYY-MM-DD'), to_date: moment().format('YYYY-MM-DD') })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
@@ -43,12 +45,31 @@ export default function ShippingProduct() {
       setLoading(false)
     }
   }
+  const updateMultiDelivery = async (data) => {
+    try {
+      if (data) {
+        const res = await Promise.all(selectedRowKeys.map(e => {
+          return UpdateDelivery(e, { status: data })
+        }))
+        if (res.reduce((a, b) => a && b.data.success, true)) {
+          notification.success({ message: "Cập nhật thành công" })
+          getAllDelivery({ ...filter })
+          setShowMultiUpdate(false)
+        }
+      }
+      else
+        setShowMultiUpdate(false)
+    }
+    catch (e) {
+      console.log(e);
+    }
+  }
 
   const onSearch = (value) => {
     setFilter({ ...filter, keyword: value })
   };
   function handleChange(value) {
-    console.log(`selected ${value}`);
+    // console.log(`selected ${value}`);
   }
   const columnsPromotion = [
     {
@@ -90,7 +111,7 @@ export default function ShippingProduct() {
             return <div onClick={() => onClickStatus(record)} style={{ color: 'red', fontWeight: '600', cursor: 'pointer' }}>Đã Hủy</div>
           }
           case 'COMPLETE': {
-            return <div onClick={onClickStatus(record)} style={{ color: 'rgba(26, 184, 0, 1)', fontWeight: '600', cursor: 'pointer' }}>Hoàn thành</div>
+            return <div onClick={() => onClickStatus(record)} style={{ color: 'rgba(26, 184, 0, 1)', fontWeight: '600', cursor: 'pointer' }}>Hoàn thành</div>
           }
         }
       }
@@ -123,7 +144,7 @@ export default function ShippingProduct() {
     },
   ];
   const onClickStatus = (data) => {
-    history.push({ pathname: '/actions/shipping-product/update/9', state: data })
+    history.push({ pathname: '/actions/shipping-product/update', state: data })
   }
   const onSelectChange = selectedRowKeys => {
     setSelectedRowKeys(selectedRowKeys)
@@ -131,7 +152,6 @@ export default function ShippingProduct() {
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-
   };
   const ExportExcel = () => {
     exportToCSV(deliveryList.map(e => {
@@ -194,7 +214,7 @@ export default function ShippingProduct() {
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý chuyển hàng</div>
           <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/shipping-product/add/9">
+            <Link to="/actions/shipping-product/add">
               <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Tạo phiếu chuyển hàng</Button>
             </Link>
           </div>
@@ -269,11 +289,18 @@ export default function ShippingProduct() {
             </Row>
           </Col>
         </Row>
+        <Row style={{ width: '100%' }}>
+          {
+            selectedRowKeys.length ? <Button type="primary" onClick={() => setShowMultiUpdate(true)}>Cập nhật trạng thái</Button> : ''
+          }
+        </Row>
+
         <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowSelection={rowSelection} loading={loading} columns={columnsPromotion} rowKey="_id" pagination={{ onChange: changePage, total: totalRecord }} dataSource={deliveryList} scroll={{ y: 500 }} />
+          <Table rowSelection={rowSelection} loading={loading} columns={columnsPromotion} rowKey="delivery_id" pagination={{ onChange: changePage, total: totalRecord }} dataSource={deliveryList} scroll={{ y: 500 }} />
         </div>
       </div>
       <ImportModal visible={exportVisible} onCancel={() => setExportVisible(false)} dataSource={deliveryList} columns={columnsPromotion} actionComponent={<ExportButton />} />
+      <ChangeStatusModal onCancel={() => setShowMultiUpdate(false)} onOk={updateMultiDelivery} visible={showMultiUpdate} />
     </>
   );
 }

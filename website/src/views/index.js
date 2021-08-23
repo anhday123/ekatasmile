@@ -90,6 +90,7 @@ import SupplierInformation from './actions/supplier/information'
 import SupplierView from './actions/supplier/view'
 import PromotionAdd from './actions/promotion/add'
 import RoleAdd from './actions/role/add'
+import DeliveryUpdate from './actions/shipping-product/update'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -377,6 +378,13 @@ const AUTH_ROUTER = [
   {
     path: ROUTES.SHIPPING_PRODUCT_VIEW,
     Component: () => <ShippingProductView />,
+    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
+    Component: () => <DeliveryUpdate />,
     title: 'Xem thông tin chi tiết quản lý chuyển hàng',
     permissions: [],
     exact: true,
