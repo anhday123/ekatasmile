@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
+import { ROUTES } from "consts";
 const { Option } = Select;
 const columns = [
   {
@@ -107,7 +108,7 @@ export default function OrderCreateShipping() {
   };
   const onFinish = (values) => {
     openNotification()
-    history.push('/order-list/4')
+    history.push(ROUTES.ORDER_LIST)
   };
 
  
@@ -153,7 +154,7 @@ export default function OrderCreateShipping() {
         className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
-            <Link to="/order-list/4" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Link to={ROUTES.ORDER_LIST} style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
               <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo đơn hàng</div>
             </Link>

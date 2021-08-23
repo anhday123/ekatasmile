@@ -18,6 +18,7 @@ import { login } from 'apis/login'
 import { loginAccessToken } from '../../actions/login'
 import { getAllStore } from '../../apis/store'
 import { getStore } from '../../actions/store'
+
 export default function Login() {
   const dispatch = useDispatch()
   const [form] = Form.useForm()
@@ -30,7 +31,7 @@ export default function Login() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await login(object)
-      console.log(res)
+      console.log('data', res)
       if (res.status === 200) {
         openNotificationLoginSuccess()
 
@@ -38,7 +39,6 @@ export default function Login() {
         dispatch(actions)
 
         history.push(ROUTES.OVERVIEW)
-
       } else {
         if (res.data.message === 'User has not activated!') {
           openNotificationLoginErrorActive()
@@ -117,7 +117,7 @@ export default function Login() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          history.push('/')
+          history.push(ROUTES.LOGIN)
           openNotificationRegisterFailMailPhoneOTP(object.email)
         }
       } else {
@@ -162,7 +162,6 @@ export default function Login() {
     return str
   }
   const onFinishRegister = (values) => {
-    console.log('Finish:', values)
     // form.resetFields();
     if (
       !validateEmail(values.emailRegister) ||
@@ -244,8 +243,7 @@ export default function Login() {
                     fax: ' ',
                     branch: '',
                   }
-                  console.log(object)
-                  console.log('------------')
+
                   apiRegister(object)
                 } else {
                   openNotificationRegisterFailUserPassCity()
@@ -336,513 +334,253 @@ export default function Login() {
         alignItems: 'center',
       }}
     >
-      {status === 1 ? (
-        <Col
-          style={{ width: '100%', height: '100%' }}
-          xs={24}
-          sm={24}
-          md={24}
-          lg={24}
-          xl={8}
-        >
-          <div className={styles['login_choose_parent']}>
+      <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
+        <div style={{}} className={styles['login_choose_parent']}>
+          <div
+            style={{ paddingTop: '1rem' }}
+            className={styles['login_choose']}
+          >
             <div
-              style={{ paddingTop: '1rem' }}
-              className={styles['login_choose']}
+              onClick={() => onClickStatus(1)}
+              className={
+                status === 1
+                  ? styles['login_choose_status_active']
+                  : styles['login_choose_status']
+              }
+              style={{
+                color: 'white',
+                fontWeight: '700',
+                marginBottom: '2rem',
+                paddingTop: '0.25rem',
+                fontSize: '1.5rem',
+                textAlign: 'center',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
             >
-              <div
-                onClick={() => onClickStatus(1)}
-                className={
-                  status === 1
-                    ? styles['login_choose_status_active']
-                    : styles['login_choose_status']
-                }
-                style={{
-                  color: 'white',
-                  fontWeight: '700',
-                  paddingTop: '0.25rem',
-                  marginBottom: '2rem',
-                  fontSize: '1.5rem',
-                  textAlign: 'center',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Đăng nhập
-              </div>
-              <div
-                onClick={() => onClickStatus(2)}
-                className={
-                  status === 2
-                    ? styles['login_choose_status_active']
-                    : styles['login_choose_status']
-                }
-                style={{
-                  color: 'white',
-                  fontWeight: '700',
-                  marginBottom: '2rem',
-                  fontSize: '1.5rem',
-                  textAlign: 'center',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Đăng ký
-              </div>
+              Đăng nhập
+            </div>
+            <div
+              onClick={() => onClickStatus(2)}
+              className={
+                status === 2
+                  ? styles['login_choose_status_active']
+                  : styles['login_choose_status']
+              }
+              style={{
+                color: 'white',
+                fontWeight: '700',
+                marginBottom: '2rem',
+                fontSize: '1.5rem',
+                textAlign: 'center',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              Đăng ký
             </div>
           </div>
+        </div>
 
-          {status === 1 ? (
-            <Form
-              style={{ marginBottom: '3rem' }}
-              className={styles['login_bottom']}
-              form={form}
-              onFinish={onFinish}
+        {status === 1 ? (
+          <Form
+            className={styles['login_bottom']}
+            form={form}
+            onFinish={onFinish}
+          >
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="emailLogin"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
             >
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="emailLogin"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="*Tài khoản"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="passwordLogin"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Mật khẩu"
-                />
-              </Form.Item>
-              <div className={styles['login_bottom_left']}>
-                <Form.Item name="remember" valuePropName="checked"></Form.Item>
-                <Link
-                  to="/forget-password"
-                  style={{ paddingTop: '0.25rem', color: 'white' }}
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<UserOutlined className="site-form-item-icon" />}
+                placeholder="*Tài khoản"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_password']}
+              name="passwordLogin"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input.Password
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<LockOutlined className="site-form-item-icon" />}
+                type="password"
+                placeholder="*Mật khẩu"
+              />
+            </Form.Item>
+            <div className={styles['login_bottom_left']}>
+              <Form.Item name="remember" valuePropName="checked">
+                <Checkbox
+                  style={{ color: 'white' }}
+                  className={styles['login_bottom_left_checkbox']}
                 >
-                  Quên mật khẩu?
-                </Link>
-              </div>
-              <div className={styles['login_bottom_left_button_parent']}>
-                <Form.Item>
-                  <Button
-                    className={styles['login_bottom_left_button']}
-                    style={{
-                      background: '#000000',
-                      borderRadius: '2rem',
-                      height: '2.5rem',
-                      color: 'white',
-                      border: 'none',
-                    }}
-                    // type="primary"
-                    htmlType="submit"
-                  >
-                    Đăng nhập
-                  </Button>
-                </Form.Item>
-              </div>
-            </Form>
-          ) : (
-            <Form
-              className={styles['login_bottom']}
-              form={form}
-              onFinish={onFinishRegister}
-            >
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="usernameRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="*Tài khoản"
-                />
+                  Nhớ mật khẩu
+                </Checkbox>
               </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="passwordRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              <Link
+                to={ROUTES.FORGET_PASSWORD}
+                style={{ paddingTop: '0.25rem', color: 'white' }}
               >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Mật khẩu"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="RepasswordRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Nhập lại mật khẩu"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="firstname"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Tên"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="lastname"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Họ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="emailRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<MailOutlined className="site-form-item-icon" />}
-                  placeholder="*Email"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="phoneNumberRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<PhoneOutlined className="site-form-item-icon" />}
-                  placeholder="*Liên hệ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="addressRegister"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<HomeOutlined className="site-form-item-icon" />}
-                  placeholder="Địa chỉ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="cityRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={
-                    <EnvironmentOutlined className="site-form-item-icon" />
-                  }
-                  placeholder="*Tên doanh nghiệp"
-                />
-              </Form.Item>
-              <div className={styles['login_bottom_left_button_parent']}>
-                <Form.Item>
-                  <Button
-                    className={styles['login_bottom_left_button']}
-                    style={{
-                      background: '#000000',
-                      borderRadius: '2rem',
-                      height: '2.5rem',
-                      color: 'white',
-                      border: 'none',
-                    }}
-                    htmlType="submit"
-                  >
-                    Tạo tài khoản
-                  </Button>
-                </Form.Item>
-              </div>
-            </Form>
-          )}
-        </Col>
-      ) : (
-        <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
-          <div style={{}} className={styles['login_choose_parent']}>
-            <div
-              style={{ paddingTop: '1rem' }}
-              className={styles['login_choose']}
-            >
-              <div
-                onClick={() => onClickStatus(1)}
-                className={
-                  status === 1
-                    ? styles['login_choose_status_active']
-                    : styles['login_choose_status']
-                }
-                style={{
-                  color: 'white',
-                  fontWeight: '700',
-                  marginBottom: '2rem',
-                  paddingTop: '0.25rem',
-                  fontSize: '1.5rem',
-                  textAlign: 'center',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Đăng nhập
-              </div>
-              <div
-                onClick={() => onClickStatus(2)}
-                className={
-                  status === 2
-                    ? styles['login_choose_status_active']
-                    : styles['login_choose_status']
-                }
-                style={{
-                  color: 'white',
-                  fontWeight: '700',
-                  marginBottom: '2rem',
-                  fontSize: '1.5rem',
-                  textAlign: 'center',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Đăng ký
-              </div>
+                Quên mật khẩu?
+              </Link>
             </div>
-          </div>
-
-          {status === 1 ? (
-            <Form
-              className={styles['login_bottom']}
-              form={form}
-              onFinish={onFinish}
-            >
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="emailLogin"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="*Tài khoản"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="passwordLogin"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Mật khẩu"
-                />
-              </Form.Item>
-              <div className={styles['login_bottom_left']}>
-                <Form.Item name="remember" valuePropName="checked">
-                  <Checkbox
-                    style={{ color: 'white' }}
-                    className={styles['login_bottom_left_checkbox']}
-                  >
-                    Nhớ mật khẩu
-                  </Checkbox>
-                </Form.Item>
-                <Link
-                  to="/forget-password"
-                  style={{ paddingTop: '0.25rem', color: 'white' }}
+            <div className={styles['login_bottom_left_button_parent']}>
+              <Form.Item>
+                <Button
+                  className={styles['login_bottom_left_button']}
+                  style={{
+                    background: '#000000',
+                    borderRadius: '2rem',
+                    height: '2.5rem',
+                    color: 'white',
+                    border: 'none',
+                  }}
+                  // type="primary"
+                  htmlType="submit"
                 >
-                  Quên mật khẩu?
-                </Link>
-              </div>
-              <div className={styles['login_bottom_left_button_parent']}>
-                <Form.Item>
-                  <Button
-                    className={styles['login_bottom_left_button']}
-                    style={{
-                      background: '#000000',
-                      borderRadius: '2rem',
-                      height: '2.5rem',
-                      color: 'white',
-                      border: 'none',
-                    }}
-                    // type="primary"
-                    htmlType="submit"
-                  >
-                    Đăng nhập
-                  </Button>
-                </Form.Item>
-              </div>
-            </Form>
-          ) : (
-            <Form
-              style={{ marginBottom: '3rem' }}
-              className={styles['login_bottom']}
-              form={form}
-              onFinish={onFinishRegister}
+                  Đăng nhập
+                </Button>
+              </Form.Item>
+            </div>
+          </Form>
+        ) : (
+          <Form
+            style={{ marginBottom: '3rem' }}
+            className={styles['login_bottom']}
+            form={form}
+            onFinish={onFinishRegister}
+          >
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="usernameRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
             >
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="usernameRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  style={{ borderRadius: '2rem' }}
-                  size="large"
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="*Tài khoản"
-                />
+              <Input
+                style={{ borderRadius: '2rem' }}
+                size="large"
+                prefix={<UserOutlined className="site-form-item-icon" />}
+                placeholder="*Tài khoản"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_password']}
+              name="passwordRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input.Password
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<LockOutlined className="site-form-item-icon" />}
+                type="password"
+                placeholder="*Mật khẩu"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_password']}
+              name="RepasswordRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input.Password
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<LockOutlined className="site-form-item-icon" />}
+                type="password"
+                placeholder="*Nhập lại mật khẩu"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="firstname"
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<UserOutlined className="site-form-item-icon" />}
+                placeholder="Tên"
+              />
+            </Form.Item>
+            <Form.Item className={styles['login_bottom_email']} name="lastname">
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<UserOutlined className="site-form-item-icon" />}
+                placeholder="Họ"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="emailRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<MailOutlined className="site-form-item-icon" />}
+                placeholder="*Email"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="phoneNumberRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<PhoneOutlined className="site-form-item-icon" />}
+                placeholder="*Liên hệ"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="addressRegister"
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<HomeOutlined className="site-form-item-icon" />}
+                placeholder="Địa chỉ"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="cityRegister"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<EnvironmentOutlined className="site-form-item-icon" />}
+                placeholder="*Tên doanh nghiệp"
+              />
+            </Form.Item>
+            <div className={styles['login_bottom_left_button_parent']}>
+              <Form.Item>
+                <Button
+                  className={styles['login_bottom_left_button']}
+                  style={{
+                    background: '#000000',
+                    borderRadius: '2rem',
+                    height: '2.5rem',
+                    color: 'white',
+                    border: 'none',
+                  }}
+                  htmlType="submit"
+                >
+                  Tạo tài khoản
+                </Button>
               </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="passwordRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Mật khẩu"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_password']}
-                name="RepasswordRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input.Password
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
-                  placeholder="*Nhập lại mật khẩu"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="firstname"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Tên"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="lastname"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<UserOutlined className="site-form-item-icon" />}
-                  placeholder="Họ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="emailRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<MailOutlined className="site-form-item-icon" />}
-                  placeholder="*Email"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="phoneNumberRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<PhoneOutlined className="site-form-item-icon" />}
-                  placeholder="*Liên hệ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="addressRegister"
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={<HomeOutlined className="site-form-item-icon" />}
-                  placeholder="Địa chỉ"
-                />
-              </Form.Item>
-              <Form.Item
-                className={styles['login_bottom_email']}
-                name="cityRegister"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input
-                  size="large"
-                  style={{ borderRadius: '2rem' }}
-                  prefix={
-                    <EnvironmentOutlined className="site-form-item-icon" />
-                  }
-                  placeholder="*Tên doanh nghiệp"
-                />
-              </Form.Item>
-              <div className={styles['login_bottom_left_button_parent']}>
-                <Form.Item>
-                  <Button
-                    className={styles['login_bottom_left_button']}
-                    style={{
-                      background: '#000000',
-                      borderRadius: '2rem',
-                      height: '2.5rem',
-                      color: 'white',
-                      border: 'none',
-                    }}
-                    htmlType="submit"
-                  >
-                    Tạo tài khoản
-                  </Button>
-                </Form.Item>
-              </div>
-            </Form>
-          )}
-        </Col>
-      )}
+            </div>
+          </Form>
+        )}
+      </Col>
 
       <Col
         style={{ width: '100%', height: '100vh', backgroundColor: 'white' }}

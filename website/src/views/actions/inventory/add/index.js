@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux'
-import { ACTION } from './../../../../consts/index'
+import { ACTION, ROUTES } from './../../../../consts/index'
 import styles from "./../add/add.module.scss";
 import React, { useState, useEffect } from "react";
 import { Select, Button, Input, Form, Row, Col, notification, InputNumber } from "antd";
@@ -72,7 +72,7 @@ export default function InventoryAdd() {
       console.log(res);
       if (res.status === 200) {
         openNotification()
-        history.push("/inventory/7");
+        history.push(ROUTES.INVENTORY);
       } else {
         openNotificationErrorCode()
       }
@@ -140,9 +140,6 @@ export default function InventoryAdd() {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
   function onChange(date, dateString) {
     console.log(date, dateString);
   }
@@ -173,18 +170,17 @@ export default function InventoryAdd() {
   return (
     <>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/inventory/7">
+        <a className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} onClick={() => history.goBack()}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Thêm kho</div>
 
-        </Link>
+        </a>
         <Form
           className={styles["supplier_add_content"]}
           onFinish={onFinish}
           form={form}
           layout="vertical"
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>

@@ -1,91 +1,83 @@
 import styles from './../password-new/password-new.module.scss'
 import 'antd/dist/antd.css'
-import React from 'react'
-import {
-
-  Link,
-  useParams,
-  useHistory,
-} from "react-router-dom";
+import React, { useEffect } from 'react'
+import { Link, useLocation, useHistory } from 'react-router-dom'
 import pgc from './../../assets/img/logo.png'
-import { changePasswordMain } from "../../apis/changePassword";
+import { changePasswordMain } from '../../apis/changePassword'
 import { useDispatch } from 'react-redux'
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import { Form, Input, Button, notification } from 'antd'
-import {
-  LockOutlined,
-} from '@ant-design/icons'
+import { LockOutlined } from '@ant-design/icons'
 export default function PasswordNew() {
-  let { slug } = useParams();
-  var username = slug
   const dispatch = useDispatch()
+  const location = useLocation()
   const [form] = Form.useForm()
   let history = useHistory()
+
+  var username = location.state && location.state.username
   const changePasswordData = async (object) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await changePasswordMain(object);
-      console.log(res);
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await changePasswordMain(object)
+      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          history.push('/');
+          history.push(ROUTES.LOGIN)
           openNotificationLoginSuccess()
-     
-        }
-      }
-      dispatch({ type: ACTION.LOADING, data: false });
-    
+        } else
+          notification.error({
+            message: 'Thay đổi mật khẩu không thành công, vui lòng thử lại',
+          })
+      } else
+        notification.error({
+          message: 'Thay đổi mật khẩu không thành công, vui lòng thử lại',
+        })
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      console.log(error);
-      dispatch({ type: ACTION.LOADING, data: false });
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
   function password_validate(password) {
     var re = {
-      'full': /^(?=.*[A-Za-z0-9])(?=.*[!@#$%^&*()?])[A-Za-z0-9\d!@#$%^&*()?]{8,}$/
-    };
-    return re.full.test(password);
-
+      full: /^(?=.*[A-Za-z0-9])(?=.*[!@#$%^&*()?])[A-Za-z0-9\d!@#$%^&*()?]{8,}$/,
+    }
+    return re.full.test(password)
   }
   const onFinishRegister = (values) => {
-    if (username) {
-      if (values.passwordRegister.trim() === values.RepasswordRegister.trim() && password_validate(values.passwordRegister.trim())) {
-        const object1 = {
-          username: username.trim(),
-          password: values.passwordRegister.trim()
-        }
-        changePasswordData(object1);
-      } else {
-        openNotificationLoginError()
+    if (
+      values.passwordRegister.trim() === values.RepasswordRegister.trim() &&
+      password_validate(values.passwordRegister.trim())
+    ) {
+      const object1 = {
+        username: username.trim(),
+        password: values.passwordRegister.trim(),
       }
-   
+      changePasswordData(object1)
     } else {
-      openNotificationLoginErrorPasswordUsername()
-      history.push('/forget-password')
+      openNotificationLoginError()
     }
   }
   const openNotificationLoginSuccess = () => {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description: 'Thay đổi mật khẩu thành công'
+      description: 'Thay đổi mật khẩu thành công',
     })
   }
 
-  const openNotificationLoginErrorPasswordUsername = () => {
-    notification.warning({
-      message: 'Nhắc nhở',
-      duration: 3,
-      description: 'Đã hết thời hạn đổi mật khẩu mới. Xin vui lòng nhập lại tài khoản.'
-    })
-  }
   const openNotificationLoginError = () => {
     notification.error({
       message: 'Thất bại',
       duration: 5,
-      description: 'Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.',
+      description:
+        'Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.',
     })
   }
+
+  useEffect(() => {
+    if (!location.state) history.goBack()
+  }, [])
   return (
     <div className={styles['login']}>
       <div className={styles['login_img_parent']}>
@@ -102,7 +94,8 @@ export default function PasswordNew() {
           Tạo mật khẩu mới
         </div>
         <div className={styles['login_forget_title']}>
-          Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.
+          Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự
+          đặc biệt.
         </div>
       </div>
       <Form
@@ -117,9 +110,7 @@ export default function PasswordNew() {
         >
           <Input.Password
             size="large"
-            prefix={
-              <LockOutlined className="site-form-item-icon" />
-            }
+            prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Mật khẩu mới"
           />
@@ -131,14 +122,22 @@ export default function PasswordNew() {
         >
           <Input.Password
             size="large"
-            prefix={
-              <LockOutlined className="site-form-item-icon" />
-            }
+            prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Nhập lại mật khẩu mới"
           />
         </Form.Item>
-        <Link to="/" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }} className={styles['login_bottom_email']}>Đăng nhập</Link>
+        <Link
+          to="/"
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '1.5rem',
+          }}
+          className={styles['login_bottom_email']}
+        >
+          Đăng nhập
+        </Link>
         <div className={styles['login_bottom_left_button_parent']}>
           <Form.Item>
             <Button
@@ -151,7 +150,6 @@ export default function PasswordNew() {
           </Form.Item>
         </div>
       </Form>
-
     </div>
   )
 }

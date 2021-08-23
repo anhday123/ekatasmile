@@ -9,6 +9,7 @@ import {
 import {  PlusCircleOutlined, StarOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import { apiAllOrder } from './../../apis/order'
+import { ROUTES } from "consts";
 
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
@@ -362,7 +363,7 @@ export default function OrderList() {
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', width: '100%' }}>
           <Col xs={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_title"]}>Danh sách đơn hàng</Col>
           <Col xs={24} sm={11} md={11} lg={11} xl={11} cls={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_button"]}>
-            <Link to="/order-create-shipping/4" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+            <Link to={ROUTES.ORDER_CREATE_SHIPPING} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
               <Button type="primary" icon={<PlusCircleOutlined />}>Tạo đơn hàng</Button>
             </Link>
           </Col>

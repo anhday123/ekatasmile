@@ -41,6 +41,7 @@ import TaxUpdate from './actions/tax/update'
 import BranchView from './actions/branch/view'
 import ShippingProductAdd from './actions/shipping-product/add/index'
 import OrderCreateShipping from './order-create-shipping'
+import VertifyAccount from './vertify-account'
 
 import Inventory from './inventory'
 import Product from './product'
@@ -562,6 +563,13 @@ const AUTH_ROUTER = [
     path: ROUTES.ROLE_ADD,
     Component: () => <RoleAdd />,
     title: 'Thêm phân quyền',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.VERTIFY_ACCOUNT,
+    Component: () => <VertifyAccount />,
+    title: 'Xác thực tài khoản',
     permissions: [],
     exact: true,
   },
