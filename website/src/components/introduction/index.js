@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 
 //antd
-import { Button, Modal, notification, Row } from 'antd'
+import { Button, Modal, Row } from 'antd'
 
 //apis
 import { getAllStore } from 'apis/store'
-import { getAllBranch } from 'apis/branch'
 
+import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
@@ -16,11 +16,13 @@ function ModalIntro() {
 
   const [visible, setVisible] = useState(false)
   const [isHaveStore, setIsHaveStore] = useState(false) //check user co store ?
+  const dataUser = useSelector((state) => state.login.dataUser)
 
-  //bắt buộc user mới vào phải tạo cửa hàng
+  //check user co store ??
   const getStoreByUser = async () => {
     try {
       const res = await getAllStore()
+      console.log('data store', res)
       if (res.status === 200) {
         if (res.data.data.length) {
           setVisible(false)
@@ -36,42 +38,15 @@ function ModalIntro() {
     }
   }
 
-  //check user co branch ?
-  const geBranchByUser = async () => {
-    try {
-      const res = await getAllBranch()
-      if (res.status === 200) {
-        if (!res.data.data.length) {
-          const key = 'notiCreateBranch'
-
-          //nếu user chưa có thì hiện thị thông báo
-          notification.warning({
-            key,
-            message: 'Bạn chưa có chi nhánh',
-            description: (
-              <a
-                onClick={() => {
-                  history.push({
-                    pathname: ROUTES.BRANCH,
-                    state: { isHaveBranch: false },
-                  })
-                }}
-              >
-                Nhấn vào đây để tạo chi nhánh
-              </a>
-            ),
-            duration: 0,
-            placement: 'bottomLeft',
-          })
-        }
-      }
-    } catch (error) {}
+  const loadData = async () => {
+    await getStoreByUser()
   }
 
   useEffect(() => {
-    geBranchByUser()
-    getStoreByUser()
-  }, [])
+    if (Object.keys(dataUser).length) {
+      loadData()
+    }
+  }, [dataUser])
 
   return (
     <Modal

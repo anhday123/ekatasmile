@@ -158,9 +158,6 @@ export default function Store(propsData) {
     }
   };
 
-  useEffect(() => {
-    getAllStoreData();
-  }, []);
   const data = [];
   for (let i = 0; i < 46; i++) {
     data.push({
@@ -541,10 +538,10 @@ export default function Store(propsData) {
   };
   useEffect(() => {
     apiDistrictData();
-  }, []);
-  useEffect(() => {
+    getAllStoreData();
     apiProvinceData();
   }, []);
+
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
     try {
@@ -564,7 +561,7 @@ export default function Store(propsData) {
     apiFilterCityData(value)
   }
 
-  const [attentionAddStore, setAttentionAddStore] = useState(true)
+  const [attentionAddStore, setAttentionAddStore] = useState(false)
   const onClickTurnOffAttentAddStore = () => {
     setAttentionAddStore(false)
   }

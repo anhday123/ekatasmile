@@ -116,10 +116,8 @@ export default function Login() {
       const res = await register(object)
       console.log(res)
       if (res.status === 200) {
-        if (res.data.success) {
-          history.push(ROUTES.LOGIN)
-          openNotificationRegisterFailMailPhoneOTP(object.email)
-        }
+        setStatus(1)
+        openNotificationRegisterFailMailPhoneOTP(object.email)
       } else {
         openNotificationRegisterUsername()
       }
@@ -213,11 +211,11 @@ export default function Login() {
                       values.usernameRegister.toLowerCase().trim()
                     ),
                     password: values.passwordRegister.trim(),
-                    role: ' ',
-                    store: ' ',
+                    role: '',
+                    store: '',
                     phone: values.phoneNumberRegister.trim(),
                     email: values.emailRegister.trim(),
-                    avatar: ' ',
+                    avatar: '',
                     first_name:
                       values && values.firstname
                         ? values.firstname.toLowerCase().trim()
@@ -226,21 +224,21 @@ export default function Login() {
                       values && values.lastname
                         ? values.lastname.toLowerCase().trim()
                         : '',
-                    birthday: ' ',
+                    birthday: '',
                     address:
                       values && values.addressRegister
                         ? values.addressRegister.toLowerCase().trim()
                         : '',
-                    ward: ' ',
-                    district: ' ',
-                    province: ' ',
+                    ward: '',
+                    district: '',
+                    province: '',
                     company_name:
                       values && values.cityRegister
                         ? values.cityRegister.toUpperCase().trim()
                         : '',
-                    company_website: ' ',
-                    tax_code: ' ',
-                    fax: ' ',
+                    company_website: '',
+                    tax_code: '',
+                    fax: '',
                     branch: '',
                   }
 

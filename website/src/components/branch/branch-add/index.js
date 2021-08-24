@@ -1,8 +1,8 @@
 import styles from './../branch-add/branch-add.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION, ROUTES } from 'consts/index'
+import { ACTION } from 'consts/index'
 import { useDispatch } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import {
   Input,
   Button,
@@ -26,7 +26,6 @@ const { Option } = Select
 export default function BranchAdd() {
   const dispatch = useDispatch()
   const location = useLocation()
-  const history = useHistory()
   const [form] = Form.useForm()
   const [modal2Visible, setModal2Visible] = useState(false)
   const [store, setStore] = useState([])
@@ -71,6 +70,9 @@ export default function BranchAdd() {
 
         modal2VisibleModal(false)
         form.resetFields()
+
+        if (location.state && !location.state.isHaveBranch)
+          dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
       } else {
         if (res.data.message === 'Branch name was exists!') {
           openNotificationError()
@@ -171,33 +173,6 @@ export default function BranchAdd() {
     apiProvinceData()
     getAllStoreData()
   }, [])
-
-  useEffect(() => {
-    const key = 'notiCreateBranch'
-    if (location.state && !location.state.isHaveBranch) {
-      if (!modal2Visible)
-        notification.warning({
-          key,
-          message: 'Bạn chưa có chi nhánh',
-          description: (
-            <a
-              onClick={() => {
-                modal2VisibleModal(true)
-                history.push({
-                  pathname: ROUTES.BRANCH,
-                  state: { isHaveBranch: location.state.isHaveBranch },
-                })
-              }}
-            >
-              Nhấn vào đây để tạo chi nhánh
-            </a>
-          ),
-          duration: 0,
-          placement: 'bottomLeft',
-        })
-      else notification.close(key)
-    }
-  }, [modal2Visible])
 
   return (
     <>

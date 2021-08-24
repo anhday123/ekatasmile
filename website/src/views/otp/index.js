@@ -12,7 +12,7 @@ export default function OTP() {
   let history = useHistory()
   let location = useLocation()
   var username = location.state && location.state.username
-
+  console.log(username)
   const apiOTP = async (otp) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })

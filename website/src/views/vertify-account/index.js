@@ -12,10 +12,14 @@ export default function VertifyAccount() {
   const checkUid = async (uid) => {
     try {
       const res = await checkUID({ UID: uid })
+      console.log(res)
       if (res.status === 200) {
         history.push({
           pathname: ROUTES.OTP,
-          state: { username: res.data.username, action: 'REGISTER' },
+          state: { username: res.data.data.username, action: 'REGISTER' },
+        })
+        notification.success({
+          message: 'Xác thực thành công',
         })
       } else {
         history.push(ROUTES.LOGIN)
@@ -33,9 +37,9 @@ export default function VertifyAccount() {
 
   useEffect(() => {
     const uid = new URLSearchParams(location.search).get('uid')
+
     if (!uid) history.push(ROUTES.LOGIN)
     else checkUid(uid)
-    checkUid()
   }, [])
 
   return <div />

@@ -4,34 +4,19 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Row, notification, Space } from 'antd'
 
 import { useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { ROUTES } from 'consts'
 
-function ModalWelcome({ show }) {
+function ModalWelcome() {
   const history = useHistory()
+  const dispatch = useDispatch()
+  const visibleModal = useSelector((state) => state.modal.visibleWelcome)
 
-  const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const key = 'notiCreateBranch'
-    notification.warning({
-      key,
-      message: 'Bạn chưa có chi nhánh',
-      description: (
-        <a
-          onClick={() => {
-            history.push({
-              pathname: ROUTES.BRANCH,
-              state: { isHaveBranch: false },
-            })
-          }}
-        >
-          Nhấn vào đây để tạo chi nhánh
-        </a>
-      ),
-      duration: 0,
-      placement: 'bottomLeft',
-    })
-  }, [visible])
+    setVisible(visibleModal)
+  }, [visibleModal])
 
   return (
     <Modal
@@ -49,6 +34,26 @@ function ModalWelcome({ show }) {
               style={{ width: '7.5rem' }}
               onClick={() => {
                 setVisible(false)
+                dispatch({ type: 'SHOW_MODAL_WELCOME', data: false })
+                const key = 'notiCreateBranch'
+                notification.warning({
+                  key,
+                  message: 'Bạn chưa có chi nhánh',
+                  description: (
+                    <a
+                      onClick={() => {
+                        history.push({
+                          pathname: ROUTES.BRANCH,
+                          state: { isHaveBranch: false },
+                        })
+                      }}
+                    >
+                      Nhấn vào đây để tạo chi nhánh
+                    </a>
+                  ),
+                  duration: 0,
+                  placement: 'bottomLeft',
+                })
               }}
             >
               Để sau
@@ -61,6 +66,7 @@ function ModalWelcome({ show }) {
                   pathname: ROUTES.BRANCH,
                   state: { isHaveBranch: false },
                 })
+                setVisible(false)
               }}
             >
               Tiếp tục

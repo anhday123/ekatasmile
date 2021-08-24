@@ -16,21 +16,20 @@ import {
   Upload,
 } from 'antd'
 
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
-import { ACTION, ROUTES } from 'consts/index'
+import { ACTION } from 'consts/index'
 import { useDispatch } from 'react-redux'
 
 //apis
 import { apiProvince } from 'apis/information'
 import { apiFilterCity } from 'apis/branch'
-import { addStore } from 'apis/store'
+import { addStore, getAllStore } from 'apis/store'
 import { uploadImgs } from 'apis/upload'
 
 const { Option } = Select
 const { Dragger } = Upload
-export default function StoreInformationAdd({ state }) {
-  const history = useHistory()
+export default function StoreInformationAdd() {
   const location = useLocation()
   const dispatch = useDispatch()
   const [form] = Form.useForm()
@@ -40,7 +39,7 @@ export default function StoreInformationAdd({ state }) {
   }
   const [imageStorePreview, setImageStorePreview] = useState('')
   const [imageStore, setImageStore] = useState('')
-  const [showWelcome, setShowWelcome] = useState(false)
+  const [listStore, setListStore] = useState([])
 
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
@@ -87,9 +86,9 @@ export default function StoreInformationAdd({ state }) {
         setImageStore('')
         form.resetFields()
 
-        //sau khi add store, kiểm tra user có branch chưa
-        //nếu chưa thì qua router /branch để tạo branch
-        if (location.state && !location.state.isHaveStore) setShowWelcome(true)
+        //nếu lần đầu tạo store thì show modal welcome
+        if (!listStore.length)
+          dispatch({ type: 'SHOW_MODAL_WELCOME', data: true })
       } else {
         openNotificationForgetImageError()
       }
@@ -180,6 +179,16 @@ export default function StoreInformationAdd({ state }) {
     }
   }
 
+  const _getAllStore = async () => {
+    try {
+      const res = await getAllStore()
+      console.log('list store', res)
+      if (res.status === 200) setListStore(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const [districtMain, setDistrictMain] = useState([])
   const apiFilterCityData = async (object) => {
     try {
@@ -208,6 +217,7 @@ export default function StoreInformationAdd({ state }) {
   }, [modal3Visible])
 
   useEffect(() => {
+    _getAllStore()
     apiProvinceData()
     if (location.state && !location.state.isHaveStore) modal3VisibleModal(true)
   }, [])
@@ -219,7 +229,6 @@ export default function StoreInformationAdd({ state }) {
       : ''
   return (
     <>
-      <ModalWelcome show={showWelcome} />
       <Button
         icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
         type="primary"
