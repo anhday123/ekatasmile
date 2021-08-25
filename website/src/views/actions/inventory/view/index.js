@@ -1,5 +1,5 @@
 import {
-  Link,
+  Link, useHistory, useLocation,
 
 } from "react-router-dom";
 import moment from 'moment'
@@ -8,9 +8,11 @@ import React, { useEffect, useState } from "react";
 import {  Table,  Input, Row, Col, Modal, } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiSearchProduct } from "../../../../apis/product";
-export default function InventoryView(propsData) {
-  const state = propsData.location.state;
-  console.log(state)
+import { ROUTES } from "consts";
+export default function InventoryView() {
+  const location = useLocation()
+  const history = useHistory()
+  const state = location.state && location.state;
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [warehousePrroduct, setWarehouseProduct] = useState([])
@@ -101,12 +103,16 @@ export default function InventoryView(propsData) {
     getProductWarehouse()
   }, [pagination])
 
+  useEffect(() => {
+    if (!location.state) history.goBack() 
+  }, [])
+
 
   const onSearch = value => console.log(value);
   return (
     <>
       <div className={styles["supplier_information"]}>
-        <Link className={styles["supplier_information_title"]} to="/inventory/7">
+        <Link className={styles["supplier_information_title"]} to={ROUTES.INVENTORY}>
 
           <ArrowLeftOutlined style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} />
           <div className={styles["supplier_information_title_right"]}>

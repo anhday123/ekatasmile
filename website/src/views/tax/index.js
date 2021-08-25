@@ -1,6 +1,6 @@
 import styles from "./../tax/tax.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import moment from 'moment';
 import { useDispatch } from 'react-redux'
 import {
@@ -337,7 +337,7 @@ export default function Tax() {
     <>
       <div className={styles["supplier_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+          <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
             <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Quản lý thuế</div>

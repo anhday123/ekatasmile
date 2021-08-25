@@ -1,6 +1,6 @@
 import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION } from 'consts/index'
+import { ACTION, ROUTES } from 'consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import { Link, useHistory } from 'react-router-dom'
@@ -107,8 +107,8 @@ export default function Branch() {
     }, 300)
   }
 
-  const onClickNotBranch = (code, name, record) => {
-    history.push({ pathname: '/actions/branch/view/19/1', state: record })
+  const onClickNotBranch = (record) => {
+    history.push({ pathname: ROUTES.BRANCH_VIEW, state: record })
   }
   const columnsPromotion = [
     {
@@ -117,7 +117,7 @@ export default function Branch() {
       width: 150,
       render: (text, record) => (
         <div
-          onClick={() => onClickNotBranch(record.code, record.name, record)}
+          onClick={() => onClickNotBranch(record)}
           style={{ color: '#007ACC', cursor: 'pointer' }}
         >
           {text}
@@ -508,7 +508,7 @@ export default function Branch() {
               alignItems: 'center',
               width: '100%',
             }}
-            to="/configuration-store/19"
+            to={ROUTES.CONFIGURATION_STORE}
           >
             <ArrowLeftOutlined
               style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}

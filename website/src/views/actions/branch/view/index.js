@@ -2,6 +2,7 @@ import {
   Link,
   useParams,
   useHistory,
+  useLocation
 } from "react-router-dom";
 import { apiFilterRoleEmployee} from "../../../../apis/employee";
 import { apiAllRole, apiSearch, updateUser } from "../../../../apis/user";
@@ -9,16 +10,17 @@ import { apiFilterCity, getAllBranch } from "../../../../apis/branch";
 import { apiDistrict, apiProvince } from "../../../../apis/information";
 import styles from "./../view/view.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { ACTION, } from './../../../../consts/index'
+import { ACTION, ROUTES, } from './../../../../consts/index'
 import { apiAllProduct, } from "../../../../apis/product";
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
 import { Switch, Select, Radio, Form, Button, Input, Row, Col, Popover, Drawer, Collapse, Table, notification, DatePicker, Modal, Typography } from "antd";
 import { ArrowLeftOutlined, FileImageOutlined, CheckOutlined, DeleteOutlined, AudioOutlined, EditOutlined, WarningOutlined } from "@ant-design/icons";
 import { logoutAction } from "../../../../actions/login";
-export default function BranchView(propsData) {
-  const state = propsData.location.state;
+export default function BranchView() {
+  const location = useLocation()
   const history = useHistory()
+  const state = location.state && location.state;
 
   const [modal2Visible, setModal2Visible] = useState(false)
   let { slug2 } = useParams();
@@ -64,47 +66,6 @@ export default function BranchView(propsData) {
     });
   }
 
-  const dataPromotion = [];
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      branchCode: <Link to="/actions/branch/view" style={{ color: '#2400FF' }}>CN {i}</Link>,
-      branchName: <Link to="/actions/branch/view" style={{ color: '#2400FF' }}>Chi nhánh {i}</Link>,
-      address: `Địa chỉ ${i}`,
-      district: `Bình thạnh ${i}`,
-      city: `Hồ chí minh ${i}`,
-      branchDefault: <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{i === 2 ? (<CheckOutlined style={{ color: '#0400DE', fontSize: '1.5rem' }} />) : ('')}</div>,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/customer/update" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
-
-  const dataEmployeeModal = [];
-
-  for (let i = 0; i < 46; i++) {
-    dataEmployeeModal.push({
-      key: i,
-      stt: i,
-      employeeCode: <div>{`JKB ${i}`}</div>,
-      employeeName: `Văn tỷ + ${i}`,
-      role: `Nhân viên + ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28`,
-      email: 'anhhung_so11@yahoo.com',
-      phoneNumber: `038494349${i}`,
-      address: `27/27, ngô y linh`,
-      district: `Bình Tân ${i}`,
-      city: `Hồ chí minh`,
-
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/employee/edit" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>
-    });
-  }
   const username = localStorage.getItem("username");
   const [employee, setEmployee] = useState([])
   const [visibleUpdate, setVisibleUpdate] = useState(false)
@@ -119,7 +80,6 @@ export default function BranchView(propsData) {
   const [record, setRecord] = useState({})
 
   function onChangeSwitch(checked, record) {
-    console.log(`switch to ${checked}`);
     updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
 
@@ -498,7 +458,7 @@ export default function BranchView(propsData) {
           dispatch(actions)
           history.push("/");
         } else {
-          history.push("/branch/19");
+          history.push(ROUTES.BRANCH);
         }
 
         openNotificationErrorMoveSuccess(`${object.first_name} ${object.last_name}`)
@@ -743,7 +703,7 @@ export default function BranchView(propsData) {
     <>
 
       <div style={{ paddingBottom: '1rem' }} className={styles["supplier_information"]}>
-        <Link className={styles["supplier_information_title"]} to="/branch/19">
+        <Link className={styles["supplier_information_title"]} to={ROUTES.BRANCH}>
 
           <ArrowLeftOutlined style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} />
           <div className={styles["supplier_information_title_right"]}>

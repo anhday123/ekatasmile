@@ -7,6 +7,7 @@ import {
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import React from "react";
 import { addWarranty } from '../../../../apis/warranty';
+import { ROUTES } from "consts";
 
 export default function GuaranteeAdd() {
   let history = useHistory();
@@ -24,7 +25,7 @@ export default function GuaranteeAdd() {
       const res = await addWarranty({ ...values, description: values.description || '' })
       if (res.status == 200) {
         openNotification()
-        history.push('/guarantee/11')
+        history.push(ROUTES.GUARANTEE)
       }
     }
     catch (e) {
@@ -47,7 +48,7 @@ export default function GuaranteeAdd() {
       >
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(231, 219, 219)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
-            <Link to="/guarantee/11" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Link to={ROUTES.GUARANTEE} style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
               <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo phiếu bảo hành</div>
             </Link>

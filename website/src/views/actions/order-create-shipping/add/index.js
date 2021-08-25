@@ -9,6 +9,7 @@ import user from './../../../../assets/img/user.png'
 import { ArrowLeftOutlined, AudioOutlined, PrinterOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 import moment from 'moment';
+import { ROUTES } from "consts";
 const { Option } = Select;
 const { Step } = Steps;
 const dateFormat = 'YYYY/MM/DD';
@@ -146,9 +147,6 @@ export default function OrderCreateShippingAdd() {
     console.log('onSelect', info);
     setSelectedKeys(selectedKeysValue);
   };
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
 
   const content = (
     <div style={{ display: 'flex', margin: '0.25rem 0', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
@@ -201,7 +199,7 @@ export default function OrderCreateShippingAdd() {
         onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
-            <Link to="/order-create-shipping/3" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+            <Link to={ROUTES.ORDER_CREATE_SHIPPING} style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
               <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Đơn hàng MONB223</div>
             </Link>

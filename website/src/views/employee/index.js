@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import {
@@ -493,14 +493,14 @@ export default function Employee() {
       <div className={styles["employee_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(231, 224, 224)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["employee_manager_title"]}>
-            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
               <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Quản lý nhân sự</div>
 
             </Link>
           </div>
-          <Link to="/actions/employee/add/19">
+          <Link to={ROUTES.EMPLOYEE_ADD}>
             <Button
               className={
                 styles["employee_manager_search_row_col_button_right"]

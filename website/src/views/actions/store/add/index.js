@@ -6,13 +6,14 @@ import {
 
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ROUTES } from "consts";
 const { Option } = Select;
 export default function StoreAdd() {
  
   return (
     <>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/17">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to={ROUTES.SUPPLIER}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Thêm khách hàng</div>

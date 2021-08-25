@@ -1,6 +1,6 @@
 import styles from "./../store/store.module.scss";
 import React, { useState, useEffect, useRef } from "react";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import { useDispatch } from 'react-redux'
 import moment from 'moment';
 import axios from 'axios';
@@ -157,25 +157,6 @@ export default function Store(propsData) {
       setLoading(false)
     }
   };
-
-  const data = [];
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      storeName: <Link to="/branch/9">{`PRX ${i}`}</Link>,
-      storeCode: <Link to="/branch/9">{`Nguyễn Văn A ${i}`}</Link>,
-      phoneNumber: `038494349${i}`,
-      district: `Bình Tân${i}`,
-      city: `Hồ Chí Minh ${i}`,
-      storeDefault: <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{i === 2 ? (<CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#0400DE' }} />) : ('')}</div>,
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <div><ExclamationCircleOutlined style={{ fontSize: '1.25rem', marginRight: '0.5rem', cursor: 'pointer', color: '#096E00' }} /></div>
-        <div style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-        <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      </div>,
-    });
-  }
 
   const contentImage = (data) => (
     <div>
@@ -589,7 +570,7 @@ export default function Store(propsData) {
       </Modal>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+          <Link style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
             <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} >Quản lý cửa hàng</div>

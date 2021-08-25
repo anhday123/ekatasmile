@@ -1,6 +1,6 @@
 import styles from "./../update/update.module.scss";
 import React from "react";
-import { ACTION } from './../../../../consts/index'
+import { ACTION, ROUTES } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import { Select, Button, Input, Form, Row, Col, DatePicker, notification, InputNumber } from "antd";
 import {
@@ -104,7 +104,7 @@ export default function InventoryUpdate(propsData) {
   return (
     <>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/inventory/7">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to={ROUTES.INVENTORY}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Cập nhật thông tin kho</div>

@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import moment from 'moment';
+import { ROUTES } from "consts";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const columns = [
@@ -109,7 +110,7 @@ export default function ImportExportFile() {
     <>
       <div className={styles["promotion_manager"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', width: '100%' }}>
-          <Col xs={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_title"]}>            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+          <Col xs={24} sm={11} md={11} lg={11} xl={11} className={styles["promotion_manager_title"]}>            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
             <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Quản lý xuất nhập file</div>

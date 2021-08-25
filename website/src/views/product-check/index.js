@@ -14,6 +14,7 @@ import {
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
+import { ROUTES } from 'consts'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -162,7 +163,7 @@ export default function ProductCheck() {
             Danh sách phiếu kiểm hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Link to="/actions/product-check/add/8">
+            <Link to={ROUTES.PRODUCT_CHECK_ADD}>
               <Button
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
                 type="primary"

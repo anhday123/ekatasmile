@@ -174,7 +174,7 @@ export default function Inventory() {
       dataIndex: 'code',
       width: 150,
       render: (text, record) => (
-        <Link to={{ pathname: '/actions/inventory/view/7', state: record }}>
+        <Link to={{ pathname: ROUTES.INVENTORY_VIEW, state: record }}>
           {text}
         </Link>
       ),

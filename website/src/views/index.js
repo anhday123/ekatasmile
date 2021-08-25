@@ -44,6 +44,7 @@ import BranchView from './actions/branch/view'
 import ShippingProductAdd from './actions/shipping-product/add/index'
 import OrderCreateShipping from './order-create-shipping'
 import VertifyAccount from './vertify-account'
+import ImportExportFile from './import-export-file'
 
 import Inventory from './inventory'
 import Product from './product'
@@ -81,7 +82,8 @@ import ProductAdd from './actions/product/add'
 import EmployeeAdd from './actions/employee/add'
 import EmployeeEdit from './actions/employee/edit'
 import CustomerAdd from './actions/customer/add'
-import SupplierAdd from './actions/customer/add'
+import SupplierAdd from './actions/supplier/add'
+import GuaranteeAdd from './actions/guarantee/add'
 import SupplierInformation from './actions/supplier/information'
 import SupplierView from './actions/supplier/view'
 import PromotionAdd from './actions/promotion/add'
@@ -153,6 +155,13 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
+    path: ROUTES.GUARANTEE_ADD,
+    Component: () => <GuaranteeAdd />,
+    title: 'Quản lý bảo hành',
+    permissions: [],
+    exact: true,
+  },
+  {
     path: ROUTES.SHIPPING_PRODUCT,
     Component: () => <ShippingProduct />,
     title: 'Quản lý chuyển hàng',
@@ -205,6 +214,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.ACTIVITY_DIARY,
     Component: () => <ActivityDiary />,
     title: 'Nhật ký hoạt động',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.IMPORT_REPORT_FILE,
+    Component: () => <ImportExportFile />,
+    title: 'Xuất/nhập file',
     permissions: [],
     exact: true,
   },
@@ -582,7 +598,7 @@ export default function Views() {
     <BrowserRouter>
       <ModalIntro />
       <ModalWelcome />
-      <NotificationCreateBranch />
+      <NotificationCreateBranch />f
 
       <Switch>
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (

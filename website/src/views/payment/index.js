@@ -28,6 +28,7 @@ import {
   ArrowLeftOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
+import { ROUTES } from "consts";
 export default function Payment() {
   const [temp, setTemp] = useState(0);
   const [visible, setVisible] = useState(false)
@@ -74,7 +75,7 @@ export default function Payment() {
       <div className={styles["payment_method"]}>
         <Row style={{ display: 'flex', borderBottom: '1px solid rgb(233, 223, 223)', justifyContent: 'space-between', width: '100%' }}>
           <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+            <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
               <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
               <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Hình thức thanh toán</div>

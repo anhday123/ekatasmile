@@ -1,5 +1,5 @@
 import styles from "./../add/add.module.scss";
-import { ACTION } from './../../../../consts/index'
+import { ACTION, ROUTES } from './../../../../consts/index'
 import { useDispatch } from 'react-redux'
 import {
   Link,
@@ -310,7 +310,7 @@ export default function EmployeeAdd() {
   return (
     <>
       <div className={styles["employee_add_parent"]}>
-        <Link style={{ borderBottom: '1px solid rgb(233, 240, 240)', paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/employee/19">
+        <Link style={{ borderBottom: '1px solid rgb(233, 240, 240)', paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.EMPLOYEE}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', marginRight: '0.5rem', fontSize: '1rem', color: 'black' }} />
           <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} className={styles["supplier_add_back"]}>Thêm nhân sự</div>

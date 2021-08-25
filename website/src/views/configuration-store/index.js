@@ -103,7 +103,7 @@ export default function ConfigurationStore() {
           <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Nhật ký</div>
           <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
             <Col style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-              <Link to="/import-export-file/19" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
+              <Link to={ROUTES.IMPORT_REPORT_FILE} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
                 <div className={styles['hover_item']} style={{ backgroundColor: '#D7E9DB', marginRight: '1rem', border: '1px solid #388F4D', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '4rem', height: '3rem', borderRadius: '0.25rem' }}><FileExcelOutlined style={{ color: '#388F4D', fontSize: '1.5rem' }} /></div>
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', fontSize: '1rem', color: '#0015CD' }}>Nhập/xuất file</div>

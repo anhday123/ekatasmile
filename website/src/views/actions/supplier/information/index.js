@@ -1,19 +1,26 @@
 import {
-
+  useHistory,
   Link,
-
+  useLocation
 } from "react-router-dom";
 import styles from "./../information/information.module.scss";
 import {Row, Col } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-export default function SupplierInformation(propsData) {
-  const dataSupplier = propsData.location.state;
+import { useEffect } from "react";
+import { ROUTES } from "consts";
+export default function SupplierInformation() {
+  const history = useHistory()
+  const location = useLocation()
+  const dataSupplier = location.state && location.state;
 
-  console.log(dataSupplier)
+  useEffect(() => {
+    if (!location.state) history.goBack()
+  }, [])
+
   return (
     <>
       <div className={styles["supplier_information"]}>
-        <Link className={styles["supplier_information_title"]} to="/supplier/10">
+        <Link className={styles["supplier_information_title"]} to={ROUTES.SUPPLIER}>
 
           <ArrowLeftOutlined style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} />
           <div className={styles["supplier_information_title_right"]}>

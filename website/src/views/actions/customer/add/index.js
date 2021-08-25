@@ -9,6 +9,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useEffect, useState } from 'react'
 import { useDispatch } from "react-redux";
 import { apiDistrict, apiProvince } from "../../../../apis/information";
+import { ROUTES } from "consts";
 const { Option } = Select;
 export default function CustomerAdd() {
   const [gender, setGender] = useState('male')
@@ -43,7 +44,7 @@ export default function CustomerAdd() {
         // console.log("Success:", values);
         openNotification()
         dispatch({ type: 'LOADING', data: false })
-        history.push("/customer/12");
+        history.push(ROUTES.CUSTOMER);
       }
       else {
         throw res
@@ -79,7 +80,7 @@ export default function CustomerAdd() {
   return (
     <>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/customer/12">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to={ROUTES.CUSTOMER}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Thêm khách hàng</div>

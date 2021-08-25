@@ -9,6 +9,7 @@ import moment from 'moment';
 import { getCustomer, updateCustomer } from "../../apis/customer";
 import CustomerInfo from "./components/customerInfo";
 import CustomerUpdate from "../actions/customer/update";
+import { ROUTES } from "consts";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -206,7 +207,7 @@ export default function Promotion() {
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý khách hàng</div>
           <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/customer/add/12">
+            <Link to={ROUTES.CUSTOMER_ADD}>
               <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
             </Link>
           </div>

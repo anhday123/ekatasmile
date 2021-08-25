@@ -155,7 +155,7 @@ export default function Guarantee() {
         <div style={{ display: 'flex', paddingBottom: '0.75rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Quản lý bảo hành</div>
           <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/guarantee/add/11">
+            <Link to="/actions/guarantee/add">
               <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Tạo phiếu bảo hành</Button>
             </Link>
           </div>

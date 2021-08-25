@@ -8,6 +8,7 @@ import {
   Link,
 } from "react-router-dom";
 import { TramOutlined } from "@material-ui/icons";
+import { ROUTES } from "consts";
 const { Option } = Select;
 
 const { RangePicker } = DatePicker;
@@ -286,7 +287,7 @@ export default function ActivityDiary() {
     <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(236, 226, 226)', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+          <Link className={styles["supplier_add_back_parent"]} style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
             <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Nhật ký hoạt động</div>

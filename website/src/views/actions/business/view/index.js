@@ -5,11 +5,12 @@ import {
 import styles from "./../view/view.module.scss";
 import { Input, Row, Col } from "antd";
 import { ArrowLeftOutlined, ShopOutlined, ShoppingCartOutlined, BranchesOutlined, FormOutlined, TeamOutlined } from "@ant-design/icons";
+import { ROUTES } from "consts";
 export default function BusinessView() {
   return (
     <>
       <div className={styles['business']}>
-        <Link to="/business/5" className={styles['business_title']}>
+        <Link to={ROUTES.BUSINESS_VIEW} className={styles['business_title']}>
           <div><ArrowLeftOutlined /></div>
           <div>Thông tin chi tiết doanh nghiệp 1</div>
         </Link>

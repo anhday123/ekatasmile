@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import moment from 'moment'
 import { apiAllRole, apiCreateUserMenu, apiSearch, updateUser } from "./../../apis/user";
 import { apiAllUser } from "../../apis/user";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import { useDispatch } from 'react-redux'
 import { Switch,  Input, Button, Row, Col, DatePicker, notification, Radio, Select, Drawer, Form, Table, Modal, Popover } from "antd";
 import {
@@ -618,7 +618,7 @@ export default function User() {
     <>
       <div className={styles["promotion_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link className={styles["supplier_add_back_parent"]} style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to="/configuration-store/19">
+          <Link className={styles["supplier_add_back_parent"]} style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} to={ROUTES.CONFIGURATION_STORE}>
 
             <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }} className={styles["supplier_add_back"]}>Quản lý người dùng</div>

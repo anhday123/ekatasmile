@@ -1,7 +1,7 @@
 import styles from "./../supplier/supplier.module.scss";
 import React, { useState, useEffect, useRef } from "react";
 import { apiAllSupplier, apiSearch, apiUpdateSupplier } from "../../apis/supplier";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import moment from 'moment';
 import { apiDistrict, apiProvince } from "../../apis/information";
 import { useDispatch } from 'react-redux'
@@ -330,7 +330,7 @@ export default function Supplier() {
       dataIndex: "code",
       width: 150,
       render: (text, record) => <Link to={{
-        pathname: '/actions/supplier/information/10', state: record
+        pathname: ROUTES.SUPPLIER_INFORMATION, state: record
       }} style={{ color: '#0019FF' }}>{text}</Link>,
     },
     {
@@ -449,7 +449,7 @@ export default function Supplier() {
       <div className={styles["supplier_manager"]}>
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["supplier_manager_title"]}>Quản lý nhà cung cấp</div>
-          <Link to="/actions/supplier/add/10">
+          <Link to={ROUTES.SUPPLIER_ADD}>
             <Button
               className={styles["supplier_manager_search_right"]}
               type="primary"

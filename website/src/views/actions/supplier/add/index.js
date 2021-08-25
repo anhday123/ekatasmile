@@ -1,6 +1,6 @@
 import styles from "./../add/add.module.scss";
 import React, { useState, useEffect } from "react";
-import { ACTION} from './../../../../consts/index'
+import { ACTION, ROUTES} from './../../../../consts/index'
 import { apiDistrict, apiProvince } from "../../../../apis/information";
 import { useDispatch } from 'react-redux'
 import { apiAddSupplier } from "../../../../apis/supplier";
@@ -72,7 +72,7 @@ export default function SupplierAdd() {
       console.log(res)
       if (res.status === 200) {
         openNotification();
-        history.push("/supplier/10");
+        history.push(ROUTES.SUPPLIER);
       } else {
         openNotificationError()
       }
@@ -85,13 +85,6 @@ export default function SupplierAdd() {
 
       dispatch({ type: ACTION.LOADING, data: false });
     }
-  };
-
-  // useEffect(() => {
-  //   apiAddSupplierData();
-  // }, []);
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
   };
 
   const openNotification = () => {
@@ -154,7 +147,7 @@ export default function SupplierAdd() {
   return (
     <>
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/supplier/10">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to={ROUTES.SUPPLIER}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Thêm nhà cung cấp</div>
@@ -165,7 +158,6 @@ export default function SupplierAdd() {
           onFinish={onFinish}
           layout="vertical"
           form={form}
-          onFinishFailed={onFinishFailed}
         >
 
           <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
