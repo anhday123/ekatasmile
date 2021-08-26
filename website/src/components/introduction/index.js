@@ -3,49 +3,18 @@ import React, { useEffect, useState } from 'react'
 //antd
 import { Button, Modal, Row } from 'antd'
 
-//apis
-import { getAllStore } from 'apis/store'
-
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 function ModalIntro() {
   const history = useHistory()
-  const location = useLocation()
 
   const [visible, setVisible] = useState(false)
-  const [isHaveStore, setIsHaveStore] = useState(false) //check user co store ?
   const dataUser = useSelector((state) => state.login.dataUser)
 
-  //check user co store ??
-  const getStoreByUser = async () => {
-    try {
-      const res = await getAllStore()
-      console.log('data store', res)
-      if (res.status === 200) {
-        if (res.data.data.length) {
-          setVisible(false)
-          setIsHaveStore(true)
-        } else {
-          // nếu đang ở router /store thì ko cần hiện
-          if (location.pathname !== ROUTES.STORE) setVisible(true)
-          setIsHaveStore(false)
-        }
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const loadData = async () => {
-    await getStoreByUser()
-  }
-
   useEffect(() => {
-    if (Object.keys(dataUser).length) {
-      loadData()
-    }
+    if (Object.keys(dataUser).length && dataUser.data.is_new) setVisible(true)
   }, [dataUser])
 
   return (
@@ -67,7 +36,8 @@ function ModalIntro() {
               history.push({
                 pathname: ROUTES.STORE,
                 state: {
-                  isHaveStore,
+                  isHaveStore:
+                    Object.keys(dataUser).length && !dataUser.data.is_new,
                 },
               })
             }}

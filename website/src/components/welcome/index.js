@@ -15,7 +15,7 @@ function ModalWelcome() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    setVisible(visibleModal)
+    if (visibleModal) setVisible(visibleModal)
   }, [visibleModal])
 
   return (
@@ -34,26 +34,7 @@ function ModalWelcome() {
               style={{ width: '7.5rem' }}
               onClick={() => {
                 setVisible(false)
-                dispatch({ type: 'SHOW_MODAL_WELCOME', data: false })
-                const key = 'notiCreateBranch'
-                notification.warning({
-                  key,
-                  message: 'Bạn chưa có chi nhánh',
-                  description: (
-                    <a
-                      onClick={() => {
-                        history.push({
-                          pathname: ROUTES.BRANCH,
-                          state: { isHaveBranch: false },
-                        })
-                      }}
-                    >
-                      Nhấn vào đây để tạo chi nhánh
-                    </a>
-                  ),
-                  duration: 0,
-                  placement: 'bottomLeft',
-                })
+                dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
               }}
             >
               Để sau

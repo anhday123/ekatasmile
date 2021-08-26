@@ -598,7 +598,8 @@ export default function Views() {
     <BrowserRouter>
       <ModalIntro />
       <ModalWelcome />
-      <NotificationCreateBranch />f
+      <NotificationCreateBranch />
+
       <Switch>
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>
