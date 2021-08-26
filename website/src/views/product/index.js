@@ -1,6 +1,5 @@
 import styles from './../product/product.module.scss'
 import { Link, useHistory } from 'react-router-dom'
-import axios from 'axios'
 
 import {
   Switch,
@@ -24,73 +23,40 @@ import {
   Radio,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES } from 'consts'
+import ProductInfo from './components/productInfo'
+import { useDispatch } from 'react-redux'
+import moment from 'moment'
+
+//icons
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+  EyeOutlined,
+} from '@ant-design/icons'
+
+//apis
+import { apiAllWarranty } from 'apis/warranty'
+import { apiAllSupplier } from 'apis/supplier'
+import { getAllBranchMain } from 'apis/branch'
+import {
+  apiAddCategory,
+  apiAllCategorySearch,
+  apiUpdateCategory,
+} from 'apis/category'
+import { apiAllInventory } from 'apis/inventory'
 import {
   apiUpdateProduct,
   apiProductSeller,
   apiAllProduct,
   apiUpdateProductStore,
   apiProductCategoryMerge,
-} from '../../apis/product'
-import { useDispatch } from 'react-redux'
-import {
-  PlusOutlined,
-  EditOutlined,
-  WarningOutlined,
-  DeleteOutlined,
-  PlusCircleOutlined,
-  EyeOutlined,
-  FileImageOutlined,
-} from '@ant-design/icons'
-import moment from 'moment'
-import { apiAllWarranty } from '../../apis/warranty'
-import { apiAllSupplier } from '../../apis/supplier'
-import { getAllBranchMain } from '../../apis/branch'
-import {
-  apiAddCategory,
-  apiAllCategorySearch,
-  apiUpdateCategory,
-} from '../../apis/category'
-import { apiAllInventory } from '../../apis/inventory'
-import ProductInfo from './components/productInfo'
+} from 'apis/product'
+import axios from 'axios'
 
 const { RangePicker } = DatePicker
 const { Dragger } = Upload
-
-const content = (data) => {
-  var result = (
-    <div
-      className={styles['shadow']}
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        textAlign: 'center',
-      }}
-    >{`Số lượng bình thường: ${data}`}</div>
-  )
-  return result
-}
-const contentAttention = (data) => {
-  var result = (
-    <div
-      className={styles['shadow']}
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        textAlign: 'center',
-        color: 'red',
-      }}
-    >{`Số lượng báo động: ${data}`}</div>
-  )
-  return result
-}
-
-
-
 export default function Product() {
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
@@ -98,10 +64,11 @@ export default function Product() {
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [page, setPage] = useState(1)
   const [page_size, setPageSize] = useState(20)
-  const [paramsFilter, setParamsFilter] = useState({})
+  const [paramsFilter, setParamsFilter] = useState({
+    merge: false,
+  })
   const [supplier, setSupplier] = useState([])
-  const [product, setProduct] = useState([])
-  const [visible, setVisible] = useState(false)
+  const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
   const [modal6Visible, setModal6Visible] = useState(false)
   const [visibleDrawer, setVisibleDrawer] = useState(false)
@@ -299,10 +266,6 @@ export default function Product() {
     setModal50Visible(modal50Visible)
   }
 
-  const showDrawer = () => {
-    setVisible(true)
-    setIndexCheckbox([])
-  }
   const apiAllSupplierData = async () => {
     try {
       setLoading(true)
@@ -359,10 +322,9 @@ export default function Product() {
                 dispatch({ type: ACTION.LOADING, data: false })
                 setList(resultsMockup[0].data.data)
 
-                product.forEach((values, index) => {
+                products.forEach((values, index) => {
                   if (values._id === indexUpdate) {
-                    product[index].image = resultsMockup[0].data.data
-                    console.log(product[index])
+                    products[index].image = resultsMockup[0].data.data
                   }
                 })
               }
@@ -557,9 +519,9 @@ export default function Product() {
                 dispatch({ type: ACTION.LOADING, data: false })
                 setList(resultsMockup[0].data.data)
 
-                product.forEach((values, index) => {
+                products.forEach((values, index) => {
                   if (values._id === indexUpdate) {
-                    product[index].variants[index20].image =
+                    products[index].variants[index20].image =
                       resultsMockup[0].data.data
                   }
                 })
@@ -710,9 +672,6 @@ export default function Product() {
       </Row>
     )
   }
-  const onClose = () => {
-    setVisible(false)
-  }
 
   const [selectedRowKeysCategory, setSelectedRowKeysCategory] = useState([])
   const [arrayUpdateCategory, setArrayUpdateCategory] = useState([])
@@ -721,7 +680,7 @@ export default function Product() {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
 
-    product.forEach((values, index) => {
+    products.forEach((values, index) => {
       selectedRowKeys.forEach((values1, index1) => {
         if (values._id === values1) {
           array.push(values)
@@ -855,15 +814,15 @@ export default function Product() {
   const getAllProduct = async (params) => {
     setLoading(true)
     setSelectedRowKeys([])
+    setProducts([])
 
     try {
       let res
-      console.log(params)
       if (viewMode === 1) res = await apiProductSeller(params)
       else res = await apiAllProduct(params)
       console.log(res)
       if (res.status === 200) {
-        setProduct(res.data.data)
+        setProducts([...res.data.data])
         setCount(res.data.count)
       }
 
@@ -889,6 +848,7 @@ export default function Product() {
   }
 
   useEffect(() => {
+    setPage(1)
     getAllProduct({ page: 1, page_size, ...paramsFilter })
   }, [viewMode])
 
@@ -988,14 +948,14 @@ export default function Product() {
 
         var objectFinish = {}
 
-        product.forEach((values, index) => {
+        products.forEach((values, index) => {
           if (values._id === record._id) {
             var array = []
-            array = [...product[index].variants[index3].image]
+            array = [...products[index].variants[index3].image]
 
             var result = array.concat(resultsMockup[0].data.data)
             var objectResult = {
-              ...product[index].variants[index3],
+              ...products[index].variants[index3],
               image: result.reverse(),
             }
             var arrayFinish = [...values.variants]
@@ -1036,7 +996,7 @@ export default function Product() {
 
         setLoading(false)
 
-        product.forEach((values, index) => {
+        products.forEach((values, index) => {
           if (values._id === record._id) {
             var listImage = [...values.image]
             //   listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
@@ -1122,7 +1082,7 @@ export default function Product() {
     setStatusName('')
     setAllSelect()
     setSelectedRowKeys([])
-    setParamsFilter({})
+    setParamsFilter({ merge: paramsFilter.merge })
   }
   const [arrayCheck, setArrayCheck] = useState([])
   const onChangeCheckboxImage = (
@@ -2739,7 +2699,6 @@ export default function Product() {
           setSelectedRowKeys([])
           setModal50Visible(false)
           openNotificationSuccessUpdateProduct(object.name)
-          onClose()
           setCheckboxValue(false)
         } else {
           openNotificationSuccessUpdateProductError()
@@ -2750,7 +2709,6 @@ export default function Product() {
         if (res.status === 200) {
           setSelectedRowKeys([])
           openNotificationSuccessUpdateProduct(object.name)
-          onClose()
           setModal50Visible(false)
           setCheckboxValue(false)
         } else {
@@ -3520,11 +3478,16 @@ export default function Product() {
           >
             <Radio.Group
               onChange={(e) => {
-                console.log(e.target.value)
+                setPage(1)
+                const checked = e.target.value
+                paramsFilter.merge = checked
+                setParamsFilter({ ...paramsFilter })
+                getAllProduct({ page: 1, page_size, ...paramsFilter })
               }}
+              value={paramsFilter.merge}
             >
-              <Radio value={1}>Hiện thị đơn</Radio>
-              <Radio value={2}>Hiện thị gộp</Radio>
+              <Radio value={false}>Hiện thị đơn</Radio>
+              <Radio value={true}>Hiện thị gộp</Radio>
             </Radio.Group>
             <Button
               onClick={onClickClear}
@@ -3536,14 +3499,6 @@ export default function Product() {
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginBottom: 10 }}>
-              <Button
-                onClick={showDrawer}
-                value={1}
-                type="primary"
-                style={{ marginRight: '1rem' }}
-              >
-                Cập nhật
-              </Button>
               <Button
                 onClick={() => {
                   history.push({
@@ -3692,7 +3647,7 @@ export default function Product() {
               rowKey="_id"
               columns={columns}
               loading={loading}
-              dataSource={product}
+              dataSource={products}
               scroll={{ x: 'max-content' }}
               size="small"
               pagination={{
@@ -3713,1256 +3668,6 @@ export default function Product() {
           </div>
         </div>
       </div>
-
-      <Drawer
-        style={{ zIndex: '999' }}
-        title="Cập nhật số lượng sản phẩm"
-        width="90%"
-        onClose={onClose}
-        visible={visible}
-        bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={() => onCloseUpdateFunc(1)} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
-      >
-        {arrayUpdate.map((values, index) => {
-          const obj = Object.keys(values)
-          return values && values.attributes && values.attributes.length > 0 ? (
-            <Row
-              style={{
-                display: 'flex',
-                marginTop: '1rem',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Col
-                style={{
-                  width: '100%',
-                  color: 'black',
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  marginBottom: '1rem',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={24}
-              >
-                Sản phẩm Variant
-              </Col>
-              {obj.map((data) => {
-                if (data === 'suppliers') {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].supplier_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn nhà cung cấp"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {supplier &&
-                        supplier.length > 0 &&
-                        supplier.map((values, index) => {
-                          return (
-                            <Option value={values.supplier_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Nhà cung cấp
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'category') {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].category_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn loại sản phẩm"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {category &&
-                        category.length > 0 &&
-                        category.map((values, index) => {
-                          return (
-                            <Option value={values.category_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Loại sản phẩm
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'warehouse' && viewMode === 0) {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].warehouse_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn kho"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        // const value =
-                        //   event.target.value;
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {warehouseList &&
-                        warehouseList.length > 0 &&
-                        warehouseList.map((values, index) => {
-                          return (
-                            <Option value={values.warehouse_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Nhà Kho
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-              })}
-
-              <Col style={{ width: '100%' }}>
-                <Row
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      margin: '0.75rem 0 0.25rem 0',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    <Checkbox
-                      checked={checkboxValue}
-                      onChange={onChangeCheckbox}
-                    >
-                      Thông số sản phẩm (không bắt buộc)
-                    </Checkbox>
-                  </div>
-                  {checkboxValue
-                    ? obj.map((data) => {
-                        if (data === 'length') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].length = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều dài (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'width') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].width = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều rộng (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'height') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].height = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều cao (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'weight') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].weight = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Cân nặng (kg)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                      })
-                    : ''}
-                </Row>
-              </Col>
-
-              <div style={{ width: '100%' }}>
-                <div
-                  style={{
-                    color: 'black',
-                    padding: '1rem 1rem 1.5rem 0',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                  }}
-                >
-                  Phiên bản:
-                </div>
-                <Row
-                  style={{
-                    display: 'flex',
-                    backgroundColor: '#FAFAFA',
-                    padding: '0 1rem 1rem 1rem',
-                    border: '1px solid rgb(230, 219, 219)',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      fontWeight: '600',
-                      color: 'black',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={4}
-                  >
-                    Variants
-                  </Col>
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      fontWeight: '600',
-                      color: 'black',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={4}
-                  >
-                    Hình ảnh
-                  </Col>
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      fontWeight: '600',
-                      color: 'black',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={4}
-                  >
-                    Giá cơ bản
-                  </Col>
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      fontWeight: '600',
-                      color: 'black',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={4}
-                  >
-                    Giá bán
-                  </Col>
-
-                  <Col
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      fontWeight: '600',
-                      color: 'black',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={4}
-                  >
-                    Số lượng
-                  </Col>
-                </Row>
-                {values.variants &&
-                  values.variants.length > 0 &&
-                  values.variants.map((values1, index1) => {
-                    const obj1 = Object.keys(values1)
-                    return (
-                      <Row
-                        style={{
-                          display: 'flex',
-                          borderBottom: '1px solid rgb(230, 219, 219)',
-                          borderLeft: '1px solid rgb(230, 219, 219)',
-                          borderRight: '1px solid rgb(230, 219, 219)',
-                          padding: '0 1rem 1rem 1rem',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        {obj1.map((data1) => {
-                          if (data1 === 'title') {
-                            const InputName = () => (
-                              <Input
-                                disabled
-                                defaultValue={values1[data1]}
-                                onChange={(event) => {
-                                  const value = event.target.value
-                                  arrayUpdate[index].variants[index1].title =
-                                    value
-                                }}
-                              />
-                            )
-                            return (
-                              <Col
-                                style={{
-                                  width: '100%',
-                                  marginTop: '1rem',
-                                  fontWeight: '600',
-                                  color: 'black',
-                                }}
-                                xs={24}
-                                sm={24}
-                                md={11}
-                                lg={11}
-                                xl={4}
-                              >
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data1 === 'available_stock_quantity') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={(value) =>
-                                  `${value}`.replace(
-                                    /\B(?=(\d{3})+(?!\d))/g,
-                                    ','
-                                  )
-                                }
-                                parser={(value) =>
-                                  value.replace(/\$\s?|(,*)/g, '')
-                                }
-                                defaultValue={
-                                  arrayUpdate[index].variants[index1]
-                                    .quantity !== null &&
-                                  arrayUpdate[index].variants[index1].quantity >
-                                    0
-                                    ? arrayUpdate[index].variants[index1]
-                                        .quantity
-                                    : arrayUpdate[index].variants[index1]
-                                        .available_stock_quantity > 0
-                                    ? arrayUpdate[index].variants[index1]
-                                        .available_stock_quantity
-                                    : arrayUpdate[index].variants[index1]
-                                        .low_stock_quantity
-                                }
-                                onChange={(event) => {
-                                  arrayUpdate[index].variants[index1].quantity =
-                                    parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col
-                                style={{
-                                  width: '100%',
-                                  marginTop: '1rem',
-                                  fontWeight: '600',
-                                  color: 'black',
-                                }}
-                                xs={24}
-                                sm={24}
-                                md={11}
-                                lg={11}
-                                xl={4}
-                              >
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data1 === 'base_price') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={(value) =>
-                                  `${value}`.replace(
-                                    /\B(?=(\d{3})+(?!\d))/g,
-                                    ','
-                                  )
-                                }
-                                parser={(value) =>
-                                  value.replace(/\$\s?|(,*)/g, '')
-                                }
-                                defaultValue={values1[data1]}
-                                onChange={(event) => {
-                                  arrayUpdate[index].variants[
-                                    index1
-                                  ].base_price = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col
-                                style={{
-                                  width: '100%',
-                                  marginTop: '1rem',
-                                  fontWeight: '600',
-                                  color: 'black',
-                                }}
-                                xs={24}
-                                sm={24}
-                                md={11}
-                                lg={11}
-                                xl={4}
-                              >
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data1 === 'sale_price') {
-                            const InputName = () => (
-                              <InputNumber
-                                style={{ width: '100%' }}
-                                formatter={(value) =>
-                                  `${value}`.replace(
-                                    /\B(?=(\d{3})+(?!\d))/g,
-                                    ','
-                                  )
-                                }
-                                parser={(value) =>
-                                  value.replace(/\$\s?|(,*)/g, '')
-                                }
-                                defaultValue={values1[data1]}
-                                onChange={(event) => {
-                                  arrayUpdate[index].variants[
-                                    index1
-                                  ].sale_price = parseInt(event)
-                                }}
-                              />
-                            )
-                            return (
-                              <Col
-                                style={{
-                                  width: '100%',
-                                  marginTop: '1rem',
-                                  fontWeight: '600',
-                                  color: 'black',
-                                }}
-                                xs={24}
-                                sm={24}
-                                md={11}
-                                lg={11}
-                                xl={4}
-                              >
-                                <InputName />
-                              </Col>
-                            )
-                          }
-                          if (data1 === 'image') {
-                            const InputName = () => (
-                              <UploadImgChild
-                                imageUrl={values1[data1]}
-                                indexUpdate={values._id}
-                                index20={index1}
-                              />
-                            )
-
-                            return (
-                              <Col
-                                style={{ width: '100%', marginTop: '1rem' }}
-                                xs={24}
-                                sm={24}
-                                md={11}
-                                lg={11}
-                                xl={4}
-                              >
-                                <div>
-                                  <InputName />
-                                </div>
-                              </Col>
-                            )
-                          }
-                        })}
-                      </Row>
-                    )
-                  })}
-              </div>
-            </Row>
-          ) : (
-            <Row
-              style={{
-                display: 'flex',
-                marginTop: '1rem',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Col
-                style={{
-                  width: '100%',
-                  color: 'black',
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  marginBottom: '1rem',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={24}
-              >
-                Sản phẩm Simple
-              </Col>
-              {obj.map((data) => {
-                if (data === 'suppliers') {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].supplier_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn nhà cung cấp"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {supplier &&
-                        supplier.length > 0 &&
-                        supplier.map((values, index) => {
-                          return (
-                            <Option value={values.supplier_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Nhà cung cấp
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'category') {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].category_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn loại sản phẩm"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {category &&
-                        category.length > 0 &&
-                        category.map((values, index) => {
-                          return (
-                            <Option value={values.category_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Loại sản phẩm
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-
-                if (data === 'warehouse') {
-                  const InputName = () => (
-                    <Select
-                      defaultValue={values[data].warehouse_id}
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn kho"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = event
-                      }}
-                    >
-                      {warehouseList &&
-                        warehouseList.length > 0 &&
-                        warehouseList.map((values, index) => {
-                          return (
-                            <Option value={values.warehouse_id}>
-                              {values.name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  )
-
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          marginBottom: '0.5rem',
-                        }}
-                      >
-                        <b style={{ color: 'red', marginRight: '0.25rem' }}>
-                          *
-                        </b>
-                        Nhà Kho
-                      </div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'available_stock_quantity') {
-                  const InputName = () => (
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      defaultValue={arrayUpdate[index].available_stock_quantity}
-                      onChange={(event) => {
-                        arrayUpdate[index].quantity = parseInt(event)
-                      }}
-                    />
-                  )
-                  return (
-                    <Col
-                      style={{
-                        width: '100%',
-                        marginTop: '1rem',
-                        fontWeight: '600',
-                        color: 'black',
-                      }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div style={{ marginBottom: '0.5rem' }}>Số lượng</div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'base_price') {
-                  const InputName = () => (
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      defaultValue={values[data]}
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = parseInt(event)
-                      }}
-                    />
-                  )
-                  return (
-                    <Col
-                      style={{
-                        width: '100%',
-                        marginTop: '1rem',
-                        fontWeight: '600',
-                        color: 'black',
-                      }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div style={{ marginBottom: '0.5rem' }}>Giá cơ bản</div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'sale_price') {
-                  const InputName = () => (
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      defaultValue={values[data]}
-                      onChange={(event) => {
-                        arrayUpdate[index][data] = parseInt(event)
-                      }}
-                    />
-                  )
-                  return (
-                    <Col
-                      style={{
-                        width: '100%',
-                        marginTop: '1rem',
-                        fontWeight: '600',
-                        color: 'black',
-                      }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div style={{ marginBottom: '0.5rem' }}>Giá bán</div>
-                      <InputName />
-                    </Col>
-                  )
-                }
-                if (data === 'image') {
-                  const InputName = () => (
-                    <UploadImg
-                      imageUrl={values[data]}
-                      indexUpdate={values._id}
-                    />
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginTop: '0.5rem' }}
-                      xs={24}
-                      sm={24}
-                      md={11}
-                      lg={11}
-                      xl={11}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            color: 'black',
-                            marginBottom: '0.5rem',
-                            fontWeight: '600',
-                          }}
-                        >
-                          <b style={{ color: 'red' }}>*</b>Ảnh sản phẩm
-                        </div>
-                        <InputName />
-                      </div>
-                    </Col>
-                  )
-                }
-              })}
-
-              <Col style={{ width: '100%' }}>
-                <Row
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      margin: '1.5rem 0 0.25rem 0',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    <Checkbox
-                      checked={checkboxValue}
-                      onChange={onChangeCheckbox}
-                    >
-                      Thông số sản phẩm (không bắt buộc)
-                    </Checkbox>
-                  </div>
-                  {checkboxValue
-                    ? obj.map((data) => {
-                        if (data === 'length') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].length = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều dài (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'width') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].width = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều rộng (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'height') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].height = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Chiều cao (cm)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                        if (data === 'weight') {
-                          const InputName = () => (
-                            <InputNumber
-                              style={{ width: '100%' }}
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) =>
-                                value.replace(/\$\s?|(,*)/g, '')
-                              }
-                              defaultValue={values[data]}
-                              onChange={(event) => {
-                                arrayUpdate[index].weight = parseInt(event)
-                              }}
-                            />
-                          )
-                          return (
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                }}
-                              >
-                                Cân nặng (kg)
-                              </div>
-
-                              <InputName />
-                            </Col>
-                          )
-                        }
-                      })
-                    : ''}
-                </Row>
-              </Col>
-            </Row>
-          )
-        })}
-      </Drawer>
-
       <Modal
         title="Tạo nhóm sản phẩm"
         centered
