@@ -1,6 +1,6 @@
 import styles from './../branch-add/branch-add.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION } from 'consts/index'
+import { ACTION, ROUTES } from 'consts/index'
 import { useDispatch } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
 import {
@@ -22,7 +22,6 @@ import { getAllStore } from 'apis/store'
 import { apiProvince } from 'apis/information'
 import { addBranch, apiFilterCity } from 'apis/branch'
 
-let checkUserNewCreateBranch = false //check user moi da tao branch ?
 const { Option } = Select
 export default function BranchAdd() {
   const dispatch = useDispatch()
@@ -73,7 +72,7 @@ export default function BranchAdd() {
         modal2VisibleModal(false)
         form.resetFields()
 
-        if (location.state && !location.state.isHaveBranch) history.goBack()
+        if (location.state && !location.state.isHaveBranch) history.push(ROUTES.OVERVIEW)
       } else {
         if (res.data.message === 'Branch name was exists!') {
           openNotificationError()
@@ -193,7 +192,7 @@ export default function BranchAdd() {
         onCancel={() => {
           if (location.state && !location.state.isHaveBranch) {
             dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
-            history.goBack()
+            history.push(ROUTES.OVERVIEW)
           }
 
           modal2VisibleModal(false)

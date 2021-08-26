@@ -457,7 +457,7 @@ const Overview = () => {
         )}
 
         <div className={styles['dashboard_manager_bottom']}>
-          <Row wrap={false} justify="space-between" style={{ width: '100%' }}>
+          <Row justify="space-between" style={{ width: '100%' }}>
             {loadingSkeleton ? (
               <Skeleton active paragraph={{ rows: 9 }} />
             ) : (
@@ -544,7 +544,7 @@ const Overview = () => {
                                 width="50px"
                               />
                             </Col>
-                            <Col span={13}>
+                            <Col span={12}>
                               <Row>
                                 {(e[0].name || e[0].title) &&
                                   (e[0].name || e[0].title)}
@@ -553,8 +553,10 @@ const Overview = () => {
                                 Đã bán {e[1].quantity} sản phẩm
                               </Row>
                             </Col>
-                            <Col span={6} style={{ fontSize: 15 }}>
-                              {formatCash(e[1].cost)} &#8363;
+                            <Col span={7} style={{ fontSize: 15 }}>
+                              <div style={{ width: 'max-content' }}>
+                                {formatCash(e[1].cost)} &#8363;
+                              </div>
                             </Col>
                           </Row>
                         )

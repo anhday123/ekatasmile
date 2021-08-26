@@ -94,6 +94,7 @@ const UI = (props) => {
   const [count, setCount] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
   const [loadingStore, setLoadingStore] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   var toggle = (data) => {
     if (count === 0) {
@@ -120,6 +121,7 @@ const UI = (props) => {
     try {
       setLoadingStore(true)
       const res = await getAllStore()
+      console.log('store', res)
       if (res.status === 200) setListStore(res.data.data)
       setLoadingStore(false)
     } catch (error) {
@@ -508,8 +510,6 @@ const UI = (props) => {
     }
   }, [])
   const onFinish = async (values) => {
-    console.log('Success:', values)
-    console.log(role)
     if (list !== 'default') {
       if (user.avatar !== 'default') {
         updateUserData(
@@ -638,6 +638,14 @@ const UI = (props) => {
       ) {
       }
     }
+  }, [])
+
+  //get width device
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true)
+      setCollapsed(true)
+    } else setIsMobile(false)
   }, [])
 
   return (
@@ -880,7 +888,8 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={275}
+        width={isMobile ? '100%' : 275}
+        collapsedWidth={isMobile ? 0 : 80}
         style={{ backgroundColor: '#FFFFFF', height: '100%' }}
         collapsed={collapsed}
         onCollapse={onCollapse}
@@ -938,18 +947,13 @@ const UI = (props) => {
       <Layout className={styles['site-layout']}>
         <Row className={styles['background_right_top']}>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div
-              style={{ backgroundColor: '#5B6BE8', width: '100%' }}
-              className={styles['navbar']}
-            >
+            <div className={styles['navbar']}>
               <div className={styles['navbar_left']}>
                 <div className={styles['navbar_left_parent']}>
-                  <div>
-                    <MenuOutlined
-                      onClick={toggle}
-                      className={styles['header_navbar_left_icon']}
-                    />
-                  </div>
+                  <MenuOutlined
+                    onClick={toggle}
+                    className={styles['header_navbar_left_icon']}
+                  />
                 </div>
                 <Link
                   to={ROUTES.STORE}
@@ -970,12 +974,14 @@ const UI = (props) => {
                   <Select
                     notFoundContent={loadingStore ? <Spin /> : null}
                     value={listStore.length ? listStore[0].store_id : ''}
-                    style={{ width: 300 }}
+                    style={{ width: '100%' }}
                     onChange={handleChange}
                   >
                     {listStore.map((values, index) => {
                       return (
-                        <Option value={values.store_id}>{values.name}</Option>
+                        <Option value={values.store_id} key={index}>
+                          {values.name}
+                        </Option>
                       )
                     })}
                   </Select>
@@ -1024,14 +1030,7 @@ const UI = (props) => {
           </Col>
         </Row>
         <Row>
-          <Col
-            className={styles['background_right']}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={24}
-            xl={24}
-          >
+          <Col style={{ backgroundColor: '#f0f2f5', width: '100%' }}>
             {props.children}
           </Col>
         </Row>

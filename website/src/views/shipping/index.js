@@ -4,7 +4,7 @@ import {
   Link,
 
 } from "react-router-dom";
-import { ACTION } from './../../consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import moment from 'moment';
 import axios from 'axios';
 import { useDispatch } from 'react-redux'
@@ -664,7 +664,7 @@ export default function Shipping() {
           <div className={styles["shipping_manager_title"]}>
             <div>Quản lý đối tác vận chuyển</div>
           </div>
-          <Link to="/actions/shipping/add/18"><Button icon={<PlusCircleOutlined />} type="primary">Thêm đối tác</Button></Link>
+          <Link to={ROUTES.SHIPPING_ADD}><Button icon={<PlusCircleOutlined />} type="primary">Thêm đối tác</Button></Link>
         </div>
         <Row className={styles["shipping_manager_search"]}>
           <Col
