@@ -38,6 +38,14 @@ var login = (state = initialState, action) => {
       }
     }
 
+    case 'UPDATE_DATA_USER': {
+      const newDataUser = { ...action.data }
+      return {
+        ...state,
+        dataUser: newDataUser,
+      }
+    }
+
     case 'SAVE_BRANCH_NAME': {
       return {
         ...state,

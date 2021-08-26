@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './../store-information-update/store-information-update.module.scss'
 
-//components
-import ModalWelcome from 'components/welcome'
-
 import {
   Input,
   Button,
@@ -16,23 +13,28 @@ import {
   Upload,
 } from 'antd'
 
-import { useLocation } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
 import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import { ACTION } from 'consts/index'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 //apis
 import { apiProvince } from 'apis/information'
 import { apiFilterCity } from 'apis/branch'
 import { addStore, getAllStore } from 'apis/store'
 import { uploadImgs } from 'apis/upload'
+import { updateUser } from 'apis/user'
 
 const { Option } = Select
 const { Dragger } = Upload
-export default function StoreInformationAdd() {
+export default function StoreInformationAdd({ reloadData }) {
   const location = useLocation()
+  const history = useHistory()
   const dispatch = useDispatch()
   const [form] = Form.useForm()
+  const dataUser = useSelector((state) => state.login.dataUser)
+  console.log('data user', dataUser)
+
   const [modal3Visible, setModal3Visible] = useState(false)
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
@@ -75,10 +77,11 @@ export default function StoreInformationAdd() {
   const addStoreData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      console.log(object)
       const res = await addStore(object)
       console.log(res)
       if (res.status === 200) {
+        await reloadData() //reload data khi tao store thanh cong
+
         openNotificationSuccessStore()
         modal3VisibleModal(false)
 
@@ -87,8 +90,19 @@ export default function StoreInformationAdd() {
         form.resetFields()
 
         //nếu lần đầu tạo store thì show modal welcome
-        if (!listStore.length)
+        if (location.state && !location.state.isHaveStore) {
+          await updateUser(
+            { is_new: false, user_id: dataUser.data.user_id },
+            dataUser.data.user_id
+          )
           dispatch({ type: 'SHOW_MODAL_WELCOME', data: true })
+          dataUser.data.is_new = false
+          dispatch({
+            type: 'UPDATE_DATA_USER',
+            data: { ...dataUser },
+          })
+          history.goBack()
+        }
       } else {
         openNotificationForgetImageError()
       }
@@ -179,16 +193,6 @@ export default function StoreInformationAdd() {
     }
   }
 
-  const _getAllStore = async () => {
-    try {
-      const res = await getAllStore()
-      console.log('list store', res)
-      if (res.status === 200) setListStore(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const [districtMain, setDistrictMain] = useState([])
   const apiFilterCityData = async (object) => {
     try {
@@ -217,8 +221,9 @@ export default function StoreInformationAdd() {
   }, [modal3Visible])
 
   useEffect(() => {
-    _getAllStore()
     apiProvinceData()
+
+    //lần đầu tiên vào app thì show modal để tạo cửa h
     if (location.state && !location.state.isHaveStore) modal3VisibleModal(true)
   }, [])
 
@@ -245,8 +250,9 @@ export default function StoreInformationAdd() {
         closable={location.state && location.state.isHaveStore}
         onCancel={() => {
           //trường hợp chưa tạo cửa hàng thì ko cho tắt modal
-          if (location.state && location.state.isHaveStore)
-            modal3VisibleModal(false)
+          if (location.state && !location.state.isHaveStore) return
+
+          modal3VisibleModal(false)
         }}
       >
         <Form

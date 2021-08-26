@@ -2,7 +2,7 @@ import styles from './../branch-add/branch-add.module.scss'
 import React, { useState, useEffect } from 'react'
 import { ACTION } from 'consts/index'
 import { useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
 import {
   Input,
   Button,
@@ -22,9 +22,11 @@ import { getAllStore } from 'apis/store'
 import { apiProvince } from 'apis/information'
 import { addBranch, apiFilterCity } from 'apis/branch'
 
+let checkUserNewCreateBranch = false //check user moi da tao branch ?
 const { Option } = Select
 export default function BranchAdd() {
   const dispatch = useDispatch()
+  const history = useHistory()
   const location = useLocation()
   const [form] = Form.useForm()
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -71,8 +73,7 @@ export default function BranchAdd() {
         modal2VisibleModal(false)
         form.resetFields()
 
-        if (location.state && !location.state.isHaveBranch)
-          dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
+        if (location.state && !location.state.isHaveBranch) history.goBack()
       } else {
         if (res.data.message === 'Branch name was exists!') {
           openNotificationError()
@@ -190,6 +191,11 @@ export default function BranchAdd() {
         footer={null}
         visible={modal2Visible}
         onCancel={() => {
+          if (location.state && !location.state.isHaveBranch) {
+            dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
+            history.goBack()
+          }
+
           modal2VisibleModal(false)
         }}
       >
