@@ -10,6 +10,7 @@ import moment from 'moment';
 import { getPromoton, updatePromotion } from "../../apis/promotion";
 import { getAllBranch } from "../../apis/branch";
 import { useDispatch } from "react-redux";
+import { ROUTES } from "consts";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const columns = [
@@ -243,7 +244,7 @@ export default function Promotion() {
         <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Khuyến mãi</div>
           <div className={styles["promotion_manager_button"]}>
-            <Link to="/actions/promotion/add/20">
+            <Link to={ROUTES.PROMOTION_ADD}>
               <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Tạo khuyến mãi</Button>
             </Link>
           </div>

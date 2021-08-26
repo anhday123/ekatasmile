@@ -4066,58 +4066,56 @@ export default function Product() {
           </div>
         }
       >
-        {arrayUpdateCategory &&
-          arrayUpdateCategory.length > 0 &&
-          arrayUpdateCategory.map((values, index) => {
-            const obj = Object.keys(values)
-            return (
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                }}
-              >
-                {obj.map((data) => {
-                  if (data === 'name') {
-                    const InputName = () => (
-                      <Input
-                        style={{ width: '100%' }}
-                        placeholder="Nhập tên nhóm"
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          arrayUpdateCategory[index].name = event.target.value
-                        }}
-                      />
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%', marginTop: '1rem' }}
-                        xs={24}
-                        sm={24}
-                        md={24}
-                        lg={24}
-                        xl={24}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                            }}
-                          >
-                            <b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm:
-                          </div>
-                          <InputName />
+        {arrayUpdateCategory.map((values, index) => {
+          const obj = Object.keys(values)
+          return (
+            <Row
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              {obj.map((data) => {
+                if (data === 'name') {
+                  const InputName = () => (
+                    <Input
+                      style={{ width: '100%' }}
+                      placeholder="Nhập tên nhóm"
+                      defaultValue={values[data]}
+                      onChange={(event) => {
+                        arrayUpdateCategory[index].name = event.target.value
+                      }}
+                    />
+                  )
+                  return (
+                    <Col
+                      style={{ width: '100%', marginTop: '1rem' }}
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={24}
+                      xl={24}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            color: 'black',
+                            fontWeight: '600',
+                            marginBottom: '0.5rem',
+                          }}
+                        >
+                          <b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm:
                         </div>
-                      </Col>
-                    )
-                  }
-                })}
-              </Row>
-            )
-          })}
+                        <InputName />
+                      </div>
+                    </Col>
+                  )
+                }
+              })}
+            </Row>
+          )
+        })}
       </Drawer>
     </>
   )

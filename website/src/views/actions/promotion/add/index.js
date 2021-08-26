@@ -26,6 +26,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./../add/add.module.scss";
 import { getAllBranch } from "../../../../apis/branch";
 import { addPromotion } from "../../../../apis/promotion";
+import { ROUTES } from "consts";
 
 const { Option } = Select;
 const provinceData = ["Zhejiang", "Jiangsu"];
@@ -160,7 +161,7 @@ export default function PromotionAdd() {
   return (
     <>
       <div className={styles["promotion_add"]}>
-        <Link className={styles["promotion_add_title"]} to="/promotion/20">
+        <Link className={styles["promotion_add_title"]} to={ROUTES.PROMOTION}>
 
           <div>
             <ArrowLeftOutlined />

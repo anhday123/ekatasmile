@@ -3254,7 +3254,7 @@ export default function Sell() {
                         placeholder="Chọn chi nhánh"
                         optionFilterProp="children"
                         showSearch
-
+                        
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         } value={branchId} onChange={handleChange}>
