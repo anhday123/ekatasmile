@@ -29,6 +29,7 @@ import {
 } from '../../apis/inventory'
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
+import InventoryAdd from 'views/actions/inventory/add'
 const { Option } = Select
 const columns = [
   {
@@ -153,8 +154,6 @@ export default function Inventory() {
     }, 300)
   }
   function formatCash(str) {
-    console.log(str)
-    console.log('|||000')
     if (isNaN(str) || str.length === 0) {
       return 0
     } else {
@@ -254,12 +253,6 @@ export default function Inventory() {
   useEffect(() => {
     apiAllInventoryData()
   }, [])
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  )
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [clear, setClear] = useState(-1)
@@ -543,14 +536,13 @@ export default function Inventory() {
         >
           <div className={styles['promotion_manager_title']}>Quản lý kho</div>
           <div className={styles['promotion_manager_button']}>
-            <Link to={ROUTES.INVENTORY_ADD}>
-              <Button
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Thêm kho
-              </Button>
-            </Link>
+            <Button
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={showDrawerUpdate}
+            >
+              Thêm kho
+            </Button>
           </div>
         </div>
         <Row
@@ -733,7 +725,7 @@ export default function Inventory() {
           </Button>
         </div>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
-          <Radio.Group
+          <div
             style={{
               display: 'flex',
               marginTop: '1rem',
@@ -741,13 +733,10 @@ export default function Inventory() {
               width: '100%',
             }}
           >
-            <Radio onClick={showDrawerUpdate} value={1}>
-              Cập nhật hàng loạt
-            </Radio>
-            <Radio onClick={showDrawer} value={2}>
-              Cập nhật riêng lẻ
-            </Radio>
-          </Radio.Group>
+            <Button type="primary" onClick={showDrawer}>
+              Cập nhật thông tin kho
+            </Button>
+          </div>
         ) : (
           ''
         )}
@@ -769,58 +758,6 @@ export default function Inventory() {
           />
         </div>
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                placeholder="Tìm kiếm khách hàng"
-                onSearch={onSearchCustomerChoose}
-                enterButton
-              />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
-            }}
-          >
-            {' '}
-            <Table
-              scroll={{ y: 500 }}
-              rowSelection={rowSelection}
-              columns={columns}
-            />
-          </div>
-        </div>
-      </Modal>
 
       <Drawer
         title="Cập nhật thông tin kho"
@@ -1173,361 +1110,13 @@ export default function Inventory() {
       </Drawer>
 
       <Drawer
-        title="Cập nhật thông tin kho"
+        title="Thêm kho"
         width={1000}
         onClose={onCloseUpdate}
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={() => onCloseUpdateFunc(2)} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
       >
-        {arrayUpdate &&
-          arrayUpdate.length > 0 &&
-          arrayUpdate.map((values, index) => {
-            const obj = Object.keys(values)
-            if (index === 0) {
-              return (
-                <Form
-                  style={{
-                    borderBottom: '1px solid rgb(238, 224, 224)',
-                    paddingBottom: '1.5rem',
-                  }}
-                  className={styles['supplier_add_content']}
-                  layout="vertical"
-                  initialValues={values}
-                >
-                  <Row
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    {obj.map((data) => {
-                      if (data === 'phone') {
-                        const InputName = () => (
-                          <Input
-                            disabled
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Liên hệ
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'name') {
-                        const InputName = () => (
-                          <Input
-                            disabled
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Tên kho
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'address') {
-                        const InputName = () => (
-                          <Input
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Địa chỉ
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'type') {
-                        const InputName = () => (
-                          <Select
-                            style={{ width: '100%' }}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                            }}
-                          >
-                            <Option value="chung">Chung</Option>
-                            <Option value="riêng">Riêng</Option>
-                            <Option value="dịch vụ">Dịch vụ</Option>
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Loại kho
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'province') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                              handleChangeCity(event)
-                            }}
-                          >
-                            {province &&
-                              province.length > 0 &&
-                              province.map((values, index) => {
-                                return (
-                                  <Option value={values.province_name}>
-                                    {values.province_name}
-                                  </Option>
-                                )
-                              })}
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Tỉnh/thành phố
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'district') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                            }}
-                          >
-                            {districtMainAPI && districtMainAPI.length > 0
-                              ? districtMainAPI &&
-                                districtMainAPI.length > 0 &&
-                                districtMainAPI.map((values, index) => {
-                                  return (
-                                    <Option value={values.district_name}>
-                                      {values.district_name}
-                                    </Option>
-                                  )
-                                })
-                              : district &&
-                                district.length > 0 &&
-                                district.map((values, index) => {
-                                  return (
-                                    <Option value={values.district_name}>
-                                      {values.district_name}
-                                    </Option>
-                                  )
-                                })}
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Quận/huyện
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'monthly_cost') {
-                        const InputName = () => (
-                          <InputNumber
-                            style={{ width: '100%' }}
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = isNaN(event)
-                                ? 0
-                                : event === 0
-                                ? 0
-                                : event
-                            }}
-                            formatter={(value) =>
-                              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                            }
-                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                            // onChange={onChange}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Phí duy trì tháng
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                    })}
-                  </Row>
-                </Form>
-              )
-            }
-          })}
+        <InventoryAdd close={onCloseUpdate} />
       </Drawer>
     </>
   )

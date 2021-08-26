@@ -28,7 +28,7 @@ import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
 const { Option } = Select
 const { Search } = Input
-export default function ShippingProduct() {
+export default function ShippingProduct(props) {
   const [modal3Visible, setModal3Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
@@ -100,7 +100,7 @@ export default function ShippingProduct() {
             message: 'Thành công',
             description: 'Thêm phiếu chuyển hàng thành công',
           })
-          history.push('/shipping-product/9')
+          props.close()
         }
         dispatch({ type: 'LOADING', data: false })
       } catch (e) {

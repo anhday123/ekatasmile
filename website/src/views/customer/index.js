@@ -1,26 +1,39 @@
-import styles from "./../customer/customer.module.scss";
-import React, { useEffect, useState } from "react";
-import { Switch, Input, Button, Row, Col, DatePicker, Select, Table, notification, Radio } from "antd";
+import styles from './../customer/customer.module.scss'
+import React, { useEffect, useState } from 'react'
 import {
-  Link,
-} from "react-router-dom";
-import { PlusCircleOutlined, EditOutlined } from "@ant-design/icons";
-import moment from 'moment';
-import { getCustomer, updateCustomer } from "../../apis/customer";
-import CustomerInfo from "./components/customerInfo";
-import CustomerUpdate from "../actions/customer/update";
-import { ROUTES } from "consts";
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+  Switch,
+  Input,
+  Button,
+  Row,
+  Col,
+  DatePicker,
+  Select,
+  Table,
+  notification,
+  Radio,
+} from 'antd'
+import { Link } from 'react-router-dom'
+import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
+import moment from 'moment'
+import { getCustomer, updateCustomer } from '../../apis/customer'
+import CustomerInfo from './components/customerInfo'
+import CustomerUpdate from '../actions/customer/update'
+import { ROUTES } from 'consts'
+const { Option } = Select
+const { RangePicker } = DatePicker
 
-export default function Promotion() {
+export default function Customer() {
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [customerList, setCustomerList] = useState([])
   const [pagination, setPagination] = useState({ page: 1, size: 10 })
   const [tableLoading, setTableLoading] = useState(false)
   const [infoCustomer, setInfoCustomer] = useState({})
-  const [customerFilter, setCustomerFilter] = useState({ search: '', date: [], category: undefined })
+  const [customerFilter, setCustomerFilter] = useState({
+    search: '',
+    date: [],
+    category: undefined,
+  })
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
   const [customerListUpdate, setCustomerListUpdate] = useState([])
   const onSearch = (value) => {
@@ -41,37 +54,46 @@ export default function Promotion() {
       const res = await updateCustomer(id, { active: status })
       if (res.status === 200) {
         if (status) {
-          notification.success({ message: "Kích hoạt khách hàng thành công" })
-        }
-        else {
-          notification.success({ message: "Vô hiệu hóa khách hàng thành công" })
+          notification.success({ message: 'Kích hoạt khách hàng thành công' })
+        } else {
+          notification.success({ message: 'Vô hiệu hóa khách hàng thành công' })
         }
       }
-    }
-    catch (e) {
-      console.log(e);
-      notification.error({ message: "Thay thay đổi trạng thái thất bại" })
+    } catch (e) {
+      console.log(e)
+      notification.error({ message: 'Thay thay đổi trạng thái thất bại' })
     }
   }
   const changeFilter = (key, val) => {
-    setCustomerFilter(e => { return { ...e, [key]: val } })
+    setCustomerFilter((e) => {
+      return { ...e, [key]: val }
+    })
   }
   const columnsPromotion = [
-  
     {
       title: 'Mã khách hàng',
       dataIndex: 'code',
       width: 150,
       render(data, record) {
-        return <span style={{ color: '#42a5f5', cursor: 'pointer' }} onClick={() => { setInfoCustomer(record); modal2VisibleModal(true) }}>{data}</span>
-      }
+        return (
+          <span
+            style={{ color: '#42a5f5', cursor: 'pointer' }}
+            onClick={() => {
+              setInfoCustomer(record)
+              modal2VisibleModal(true)
+            }}
+          >
+            {data}
+          </span>
+        )
+      },
     },
     {
       title: 'Tên khách hàng',
       width: 150,
       render(data) {
-        return data.first_name + " " + data.last_name
-      }
+        return data.first_name + ' ' + data.last_name
+      },
     },
     {
       title: 'Loại khách hàng',
@@ -80,10 +102,8 @@ export default function Promotion() {
       render(data) {
         if (data && data.toUpperCase() == 'POTENTIAL') {
           return 'Tiềm năng'
-        }
-        else
-          return 'Vãng lai'
-      }
+        } else return 'Vãng lai'
+      },
     },
     {
       title: 'Chi nhánh',
@@ -96,7 +116,7 @@ export default function Promotion() {
       width: 150,
       render(data) {
         return data && moment(data).format('L')
-      }
+      },
     },
     {
       title: 'Email',
@@ -124,24 +144,32 @@ export default function Promotion() {
       width: 150,
     },
     {
-      title: "Trạng thái",
+      title: 'Trạng thái',
       dataIndex: 'active',
       width: 120,
       fixed: 'right',
       render(data, record) {
-        return <Switch defaultChecked={data} onChange={(e) => changeActiveCustomer(record.customer_id, e)} />
-      }
-    }
-  
-  ];
+        return (
+          <Switch
+            defaultChecked={data}
+            onChange={(e) => changeActiveCustomer(record.customer_id, e)}
+          />
+        )
+      },
+    },
+  ]
   const changePagi = (page, size) => setPagination({ page, size })
 
-  const dataPromotion = [];
+  const dataPromotion = []
   for (let i = 0; i < 46; i++) {
     dataPromotion.push({
       key: i,
       stt: i,
-      customerCode: <Link to="/actions/customer/view/12" style={{ color: '#2400FF' }}>GH {i}</Link>,
+      customerCode: (
+        <Link to="/actions/customer/view/12" style={{ color: '#2400FF' }}>
+          GH {i}
+        </Link>
+      ),
       customerName: `Văn Tỷ ${i}`,
       customerType: `Tiềm năng ${i}`,
       branch: `Chi nhánh ${i}`,
@@ -151,33 +179,57 @@ export default function Promotion() {
       address: '27/27, đường Ngô Y Linh',
       district: 'Bình Tân',
       city: 'Hồ Chí Minh',
-      action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-        <Link to="/actions/customer/update/12" style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link>
-      </div>
-    });
+      action: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Link
+            to="/actions/customer/update/12"
+            style={{ marginRight: '0.5rem' }}
+          >
+            <EditOutlined
+              style={{
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+                color: '#0500E8',
+              }}
+            />
+          </Link>
+        </div>
+      ),
+    })
   }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onSelectChange = selectedRowKeys => {
+  const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-  };
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
   const getAllCustomer = async (params) => {
     setTableLoading(true)
     try {
-      const res = await getCustomer({ ...params, page: pagination.page, page_size: pagination.size })
+      const res = await getCustomer({
+        ...params,
+        page: pagination.page,
+        page_size: pagination.size,
+      })
 
       if (res.status === 200 && res.data.success) {
         setCustomerList(res.data.data)
         setTableLoading(false)
       }
     } catch (e) {
-      console.log(e);
+      console.log(e)
       setTableLoading(false)
     }
   }
@@ -188,10 +240,9 @@ export default function Promotion() {
   }
   const openUpdateDrawer = () => {
     var tmp = []
-    selectedRowKeys.forEach(e => {
-      var customer = customerList.find(c => c._id === e)
-      if (customer)
-        tmp.push(customer)
+    selectedRowKeys.forEach((e) => {
+      var customer = customerList.find((c) => c._id === e)
+      if (customer) tmp.push(customer)
     })
     setCustomerListUpdate(tmp)
     setTimeout(() => {
@@ -203,39 +254,91 @@ export default function Promotion() {
   }, [])
   return (
     <>
-      <div className={styles["promotion_manager"]}>
-        <div style={{ display: 'flex', borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div className={styles["promotion_manager_title"]}>Quản lý khách hàng</div>
-          <div className={styles["promotion_manager_button"]}>
+      <div className={styles['promotion_manager']}>
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid rgb(236, 226, 226)',
+            paddingBottom: '0.75rem',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <div className={styles['promotion_manager_title']}>
+            Quản lý khách hàng
+          </div>
+          <div className={styles['promotion_manager_button']}>
             <Link to={ROUTES.CUSTOMER_ADD}>
-              <Button icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />} type="primary">Thêm khách hàng</Button>
+              <Button
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+              >
+                Thêm khách hàng
+              </Button>
             </Link>
           </div>
         </div>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <Input
               placeholder="Tìm kiếm theo tên"
               value={customerFilter.search}
-              onChange={e => onSearch(e.target.value)}
+              onChange={(e) => onSearch(e.target.value)}
             />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div style={{ width: '100%' }}>
               <RangePicker
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
+                  'This Month': [
+                    moment().startOf('month'),
+                    moment().endOf('month'),
+                  ],
                 }}
                 value={customerFilter.date}
                 onChange={onChange}
               />
             </div>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div style={{ width: '100%' }}>
-              <Select style={{ width: '100%' }} placeholder="Lọc theo khách hàng" value={customerFilter.category} onChange={handleChange}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Lọc theo khách hàng"
+                value={customerFilter.category}
+                onChange={handleChange}
+              >
                 <Option value="POTENTIAL">Khách hàng tiềm năng</Option>
                 <Option value="VANGLAI">Khách hàng vãng lai</Option>
               </Select>
@@ -243,22 +346,48 @@ export default function Promotion() {
           </Col>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button onClick={clearFilter} type="primary">Xóa bộ lọc</Button>
+          <Button onClick={clearFilter} type="primary">
+            Xóa bộ lọc
+          </Button>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}>
-          {
-            selectedRowKeys && selectedRowKeys.length > 0 && (<Button type="primary" onClick={openUpdateDrawer}>Cập nhật khách hàng</Button>)
-          }
+          {selectedRowKeys && selectedRowKeys.length > 0 && (
+            <Button type="primary" onClick={openUpdateDrawer}>
+              Cập nhật khách hàng
+            </Button>
+          )}
         </Row>
 
-
-        <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
-          <Table rowSelection={rowSelection} rowKey="_id" loading={tableLoading} pagination={{ onChange: changePagi }} columns={columnsPromotion} dataSource={customerList} scroll={{ y: 500 }} />
+        <div
+          style={{
+            width: '100%',
+            marginTop: '1rem',
+            border: '1px solid rgb(243, 234, 234)',
+          }}
+        >
+          <Table
+            rowSelection={rowSelection}
+            rowKey="_id"
+            loading={tableLoading}
+            pagination={{ onChange: changePagi }}
+            columns={columnsPromotion}
+            dataSource={customerList}
+            scroll={{ y: 500 }}
+          />
         </div>
-       
       </div>
-      <CustomerInfo visible={modal2Visible} onCancel={() => modal2VisibleModal(false)} infoCustomer={infoCustomer} />
-      <CustomerUpdate customerData={customerListUpdate} visible={customerUpdateDrawer} onClose={() => { setCustomerUpdateDrawer(false) }} />
+      <CustomerInfo
+        visible={modal2Visible}
+        onCancel={() => modal2VisibleModal(false)}
+        infoCustomer={infoCustomer}
+      />
+      <CustomerUpdate
+        customerData={customerListUpdate}
+        visible={customerUpdateDrawer}
+        onClose={() => {
+          setCustomerUpdateDrawer(false)
+        }}
+      />
     </>
-  );
+  )
 }

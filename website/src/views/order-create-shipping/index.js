@@ -1,338 +1,170 @@
-import styles from "./../order-create-shipping/order-create-shipping.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Popover, notification, Row, Col, DatePicker, Space, Radio, Tree, Table, Modal } from "antd";
+import styles from './order-create-shipping.module.scss'
+import { Row, Col, Divider, Input, Button, Table, InputNumber } from 'antd'
+import { useHistory } from 'react-router-dom'
+import React from 'react'
 import {
-  Link,
-  useHistory,
-} from "react-router-dom";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
-import { ROUTES } from "consts";
-const { Option } = Select;
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Mã SKU',
-    dataIndex: 'skuCode',
-    width: 150,
-  },
-  {
-    title: 'Tên sản phẩm',
-    dataIndex: 'productName',
-    width: 150,
-  },
-  {
-    title: 'Đơn vị',
-    dataIndex: 'unit',
-    width: 150,
-  },
-  {
-    title: 'Số lượng',
-    dataIndex: 'quantity',
-    width: 150,
-  },
-  {
-    title: 'Đơn giá',
-    dataIndex: 'price',
-    width: 150,
-  },
-  {
-    title: 'Thành tiền',
-    dataIndex: 'moneyTotal',
-    width: 150,
-  },
-];
-
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    skuCode: <Link to="/actions/order-create-shipping/add/3">{`IAN ${i}`}</Link>,
-    productName: `Ly thủy tinh`,
-    unit: `${i} đơn vị`,
-    quantity: i,
-    price: i,
-    moneyTotal: i,
-  });
+  ArrowLeftOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+function formatCash(str) {
+  return str
+    .toString()
+    .split('')
+    .reverse()
+    .reduce((prev, next, index) => {
+      return (index % 3 ? next : next + ',') + prev
+    })
 }
-const treeData = [
-  {
-    title: 'Tất cả sản phẩm (tối đa 1000 sản phẩm)',
-    key: 'productAll',
-  },
-  {
-    title: 'Tất cả các nhóm sản phẩm',
-    key: 'productGroupAll',
-    children: [
-      {
-        title: 'Tất cả loại sản phẩm',
-        key: 'productAllType',
-      },
-      {
-        title: 'Tất cả nhãn sản phẩm',
-        key: 'productAllBranch',
-      },
-    ],
-  },
-];
 export default function OrderCreateShipping() {
-  let history = useHistory();
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
-  const [checkedKeys, setCheckedKeys] = useState(['']);
-  const [form] = Form.useForm();
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const onSelectChange = selectedRowKeys => {
-    setSelectedRowKeys(selectedRowKeys)
-  };
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description:
-        'Tạo đơn thành công.',
-    });
-  };
-  const onFinish = (values) => {
-    openNotification()
-    history.push(ROUTES.ORDER_LIST)
-  };
-
- 
-  const { Search } = Input;
-
-
-  const onExpand = (expandedKeysValue) => {
-    console.log('onExpand', expandedKeysValue);
-    // if not set autoExpandParent to false, if children expanded, parent can not collapse.
-    // or, you can remove all expanded children keys.
-    setExpandedKeys(expandedKeysValue);
-    setAutoExpandParent(false);
-  };
-
-  const onCheck = (checkedKeysValue) => {
-    console.log('onCheck', checkedKeysValue);
-    setCheckedKeys(checkedKeysValue);
-  };
-
-  const onSelect = (selectedKeysValue, info) => {
-    console.log('onSelect', info);
-    setSelectedKeys(selectedKeysValue);
-  };
-  function onChangeDate(date, dateString) {
-    console.log(date, dateString);
-  }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  );
-
-  function random() {
-    return Math.random().toString(16).slice(-4)
-  }
-  const code = form.getFieldValue()
-  code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
-  return (
-    <>
-      <Form onFinish={onFinish}
-        form={form}
-        className={styles['product_check_add']}>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
-            <Link to={ROUTES.ORDER_LIST} style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
-              <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo đơn hàng</div>
-            </Link>
-          </Col>
-      
-        </Row>
-       
-        <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', width: '100%' }}>
-          <Col style={{ width: '100%', backgroundColor: 'white', marginBottom: '1rem', padding: '1rem', }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin khách hàng</div>
-              <div style={{ display: 'flex', marginTop: '0.5rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                <Popover content={content} trigger="click" placement="bottomLeft">
-                  <Search style={{ width: '100%' }} placeholder="Tìm kiếm khách hàng" enterButton />
-                </Popover>
-              </div>
-            </div>
-          </Col>
-          <Col style={{ width: '100%', backgroundColor: 'white', padding: '1rem', }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin đơn hàng</div>
-
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Mã đơn hàng</div>
-                    <Form.Item
-                      name="orderCode"
-                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                    >
-                      <Input disabled placeholder="Nhập mã đơn hàng" />
-                    </Form.Item>
-                  </div>
-                </Col>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Ngày hẹn giao</div>
-                    <Form.Item
-                      name="date"
-                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                    >
-                      <DatePicker style={{ width: '100%' }} onChange={onChangeDate} />
-                    </Form.Item>
-                  </div>
-                </Col>
-              </Row>
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Chi nhánh</div>
-                    <Form.Item
-                      name="branch"
-                      hasFeedback
-                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                    >
-                      <Select placeholder="Chọn chi nhánh">
-                        <Option value="branch1">Chi nhánh 1</Option>
-                        <Option value="branch2">Chi nhánh 2</Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
-                </Col>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Tên nhân viên</div>
-                    <Form.Item
-                      name="employeeName"
-                      rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                    >
-                      <Select placeholder="Chọn nhân viên">
-                        <Option value="employee1">Nhân viên 1</Option>
-                        <Option value="employee2">Nhân viên 2</Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          </Col>
-        </Row>
-
-
-        <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 1rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Danh sách sản phẩm</div>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-            <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Popover content={content} trigger="click" placement="bottomLeft">
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" enterButton />
-              </Popover>
-            </Col>
-          </Row>
-          <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
-            <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
-          </div>
-          {
-            selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              okText="Yes"
-              cancelText="No"
-            ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
-          }
-        </div>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <Col style={{ width: '100%', height: '16rem', marginTop: '1rem', backgroundColor: 'white', padding: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Xác nhận thanh toán</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-                <Form.Item style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', width: '100%' }} name="paymentConfirm" >
-                  <Radio.Group>
-                    <Radio style={{ marginTop: '1rem' }} value="paymentFirst">Khách hàng thanh toán trước</Radio>
-                    <Radio style={{ marginTop: '1rem' }} value="paymentSuccess">Thu COD sau khi giao hàng thành công</Radio><br />
-                    <Radio style={{ marginTop: '1rem' }} value="paymentLast">Thanh toán sau</Radio>
-                  </Radio.Group>
-                </Form.Item>
-              </div>
-            </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem', backgroundColor: 'white', padding: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Hình thức thanh toán dự kiến</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-                <Form.Item name="paymentMethod" >
-                  <Radio.Group>
-                    <Space direction="vertical">
-                      <Radio style={{ marginTop: '1rem' }} value="card">Quẹt thẻ</Radio>
-                      <Radio style={{ marginTop: '1rem' }} value="paymentPoint">Thanh toán bằng điểm</Radio>
-                      <Radio style={{ marginTop: '1rem' }} value="paymentOnline">Chuyển khoảng</Radio>
-
-                      <Radio style={{ marginTop: '1rem' }} value="paymentMoney">Tiền mặt</Radio>
-                    </Space>
-                  </Radio.Group>
-                </Form.Item>
-              </div>
-            </div>
-          </Col>
-        </Row>
-        <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Row style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Col style={{ display: 'flex', marginLeft: '2rem', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
-                    Tạo đơn
-                  </Button>
-                </Form.Item>
+  let history = useHistory()
+  const columns = [
+    {
+      title: 'Sản phẩm',
+      render(data) {
+        return (
+          <div>
+            <Row gutter={10}>
+              <Col>
+                <img src={data.img} width="50" />
+              </Col>
+              <Col>
+                <div>{data.name}</div>
+                <div>{data.option}</div>
+                <div>{data.sku}</div>
               </Col>
             </Row>
-          </Col>
-
-        </Row>
-        <Modal
-          title="Thêm nhanh sản phẩm"
-          centered
-          footer={null}
-
-          visible={modal2Visible}
-          onOk={() => modal2VisibleModal(false)}
-          onCancel={() => modal2VisibleModal(false)}
-        >
-          <div>
-            <Tree
-              checkable
-              onExpand={onExpand}
-              expandedKeys={expandedKeys}
-              autoExpandParent={autoExpandParent}
-              onCheck={onCheck}
-              checkedKeys={checkedKeys}
-              onSelect={onSelect}
-              selectedKeys={selectedKeys}
-              treeData={treeData}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <div onClick={() => modal2VisibleModal(false)}><Button type="primary" style={{ width: '5rem' }} danger>Hủy</Button></div>
-              <div><Button type="primary" style={{ width: '5rem', marginLeft: '1rem' }} >Thêm</Button></div>
-            </div>
           </div>
-        </Modal>
-      </Form>
-    </>
-  );
+        )
+      },
+    },
+    {
+      title: 'Số lượng',
+      render(data) {
+        return <InputNumber />
+      },
+    },
+    {
+      title: 'Giá',
+      dataIndex: 'price',
+      render(data) {
+        return formatCash(data)
+      },
+    },
+    {
+      title: 'Thành  tiền',
+    },
+  ]
+  const data = [
+    {
+      img: 'https://storage.googleapis.com/viesoftware0710/1629148696927_viesoftware0710_0.webp',
+      name: 'Áo có slogan',
+      option: 'Đen/L',
+      sku: 'AO966',
+      price: 100000,
+    },
+  ]
+  return (
+    <div className={styles['order-create-shipping']}>
+      <div style={{ background: 'white', padding: '20px' }}>
+        <Row align="middle" style={{ fontSize: 18, fontWeight: 600 }}>
+          <ArrowLeftOutlined
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push('/order-list')}
+          />
+          Tạo đơn hàng
+        </Row>
+        <Divider />
+        <Row gutter={30}>
+          <Col span={16}>
+            <div className={styles['block']}>
+              <div className={styles['title']}>Sản phẩm</div>
+              <Input.Search
+                enterButton="Tìm kiếm"
+                style={{ marginBottom: 20 }}
+              />
+              <Table columns={columns} size="small" dataSource={data} />
+            </div>
+            <div className={styles['block']} style={{ marginTop: 30 }}>
+              <div className={styles['title']}>Thanh toán</div>
+              <Row gutter={20}>
+                <Col span={12}>
+                  <div style={{ fontWeight: 500 }}>Ghi chú đơn hàng</div>
+                  <Input placeholder="Ghi chú đơn hàng tại đây" />
+                </Col>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>Số lượng sản phẩm</Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={12}>Tổng tiền hàng</Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={12}>
+                      <span style={{ color: 'blue' }}>Giảm giá</span>
+                    </Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={12}>Tạm tính</Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={12}>
+                      <span style={{ color: 'blue' }}>Phí vận chuyển</span>
+                    </Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={12}>
+                      <b>Phải thu</b>
+                    </Col>
+                    <Col span={12} style={{ textAlign: 'end' }}>
+                      0
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </div>
+            <Divider />
+            <Row justify="end">
+              <Button type="primary" style={{ marginRight: 20 }}>
+                Đã thanh toán
+              </Button>
+              <Button type="primary" disabled>
+                Thanh toán sau
+              </Button>
+            </Row>
+          </Col>
+          <Col span={8}>
+            <div className={styles['block']}>
+              <Row justify="space-between" className={styles['title']}>
+                <div>Khách hàng</div>
+                <div style={{ cursor: 'pointer' }}>
+                  <PlusOutlined /> Tạo khách hàng
+                </div>
+              </Row>
+              <Input
+                placeholder="Tìm kiếm khách hàng"
+                prefix={<SearchOutlined />}
+              />
+              <Divider />
+            </div>
+          </Col>
+        </Row>
+      </div>
+    </div>
+  )
 }

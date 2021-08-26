@@ -54,7 +54,7 @@ import Employee from './employee'
 import Shipping from './shipping'
 import Customer from './customer'
 import Supplier from './supplier'
-import Promotion from './customer'
+import Promotion from './promotion'
 import Role from './role'
 import ShippingProductView from './actions/shipping-product/view/index'
 import ShippingControlAdd from './actions/shipping-control/add'
@@ -599,7 +599,6 @@ export default function Views() {
       <ModalIntro />
       <ModalWelcome />
       <NotificationCreateBranch />f
-
       <Switch>
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>
