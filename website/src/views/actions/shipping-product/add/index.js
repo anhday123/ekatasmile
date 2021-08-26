@@ -28,7 +28,7 @@ import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
 const { Option } = Select
 const { Search } = Input
-export default function ShippingProduct(props) {
+export default function ShippingProductAdd(props) {
   const [modal3Visible, setModal3Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
@@ -409,22 +409,6 @@ export default function ShippingProduct(props) {
   return (
     <>
       <div className={styles['supplier_add']}>
-        <a
-          className={styles['supplier_add_back_parent']}
-          style={{
-            borderBottom: '1px solid rgb(233, 220, 220)',
-            paddingBottom: '1rem',
-          }}
-          onClick={() => history.goBack()}
-        >
-          <ArrowLeftOutlined
-            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-          />
-          <div className={styles['supplier_add_back']}>
-            Tạo phiếu chuyển hàng
-          </div>
-        </a>
-
         <Form
           style={{}}
           className={styles['supplier_add_content']}

@@ -11,6 +11,7 @@ import {
   Table,
   notification,
   Radio,
+  Drawer,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
@@ -19,6 +20,7 @@ import { getCustomer, updateCustomer } from '../../apis/customer'
 import CustomerInfo from './components/customerInfo'
 import CustomerUpdate from '../actions/customer/update'
 import { ROUTES } from 'consts'
+import CustomerAdd from 'views/actions/customer/add'
 const { Option } = Select
 const { RangePicker } = DatePicker
 
@@ -29,6 +31,7 @@ export default function Customer() {
   const [pagination, setPagination] = useState({ page: 1, size: 10 })
   const [tableLoading, setTableLoading] = useState(false)
   const [infoCustomer, setInfoCustomer] = useState({})
+  const [showCreate, setShowCreate] = useState(false)
   const [customerFilter, setCustomerFilter] = useState({
     search: '',
     date: [],
@@ -160,51 +163,6 @@ export default function Customer() {
   ]
   const changePagi = (page, size) => setPagination({ page, size })
 
-  const dataPromotion = []
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      customerCode: (
-        <Link to="/actions/customer/view/12" style={{ color: '#2400FF' }}>
-          GH {i}
-        </Link>
-      ),
-      customerName: `Văn Tỷ ${i}`,
-      customerType: `Tiềm năng ${i}`,
-      branch: `Chi nhánh ${i}`,
-      birthDay: `2021/06/28 ${i}`,
-      email: `anhhung_so11@yahoo.com`,
-      phoneNumber: '0384943497',
-      address: '27/27, đường Ngô Y Linh',
-      district: 'Bình Tân',
-      city: 'Hồ Chí Minh',
-      action: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Link
-            to="/actions/customer/update/12"
-            style={{ marginRight: '0.5rem' }}
-          >
-            <EditOutlined
-              style={{
-                fontSize: '1.25rem',
-                cursor: 'pointer',
-                color: '#0500E8',
-              }}
-            />
-          </Link>
-        </div>
-      ),
-    })
-  }
-
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
@@ -269,14 +227,13 @@ export default function Customer() {
             Quản lý khách hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Link to={ROUTES.CUSTOMER_ADD}>
-              <Button
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Thêm khách hàng
-              </Button>
-            </Link>
+            <Button
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={() => setShowCreate(true)}
+            >
+              Thêm khách hàng
+            </Button>
           </div>
         </div>
         <Row
@@ -388,6 +345,14 @@ export default function Customer() {
           setCustomerUpdateDrawer(false)
         }}
       />
+      <Drawer
+        visible={showCreate}
+        onClose={() => setShowCreate(false)}
+        width="75%"
+        title="Thêm khách hàng"
+      >
+        <CustomerAdd close={() => setShowCreate(false)} />
+      </Drawer>
     </>
   )
 }

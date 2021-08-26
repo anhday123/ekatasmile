@@ -1,22 +1,34 @@
-import styles from "./../supplier/supplier.module.scss";
-import React, { useState, useEffect, useRef } from "react";
-import { apiAllSupplier, apiSearch, apiUpdateSupplier } from "../../apis/supplier";
+import styles from './../supplier/supplier.module.scss'
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  apiAllSupplier,
+  apiSearch,
+  apiUpdateSupplier,
+} from '../../apis/supplier'
 import { ACTION, ROUTES } from './../../consts/index'
-import moment from 'moment';
-import { apiDistrict, apiProvince } from "../../apis/information";
+import moment from 'moment'
+import { apiDistrict, apiProvince } from '../../apis/information'
 import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom'
 import {
-
-  Link,
-
-} from "react-router-dom";
-import {  Switch, Radio, DatePicker, Form, Drawer, Select, notification, Input, Button, Table, Row, Col, } from "antd";
-import {
-  PlusCircleOutlined,
-} from "@ant-design/icons";
-import { apiFilterCity } from "../../apis/branch";
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+  Switch,
+  Radio,
+  DatePicker,
+  Form,
+  Drawer,
+  Select,
+  notification,
+  Input,
+  Button,
+  Table,
+  Row,
+  Col,
+} from 'antd'
+import { PlusCircleOutlined } from '@ant-design/icons'
+import { apiFilterCity } from '../../apis/branch'
+import SupplierAdd from 'views/actions/supplier/add'
+const { Option } = Select
+const { RangePicker } = DatePicker
 export default function Supplier() {
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
@@ -24,24 +36,23 @@ export default function Supplier() {
   const [supplier, setSupplier] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [loading, setLoading] = useState(false)
-  const typingTimeoutRef = useRef(null);
+  const typingTimeoutRef = useRef(null)
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
-      const res = await apiSearch({ keyword: value });
+      const res = await apiSearch({ keyword: value })
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
-
     } catch (error) {
       setLoading(false)
     }
-  };
+  }
   const apiSearchDateData = async (start, end) => {
     try {
       setLoading(true)
 
-      const res = await apiSearch({ from_date: start, to_date: end });
+      const res = await apiSearch({ from_date: start, to_date: end })
       if (res.status === 200) {
         setSupplier(res.data.data)
       }
@@ -49,7 +60,7 @@ export default function Supplier() {
     } catch (error) {
       setLoading(false)
     }
-  };
+  }
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [clear, setClear] = useState(-1)
@@ -58,7 +69,10 @@ export default function Supplier() {
 
     setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '')
     setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
-    apiSearchDateData(dateStrings && dateStrings.length > 0 ? dateStrings[0] : '', dateStrings && dateStrings.length > 0 ? dateStrings[1] : '')
+    apiSearchDateData(
+      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
+      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
+    )
   }
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -67,127 +81,131 @@ export default function Supplier() {
       clearTimeout(typingTimeoutRef.current)
     }
     typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value;
-      apiSearchData(value);
-    }, 300);
-  };
+      const value = e.target.value
+      apiSearchData(value)
+    }, 300)
+  }
 
   const [arrayUpdate, setArrayUpdate] = useState([])
- 
+
   const apiAllSupplierData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllSupplier();
+      const res = await apiAllSupplier()
       console.log(res)
       if (res.status === 200) {
         setSupplier(res.data.data)
       }
       setLoading(false)
-
     } catch (error) {
       setLoading(false)
     }
-  };
+  }
   const openNotificationDeleteSupplier = (data) => {
     notification.success({
       message: 'Thành công',
-      description: data === 2 ? ('Vô hiệu hóa nhà cung cấp thành công.') : ('Kích hoạt nhà cung cấp thành công')
-    });
-  };
+      description:
+        data === 2
+          ? 'Vô hiệu hóa nhà cung cấp thành công.'
+          : 'Kích hoạt nhà cung cấp thành công',
+    })
+  }
   const apiUpdateSupplierData = async (object, id, data) => {
     try {
       setLoading(true)
-      const res = await apiUpdateSupplier(object, id);
-      console.log(res);
+      const res = await apiUpdateSupplier(object, id)
+      console.log(res)
       if (res.status === 200) {
-        await apiAllSupplierData();
+        await apiAllSupplierData()
         openNotificationDeleteSupplier(data)
         setSelectedRowKeys([])
       }
       setLoading(false)
     } catch (error) {
-      console.log(error);
+      console.log(error)
       setLoading(false)
     }
-  };
-  
+  }
+
   function onChangeSwitch(checked, record) {
     const object = {
-      active: checked
+      active: checked,
     }
     apiUpdateSupplierData(object, record.supplier_id, checked ? 1 : 2)
   }
 
   useEffect(() => {
-    apiAllSupplierData();
-  }, []);
+    apiAllSupplierData()
+  }, [])
 
   const showDrawer = () => {
     setVisible(true)
-  };
+  }
 
   const onClose = () => {
     setVisible(false)
-  };
+  }
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
-  };
+  }
   const showDrawerUpdate = () => {
     setVisibleUpdate(true)
-  };
+  }
 
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  const onSelectChange = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
     const array = []
-    supplier && supplier.length > 0 && supplier.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          array.push(values)
-        }
+    supplier &&
+      supplier.length > 0 &&
+      supplier.forEach((values, index) => {
+        selectedRowKeys.forEach((values1, index1) => {
+          if (values._id === values1) {
+            array.push(values)
+          }
+        })
       })
-    })
     setArrayUpdate([...array])
-  };
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
   const openNotificationRegisterFailMailRegex = (data) => {
     notification.error({
       message: 'Thất bại',
       duration: 3,
-      description:
-        `${data} phải là số và có độ dài là 10`,
-    });
-  };
+      description: `${data} phải là số và có độ dài là 10`,
+    })
+  }
   const openNotificationRegisterFailMail = () => {
     notification.error({
       message: 'Thất bại',
       duration: 3,
-      description:
-        'Gmail phải ở dạng @gmail.com.',
-    });
-  };
+      description: 'Gmail phải ở dạng @gmail.com.',
+    })
+  }
   const openNotificationUpdate = (data) => {
     notification.success({
       message: 'Thành công',
-      description:
-        <div>Cập nhật thông tin nhà cung cấp <b>{data}</b> thành công</div>
-    });
-  };
+      description: (
+        <div>
+          Cập nhật thông tin nhà cung cấp <b>{data}</b> thành công
+        </div>
+      ),
+    })
+  }
   const openNotificationErrorUpdate = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Lỗi cập nhật thông tin nhà cung cấp',
-    });
-  };
+      description: 'Lỗi cập nhật thông tin nhà cung cấp',
+    })
+  }
   const apiUpdateSupplierDataUpdate = async (object, id) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiUpdateSupplier(object, id);
-      console.log(res);
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiUpdateSupplier(object, id)
+      console.log(res)
       if (res.status === 200) {
         await apiAllSupplierData()
         openNotificationUpdate(object.name)
@@ -197,177 +215,191 @@ export default function Supplier() {
       } else {
         openNotificationErrorUpdate()
       }
-      dispatch({ type: ACTION.LOADING, data: false });
-   
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      console.log(error);
-      dispatch({ type: ACTION.LOADING, data: false });
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
-  function validateEmail(email) {
-    const re = /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/;
-    return re.test(String(email).toLowerCase());
   }
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  function validateEmail(email) {
+    const re =
+      /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/
+    return re.test(String(email).toLowerCase())
+  }
+  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
   const onCloseUpdateFunc = (data) => {
     if (data === 1) {
-      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-        if (validateEmail(values.email)) {
-          if (isNaN(values.phone)) {
-            openNotificationRegisterFailMailRegex('Liên hệ')
-          } else {
-            if (regex.test(values.phone)) {
-              const object = {
-                name: values.name.toLowerCase(),
-                email: values.email,
-                phone: values.phone,
-                address: values && values.address ? values.address.toLowerCase() : '',
-                ward: ' ',
-                district: values.district.toLowerCase(),
-                province: values.province.toLowerCase(),
-                active: true
-              }
-              console.log(object)
-              apiUpdateSupplierDataUpdate(object, values.supplier_id);
-            } else {
+      arrayUpdate &&
+        arrayUpdate.length > 0 &&
+        arrayUpdate.forEach((values, index) => {
+          if (validateEmail(values.email)) {
+            if (isNaN(values.phone)) {
               openNotificationRegisterFailMailRegex('Liên hệ')
+            } else {
+              if (regex.test(values.phone)) {
+                const object = {
+                  name: values.name.toLowerCase(),
+                  email: values.email,
+                  phone: values.phone,
+                  address:
+                    values && values.address
+                      ? values.address.toLowerCase()
+                      : '',
+                  ward: ' ',
+                  district: values.district.toLowerCase(),
+                  province: values.province.toLowerCase(),
+                  active: true,
+                }
+                console.log(object)
+                apiUpdateSupplierDataUpdate(object, values.supplier_id)
+              } else {
+                openNotificationRegisterFailMailRegex('Liên hệ')
+              }
             }
+          } else {
+            openNotificationRegisterFailMail()
           }
-        } else {
-          openNotificationRegisterFailMail()
-        }
-      })
+        })
     } else {
-      arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.forEach((values, index) => {
-        if (validateEmail(values.email)) {
-          if (isNaN(values.phone)) {
-            openNotificationRegisterFailMailRegex('Liên hệ')
-          } else {
-            if (regex.test(values.phone)) {
-              const object = {
-                name: values.name.toLowerCase(),
-                email: values.email,
-                phone: values.phone,
-                address: arrayUpdate[0] && arrayUpdate[0].address ? arrayUpdate[0].address.toLowerCase() : '',
-                ward: ' ',
-                district: arrayUpdate[0].district.toLowerCase(),
-                province: arrayUpdate[0].province.toLowerCase(),
-                active: true
-              }
-              console.log(object)
-              apiUpdateSupplierDataUpdate(object, values.supplier_id);
-            } else {
+      arrayUpdate &&
+        arrayUpdate.length > 0 &&
+        arrayUpdate.forEach((values, index) => {
+          if (validateEmail(values.email)) {
+            if (isNaN(values.phone)) {
               openNotificationRegisterFailMailRegex('Liên hệ')
+            } else {
+              if (regex.test(values.phone)) {
+                const object = {
+                  name: values.name.toLowerCase(),
+                  email: values.email,
+                  phone: values.phone,
+                  address:
+                    arrayUpdate[0] && arrayUpdate[0].address
+                      ? arrayUpdate[0].address.toLowerCase()
+                      : '',
+                  ward: ' ',
+                  district: arrayUpdate[0].district.toLowerCase(),
+                  province: arrayUpdate[0].province.toLowerCase(),
+                  active: true,
+                }
+                console.log(object)
+                apiUpdateSupplierDataUpdate(object, values.supplier_id)
+              } else {
+                openNotificationRegisterFailMailRegex('Liên hệ')
+              }
             }
+          } else {
+            openNotificationRegisterFailMail()
           }
-        } else {
-          openNotificationRegisterFailMail()
-        }
-      })
+        })
     }
   }
   const openNotificationClear = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Dữ liệu đã được reset về ban đầu.',
-    });
-  };
-  const dateFormat = 'YYYY/MM/DD';
+      description: 'Dữ liệu đã được reset về ban đầu.',
+    })
+  }
+  const dateFormat = 'YYYY/MM/DD'
 
   const onClickClear = async () => {
     await apiAllSupplierData()
     openNotificationClear()
-    setValueSearch("")
+    setValueSearch('')
     setClear(1)
-    setCity("")
-    setDistrictSelect("")
+    setCity('')
+    setDistrictSelect('')
     setSelectedRowKeys([])
     setStart([])
     setEnd([])
   }
 
-
   const [district, setDistrict] = useState([])
   const apiDistrictData = async () => {
     try {
       setLoading(true)
-      const res = await apiDistrict();
+      const res = await apiDistrict()
       console.log(res)
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
       setLoading(false)
     } catch (error) {
-
       setLoading(false)
     }
-  };
+  }
   const [province, setProvince] = useState([])
   const apiProvinceData = async () => {
     try {
       setLoading(true)
-      const res = await apiProvince();
+      const res = await apiProvince()
       console.log(res)
       if (res.status === 200) {
         setProvince(res.data.data)
       }
       setLoading(false)
     } catch (error) {
-
       setLoading(false)
     }
-  };
+  }
   useEffect(() => {
-    apiDistrictData();
-  }, []);
+    apiDistrictData()
+  }, [])
   useEffect(() => {
-    apiProvinceData();
-  }, []);
+    apiProvinceData()
+  }, [])
   const columns = [
     {
-      title: "Mã nhà cung cấp",
-      dataIndex: "code",
+      title: 'Mã nhà cung cấp',
+      dataIndex: 'code',
       width: 150,
-      render: (text, record) => <Link to={{
-        pathname: ROUTES.SUPPLIER_INFORMATION, state: record
-      }} style={{ color: '#0019FF' }}>{text}</Link>,
+      render: (text, record) => (
+        <Link
+          to={{
+            pathname: ROUTES.SUPPLIER_INFORMATION,
+            state: record,
+          }}
+          style={{ color: '#0019FF' }}
+        >
+          {text}
+        </Link>
+      ),
     },
     {
-      title: "Tên nhà cung cấp",
-      dataIndex: "name",
+      title: 'Tên nhà cung cấp',
+      dataIndex: 'name',
       width: 150,
       render: (text, record) => <div>{text}</div>,
     },
     {
-      title: "Ngày tạo",
-      dataIndex: "create_date",
+      title: 'Ngày tạo',
+      dataIndex: 'create_date',
       width: 150,
-      render: (text, record) => text ? moment(text).format('YYYY-MM-DD') : ''
+      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
     },
     {
-      title: "Quận/huyện",
-      dataIndex: "district",
-      width: 150,
-    },
-    {
-      title: "Tỉnh/thành phố",
-      dataIndex: "province",
+      title: 'Quận/huyện',
+      dataIndex: 'district',
       width: 150,
     },
     {
-      title: "Email",
-      dataIndex: "email",
+      title: 'Tỉnh/thành phố',
+      dataIndex: 'province',
       width: 150,
     },
     {
-      title: "Liên hệ",
-      dataIndex: "phone",
+      title: 'Email',
+      dataIndex: 'email',
       width: 150,
     },
     {
-      title: "Địa chỉ",
-      dataIndex: "address",
+      title: 'Liên hệ',
+      dataIndex: 'phone',
+      width: 150,
+    },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'address',
       width: 150,
     },
 
@@ -376,58 +408,59 @@ export default function Supplier() {
       dataIndex: 'active',
       fixed: 'right',
       width: 100,
-      render: (text, record) => text ? <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} /> : <Switch onChange={(e) => onChangeSwitch(e, record)} />
+      render: (text, record) =>
+        text ? (
+          <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} />
+        ) : (
+          <Switch onChange={(e) => onChangeSwitch(e, record)} />
+        ),
     },
-  
-  ];
+  ]
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiFilterCity({ keyword: object });
+      const res = await apiFilterCity({ keyword: object })
       console.log(res)
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
       setLoading(false)
     } catch (error) {
-
       setLoading(false)
     }
-  };
+  }
   function handleChangeCity(value) {
-    console.log(`selected ${value}`);
+    console.log(`selected ${value}`)
     apiFilterCityData(value)
   }
- 
+
   const apiSearchProvinceData = async (value) => {
     try {
       setLoading(true)
-      const res = await apiSearch({ province: value });
+      const res = await apiSearch({ province: value })
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
     } catch (error) {
-
       setLoading(false)
     }
-  };
+  }
   const apiSearchDistrictData = async (value) => {
     try {
       setLoading(true)
 
-      const res = await apiSearch({ district: value });
+      const res = await apiSearch({ district: value })
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)
     } catch (error) {
-
       setLoading(false)
     }
-  };
+  }
   const [city, setCity] = useState('')
   const handleChange = async (value) => {
-    console.log(`selected ${value}`);
+    console.log(`selected ${value}`)
     setCity(value)
     if (value !== 'default') {
       apiSearchProvinceData(value)
@@ -446,107 +479,211 @@ export default function Supplier() {
   }
   return (
     <>
-      <div className={styles["supplier_manager"]}>
-        <div style={{ display: 'flex', borderBottom: '1px solid rgb(241, 236, 236)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div className={styles["supplier_manager_title"]}>Quản lý nhà cung cấp</div>
-          <Link to={ROUTES.SUPPLIER_ADD}>
-            <Button
-              className={styles["supplier_manager_search_right"]}
-              type="primary"
-              icon={<PlusCircleOutlined />}
-            >
-              Thêm nhà cung cấp
-            </Button>
-          </Link>
+      <div className={styles['supplier_manager']}>
+        <div
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid rgb(241, 236, 236)',
+            paddingBottom: '1rem',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <div className={styles['supplier_manager_title']}>
+            Quản lý nhà cung cấp
+          </div>
+          <Button
+            className={styles['supplier_manager_search_right']}
+            type="primary"
+            icon={<PlusCircleOutlined />}
+            onClick={showDrawerUpdate}
+          >
+            Thêm nhà cung cấp
+          </Button>
         </div>
-        <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div style={{ width: '100%' }}>
-
-              <Input style={{ width: '100%' }} name="name" value={valueSearch} enterButton onChange={onSearch} className={styles["orders_manager_content_row_col_search"]}
-                placeholder="Tìm kiếm theo mã, theo tên" allowClear />
+              <Input
+                style={{ width: '100%' }}
+                name="name"
+                value={valueSearch}
+                enterButton
+                onChange={onSearch}
+                className={styles['orders_manager_content_row_col_search']}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                allowClear
+              />
             </div>
-
           </Col>
 
-          <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col
+            style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div style={{ width: '100%' }}>
-
-              <Select showSearch
+              <Select
+                showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
                 optionFilterProp="children"
-
-
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } value={city ? city : 'default'} onChange={(event) => { handleChange(event); handleChangeCity(event) }}>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                value={city ? city : 'default'}
+                onChange={(event) => {
+                  handleChange(event)
+                  handleChangeCity(event)
+                }}
+              >
                 <Option value="default">Tất cả tỉnh/thành phố</Option>
-                {
-                  province && province.length > 0 && province.map((values, index) => {
+                {province &&
+                  province.length > 0 &&
+                  province.map((values, index) => {
                     return (
-                      <Option value={values.province_name}>{values.province_name}</Option>
+                      <Option value={values.province_name}>
+                        {values.province_name}
+                      </Option>
                     )
-                  })
-                }
+                  })}
               </Select>
-
             </div>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col
+            style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div style={{ width: '100%' }}>
-
-              <Select showSearch
+              <Select
+                showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
                 optionFilterProp="children"
-
-
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                } value={districtSelect ? districtSelect : 'default'} onChange={handleChangeDistrict}>
-                <Option value="default">Tất cả quận/huyện</Option>
-                {
-                  districtMainAPI && districtMainAPI.length > 0 ? (districtMainAPI && districtMainAPI.length > 0 && districtMainAPI.map((values, index) => {
-                    return (
-                      <Option value={values.district_name}>{values.district_name}</Option>
-                    )
-                  })) : (district && district.length > 0 && district.map((values, index) => {
-                    return (
-                      <Option value={values.district_name}>{values.district_name}</Option>
-                    )
-                  }))
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
                 }
+                value={districtSelect ? districtSelect : 'default'}
+                onChange={handleChangeDistrict}
+              >
+                <Option value="default">Tất cả quận/huyện</Option>
+                {districtMainAPI && districtMainAPI.length > 0
+                  ? districtMainAPI &&
+                    districtMainAPI.length > 0 &&
+                    districtMainAPI.map((values, index) => {
+                      return (
+                        <Option value={values.district_name}>
+                          {values.district_name}
+                        </Option>
+                      )
+                    })
+                  : district &&
+                    district.length > 0 &&
+                    district.map((values, index) => {
+                      return (
+                        <Option value={values.district_name}>
+                          {values.district_name}
+                        </Option>
+                      )
+                    })}
               </Select>
-
             </div>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
             <div>
               <RangePicker
                 // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
-                value={clear === 1 ? ([]) : (start !== "" ? [moment(start, dateFormat), moment(end, dateFormat)] : [])}
+                value={
+                  clear === 1
+                    ? []
+                    : start !== ''
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
+                }
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
+                  'This Month': [
+                    moment().startOf('month'),
+                    moment().endOf('month'),
+                  ],
                 }}
                 onChange={onChangeDate}
               />
             </div>
           </Col>
         </Row>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button onClick={onClickClear} type="primary" style={{ width: '7.5rem' }}>Xóa tất cả lọc</Button></div>
-        {
-          selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Radio.Group style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-start', width: '100%' }} >
-              <Radio onClick={showDrawerUpdate} value={1}>Cập nhật hàng loạt</Radio>
-              <Radio onClick={showDrawer} value={2}>Cập nhật riêng lẻ</Radio>
-            </Radio.Group>
-          ) : ('')
-        }
-        <div style={{ width: '100%', marginTop: '1rem', border: '1px solid rgb(243, 234, 234)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+            marginTop: '1rem',
+          }}
+        >
+          <Button
+            onClick={onClickClear}
+            type="primary"
+            style={{ width: '7.5rem' }}
+          >
+            Xóa tất cả lọc
+          </Button>
+        </div>
+        {selectedRowKeys && selectedRowKeys.length > 0 ? (
+          <div
+            style={{
+              display: 'flex',
+              marginTop: '1rem',
+              justifyContent: 'flex-start',
+              width: '100%',
+            }}
+          >
+            <Button type="primary" onClick={showDrawer}>
+              Cập nhật thông tin
+            </Button>
+          </div>
+        ) : (
+          ''
+        )}
+        <div
+          style={{
+            width: '100%',
+            marginTop: '1rem',
+            border: '1px solid rgb(243, 234, 234)',
+          }}
+        >
           <Table
             rowKey="_id"
             rowSelection={rowSelection}
@@ -557,7 +694,6 @@ export default function Supplier() {
             scroll={{ y: 500 }}
           />
         </div>
-
       </div>
 
       <Drawer
@@ -578,384 +714,309 @@ export default function Supplier() {
           </div>
         }
       >
-        {
-          arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
+        {arrayUpdate &&
+          arrayUpdate.length > 0 &&
+          arrayUpdate.map((values, index) => {
             const obj = Object.keys(values)
             return (
-
               <Form
-                style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
-                className={styles["supplier_add_content"]}
-
+                style={{
+                  borderBottom: '1px solid rgb(238, 224, 224)',
+                  paddingBottom: '1.5rem',
+                }}
+                className={styles['supplier_add_content']}
                 // form={form}
                 layout="vertical"
                 initialValues={values}
-
               >
-                <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  {
-                    obj.map((data) => {
-                      if (data === 'name') {
-                        const InputName = () => <Input defaultValue={values[data]}
+                <Row
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {obj.map((data) => {
+                    if (data === 'name') {
+                      const InputName = () => (
+                        <Input
+                          defaultValue={values[data]}
                           onChange={(event) => {
-                            const value =
-                              event.target.value;
-                            arrayUpdate[index][data] =
-                              value;
-                          }} />
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-
-                              
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên nhà cung cấp</div>
-                              <InputName />
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Tên nhà cung cấp
                             </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'address') {
-                        const InputName = () => <Input defaultValue={values[data]}
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'address') {
+                      const InputName = () => (
+                        <Input
+                          defaultValue={values[data]}
                           onChange={(event) => {
-                            const value =
-                              event.target.value;
-                            arrayUpdate[index][data] =
-                              value;
-                          }} />
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Địa chỉ</div>
-                              <InputName />
-
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Địa chỉ
                             </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'phone') {
-                        const InputName = () => <Input defaultValue={values[data]}
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'phone') {
+                      const InputName = () => (
+                        <Input
+                          defaultValue={values[data]}
                           onChange={(event) => {
-                            const value =
-                              event.target.value;
-                            arrayUpdate[index][data] =
-                              value;
-                          }} />
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
-                              <InputName />
-
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Liên hệ
                             </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'email') {
-                        const InputName = () => <Input defaultValue={values[data]}
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'email') {
+                      const InputName = () => (
+                        <Input
+                          defaultValue={values[data]}
                           onChange={(event) => {
-                            const value =
-                              event.target.value;
-                            arrayUpdate[index][data] =
-                              value;
-                          }} />
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Email</div>
-
-                              <InputName />
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Email
                             </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'province') {
-                        const InputName = () => <Select defaultValue={values[data]}
+
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'province') {
+                      const InputName = () => (
+                        <Select
+                          defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}
                           placeholder="Select a person"
                           optionFilterProp="children"
-
-
                           filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            option.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
                             // const value =
                             //   event.target.value;
-                            arrayUpdate[index][data] =
-                              event; handleChangeCity(event)
-                          }}>
-                          {
-                            province && province.length > 0 && province.map((values, index) => {
-                              return <Option value={values.province_name}>{values.province_name}</Option>
-                            })
-                          }
+                            arrayUpdate[index][data] = event
+                            handleChangeCity(event)
+                          }}
+                        >
+                          {province &&
+                            province.length > 0 &&
+                            province.map((values, index) => {
+                              return (
+                                <Option value={values.province_name}>
+                                  {values.province_name}
+                                </Option>
+                              )
+                            })}
                         </Select>
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tỉnh/thành phố</div>
-                              <InputName />
-
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Tỉnh/thành phố
                             </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'district') {
-                        const InputName = () => <Select defaultValue={values[data]}
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'district') {
+                      const InputName = () => (
+                        <Select
+                          defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}
                           placeholder="Select a person"
                           optionFilterProp="children"
-
-
                           filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            option.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(event) => {
                             // const value =
                             //   event.target.value;
-                            arrayUpdate[index][data] =
-                              event;
-                          }}>
-                          {
-                            districtMainAPI && districtMainAPI.length > 0 ? (districtMainAPI && districtMainAPI.length > 0 && districtMainAPI.map((values, index) => {
-                              return (
-                                <Option value={values.district_name}>{values.district_name}</Option>
-                              )
-                            })) : (district && district.length > 0 && district.map((values, index) => {
-                              return (
-                                <Option value={values.district_name}>{values.district_name}</Option>
-                              )
-                            }))
-                          }
+                            arrayUpdate[index][data] = event
+                          }}
+                        >
+                          {districtMainAPI && districtMainAPI.length > 0
+                            ? districtMainAPI &&
+                              districtMainAPI.length > 0 &&
+                              districtMainAPI.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>
+                                    {values.district_name}
+                                  </Option>
+                                )
+                              })
+                            : district &&
+                              district.length > 0 &&
+                              district.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>
+                                    {values.district_name}
+                                  </Option>
+                                )
+                              })}
                         </Select>
-                        return (
-                          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                            <div>
-                              <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Quận/huyện</div>
-
-                              <InputName />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Quận/huyện
                             </div>
-                          </Col>
-                        )
-                      }
-                    })
-                  }
+
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                  })}
                 </Row>
-
               </Form>
-
             )
-          })
-        }
+          })}
       </Drawer>
 
       <Drawer
-        title="Cập nhật thông tin nhà cung cấp"
+        title="Thêm nhà cung cấp"
         width={1000}
         onClose={onCloseUpdate}
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={() => onCloseUpdateFunc(2)} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
       >
-        {
-          arrayUpdate && arrayUpdate.length > 0 && arrayUpdate.map((values, index) => {
-            const obj = Object.keys(values)
-            if (index === 0) {
-              return (
-
-                <Form
-                  style={{ borderBottom: '1px solid rgb(238, 224, 224)', paddingBottom: '1.5rem', }}
-                  className={styles["supplier_add_content"]}
-
-                  // form={form}
-                  layout="vertical"
-                  initialValues={values}
-
-                >
-                  <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    {
-                      obj.map((data) => {
-                        if (data === 'name') {
-                          const InputName = () => <Input disabled defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value =
-                                event.target.value;
-                              arrayUpdate[index][data] =
-                                value;
-                            }} />
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-
-                                {/* <Form.Item
-  
-                                  label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                                  name="phone"
-                                  rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                                > */}
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tên nhà cung cấp</div>
-
-                                <InputName />
-                              </div>
-                            </Col>
-                          )
-                        }
-                        if (data === 'address') {
-                          const InputName = () => <Input defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value =
-                                event.target.value;
-                              arrayUpdate[index][data] =
-                                value;
-                            }} />
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Địa chỉ</div>
-                                <InputName />
-
-                              </div>
-                            </Col>
-                          )
-                        }
-                        if (data === 'phone') {
-                          const InputName = () => <Input disabled defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value =
-                                event.target.value;
-                              arrayUpdate[index][data] =
-                                value;
-                            }} />
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Liên hệ</div>
-                                <InputName />
-
-                              </div>
-                            </Col>
-                          )
-                        }
-
-                        if (data === 'email') {
-                          const InputName = () => <Input disabled defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value =
-                                event.target.value;
-                              arrayUpdate[index][data] =
-                                value;
-                            }} />
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Email</div>
-
-                                <InputName />
-                              </div>
-                            </Col>
-                          )
-                        }
-
-                        if (data === 'province') {
-                          const InputName = () => <Select defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-
-
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
-                              arrayUpdate[index][data] =
-                                event; handleChangeCity(event)
-                            }}>
-                            {
-                              province && province.length > 0 && province.map((values, index) => {
-                                return <Option value={values.province_name}>{values.province_name}</Option>
-                              })
-                            }
-                          </Select>
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Tỉnh/thành phố</div>
-                                <InputName />
-
-                              </div>
-                            </Col>
-                          )
-                        }
-                        if (data === 'district') {
-                          const InputName = () => <Select defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-
-
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              // const value =
-                              //   event.target.value;
-                              arrayUpdate[index][data] =
-                                event;
-                            }}>
-                            {
-                              districtMainAPI && districtMainAPI.length > 0 ? (districtMainAPI && districtMainAPI.length > 0 && districtMainAPI.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>{values.district_name}</Option>
-                                )
-                              })) : (district && district.length > 0 && district.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>{values.district_name}</Option>
-                                )
-                              }))
-                            }
-                          </Select>
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                              <div>
-                                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem', marginTop: '1rem' }}>Quận/huyện</div>
-
-                                <InputName />
-                              </div>
-                            </Col>
-                          )
-                        }
-                      })
-                    }
-                  </Row>
-
-                </Form>
-
-              )
-            }
-          })
-        }
+        <SupplierAdd close={onCloseUpdate} />
       </Drawer>
-
     </>
-  );
+  )
 }

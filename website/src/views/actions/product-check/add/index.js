@@ -1,11 +1,22 @@
-import styles from "./../add/add.module.scss";
-import { Popconfirm, Select, Button, Input, Form, Row, Col, Popover, Steps, message, Tree, Table, Modal, InputNumber } from "antd";
+import styles from './../add/add.module.scss'
 import {
-  Link,
-} from "react-router-dom";
-import { ArrowLeftOutlined, AudioOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
-const { Option } = Select;
+  Popconfirm,
+  Select,
+  Button,
+  Input,
+  Form,
+  Row,
+  Col,
+  message,
+  Tree,
+  Table,
+  Modal,
+  InputNumber,
+} from 'antd'
+import { Link } from 'react-router-dom'
+import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
+import React, { useState } from 'react'
+const { Option } = Select
 
 const columns = [
   {
@@ -34,27 +45,21 @@ const columns = [
     width: 150,
   },
   {
-    title: "Số lượng thực tế",
+    title: 'Số lượng thực tế',
     width: 150,
     render() {
       return <InputNumber />
-    }
+    },
   },
   {
-    title: "Số lượng hệ thống",
+    title: 'Số lượng hệ thống',
     width: 150,
     render() {
       return 10
-    }
-  }
-];
-const content = (
-  <div>
-    <div>Gợi ý 1</div>
-    <div>Gợi ý 2</div>
-  </div>
-);
-const data = [];
+    },
+  },
+]
+const data = []
 for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
@@ -63,7 +68,7 @@ for (let i = 0; i < 46; i++) {
     productName: `Ly thủy tinh`,
     unit: `${i} đơn vị`,
     branchInventory: `Chi nhánh 1`,
-  });
+  })
 }
 const treeData = [
   {
@@ -84,83 +89,106 @@ const treeData = [
       },
     ],
   },
-];
-export default function ProductCheckAdd() {
-  const [current, setCurrent] = useState(0)
+]
+export default function ProductCheckAdd(props) {
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
-  const [checkedKeys, setCheckedKeys] = useState(['']);
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll'])
+  const [checkedKeys, setCheckedKeys] = useState([''])
+  const [selectedKeys, setSelectedKeys] = useState([])
+  const [autoExpandParent, setAutoExpandParent] = useState(true)
 
-  const onSelectChange = selectedRowKeys => {
+  const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-  };
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
 
   const onFinish = (values) => {
-    console.log('Success:', values);
-  };
+    props.close()
+  }
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const { Search } = Input;
+    console.log('Failed:', errorInfo)
+  }
+  const { Search } = Input
 
-
-  const onSearch = value => console.log(value);
+  const onSearch = (value) => console.log(value)
 
   const onExpand = (expandedKeysValue) => {
-    console.log('onExpand', expandedKeysValue);
+    console.log('onExpand', expandedKeysValue)
     // if not set autoExpandParent to false, if children expanded, parent can not collapse.
     // or, you can remove all expanded children keys.
-    setExpandedKeys(expandedKeysValue);
-    setAutoExpandParent(false);
-  };
+    setExpandedKeys(expandedKeysValue)
+    setAutoExpandParent(false)
+  }
   function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
+    console.log(e)
+    message.success('Click on Yes')
   }
 
   function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
+    message.error('Click on No')
   }
   const onCheck = (checkedKeysValue) => {
-    console.log('onCheck', checkedKeysValue);
-    setCheckedKeys(checkedKeysValue);
-  };
+    setCheckedKeys(checkedKeysValue)
+  }
 
   const onSelect = (selectedKeysValue, info) => {
-    console.log('onSelect', info);
-    setSelectedKeys(selectedKeysValue);
-  };
+    setSelectedKeys(selectedKeysValue)
+  }
   return (
     <>
-      <Form onFinish={onFinish}
-        onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={5} xl={5}>
-            <Link to="/product-check/8" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
-              <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Tạo phiếu kiểm hàng</div>
-            </Link>
-          </Col>
-        </Row>
-
-
-        <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 0 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu kiểm hàng</div>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={5} xl={5}>
+      <Form
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        className={styles['product_check_add']}
+      >
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: 'white',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin phiếu kiểm hàng
+          </div>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginTop: '0.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={5}
+              xl={5}
+            >
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Chi nhánh kiểm</div>
                 <Form.Item
@@ -177,7 +205,14 @@ export default function ProductCheckAdd() {
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={5} xl={5}>
+            <Col
+              style={{ width: '100%', marginTop: '0.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={5}
+              xl={5}
+            >
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Nhân viên kiểm</div>
                 <Form.Item
@@ -194,23 +229,32 @@ export default function ProductCheckAdd() {
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={5} xl={5}>
+            <Col
+              style={{ width: '100%', marginTop: '0.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={5}
+              xl={5}
+            >
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Ghi chú</div>
-                <Form.Item
-                  name="note"
-
-                >
+                <Form.Item name="note">
                   <Input placeholder="Nhập ghi chú" />
                 </Form.Item>
               </div>
             </Col>
-            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={24} md={11} lg={5} xl={5}>
+            <Col
+              style={{ width: '100%', marginTop: '0.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={5}
+              xl={5}
+            >
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Tag</div>
-                <Form.Item
-                  name="tag"
-                >
+                <Form.Item name="tag">
                   <Input placeholder="Nhập tag" />
                 </Form.Item>
               </div>
@@ -218,31 +262,106 @@ export default function ProductCheckAdd() {
           </Row>
         </div>
 
-
-        <div style={{ display: 'flex', backgroundColor: 'white', marginTop: '1rem', padding: '1rem 1rem 0rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Danh sách sản phẩm</div>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-            <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Popover placement="bottomLeft" content={content} trigger="click">
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
-              </Popover>
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: 'white',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Danh sách sản phẩm
+          </div>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginTop: '1rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <Search
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo tên sản phẩm, mã sku"
+                onSearch={onSearch}
+                enterButton
+              />
             </Col>
           </Row>
-          <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
-            <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
+          <div
+            style={{
+              border: '1px solid rgb(224, 208, 208)',
+              marginTop: '1rem',
+              width: '100%',
+            }}
+          >
+            <Table
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={data}
+              scroll={{ y: 500 }}
+            />
           </div>
-          {
-            selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              onConfirm={confirm}
-              onCancel={cancel}
-              okText="Yes"
-              cancelText="No"
-            ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
-          }
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+          {selectedRowKeys && selectedRowKeys.length > 0 ? (
+            <div
+              style={{
+                marginTop: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Popconfirm
+                title="Bạn chắc chắn muốn xóa?"
+                onConfirm={confirm}
+                onCancel={cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger style={{ width: '7.5rem' }}>
+                  Xóa sản phẩm
+                </Button>
+              </Popconfirm>
+            </div>
+          ) : (
+            ''
+          )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
             <Form.Item style={{ marginLeft: '1rem', marginTop: '1rem' }}>
-              <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+              <Button
+                style={{ width: '7.5rem' }}
+                type="primary"
+                htmlType="submit"
+              >
                 Tạo
               </Button>
             </Form.Item>
@@ -252,7 +371,6 @@ export default function ProductCheckAdd() {
           title="Thêm nhanh sản phẩm"
           centered
           footer={null}
-
           visible={modal2Visible}
           onOk={() => modal2VisibleModal(false)}
           onCancel={() => modal2VisibleModal(false)}
@@ -269,13 +387,31 @@ export default function ProductCheckAdd() {
               selectedKeys={selectedKeys}
               treeData={treeData}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <div onClick={() => modal2VisibleModal(false)}><Button type="primary" style={{ width: '5rem' }} danger>Hủy</Button></div>
-              <div><Button type="primary" style={{ width: '5rem', marginLeft: '1rem' }} >Thêm</Button></div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <div onClick={() => modal2VisibleModal(false)}>
+                <Button type="primary" style={{ width: '5rem' }} danger>
+                  Hủy
+                </Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  style={{ width: '5rem', marginLeft: '1rem' }}
+                >
+                  Thêm
+                </Button>
+              </div>
             </div>
           </div>
         </Modal>
       </Form>
     </>
-  );
+  )
 }

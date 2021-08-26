@@ -10,11 +10,13 @@ import {
   Table,
   Modal,
   Popover,
+  Drawer,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+import ProductCheckAdd from 'views/actions/product-check/add'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -58,7 +60,7 @@ for (let i = 0; i < 46; i++) {
 }
 export default function ProductCheck() {
   const { Search } = Input
-  const [modal2Visible, setModal2Visible] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
 
@@ -128,12 +130,7 @@ export default function ProductCheck() {
     })
   }
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
   }
   const rowSelection = {
@@ -163,14 +160,13 @@ export default function ProductCheck() {
             Danh sách phiếu kiểm hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Link to={ROUTES.PRODUCT_CHECK_ADD}>
-              <Button
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Tạo phiếu kiểm
-              </Button>
-            </Link>
+            <Button
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={() => setShowCreate(true)}
+            >
+              Tạo phiếu kiểm
+            </Button>
           </div>
         </div>
         <Row
@@ -189,11 +185,9 @@ export default function ProductCheck() {
             lg={11}
             xl={7}
           >
-            <Popover placement="bottomLeft" content={content} trigger="click">
-              <div style={{ width: '100%' }}>
-                <Search placeholder="Tìm kiếm theo mã, theo tên" enterButton />
-              </div>
-            </Popover>
+            <div style={{ width: '100%' }}>
+              <Search placeholder="Tìm kiếm theo mã, theo tên" enterButton />
+            </div>
           </Col>
           <Col
             style={{ width: '100%', marginTop: '1rem' }}
@@ -341,59 +335,14 @@ export default function ProductCheck() {
           />
         </div>
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
+      <Drawer
+        visible={showCreate}
+        onClose={() => setShowCreate(false)}
+        width="75%"
+        title="Tạo phiếu kiểm hàng"
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                placeholder="Tìm kiếm khách hàng"
-                onSearch={onSearchCustomerChoose}
-                enterButton
-              />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
-            }}
-          >
-            <Table
-              scroll={{ y: 500 }}
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-              size="small"
-            />
-          </div>
-        </div>
-      </Modal>
+        <ProductCheckAdd close={() => setShowCreate(false)} />
+      </Drawer>
     </>
   )
 }

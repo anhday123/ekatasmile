@@ -18,6 +18,7 @@ import { getDelivery, UpdateDelivery } from '../../apis/delivery'
 import ImportModal from '../../components/ExportCSV/importModal'
 import exportToCSV from '../../components/ExportCSV/export'
 import ChangeStatusModal from 'components/shipping-product/changeStatus'
+import ShippingProductAdd from 'views/actions/shipping-product/add'
 const { Option } = Select
 const { RangePicker } = DatePicker
 
@@ -531,7 +532,14 @@ export default function ShippingProduct() {
           />
         </div>
       </div>
-      <Drawer visible={showCreate}></Drawer>
+      <Drawer
+        visible={showCreate}
+        width="75%"
+        onClose={() => setShowCreate(false)}
+        title="Tạo phiếu chuyển hàng"
+      >
+        <ShippingProductAdd close={() => setShowCreate(false)} />
+      </Drawer>
       <ImportModal
         visible={exportVisible}
         onCancel={() => setExportVisible(false)}
