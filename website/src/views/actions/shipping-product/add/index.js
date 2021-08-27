@@ -292,9 +292,7 @@ export default function ShippingProductAdd(props) {
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
   }
-  const onSearch = (value) => console.log(value)
   const onSelectChangeMain = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeysMain(selectedRowKeys)
   }
   const rowSelectionMain = {
@@ -302,7 +300,6 @@ export default function ShippingProductAdd(props) {
     onChange: onSelectChangeMain,
   }
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
   }
   const rowSelection = {
@@ -391,7 +388,6 @@ export default function ShippingProductAdd(props) {
   }
 
   const onSelect = (value) => {
-    console.log(JSON.parse(value))
     setProductDelivery([...productDelivery, JSON.parse(value)])
   }
   const ImportButton = () => (
@@ -715,7 +711,6 @@ export default function ShippingProductAdd(props) {
               <Search
                 style={{ width: '100%' }}
                 placeholder="Tìm kiếm theo mã, theo tên"
-                onSearch={onSearch}
                 enterButton
               />
             </div>

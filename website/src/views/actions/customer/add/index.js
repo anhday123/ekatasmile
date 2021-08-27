@@ -37,7 +37,7 @@ export default function CustomerAdd(props) {
         first_name: values.first_name,
         last_name: values.last_name,
         phone: values.phone,
-        type: values.type,
+        type: props.hiddenType ? 'vangLai' : values.type,
         birthday: values.birthday ? values.birthday : '',
         address: values.address ? values.address : '',
         province: values.province ? values.province : '',
@@ -207,37 +207,40 @@ export default function CustomerAdd(props) {
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    color: 'black',
-                    fontWeight: '600',
-                  }}
-                >
-                  <span style={{ color: '#ff4d4f' }}>*</span> Loại khách hàng
+            {!props.hiddenType && (
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={11}
+                lg={11}
+                xl={11}
+              >
+                <div>
+                  <div
+                    style={{
+                      marginBottom: '0.5rem',
+                      color: 'black',
+                      fontWeight: '600',
+                    }}
+                  >
+                    <span style={{ color: '#ff4d4f' }}>*</span> Loại khách hàng
+                  </div>
+                  <Form.Item
+                    name="type"
+                    hasFeedback
+                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                  >
+                    <Select placeholder="Chọn loại khách hàng">
+                      {/* <Option value="vip">VIP</Option> */}
+                      <Option value="potential">Tiềm năng</Option>
+                      <Option value="vangLai">Vãng lai</Option>
+                    </Select>
+                  </Form.Item>
                 </div>
-                <Form.Item
-                  name="type"
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="Chọn loại khách hàng">
-                    {/* <Option value="vip">VIP</Option> */}
-                    <Option value="potential">Tiềm năng</Option>
-                    <Option value="vangLai">Vãng lai</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
+              </Col>
+            )}
+
             <Col
               style={{ width: '100%' }}
               xs={24}
