@@ -410,6 +410,7 @@ export default function ShippingProductAdd(props) {
           className={styles['supplier_add_content']}
           onFinish={onFinish}
         >
+          
           <div
             style={{
               display: 'flex',
@@ -420,8 +421,11 @@ export default function ShippingProductAdd(props) {
               color: 'black',
               fontWeight: '600',
               fontSize: '1rem',
+              cursor: 'pointer'
             }}
+            onClick={() => history.goBack()}
           >
+            <ArrowLeftOutlined style={{marginRight: 7}}/>
             Thông tin phiếu chuyển
           </div>
           <Row style={{ width: '100%' }}>

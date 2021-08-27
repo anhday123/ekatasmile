@@ -56,9 +56,7 @@ import cart from './../../assets/img/cart.png'
 import Permission from 'components/permission'
 
 import {
-  useParams,
   Link,
-  useHistory,
   useLocation,
   useRouteMatch,
 } from 'react-router-dom'
@@ -75,7 +73,6 @@ const { Option } = Select
 const { Dragger } = Upload
 
 const UI = (props) => {
-  let history = useHistory()
   const location = useLocation()
   const routeMatch = useRouteMatch()
 
@@ -89,10 +86,11 @@ const UI = (props) => {
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
   const [modal1Visible, setModal1Visible] = useState(false)
-  let { slug } = useParams()
   const dispatch = useDispatch()
   const [count, setCount] = useState(0)
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(
+    location.pathname === ROUTES.SELL ? true : false
+  ) //nếu nhấn vào menu bán hàng thì thu gọn menu
   const [loadingStore, setLoadingStore] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -340,9 +338,6 @@ const UI = (props) => {
     localStorage.setItem('key', JSON.stringify(data))
     setKey(data)
   }
-  useEffect(() => {
-    setKey(JSON.parse(localStorage.getItem('key')))
-  }, [])
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -365,9 +360,6 @@ const UI = (props) => {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  useEffect(() => {
-    apiAllRoleData()
-  }, [])
 
   const onClickSignout = () => {
     localStorage.clear()
@@ -375,6 +367,8 @@ const UI = (props) => {
 
   const [username, setUsername] = useState('')
   useEffect(() => {
+    setKey(JSON.parse(localStorage.getItem('key')))
+
     const username = localStorage.getItem('username')
     setUsername(username)
   }, [])
@@ -384,7 +378,7 @@ const UI = (props) => {
         <div>
           <b>
             <UserOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>{' '}
+          </b>
           Thông tin cá nhân
         </div>
         <div>
@@ -395,7 +389,7 @@ const UI = (props) => {
         <div>
           <b>
             <EditOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>{' '}
+          </b>
           Chỉnh sửa thông tin cá nhân
         </div>
         <div>
@@ -403,7 +397,7 @@ const UI = (props) => {
         </div>
       </div>
       <Link
-        to="/"
+        to={ROUTES.LOGIN}
         onClick={onClickSignout}
         className={styles['user_information_link']}
         style={{ color: 'black', fontWeight: '600' }}
@@ -411,7 +405,7 @@ const UI = (props) => {
         <div>
           <b>
             <LogoutOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>{' '}
+          </b>
           Đăng xuất
         </div>
         <div>
@@ -503,12 +497,7 @@ const UI = (props) => {
       }
     },
   }
-  useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken')
-    if (!accessToken) {
-      history.push('/')
-    }
-  }, [])
+
   const onFinish = async (values) => {
     if (list !== 'default') {
       if (user.avatar !== 'default') {
@@ -619,25 +608,7 @@ const UI = (props) => {
   useEffect(() => {
     getInfoUser()
     getStoreByUser()
-
-    if (slug === '1' || slug === 1) {
-      const branch_id = JSON.parse(localStorage.getItem('branch_id'))
-      var result =
-        branch_id &&
-        branch_id.data &&
-        branch_id.data.branch &&
-        branch_id.data.branch.branch_id &&
-        branch_id.data.branch.branch_id
-          ? branch_id.data.branch.branch_id
-          : ''
-      if (
-        (result && result.name !== '') ||
-        (result && result.name !== ' ') ||
-        (result && result.name !== 'default') ||
-        (result && result.name !== null)
-      ) {
-      }
-    }
+    apiAllRoleData()
   }, [])
 
   //get width device
@@ -940,7 +911,9 @@ const UI = (props) => {
         >
           {MENUS.map(renderMenuItem)}
           <Menu.Item onClick={onClickSignout} key="9" icon={<LogoutOutlined />}>
-            <Link to={ROUTES.LOGIN}>Logout</Link>
+            <Link to={ROUTES.LOGIN} style={{ fontSize: '1rem' }}>
+              Logout
+            </Link>
           </Menu.Item>
         </Menu>
       </Sider>

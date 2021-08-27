@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import {  ArrowLeftOutlined, FileExcelOutlined } from "@ant-design/icons";
 import moment from 'moment';
+import { ROUTES } from "consts";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -22,7 +23,7 @@ export default function RevenueDetailView() {
   return (
     <>
       <div className={styles["promotion_manager"]}>
-        <Link style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(238, 227, 227)', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} className={styles["supplier_information_title"]} to="/report-financial/16">
+        <Link style={{ display: 'flex', paddingBottom: '1rem', borderBottom: '1px solid rgb(238, 227, 227)', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }} className={styles["supplier_information_title"]} to={ROUTES.REPORT_FINANCIAL}>
 
           <ArrowLeftOutlined style={{ color: 'black', marginRight: '0.5rem', fontWeight: '600', fontSize: '1rem' }} />
           <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }} className={styles["supplier_information_title_right"]}>

@@ -75,6 +75,8 @@ import ShippingView from './actions/shipping/view'
 import ShippingAdd from './actions/shipping/add'
 
 import CustomerView from './actions/customer/view'
+import RevenueCostView from './actions/revenue-cost/view'
+import ReportFinancialView from './actions/sale-detail/view'
 import CustomerUpdate from './actions/shipping/update'
 import SupplierUpdate from './actions/supplier/update'
 import InventoryAdd from './actions/inventory/add'
@@ -94,6 +96,20 @@ const DEFINE_ROUTER = [
     path: ROUTES.REPORT_IMPORT,
     Component: () => <ReportImport />,
     title: 'Báo cáo nhập hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.REPORT_FINANCIAL_VIEW,
+    Component: () => <ReportFinancialView />,
+    title: 'Báo cáo chi tiết bán hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.REPORT_REVENUE_VIEW,
+    Component: () => <RevenueCostView />,
+    title: 'Báo cáo chi phí doanh thu',
     permissions: [],
     exact: true,
   },

@@ -76,6 +76,8 @@ export const ROUTES = {
   SHIPPING_VIEW: '/actions/shipping/view',
   SHIPPING_ADD: '/actions/shipping/add',
   CUSTOMER_VIEW: '/actions/customer/view',
+  REPORT_FINANCIAL_VIEW: '/actions/sale-detail/view',
+  REPORT_REVENUE_VIEW: '/actions/revenue-cost/view',
   CUSTOMER_UPDATE: '/actions/customer/update',
   SUPPLIER_UPDATE: '/actions/supplier/update',
   INVENTORY_ADD: '/actions/inventory/add',
