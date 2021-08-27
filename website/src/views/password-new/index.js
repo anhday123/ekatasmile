@@ -2,12 +2,14 @@ import styles from './../password-new/password-new.module.scss'
 import 'antd/dist/antd.css'
 import React, { useEffect } from 'react'
 import { Link, useLocation, useHistory } from 'react-router-dom'
-import pgc from './../../assets/img/logo.png'
-import { changePasswordMain } from '../../apis/changePassword'
+import pgc from 'assets/img/logo.png'
+import { changePasswordMain } from 'apis/changePassword'
 import { useDispatch } from 'react-redux'
-import { ACTION, ROUTES } from './../../consts/index'
-import { Form, Input, Button, notification } from 'antd'
+import { ACTION, ROUTES } from 'consts/index'
+import { Form, Input, Button, notification, Row, Col } from 'antd'
 import { LockOutlined } from '@ant-design/icons'
+import store from 'assets/img/store.png'
+
 export default function PasswordNew() {
   const dispatch = useDispatch()
   const location = useLocation()
@@ -79,77 +81,111 @@ export default function PasswordNew() {
     if (!location.state) history.goBack()
   }, [])
   return (
-    <div className={styles['login']}>
-      <div className={styles['login_img_parent']}>
-        <img className={styles['login_img']} src={pgc} alt="" />
-      </div>
-      <div className={styles['login_forget']}>
-        <div
-          style={{
-            color: '#1890FF',
-            marginBottom: '1rem',
-            fontSize: '1.25rem',
-          }}
-        >
-          Tạo mật khẩu mới
+    <Row
+      style={{
+        display: 'flex',
+        height: '100%',
+        backgroundColor: '#5B6BE8',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
+        <div className={styles['login_forget']}>
+          <div
+            style={{
+              marginBottom: '1rem',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+            }}
+          >
+            Tạo mật khẩu mới
+          </div>
+          <div className={styles['login_forget_title']}>
+            Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký
+            tự đặc biệt.
+          </div>
         </div>
-        <div className={styles['login_forget_title']}>
-          Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự
-          đặc biệt.
-        </div>
-      </div>
-      <Form
-        className={styles['login_bottom']}
-        form={form}
-        onFinish={onFinishRegister}
-      >
-        <Form.Item
-          className={styles['login_bottom_password']}
-          name="passwordRegister"
-          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+        <Form
+          className={styles['login_bottom']}
+          form={form}
+          onFinish={onFinishRegister}
         >
-          <Input.Password
-            size="large"
-            prefix={<LockOutlined className="site-form-item-icon" />}
-            type="password"
-            placeholder="Mật khẩu mới"
-          />
-        </Form.Item>
-        <Form.Item
-          className={styles['login_bottom_password']}
-          name="RepasswordRegister"
-          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-        >
-          <Input.Password
-            size="large"
-            prefix={<LockOutlined className="site-form-item-icon" />}
-            type="password"
-            placeholder="Nhập lại mật khẩu mới"
-          />
-        </Form.Item>
-        <Link
-          to="/"
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            marginBottom: '1.5rem',
-          }}
-          className={styles['login_bottom_email']}
-        >
-          Đăng nhập
-        </Link>
-        <div className={styles['login_bottom_left_button_parent']}>
-          <Form.Item>
-            <Button
-              className={styles['login_bottom_left_button']}
-              type="primary"
-              htmlType="submit"
-            >
-              Thay đổi mật khẩu
-            </Button>
+          <Form.Item
+            className={styles['login_bottom_password']}
+            name="passwordRegister"
+            rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+          >
+            <Input.Password
+              size="large"
+              prefix={<LockOutlined className="site-form-item-icon" />}
+              type="password"
+              placeholder="Mật khẩu mới"
+              style={{ borderRadius: 40 }}
+            />
           </Form.Item>
-        </div>
-      </Form>
-    </div>
+          <Form.Item
+            className={styles['login_bottom_password']}
+            name="RepasswordRegister"
+            rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+          >
+            <Input.Password
+              size="large"
+              prefix={<LockOutlined className="site-form-item-icon" />}
+              type="password"
+              placeholder="Nhập lại mật khẩu mới"
+              style={{ borderRadius: 40 }}
+            />
+          </Form.Item>
+          <Link
+            to={ROUTES.LOGIN}
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginBottom: '1.5rem',
+              color: 'white',
+            }}
+            className={styles['login_bottom_email']}
+          >
+            Đăng nhập
+          </Link>
+          <div className={styles['login_bottom_left_button_parent']}>
+            <Form.Item>
+              <Button
+                className={styles['login_bottom_left_button']}
+                type="primary"
+                htmlType="submit"
+                style={{
+                  backgroundColor: 'black',
+                  borderColor: 'black',
+                  borderRadius: 40,
+                }}
+              >
+                Thay đổi mật khẩu
+              </Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Col>
+      <Col
+        style={{ width: '100%', height: '100vh', backgroundColor: 'white' }}
+        xs={24}
+        sm={24}
+        md={24}
+        lg={24}
+        xl={16}
+      >
+        <img
+          src={store}
+          style={{
+            width: '100%',
+            paddingBottom: '4rem',
+            height: '100vh',
+            objectFit: 'contain',
+          }}
+          alt=""
+        />
+      </Col>
+    </Row>
   )
 }

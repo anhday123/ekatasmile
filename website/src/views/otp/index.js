@@ -2,11 +2,13 @@ import styles from './../otp/otp.module.scss'
 import 'antd/dist/antd.css'
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ACTION, ROUTES } from './../../consts/index'
-import { apiOTPForgetPassword, apiOTPMain } from '../../apis/otp'
+import { ACTION, ROUTES } from 'consts/index'
+import { apiOTPForgetPassword, apiOTPMain } from 'apis/otp'
 import { Link, useHistory, useLocation } from 'react-router-dom'
-import pgc from './../../assets/img/logo.png'
-import { Form, Input, Button, notification } from 'antd'
+import pgc from 'assets/img/logo.png'
+import { Form, Input, Button, notification, Row, Col } from 'antd'
+import store from 'assets/img/store.png'
+
 export default function OTP() {
   const dispatch = useDispatch()
   let history = useHistory()
@@ -102,57 +104,101 @@ export default function OTP() {
   }, [])
 
   return (
-    <div className={styles['login']}>
-      <div className={styles['login_img_parent']}>
-        <img className={styles['login_img']} src={pgc} alt="" />
-      </div>
-      <div className={styles['confirm_otp']}>
-        <div style={{ color: 'white', fontSize: '1.25rem', fontWeight: '600' }}>
-          Xác minh mã OTP
-        </div>
-        <div>Mã xác minh đã được gửi qua gmail mà bạn đã đăng ký</div>
-
-        <div>Vui lòng nhập OTP</div>
-      </div>
-      <Form onFinish={onFinish} className={styles['confirm_otp_input']}>
-        <Form.Item
-          name="otp"
-          rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}
-        >
-          <Input
-            style={{
-              textAlign: 'center',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-            maxLength="6"
-            placeholder=""
-          />
-        </Form.Item>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '22.5rem',
-          }}
-        >
-          <div>
-            Bạn chưa nhận được mã?{' '}
-            <a onClick={onClickOTP} style={{ marginLeft: '0.5rem' }}>
-              Gửi lại OTP
-            </a>
+    <Row
+      style={{
+        display: 'flex',
+        height: '100%',
+        backgroundColor: '#5B6BE8',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
+        <div className={styles['confirm_otp']}>
+          <div
+            style={{ color: 'white', fontSize: '1.5rem', fontWeight: '700' }}
+          >
+            Xác minh mã OTP
           </div>
-          <Link to={ROUTES.LOGIN}>Đăng nhập</Link>
+          <div>Mã xác minh đã được gửi qua gmail mà bạn đã đăng ký</div>
+
+          <div>Vui lòng nhập OTP</div>
         </div>
-        <div className={styles['login_bottom_left_button_parent']}>
-          <Form.Item style={{ width: '100%' }}>
-            <Button type="primary" style={{ width: '100%' }} htmlType="submit">
-              Xác thực
-            </Button>
+        <Form onFinish={onFinish} className={styles['confirm_otp_input']}>
+          <Form.Item
+            name="otp"
+            rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}
+          >
+            <Input
+              style={{
+                textAlign: 'center',
+                display: 'flex',
+                justifyContent: 'center',
+                color: 'black',
+              }}
+              maxLength="6"
+              placeholder=""
+            />
           </Form.Item>
-        </div>
-      </Form>
-    </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '22.5rem',
+            }}
+          >
+            <div>
+              Bạn chưa nhận được mã?{' '}
+              <a
+                onClick={onClickOTP}
+                style={{
+                  marginLeft: '0.5rem',
+                  color: 'white',
+                  fontWeight: 700,
+                }}
+              >
+                Gửi lại OTP
+              </a>
+            </div>
+          </div>
+          <div className={styles['login_bottom_left_button_parent']}>
+            <Form.Item style={{ width: '100%' }}>
+              <Button
+                type="primary"
+                style={{
+                  width: '100%',
+                  borderColor: 'black',
+                  backgroundColor: 'black',
+                  borderRadius: 40,
+                }}
+                htmlType="submit"
+              >
+                Xác thực
+              </Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Col>
+      <Col
+        style={{ width: '100%', height: '100vh', backgroundColor: 'white' }}
+        xs={24}
+        sm={24}
+        md={24}
+        lg={24}
+        xl={16}
+      >
+        <img
+          src={store}
+          style={{
+            width: '100%',
+            paddingBottom: '4rem',
+            height: '100vh',
+            objectFit: 'contain',
+          }}
+          alt=""
+        />
+      </Col>
+    </Row>
   )
 }

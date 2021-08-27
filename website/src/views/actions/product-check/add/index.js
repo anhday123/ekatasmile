@@ -13,7 +13,7 @@ import {
   Modal,
   InputNumber,
 } from 'antd'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 const { Option } = Select
@@ -91,6 +91,7 @@ const treeData = [
   },
 ]
 export default function ProductCheckAdd(props) {
+  const history = useHistory()
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [expandedKeys, setExpandedKeys] = useState(['productGroupAll'])
@@ -169,9 +170,12 @@ export default function ProductCheckAdd(props) {
               color: 'black',
               fontWeight: '600',
               fontSize: '1rem',
+              cursor: 'pointer',
             }}
+            onClick={() => history.goBack()}
           >
-            Thông tin phiếu kiểm hàng
+            <ArrowLeftOutlined style={{ marginRight: 5, fontSize: 18 }} /> Thông
+            tin phiếu kiểm hàng
           </div>
           <Row
             style={{
@@ -320,7 +324,6 @@ export default function ProductCheckAdd(props) {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
-              scroll={{ y: 500 }}
             />
           </div>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (

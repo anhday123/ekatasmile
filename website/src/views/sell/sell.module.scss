@@ -1,111 +1,106 @@
 .sell_manager {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 1rem 1rem 0 1rem;
-    flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 1rem 0 1rem;
+  flex-direction: column;
 }
 .sell_manager_title {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: column;
-    margin-bottom: 1rem;
-    width: 100%;
-    background-color: #336cfb;
-    padding: 1rem 1rem 0 1rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  width: 100%;
+  background-color: #336cfb;
+  padding: 1rem 1rem 0 1rem;
 }
 .sell_manager_title_row {
-    display: flex;
-    justify-content: space-between;
-    // align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  // align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_fix {
-    display: flex;
-    justify-content: flex-start;
-    // align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  // align-items: center;
+  width: 100%;
 }
-.sell_manager_title_row_top {
-    display: flex;
-    justify-content: space-between;
-    // align-items: center;
-    width: 100%;
-}
-.sell_manager_title_row_col_orders {
-    display: flex;
 
-    // padding: 0.5rem 0.75rem;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+.sell_manager_title_row_col_orders {
+  display: flex;
+
+  // padding: 0.5rem 0.75rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_orders > div {
-    color: white;
-    font-weight: 600;
+  color: white;
+  font-weight: 600;
 }
 .sell_manager_title_row_col_orders_acitve {
-    display: flex;
-    background-color: #336cfb;
-    // padding: 0.5rem 0.75rem;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  background-color: #336cfb;
+  // padding: 0.5rem 0.75rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_orders_acitve > div {
-    color: white;
-    font-weight: 600;
+  color: white;
+  font-weight: 600;
 }
 .sell_manager_title_row_col {
-    width: 100%;
-    margin-bottom: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
 }
 .sell_manager_title_row_col_item {
-    width: 100%;
-    margin-right: 1rem;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    background-color: #11398a;
-    padding: 0.5rem 0.75rem;
+  width: 100%;
+  margin-right: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  background-color: #11398a;
+  padding: 0.5rem 0.75rem;
 }
 .sell_manager_title_row_col_item_add {
-    width: 100%;
-    display: flex;
-    cursor: pointer;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 1rem;
+  width: 100%;
+  display: flex;
+  cursor: pointer;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 .sell_manager_title_row_col_orders_title {
-    margin-right: 0.5rem;
+  margin-right: 0.5rem;
 }
 .sell_manager_title_row_col_orders_add {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_orders_add > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_item_active {
-    width: 100%;
-    position: relative;
-    margin-bottom: 1rem;
-    margin-right: 1rem;
-    cursor: pointer;
-    background-color: white;
-    padding: 0.5rem 0.75rem;
+  width: 100%;
+  position: relative;
+  margin-bottom: 1rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  background-color: white;
+  padding: 0.5rem 0.75rem;
 }
 .sell_manager_title_row_col_item_active
-    .sell_manager_title_row_col_orders
-    > div {
-    color: black;
-    font-weight: 600;
+  .sell_manager_title_row_col_orders
+  > div {
+  color: black;
+  font-weight: 600;
 }
 // .sell_manager_title_row_col_item:hover {
 //     width: 100%;
@@ -124,474 +119,464 @@
 
 // }
 .sell_manager_title_row_col_user {
-    width: 100%;
-    //   margin-bottom: 1rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  width: 100%;
+  //   margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 .sell_manager_title_row_col_home {
-    width: 100%;
-    margin-bottom: 1rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 .sell_manager_title_row_col_parent {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_child {
-    width: 100%;
+  width: 100%;
 }
 .sell_manager_title_row_col_child_right {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_child_name {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_child_name > div {
-    color: white;
-    font-size: 1rem;
-    //   margin-right: 0.5rem;
-    font-weight: 600;
+  color: white;
+  font-size: 1rem;
+  //   margin-right: 0.5rem;
+  font-weight: 600;
 }
 .sell_manager_title_row_col_parent_right {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_title_row_col_child_name_support {
-    padding: 0.25rem 0.5rem;
-    border: 2px solid white;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid white;
 }
 .sell_manager_content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row {
-    display: flex;
-    justify-content: space-between;
-    // align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  // align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col {
-    width: 100%;
-    //   margin-bottom: 1rem;
-    //   background-color: white;
-    //   padding: 1rem;
+  width: 100%;
 }
 .sell_manager_content_row_col_right {
-    width: 100%;
-    margin-bottom: 1rem;
-    background-color: white;
-    //   margin-bottom: 1rem;
-    //   background-color: white;
-    padding: 1rem;
+  width: 100%;
+  background-color: white;
 }
 .sell_manager_content_row_col_table {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    border: 1px solid rgb(219, 202, 202);
-    max-width: 100%;
-    overflow: auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgb(219, 202, 202);
+  max-width: 100%;
+  overflow: auto;
 
-    background-color: white;
+  background-color: white;
 }
 .sell_manager_content_row_col_table_child {
-    width: 100%;
-    background-color: white;
+  width: 100%;
+  background-color: white;
 }
 .delete_icon {
-    cursor: pointer;
+  cursor: pointer;
 }
 .sell_manager_content_row_col_bottom {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row_col {
-    width: 100%;
-    background-color: white;
-    padding: 1rem;
-    margin-bottom: 1rem;
+  width: 100%;
+  background-color: white;
 }
 .sell_manager_content_row_col_right_parent {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    //  align-content: flex-end;
-    // height: 100%;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
 }
 .sell_manager_content_row_col_right_parent_search {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_search_row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_col {
-    width: 100%;
-    margin-bottom: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
 }
 .sell_manager_content_row_col_right_col_icon {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  cursor: pointer;
 }
 .sell_manager_content_row_col_right_parent_content_top {
-    display: flex;
-    justify-content: flex-start;
-    align-content: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-content: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    // align-items: center;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  // align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content_money {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content_money_fix {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    width: 100%;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content_money > div {
-    // color: black;
-    // font-weight: 600;
+  // color: black;
+  // font-weight: 600;
 }
 .sell_manager_content_row_col_right_parent_content_money_total {
-    font-size: 1rem;
-    font-weight: 600;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 1.5rem;
-    color: black;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  color: black;
 }
 .sell_manager_content_row_col_right_parent_content_money_radio {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
 }
 .sell_manager_content_row_col_right_parent_content_money_radio > div {
-    color: black;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    font-weight: 600;
+  color: black;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  font-weight: 600;
 }
 .sell_manager_content_row_col_right_parent_content_money_radio_child {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
 }
 .sell_manager_content_row_col_right_parent_content_money_input {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content_money_input_button {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_right_parent_content_money_input_button > div {
-    // padding: 1rem;
+  // padding: 1rem;
 }
 .button_background {
-    background-color: #fc5b00;
-    display: flex;
-    font-size: 1rem;
-    font-weight: 600;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    //   width: 5.5rem;
+  background-color: #fc5b00;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  //   width: 5.5rem;
 }
 .button_background_right {
-    background-color: #336cfb;
-    display: flex;
-    font-size: 1rem;
-    font-weight: 600;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    //   width: 5.5rem;
+  background-color: #336cfb;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  //   width: 5.5rem;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col {
-    width: 100%;
-    // margin-right: 1rem;
-    // margin-bottom: 1rem;
+  width: 100%;
+  // margin-right: 1rem;
+  // margin-bottom: 1rem;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col_product {
-    display: flex;
-    border: 1px solid rgb(235, 225, 225);
-    position: relative;
-    justify-content: flex-start;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  border: 1px solid rgb(235, 225, 225);
+  position: relative;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col_product_image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent {
 }
 .product_information {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  flex-direction: column;
 }
 .product_information > div {
-    display: flex;
-    color: black;
-    font-size: 0.75rem;
-    font-weight: 600;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  color: black;
+  font-size: 0.75rem;
+  font-weight: 600;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col_parent {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    cursor: pointer;
-    padding: 1rem;
-    width: 100%;
+  cursor: pointer;
+  padding: 1rem;
+  width: 100%;
 }
 .sell_manager_content_row_col_bottom_row_col_bottom_col_parent:hover {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 .carousel {
 }
 .modal_item {
-    display: flex;
-    justify-content: space-between;
-    // align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  // align-items: center;
+  width: 100%;
 }
 .modal_item_col {
-    width: 100%;
+  width: 100%;
 }
 .modal {
-    display: flex;
-    justify-content: flex-start;
-    align-content: center;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-content: center;
+  width: 100%;
+  flex-direction: column;
 }
 .date {
-    width: 100%;
+  width: 100%;
 }
 .popover {
-    width: 100%;
-    height: 25rem;
-    max-height: 100%;
-    overflow: auto;
-    z-index: 999;
-    max-width: 100%;
-    box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
-    -webkit-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
-    -moz-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+  width: 100%;
+  height: 25rem;
+  max-height: 100%;
+  overflow: auto;
+  z-index: 999;
+  max-width: 100%;
+  box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  -webkit-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  -moz-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 .popover > div {
-    cursor: pointer;
-    padding: 0.5rem 1rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
 }
 .popover > div:hover {
-    padding: 0.5rem 1rem;
-    background-color: rgb(233, 217, 217);
+  padding: 0.5rem 1rem;
+  background-color: rgb(233, 217, 217);
 }
 .button_modal {
-    display: flex;
-    justify-content: flex-end;
-    align-content: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-content: center;
+  width: 100%;
 }
 .button_modal_left {
-    margin-right: 1rem;
+  margin-right: 1rem;
 }
 .sell_manager_content_row_col_bottom_row_col_empty {
-    display: flex;
-    height: 30rem;
-    flex-direction: column;
-    max-height: 100%;
-    overflow: auto;
-    justify-content: center;
-    align-items: center;
-    // height: 30rem;
-    width: 100%;
+  display: flex;
+  height: 30rem;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  padding: 1rem;
+  margin-right: 7px;
 }
-.sell_manager_content_row_col_bottom_row_col_empty > div {
-    color: black;
-    font-size: 1.25rem;
-    font-weight: 600;
-}
+
 .sell_manager_content_row_col_right_parent_content_money_total_payment {
-    color: black;
-    // font-size: 1.25rem;
-    font-weight: 600;
+  color: black;
+  // font-size: 1.25rem;
+  font-weight: 600;
 }
 .product_show {
-    height: 30rem;
-    max-height: 100%;
-    overflow: auto;
+  height: 30rem;
+  max-height: 100%;
 }
 .variant {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
 }
 .variant > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 .variant > div > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 .product-search {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .product-search > div {
-    display: flex;
-    margin-left: 1rem;
-    color: black;
-    font-weight: 600;
-    font-size: 1rem;
-    justify-content: flex-start;
-    align-items: center;
+  display: flex;
+  margin-left: 1rem;
+  color: black;
+  font-weight: 600;
+  font-size: 1rem;
+  justify-content: flex-start;
+  align-items: center;
 }
 .order {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
 
-    margin-bottom: 1rem;
-    padding: 0 2.5rem 1rem 1rem;
-    border-bottom: 1px solid grey;
-    flex-direction: column;
+  margin-bottom: 1rem;
+  padding: 0 2.5rem 1rem 1rem;
+  border-bottom: 1px solid grey;
+  flex-direction: column;
 }
 .order > div {
-    display: flex;
-    margin-bottom: 0.5rem;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  margin-bottom: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 .informaton__customer-search {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 1rem;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
 }
 
 .informaton__customer-search:hover {
-    cursor: pointer;
-    background-color: rgb(226, 209, 209);
+  cursor: pointer;
+  background-color: rgb(226, 209, 209);
 }
 .shadow {
-    box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
-    -webkit-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
-    -moz-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  -webkit-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
+  -moz-box-shadow: -1px 2px 6px -1px rgba(0, 0, 0, 1);
 }
 .delete {
-    z-index: 9999999999999999999;
+  z-index: 9999999999999999999;
 }
 .delete:hover {
-    color: black;
+  color: black;
 }
 .order__list-view {
-    background-color: '#50D648';
+  background-color: '#50D648';
 }
 .customer__information-view {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
 }
 .customer__information-view > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
 }
 .customer__information-view > div > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+@media only screen and (max-width: 768px) {
+  .sell_manager_content_row_col_bottom_row_col_empty {
+    margin-right: 0px;
+    flex-direction: column;
+  }
 }

@@ -55,11 +55,7 @@ import cart from './../../assets/img/cart.png'
 //components
 import Permission from 'components/permission'
 
-import {
-  Link,
-  useLocation,
-  useRouteMatch,
-} from 'react-router-dom'
+import { Link, useLocation, useRouteMatch } from 'react-router-dom'
 import { Row, Col } from 'antd'
 import { getStoreSelectValue } from './../../actions/store/index'
 
@@ -376,24 +372,18 @@ const UI = (props) => {
     <div className={styles['user_information']}>
       <div onClick={() => modal2VisibleModal(true)}>
         <div>
-          <b>
-            <UserOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>
+          <UserOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+          />
           Thông tin cá nhân
-        </div>
-        <div>
-          <RightOutlined style={{ fontSize: '0.75rem' }} />
         </div>
       </div>
       <div onClick={() => modal1VisibleModal(true)}>
         <div>
-          <b>
-            <EditOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>
+          <EditOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+          />
           Chỉnh sửa thông tin cá nhân
-        </div>
-        <div>
-          <RightOutlined style={{ fontSize: '0.75rem' }} />
         </div>
       </div>
       <Link
@@ -403,13 +393,10 @@ const UI = (props) => {
         style={{ color: 'black', fontWeight: '600' }}
       >
         <div>
-          <b>
-            <LogoutOutlined style={{ fontSize: '1rem', color: 'black' }} />
-          </b>
+          <LogoutOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+          />
           Đăng xuất
-        </div>
-        <div>
-          <RightOutlined style={{ fontSize: '0.75rem' }} />
         </div>
       </Link>
     </div>
@@ -861,7 +848,11 @@ const UI = (props) => {
         collapsible
         width={isMobile ? '100%' : 275}
         collapsedWidth={isMobile ? 0 : 80}
-        style={{ backgroundColor: '#FFFFFF', height: '100%' }}
+        style={{
+          backgroundColor: '#FFFFFF',
+          height: '100%',
+          zIndex: isMobile && 6000,
+        }}
         collapsed={collapsed}
         onCollapse={onCollapse}
       >
@@ -920,7 +911,11 @@ const UI = (props) => {
       <Layout className={styles['site-layout']}>
         <Row className={styles['background_right_top']}>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div className={styles['navbar']}>
+            <Row
+              justify="space-between"
+              wrap={false}
+              className={styles['navbar']}
+            >
               <div className={styles['navbar_left']}>
                 <div className={styles['navbar_left_parent']}>
                   <MenuOutlined
@@ -943,22 +938,6 @@ const UI = (props) => {
                     }}
                   />
                 </Link>
-                <div className={styles['navbar_right_select']}>
-                  <Select
-                    notFoundContent={loadingStore ? <Spin /> : null}
-                    value={listStore.length ? listStore[0].store_id : ''}
-                    style={{ width: '100%' }}
-                    onChange={handleChange}
-                  >
-                    {listStore.map((values, index) => {
-                      return (
-                        <Option value={values.store_id} key={index}>
-                          {values.name}
-                        </Option>
-                      )
-                    })}
-                  </Select>
-                </div>
               </div>
               <div className={styles['navbar_right']}>
                 <Popover placement="bottomRight" content={content}>
@@ -999,7 +978,7 @@ const UI = (props) => {
                   </div>
                 </Popover>
               </div>
-            </div>
+            </Row>
           </Col>
         </Row>
         <Row>

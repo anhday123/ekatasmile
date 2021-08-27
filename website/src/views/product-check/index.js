@@ -117,7 +117,7 @@ export default function ProductCheck() {
       key: i,
       stt: i,
       ticketCode: (
-        <Link to="/actions/product-check/view/8" style={{ color: '#2400FF' }}>
+        <Link to={ROUTES.PRODUCT_CHECK_ADD} style={{ color: '#2400FF' }}>
           GH {i}
         </Link>
       ),
