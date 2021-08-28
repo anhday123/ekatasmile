@@ -982,7 +982,13 @@ const UI = (props) => {
           </Col>
         </Row>
         <Row>
-          <Col style={{ backgroundColor: '#f0f2f5', width: '100%' }}>
+          <Col
+            style={{
+              backgroundColor: '#f0f2f5',
+              width: '100%',
+              height: '100%',
+            }}
+          >
             {props.children}
           </Col>
         </Row>

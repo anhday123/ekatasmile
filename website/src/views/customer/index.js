@@ -228,6 +228,7 @@ export default function Customer() {
           </div>
           <div className={styles['promotion_manager_button']}>
             <Button
+              size="large"
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               type="primary"
               onClick={() => setShowCreate(true)}
@@ -256,6 +257,7 @@ export default function Customer() {
               placeholder="Tìm kiếm theo tên"
               value={customerFilter.search}
               onChange={(e) => onSearch(e.target.value)}
+              size="large"
             />
           </Col>
           <Col
@@ -268,6 +270,8 @@ export default function Customer() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
@@ -291,6 +295,7 @@ export default function Customer() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc theo khách hàng"
                 value={customerFilter.category}
@@ -303,13 +308,13 @@ export default function Customer() {
           </Col>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button onClick={clearFilter} type="primary">
+          <Button onClick={clearFilter} type="primary" size="large">
             Xóa bộ lọc
           </Button>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}>
           {selectedRowKeys && selectedRowKeys.length > 0 && (
-            <Button type="primary" onClick={openUpdateDrawer}>
+            <Button size="large" type="primary" onClick={openUpdateDrawer}>
               Cập nhật khách hàng
             </Button>
           )}

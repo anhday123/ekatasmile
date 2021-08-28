@@ -16,6 +16,7 @@ import {
 import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
+import { ROUTES } from 'consts'
 const { Option } = Select
 
 const columns = [
@@ -172,7 +173,7 @@ export default function ProductCheckAdd(props) {
               fontSize: '1rem',
               cursor: 'pointer',
             }}
-            onClick={() => history.goBack()}
+            onClick={() => history.push(ROUTES.PRODUCT_CHECK)}
           >
             <ArrowLeftOutlined style={{ marginRight: 5, fontSize: 18 }} /> Thông
             tin phiếu kiểm hàng
@@ -201,7 +202,7 @@ export default function ProductCheckAdd(props) {
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select defaultValue="defaultBranch">
+                  <Select defaultValue="defaultBranch" size="large">
                     <Option value="defaultBranch">Chi nhánh mặc định</Option>
                     <Option value="branch1">Chi nhánh 1</Option>
                     <Option value="branch2">Chi nhánh 2</Option>
@@ -225,7 +226,7 @@ export default function ProductCheckAdd(props) {
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select defaultValue="vt">
+                  <Select defaultValue="vt" size="large">
                     <Option value="vt">Văn Tỷ</Option>
                     <Option value="vh">Văn hoàng</Option>
                     <Option value="hm">Huỳnh Mẫn</Option>
@@ -244,7 +245,7 @@ export default function ProductCheckAdd(props) {
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Ghi chú</div>
                 <Form.Item name="note">
-                  <Input placeholder="Nhập ghi chú" />
+                  <Input placeholder="Nhập ghi chú" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -259,7 +260,7 @@ export default function ProductCheckAdd(props) {
               <div>
                 <div style={{ marginBottom: '0.5rem' }}>Tag</div>
                 <Form.Item name="tag">
-                  <Input placeholder="Nhập tag" />
+                  <Input placeholder="Nhập tag" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -305,7 +306,8 @@ export default function ProductCheckAdd(props) {
               lg={11}
               xl={11}
             >
-              <Search
+              <Input
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Tìm kiếm theo tên sản phẩm, mã sku"
                 onSearch={onSearch}
@@ -326,16 +328,15 @@ export default function ProductCheckAdd(props) {
               dataSource={data}
             />
           </div>
-          {selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <div
-              style={{
-                marginTop: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
+
+          <Row
+            justify="end"
+            style={{
+              marginTop: '1rem',
+              width: '100%',
+            }}
+          >
+            {selectedRowKeys && selectedRowKeys.length > 0 ? (
               <Popconfirm
                 title="Bạn chắc chắn muốn xóa?"
                 onConfirm={confirm}
@@ -343,32 +344,20 @@ export default function ProductCheckAdd(props) {
                 okText="Yes"
                 cancelText="No"
               >
-                <Button type="primary" danger style={{ width: '7.5rem' }}>
+                <Button type="primary" danger size="large">
                   Xóa sản phẩm
                 </Button>
               </Popconfirm>
-            </div>
-          ) : (
-            ''
-          )}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Form.Item style={{ marginLeft: '1rem', marginTop: '1rem' }}>
-              <Button
-                style={{ width: '7.5rem' }}
-                type="primary"
-                htmlType="submit"
-              >
+            ) : (
+              ''
+            )}
+
+            <Form.Item style={{ marginBottom: 0, marginLeft: 15 }}>
+              <Button size="large" type="primary" htmlType="submit">
                 Tạo
               </Button>
             </Form.Item>
-          </div>
+          </Row>
         </div>
         <Modal
           title="Thêm nhanh sản phẩm"

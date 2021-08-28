@@ -507,35 +507,31 @@ export default function Employee() {
             width: '100%',
           }}
         >
-          <div className={styles['employee_manager_title']}>
-            <Link
-              className={styles['supplier_add_back_parent']}
+          <Link
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+            }}
+            to={ROUTES.CONFIGURATION_STORE}
+          >
+            <ArrowLeftOutlined
+              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
+            />
+            <div
               style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
+                color: 'black',
+                fontWeight: '600',
+                fontSize: '1rem',
+                marginLeft: '0.5rem',
               }}
-              to={ROUTES.CONFIGURATION_STORE}
             >
-              <ArrowLeftOutlined
-                style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-              />
-              <div
-                style={{
-                  color: 'black',
-                  fontWeight: '600',
-                  fontSize: '1rem',
-                  marginLeft: '0.5rem',
-                }}
-                className={styles['supplier_add_back']}
-              >
-                Quản lý nhân sự
-              </div>
-            </Link>
-          </div>
+              Quản lý nhân sự
+            </div>
+          </Link>
           <Button
-            className={styles['employee_manager_search_row_col_button_right']}
+            size="large"
             type="primary"
             icon={<PlusCircleOutlined />}
             onClick={showDrawerUpdate}
@@ -556,6 +552,7 @@ export default function Employee() {
             >
               <div style={{ width: '100%' }}>
                 <Input
+                  size="large"
                   style={{ width: '100%' }}
                   name="name"
                   value={valueSearch}
@@ -578,6 +575,8 @@ export default function Employee() {
             >
               <div style={{ width: '100%' }}>
                 <RangePicker
+                  size="large"
+                  className="br-15__date-picker"
                   // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                   value={
                     clear === 1
@@ -609,6 +608,7 @@ export default function Employee() {
             >
               <div style={{ width: '100%' }}>
                 <Select
+                  size="large"
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Select a person"
@@ -685,11 +685,7 @@ export default function Employee() {
               marginTop: '1rem',
             }}
           >
-            <Button
-              onClick={onClickClear}
-              type="primary"
-              style={{ width: '7.5rem' }}
-            >
+            <Button onClick={onClickClear} type="primary" size="large">
               Xóa tất cả lọc
             </Button>
           </div>
@@ -702,7 +698,7 @@ export default function Employee() {
                 width: '100%',
               }}
             >
-              <Button type="primary" onClick={showDrawer}>
+              <Button type="primary" onClick={showDrawer} size="large">
                 Thêm nhân sự
               </Button>
             </div>
@@ -1068,6 +1064,7 @@ export default function Employee() {
                     if (data === 'username') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           disabled
                           defaultValue={values[data]}
                           onChange={(event) => {
@@ -1104,6 +1101,7 @@ export default function Employee() {
                     if (data === 'phone') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -1139,6 +1137,7 @@ export default function Employee() {
                     if (data === 'email') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -1174,6 +1173,7 @@ export default function Employee() {
                     if (data === 'branch') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data].branch_id}
                           showSearch
                           style={{ width: '100%' }}
@@ -1227,6 +1227,7 @@ export default function Employee() {
                     if (data === 'store') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data].store_id}
                           showSearch
                           style={{ width: '100%' }}
@@ -1280,6 +1281,7 @@ export default function Employee() {
                     if (data === 'role') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={
                             values[data] && values[data].role_id
                               ? values[data].role_id
@@ -1338,6 +1340,7 @@ export default function Employee() {
                     if (data === 'first_name') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -1373,6 +1376,7 @@ export default function Employee() {
                     if (data === 'last_name') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -1408,6 +1412,7 @@ export default function Employee() {
                     if (data === 'address') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -1443,6 +1448,7 @@ export default function Employee() {
                     if (data === 'province') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}
@@ -1497,6 +1503,7 @@ export default function Employee() {
                     if (data === 'district') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}

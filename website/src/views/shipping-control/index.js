@@ -94,6 +94,7 @@ export default function ShippingControl() {
           </div>
           <div className={styles['promotion_manager_button']}>
             <Button
+              size="large"
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               type="primary"
               onClick={() => setShowCreate(true)}
@@ -109,7 +110,7 @@ export default function ShippingControl() {
         >
           <TabPane
             tab={
-              <span style={{ fontSize: 18, fontWeight: 500 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>
                 Đơn chờ đối soát
               </span>
             }
@@ -123,7 +124,7 @@ export default function ShippingControl() {
           </TabPane>
           <TabPane
             tab={
-              <span style={{ fontSize: 18, fontWeight: 500 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>
                 Đơn đã đối soát thành công
               </span>
             }
@@ -137,7 +138,7 @@ export default function ShippingControl() {
           </TabPane>
           <TabPane
             tab={
-              <span style={{ fontSize: 18, fontWeight: 500 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>
                 Lịch sử đối soát
               </span>
             }

@@ -324,7 +324,7 @@ export default function ShippingAdd() {
                   name="customerName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên đối tác" />
+                  <Input size="large" placeholder="Nhập tên đối tác" />
                 </Form.Item>
               </div>
             </Col>
@@ -345,7 +345,7 @@ export default function ShippingAdd() {
                   }
                   name="address"
                 >
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -381,7 +381,7 @@ export default function ShippingAdd() {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="zipCode"
                 >
-                  <Input placeholder="Nhập zip code" />
+                  <Input placeholder="Nhập zip code" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -405,6 +405,7 @@ export default function ShippingAdd() {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     onChange={handleChangeCity}
                     showSearch
                     style={{ width: '100%' }}
@@ -456,7 +457,7 @@ export default function ShippingAdd() {
                   name="phoneNumber"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input placeholder="Nhập liên hệ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -481,6 +482,7 @@ export default function ShippingAdd() {
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"
@@ -523,11 +525,7 @@ export default function ShippingAdd() {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Lưu
                 </Button>
               </Form.Item>

@@ -235,6 +235,7 @@ export default function StoreInformationAdd({ reloadData }) {
   return (
     <>
       <Button
+        size="large"
         icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
         type="primary"
         onClick={() => modal3VisibleModal(true)}
@@ -331,7 +332,7 @@ export default function StoreInformationAdd({ reloadData }) {
                 name="storeName"
                 rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
-                <Input placeholder="Nhập tên cửa hàng" />
+                <Input size="large" placeholder="Nhập tên cửa hàng" />
               </Form.Item>
             </Col>
             <Col
@@ -353,7 +354,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   Địa chỉ
                 </div>
                 <Form.Item name="address">
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -385,7 +386,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   name="phoneNumber"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input placeholder="Nhập liên hệ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -408,6 +409,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     onChange={handleChangeCity}
                     showSearch
                     style={{ width: '100%' }}
@@ -463,7 +465,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="fax"
                 >
-                  <Input placeholder="Nhập số fax" />
+                  <Input placeholder="Nhập số fax" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -487,6 +489,7 @@ export default function StoreInformationAdd({ reloadData }) {
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"
@@ -536,7 +539,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="websiteLink"
                 >
-                  <Input placeholder="Nhập link website" />
+                  <Input size="large" placeholder="Nhập link website" />
                 </Form.Item>
               </div>
             </Col>
@@ -564,11 +567,7 @@ export default function StoreInformationAdd({ reloadData }) {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Thêm
                 </Button>
               </Form.Item>

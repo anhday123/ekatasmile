@@ -537,6 +537,7 @@ export default function Inventory() {
           <div className={styles['promotion_manager_title']}>Quản lý kho</div>
           <div className={styles['promotion_manager_button']}>
             <Button
+              size="large"
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               type="primary"
               onClick={showDrawerUpdate}
@@ -563,6 +564,7 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 enterButton
                 name="name"
@@ -584,6 +586,8 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 value={
                   clear === 1
                     ? []
@@ -613,6 +617,7 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 value={inventoryTypeValue ? inventoryTypeValue : 'default'}
                 placeholder="Chọn loại kho"
@@ -635,6 +640,7 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
@@ -672,6 +678,7 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
@@ -716,11 +723,7 @@ export default function Inventory() {
             marginTop: '1rem',
           }}
         >
-          <Button
-            onClick={onClickClear}
-            type="primary"
-            style={{ width: '7.5rem' }}
-          >
+          <Button onClick={onClickClear} type="primary" size="large">
             Xóa tất cả lọc
           </Button>
         </div>
@@ -733,7 +736,7 @@ export default function Inventory() {
               width: '100%',
             }}
           >
-            <Button type="primary" onClick={showDrawer}>
+            <Button size="large" type="primary" onClick={showDrawer}>
               Cập nhật thông tin kho
             </Button>
           </div>
@@ -771,7 +774,11 @@ export default function Inventory() {
               textAlign: 'right',
             }}
           >
-            <Button onClick={() => onCloseUpdateFunc(1)} type="primary">
+            <Button
+              onClick={() => onCloseUpdateFunc(1)}
+              type="primary"
+              size="large"
+            >
               Cập nhật
             </Button>
           </div>
@@ -803,6 +810,7 @@ export default function Inventory() {
                     if (data === 'phone') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -838,6 +846,7 @@ export default function Inventory() {
                     if (data === 'name') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -873,6 +882,7 @@ export default function Inventory() {
                     if (data === 'address') {
                       const InputName = () => (
                         <Input
+                          size="large"
                           defaultValue={values[data]}
                           onChange={(event) => {
                             const value = event.target.value
@@ -908,6 +918,7 @@ export default function Inventory() {
                     if (data === 'type') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           style={{ width: '100%' }}
                           defaultValue={values[data]}
                           onChange={(event) => {
@@ -947,6 +958,7 @@ export default function Inventory() {
                     if (data === 'province') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}
@@ -1001,6 +1013,7 @@ export default function Inventory() {
                     if (data === 'district') {
                       const InputName = () => (
                         <Select
+                          size="large"
                           defaultValue={values[data]}
                           showSearch
                           style={{ width: '100%' }}
@@ -1062,6 +1075,8 @@ export default function Inventory() {
                     if (data === 'monthly_cost') {
                       const InputName = () => (
                         <InputNumber
+                          size="large"
+                          className="br-15__input"
                           style={{ width: '100%' }}
                           defaultValue={values[data]}
                           onChange={(event) => {

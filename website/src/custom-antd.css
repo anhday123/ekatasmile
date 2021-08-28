@@ -1,0 +1,37 @@
+/* custom modal */
+.ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+/* custom modal */
+
+/* custom select */
+.ant-select-selector {
+  border-radius: 15px !important;
+}
+/* custom select */
+
+.br-15__date-picker {
+  border-radius: 15px !important;
+}
+
+/* custom button */
+.ant-btn {
+  border-radius: 15px !important;
+}
+.br-15__button {
+  border-radius: 15px !important;
+}
+/* custom button */
+
+/* custom input */
+.br-15__input {
+  border-radius: 15px !important;
+}
+.ant-input {
+  border-radius: 15px !important;
+}
+.ant-input-affix-wrapper {
+  border-radius: 15px !important;
+}
+/* custom input */

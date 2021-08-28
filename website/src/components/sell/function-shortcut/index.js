@@ -1,8 +1,6 @@
-import styles from './../function-shortcut/function-shortcut.module.scss'
 import React, { useState } from 'react'
-import 'react-multi-carousel/lib/styles.css'
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
-import { Row, Modal, Col } from 'antd'
+import { Row, Modal, Col, Button } from 'antd'
 
 export default function Sell() {
   const [modal3Visible, setModal3Visible] = useState(false)
@@ -12,18 +10,13 @@ export default function Sell() {
   }
   return (
     <>
-      <div
-        style={{ cursor: 'pointer' }}
+      <Button
+        size="large"
+        className="br-15__button"
         onClick={() => modal3VisibleModal(true)}
       >
-        <div className={styles['sell_manager_title_row_col_child_name']}>
-          <div
-            className={styles['sell_manager_title_row_col_child_name_support']}
-          >
-            Phím tắt hỗ trợ
-          </div>
-        </div>
-      </div>
+        Phím tắt hỗ trợ
+      </Button>
 
       <Modal
         title="Phím tắt chức năng"

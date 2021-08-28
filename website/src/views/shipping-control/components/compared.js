@@ -34,72 +34,72 @@ export default function Compared(props) {
     {
       title: 'Mã đơn hàng',
       dataIndex: 'order',
-      key: 0
+      key: 0,
     },
     {
       title: 'Mã vận đơn',
       dataIndex: 'code',
-      key: 1
+      key: 1,
     },
     {
       title: 'DVVC',
       dataIndex: 'shipping_company',
-      key: 2
+      key: 2,
     },
     {
       title: 'Tên khách hàng',
       dataIndex: '',
-      key: 3
+      key: 3,
     },
     {
       title: 'Mã số khách',
       dataIndex: '',
-      key: 4
+      key: 4,
     },
     {
       title: 'Ngày tạo đơn',
       dataIndex: 'revice_date',
-      key: 5
+      key: 5,
     },
     {
       title: 'Tiền COD',
       dataIndex: 'cod_cost',
-      key: 6
+      key: 6,
     },
     {
       title: 'tiền chuyển khoản',
       dataIndex: 'transfer_cost',
-      key: 7
+      key: 7,
     },
     {
       title: 'Phí vận chuyển',
       dataIndex: 'delivery_cost',
-      key: 8
+      key: 8,
     },
     {
       title: 'Tiền COD thực nhận',
       dataIndex: 'real_cod_cost',
-      key: 9
+      key: 9,
     },
     {
       title: 'Phí bảo hiểm',
       dataIndex: 'insurance_cost',
-      key: 10
+      key: 10,
     },
     {
       title: 'Phí giao hàng',
       dataIndex: 'shipping_cost',
-      key: 11
+      key: 11,
     },
     {
       title: 'Phí chuyển hoàn',
       dataIndex: 'warehouse_cost',
-      key: 12
+      key: 12,
     },
     {
       title: 'Phí lưu kho',
       dataIndex: 'warehouse_cost',
-      key: 13
+      key: 13,
     },
     {
       title: 'Khối lượng',
@@ -112,23 +112,23 @@ export default function Compared(props) {
     {
       title: 'Ngày nhận',
       dataIndex: 'revice_date',
-      key: 15
+      key: 15,
     },
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
-      key: 16
+      key: 16,
     },
     {
       title: 'Ghi chú đơn',
       dataIndex: 'note',
       width: 200,
-      key: 17
+      key: 17,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
-      key: 18
+      key: 18,
     },
   ]
   const changeRange = (date, dateString) => {
@@ -150,9 +150,7 @@ export default function Compared(props) {
       case 'yesterday':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'days')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
           to_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
         })
         break
@@ -227,7 +225,7 @@ export default function Compared(props) {
   }
   const handleShowColumns = () => {
     let tmp = []
-    defaultColumns.forEach(e => {
+    defaultColumns.forEach((e) => {
       tmp.push(columns[e])
     })
     setDisplayColumns(tmp)
@@ -237,9 +235,10 @@ export default function Compared(props) {
   return (
     <>
       <div>
-        <Row gutter={30} justify="space-between">
-          <Col span={8}>
+        <Row justify="space-between">
+          <Col>
             <Input
+              size="large"
               onChange={(e) =>
                 props.setFilter({
                   ...filter,
@@ -249,8 +248,9 @@ export default function Compared(props) {
               placeholder="Tìm theo mã, theo tên"
             />
           </Col>
-          <Col span={8}>
+          <Col>
             <Select
+              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -270,8 +270,7 @@ export default function Compared(props) {
                 <div>
                   <RangePicker
                     onFocus={() => {
-                      if (!isOpenSelect)
-                        toggleOpenSelect()
+                      if (!isOpenSelect) toggleOpenSelect()
                     }}
                     onBlur={() => {
                       if (isOpenSelect) toggleOpenSelect()
@@ -293,22 +292,22 @@ export default function Compared(props) {
               <Option value="last_year">Last year</Option>
             </Select>
           </Col>
-          <Col span={8}>
+          <Col>
             <Select
+              size="large"
               placeholder="Chọn chi nhánh"
               style={{ width: '100%' }}
               onChange={(e) =>
                 props.setFilter({
                   ...filter,
                   branch: e,
-                })}
+                })
+              }
             >
               {props.branchList
                 .filter((e) => e.active)
                 .map((e) => (
-                  <Option value={e.branch_id}>
-                    {e.name}
-                  </Option>
+                  <Option value={e.branch_id}>{e.name}</Option>
                 ))}{' '}
             </Select>
           </Col>
@@ -321,25 +320,39 @@ export default function Compared(props) {
           }}
         >
           <ImportFile />
-          <Button type="primary" onClick={() => setShowCustomColumns(true)}>Setting Column</Button>
+          <Button
+            size="large"
+            type="primary"
+            onClick={() => setShowCustomColumns(true)}
+          >
+            Setting Column
+          </Button>
         </Row>
         <Table
           rowKey="_id"
           columns={displayColumns}
           scroll={{ x: 'max-content' }}
-          dataSource={compareList.filter(
-            (e) => e.status ? e.status.toLowerCase() == 'complete' : ''
+          dataSource={compareList.filter((e) =>
+            e.status ? e.status.toLowerCase() == 'complete' : ''
           )}
         />
       </div>
-      <Modal centered visible={showCustomColumns} onCancel={() => setShowCustomColumns(false)} onOk={handleShowColumns}>
-        <Checkbox.Group defaultValue={defaultColumns} onChange={e => setDefaultColumns(e)}>
+      <Modal
+        centered
+        visible={showCustomColumns}
+        onCancel={() => setShowCustomColumns(false)}
+        onOk={handleShowColumns}
+      >
+        <Checkbox.Group
+          defaultValue={defaultColumns}
+          onChange={(e) => setDefaultColumns(e)}
+        >
           <Row justify="space-between" gutter={[20, 10]}>
-            {
-              columns.map(e => <Col span={11}>
+            {columns.map((e) => (
+              <Col span={11}>
                 <Checkbox value={e.key}>{e.title}</Checkbox>
-              </Col>)
-            }
+              </Col>
+            ))}
           </Row>
         </Checkbox.Group>
       </Modal>

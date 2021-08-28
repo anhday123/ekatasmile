@@ -9,7 +9,6 @@ import moment from 'moment'
 import FunctionShortcut from 'components/sell/function-shortcut/index'
 import 'react-multi-carousel/lib/styles.css'
 import { decodeToken } from 'react-jwt'
-
 import { useDispatch } from 'react-redux'
 
 import {
@@ -4472,8 +4471,9 @@ export default function Sell() {
                     name="name"
                     value={valueSearch}
                     enterButton
+                    size="large"
                     onChange={onSearch}
-                    className={styles['orders_manager_content_row_col_search']}
+                    className="br-15__input"
                     placeholder="Tìm kiếm sản phẩm"
                     autocomplete="off"
                     allowClear
@@ -4493,6 +4493,7 @@ export default function Sell() {
                 style={{
                   width: '100%',
                   display: 'flex',
+                  alignItems: !isMobile && 'center',
                   flexDirection: isMobile && 'column',
                 }}
               >
@@ -4502,7 +4503,7 @@ export default function Sell() {
                     display: 'flex',
                     justifyContent: isMobile && 'space-between',
                     alignItems: 'center',
-                    marginBottom: 15,
+                    marginBottom: isMobile && 15,
                   }}
                   onChange={onChangeOrderStatus}
                   value={orderStatus}
@@ -4528,7 +4529,14 @@ export default function Sell() {
                     Pre-order
                   </Radio>
                 </Radio.Group>
-                <Button onClick={showDrawerOrderList} type="primary" danger>
+                <Button
+                  className="br-15__button"
+                  size="large"
+                  onClick={showDrawerOrderList}
+                  type="primary"
+                  danger
+                  style={{ width: 'max-content' }}
+                >
                   Danh sách order
                 </Button>
               </div>
@@ -5273,9 +5281,8 @@ export default function Sell() {
                           value={valueSearchCustomer}
                           enterButton
                           onChange={onSearchCustomer}
-                          className={
-                            styles['orders_manager_content_row_col_search']
-                          }
+                          className="br-15__input"
+                          size="large"
                           placeholder="Tìm khách hàng theo tên, số điện thoại"
                           autocomplete="off"
                           allowClear
@@ -5283,9 +5290,10 @@ export default function Sell() {
                       </Dropdown>
 
                       <Button
+                        size="large"
                         style={{ marginLeft: 20 }}
                         onClick={showDrawer}
-                        icon={<PlusOutlined />}
+                        icon={<PlusOutlined style={{ fontSize: 15 }} />}
                         type="primary"
                       ></Button>
                     </Row>
@@ -5517,70 +5525,61 @@ export default function Sell() {
                     }
                   >
                     <div>Tiền khách đưa</div>
-                    {moneyPredict && moneyPredict.length > 0 ? (
-                      <Row
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        {moneyPredict &&
-                          moneyPredict.length > 0 &&
-                          moneyPredict.map((values, index) => {
-                            return (
-                              <Col
-                                style={{ width: '100%', marginTop: '0.5rem' }}
-                                xs={24}
-                                sm={11}
-                                md={11}
-                                lg={7}
-                                xl={7}
-                              >
-                                {indexPaymentMoney === index ? (
-                                  <Button
-                                    style={{
-                                      width: '7rem',
-                                      backgroundColor: '#50D648',
-                                    }}
-                                    onClick={() =>
-                                      onClickPredictMoney(values, index)
-                                    }
-                                    type="primary"
-                                  >{`${formatCash(
-                                    String(values)
-                                  )} VNĐ`}</Button>
-                                ) : (
-                                  <Button
-                                    style={{ width: '7rem' }}
-                                    onClick={() =>
-                                      onClickPredictMoney(values, index)
-                                    }
-                                    type="primary"
-                                  >{`${formatCash(
-                                    String(values)
-                                  )} VNĐ`}</Button>
-                                )}
-                              </Col>
-                            )
-                          })}
-                      </Row>
-                    ) : (
-                      <div
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'nowrap',
-                        }}
-                      >
-                        <Button type="primary">100.000 VNĐ</Button>
-                        <Button type="primary">200.000 VNĐ</Button>
-                        <Button type="primary">500.000 VNĐ</Button>
-                      </div>
-                    )}
+                    <Row
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        flexWrap: 'nowrap',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {moneyPredict.length ? (
+                        moneyPredict.map((values, index) => {
+                          return (
+                            <Col
+                              style={{ width: '100%', marginTop: '0.5rem' }}
+                              xs={24}
+                              sm={11}
+                              md={11}
+                              lg={7}
+                              xl={7}
+                            >
+                              {indexPaymentMoney === index ? (
+                                <Button
+                                  style={{
+                                    width: '7rem',
+                                    backgroundColor: '#50D648',
+                                  }}
+                                  onClick={() =>
+                                    onClickPredictMoney(values, index)
+                                  }
+                                  type="primary"
+                                >{`${formatCash(
+                                  String(values || 100000)
+                                )} VNĐ`}</Button>
+                              ) : (
+                                <Button
+                                  style={{ width: '7rem' }}
+                                  onClick={() =>
+                                    onClickPredictMoney(values, index)
+                                  }
+                                  type="primary"
+                                >{`${formatCash(
+                                  String(values || 200000)
+                                )} VNĐ`}</Button>
+                              )}
+                            </Col>
+                          )
+                        })
+                      ) : (
+                        <>
+                          <Button type="primary">100.000 VND</Button>
+                          <Button type="primary">200.000 VND</Button>
+                          <Button type="primary">300.000 VND</Button>
+                        </>
+                      )}
+                    </Row>
                   </div>
                   <div
                     style={{ marginBottom: '0.5rem' }}
@@ -5597,7 +5596,6 @@ export default function Sell() {
                         fontSize: '1rem',
                       }}
                     >
-                      {' '}
                       Tiền thối
                     </div>
                     <div
@@ -5614,11 +5612,12 @@ export default function Sell() {
                   </div>
 
                   <Input
+                    size="large"
                     value={note}
                     onChange={onChangeNote}
                     prefix={<EditOutlined />}
-                    style={{ paddingLeft: '0.5rem', marginBottom: '1.5rem' }}
                     placeholder="Nhập ghi chú đơn hàng"
+                    style={{ marginBottom: 23 }}
                   />
 
                   <div
@@ -5639,6 +5638,7 @@ export default function Sell() {
                     </div>
                     <div style={{ width: '100%' }}>
                       <Select
+                        size="large"
                         showSearch
                         mode="multiple"
                         style={{ width: '100%' }}
@@ -5664,74 +5664,6 @@ export default function Sell() {
                     </div>
                   </div>
                   {moneyFinish && moneyFinish > 0 ? (
-                    promotionValue && promotionValue === 'default' ? (
-                      <div
-                        style={{ paddingTop: '0.5rem' }}
-                        className={
-                          styles[
-                            'sell_manager_content_row_col_right_parent_content_money_fix'
-                          ]
-                        }
-                      >
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: 'black',
-                            marginRight: '1rem',
-                          }}
-                        >
-                          Voucher
-                        </div>
-
-                        <Input
-                          style={{ width: '100%' }}
-                          name="name"
-                          value={voucher}
-                          enterButton
-                          onChange={onChangeVoucher}
-                          className={
-                            styles['orders_manager_content_row_col_search']
-                          }
-                          placeholder="Nhập voucher"
-                          autocomplete="off"
-                          allowClear
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        style={{ paddingTop: '0.5rem' }}
-                        className={
-                          styles[
-                            'sell_manager_content_row_col_right_parent_content_money_fix'
-                          ]
-                        }
-                      >
-                        <div
-                          style={{
-                            fontWeight: '600',
-                            color: 'black',
-                            marginRight: '1rem',
-                          }}
-                        >
-                          Voucher
-                        </div>
-                        <Input
-                          disabled
-                          style={{ width: '100%' }}
-                          name="name"
-                          value={voucher}
-                          enterButton
-                          onChange={onChangeVoucher}
-                          className={
-                            styles['orders_manager_content_row_col_search']
-                          }
-                          placeholder="Nhập voucher"
-                          autocomplete="off"
-                          allowClear
-                        />
-                      </div>
-                    )
-                  ) : promotionValue && promotionValue === 'Chọn voucher' ? (
                     <div
                       style={{ paddingTop: '0.5rem' }}
                       className={
@@ -5750,15 +5682,17 @@ export default function Sell() {
                         Voucher
                       </div>
                       <Input
-                        disabled
+                        disabled={
+                          promotionValue && promotionValue === 'default'
+                            ? false
+                            : true
+                        }
                         style={{ width: '100%' }}
                         name="name"
                         value={voucher}
                         enterButton
                         onChange={onChangeVoucher}
-                        className={
-                          styles['orders_manager_content_row_col_search']
-                        }
+                        size="large"
                         placeholder="Nhập voucher"
                         autocomplete="off"
                         allowClear
@@ -5789,9 +5723,7 @@ export default function Sell() {
                         value={voucher}
                         enterButton
                         onChange={onChangeVoucher}
-                        className={
-                          styles['orders_manager_content_row_col_search']
-                        }
+                        size="large"
                         placeholder="Nhập voucher"
                         autocomplete="off"
                         allowClear
@@ -5828,6 +5760,7 @@ export default function Sell() {
                         </Select>
                       ) : (
                         <Select
+                          size="large"
                           style={{ width: '100%' }}
                           placeHolder="Chọn voucher"
                           value={promotionValue}
@@ -5875,6 +5808,7 @@ export default function Sell() {
                         </Select>
                       ) : (
                         <Select
+                          size="large"
                           style={{ width: '100%' }}
                           disabled
                           placeHolder="Chọn voucher"
@@ -6682,6 +6616,7 @@ export default function Sell() {
                 <b style={{ color: 'red' }}>*</b>Tên khách hàng
               </div>
               <Input
+                size="large"
                 value={customerName}
                 onChange={onChangeCustomerName}
                 placeholder="Nhập tên khách hàng"
@@ -6705,6 +6640,7 @@ export default function Sell() {
                 <b style={{ color: 'red' }}>*</b>Liên hệ
               </div>
               <Input
+                size="large"
                 value={randomPhoneValue}
                 onChange={onChangeRandom}
                 placeholder="Nhập liên hệ"
@@ -6739,6 +6675,7 @@ export default function Sell() {
               </div>
               <Form.Item name="ward">
                 <Select
+                  size="large"
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Chọn tỉnh/thành phố"
@@ -6818,6 +6755,7 @@ export default function Sell() {
               </div>
               <Form.Item name="district">
                 <Select
+                  size="large"
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Chọn quận/huyện"
@@ -6869,7 +6807,7 @@ export default function Sell() {
                 Địa chỉ
               </div>
               <Form.Item name="address">
-                <Input placeholder="Nhập địa chỉ" />
+                <Input placeholder="Nhập địa chỉ" size="large" />
               </Form.Item>
             </Col>
             <Col
@@ -6923,11 +6861,7 @@ export default function Sell() {
                 width: '100%',
               }}
             >
-              <Button
-                htmlType="submit"
-                type="primary"
-                style={{ with: '10rem' }}
-              >
+              <Button htmlType="submit" type="primary" size="large">
                 Thêm khách hàng
               </Button>
             </div>

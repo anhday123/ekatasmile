@@ -26,6 +26,7 @@ import CustomerAdd from '../actions/customer/add'
 import { getAllBranch } from 'apis/branch'
 import { apiAllTax } from 'apis/tax'
 import { getPromoton } from 'apis/promotion'
+import { ROUTES } from 'consts'
 function formatCash(str) {
   return str
     .toString()
@@ -227,11 +228,17 @@ export default function OrderCreateShipping() {
   return (
     <div className={styles['order-create-shipping']}>
       <div style={{ background: 'white', padding: '20px' }}>
-        <Row align="middle" style={{ fontSize: 18, fontWeight: 600 }}>
-          <ArrowLeftOutlined
-            style={{ cursor: 'pointer' }}
-            onClick={() => history.push('/order-list')}
-          />
+        <Row
+          align="middle"
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            cursor: 'pointer',
+            width: 'max-content',
+          }}
+          onClick={() => history.push(ROUTES.ORDER_LIST)}
+        >
+          <ArrowLeftOutlined style={{ marginRight: 5 }} />
           Tạo đơn hàng
         </Row>
         <Divider />
@@ -239,26 +246,25 @@ export default function OrderCreateShipping() {
           <Col span={16}>
             <div className={styles['block']}>
               <div className={styles['title']}>Chi nhánh</div>
-              <Select style={{ width: '200px' }} placeholder="chọn chi nhánh">
+              <Select
+                size="large"
+                style={{ width: '200px' }}
+                placeholder="chọn chi nhánh"
+              >
                 {branchList.map((e) => (
                   <Select.Option value={e.branch_id}>{e.name}</Select.Option>
                 ))}
               </Select>
               <div className={styles['title']}>Sản phẩm</div>
               <AutoComplete
+                size="large"
                 options={options}
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginBottom: 10 }}
                 onSelect={onSelect}
                 onSearch={handleSearch}
                 onFocus={handleSearch}
-              >
-                <div>
-                  <Input.Search
-                    enterButton="Tìm kiếm"
-                    style={{ marginBottom: 20 }}
-                  />
-                </div>
-              </AutoComplete>
+                placeholder="Tìm kiếm sản phẩm"
+              />
 
               <Table columns={columns} size="small" dataSource={productData} />
             </div>
@@ -268,6 +274,7 @@ export default function OrderCreateShipping() {
                 <Col span={12}>
                   <div style={{ fontWeight: 500 }}>Ghi chú đơn hàng</div>
                   <Input
+                    size="large"
                     placeholder="Ghi chú đơn hàng tại đây"
                     onChange={(e) => setNote(e.target.value)}
                   />
@@ -277,10 +284,9 @@ export default function OrderCreateShipping() {
                     <div style={{ color: 'blue' }}>Thuế</div>
                     <Select
                       mode="tags"
-                      // size={size}
+                      size="large"
                       placeholder="Please select"
                       defaultValue={['1']}
-                      // onChange={handleChange}
                       style={{ width: '100%' }}
                     >
                       {taxList.map((e) => (
@@ -288,9 +294,11 @@ export default function OrderCreateShipping() {
                       ))}
                     </Select>
                     <div style={{ color: 'blue' }}>voucher</div>
-                    <Input />
+
+                    <Input size="large" />
                     <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
                     <Select
+                      size="large"
                       // onChange={handleChange}
                       style={{ width: '100%' }}
                     >
@@ -380,7 +388,9 @@ export default function OrderCreateShipping() {
             </div>
             <Divider />
             <Row justify="end">
-              <Button type="primary">Thanh toán</Button>
+              <Button size="large" type="primary">
+                Thanh toán
+              </Button>
             </Row>
           </Col>
           <Col span={8}>
@@ -403,18 +413,14 @@ export default function OrderCreateShipping() {
                     </div>
                   </Row>
                   <AutoComplete
+                    placeholder="Tìm kiếm khách hàng"
+                    size="large"
                     options={customerOptions}
                     onSelect={onChooseCustomer}
                     onSearch={customerSearch}
                     onFocus={customerSearch}
                     style={{ width: '100%' }}
-                  >
-                    <Input
-                      placeholder="Tìm kiếm khách hàng"
-                      prefix={<SearchOutlined />}
-                      style={{ width: '100%' }}
-                    />
-                  </AutoComplete>
+                  />
 
                   <Divider />
                 </>
@@ -483,6 +489,7 @@ export default function OrderCreateShipping() {
         </Row>
       </div>
       <Drawer
+        title="Tạo khách hàng"
         visible={showCreate}
         onClose={() => setShowCreate(false)}
         width="75%"

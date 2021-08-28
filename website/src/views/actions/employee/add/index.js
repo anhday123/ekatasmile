@@ -353,6 +353,7 @@ export default function EmployeeAdd(props) {
                         (user && user.company_name !== ' ') ||
                         (user && user.company_name !== 'default') ? (
                           <Input
+                            size="large"
                             addonBefore={
                               (user && user.company_name !== '') ||
                               (user && user.company_name !== ' ') ||
@@ -363,7 +364,7 @@ export default function EmployeeAdd(props) {
                             placeholder="Nhập tên nhân sự"
                           />
                         ) : (
-                          <Input placeholder="Nhập tên nhân sự" />
+                          <Input placeholder="Nhập tên nhân sự" size="large" />
                         )}
                       </Form.Item>
                     </Col>
@@ -399,7 +400,7 @@ export default function EmployeeAdd(props) {
                         Họ
                       </div>
                       <Form.Item name="surname">
-                        <Input placeholder="Nhập họ" />
+                        <Input placeholder="Nhập họ" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -435,7 +436,10 @@ export default function EmployeeAdd(props) {
                         name="password"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input.Password placeholder="Nhập mật khẩu" />
+                        <Input.Password
+                          placeholder="Nhập mật khẩu"
+                          size="large"
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -473,7 +477,7 @@ export default function EmployeeAdd(props) {
                         // label="Username"
                         name="name"
                       >
-                        <Input placeholder="Nhập tên" />
+                        <Input placeholder="Nhập tên" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -509,6 +513,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           placeholder="Select a person"
@@ -566,7 +571,7 @@ export default function EmployeeAdd(props) {
                         // label="Username"
                         name="address"
                       >
-                        <Input placeholder="Nhập địa chỉ" />
+                        <Input placeholder="Nhập địa chỉ" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -602,7 +607,7 @@ export default function EmployeeAdd(props) {
                         name="phoneNumber"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input placeholder="Nhập liên hệ" />
+                        <Input placeholder="Nhập liên hệ" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -636,7 +641,7 @@ export default function EmployeeAdd(props) {
                         name="email"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input placeholder="Nhập email" />
+                        <Input placeholder="Nhập email" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -673,6 +678,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
@@ -727,6 +733,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
@@ -786,6 +793,7 @@ export default function EmployeeAdd(props) {
                       </div>
                       <Form.Item name="city" hasFeedback>
                         <Select
+                          size="large"
                           onChange={handleChangeCity}
                           showSearch
                           style={{ width: '100%' }}
@@ -845,6 +853,7 @@ export default function EmployeeAdd(props) {
                         </div>
                         <Form.Item name="district" hasFeedback>
                           <Select
+                            size="large"
                             showSearch
                             style={{ width: '100%' }}
                             placeholder="Select a person"
@@ -917,6 +926,7 @@ export default function EmployeeAdd(props) {
                         (user && user.company_name !== ' ') ||
                         (user && user.company_name !== 'default') ? (
                           <Input
+                            size="large"
                             addonBefore={
                               (user && user.company_name !== '') ||
                               (user && user.company_name !== ' ') ||
@@ -927,7 +937,7 @@ export default function EmployeeAdd(props) {
                             placeholder="Nhập tên nhân sự"
                           />
                         ) : (
-                          <Input placeholder="Nhập tên nhân sự" />
+                          <Input placeholder="Nhập tên nhân sự" size="large" />
                         )}
                       </Form.Item>
                     </Col>
@@ -961,7 +971,10 @@ export default function EmployeeAdd(props) {
                         name="password"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input.Password placeholder="Nhập mật khẩu" />
+                        <Input.Password
+                          placeholder="Nhập mật khẩu"
+                          size="large"
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -998,6 +1011,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
@@ -1052,6 +1066,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           placeholder="Select a person"
@@ -1107,7 +1122,7 @@ export default function EmployeeAdd(props) {
                         name="email"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input placeholder="Nhập email" />
+                        <Input placeholder="Nhập email" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1142,6 +1157,7 @@ export default function EmployeeAdd(props) {
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select
+                          size="large"
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
@@ -1197,7 +1213,7 @@ export default function EmployeeAdd(props) {
                         name="phoneNumber"
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input placeholder="Nhập liên hệ" />
+                        <Input placeholder="Nhập liên hệ" size="large" />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1208,11 +1224,7 @@ export default function EmployeeAdd(props) {
 
           <div className={styles['button']}>
             <Form.Item>
-              <Button
-                type="primary"
-                style={{ width: '7.5rem' }}
-                htmlType="submit"
-              >
+              <Button type="primary" size="large" htmlType="submit">
                 Thêm
               </Button>
             </Form.Item>

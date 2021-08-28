@@ -72,7 +72,8 @@ export default function BranchAdd() {
         modal2VisibleModal(false)
         form.resetFields()
 
-        if (location.state && !location.state.isHaveBranch) history.push(ROUTES.OVERVIEW)
+        if (location.state && !location.state.isHaveBranch)
+          history.push(ROUTES.OVERVIEW)
       } else {
         if (res.data.message === 'Branch name was exists!') {
           openNotificationError()
@@ -177,6 +178,7 @@ export default function BranchAdd() {
   return (
     <>
       <Button
+        size="large"
         icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
         type="primary"
         onClick={() => modal2VisibleModal(true)}
@@ -230,7 +232,7 @@ export default function BranchAdd() {
                   name="branchName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên chi nhánh" />
+                  <Input size="large" placeholder="Nhập tên chi nhánh" />
                 </Form.Item>
               </div>
             </Col>
@@ -256,7 +258,7 @@ export default function BranchAdd() {
                   name="address"
                   // rules={[{ required: true, message: "Giá trị rỗng!" }]}
                 >
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -288,7 +290,7 @@ export default function BranchAdd() {
                   name="phoneNumber"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input placeholder="Nhập liên hệ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -311,6 +313,7 @@ export default function BranchAdd() {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     onChange={handleChangeCity}
                     showSearch
                     style={{ width: '100%' }}
@@ -363,6 +366,7 @@ export default function BranchAdd() {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     showSearch
                     filterOption={(input, option) =>
                       option.children
@@ -401,6 +405,7 @@ export default function BranchAdd() {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     mode="tags"
                     placeholder="Please select"
                     // onChange={handleChange}
@@ -483,11 +488,7 @@ export default function BranchAdd() {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Thêm
                 </Button>
               </Form.Item>

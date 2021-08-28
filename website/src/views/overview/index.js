@@ -79,6 +79,7 @@ const Overview = () => {
                 >
                   <div style={{ width: '100%' }}>
                     <Select
+                      size="large"
                       style={{ width: '100%' }}
                       className={
                         styles['dashboard_manager_date_row_col_select']
@@ -101,9 +102,9 @@ const Overview = () => {
                 >
                   <div>
                     <RangePicker
-                      className={
-                        styles['dashboard_manager_date_row_col_select']
-                      }
+                      size="large"
+                      className="br-15__date-picker"
+                      style={{ width: '100%' }}
                     />
                   </div>
                 </Col>

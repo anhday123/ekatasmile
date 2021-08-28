@@ -65,6 +65,7 @@ export default function Product() {
   const [page, setPage] = useState(1)
   const [page_size, setPageSize] = useState(20)
   const [paramsFilter, setParamsFilter] = useState({
+    this_week: true,
     merge: false,
   })
   const [supplier, setSupplier] = useState([])
@@ -80,8 +81,10 @@ export default function Product() {
   const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
     useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
+  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
+    this_week: true,
+  })
   const [warehouseList, setWarehouseList] = useState([])
   const [branchList, setBranchList] = useState([])
   const history = useHistory()
@@ -633,6 +636,8 @@ export default function Product() {
     setStatusName('')
     setAllSelect()
     setSelectedRowKeys([])
+    setValueDateSearch({})
+    setValueTime()
     setParamsFilter({ merge: paramsFilter.merge })
   }
   const [arrayCheck, setArrayCheck] = useState([])
@@ -2678,6 +2683,7 @@ export default function Product() {
               borderBottom: '1px solid rgb(236, 228, 228)',
               justifyContent: 'space-between',
               width: '100%',
+              alignItems: 'center',
             }}
           >
             <Col
@@ -2720,6 +2726,7 @@ export default function Product() {
                   }}
                 >
                   <Button
+                    size="large"
                     onClick={showDrawerGroup}
                     type="primary"
                     icon={<PlusCircleOutlined />}
@@ -2736,7 +2743,11 @@ export default function Product() {
                   }}
                 >
                   <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button type="primary" icon={<PlusCircleOutlined />}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusCircleOutlined />}
+                    >
                       Thêm sản phẩm
                     </Button>
                   </Link>
@@ -2776,6 +2787,7 @@ export default function Product() {
               xl={11}
             >
               <Select
+                size="large"
                 value={allSelect}
                 showSearch
                 allowClear
@@ -2809,6 +2821,7 @@ export default function Product() {
               xl={11}
             >
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
@@ -2841,6 +2854,7 @@ export default function Product() {
                 <Row style={{ width: '100%' }}>
                   <Col span={14}>
                     <Input
+                      size="large"
                       style={{ width: '100%' }}
                       name="name"
                       value={valueSearch}
@@ -2854,6 +2868,7 @@ export default function Product() {
                   </Col>
                   <Col span={10}>
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Chọn theo"
@@ -2890,6 +2905,7 @@ export default function Product() {
             >
               <div style={{ width: '100%' }}>
                 <Select
+                  size="large"
                   open={isOpenSelect}
                   onBlur={() => {
                     if (isOpenSelect) toggleOpenSelect()
@@ -3035,17 +3051,14 @@ export default function Product() {
               <Radio value={false}>Hiện thị đơn</Radio>
               <Radio value={true}>Hiện thị gộp</Radio>
             </Radio.Group>
-            <Button
-              onClick={onClickClear}
-              type="primary"
-              style={{ width: '7.5rem' }}
-            >
+            <Button size="large" onClick={onClickClear} type="primary">
               Xóa tất cả lọc
             </Button>
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginBottom: 10 }}>
               <Button
+                size="large"
                 onClick={() => {
                   history.push({
                     pathname: ROUTES.SHIPPING_PRODUCT_ADD,
@@ -3057,6 +3070,7 @@ export default function Product() {
                 Tạo phiếu chuyển hàng
               </Button>
               <Button
+                size="large"
                 style={{ marginLeft: '1rem' }}
                 onClick={() => modal5VisibleModal(true)}
                 type="primary"
@@ -3064,6 +3078,7 @@ export default function Product() {
                 Tạo nhóm sản phẩm
               </Button>
               <Button
+                size="large"
                 style={{ marginLeft: '1rem' }}
                 onClick={() => modal50VisibleModal(true)}
                 type="primary"
@@ -3246,13 +3261,14 @@ export default function Product() {
                 color: 'black',
                 fontSize: '1rem',
                 fontWeight: '600',
-                width: '10rem',
+                width: 'max-content',
               }}
             >
               Nhóm sản phẩm:
             </div>
             <div style={{ marginLeft: '1rem', width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 onChange={onChangeGroupProduct}
                 placeholder="Nhập tên nhóm sản phẩm"
@@ -3287,11 +3303,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Button
-            onClick={onClickGroupProduct}
-            type="primary"
-            style={{ width: '7.5rem' }}
-          >
+          <Button onClick={onClickGroupProduct} type="primary" size="large">
             Tạo
           </Button>
         </div>
@@ -3327,6 +3339,7 @@ export default function Product() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
@@ -3377,7 +3390,7 @@ export default function Product() {
           <Button
             onClick={onClickGroupProductSelect}
             type="primary"
-            style={{ width: '7.5rem' }}
+            size="large"
           >
             Cập nhật
           </Button>
@@ -3430,6 +3443,7 @@ export default function Product() {
                   overlay={contentProductGroup}
                 >
                   <Input
+                    size="large"
                     style={{ width: '100%' }}
                     name="name"
                     value={valueSearchProductGroup}
@@ -3460,8 +3474,8 @@ export default function Product() {
                 }}
               >
                 <Button
+                  size="large"
                   onClick={() => modal6VisibleModal(true)}
-                  style={{ width: '10rem' }}
                   type="primary"
                 >
                   Tạo nhóm sản phẩm
@@ -3472,6 +3486,7 @@ export default function Product() {
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginTop: 20 }}>
               <Button
+                size="large"
                 onClick={showDrawerCategoryGroupUpdate}
                 type="primary"
                 style={{ marginRight: '1rem' }}
@@ -3479,10 +3494,10 @@ export default function Product() {
                 Cập nhật nhóm sản phẩm
               </Button>
               <Button
+                size="large"
                 onClick={onChangeSwitchCategory}
                 danger
                 type="primary"
-                style={{ marginRight: '1rem' }}
               >
                 Xóa
               </Button>
@@ -3552,7 +3567,7 @@ export default function Product() {
                   name="categoryName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên nhóm sản phẩm" />
+                  <Input size="large" placeholder="Nhập tên nhóm sản phẩm" />
                 </Form.Item>
               </div>
             </Col>
@@ -3581,11 +3596,7 @@ export default function Product() {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Tạo nhóm
                 </Button>
               </Form.Item>
