@@ -17,7 +17,6 @@ import React, { useEffect, useState } from 'react'
 import {
   ArrowLeftOutlined,
   PlusOutlined,
-  SearchOutlined,
   CloseOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -28,13 +27,9 @@ import { getCustomer } from 'apis/customer'
 import CustomerAdd from '../actions/customer/add'
 import { getAllBranch } from 'apis/branch'
 import { apiAllTax } from 'apis/tax'
-<<<<<<< HEAD
 import { apiCheckPromotion, getPromoton } from 'apis/promotion'
-import { apiOrderPromotion, apiOrderVoucher } from 'apis/order'
-=======
-import { getPromoton } from 'apis/promotion'
+import { apiOrderVoucher } from 'apis/order'
 import { ROUTES } from 'consts'
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
 function formatCash(str) {
   return str
     .toString()
@@ -362,7 +357,7 @@ export default function OrderCreateShipping() {
             <div className={styles['block']}>
               <div className={styles['title']}>Chi nhánh</div>
               <Select
-<<<<<<< HEAD
+                size="large"
                 style={{ width: '200px' }}
                 onChange={(e) => setBranch(e)}
                 placeholder="chọn chi nhánh"
@@ -372,15 +367,6 @@ export default function OrderCreateShipping() {
                   .map((e) => (
                     <Select.Option value={e.branch_id}>{e.name}</Select.Option>
                   ))}
-=======
-                size="large"
-                style={{ width: '200px' }}
-                placeholder="chọn chi nhánh"
-              >
-                {branchList.map((e) => (
-                  <Select.Option value={e.branch_id}>{e.name}</Select.Option>
-                ))}
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
               </Select>
               <div className={styles['title']}>Sản phẩm</div>
               <AutoComplete
@@ -413,12 +399,8 @@ export default function OrderCreateShipping() {
                       mode="tags"
                       size="large"
                       placeholder="Please select"
-<<<<<<< HEAD
                       defaultValue={tax}
                       onChange={addTax}
-=======
-                      defaultValue={['1']}
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       style={{ width: '100%' }}
                     >
                       {taxList
@@ -430,21 +412,14 @@ export default function OrderCreateShipping() {
                         ))}
                     </Select>
                     <div style={{ color: 'blue' }}>voucher</div>
-<<<<<<< HEAD
                     <Input
                       disabled={promotion}
+                      size="large"
                       onChange={(e) => checkVoucher(e.target.value)}
                     />
                     <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
                     <Select
-=======
-
-                    <Input size="large" />
-                    <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
-                    <Select
                       size="large"
-                      // onChange={handleChange}
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       style={{ width: '100%' }}
                       disabled={voucher}
                       allowClear
@@ -580,11 +555,7 @@ export default function OrderCreateShipping() {
             </div>
             <Divider />
             <Row justify="end">
-<<<<<<< HEAD
-              <Button type="primary" onClick={createOrder}>
-=======
-              <Button size="large" type="primary">
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
+              <Button type="primary" size="large" onClick={createOrder}>
                 Thanh toán
               </Button>
             </Row>

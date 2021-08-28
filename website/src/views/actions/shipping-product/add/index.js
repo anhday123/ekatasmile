@@ -412,23 +412,6 @@ export default function ShippingProductAdd(props) {
           className={styles['supplier_add_content']}
           onFinish={onFinish}
         >
-          <div
-            style={{
-              display: 'flex',
-              marginBottom: '0.75rem',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              color: 'black',
-              fontWeight: '600',
-              fontSize: '1rem',
-              cursor: 'pointer',
-            }}
-            onClick={() => history.push(ROUTES.SHIPPING_PRODUCT)}
-          >
-            <ArrowLeftOutlined style={{ marginRight: 7 }} />
-            Thông tin phiếu chuyển
-          </div>
           <Row style={{ width: '100%' }} align="middle">
             <span
               style={{

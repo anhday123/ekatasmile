@@ -24,7 +24,7 @@ import axios from 'axios'
 
 const { Option } = Select
 const { Dragger } = Upload
-export default function ShippingAdd() {
+export default function ShippingAdd(props) {
   const dispatch = useDispatch()
   let history = useHistory()
   const [form] = Form.useForm()
@@ -47,7 +47,7 @@ export default function ShippingAdd() {
       console.log(res)
       if (res.status === 200) {
         openNotification()
-        history.push(ROUTES.SHIPPING)
+        props.close()
       } else {
         openNotificationError()
       }
@@ -153,7 +153,6 @@ export default function ShippingAdd() {
     },
   }
   const onFinish = async (values) => {
-    console.log('Success:', values)
     if (list !== '') {
       if (values.zipCode) {
         if (isNaN(values.phoneNumber) || isNaN(values.zipCode)) {
@@ -234,21 +233,6 @@ export default function ShippingAdd() {
   return (
     <>
       <div className={styles['supplier_add']}>
-        <Link
-          className={styles['supplier_add_back_parent']}
-          style={{
-            borderBottom: '1px solid rgb(233, 220, 220)',
-            paddingBottom: '1rem',
-          }}
-          to={ROUTES.SHIPPING}
-        >
-          <ArrowLeftOutlined
-            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-          />
-          <div className={styles['supplier_add_back']}>
-            Thêm đối tác vận chuyển
-          </div>
-        </Link>
         <Form
           className={styles['supplier_add_content']}
           onFinish={onFinish}

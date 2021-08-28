@@ -663,7 +663,6 @@ export default function Branch() {
           />
         </div>
       </div>
-<<<<<<< HEAD
 
       <Drawer
         title="Cập nhật thông tin chi nhánh"
@@ -1341,8 +1340,6 @@ export default function Branch() {
       >
         <BranchView data={data} />
       </Drawer>
-=======
->>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
     </>
   )
 }

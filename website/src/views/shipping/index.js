@@ -29,6 +29,7 @@ import {
 } from '../../apis/shipping'
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
+import ShippingAdd from 'views/actions/shipping/add'
 
 export default function Shipping() {
   const { RangePicker } = DatePicker
@@ -38,6 +39,7 @@ export default function Shipping() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
@@ -725,11 +727,14 @@ export default function Shipping() {
           <div className={styles['shipping_manager_title']}>
             <div>Quản lý đối tác vận chuyển</div>
           </div>
-          <Link to={ROUTES.SHIPPING_ADD}>
-            <Button icon={<PlusCircleOutlined />} type="primary" size="large">
-              Thêm đối tác
-            </Button>
-          </Link>
+          <Button
+            icon={<PlusCircleOutlined />}
+            type="primary"
+            size="large"
+            onClick={() => setShowCreate(true)}
+          >
+            Thêm đối tác
+          </Button>
         </div>
         <Row className={styles['shipping_manager_search']}>
           <Col
@@ -1910,6 +1915,14 @@ export default function Shipping() {
               )
             }
           })}
+      </Drawer>
+      <Drawer
+        visible={showCreate}
+        onClose={() => setShowCreate(false)}
+        width="75%"
+        title="Thêm đối tác"
+      >
+        <ShippingAdd close={() => setShowCreate(false)} />
       </Drawer>
     </>
   )
