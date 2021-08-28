@@ -33,6 +33,7 @@ import {
   apiUpdateBranch,
   getAllBranch,
 } from 'apis/branch'
+import BranchView from 'views/actions/branch/view'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -42,6 +43,8 @@ export default function Branch() {
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [data, setData] = useState({})
+  const [viewBranch, setViewBranch] = useState(false)
   const [store, setStore] = useState([])
   const [branch, setBranch] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -106,10 +109,6 @@ export default function Branch() {
       apiSearchData(value, 1)
     }, 300)
   }
-
-  const onClickNotBranch = (record) => {
-    history.push({ pathname: ROUTES.BRANCH_VIEW, state: record })
-  }
   const columnsPromotion = [
     {
       title: 'Mã chi nhánh',
@@ -117,7 +116,10 @@ export default function Branch() {
       width: 150,
       render: (text, record) => (
         <div
-          onClick={() => onClickNotBranch(record)}
+          onClick={() => {
+            setData(record)
+            setViewBranch(true)
+          }}
           style={{ color: '#007ACC', cursor: 'pointer' }}
         >
           {text}
@@ -1347,6 +1349,14 @@ export default function Branch() {
               )
             }
           })}
+      </Drawer>
+      <Drawer
+        visible={viewBranch}
+        onClose={() => setViewBranch(false)}
+        title="Chi tiết chi nhánh"
+        width="75%"
+      >
+        <BranchView data={data} />
       </Drawer>
     </>
   )

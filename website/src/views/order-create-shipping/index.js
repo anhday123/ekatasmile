@@ -19,13 +19,17 @@ import {
   PlusOutlined,
   SearchOutlined,
   CloseOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  AlertOutlined,
 } from '@ant-design/icons'
 import { apiProductSeller } from 'apis/product'
 import { getCustomer } from 'apis/customer'
 import CustomerAdd from '../actions/customer/add'
 import { getAllBranch } from 'apis/branch'
 import { apiAllTax } from 'apis/tax'
-import { getPromoton } from 'apis/promotion'
+import { apiCheckPromotion, getPromoton } from 'apis/promotion'
+import { apiOrderPromotion, apiOrderVoucher } from 'apis/order'
 function formatCash(str) {
   return str
     .toString()
@@ -46,6 +50,11 @@ export default function OrderCreateShipping() {
   const [branchList, setBranchList] = useState([])
   const [taxList, setTaxList] = useState([])
   const [promotionList, setPromotionList] = useState([])
+  const [promotion, setPromotion] = useState('')
+  const [taxValue, setTaxValue] = useState(5)
+  const [tax, setTax] = useState(['1'])
+  const [voucher, setvoucher] = useState('')
+  const [discount, setDiscount] = useState('')
   const [branch, setBranch] = useState('')
   const columns = [
     {
@@ -80,7 +89,8 @@ export default function OrderCreateShipping() {
         return (
           <InputNumber
             defaultValue={1}
-            min={1}
+            min={0}
+            max={record.available_stock_quantity || record.low_stock_quantity}
             onChange={(e) => {
               var tmp = [...productData]
               tmp[index].quantity = e
@@ -116,7 +126,15 @@ export default function OrderCreateShipping() {
     }
   }
   const handleSearch = async (value) => {
-    const data = await getProduct({ keyword: value, merge: false })
+    if (!branch) {
+      notification.warning({ message: 'Vui lòng chọn chi nhánh' })
+      return
+    }
+    const data = await getProduct({
+      keyword: value,
+      branch: branch,
+      merge: false,
+    })
     setOptions(!data.length ? [] : searchResult(data))
   }
   const searchResult = (query) => {
@@ -127,12 +145,37 @@ export default function OrderCreateShipping() {
           <div
             style={{
               display: 'flex',
-              // justifyContent: 'space-between',
+              justifyContent: 'space-between',
             }}
           >
-            <img src={_.image[0]} width="100px" style={{ marginRight: 20 }} />
-            <span>{_.name}</span>
-            {/* <span>{_.sale_price}</span> */}
+            <div style={{ display: 'flex', width: '50%' }}>
+              <img src={_.image[0]} width="60px" style={{ marginRight: 20 }} />
+              <div
+                style={{
+                  width: '230px',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
+              >
+                {_.title || _.name}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', width: '50%' }}>
+              <div style={{ padding: '10px', width: '110px' }}>
+                {formatCash(_.sale_price)} VND
+              </div>
+              <div style={{ padding: '10px', width: '80px', color: 'green' }}>
+                <CheckCircleOutlined />
+                {formatCash(_.available_stock_quantity)}
+              </div>
+              <div style={{ padding: '10px', width: '80px', color: 'orange' }}>
+                <AlertOutlined /> {_.low_stock_quantity}
+              </div>
+              <div style={{ padding: '10px', width: '80px', color: 'red' }}>
+                <CloseCircleOutlined /> {_.out_stock_quantity}
+              </div>
+            </div>
           </div>
         ),
       }
@@ -176,36 +219,75 @@ export default function OrderCreateShipping() {
       console.log(e)
     }
   }
-  const createOrder = () => {
+  const createOrder = async () => {
+    if (voucher) {
+      try {
+        const res = await apiCheckPromotion({ voucher })
+        if (!res.data.success) {
+          notification.error({
+            message: 'Voucher không tồn tại hoặc đã được sử dụng',
+          })
+          return
+        }
+      } catch (e) {
+        notification.error({
+          message: 'Voucher không tồn tại hoặc đã được sử dụng',
+        })
+        return
+      }
+    }
+    let totalDiscount =
+      (discount.value / 100) *
+      productData.reduce((a, b) => a + b.quantity * b.sale_price, 0)
     const dataList = productData.map((product) => {
-      return {
+      let productDiscount = 0
+      if (totalDiscount >= product.sale_price * product.quantity) {
+        productDiscount = product.sale_price * product.quantity
+        totalDiscount -= product.sale_price * product.quantity
+      } else {
+        productDiscount = totalDiscount
+        totalDiscount = 0
+      }
+      const data = {
         product_id: product.product_id,
         sku: product.sku,
         supplier: product.suppliers.supplier_id,
         options: product.options,
-        voucher: ' ',
+        // has_variable: product.has_variable,
         quantity: product.quantity,
         total_cost: product.sale_price * product.quantity,
-        discount: 0,
-        final_cost: product.sale_price * product.quantity,
+        discount: productDiscount,
+        final_cost: product.sale_price * product.quantity - productDiscount,
       }
+
+      return voucher
+        ? { ...data, voucher: productDiscount ? voucher : ' ' }
+        : { ...data, promotion: productDiscount ? promotion : ' ' }
     })
     const data = {
-      branch: '1',
+      branch: branch,
       customer: customerInfo.customer_id,
       order_details: dataList,
       payment: '1',
-      tax_list: ['1'],
-      voucher: ' ',
+      tax_list: tax,
+      // voucher: voucher,
       transport: '1',
       total_cost: dataList.reduce((a, b) => a + b.final_cost, 0),
       discount: dataList.reduce((a, b) => a + b.discount, 0),
       final_cost:
-        dataList.reduce((a, b) => a + b.final_cost, 0) -
-        dataList.reduce((a, b) => a + b.discount, 0),
+        dataList.reduce((a, b) => a + b.total_cost, 0) -
+        dataList.reduce((a, b) => a + b.discount, 0) +
+        (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100,
       latitude: '50.50',
       longtitude: '50.50',
       note: note,
+    }
+    const res = voucher
+      ? await apiOrderVoucher({ ...data, voucher })
+      : await apiOrderVoucher({ ...data, promotion })
+    if (res.data.success) {
+      notification.success({ message: 'Tạo hóa đơn thành công' })
+      history.push('/order-list')
     }
   }
   const getData = async (api, callback) => {
@@ -218,10 +300,39 @@ export default function OrderCreateShipping() {
       console.log(e)
     }
   }
-
+  const checkVoucher = async (value) => {
+    setvoucher(value)
+    try {
+      const res = await apiCheckPromotion({ voucher, value })
+      if (res.data.success) {
+        if (res.data.data.type == 'value') {
+          setDiscount({ value: res.data.data.value, type: 'value' })
+        } else setDiscount({ value: res.data.data.value, type: 'percent' })
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const addTax = (value) => {
+    setTax(value)
+    const totaltax = value
+      .map((e) => {
+        return parseInt(e.value)
+      })
+      .reduce((a, b) => a + b, 0)
+    setTaxValue(totaltax)
+  }
+  const addPromotion = (value) => {
+    setPromotion(value)
+    const pro = promotionList.find((e) => e.promotion_id == value)
+    if (pro.type == 'value') {
+      setDiscount({ value: pro.value, type: 'value' })
+    } else setDiscount({ value: pro.value, type: 'percent' })
+  }
   useEffect(() => {
     getData(getAllBranch, setBranchList)
     getData(apiAllTax, setTaxList)
+
     getData(getPromoton, setPromotionList)
   }, [])
   return (
@@ -239,10 +350,16 @@ export default function OrderCreateShipping() {
           <Col span={16}>
             <div className={styles['block']}>
               <div className={styles['title']}>Chi nhánh</div>
-              <Select style={{ width: '200px' }} placeholder="chọn chi nhánh">
-                {branchList.map((e) => (
-                  <Select.Option value={e.branch_id}>{e.name}</Select.Option>
-                ))}
+              <Select
+                style={{ width: '200px' }}
+                onChange={(e) => setBranch(e)}
+                placeholder="chọn chi nhánh"
+              >
+                {branchList
+                  .filter((e) => e.active)
+                  .map((e) => (
+                    <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                  ))}
               </Select>
               <div className={styles['title']}>Sản phẩm</div>
               <AutoComplete
@@ -279,26 +396,37 @@ export default function OrderCreateShipping() {
                       mode="tags"
                       // size={size}
                       placeholder="Please select"
-                      defaultValue={['1']}
-                      // onChange={handleChange}
+                      defaultValue={tax}
+                      onChange={addTax}
                       style={{ width: '100%' }}
                     >
-                      {taxList.map((e) => (
-                        <Select.Option value={e.tax_id}>{e.name}</Select.Option>
-                      ))}
+                      {taxList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Select.Option value={e.tax_id}>
+                            {e.name}
+                          </Select.Option>
+                        ))}
                     </Select>
                     <div style={{ color: 'blue' }}>voucher</div>
-                    <Input />
+                    <Input
+                      disabled={promotion}
+                      onChange={(e) => checkVoucher(e.target.value)}
+                    />
                     <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
                     <Select
-                      // onChange={handleChange}
                       style={{ width: '100%' }}
+                      disabled={voucher}
+                      allowClear
+                      onChange={addPromotion}
                     >
-                      {promotionList.map((e) => (
-                        <Select.Option value={e.promotion_id}>
-                          {e.name}
-                        </Select.Option>
-                      ))}
+                      {promotionList
+                        .filter((e) => e.active)
+                        .map((e) => (
+                          <Select.Option value={e.promotion_id}>
+                            {e.name}
+                          </Select.Option>
+                        ))}
                     </Select>
                   </Row>
                   <Row>
@@ -327,7 +455,17 @@ export default function OrderCreateShipping() {
                       <span>Chiết khấu</span>
                     </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
-                      0
+                      {discount && productData.length
+                        ? formatCash(
+                            discount.type == 'value'
+                              ? discount.value
+                              : (discount.value / 100) *
+                                  productData.reduce(
+                                    (a, b) => a + b.quantity * b.sale_price,
+                                    0
+                                  )
+                          )
+                        : 0}
                     </Col>
                   </Row>
                   <Row>
@@ -343,7 +481,15 @@ export default function OrderCreateShipping() {
                       <span>Tổng thuế</span>
                     </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
-                      0
+                      {productData.length
+                        ? formatCash(
+                            (taxValue / 100) *
+                              productData.reduce(
+                                (a, b) => a + b.quantity * b.sale_price,
+                                0
+                              )
+                          )
+                        : 0}
                     </Col>
                   </Row>
                   <Row>
@@ -366,12 +512,36 @@ export default function OrderCreateShipping() {
                     </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
                       {productData.length
-                        ? formatCash(
-                            productData.reduce(
-                              (a, b) => a + b.quantity * b.sale_price,
-                              0
+                        ? discount
+                          ? formatCash(
+                              discount.type == 'value'
+                                ? discount.value
+                                : productData.reduce(
+                                    (a, b) => a + b.quantity * b.sale_price,
+                                    0
+                                  ) - // giảm giá
+                                    (discount.value / 100) *
+                                      productData.reduce(
+                                        (a, b) => a + b.quantity * b.sale_price,
+                                        0
+                                      ) + // thuế
+                                    (taxValue / 100) *
+                                      productData.reduce(
+                                        (a, b) => a + b.quantity * b.sale_price,
+                                        0
+                                      )
                             )
-                          )
+                          : formatCash(
+                              productData.reduce(
+                                (a, b) => a + b.quantity * b.sale_price,
+                                0
+                              ) + //thuế
+                                (taxValue / 100) *
+                                  productData.reduce(
+                                    (a, b) => a + b.quantity * b.sale_price,
+                                    0
+                                  )
+                            )
                         : 0}
                     </Col>
                   </Row>
@@ -380,7 +550,9 @@ export default function OrderCreateShipping() {
             </div>
             <Divider />
             <Row justify="end">
-              <Button type="primary">Thanh toán</Button>
+              <Button type="primary" onClick={createOrder}>
+                Thanh toán
+              </Button>
             </Row>
           </Col>
           <Col span={8}>
