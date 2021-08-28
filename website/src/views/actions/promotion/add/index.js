@@ -74,7 +74,7 @@ for (let i = 0; i < 46; i++) {
   })
 }
 
-export default function PromotionAdd() {
+export default function PromotionAdd(props) {
   let history = useHistory()
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -101,7 +101,7 @@ export default function PromotionAdd() {
       const res = await addPromotion(obj)
       if (res.status === 200) {
         openNotification()
-        history.push('/promotion/20')
+        props.close()
       } else throw res
     } catch (e) {
       console.log(e)
@@ -147,13 +147,6 @@ export default function PromotionAdd() {
   return (
     <>
       <div className={styles['promotion_add']}>
-        <Link className={styles['promotion_add_title']} to={ROUTES.PROMOTION}>
-          <div>
-            <ArrowLeftOutlined />
-          </div>
-          <div>Thêm khuyến mãi</div>
-        </Link>
-
         <Form
           className={styles['promotion_add_form_parent']}
           onFinish={onFinish}

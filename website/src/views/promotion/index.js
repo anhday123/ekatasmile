@@ -23,6 +23,7 @@ import { getPromoton, updatePromotion } from '../../apis/promotion'
 import { getAllBranch } from '../../apis/branch'
 import { useDispatch } from 'react-redux'
 import { ROUTES } from 'consts'
+import PromotionAdd from 'views/actions/promotion/add'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -82,6 +83,7 @@ export default function Promotion() {
   const [listBranch, setListBranch] = useState([])
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const [searchFilter, setSearchFilter] = useState({
     keyword: '',
     date: [],
@@ -287,15 +289,14 @@ export default function Promotion() {
         >
           <div className={styles['promotion_manager_title']}>Khuyến mãi</div>
           <div className={styles['promotion_manager_button']}>
-            <Link to={ROUTES.PROMOTION_ADD}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Tạo khuyến mãi
-              </Button>
-            </Link>
+            <Button
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              onClick={() => setShowCreate(true)}
+              type="primary"
+              size="large"
+            >
+              Tạo khuyến mãi
+            </Button>
           </div>
         </div>
         <Row
@@ -790,6 +791,14 @@ export default function Promotion() {
             </div>
           </div>
         </Modal>
+      </Drawer>
+      <Drawer
+        visible={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Thêm khuyến mãi"
+        width="75%"
+      >
+        <PromotionAdd close={() => setShowCreate(false)} />
       </Drawer>
     </>
   )

@@ -12,7 +12,6 @@ import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import {
   Switch,
-  Radio,
   DatePicker,
   Form,
   Drawer,
@@ -27,6 +26,7 @@ import {
 import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiFilterCity } from '../../apis/branch'
 import SupplierAdd from 'views/actions/supplier/add'
+import SupplierInformation from 'views/actions/supplier/information'
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Supplier() {
@@ -34,7 +34,9 @@ export default function Supplier() {
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [supplier, setSupplier] = useState([])
+  const [viewSupplier, setViewSupplier] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [data, setData] = useState({})
   const [loading, setLoading] = useState(false)
   const typingTimeoutRef = useRef(null)
   const apiSearchData = async (value) => {
@@ -354,15 +356,15 @@ export default function Supplier() {
       dataIndex: 'code',
       width: 150,
       render: (text, record) => (
-        <Link
-          to={{
-            pathname: ROUTES.SUPPLIER_INFORMATION,
-            state: record,
+        <span
+          style={{ color: '#0019FF', cursor: 'pointer' }}
+          onClick={() => {
+            setData(record)
+            setViewSupplier(true)
           }}
-          style={{ color: '#0019FF' }}
         >
           {text}
-        </Link>
+        </span>
       ),
     },
     {
@@ -1017,6 +1019,14 @@ export default function Supplier() {
         bodyStyle={{ paddingBottom: 80 }}
       >
         <SupplierAdd close={onCloseUpdate} />
+      </Drawer>
+      <Drawer
+        visible={viewSupplier}
+        onClose={() => setViewSupplier(false)}
+        title="Chi tiết nhà cung cấp"
+        width="75%"
+      >
+        <SupplierInformation data={data} />
       </Drawer>
     </>
   )

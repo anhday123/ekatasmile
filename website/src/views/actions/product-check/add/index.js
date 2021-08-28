@@ -162,22 +162,6 @@ export default function ProductCheckAdd(props) {
             flexDirection: 'column',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              color: 'black',
-              fontWeight: '600',
-              fontSize: '1rem',
-              cursor: 'pointer',
-            }}
-            onClick={() => history.push(ROUTES.PRODUCT_CHECK)}
-          >
-            <ArrowLeftOutlined style={{ marginRight: 5, fontSize: 18 }} /> Thông
-            tin phiếu kiểm hàng
-          </div>
           <Row
             style={{
               display: 'flex',

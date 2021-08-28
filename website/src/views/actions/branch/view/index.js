@@ -25,22 +25,16 @@ import {
   notification,
   DatePicker,
   Modal,
-  Typography,
 } from 'antd'
 import {
   ArrowLeftOutlined,
   FileImageOutlined,
-  CheckOutlined,
-  DeleteOutlined,
-  AudioOutlined,
-  EditOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
 import { logoutAction } from '../../../../actions/login'
-export default function BranchView() {
+export default function BranchView(props) {
   const location = useLocation()
   const history = useHistory()
-  const state = location.state && location.state
 
   const [modal2Visible, setModal2Visible] = useState(false)
   let { slug2 } = useParams()
@@ -431,40 +425,12 @@ export default function BranchView() {
         'Nhân viên đang hoạt động. Không thể thực hiện chức năng này.',
     })
   }
-  const openNotificationDeleteSupplierError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description:
-        'Nhân viên đang ở trạng thái vô hiệu hóa. Không thể thực hiện chức năng này.',
-    })
-  }
-  function confirmActive(e) {
-    employee &&
-      employee.length > 0 &&
-      employee.forEach((values, index) => {
-        selectedRowKeys.forEach((values1, index1) => {
-          if (values._id === values1) {
-            if (values.active) {
-              openNotificationDeleteSupplierErrorActive()
-            } else {
-              const object = {
-                active: true,
-              }
-              updateUserData(object, values.user_id, 2)
-            }
-          }
-        })
-      })
-  }
-
   const onClose = () => {
     setVisible(false)
   }
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
   }
-
   const openNotificationRegisterFailMail = () => {
     notification.error({
       message: 'Thất bại',
@@ -476,7 +442,7 @@ export default function BranchView() {
   const openNotificationErrorMove = () => {
     notification.error({
       message: 'Thất bại',
-      description: `Phân nhân sự vào chi nhánh ${state.name} lỗi.`,
+      description: `Phân nhân sự vào chi nhánh ${props.data.name} lỗi.`,
     })
   }
   const openNotificationErrorMoveSuccess = (name) => {
@@ -485,7 +451,8 @@ export default function BranchView() {
       duration: 5,
       description: (
         <div>
-          Nhân sự <b>{name}</b> đã được phân vào chi nhánh <b>{state.name}</b>.
+          Nhân sự <b>{name}</b> đã được phân vào chi nhánh{' '}
+          <b>{props.data.name}</b>.
         </div>
       ),
     })
@@ -530,6 +497,7 @@ export default function BranchView() {
       /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/
     return re.test(String(email).toLowerCase())
   }
+  const regexCheck = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
   const onCloseUpdateFunc = (data) => {
     if (data === 1) {
       arrayUpdate &&
@@ -659,14 +627,14 @@ export default function BranchView() {
       arrayUpdate.length > 0 &&
       arrayUpdate.forEach((values, index) => {
         if (values.active) {
-          if (values.branch.branch_id === state.branch_id) {
+          if (values.branch.branch_id === props.data.branch_id) {
             openNotificationErrorNotEmployeeError(
               `${values.first_name} ${values.last_name}`,
               values.branch.name
             )
           } else {
             updateUserDataMove(
-              { ...values, branch: state.branch_id },
+              { ...values, branch: props.data.branch_id },
               values.user_id
             )
           }
@@ -806,7 +774,7 @@ export default function BranchView() {
             style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
           />
           <div className={styles['supplier_information_title_right']}>
-            Chi nhánh {state.name}
+            Chi nhánh {props.data.name}
           </div>
         </Link>
         <div

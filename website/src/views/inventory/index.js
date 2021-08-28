@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import {
   Switch,
   Drawer,
-  Radio,
   Form,
   Input,
   InputNumber,
@@ -15,10 +14,8 @@ import {
   notification,
   Col,
   DatePicker,
-  Popover,
   Select,
   Table,
-  Modal,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined } from '@ant-design/icons'
@@ -30,44 +27,21 @@ import {
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
 import InventoryAdd from 'views/actions/inventory/add'
+import { divide } from 'lodash'
+import InventoryView from 'views/actions/inventory/view'
 const { Option } = Select
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
+
 const { RangePicker } = DatePicker
-const { Search } = Input
 
 export default function Inventory() {
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [modal2Visible, setModal2Visible] = useState(false)
+  const [showView, setShowView] = useState(false)
   const [inventory, setInventory] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [data, setData] = useState({})
   const [loading, setLoading] = useState(false)
   const openNotificationDelete = (data) => {
     notification.success({
@@ -173,9 +147,15 @@ export default function Inventory() {
       dataIndex: 'code',
       width: 150,
       render: (text, record) => (
-        <Link to={{ pathname: ROUTES.INVENTORY_VIEW, state: record }}>
+        <span
+          onClick={() => {
+            setData(record)
+            setShowView(true)
+          }}
+          style={{ color: 'blue', cursor: 'pointer' }}
+        >
           {text}
-        </Link>
+        </span>
       ),
     },
     {
@@ -1132,6 +1112,14 @@ export default function Inventory() {
         bodyStyle={{ paddingBottom: 80 }}
       >
         <InventoryAdd close={onCloseUpdate} />
+      </Drawer>
+      <Drawer
+        visible={showView}
+        width="75%"
+        onClose={() => setShowView(false)}
+        title="Thông tin chi tiết kho"
+      >
+        <InventoryView data={data} />
       </Drawer>
     </>
   )
