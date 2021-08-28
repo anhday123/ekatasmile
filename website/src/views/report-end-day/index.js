@@ -18,7 +18,7 @@ export default function ReportEndDay() {
   )
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <Row
           style={{
             width: '100%',

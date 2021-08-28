@@ -188,83 +188,59 @@ export default function PenddingCompare(props) {
           width: '100%',
         }}
       >
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <Input
-              size="large"
-              placeholder="Tìm kiếm theo mã, theo tên"
-              onChange={onSearch}
-              enterButton
-            />
-          </div>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+          <Input
+            style={{ width: '100%' }}
+            size="large"
+            placeholder="Tìm kiếm theo mã, theo tên"
+            onChange={onSearch}
+            enterButton
+          />
         </Col>
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <Select
-              size="large"
-              open={isOpenSelect}
-              onBlur={() => {
-                if (isOpenSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!isOpenSelect) toggleOpenSelect()
-              }}
-              style={{ width: 380 }}
-              placeholder="Choose time"
-              allowClear
-              onChange={async (value) => {
-                if (isOpenSelect) toggleOpenSelect()
-                changeTimeOption(value)
-              }}
-              dropdownRender={(menu) => (
-                <div>
-                  <RangePicker
-                    onFocus={() => {
-                      if (!isOpenSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (isOpenSelect) toggleOpenSelect()
-                    }}
-                    style={{ width: '100%' }}
-                    onChange={changeRange}
-                  />
-                  {menu}
-                </div>
-              )}
-            >
-              <Option value="to_day">Today</Option>
-              <Option value="yesterday">Yesterday</Option>
-              <Option value="this_week">This week</Option>
-              <Option value="last_week">Last week</Option>
-              <Option value="last_month">Last month</Option>
-              <Option value="this_month">This month</Option>
-              <Option value="this_year">This year</Option>
-              <Option value="last_year">Last year</Option>
-            </Select>
-          </div>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+          <Select
+            size="large"
+            open={isOpenSelect}
+            onBlur={() => {
+              if (isOpenSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!isOpenSelect) toggleOpenSelect()
+            }}
+            style={{ width: '100%' }}
+            placeholder="Choose time"
+            allowClear
+            onChange={async (value) => {
+              if (isOpenSelect) toggleOpenSelect()
+              changeTimeOption(value)
+            }}
+            dropdownRender={(menu) => (
+              <div>
+                <RangePicker
+                  onFocus={() => {
+                    if (!isOpenSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (isOpenSelect) toggleOpenSelect()
+                  }}
+                  style={{ width: '100%' }}
+                  onChange={changeRange}
+                />
+                {menu}
+              </div>
+            )}
+          >
+            <Option value="to_day">Today</Option>
+            <Option value="yesterday">Yesterday</Option>
+            <Option value="this_week">This week</Option>
+            <Option value="last_week">Last week</Option>
+            <Option value="last_month">Last month</Option>
+            <Option value="this_month">This month</Option>
+            <Option value="this_year">This year</Option>
+            <Option value="last_year">Last year</Option>
+          </Select>
         </Col>
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
           <Select
             size="large"
             placeholder="Chọn chi nhánh"
@@ -284,42 +260,15 @@ export default function PenddingCompare(props) {
           </Select>
         </Col>
       </Row>
+
       <Row
+        justify="end"
         style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
+          marginTop: 15,
           width: '100%',
         }}
       >
-        <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{
-                width: '100%',
-                marginTop: '1rem',
-                marginLeft: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={24}
-              xl={6}
-            >
-              <ImportFile />
-            </Col>
-          </Row>
-        </Col>
+        <ImportFile />
       </Row>
       <div
         style={{

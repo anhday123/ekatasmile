@@ -4264,7 +4264,7 @@ export default function Sell() {
   return (
     <>
       <div className={styles['sell_manager']}>
-        <div className={styles['sell_manager_title']}>
+        <div className={`${styles['sell_manager_title']} ${styles['card']}`}>
           <Row wrap={false} justify="space-between" style={{ width: '100%' }}>
             <Select
               size="large"
@@ -4558,11 +4558,9 @@ export default function Sell() {
               >
                 <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                   <div
-                    className={
-                      styles[
-                        'sell_manager_content_row_col_bottom_row_col_empty'
-                      ]
-                    }
+                    className={`${styles['sell_manager_content_row_col_bottom_row_col_empty']}
+                      ${styles['card']}
+                      `}
                   >
                     {billQuantity && billQuantity.length > 0 ? (
                       <div
@@ -4947,11 +4945,9 @@ export default function Sell() {
                       </div>
                     ) : (
                       <div
-                        className={
-                          styles[
-                            'sell_manager_content_row_col_bottom_row_col_empty'
-                          ]
-                        }
+                        className={`${styles['sell_manager_content_row_col_bottom_row_col_empty']}
+                          ${styles['card']}
+                          `}
                       >
                         <div style={{ marginBottom: '1rem' }}>
                           <img
@@ -4981,7 +4977,7 @@ export default function Sell() {
                 {productSelect && productSelect.length > 0 ? (
                   <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                     <div
-                      className={styles['product_show']}
+                      className={`${styles['product_show']} ${styles['card']}`}
                       style={{
                         height: '30rem',
                         maxHeight: '100%',
@@ -5249,6 +5245,7 @@ export default function Sell() {
                 padding: '1rem',
                 marginLeft: !isMobile && 7,
               }}
+              className={styles['card']}
             >
               <Form
                 className={

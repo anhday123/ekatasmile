@@ -376,7 +376,7 @@ export default function Tax() {
   ]
   return (
     <>
-      <div className={styles['supplier_manager']}>
+      <div className={`${styles['supplier_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',

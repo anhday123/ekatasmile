@@ -226,8 +226,11 @@ export default function OrderCreateShipping() {
     getData(getPromoton, setPromotionList)
   }, [])
   return (
-    <div className={styles['order-create-shipping']}>
-      <div style={{ background: 'white', padding: '20px' }}>
+    <div className={`${styles['order-create-shipping']}`}>
+      <div
+        style={{ background: 'white', padding: '20px' }}
+        className={styles['card']}
+      >
         <Row
           align="middle"
           style={{

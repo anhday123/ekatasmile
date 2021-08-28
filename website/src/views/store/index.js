@@ -692,7 +692,7 @@ export default function Store() {
           </div>
         </div>
       </Modal>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',

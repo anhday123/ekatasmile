@@ -92,7 +92,7 @@ export default function ReportImport() {
   )
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',
@@ -280,7 +280,7 @@ export default function ReportImport() {
           </Col>
         </Row>
       </div>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',

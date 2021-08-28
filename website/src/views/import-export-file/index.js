@@ -116,7 +116,7 @@ export default function ImportExportFile() {
   )
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <Row
           style={{
             display: 'flex',

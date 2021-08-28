@@ -45,7 +45,7 @@ export default function GuaranteeAdd() {
         form={form}
         layout="vertical"
         onFinishFailed={onFinishFailed}
-        className={styles['product_check_add']}
+        className={`${styles['product_check_add']} ${styles['card']}`}
       >
         <Row
           style={{

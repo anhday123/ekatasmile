@@ -236,7 +236,7 @@ export default function Compared(props) {
     <>
       <div>
         <Row justify="space-between">
-          <Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
             <Input
               size="large"
               onChange={(e) =>
@@ -248,7 +248,7 @@ export default function Compared(props) {
               placeholder="Tìm theo mã, theo tên"
             />
           </Col>
-          <Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
             <Select
               size="large"
               open={isOpenSelect}
@@ -258,7 +258,7 @@ export default function Compared(props) {
               onClick={() => {
                 if (!isOpenSelect) toggleOpenSelect()
               }}
-              style={{ width: 380 }}
+              style={{ width: '100%' }}
               placeholder="Choose time"
               allowClear
               onChange={async (value) => {
@@ -292,7 +292,7 @@ export default function Compared(props) {
               <Option value="last_year">Last year</Option>
             </Select>
           </Col>
-          <Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
             <Select
               size="large"
               placeholder="Chọn chi nhánh"
@@ -315,8 +315,8 @@ export default function Compared(props) {
         <Row
           justify="end"
           style={{
-            marginTop: 15,
-            marginBottom: 15,
+            marginTop: 20,
+            marginBottom: 20,
           }}
         >
           <ImportFile />

@@ -68,7 +68,7 @@ export default function Payment() {
   }
   return (
     <>
-      <div className={styles['payment_method']}>
+      <div className={`${styles['payment_method']} ${styles['card']}`}>
         <Row
           style={{
             display: 'flex',

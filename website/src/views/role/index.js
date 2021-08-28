@@ -261,6 +261,7 @@ export default function Role() {
           margin: '1rem',
           backgroundColor: 'white',
         }}
+        className={styles['card']}
       >
         <Row
           style={{

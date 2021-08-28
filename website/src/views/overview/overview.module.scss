@@ -34,6 +34,12 @@
   background-color: white;
   padding: 1rem 1rem 1rem 0;
 }
+.card {
+  box-shadow: 0 12px 23px 0 #5c37990a;
+  border-radius: 1.25rem;
+  border: 0 solid transparent;
+  overflow: hidden;
+}
 .dashboard_manager_balance_parent_row_col_parent {
   display: flex;
   justify-content: flex-start;

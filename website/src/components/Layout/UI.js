@@ -78,6 +78,7 @@ const UI = (props) => {
   const dataUser = localStorage.getItem('accessToken')
     ? decodeToken(localStorage.getItem('accessToken'))
     : {}
+
   const [modal2Visible, setModal2Visible] = useState(false)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
@@ -115,7 +116,7 @@ const UI = (props) => {
     try {
       setLoadingStore(true)
       const res = await getAllStore()
-      console.log('store', res)
+
       if (res.status === 200) setListStore(res.data.data)
       setLoadingStore(false)
     } catch (error) {
@@ -153,7 +154,7 @@ const UI = (props) => {
     },
     {
       path: ROUTES.BUSINESS,
-      title: 'Business',
+      title: 'Business Management',
       permissions: [],
       icon: <ApartmentOutlined />,
     },
@@ -194,6 +195,12 @@ const UI = (props) => {
           permissions: [],
         },
       ],
+    },
+    {
+      path: ROUTES.PROMOTION,
+      title: 'Khuyến mãi',
+      permissions: [],
+      icon: <TagsOutlined />,
     },
     {
       path: ROUTES.PRODUCT_CHECK,
@@ -264,12 +271,6 @@ const UI = (props) => {
       title: 'Cấu hình thông tin',
       permissions: [],
       icon: <SettingOutlined />,
-    },
-    {
-      path: ROUTES.PROMOTION,
-      title: 'Khuyến mãi',
-      permissions: [],
-      icon: <TagsOutlined />,
     },
     {
       path: ROUTES.ROLE,
@@ -912,11 +913,22 @@ const UI = (props) => {
         <Row className={styles['background_right_top']}>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
             <Row
+              wrap={isMobile}
               justify="space-between"
-              wrap={false}
               className={styles['navbar']}
             >
-              <div className={styles['navbar_left']}>
+              <Row
+                align="middle"
+                wrap={false}
+                style={{
+                  width: '100%',
+                  paddingLeft: 5,
+                  paddingRight: 5,
+                  marginTop: 10,
+                  marginBottom: 15,
+                }}
+                justify={isMobile && 'space-between'}
+              >
                 <div className={styles['navbar_left_parent']}>
                   <MenuOutlined
                     onClick={toggle}
@@ -927,18 +939,32 @@ const UI = (props) => {
                   to={ROUTES.STORE}
                   style={{ marginRight: '1rem', cursor: 'pointer' }}
                 >
-                  <PlusOutlined
+                  <Button
+                    type="primary"
+                    size="large"
                     style={{
-                      backgroundColor: '#50D648',
-                      color: 'white',
-                      borderRadius: '50%',
-                      padding: '0.25rem',
-                      fontSize: '1.5rem',
-                      fontWeight: '900',
+                      backgroundColor: '#FFAB2D',
+                      borderColor: '#FFAB2D',
+                      fontWeight: 600,
+                      marginLeft: 15,
                     }}
-                  />
+                  >
+                    Thêm cửa hàng
+                  </Button>
                 </Link>
-              </div>
+                <Select
+                  placeholder="Chọn chưa hàng"
+                  style={{ width: isMobile ? '100%' : 250 }}
+                  size="large"
+                  defaultValue={dataUser.data.store}
+                >
+                  {listStore.map((e, index) => (
+                    <Option value={e.store_id} key={index}>
+                      {e.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Row>
               <div className={styles['navbar_right']}>
                 <Popover placement="bottomRight" content={content}>
                   <div

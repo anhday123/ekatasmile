@@ -25,14 +25,14 @@ export default function ReportFinancial() {
 
   return (
     <>
-      <div className={styles["promotion_manager"]}>
+      <div className={`${styles["promotion_manager"]}`}>
         <div style={{ display: 'flex', borderBottom: '1px solid grey', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className={styles["promotion_manager_title"]}>Báo cáo tài chính</div>
         </div>
 
         <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col className={styles['hover_item']} style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            <Link to={ROUTES.REPORT_FINANCIAL_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', border: '1px solid #1A3873', borderRadius: '0.25rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
+          <Col className={`${styles['hover_item']} ${styles["card"]}`} style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Link to={ROUTES.REPORT_FINANCIAL_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
               <div style={{ marginRight: '1rem' }}><img style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain' }} src={report_cost} alt="" /></div>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: '#18A375', fontSize: '1.25rem', fontWeight: '600' }}>Báo cáo chi tiết bán hàng</div>
@@ -40,8 +40,8 @@ export default function ReportFinancial() {
               </div>
             </Link>
           </Col>
-          <Col className={styles['hover_item']} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            <Link to={ROUTES.REPORT_REVENUE_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', border: '1px solid #1A3873', borderRadius: '0.25rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
+          <Col className={`${styles['hover_item']} ${styles["card"]}`} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+            <Link to={ROUTES.REPORT_REVENUE_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
               <div style={{ marginRight: '1rem' }}><img style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain' }} src={money} alt="" /></div>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: '#18A375', fontSize: '1.25rem', fontWeight: '600' }}>Báo cáo chi phí doanh thu</div>

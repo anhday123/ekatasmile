@@ -2674,559 +2674,549 @@ export default function Product() {
 
   return (
     <>
-      <div>
-        <div className={styles['view_product']}>
-          <Row
-            style={{
-              display: 'flex',
-              paddingBottom: '1rem',
-              borderBottom: '1px solid rgb(236, 228, 228)',
-              justifyContent: 'space-between',
-              width: '100%',
-              alignItems: 'center',
-            }}
+      <div className={`${styles['view_product']} ${styles['card']}`}>
+        <Row
+          style={{
+            display: 'flex',
+            paddingBottom: '1rem',
+            borderBottom: '1px solid rgb(236, 228, 228)',
+            justifyContent: 'space-between',
+            width: '100%',
+            alignItems: 'center',
+          }}
+        >
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            xl={12}
           >
-            <Col
-              style={{ width: '100%', marginTop: '1rem' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={12}
-              xl={12}
-            >
-              <div className={styles['view_product_back']}>
-                <div className={styles['view_product_back_title']}>
-                  Danh sách sản phẩm
-                </div>
+            <div className={styles['view_product_back']}>
+              <div className={styles['view_product_back_title']}>
+                Danh sách sản phẩm
               </div>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={12}
-              xl={12}
+            </div>
+          </Col>
+          <Col
+            style={{ width: '100%' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={12}
+            xl={12}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+              }}
             >
               <div
                 style={{
                   display: 'flex',
+                  marginRight: '1rem',
+                  marginTop: '1rem',
                   justifyContent: 'flex-end',
                   alignItems: 'center',
-                  width: '100%',
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    marginRight: '1rem',
-                    marginTop: '1rem',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                  }}
+                <Button
+                  size="large"
+                  onClick={showDrawerGroup}
+                  type="primary"
+                  icon={<PlusCircleOutlined />}
                 >
+                  Nhóm sản phẩm
+                </Button>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  marginTop: '1rem',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}
+              >
+                <Link to={ROUTES.PRODUCT_ADD}>
                   <Button
                     size="large"
-                    onClick={showDrawerGroup}
                     type="primary"
                     icon={<PlusCircleOutlined />}
                   >
-                    Nhóm sản phẩm
+                    Thêm sản phẩm
                   </Button>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    marginTop: '1rem',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button
-                      size="large"
-                      type="primary"
-                      icon={<PlusCircleOutlined />}
-                    >
-                      Thêm sản phẩm
-                    </Button>
-                  </Link>
-                </div>
+                </Link>
               </div>
-            </Col>
-          </Row>
-          <Row style={{ width: '100%', marginTop: 20 }}>
-            <Radio.Group
-              defaultValue={viewMode}
-              onChange={(e) => onChangeTypeViewProduct(e)}
-            >
-              <Radio style={{ marginBottom: '0.5rem' }} value={0}>
-                Xem theo Kho
-              </Radio>
-              <Radio value={1}>Xem theo chi nhánh</Radio>
-            </Radio.Group>
-          </Row>
-
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
+            </div>
+          </Col>
+        </Row>
+        <Row style={{ width: '100%', marginTop: 20 }}>
+          <Radio.Group
+            defaultValue={viewMode}
+            onChange={(e) => onChangeTypeViewProduct(e)}
           >
-            <Col
-              style={{
-                width: '100%',
-                marginTop: '1rem',
-              }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
+            <Radio style={{ marginBottom: '0.5rem' }} value={0}>
+              Xem theo Kho
+            </Radio>
+            <Radio value={1}>Xem theo chi nhánh</Radio>
+          </Radio.Group>
+        </Row>
+
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{
+              width: '100%',
+              marginTop: '1rem',
+            }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Select
+              size="large"
+              value={allSelect}
+              showSearch
+              allowClear
+              style={{ width: '100%' }}
+              placeholder={!viewMode ? `Chọn kho` : 'Chọn chi nhánh'}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              onChange={onChangeAllSelect}
             >
-              <Select
-                size="large"
-                value={allSelect}
-                showSearch
-                allowClear
-                style={{ width: '100%' }}
-                placeholder={!viewMode ? `Chọn kho` : 'Chọn chi nhánh'}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                onChange={onChangeAllSelect}
-              >
-                {!viewMode
-                  ? warehouseList.map((e) => (
-                      <Option value={e.warehouse_id}>{e.name}</Option>
-                    ))
-                  : branchList.map((e) => (
-                      <Option value={e.branch_id}>{e.name}</Option>
-                    ))}
-              </Select>
-            </Col>
-            <Col
-              style={{
-                width: '100%',
-                marginTop: '1rem',
-              }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
+              {!viewMode
+                ? warehouseList.map((e) => (
+                    <Option value={e.warehouse_id}>{e.name}</Option>
+                  ))
+                : branchList.map((e) => (
+                    <Option value={e.branch_id}>{e.name}</Option>
+                  ))}
+            </Select>
+          </Col>
+          <Col
+            style={{
+              width: '100%',
+              marginTop: '1rem',
+            }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Chọn nhóm sản phẩm"
+              allowClear
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={categoryValue}
+              onChange={onChangeCategoryValue}
             >
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn nhóm sản phẩm"
-                allowClear
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                value={categoryValue}
-                onChange={onChangeCategoryValue}
-              >
-                {category.map((values, index) => {
-                  return (
-                    <Option value={values.category_id}>{values.name}</Option>
-                  )
-                })}
-              </Select>
-            </Col>
+              {category.map((values, index) => {
+                return <Option value={values.category_id}>{values.name}</Option>
+              })}
+            </Select>
+          </Col>
 
-            <Col
-              style={{ width: '100%', marginTop: '1rem' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
-            >
-              <Input.Group style={{ width: '100%' }}>
-                <Row style={{ width: '100%' }}>
-                  <Col span={14}>
-                    <Input
-                      size="large"
-                      style={{ width: '100%' }}
-                      name="name"
-                      value={valueSearch}
-                      onChange={onSearch}
-                      className={
-                        styles['orders_manager_content_row_col_search']
-                      }
-                      placeholder="Tìm kiếm theo mã, theo tên"
-                      allowClear
-                    />
-                  </Col>
-                  <Col span={10}>
-                    <Select
-                      size="large"
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn theo"
-                      optionFilterProp="children"
-                      value={optionSearchName}
-                      onChange={(value) => {
-                        delete paramsFilter[optionSearchName]
-                        setOptionSearchName(value)
-                      }}
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      <Option value="name">Tên sản phẩm</Option>
-                      <Option value="sku">SKU</Option>
-                    </Select>
-                  </Col>
-                </Row>
-              </Input.Group>
-            </Col>
-
-            <Col
-              style={{
-                width: '100%',
-                marginTop: '1rem',
-              }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
-            >
-              <div style={{ width: '100%' }}>
-                <Select
-                  size="large"
-                  open={isOpenSelect}
-                  onBlur={() => {
-                    if (isOpenSelect) toggleOpenSelect()
-                  }}
-                  onClick={() => {
-                    if (!isOpenSelect) toggleOpenSelect()
-                  }}
-                  allowClear
-                  showSearch
-                  style={{ width: '100%' }}
-                  placeholder="Lọc theo thời gian"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  value={valueTime}
-                  onChange={async (value) => {
-                    setValueTime(value)
-
-                    //khi search hoac filter thi reset page ve 1
-                    setPage(1)
-
-                    //xoa params search date hien tai
-                    const p = Object.keys(valueDateTimeSearch)
-                    if (p.length) delete paramsFilter[p[0]]
-
-                    setValueDateSearch(null)
-                    delete paramsFilter.startDate
-                    delete paramsFilter.endDate
-
-                    if (isOpenSelect) toggleOpenSelect()
-
-                    if (value) {
-                      const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-                      getAllProduct({
-                        page: 1,
-                        page_size,
-                        ...paramsFilter,
-                        ...searchDate,
-                      })
-                      setParamsFilter({ ...paramsFilter, ...searchDate })
-                      setValueDateTimeSearch({ ...searchDate })
-                    } else {
-                      getAllProduct({ page: 1, page_size, ...paramsFilter })
-                      setParamsFilter({ ...paramsFilter })
-                      setValueDateTimeSearch({})
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Input.Group style={{ width: '100%' }}>
+              <Row style={{ width: '100%' }}>
+                <Col span={14}>
+                  <Input
+                    size="large"
+                    style={{ width: '100%' }}
+                    name="name"
+                    value={valueSearch}
+                    onChange={onSearch}
+                    className={styles['orders_manager_content_row_col_search']}
+                    placeholder="Tìm kiếm theo mã, theo tên"
+                    allowClear
+                  />
+                </Col>
+                <Col span={10}>
+                  <Select
+                    size="large"
+                    showSearch
+                    style={{ width: '100%' }}
+                    placeholder="Chọn theo"
+                    optionFilterProp="children"
+                    value={optionSearchName}
+                    onChange={(value) => {
+                      delete paramsFilter[optionSearchName]
+                      setOptionSearchName(value)
+                    }}
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
                     }
-                  }}
-                  dropdownRender={(menu) => (
-                    <>
-                      <RangePicker
-                        onFocus={() => {
-                          if (!isOpenSelect) toggleOpenSelect()
-                        }}
-                        onBlur={() => {
-                          if (isOpenSelect) toggleOpenSelect()
-                        }}
-                        value={valueDateSearch}
-                        onChange={(dates, dateStrings) => {
-                          //khi search hoac filter thi reset page ve 1
-                          setPage(1)
+                  >
+                    <Option value="name">Tên sản phẩm</Option>
+                    <Option value="sku">SKU</Option>
+                  </Select>
+                </Col>
+              </Row>
+            </Input.Group>
+          </Col>
 
-                          if (isOpenSelect) toggleOpenSelect()
-
-                          //nếu search date thì xoá các params date
-                          delete paramsFilter.to_day
-                          delete paramsFilter.yesterday
-                          delete paramsFilter.this_week
-                          delete paramsFilter.last_week
-                          delete paramsFilter.last_month
-                          delete paramsFilter.this_month
-                          delete paramsFilter.this_year
-                          delete paramsFilter.last_year
-
-                          //Kiểm tra xem date có được chọn ko
-                          //Nếu ko thì thoát khỏi hàm, tránh cash app
-                          //và get danh sách order
-                          if (!dateStrings[0] && !dateStrings[1]) {
-                            delete paramsFilter.from_date
-                            delete paramsFilter.to_date
-
-                            setValueDateSearch(null)
-                            setValueTime()
-                          } else {
-                            const dateFirst = dateStrings[0]
-                            const dateLast = dateStrings[1]
-                            setValueDateSearch(dates)
-                            setValueTime(`${dateFirst} -> ${dateLast}`)
-
-                            dateFirst.replace(/-/g, '/')
-                            dateLast.replace(/-/g, '/')
-
-                            paramsFilter.from_date = dateFirst
-                            paramsFilter.to_date = dateLast
-                          }
-
-                          getAllProduct({
-                            page: 1,
-                            page_size,
-                            ...paramsFilter,
-                          })
-                          setParamsFilter({ ...paramsFilter })
-                        }}
-                        style={{ width: '100%' }}
-                      />
-                      {menu}
-                    </>
-                  )}
-                >
-                  <Option value="today">Today</Option>
-                  <Option value="yesterday">Yesterday</Option>
-                  <Option value="this_week">This week</Option>
-                  <Option value="last_week">Last week</Option>
-                  <Option value="this_month">This month</Option>
-                  <Option value="last_month">Last Month</Option>
-                  <Option value="this_year">This year</Option>
-                  <Option value="last_year">Last year</Option>
-                </Select>
-              </div>
-            </Col>
-          </Row>
-
-          <Row
-            justify="space-between"
+          <Col
             style={{
-              marginTop: '30px',
               width: '100%',
-              marginBottom: '1rem',
+              marginTop: '1rem',
             }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
           >
-            <Radio.Group
-              onChange={(e) => {
-                setPage(1)
-                const checked = e.target.value
-                paramsFilter.merge = checked
-                setParamsFilter({ ...paramsFilter })
-                getAllProduct({ page: 1, page_size, ...paramsFilter })
+            <div style={{ width: '100%' }}>
+              <Select
+                size="large"
+                open={isOpenSelect}
+                onBlur={() => {
+                  if (isOpenSelect) toggleOpenSelect()
+                }}
+                onClick={() => {
+                  if (!isOpenSelect) toggleOpenSelect()
+                }}
+                allowClear
+                showSearch
+                style={{ width: '100%' }}
+                placeholder="Lọc theo thời gian"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                value={valueTime}
+                onChange={async (value) => {
+                  setValueTime(value)
+
+                  //khi search hoac filter thi reset page ve 1
+                  setPage(1)
+
+                  //xoa params search date hien tai
+                  const p = Object.keys(valueDateTimeSearch)
+                  if (p.length) delete paramsFilter[p[0]]
+
+                  setValueDateSearch(null)
+                  delete paramsFilter.startDate
+                  delete paramsFilter.endDate
+
+                  if (isOpenSelect) toggleOpenSelect()
+
+                  if (value) {
+                    const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+                    getAllProduct({
+                      page: 1,
+                      page_size,
+                      ...paramsFilter,
+                      ...searchDate,
+                    })
+                    setParamsFilter({ ...paramsFilter, ...searchDate })
+                    setValueDateTimeSearch({ ...searchDate })
+                  } else {
+                    getAllProduct({ page: 1, page_size, ...paramsFilter })
+                    setParamsFilter({ ...paramsFilter })
+                    setValueDateTimeSearch({})
+                  }
+                }}
+                dropdownRender={(menu) => (
+                  <>
+                    <RangePicker
+                      onFocus={() => {
+                        if (!isOpenSelect) toggleOpenSelect()
+                      }}
+                      onBlur={() => {
+                        if (isOpenSelect) toggleOpenSelect()
+                      }}
+                      value={valueDateSearch}
+                      onChange={(dates, dateStrings) => {
+                        //khi search hoac filter thi reset page ve 1
+                        setPage(1)
+
+                        if (isOpenSelect) toggleOpenSelect()
+
+                        //nếu search date thì xoá các params date
+                        delete paramsFilter.to_day
+                        delete paramsFilter.yesterday
+                        delete paramsFilter.this_week
+                        delete paramsFilter.last_week
+                        delete paramsFilter.last_month
+                        delete paramsFilter.this_month
+                        delete paramsFilter.this_year
+                        delete paramsFilter.last_year
+
+                        //Kiểm tra xem date có được chọn ko
+                        //Nếu ko thì thoát khỏi hàm, tránh cash app
+                        //và get danh sách order
+                        if (!dateStrings[0] && !dateStrings[1]) {
+                          delete paramsFilter.from_date
+                          delete paramsFilter.to_date
+
+                          setValueDateSearch(null)
+                          setValueTime()
+                        } else {
+                          const dateFirst = dateStrings[0]
+                          const dateLast = dateStrings[1]
+                          setValueDateSearch(dates)
+                          setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                          dateFirst.replace(/-/g, '/')
+                          dateLast.replace(/-/g, '/')
+
+                          paramsFilter.from_date = dateFirst
+                          paramsFilter.to_date = dateLast
+                        }
+
+                        getAllProduct({
+                          page: 1,
+                          page_size,
+                          ...paramsFilter,
+                        })
+                        setParamsFilter({ ...paramsFilter })
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                    {menu}
+                  </>
+                )}
+              >
+                <Option value="today">Today</Option>
+                <Option value="yesterday">Yesterday</Option>
+                <Option value="this_week">This week</Option>
+                <Option value="last_week">Last week</Option>
+                <Option value="this_month">This month</Option>
+                <Option value="last_month">Last Month</Option>
+                <Option value="this_year">This year</Option>
+                <Option value="last_year">Last year</Option>
+              </Select>
+            </div>
+          </Col>
+        </Row>
+
+        <Row
+          justify="space-between"
+          style={{
+            marginTop: '30px',
+            width: '100%',
+            marginBottom: '1rem',
+          }}
+        >
+          <Radio.Group
+            onChange={(e) => {
+              setPage(1)
+              const checked = e.target.value
+              paramsFilter.merge = checked
+              setParamsFilter({ ...paramsFilter })
+              getAllProduct({ page: 1, page_size, ...paramsFilter })
+            }}
+            value={paramsFilter.merge}
+          >
+            <Radio value={false}>Hiện thị đơn</Radio>
+            <Radio value={true}>Hiện thị gộp</Radio>
+          </Radio.Group>
+          <Button size="large" onClick={onClickClear} type="primary">
+            Xóa tất cả lọc
+          </Button>
+        </Row>
+        {selectedRowKeys && selectedRowKeys.length > 0 ? (
+          <Row style={{ width: '100%', marginBottom: 10 }}>
+            <Button
+              size="large"
+              onClick={() => {
+                history.push({
+                  pathname: ROUTES.SHIPPING_PRODUCT_ADD,
+                  state: arrayUpdate,
+                })
               }}
-              value={paramsFilter.merge}
+              type="primary"
             >
-              <Radio value={false}>Hiện thị đơn</Radio>
-              <Radio value={true}>Hiện thị gộp</Radio>
-            </Radio.Group>
-            <Button size="large" onClick={onClickClear} type="primary">
-              Xóa tất cả lọc
+              Tạo phiếu chuyển hàng
+            </Button>
+            <Button
+              size="large"
+              style={{ marginLeft: '1rem' }}
+              onClick={() => modal5VisibleModal(true)}
+              type="primary"
+            >
+              Tạo nhóm sản phẩm
+            </Button>
+            <Button
+              size="large"
+              style={{ marginLeft: '1rem' }}
+              onClick={() => modal50VisibleModal(true)}
+              type="primary"
+            >
+              Cập nhật nhóm sản phẩm
             </Button>
           </Row>
-          {selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Row style={{ width: '100%', marginBottom: 10 }}>
-              <Button
-                size="large"
-                onClick={() => {
-                  history.push({
-                    pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                    state: arrayUpdate,
-                  })
-                }}
-                type="primary"
-              >
-                Tạo phiếu chuyển hàng
-              </Button>
-              <Button
-                size="large"
-                style={{ marginLeft: '1rem' }}
-                onClick={() => modal5VisibleModal(true)}
-                type="primary"
-              >
-                Tạo nhóm sản phẩm
-              </Button>
-              <Button
-                size="large"
-                style={{ marginLeft: '1rem' }}
-                onClick={() => modal50VisibleModal(true)}
-                type="primary"
-              >
-                Cập nhật nhóm sản phẩm
-              </Button>
-            </Row>
-          ) : (
-            ''
-          )}
-          <Row
+        ) : (
+          ''
+        )}
+        <Row
+          style={{
+            width: '100%',
+            backgroundColor: 'rgb(235, 224, 224)',
+            marginTop: '0.25rem',
+            padding: '0.5rem 1rem',
+            marginBottom: '1rem',
+          }}
+        >
+          <div
+            onClick={() => filterProductByStatus('')}
             style={{
-              width: '100%',
-              backgroundColor: 'rgb(235, 224, 224)',
-              marginTop: '0.25rem',
-              padding: '0.5rem 1rem',
-              marginBottom: '1rem',
+              cursor: 'pointer',
+              marginRight: 30,
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: !statusName && 'orange',
             }}
           >
-            <div
-              onClick={() => filterProductByStatus('')}
-              style={{
-                cursor: 'pointer',
-                marginRight: 30,
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: !statusName && 'orange',
-              }}
-            >
-              All &nbsp;
-            </div>
-
-            <span
-              style={{
-                width: 12,
-                height: 12,
-                background: 'rgba(47, 155, 255, 1)',
-                marginRight: 5,
-                marginTop: '0.45rem',
-              }}
-            ></span>
-            <div
-              style={{
-                cursor: 'pointer',
-                color:
-                  statusName === 'shipping_stock' && 'rgba(47, 155, 255, 1)',
-                marginRight: 30,
-                fontSize: '1rem',
-                fontWeight: '600',
-              }}
-              onClick={() => filterProductByStatus('shipping_stock')}
-            >
-              Shipping stock
-            </div>
-
-            <span
-              style={{
-                width: 12,
-                height: 12,
-                background: '#24A700',
-                marginRight: 5,
-                marginTop: '0.45rem',
-              }}
-            ></span>
-            <div
-              style={{
-                cursor: 'pointer',
-                color: statusName === 'available_stock' && '#24A700',
-                marginRight: 30,
-                fontSize: '1rem',
-                fontWeight: '600',
-              }}
-              onClick={() => filterProductByStatus('available_stock')}
-            >
-              Available stock
-            </div>
-
-            <span
-              style={{
-                width: 12,
-                height: 12,
-                background: '#A06000',
-                marginRight: 5,
-                marginTop: '0.45rem',
-              }}
-            ></span>
-            <div
-              style={{
-                cursor: 'pointer',
-                marginRight: 30,
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: statusName === 'low_stock' && '#A06000',
-              }}
-              onClick={() => filterProductByStatus('low_stock')}
-            >
-              Low stock
-            </div>
-
-            <span
-              style={{
-                width: 12,
-                height: 12,
-                background: 'rgba(254, 146, 146, 1)',
-                marginRight: 5,
-                marginTop: '0.45rem',
-              }}
-            ></span>
-            <div
-              style={{
-                cursor: 'pointer',
-                marginRight: 30,
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: statusName === 'out_stock' && 'rgba(254, 146, 146, 1)',
-              }}
-              onClick={() => filterProductByStatus('out_stock')}
-            >
-              Out stock
-            </div>
-          </Row>
-
-          <div className={styles['view_product_table']}>
-            <Table
-              rowSelection={rowSelection}
-              bordered
-              rowKey="_id"
-              columns={columns}
-              loading={loading}
-              dataSource={products}
-              scroll={{ x: 'max-content' }}
-              size="small"
-              pagination={{
-                position: ['bottomLeft'],
-                current: page,
-                defaultPageSize: 20,
-                pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
-                showQuickJumper: true,
-                onChange: (page, pageSize) => {
-                  setSelectedRowKeys([])
-                  setPage(page)
-                  setPageSize(pageSize)
-                  getAllProduct({ page, page_size: pageSize, ...paramsFilter })
-                },
-                total: count,
-              }}
-            />
+            All &nbsp;
           </div>
+
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              background: 'rgba(47, 155, 255, 1)',
+              marginRight: 5,
+              marginTop: '0.45rem',
+            }}
+          ></span>
+          <div
+            style={{
+              cursor: 'pointer',
+              color: statusName === 'shipping_stock' && 'rgba(47, 155, 255, 1)',
+              marginRight: 30,
+              fontSize: '1rem',
+              fontWeight: '600',
+            }}
+            onClick={() => filterProductByStatus('shipping_stock')}
+          >
+            Shipping stock
+          </div>
+
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              background: '#24A700',
+              marginRight: 5,
+              marginTop: '0.45rem',
+            }}
+          ></span>
+          <div
+            style={{
+              cursor: 'pointer',
+              color: statusName === 'available_stock' && '#24A700',
+              marginRight: 30,
+              fontSize: '1rem',
+              fontWeight: '600',
+            }}
+            onClick={() => filterProductByStatus('available_stock')}
+          >
+            Available stock
+          </div>
+
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              background: '#A06000',
+              marginRight: 5,
+              marginTop: '0.45rem',
+            }}
+          ></span>
+          <div
+            style={{
+              cursor: 'pointer',
+              marginRight: 30,
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: statusName === 'low_stock' && '#A06000',
+            }}
+            onClick={() => filterProductByStatus('low_stock')}
+          >
+            Low stock
+          </div>
+
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              background: 'rgba(254, 146, 146, 1)',
+              marginRight: 5,
+              marginTop: '0.45rem',
+            }}
+          ></span>
+          <div
+            style={{
+              cursor: 'pointer',
+              marginRight: 30,
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: statusName === 'out_stock' && 'rgba(254, 146, 146, 1)',
+            }}
+            onClick={() => filterProductByStatus('out_stock')}
+          >
+            Out stock
+          </div>
+        </Row>
+
+        <div className={styles['view_product_table']}>
+          <Table
+            rowSelection={rowSelection}
+            bordered
+            rowKey="_id"
+            columns={columns}
+            loading={loading}
+            dataSource={products}
+            scroll={{ x: 'max-content' }}
+            size="small"
+            pagination={{
+              position: ['bottomLeft'],
+              current: page,
+              defaultPageSize: 20,
+              pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+              showQuickJumper: true,
+              onChange: (page, pageSize) => {
+                setSelectedRowKeys([])
+                setPage(page)
+                setPageSize(pageSize)
+                getAllProduct({ page, page_size: pageSize, ...paramsFilter })
+              },
+              total: count,
+            }}
+          />
         </div>
       </div>
       <Modal

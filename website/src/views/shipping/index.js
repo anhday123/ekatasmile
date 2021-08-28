@@ -711,7 +711,7 @@ export default function Shipping() {
   }
   return (
     <>
-      <div className={styles['shipping_manager']}>
+      <div className={`${styles['shipping_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',

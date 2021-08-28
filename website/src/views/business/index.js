@@ -71,7 +71,7 @@ export default function Business() {
   const { Search } = Input
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [bussinessList, setBussinessList] = useState([])
+  const [businessList, setBusinessList] = useState([])
   const [pagination, setpagination] = useState({ page: 1, page_size: 10 })
   const [Address, setAddress] = useState({ province: [], district: [] })
   const [filter, setFilter] = useState({
@@ -89,11 +89,6 @@ export default function Business() {
   }
   const columnsPromotion = [
     {
-      title: 'STT',
-      dataIndex: 'stt',
-      width: 100,
-    },
-    {
       title: 'Mã business',
       dataIndex: 'businessCode',
       width: 150,
@@ -101,27 +96,24 @@ export default function Business() {
     {
       title: 'Tên business',
       dataIndex: 'businessName',
-      width: 150,
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phoneNumber',
-      width: 150,
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
-      width: 150,
     },
     {
       title: 'Thành phố',
       dataIndex: 'city',
-      width: 150,
     },
     {
-      title: 'Action',
-      dataIndex: 'action',
-      width: 100,
+      title: 'Thời gian đăng kí',
+    },
+    {
+      title: 'Lĩnh vực kinh doanh',
     },
   ]
 
@@ -143,11 +135,12 @@ export default function Business() {
       <div>Gợi ý 2</div>
     </div>
   )
-  const getAllBussiness = async (params) => {
+  const getAllBusiness = async (params) => {
     try {
       const res = await apiAllUser({ ...params, ...pagination })
+      console.log(res)
       if (res.status === 200) {
-        setBussinessList(res.data.data)
+        setBusinessList(res.data.data)
       }
     } catch (e) {
       console.log(e)
@@ -173,11 +166,11 @@ export default function Business() {
     getAddress(apiDistrict, setAddress, 'district')
   }, [])
   useEffect(() => {
-    getAllBussiness({ role: 2, ...removeFalse(filter) })
+    getAllBusiness({ role: 2, ...removeFalse(filter) })
   }, [filter])
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',
@@ -228,6 +221,7 @@ export default function Business() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                allowClear
                 size="large"
                 style={{ width: '100%' }}
                 placeholder="Chọn tỉnh/thành phố"
@@ -257,6 +251,7 @@ export default function Business() {
             <div style={{ width: '100%' }}>
               {Address.district.length ? (
                 <Select
+                  allowClear
                   size="large"
                   showSearch
                   style={{ width: '100%' }}
@@ -300,8 +295,8 @@ export default function Business() {
             rowKey="_id"
             pagination={{ onChange: changePagi }}
             columns={columnsPromotion}
-            dataSource={bussinessList}
-            scroll={{ y: 500 }}
+            dataSource={businessList}
+            style={{ width: '100%' }}
           />
         </div>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (

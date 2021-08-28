@@ -1,38 +1,44 @@
 .configuration {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: column;
-    margin: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  margin: 1rem;
 }
 .configuration > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 .configuration_content {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    border: 1px solid #1a3873;
-    border-radius: 0.25rem;
-    background-color: white;
-    padding: 1rem;
-    margin-top: 1rem;
-    width: 100%;
-    flex-direction: column;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 0.25rem;
+  background-color: white;
+  padding: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+  flex-direction: column;
 }
 .configuration_content > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 
 .hover_item {
-    cursor: pointer;
+  cursor: pointer;
 }
 .hover_item:hover {
-    transform: scale(1.1);
+  transition: all 0.3s;
+  transform: scale(1.1);
+}
+.card {
+  box-shadow: 0 12px 23px 0 #5c37990a;
+  border-radius: 1.25rem;
+  border: 0 solid transparent;
+  overflow: hidden;
 }

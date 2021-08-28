@@ -152,8 +152,8 @@ export default function CompareHistory(props) {
   }
   return (
     <div>
-      <Row gutter={30} justify="space-between">
-        <Col span={8}>
+      <Row justify="space-between">
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
           <Input
             size="large"
             onChange={(e) =>
@@ -165,7 +165,7 @@ export default function CompareHistory(props) {
             placeholder="Tìm theo mã, theo tên"
           />
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
           <Select
             size="large"
             open={isOpenSelect}
@@ -175,7 +175,7 @@ export default function CompareHistory(props) {
             onClick={() => {
               if (!isOpenSelect) toggleOpenSelect()
             }}
-            style={{ width: 380 }}
+            style={{ width: '100%' }}
             placeholder="Choose time"
             allowClear
             onChange={async (value) => {
@@ -208,7 +208,7 @@ export default function CompareHistory(props) {
             <Option value="last_year">Last year</Option>
           </Select>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
           <Select
             size="large"
             placeholder="Chọn chi nhánh"

@@ -496,7 +496,7 @@ export default function Employee() {
     })
   return (
     <>
-      <div className={styles['employee_manager']}>
+      <div className={`${styles['employee_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',

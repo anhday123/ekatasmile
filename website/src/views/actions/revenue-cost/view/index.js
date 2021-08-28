@@ -9,11 +9,9 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 
 export default function RevenueDetailView() {
-  const { Search } = Input
-
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <Link
           style={{
             display: 'flex',

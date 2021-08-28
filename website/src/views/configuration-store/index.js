@@ -29,7 +29,7 @@ export default function ConfigurationStore() {
         >
           Cấu hình
         </div>
-        <div className={styles['configuration_content']}>
+        <div className={`${styles['configuration_content']} ${styles['card']}`}>
           <div
             style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
           >
@@ -330,7 +330,7 @@ export default function ConfigurationStore() {
           </Row>
         </div>
 
-        <div className={styles['configuration_content']}>
+        <div className={`${styles['configuration_content']} ${styles['card']}`}>
           <div
             style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
           >
@@ -489,7 +489,7 @@ export default function ConfigurationStore() {
           </Row>
         </div>
 
-        <div className={styles['configuration_content']}>
+        <div className={`${styles['configuration_content']} ${styles['card']}`}>
           <div
             style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
           >

@@ -116,7 +116,9 @@ const Overview = () => {
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (
-        <div className={styles['dashboard_manager_balance']}>
+        <div
+          className={`${styles['dashboard_manager_balance']} ${styles['card']}`}
+        >
           <div className={styles['dashboard_manager_balance_title']}>
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
@@ -480,6 +482,7 @@ const Overview = () => {
                   backgroundColor: 'white',
                   height: '100%',
                 }}
+                className={styles['card']}
               >
                 <div className={styles['dashboard_manager_revenue_title']}>
                   <div>Doanh thu</div>
@@ -538,6 +541,7 @@ const Overview = () => {
                   marginTop: isMobile && 15,
                   padding: '1rem',
                 }}
+                className={styles['card']}
               >
                 <div
                   className={

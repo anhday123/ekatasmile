@@ -99,7 +99,7 @@ export default function SaleDetailView() {
   )
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <Link
           style={{
             display: 'flex',

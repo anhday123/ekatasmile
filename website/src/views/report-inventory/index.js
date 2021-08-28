@@ -90,7 +90,7 @@ export default function ReportInventory() {
   )
   return (
     <>
-      <div className={styles['promotion_manager']}>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <div
           style={{
             display: 'flex',
