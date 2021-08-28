@@ -350,6 +350,7 @@ export default function ShippingProduct() {
           </div>
           <div className={styles['promotion_manager_button']}>
             <Button
+              size="large"
               onClick={() => setShowCreate(true)}
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               type="primary"
@@ -376,6 +377,7 @@ export default function ShippingProduct() {
           >
             <div style={{ width: '100%' }}>
               <Input
+                size="large"
                 placeholder="Tìm kiếm theo mã, theo tên"
                 onChange={onSearch}
                 enterButton
@@ -392,6 +394,7 @@ export default function ShippingProduct() {
             xl={7}
           >
             <Select
+              size="large"
               open={isOpenSelect}
               defaultValue="this_month"
               onBlur={() => {
@@ -443,6 +446,7 @@ export default function ShippingProduct() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc phiếu chuyển"
                 onChange={handleChange}
@@ -490,9 +494,9 @@ export default function ShippingProduct() {
                 xl={6}
               >
                 <Button
+                  size="large"
                   icon={<FileExcelOutlined />}
                   style={{
-                    width: '7.5rem',
                     backgroundColor: '#008816',
                     color: 'white',
                   }}
@@ -506,7 +510,11 @@ export default function ShippingProduct() {
         </Row>
         <Row style={{ width: '100%' }}>
           {selectedRowKeys.length ? (
-            <Button type="primary" onClick={() => setShowMultiUpdate(true)}>
+            <Button
+              size="large"
+              type="primary"
+              onClick={() => setShowMultiUpdate(true)}
+            >
               Cập nhật trạng thái
             </Button>
           ) : (
@@ -537,6 +545,7 @@ export default function ShippingProduct() {
         width="75%"
         onClose={() => setShowCreate(false)}
         title="Tạo phiếu chuyển hàng"
+        bodyStyle={{ padding: 0 }}
       >
         <ShippingProductAdd close={() => setShowCreate(false)} />
       </Drawer>

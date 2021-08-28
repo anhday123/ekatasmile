@@ -293,6 +293,7 @@ export default function Promotion() {
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               onClick={() => setShowCreate(true)}
               type="primary"
+              size="large"
             >
               Tạo khuyến mãi
             </Button>
@@ -316,6 +317,7 @@ export default function Promotion() {
           >
             <div style={{ width: '100%' }}>
               <Input
+                size="large"
                 placeholder="Tìm kiếm khuyến mãi"
                 onChange={(e) => {
                   setSearchFilter({ ...searchFilter, keyword: e.target.value })
@@ -336,6 +338,8 @@ export default function Promotion() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
@@ -363,6 +367,7 @@ export default function Promotion() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 allowClear
                 placeholder="Lọc theo hình thức khuyến mãi"
@@ -379,7 +384,7 @@ export default function Promotion() {
           </Col>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button type="primary" onClick={resetFilter}>
+          <Button type="primary" onClick={resetFilter} size="large">
             Xóa bộ lọc
           </Button>
         </Row>

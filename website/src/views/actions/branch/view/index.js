@@ -37,9 +37,16 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 import { logoutAction } from '../../../../actions/login'
+<<<<<<< HEAD
 export default function BranchView(props) {
   const location = useLocation()
   const history = useHistory()
+=======
+export default function BranchView() {
+  const location = useLocation()
+  const history = useHistory()
+  const state = location.state && location.state
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
 
   const [modal2Visible, setModal2Visible] = useState(false)
   let { slug2 } = useParams()
@@ -457,15 +464,19 @@ export default function BranchView(props) {
       })
   }
 
+<<<<<<< HEAD
   const showDrawer = () => {
     setVisible(true)
   }
+=======
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
   const onClose = () => {
     setVisible(false)
   }
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
   }
+<<<<<<< HEAD
   const showDrawerUpdate = () => {
     setVisibleUpdate(true)
   }
@@ -504,6 +515,9 @@ export default function BranchView(props) {
       description: 'Tên đăng nhập phải là số điện thoại và có độ dài là 10',
     })
   }
+=======
+
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
   const openNotificationRegisterFailMail = () => {
     notification.error({
       message: 'Thất bại',
@@ -511,6 +525,7 @@ export default function BranchView(props) {
       description: 'Gmail phải ở dạng @gmail.com.',
     })
   }
+<<<<<<< HEAD
   const openNotificationError = () => {
     notification.error({
       message: 'Thất bại',
@@ -521,6 +536,13 @@ export default function BranchView(props) {
     notification.error({
       message: 'Thất bại',
       description: `Phân nhân sự vào chi nhánh ${props.dataname} lỗi.`,
+=======
+
+  const openNotificationErrorMove = () => {
+    notification.error({
+      message: 'Thất bại',
+      description: `Phân nhân sự vào chi nhánh ${state.name} lỗi.`,
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
     })
   }
   const openNotificationErrorMoveSuccess = (name) => {
@@ -529,8 +551,12 @@ export default function BranchView(props) {
       duration: 5,
       description: (
         <div>
+<<<<<<< HEAD
           Nhân sự <b>{name}</b> đã được phân vào chi nhánh{' '}
           <b>{props.dataname}</b>.
+=======
+          Nhân sự <b>{name}</b> đã được phân vào chi nhánh <b>{state.name}</b>.
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
         </div>
       ),
     })
@@ -575,7 +601,10 @@ export default function BranchView(props) {
       /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/
     return re.test(String(email).toLowerCase())
   }
+<<<<<<< HEAD
   const regexCheck = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
+=======
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
   const onCloseUpdateFunc = (data) => {
     if (data === 1) {
       arrayUpdate &&
@@ -705,14 +734,22 @@ export default function BranchView(props) {
       arrayUpdate.length > 0 &&
       arrayUpdate.forEach((values, index) => {
         if (values.active) {
+<<<<<<< HEAD
           if (values.branch.branch_id === props.databranch_id) {
+=======
+          if (values.branch.branch_id === state.branch_id) {
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
             openNotificationErrorNotEmployeeError(
               `${values.first_name} ${values.last_name}`,
               values.branch.name
             )
           } else {
             updateUserDataMove(
+<<<<<<< HEAD
               { ...values, branch: props.databranch_id },
+=======
+              { ...values, branch: state.branch_id },
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
               values.user_id
             )
           }
@@ -852,7 +889,11 @@ export default function BranchView(props) {
             style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
           />
           <div className={styles['supplier_information_title_right']}>
+<<<<<<< HEAD
             Chi nhánh {props.dataname}
+=======
+            Chi nhánh {state.name}
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
           </div>
         </Link>
         <div
@@ -894,6 +935,10 @@ export default function BranchView(props) {
                 >
                   <div style={{ width: '100%' }}>
                     <Input
+<<<<<<< HEAD
+=======
+                      size="large"
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       style={{ width: '100%' }}
                       name="name"
                       value={valueSearch}
@@ -918,6 +963,11 @@ export default function BranchView(props) {
                 >
                   <div style={{ width: '100%' }}>
                     <RangePicker
+<<<<<<< HEAD
+=======
+                      size="large"
+                      className="br-15__date-picker"
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       value={
                         clear === 1
                           ? []
@@ -948,6 +998,10 @@ export default function BranchView(props) {
                 >
                   <div style={{ width: '100%' }}>
                     <Select
+<<<<<<< HEAD
+=======
+                      size="large"
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"
@@ -1086,11 +1140,15 @@ export default function BranchView(props) {
                     width: '100%',
                   }}
                 >
+<<<<<<< HEAD
                   <Button
                     onClick={onClickClear}
                     type="primary"
                     style={{ width: '7.5rem' }}
                   >
+=======
+                  <Button onClick={onClickClear} type="primary" size="large">
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                     Xóa tất cả lọc
                   </Button>
                 </div>

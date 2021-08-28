@@ -200,7 +200,7 @@ export default function InventoryAdd(props) {
                   name="inventoryName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên kho" />
+                  <Input placeholder="Nhập tên kho" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -222,7 +222,7 @@ export default function InventoryAdd(props) {
                   name="phoneNumber"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input placeholder="Nhập liên hệ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -253,7 +253,7 @@ export default function InventoryAdd(props) {
                   }
                   name="address"
                 >
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -282,6 +282,8 @@ export default function InventoryAdd(props) {
                 </div>
                 <Form.Item name="maintainCost">
                   <InputNumber
+                    size="large"
+                    className="br-15__input"
                     style={{ width: '100%' }}
                     // defaultValue={1000}
                     formatter={(value) =>
@@ -323,6 +325,7 @@ export default function InventoryAdd(props) {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     onChange={handleChangeCity}
                     showSearch
                     style={{ width: '100%' }}
@@ -366,7 +369,7 @@ export default function InventoryAdd(props) {
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select defaultValue="general">
+                  <Select defaultValue="general" size="large">
                     <Option value="chung">Chung</Option>
                     <Option value="riêng">Riêng</Option>
                     <Option value="dịch vụ">Dịch vụ</Option>
@@ -405,6 +408,7 @@ export default function InventoryAdd(props) {
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"
@@ -448,11 +452,7 @@ export default function InventoryAdd(props) {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Lưu
                 </Button>
               </Form.Item>

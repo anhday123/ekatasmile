@@ -168,7 +168,7 @@ export default function SupplierAdd(props) {
                   name="supplierName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên nhà cung cấp" />
+                  <Input size="large" placeholder="Nhập tên nhà cung cấp" />
                 </Form.Item>
               </div>
             </Col>
@@ -194,7 +194,7 @@ export default function SupplierAdd(props) {
                   name="supplierAddress"
                   // rules={[{ required: true, message: "Giá trị rỗng!" }]}
                 >
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -228,7 +228,7 @@ export default function SupplierAdd(props) {
                   }
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input placeholder="Nhập liên hệ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -252,6 +252,7 @@ export default function SupplierAdd(props) {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
+                    size="large"
                     onChange={handleChangeCity}
                     showSearch
                     style={{ width: '100%' }}
@@ -306,7 +307,7 @@ export default function SupplierAdd(props) {
                   }
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập email" />
+                  <Input placeholder="Nhập email" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -331,6 +332,7 @@ export default function SupplierAdd(props) {
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"
@@ -358,19 +360,8 @@ export default function SupplierAdd(props) {
               ''
             )}
           </Row>
-          {/* 
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-          </Row> */}
 
           <Row className={styles['supplier_add_content_supplier_button']}>
-            {/* <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
-              <Form.Item >
-                <Button style={{ width: '7.5rem' }} type="primary" danger>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Col> */}
             <Col
               style={{
                 width: '100%',
@@ -386,11 +377,7 @@ export default function SupplierAdd(props) {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Lưu
                 </Button>
               </Form.Item>

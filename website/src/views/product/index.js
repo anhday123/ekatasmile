@@ -54,9 +54,9 @@ import {
   apiProductCategoryMerge,
 } from 'apis/product'
 import axios from 'axios'
+import { uploadFiles } from 'utils'
 
 const { RangePicker } = DatePicker
-const { Dragger } = Upload
 export default function Product() {
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
@@ -65,6 +65,7 @@ export default function Product() {
   const [page, setPage] = useState(1)
   const [page_size, setPageSize] = useState(20)
   const [paramsFilter, setParamsFilter] = useState({
+    this_week: true,
     merge: false,
   })
   const [supplier, setSupplier] = useState([])
@@ -80,8 +81,10 @@ export default function Product() {
   const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
     useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
+  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
+    this_week: true,
+  })
   const [warehouseList, setWarehouseList] = useState([])
   const [branchList, setBranchList] = useState([])
   const history = useHistory()
@@ -198,7 +201,6 @@ export default function Product() {
       const res = await apiUpdateCategory(object, id)
       if (res.status === 200) {
         await apiAllCategoryData()
-        setSelectedRowKeysCategory([])
         setSelectedRowKeys([])
         openNotificationSuccessCategoryMain(name)
       }
@@ -280,402 +282,7 @@ export default function Product() {
     }
   }
 
-  const [checkboxValue, setCheckboxValue] = useState(false)
-  function onChangeCheckbox(e) {
-    setCheckboxValue(e.target.checked)
-  }
-
-  const UploadImg = ({ imageUrl, indexUpdate }) => {
-    const [list, setList] = useState('')
-    const propsMain = {
-      name: 'file',
-      multiple: true,
-      showUploadList: false,
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-      async onChange(info) {
-        var { status } = info.file
-        if (status !== 'done') {
-          status = 'done'
-          if (status === 'done') {
-            if (info.fileList && info.fileList.length > 0) {
-              var image
-              let formData = new FormData()
-              info.fileList.forEach((values, index) => {
-                image = values.originFileObj
-                formData.append('files', image) //append the values with key, value pair
-              })
-
-              if (formData) {
-                dispatch({ type: ACTION.LOADING, data: true })
-                let a = axios
-                  .post(
-                    'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                    formData,
-                    {
-                      headers: {
-                        'Content-Type': 'multipart/form-data',
-                      },
-                    }
-                  )
-                  .then((resp) => resp)
-                let resultsMockup = await Promise.all([a])
-                dispatch({ type: ACTION.LOADING, data: false })
-                setList(resultsMockup[0].data.data)
-
-                products.forEach((values, index) => {
-                  if (values._id === indexUpdate) {
-                    products[index].image = resultsMockup[0].data.data
-                  }
-                })
-              }
-            }
-          }
-        }
-      },
-      onDrop(e) {},
-    }
-
-    return (
-      <Row>
-        <Dragger
-          style={{ width: '10rem', marginBottom: '1.25rem' }}
-          {...propsMain}
-        >
-          {list ? (
-            <p
-              style={{ marginTop: '1.25rem' }}
-              className="ant-upload-drag-icon"
-            >
-              <img
-                src={list[list.length - 1]}
-                style={{
-                  width: '7.5rem',
-                  height: '5rem',
-                  objectFit: 'contain',
-                }}
-                alt=""
-              />
-            </p>
-          ) : (
-            <p
-              style={{ marginTop: '1.25rem', width: '10rem' }}
-              className="ant-upload-drag-icon"
-            >
-              <PlusOutlined />
-
-              <div>Thêm ảnh</div>
-            </p>
-          )}
-        </Dragger>
-        {list && list.length > 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              maxWidth: '100%',
-              overflow: 'auto',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            {list &&
-              list.length > 0 &&
-              list.map((values, index) => {
-                return (
-                  <Popover placement="right" content={() => content(values)}>
-                    <Col
-                      xs={24}
-                      sm={24}
-                      md={6}
-                      lg={6}
-                      xl={6}
-                      style={{
-                        border: '1px solid rgb(230, 220, 220)',
-                        marginTop: '1rem',
-                        marginRight: '1rem',
-                        padding: '1rem',
-                        width: '6.5rem',
-                        height: '6.5rem',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a href={values} target="_blank">
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                            cursor: 'pointer',
-                          }}
-                          alt=""
-                        />
-                      </a>
-
-                      <div className={styles['icon_hover']}></div>
-                    </Col>
-                  </Popover>
-                )
-              })}
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              maxWidth: '100%',
-              overflow: 'auto',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            {imageUrl &&
-              imageUrl.length > 0 &&
-              imageUrl.map((values, index) => {
-                return (
-                  <Popover placement="right" content={() => content(values)}>
-                    <Col
-                      xs={24}
-                      sm={24}
-                      md={6}
-                      lg={6}
-                      xl={6}
-                      style={{
-                        border: '1px solid rgb(230, 220, 220)',
-                        marginTop: '1rem',
-                        marginRight: '1rem',
-                        padding: '1rem',
-                        width: '6.5rem',
-                        height: '6.5rem',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a href={values} target="_blank">
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                            cursor: 'pointer',
-                          }}
-                          alt=""
-                        />
-                      </a>
-                      <div className={styles['icon_hover']}></div>
-                    </Col>
-                  </Popover>
-                )
-              })}
-          </div>
-        )}
-      </Row>
-    )
-  }
-  const UploadImgChild = ({ imageUrl, indexUpdate, index20 }) => {
-    const [list, setList] = useState('')
-
-    const propsMain = {
-      name: 'file',
-      multiple: true,
-      showUploadList: false,
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-      async onChange(info) {
-        var { status } = info.file
-        if (status !== 'done') {
-          status = 'done'
-          if (status === 'done') {
-            console.log(info.file, info.fileList)
-            if (info.fileList && info.fileList.length > 0) {
-              var image
-              var array = []
-              let formData = new FormData()
-              info.fileList.forEach((values, index) => {
-                image = values.originFileObj
-                formData.append('files', image) //append the values with key, value pair
-              })
-
-              if (formData) {
-                dispatch({ type: ACTION.LOADING, data: true })
-                let a = axios
-                  .post(
-                    'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                    formData,
-                    {
-                      headers: {
-                        'Content-Type': 'multipart/form-data',
-                      },
-                    }
-                  )
-                  .then((resp) => resp)
-                let resultsMockup = await Promise.all([a])
-
-                dispatch({ type: ACTION.LOADING, data: false })
-                setList(resultsMockup[0].data.data)
-
-                products.forEach((values, index) => {
-                  if (values._id === indexUpdate) {
-                    products[index].variants[index20].image =
-                      resultsMockup[0].data.data
-                  }
-                })
-              }
-            }
-          }
-        }
-      },
-    }
-    return (
-      <Row>
-        <Dragger
-          style={{ width: '10rem', marginBottom: '1.25rem' }}
-          {...propsMain}
-        >
-          {list ? (
-            <p
-              style={{ marginTop: '1.25rem' }}
-              className="ant-upload-drag-icon"
-            >
-              <img
-                src={list[list.length - 1]}
-                style={{
-                  width: '7.5rem',
-                  height: '5rem',
-                  objectFit: 'contain',
-                }}
-                alt=""
-              />
-            </p>
-          ) : (
-            <p
-              style={{ marginTop: '1.25rem', width: '10rem' }}
-              className="ant-upload-drag-icon"
-            >
-              <PlusOutlined />
-
-              <div>Thêm ảnh</div>
-            </p>
-          )}
-        </Dragger>
-        {list && list.length > 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              maxWidth: '100%',
-              overflow: 'auto',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '10rem',
-            }}
-          >
-            {list &&
-              list.length > 0 &&
-              list.map((values, index) => {
-                return (
-                  <Popover placement="right" content={() => content(values)}>
-                    <Col
-                      xs={24}
-                      sm={24}
-                      md={16}
-                      lg={16}
-                      xl={16}
-                      style={{
-                        border: '1px solid rgb(230, 220, 220)',
-                        marginTop: '1rem',
-                        marginRight: '1rem',
-                        padding: '1rem',
-                        width: '6.5rem',
-                        height: '6.5rem',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a href={values} target="_blank">
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                            cursor: 'pointer',
-                          }}
-                          alt=""
-                        />
-                      </a>
-                      <div className={styles['icon_hover']}></div>
-                    </Col>
-                  </Popover>
-                )
-              })}
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              maxWidth: '100%',
-              overflow: 'auto',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            {imageUrl &&
-              imageUrl.length > 0 &&
-              imageUrl.map((values, index) => {
-                return (
-                  <Popover placement="right" content={() => content(values)}>
-                    <Col
-                      xs={24}
-                      sm={24}
-                      md={16}
-                      lg={16}
-                      xl={16}
-                      style={{
-                        border: '1px solid rgb(230, 220, 220)',
-                        marginTop: '1rem',
-                        marginRight: '1rem',
-                        padding: '1rem',
-                        width: '6.5rem',
-                        height: '6.5rem',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <a href={values} target="_blank">
-                        <img
-                          src={values}
-                          style={{
-                            width: '5rem',
-                            height: '5rem',
-                            objectFit: 'contain',
-                            cursor: 'pointer',
-                          }}
-                          alt=""
-                        />
-                      </a>
-                    </Col>
-                  </Popover>
-                )
-              })}
-          </div>
-        )}
-      </Row>
-    )
-  }
-
-  const [selectedRowKeysCategory, setSelectedRowKeysCategory] = useState([])
   const [arrayUpdateCategory, setArrayUpdateCategory] = useState([])
-
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
@@ -921,111 +528,65 @@ export default function Product() {
 
   const onChangeImage = async (info, index3, record) => {
     if (info.fileList && info.fileList.length > 0) {
-      var image
+      setLoading(true)
 
-      let formData = new FormData()
-      info.fileList.forEach((values, index) => {
-        image = values.originFileObj
-        formData.append('files', image) //append the values with key, value pair
-      })
+      let resultsMockup = await uploadFiles(
+        info.fileList.map((e) => e.originFileObj)
+      )
+      console.log('resutl', resultsMockup)
+      setLoading(false)
 
-      if (formData) {
-        setLoading(true)
-        let a = axios
-          .post(
-            'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            }
-          )
-          .then((resp) => resp)
-        let resultsMockup = await Promise.all([a])
+      var objectFinish = {}
 
-        setLoading(false)
+      products.forEach((values, index) => {
+        if (values._id === record._id) {
+          var array = []
+          array = [...products[index].variants[index3].image]
 
-        var objectFinish = {}
-
-        products.forEach((values, index) => {
-          if (values._id === record._id) {
-            var array = []
-            array = [...products[index].variants[index3].image]
-
-            var result = array.concat(resultsMockup[0].data.data)
-            var objectResult = {
-              ...products[index].variants[index3],
-              image: result.reverse(),
-            }
-            var arrayFinish = [...values.variants]
-            arrayFinish[index3] = objectResult
-
-            objectFinish = { ...values, variants: arrayFinish }
-            apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+          var result = array.concat(resultsMockup)
+          var objectResult = {
+            ...products[index].variants[index3],
+            image: result.reverse(),
           }
-        })
-      }
+          var arrayFinish = [...values.variants]
+          arrayFinish[index3] = objectResult
+
+          objectFinish = { ...values, variants: arrayFinish }
+          apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
+        }
+      })
     }
   }
   const onChangeImageSimple = async (info, record) => {
-    console.log(info)
-    if (info.fileList && info.fileList.length > 0) {
-      var image
-
-      let formData = new FormData()
-      info.fileList.forEach((values, index) => {
-        image = values.originFileObj
-        formData.append('files', image) //append the values with key, value pair
-      })
-
-      if (formData) {
+    try {
+      if (info.fileList && info.fileList.length > 0) {
         setLoading(true)
-        let a = axios
-          .post(
-            'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            }
-          )
-          .then((resp) => resp)
-        let resultsMockup = await Promise.all([a])
+
+        let resultsMockup = await uploadFiles(
+          info.fileList.map((e) => e.originFileObj)
+        )
+        console.log('resutl', resultsMockup)
 
         setLoading(false)
 
-        products.forEach((values, index) => {
-          if (values._id === record._id) {
-            var listImage = [...values.image]
-            //   listImage.push(resultsMockup[0].data.data[resultsMockup[0].data.data.length - 1])
-
-            var result = listImage.concat(resultsMockup[0].data.data)
-            apiUpdateProductMultiMain(
-              { ...values, image: result.reverse() },
-              values.product_id
-            )
-          }
-        })
+        const product = products.find((e) => e._id === record._id)
+        if (product) {
+          const listImage = [...product.image]
+          apiUpdateProductMultiMain(
+            { ...product, image: [...resultsMockup, ...listImage] },
+            product.product_id
+          )
+        }
       }
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
     }
   }
 
-  const [valueImage, setValueImage] = useState(20)
+  const Content = (url) => {
+    const [valueImage, setValueImage] = useState(20)
 
-  const onChangeHoverImage = (e) => {
-    console.log(e)
-    setValueImage(e)
-    if (e < 20) {
-      setValueImage(20)
-    } else if (e > 70) {
-      setValueImage(70)
-    } else {
-      setValueImage(e)
-    }
-  }
-  const content = (url) => {
     return (
       <div style={{ zIndex: '999999999' }}>
         <img
@@ -1055,20 +616,13 @@ export default function Product() {
         >
           Thay đổi kích thước ảnh
         </div>
-        <div
-          style={{
-            backgroundColor: 'grey',
-            padding: '0.25rem 0',
-            marginTop: '1rem',
-          }}
-        >
-          <Slider
-            value={valueImage}
-            min={20}
-            max={70}
-            onChange={onChangeHoverImage}
-          />
-        </div>
+
+        <Slider
+          value={valueImage}
+          min={20}
+          max={70}
+          onChange={(e) => setValueImage(e)}
+        />
       </div>
     )
   }
@@ -1082,6 +636,8 @@ export default function Product() {
     setStatusName('')
     setAllSelect()
     setSelectedRowKeys([])
+    setValueDateSearch({})
+    setValueTime()
     setParamsFilter({ merge: paramsFilter.merge })
   }
   const [arrayCheck, setArrayCheck] = useState([])
@@ -1265,7 +821,6 @@ export default function Product() {
             fileList={[]}
             showUploadList={false}
             onChange={(e) => onChangeImageSimple(e, record)}
-            // onPreview={onPreview}
           >
             + Upload
           </Upload>
@@ -1275,7 +830,7 @@ export default function Product() {
           record.image.length > 0 &&
           record.image.map((values1, index1) => {
             return (
-              <Popover placement="right" content={() => content(values1)}>
+              <Popover placement="right" content={() => Content(values1)}>
                 <Col
                   xs={24}
                   sm={24}
@@ -1394,7 +949,7 @@ export default function Product() {
     typingTimeoutRef.current = setTimeout(() => {
       // const value = e.target.value;
       apiAllCategorySearchData(e)
-    }, 300)
+    }, 750)
     //
   }
   const funcHoverImage = (list, index, record, sku) => {
@@ -1423,7 +978,6 @@ export default function Product() {
             showUploadList={false}
             fileList={[]}
             onChange={(e) => onChangeImage(e, index, record)}
-            // onPreview={onPreview}
           >
             + Upload
           </Upload>
@@ -1433,7 +987,7 @@ export default function Product() {
           list.length > 0 &&
           list.map((values1, index1) => {
             return (
-              <Popover placement="right" content={() => content(values1)}>
+              <Popover placement="right" content={() => Content(values1)}>
                 <Col
                   xs={24}
                   sm={24}
@@ -2699,7 +2253,6 @@ export default function Product() {
           setSelectedRowKeys([])
           setModal50Visible(false)
           openNotificationSuccessUpdateProduct(object.name)
-          setCheckboxValue(false)
         } else {
           openNotificationSuccessUpdateProductError()
         }
@@ -2710,7 +2263,6 @@ export default function Product() {
           setSelectedRowKeys([])
           openNotificationSuccessUpdateProduct(object.name)
           setModal50Visible(false)
-          setCheckboxValue(false)
         } else {
           openNotificationSuccessUpdateProductError()
         }
@@ -3086,7 +2638,6 @@ export default function Product() {
       const res = await apiUpdateCategory(object, id)
       if (res.status === 200) {
         await apiAllCategoryData()
-        setSelectedRowKeysCategory([])
         setSelectedRowKeys([])
 
         openNotificationSuccessStoreUpdate(object.name)
@@ -3132,6 +2683,7 @@ export default function Product() {
               borderBottom: '1px solid rgb(236, 228, 228)',
               justifyContent: 'space-between',
               width: '100%',
+              alignItems: 'center',
             }}
           >
             <Col
@@ -3174,6 +2726,7 @@ export default function Product() {
                   }}
                 >
                   <Button
+                    size="large"
                     onClick={showDrawerGroup}
                     type="primary"
                     icon={<PlusCircleOutlined />}
@@ -3190,7 +2743,11 @@ export default function Product() {
                   }}
                 >
                   <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button type="primary" icon={<PlusCircleOutlined />}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusCircleOutlined />}
+                    >
                       Thêm sản phẩm
                     </Button>
                   </Link>
@@ -3230,6 +2787,7 @@ export default function Product() {
               xl={11}
             >
               <Select
+                size="large"
                 value={allSelect}
                 showSearch
                 allowClear
@@ -3263,6 +2821,7 @@ export default function Product() {
               xl={11}
             >
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
@@ -3295,6 +2854,7 @@ export default function Product() {
                 <Row style={{ width: '100%' }}>
                   <Col span={14}>
                     <Input
+                      size="large"
                       style={{ width: '100%' }}
                       name="name"
                       value={valueSearch}
@@ -3308,6 +2868,7 @@ export default function Product() {
                   </Col>
                   <Col span={10}>
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Chọn theo"
@@ -3344,6 +2905,7 @@ export default function Product() {
             >
               <div style={{ width: '100%' }}>
                 <Select
+                  size="large"
                   open={isOpenSelect}
                   onBlur={() => {
                     if (isOpenSelect) toggleOpenSelect()
@@ -3489,17 +3051,14 @@ export default function Product() {
               <Radio value={false}>Hiện thị đơn</Radio>
               <Radio value={true}>Hiện thị gộp</Radio>
             </Radio.Group>
-            <Button
-              onClick={onClickClear}
-              type="primary"
-              style={{ width: '7.5rem' }}
-            >
+            <Button size="large" onClick={onClickClear} type="primary">
               Xóa tất cả lọc
             </Button>
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginBottom: 10 }}>
               <Button
+                size="large"
                 onClick={() => {
                   history.push({
                     pathname: ROUTES.SHIPPING_PRODUCT_ADD,
@@ -3511,6 +3070,7 @@ export default function Product() {
                 Tạo phiếu chuyển hàng
               </Button>
               <Button
+                size="large"
                 style={{ marginLeft: '1rem' }}
                 onClick={() => modal5VisibleModal(true)}
                 type="primary"
@@ -3518,6 +3078,7 @@ export default function Product() {
                 Tạo nhóm sản phẩm
               </Button>
               <Button
+                size="large"
                 style={{ marginLeft: '1rem' }}
                 onClick={() => modal50VisibleModal(true)}
                 type="primary"
@@ -3700,13 +3261,14 @@ export default function Product() {
                 color: 'black',
                 fontSize: '1rem',
                 fontWeight: '600',
-                width: '10rem',
+                width: 'max-content',
               }}
             >
               Nhóm sản phẩm:
             </div>
             <div style={{ marginLeft: '1rem', width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 onChange={onChangeGroupProduct}
                 placeholder="Nhập tên nhóm sản phẩm"
@@ -3741,11 +3303,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Button
-            onClick={onClickGroupProduct}
-            type="primary"
-            style={{ width: '7.5rem' }}
-          >
+          <Button onClick={onClickGroupProduct} type="primary" size="large">
             Tạo
           </Button>
         </div>
@@ -3781,6 +3339,7 @@ export default function Product() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Chọn nhóm sản phẩm"
@@ -3831,7 +3390,7 @@ export default function Product() {
           <Button
             onClick={onClickGroupProductSelect}
             type="primary"
-            style={{ width: '7.5rem' }}
+            size="large"
           >
             Cập nhật
           </Button>
@@ -3884,6 +3443,7 @@ export default function Product() {
                   overlay={contentProductGroup}
                 >
                   <Input
+                    size="large"
                     style={{ width: '100%' }}
                     name="name"
                     value={valueSearchProductGroup}
@@ -3914,8 +3474,8 @@ export default function Product() {
                 }}
               >
                 <Button
+                  size="large"
                   onClick={() => modal6VisibleModal(true)}
-                  style={{ width: '10rem' }}
                   type="primary"
                 >
                   Tạo nhóm sản phẩm
@@ -3926,6 +3486,7 @@ export default function Product() {
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginTop: 20 }}>
               <Button
+                size="large"
                 onClick={showDrawerCategoryGroupUpdate}
                 type="primary"
                 style={{ marginRight: '1rem' }}
@@ -3933,10 +3494,10 @@ export default function Product() {
                 Cập nhật nhóm sản phẩm
               </Button>
               <Button
+                size="large"
                 onClick={onChangeSwitchCategory}
                 danger
                 type="primary"
-                style={{ marginRight: '1rem' }}
               >
                 Xóa
               </Button>
@@ -4006,7 +3567,7 @@ export default function Product() {
                   name="categoryName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên nhóm sản phẩm" />
+                  <Input size="large" placeholder="Nhập tên nhóm sản phẩm" />
                 </Form.Item>
               </div>
             </Col>
@@ -4035,11 +3596,7 @@ export default function Product() {
               xl={3}
             >
               <Form.Item>
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button size="large" type="primary" htmlType="submit">
                   Tạo nhóm
                 </Button>
               </Form.Item>

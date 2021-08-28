@@ -10,9 +10,8 @@ import {
   notification,
   Radio,
 } from 'antd'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { addCustomer } from '../../../../apis/customer'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
@@ -121,7 +120,7 @@ export default function CustomerAdd(props) {
                   name="first_name"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập họ" />
+                  <Input size="large" placeholder="Nhập họ" />
                 </Form.Item>
               </div>
             </Col>
@@ -148,7 +147,7 @@ export default function CustomerAdd(props) {
                   name="last_name"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên" />
+                  <Input size="large" placeholder="Nhập tên" />
                 </Form.Item>
               </div>
             </Col>
@@ -174,7 +173,12 @@ export default function CustomerAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="birthday"
                 >
-                  <DatePicker style={{ width: '100%' }} onChange={onChange} />
+                  <DatePicker
+                    size="large"
+                    className="br-15__date-picker"
+                    style={{ width: '100%' }}
+                    onChange={onChange}
+                  />
                 </Form.Item>
               </div>
             </Col>
@@ -203,7 +207,7 @@ export default function CustomerAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập liên hệ" />
+                  <Input size="large" placeholder="Nhập liên hệ" />
                 </Form.Item>
               </div>
             </Col>
@@ -231,7 +235,7 @@ export default function CustomerAdd(props) {
                     hasFeedback
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
-                    <Select placeholder="Chọn loại khách hàng">
+                    <Select placeholder="Chọn loại khách hàng" size="large">
                       {/* <Option value="vip">VIP</Option> */}
                       <Option value="potential">Tiềm năng</Option>
                       <Option value="vangLai">Vãng lai</Option>
@@ -265,7 +269,7 @@ export default function CustomerAdd(props) {
                   name="address"
                   className={styles['supplier_add_content_supplier_code_input']}
                 >
-                  <Input placeholder="Nhập địa chỉ" />
+                  <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -290,6 +294,7 @@ export default function CustomerAdd(props) {
                 </div>
                 <Form.Item name="province" hasFeedback>
                   <Select
+                    size="large"
                     placeholder="Chọn tỉnh/thành phố"
                     onChange={(e) =>
                       getAddress(apiDistrict, setLocation, 'district', {
@@ -324,7 +329,7 @@ export default function CustomerAdd(props) {
                   Quận/huyện
                 </div>
                 <Form.Item name="district" hasFeedback>
-                  <Select placeholder="Chọn quận/huyện">
+                  <Select size="large" placeholder="Chọn quận/huyện">
                     {Location.district.map((e) => (
                       <Option value={e.district_name}>{e.district_name}</Option>
                     ))}
@@ -354,7 +359,7 @@ export default function CustomerAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="email"
                 >
-                  <Input placeholder="Nhập email" />
+                  <Input size="large" placeholder="Nhập email" />
                 </Form.Item>
               </div>
             </Col>
@@ -394,6 +399,7 @@ export default function CustomerAdd(props) {
                   style={{ width: '7.5rem' }}
                   type="primary"
                   htmlType="submit"
+                  size="large"
                 >
                   Lưu
                 </Button>

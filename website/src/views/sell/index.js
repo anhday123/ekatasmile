@@ -1,20 +1,16 @@
-import styles from "./../sell/sell.module.scss";
-import emptyProduct from "./../../assets/img/emptyProduct.png";
-import user from './../../assets/img/user.png'
-import { ACTION, } from './../../consts/index'
-import { apiFilterCity, getAllBranch } from './../../apis/branch'
+import React, { useState, useRef, useEffect } from 'react'
+
+import styles from './sell.module.scss'
+import emptyProduct from 'assets/img/emptyProduct.png'
+import user from 'assets/img/user.png'
+import { ACTION } from 'consts/index'
 import _ from 'lodash'
-import { Offline, Online } from "react-detect-offline";
-import { apiAllTax } from './../../apis/tax'
-import { apiAllShipping } from './../../apis/shipping'
-import { apiCheckPromotion, getAllPromotion, getPromoton } from './../../apis/promotion'
 import moment from 'moment'
-import { addCustomer, getCustomer } from './../../apis/customer'
-import {  apiProductCategoryMerge, apiProductSeller,  } from "../../apis/product";
-import { useDispatch, useSelector } from 'react-redux'
-import React, { useState, useRef, useEffect } from "react";
-import FunctionShortcut from './../../components/sell/function-shortcut/index'
-import "react-multi-carousel/lib/styles.css";
+import FunctionShortcut from 'components/sell/function-shortcut/index'
+import 'react-multi-carousel/lib/styles.css'
+import { decodeToken } from 'react-jwt'
+import { useDispatch } from 'react-redux'
+
 import {
   PlusCircleOutlined,
   AlertOutlined,
@@ -26,7 +22,8 @@ import {
   CloseCircleOutlined,
   DeleteOutlined,
   EditOutlined,
-} from "@ant-design/icons";
+} from '@ant-design/icons'
+
 import {
   Select,
   Pagination,
@@ -44,23 +41,31 @@ import {
   Modal,
   Form,
   Col,
-  Tabs
-} from "antd";
-import { apiDistrict, apiProvince } from "../../apis/information";
-import { getAllPayment } from "../../apis/payment";
-import { apiAllOrder,  apiOrderVoucher } from "../../apis/order";
-import { apiAllUser } from "../../apis/user";
-import { decodeToken } from 'react-jwt'
-const ButtonGroup = Button.Group;
-const { TabPane } = Tabs;
+  Tabs,
+} from 'antd'
 
+//apis
+import { apiDistrict, apiProvince } from 'apis/information'
+import { getAllPayment } from 'apis/payment'
+import { apiAllOrder, apiOrderVoucher } from 'apis/order'
+import { apiAllUser } from 'apis/user'
+import { addCustomer, getCustomer } from 'apis/customer'
+import { apiProductCategoryMerge, apiProductSeller } from 'apis/product'
+import { apiFilterCity, getAllBranch } from 'apis/branch'
+import { apiAllTax } from 'apis/tax'
+import { apiAllShipping } from 'apis/shipping'
+import { apiCheckPromotion, getAllPromotion, getPromoton } from 'apis/promotion'
 
-const { Option } = Select;
-
+const ButtonGroup = Button.Group
+const { TabPane } = Tabs
+const { Option } = Select
 export default function Sell() {
   const [form] = Form.useForm()
-  const dataUser = localStorage.getItem('accessToken') ? decodeToken(localStorage.getItem('accessToken')) : {}
+  const dataUser = localStorage.getItem('accessToken')
+    ? decodeToken(localStorage.getItem('accessToken'))
+    : {}
 
+  const [isMobile, setIsMobile] = useState(false)
   const [shipping, setShipping] = useState([])
   const [customerOddMain, setCustomerOddMain] = useState(false)
   const [customerName, setCustomerName] = useState('')
@@ -72,7 +77,7 @@ export default function Sell() {
   const [selectedRowKeysOrderList, setSelectedRowKeysOrderList] = useState([])
   const [objectVariant, setObjectVariant] = useState({})
   const [record, setRecord] = useState({})
-  const typingTimeoutRef = useRef(null);
+  const typingTimeoutRef = useRef(null)
   const [valueSearchCustomer, setValueSearchCustomer] = useState('')
   const [valueSearch, setValueSearch] = useState('')
   const [orderToday, setOrderToday] = useState()
@@ -86,12 +91,12 @@ export default function Sell() {
   const [loadingTable, setLoadingTable] = useState(false)
   const [valueSearchOrderDetail, setValueSearchOrderDetail] = useState('')
   const [taxPercentValue, setTaxPercentValue] = useState(0)
-  const [receiveMethod, setReceiveMethod] = useState("2")
+  const [receiveMethod, setReceiveMethod] = useState('2')
   const [orderStatus, setOrderStatus] = useState('order now')
   const [paymentMethod, setPaymentMethod] = useState('1')
   const [taxMoneyValue, setTaxMoneyValue] = useState(0)
   const [visibleOrder, setVisibleOrder] = useState(false)
-  const [voucher, setVoucher] = useState("")
+  const [voucher, setVoucher] = useState('')
   const [discount, setDiscount] = useState(0)
   const [orderDetail, setOrderDetail] = useState([])
   const [receiveMethodName, setReceiveMethodName] = useState('')
@@ -103,245 +108,225 @@ export default function Sell() {
   const [voucherSave, setVoucherSave] = useState('')
   const [voucherSaveCheck, setVoucherSaveCheck] = useState(-1)
   const [tax, setTax] = useState([])
-  const [branchId, setBranchId] = useState('')
+  const [branchId, setBranchId] = useState()
   const dispatch = useDispatch()
   const [promotion, setPromotion] = useState([])
-  const [value, setValue] = useState('18');
-  const [valueSex, setValueSex] = useState('Nam');
+  const [value, setValue] = useState('18')
+  const [valueSex, setValueSex] = useState('Nam')
   const [branch, setBranch] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
   const [note, setNote] = useState('')
   const [districtMain, setDistrictMain] = useState([])
   const apiDistrictData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiDistrict();
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiDistrict()
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
-  useEffect(() => {
-    if (billQuantity && billQuantity.length > 0) {
-      <Offline>
-        {
-          localStorage.setItem('bill', JSON.stringify(billQuantity && billQuantity.length > 0 ? billQuantity : []))
-        }
-      </Offline>
-    }
+  }
 
-
-
-  })
   const [provinceMain, setProvinceMain] = useState([])
   const apiProvinceData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiProvince();
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiProvince()
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const getAllCustomerData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await getCustomer({ page: 1, page_size: 50 });
-   
+      const res = await getCustomer({ page: 1, page_size: 50 })
+
       if (res.status === 200) {
-
         setCustomerBackup(res.data.data)
-        dispatch({ type: ACTION.LOADING, data: false });
-
+        dispatch({ type: ACTION.LOADING, data: false })
       }
-
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const apiProductCategoryDataMerge = async (value) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
       const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
-      const res = await apiProductCategoryMerge({ branch: branch_id.data.branch.branch_id });
-   
+      const res = await apiProductCategoryMerge({
+        branch: branch_id.data.branch.branch_id,
+      })
+
       if (res.status === 200) {
-
-
         setCategory(res.data.data)
-
       }
-      dispatch({ type: ACTION.LOADING, data: false });
-    
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
   }
-  const onSelectChangeOrderList = selectedRowKeys => {
+  const onSelectChangeOrderList = (selectedRowKeys) => {
     setSelectedRowKeysOrderList(selectedRowKeys)
-
-  };
+  }
   const rowSelectionOrderList = {
     selectedRowKeysOrderList,
     onChange: onSelectChangeOrderList,
-  };
+  }
   const apiAllShippingData = async (value) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiAllShipping(value);
+      const res = await apiAllShipping(value)
 
       if (res.status === 200) {
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (values.active) {
+              array.push(values)
+            }
+          })
         setShipping([...array])
-
       } else {
         openNotificationErrorAddCustomer()
       }
-      dispatch({ type: ACTION.LOADING, data: false });
-  
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const showDrawerOrderList = () => {
     setVisibleOrderList(true)
-  };
+  }
 
   const onCloseOrderList = () => {
     setVisibleOrderList(false)
-  };
+  }
   const getAllPromotionData = async (object) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await getAllPromotion();
-  
-      if (res.status === 200) {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await getAllPromotion()
 
+      if (res.status === 200) {
         var array = []
-        res.data.data && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.forEach((values, index) => {
+            if (values.active) {
+              array.push(values)
+            }
+          })
         setPromotion([...array])
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const apiAllOrderData = async () => {
     try {
       setLoadingTable(true)
-      const res = await apiAllOrder({ page: 1, page_size: 10 });
-  
+      const res = await apiAllOrder({ page: 1, page_size: 10 })
+
       if (res.status === 200) {
         setCountTable(res.data.count)
-        let now = moment();
+        let now = moment()
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (
+              moment(values.create_date).format('YYYY-MM-DD') ===
+              now.format('YYYY-MM-DD')
+            ) {
+              array.push(values)
+            }
+          })
         setOrderToday([...array])
       }
       setLoadingTable(false)
     } catch (error) {
       setLoadingTable(false)
     }
-  };
+  }
 
   const apiAllUserData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiAllUser();
-   
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiAllUser()
+
       if (res.status === 200) {
-        const username = localStorage.getItem("username")
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (username === values.username) {
-            setUserEmployee(values)
-          }
-        })
-
-
+        const username = localStorage.getItem('username')
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (username === values.username) {
+              setUserEmployee(values)
+            }
+          })
       }
-     
-      dispatch({ type: ACTION.LOADING, data: false });
-    } catch (error) {
 
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const apiAllTaxData = async (object) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiAllTax();
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiAllTax()
       if (res.status === 200) {
         setTax(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const onChangeNote = (e) => {
     setNote(e.target.value)
   }
-  const onChangeBirthday = e => {
-    setValue(e.target.value);
-  };
-  const onChangeSex = e => {
-    setValueSex(e.target.value);
-  };
+  const onChangeBirthday = (e) => {
+    setValue(e.target.value)
+  }
+  const onChangeSex = (e) => {
+    setValueSex(e.target.value)
+  }
   const showDrawerOrder = () => {
     setVisibleOrder(true)
-  };
+  }
 
   const onCloseOrder = () => {
     setVisibleOrder(false)
-  };
+  }
 
   const showDrawer = () => {
     setVisible(true)
     setRandomPhoneValue(randomPhone())
-  };
+  }
 
   const onClose = () => {
     setVisible(false)
-  };
+  }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -353,53 +338,52 @@ export default function Sell() {
     setSize(-1)
     setColor(-1)
     if (billQuantity && billQuantity.length > 0) {
-
-      var count = 0;
+      var count = 0
       var array = [...billQuantity]
       array[billIndex].forEach((values1, index1) => {
         if (values1.sku === values3.sku) {
           count++
         }
-
-
-
       })
       if (count > 0) {
         openNotificationAddProductErrorAddProduct()
       } else {
-
         setModal2Visible(true)
         setObjectVariant(values3)
         setRecord(record2)
-
       }
-    }
-    else {
+    } else {
       openNotificationAddProductError()
     }
   }
 
-
   const onSearch = (e) => {
-    if (e.target.value === "" || e.target.value === "default" || e.target.value === " ") {
+    if (
+      e.target.value === '' ||
+      e.target.value === 'default' ||
+      e.target.value === ' '
+    ) {
       setProductSearch([])
-      setValueSearch("")
+      setValueSearch('')
     } else {
       setValueSearch(e.target.value)
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
       typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value;
-        apiSearchData(value);
-      }, 300);
+        const value = e.target.value
+        apiSearchData(value)
+      }, 300)
     }
-
   }
 
   const onSearchCustomer = (e) => {
-    if (e.target.value === "" || e.target.value === "default" || e.target.value === " ") {
-      setValueSearchCustomer("")
+    if (
+      e.target.value === '' ||
+      e.target.value === 'default' ||
+      e.target.value === ' '
+    ) {
+      setValueSearchCustomer('')
       setCustomerOnClick([])
       setCustomer([])
       setCustomerOddMain(false)
@@ -412,15 +396,18 @@ export default function Sell() {
         clearTimeout(typingTimeoutRef.current)
       }
       typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value;
-        getCustomerData(value);
-      }, 1000);
+        const value = e.target.value
+        getCustomerData(value)
+      }, 1000)
     }
-
   }
   const onChangeVoucher = (e) => {
-    if (e.target.value === "" || e.target.value === "default" || e.target.value === " ") {
-      setVoucher("")
+    if (
+      e.target.value === '' ||
+      e.target.value === 'default' ||
+      e.target.value === ' '
+    ) {
+      setVoucher('')
     } else {
       setVoucher(e.target.value)
 
@@ -428,42 +415,39 @@ export default function Sell() {
         clearTimeout(typingTimeoutRef.current)
       }
       typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value;
+        const value = e.target.value
         apiCheckPromotionData({ voucher: value }, 1)
-      }, 1000);
+      }, 1000)
     }
-
   }
 
   const [payment, setPayment] = useState([])
   const getAllPaymentData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
       const res = await getAllPayment()
-    
+
       if (res.status === 200) {
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (values.active) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (values.active) {
+              array.push(values)
+            }
+          })
         setPayment([...array])
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
 
   const onClickMarkVariant = (index) => {
-
     setIndexMark(index)
-  
-
   }
   const onClickMark = (index) => {
-
     if (billQuantity && billQuantity.length > 0) {
       var array = [...billQuantity[billIndex][0].mark]
       array.push(index)
@@ -471,9 +455,7 @@ export default function Sell() {
       arrayBillQuantity[billIndex][0].mark = array
       setBillQuantity([...arrayBillQuantity])
     } else {
-
     }
-
   }
   function formatCash(str) {
     return str
@@ -486,23 +468,20 @@ export default function Sell() {
   const openNotificationAddProductErrorBill = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Voucher không tồn tại hoặc đã được sử dụng.',
-    });
-  };
+      description: 'Voucher không tồn tại hoặc đã được sử dụng.',
+    })
+  }
 
   const openNotificationVoucherError = () => {
     notification.warning({
       message: 'Nhắc nhở',
-      description:
-        'Chỉ tạo được tối đa 5 hóa đơn.',
-    });
-  };
+      description: 'Chỉ tạo được tối đa 5 hóa đơn.',
+    })
+  }
 
   const [arrayRandom, setArrayRandom] = useState([1, 2, 3, 4, 5])
   const [billQuantity, setBillQuantity] = useState([])
   const onClickCreateBill = () => {
-
     setConfirm(1)
     if (billQuantity && billQuantity.length > 4) {
       openNotificationVoucherError()
@@ -518,16 +497,12 @@ export default function Sell() {
           arrayResult.splice(index, 1)
           setArrayRandom([...arrayResult])
 
-
-
-
-
           setBillQuantityStatus(values)
           setBillIndex(array.length - 1)
           setDiscount(0)
-          setValueSearchCustomer("")
+          setValueSearchCustomer('')
           setPromotionValue('default')
-          var moneyTotalItem = 0;
+          var moneyTotalItem = 0
           array[array.length - 1].forEach((values30, index30) => {
             if (index30 !== 0) {
               moneyTotalItem += values30.total_cost
@@ -535,56 +510,50 @@ export default function Sell() {
           })
           setMoneyTotal(moneyTotalItem)
 
+          var taxPercent = 0
+          tax &&
+            tax.length > 0 &&
+            tax.forEach((values40, index40) => {
+              taxDefault &&
+                taxDefault.length > 0 &&
+                taxDefault.forEach((values41, index41) => {
+                  if (values40.name === values41) {
+                    var numberValue = values40.value.split('%')[0]
 
-
-
-
-          var taxPercent = 0;
-          tax && tax.length > 0 && tax.forEach((values40, index40) => {
-            taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-              if (values40.name === values41) {
-                var numberValue = values40.value.split('%')[0]
-
-                taxPercent += parseInt(numberValue)
-              }
+                    taxPercent += parseInt(numberValue)
+                  }
+                })
             })
-          })
-          var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-          var result = moneyTotalTemp - moneyTotalItem;
+          var moneyTotalTemp =
+            moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+          var result = moneyTotalTemp - moneyTotalItem
           setTaxPercentValue(taxPercent)
           setTaxMoneyValue(result)
           setMoneyFinish(moneyTotalTemp)
         }
       })
     }
-
-
-
   }
   const [confirm, setConfirm] = useState(-1)
   const onClickDeleteBillQuantity = (index, randomName) => {
-
     setMoneyPredict([])
-    setOrderStatus("order now")
-    setPaidCustomerMoney("")
-    setPaymentMethod("1")
-    setNote("")
-    setReceiveMethod("2")
+    setOrderStatus('order now')
+    setPaidCustomerMoney('')
+    setPaymentMethod('1')
+    setNote('')
+    setReceiveMethod('2')
     setTaxDefault(['VAT'])
-    setVoucher("")
-    setPromotionValue("default")
+    setVoucher('')
+    setPromotionValue('default')
     var array = [...billQuantity]
-    setValueSearchCustomer("")
+    setValueSearchCustomer('')
     array.splice(index, 1)
-
-
-
 
     if (array && array.length === 0) {
       setBillName('')
     }
     if (array.length > 0) {
-      var checkValue = 0;
+      var checkValue = 0
       array.forEach((values1, index1) => {
         if (values1.length > 1) {
           checkValue++
@@ -593,27 +562,23 @@ export default function Sell() {
         if (values1 && values1.length > 0) {
           values1.forEach((values2, index2) => {
             if (index2 === 0) {
-
               if (index !== 0) {
-
-
                 if (array && array.length === 1) {
                   setBillQuantityStatus(values2.values) //
                   setBillName(`1000${values2.values}`)
                   if (billQuantity && billQuantity.length > 0) {
-                    var count = 0;
+                    var count = 0
                     billQuantity.forEach((values00, index00) => {
-
                       values00.forEach((values100, index100) => {
                         if (index100 === 0) {
                           if (values2.values === values100.values) {
-                            //     
-                            count++;
+                            //
+                            count++
                           }
                         }
                       })
                     })
-                    //  && 
+                    //  &&
                     if (moneyFinish > 0) {
                       if (count > 0) {
                         // alert('123')
@@ -621,32 +586,25 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-
                     } else {
-
-
                     }
                   } else {
-
                   }
-
-
-
                 } else {
                   setBillQuantityStatus(-1)
                   if (billQuantity && billQuantity.length > 0) {
-                    var count = 0;
+                    var count = 0
                     billQuantity.forEach((values, index) => {
                       values.forEach((values1, index1) => {
                         if (index1 === 0) {
                           if (-1 === values1.values) {
-                            //     
-                            count++;
+                            //
+                            count++
                           }
                         }
                       })
                     })
-                    //  && 
+                    //  &&
                     if (moneyFinish > 0) {
                       if (count > 0) {
                         // alert('123')
@@ -654,33 +612,28 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-
                     } else {
-
-
                     }
                   } else {
-
                   }
                 }
-              }
-              else {
+              } else {
                 // alert('123')
                 if (array && array.length === 1) {
                   setBillQuantityStatus(-1)
                   if (billQuantity && billQuantity.length > 0) {
-                    var count = 0;
+                    var count = 0
                     billQuantity.forEach((values, index) => {
                       values.forEach((values1, index1) => {
                         if (index1 === 0) {
                           if (-1 === values1.values) {
-                            //     
-                            count++;
+                            //
+                            count++
                           }
                         }
                       })
                     })
-                    //  && 
+                    //  &&
                     if (moneyFinish > 0) {
                       if (count > 0) {
                         // alert('123')
@@ -688,29 +641,25 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-
                     } else {
-
-
                     }
                   } else {
-
                   }
                 } else {
                   setBillQuantityStatus(-1)
                   if (billQuantity && billQuantity.length > 0) {
-                    var count = 0;
+                    var count = 0
                     billQuantity.forEach((values, index) => {
                       values.forEach((values1, index1) => {
                         if (index1 === 0) {
                           if (-1 === values1.values) {
-                            //     
-                            count++;
+                            //
+                            count++
                           }
                         }
                       })
                     })
-                    //  && 
+                    //  &&
                     if (moneyFinish > 0) {
                       if (count > 0) {
                         // alert('123')
@@ -718,26 +667,16 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-
                     } else {
-
-
                     }
                   } else {
-
                   }
                 }
-
               }
             } else {
-
-
             }
           })
-
         }
-
-
       })
       if (checkValue === 0) {
         setConfirm(-1)
@@ -745,7 +684,7 @@ export default function Sell() {
     }
 
     if (array && array.length === 1) {
-      var moneyTotalItem = 0;
+      var moneyTotalItem = 0
       if (index - 1 >= 0) {
         array[index - 1].forEach((values30, index30) => {
           if (index30 !== 0) {
@@ -753,23 +692,27 @@ export default function Sell() {
           }
         })
         setMoneyTotal(moneyTotalItem)
-        var taxPercent = 0;
-        tax && tax.length > 0 && tax.forEach((values40, index40) => {
-          taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-            if (values40.name === values41) {
-              var numberValue = values40.value.split('%')[0]
+        var taxPercent = 0
+        tax &&
+          tax.length > 0 &&
+          tax.forEach((values40, index40) => {
+            taxDefault &&
+              taxDefault.length > 0 &&
+              taxDefault.forEach((values41, index41) => {
+                if (values40.name === values41) {
+                  var numberValue = values40.value.split('%')[0]
 
-              taxPercent += parseInt(numberValue)
-            }
+                  taxPercent += parseInt(numberValue)
+                }
+              })
           })
-        })
-        var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-        var result = moneyTotalTemp - moneyTotalItem;
+        var moneyTotalTemp =
+          moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+        var result = moneyTotalTemp - moneyTotalItem
         setTaxPercentValue(taxPercent)
         setTaxMoneyValue(result)
         setMoneyFinish(moneyTotalTemp)
       }
-
     }
     setBillQuantity([...array])
     if (index === 0) {
@@ -783,11 +726,19 @@ export default function Sell() {
   }
   const contentHoverVariant = (url) => {
     return (
-
-      <img src={url} style={{ width: '35rem', height: '17.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', objectFit: 'contain' }} alt="" />
-
+      <img
+        src={url}
+        style={{
+          width: '35rem',
+          height: '17.5rem',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          objectFit: 'contain',
+        }}
+        alt=""
+      />
     )
-
   }
 
   const [quantity, setQuantity] = useState(1)
@@ -801,19 +752,21 @@ export default function Sell() {
     var array = [...colorSizeArray]
     array.push(data1)
     setColorSizeArray([...array])
-    var count = [];
+    var count = []
 
-    objectVariant && objectVariant.options && objectVariant.options.length > 0 && objectVariant.options.forEach((values1, index1) => {
-      if (index1 === 0) {
-        if (values1.values.toLowerCase() === data1.toLowerCase()) {
-          count.push(1)
-          setCheckVariantColor([...count])
-        } else {
-
-          setCheckVariantColor([2, 3])
+    objectVariant &&
+      objectVariant.options &&
+      objectVariant.options.length > 0 &&
+      objectVariant.options.forEach((values1, index1) => {
+        if (index1 === 0) {
+          if (values1.values.toLowerCase() === data1.toLowerCase()) {
+            count.push(1)
+            setCheckVariantColor([...count])
+          } else {
+            setCheckVariantColor([2, 3])
+          }
         }
-      }
-    })
+      })
   }
   const [size, setSize] = useState(-1)
   const onClickSize = (index, data1) => {
@@ -821,28 +774,31 @@ export default function Sell() {
     var array = [...colorSizeArray]
     array.push(data1)
     setColorSizeArray([...array])
-    var count = [];
-    objectVariant && objectVariant.options && objectVariant.options.length > 0 && objectVariant.options.forEach((values1, index1) => {
-      if (index1 === 1) {
-        if (values1.values.toLowerCase() === data1.toLowerCase()) {
-          count.push(1)
-          setCheckVariantSize([...count])
-        } else {
-
-          setCheckVariantSize([2, 3])
+    var count = []
+    objectVariant &&
+      objectVariant.options &&
+      objectVariant.options.length > 0 &&
+      objectVariant.options.forEach((values1, index1) => {
+        if (index1 === 1) {
+          if (values1.values.toLowerCase() === data1.toLowerCase()) {
+            count.push(1)
+            setCheckVariantSize([...count])
+          } else {
+            setCheckVariantSize([2, 3])
+          }
         }
-      }
-    })
-
+      })
   }
   const increase = () => {
-    let quantity1 = parseInt(quantity) + 1;
+    let quantity1 = parseInt(quantity) + 1
     if (isNaN(quantity1)) {
       openNotificationErrorQuantityCheck()
     } else {
       setQuantity(quantity1)
-    
-      var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
+
+      var quantityTotal =
+        parseInt(objectVariant.available_stock_quantity) +
+        parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(quantity1)) {
           setCheckQuantity([])
@@ -851,12 +807,12 @@ export default function Sell() {
           } else {
             setQuantity(quantity1)
           }
-        }
-        else {
-       
+        } else {
           setQuantity(quantityTotal)
-          openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
-       
+          openNotificationErrorQuantityAvailable(
+            objectVariant.title,
+            quantityTotal
+          )
         }
       } else {
         if (parseInt(quantity1) <= 0) {
@@ -865,22 +821,21 @@ export default function Sell() {
           setQuantity(quantity1)
         }
       }
-
     }
-
-
   }
   const decline = () => {
-    let quantity1 = quantity - 1;
+    let quantity1 = quantity - 1
     if (quantity1 === 0 || quantity1 === 1) {
-      quantity1 = 1;
+      quantity1 = 1
     }
     if (isNaN(quantity1)) {
       openNotificationErrorQuantityCheck()
     } else {
       setQuantity(quantity1)
       var quantityCheck = []
-      var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
+      var quantityTotal =
+        parseInt(objectVariant.available_stock_quantity) +
+        parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(quantity1)) {
           setCheckQuantity([])
@@ -889,10 +844,12 @@ export default function Sell() {
           } else {
             setQuantity(quantity1)
           }
-        }
-        else {
+        } else {
           setQuantity(quantityTotal)
-          openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
+          openNotificationErrorQuantityAvailable(
+            objectVariant.title,
+            quantityTotal
+          )
           quantityCheck.push(1)
           setCheckQuantity([...quantityCheck])
         }
@@ -903,25 +860,23 @@ export default function Sell() {
           setQuantity(quantity1)
         }
       }
-
     }
-
-
   }
-  
+
   const openNotificationErrorQuantityCheck = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Số lượng phải là số nguyên.',
-    });
-  };
+      description: 'Số lượng phải là số nguyên.',
+    })
+  }
   const onChangeQuantity = (e) => {
     if (isNaN(e.target.value)) {
       openNotificationErrorQuantityCheck()
     } else {
       setQuantity(e.target.value)
-      var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
+      var quantityTotal =
+        parseInt(objectVariant.available_stock_quantity) +
+        parseInt(objectVariant.low_stock_quantity)
       if (orderStatus === 'order now') {
         if (quantityTotal >= parseInt(e.target.value)) {
           setCheckQuantity([])
@@ -930,11 +885,12 @@ export default function Sell() {
           } else {
             setQuantity(e.target.value)
           }
-        }
-        else {
+        } else {
           setQuantity(quantityTotal)
-          openNotificationErrorQuantityAvailable(objectVariant.title, quantityTotal)
-         
+          openNotificationErrorQuantityAvailable(
+            objectVariant.title,
+            quantityTotal
+          )
         }
       } else {
         setCheckQuantity([])
@@ -944,24 +900,31 @@ export default function Sell() {
           setQuantity(e.target.value)
         }
       }
-
     }
-
-
   }
   const openNotificationAddProductError = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Bạn chưa tạo hóa đơn.',
-    });
-  };
+      description: 'Bạn chưa tạo hóa đơn.',
+    })
+  }
 
   const [roleName, setRoleName] = useState('')
 
   useEffect(() => {
     setRoleName(dataUser.data.role.name.toLowerCase() || '')
-    setBranchId(dataUser.data.role.branch ? dataUser.data.role.branch.branch_id : '')
+    setBranchId(
+      dataUser.data.role.branch
+        ? dataUser.data.role.branch.branch_id
+        : undefined
+    )
+  }, [])
+
+  //get width device
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true)
+    } else setIsMobile(false)
   }, [])
 
   useEffect(() => {
@@ -970,42 +933,44 @@ export default function Sell() {
     apiAllShippingData()
     apiProductCategoryDataMerge()
     getAllCustomerData()
-    apiDistrictData();
+    apiDistrictData()
     getAllPromotionData()
-    apiProvinceData();
-    apiAllUserData();
+    apiProvinceData()
+    apiAllUserData()
     getAllPaymentData()
-    getAllBranchData();
+    getAllBranchData()
     apiProductSellerData()
   }, [])
 
   const [productSelect, setProductSelect] = useState([])
   const apiProductSellerData = async (e) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiProductSeller({ branch: branchId, page: 1, page_size: 50 });
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiProductSeller({
+        branch: branchId,
+        page: 1,
+        page_size: 50,
+      })
       if (res.status === 200) {
         setProductSelect(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
   const apiProductSellerDataMain = async (e) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiProductSeller({ branch: e });
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiProductSeller({ branch: e })
       if (res.status === 200) {
         setProductSelect(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const handleChange = (e) => {
     setBranchId(e)
@@ -1016,27 +981,26 @@ export default function Sell() {
   const [branchDetail, setBranchDetail] = useState({})
   const getAllBranchData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await getAllBranch();
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await getAllBranch()
       if (res.status === 200) {
         var object = {}
         const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
-        res.data.data && res.data.data.forEach((values, index) => {
-          if (values.branch_id === branch_id.data.branch.branch_id) {
-            object = values
-
-          }
-        })
+        res.data.data &&
+          res.data.data.forEach((values, index) => {
+            if (values.branch_id === branch_id.data.branch.branch_id) {
+              object = values
+            }
+          })
         setBranchDetail(object)
         setBranch(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const [billIndex, setBillIndex] = useState(0)
   const [billQuantityStatus, setBillQuantityStatus] = useState(1)
@@ -1047,10 +1011,10 @@ export default function Sell() {
     setBillQuantityStatus(status)
     setBillIndex(index)
     setDiscount(0)
-    setValueSearchCustomer("")
+    setValueSearchCustomer('')
     setPromotionValue('default')
     var array = [...billQuantity]
-    var moneyTotalItem = 0;
+    var moneyTotalItem = 0
     array[index].forEach((values30, index30) => {
       if (index30 !== 0) {
         moneyTotalItem += values30.total_cost
@@ -1058,19 +1022,22 @@ export default function Sell() {
     })
     setMoneyTotal(moneyTotalItem)
 
+    var taxPercent = 0
+    tax &&
+      tax.length > 0 &&
+      tax.forEach((values40, index40) => {
+        taxDefault &&
+          taxDefault.length > 0 &&
+          taxDefault.forEach((values41, index41) => {
+            if (values40.name === values41) {
+              var numberValue = values40.value.split('%')[0]
 
-    var taxPercent = 0;
-    tax && tax.length > 0 && tax.forEach((values40, index40) => {
-      taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-        if (values40.name === values41) {
-          var numberValue = values40.value.split('%')[0]
-
-          taxPercent += parseInt(numberValue)
-        }
+              taxPercent += parseInt(numberValue)
+            }
+          })
       })
-    })
-    var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-    var result = moneyTotalTemp - moneyTotalItem;
+    var moneyTotalTemp = moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+    var result = moneyTotalTemp - moneyTotalItem
     setTaxPercentValue(taxPercent)
     setTaxMoneyValue(result)
     setMoneyFinish(moneyTotalTemp)
@@ -1078,24 +1045,21 @@ export default function Sell() {
   const openNotificationAddProductErrorAddProduct = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Sản phẩm đã thêm.',
-    });
-  };
+      description: 'Sản phẩm đã thêm.',
+    })
+  }
   const openNotificationAddProductErrorAddProductSuccess = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Thêm sản phẩm vào hóa đơn thành công.',
-    });
-  };
+      description: 'Thêm sản phẩm vào hóa đơn thành công.',
+    })
+  }
   const openNotificationErrorQuantityTotal = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Sản phẩm này đã hết hàng.',
-    });
-  };
+      description: 'Sản phẩm này đã hết hàng.',
+    })
+  }
   const [moneyTotal, setMoneyTotal] = useState(0)
   const [moneyFinish, setMoneyFinish] = useState(0)
   const [moneyPredict, setMoneyPredict] = useState([])
@@ -1110,119 +1074,158 @@ export default function Sell() {
   }
 
   const onClickAddProductSimple = (record1) => {
-    var quantityTotal = parseInt(record1.available_stock_quantity) + parseInt(record1.low_stock_quantity)
+    var quantityTotal =
+      parseInt(record1.available_stock_quantity) +
+      parseInt(record1.low_stock_quantity)
     if (quantityTotal > 0) {
       if (billQuantity && billQuantity.length > 0) {
-
         setRecord(record1)
         var array = [...billQuantity]
 
         if (array[billIndex].length === 0) {
-          array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: record1.sale_price, title: record1.name, product_id: record1.product_id, sku: record1.sku, supplier: record1.suppliers, options: [], quantity: 1, total_cost: (1 * record1.sale_price), voucher: '', discount: 0, final_cost: 0 })
+          array[billIndex].push({
+            quantityAvailable: quantityTotal,
+            sale_price: record1.sale_price,
+            title: record1.name,
+            product_id: record1.product_id,
+            sku: record1.sku,
+            supplier: record1.suppliers,
+            options: [],
+            quantity: 1,
+            total_cost: 1 * record1.sale_price,
+            voucher: '',
+            discount: 0,
+            final_cost: 0,
+          })
           openNotificationAddProductErrorAddProductSuccess()
           setBillQuantity([...array])
 
-
-          var moneyTotalItem = 0;
+          var moneyTotalItem = 0
           array[billIndex].forEach((values30, index30) => {
             if (index30 !== 0) {
               moneyTotalItem += values30.total_cost
             }
           })
           setMoneyTotal(moneyTotalItem)
-          var taxPercent = 0;
-          tax && tax.length > 0 && tax.forEach((values40, index40) => {
-            taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-              if (values40.name === values41) {
-                var numberValue = values40.value.split('%')[0]
-
-                taxPercent += parseInt(numberValue)
-              }
-            })
-          })
-          var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-          var result = moneyTotalTemp - moneyTotalItem;
-          setTaxPercentValue(taxPercent)
-          setTaxMoneyValue(result)
-          setMoneyFinish(moneyTotalTemp)
-
-          setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
-        } else {
-          var count = 0;
-          array[billIndex].forEach((values1, index1) => {
-            if (values1.sku === record1.sku) {
-              count++
-            }
-            var result = array[billIndex].findIndex(x => x.sku === record1.sku)
-            if (result === -1) {
-              array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: record1.sale_price, title: record1.name, product_id: record1.product_id, sku: record1.sku, supplier: record1.suppliers, options: [], quantity: 1, total_cost: (1 * record1.sale_price), voucher: '', discount: 0, final_cost: 0 })
-              openNotificationAddProductErrorAddProductSuccess()
-              setBillQuantity([...array])
-              var moneyTotalItem = 0;
-              array[billIndex].forEach((values30, index30) => {
-                if (index30 !== 0) {
-                  moneyTotalItem += values30.total_cost
-                }
-              })
-              setMoneyTotal(moneyTotalItem)
-              var taxPercent = 0;
-              tax && tax.length > 0 && tax.forEach((values40, index40) => {
-                taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
+          var taxPercent = 0
+          tax &&
+            tax.length > 0 &&
+            tax.forEach((values40, index40) => {
+              taxDefault &&
+                taxDefault.length > 0 &&
+                taxDefault.forEach((values41, index41) => {
                   if (values40.name === values41) {
                     var numberValue = values40.value.split('%')[0]
 
                     taxPercent += parseInt(numberValue)
                   }
                 })
+            })
+          var moneyTotalTemp =
+            moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+          var result = moneyTotalTemp - moneyTotalItem
+          setTaxPercentValue(taxPercent)
+          setTaxMoneyValue(result)
+          setMoneyFinish(moneyTotalTemp)
+
+          setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
+        } else {
+          var count = 0
+          array[billIndex].forEach((values1, index1) => {
+            if (values1.sku === record1.sku) {
+              count++
+            }
+            var result = array[billIndex].findIndex(
+              (x) => x.sku === record1.sku
+            )
+            if (result === -1) {
+              array[billIndex].push({
+                quantityAvailable: quantityTotal,
+                sale_price: record1.sale_price,
+                title: record1.name,
+                product_id: record1.product_id,
+                sku: record1.sku,
+                supplier: record1.suppliers,
+                options: [],
+                quantity: 1,
+                total_cost: 1 * record1.sale_price,
+                voucher: '',
+                discount: 0,
+                final_cost: 0,
               })
-              var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-              var result = moneyTotalTemp - moneyTotalItem;
+              openNotificationAddProductErrorAddProductSuccess()
+              setBillQuantity([...array])
+              var moneyTotalItem = 0
+              array[billIndex].forEach((values30, index30) => {
+                if (index30 !== 0) {
+                  moneyTotalItem += values30.total_cost
+                }
+              })
+              setMoneyTotal(moneyTotalItem)
+              var taxPercent = 0
+              tax &&
+                tax.length > 0 &&
+                tax.forEach((values40, index40) => {
+                  taxDefault &&
+                    taxDefault.length > 0 &&
+                    taxDefault.forEach((values41, index41) => {
+                      if (values40.name === values41) {
+                        var numberValue = values40.value.split('%')[0]
+
+                        taxPercent += parseInt(numberValue)
+                      }
+                    })
+                })
+              var moneyTotalTemp =
+                moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+              var result = moneyTotalTemp - moneyTotalItem
               setTaxPercentValue(taxPercent)
               setTaxMoneyValue(result)
               setMoneyFinish(moneyTotalTemp)
               setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
             }
-
           })
-
         }
-
-
-
 
         if (count > 0) {
           openNotificationAddProductErrorAddProduct()
         }
-
-
-
       } else {
         openNotificationAddProductError()
       }
     } else {
-
       openNotificationErrorQuantityTotal()
     }
-
   }
- 
+
   const onClickAddProductVariant = () => {
-    var quantityTotal = parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity)
+    var quantityTotal =
+      parseInt(objectVariant.available_stock_quantity) +
+      parseInt(objectVariant.low_stock_quantity)
     if (orderStatus === 'order now') {
       if (quantityTotal > 0) {
         if (billQuantity && billQuantity.length > 0) {
           var array = [...billQuantity]
           setRecord(record)
-       
 
           if (array[billIndex].length === 0) {
-            array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
+            array[billIndex].push({
+              quantityAvailable: quantityTotal,
+              sale_price: objectVariant.sale_price,
+              title: objectVariant.title,
+              product_id: record.product_id,
+              sku: objectVariant.sku,
+              supplier: objectVariant.supplier,
+              options: objectVariant.options,
+              quantity: quantity,
+              total_cost: quantity * objectVariant.sale_price,
+              voucher: '',
+              discount: 0,
+              final_cost: 0,
+            })
             openNotificationAddProductErrorAddProductSuccess()
             setBillQuantity([...array])
             modal2VisibleModal(false)
-
-
-
 
             setQuantity(1)
             if (billQuantity && billQuantity.length > 0) {
@@ -1233,9 +1236,7 @@ export default function Sell() {
               arrayBillQuantity[billIndex][0].mark = array9
               setBillQuantity([...arrayBillQuantity])
 
-
-
-              var moneyTotalItem = 0;
+              var moneyTotalItem = 0
               array[billIndex].forEach((values30, index30) => {
                 if (index30 !== 0) {
                   moneyTotalItem += values30.total_cost
@@ -1243,37 +1244,53 @@ export default function Sell() {
               })
               setMoneyTotal(moneyTotalItem)
 
+              var taxPercent = 0
+              tax &&
+                tax.length > 0 &&
+                tax.forEach((values40, index40) => {
+                  taxDefault &&
+                    taxDefault.length > 0 &&
+                    taxDefault.forEach((values41, index41) => {
+                      if (values40.name === values41) {
+                        var numberValue = values40.value.split('%')[0]
 
-
-
-              var taxPercent = 0;
-              tax && tax.length > 0 && tax.forEach((values40, index40) => {
-                taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-                  if (values40.name === values41) {
-                    var numberValue = values40.value.split('%')[0]
-
-                    taxPercent += parseInt(numberValue)
-                  }
+                        taxPercent += parseInt(numberValue)
+                      }
+                    })
                 })
-              })
-              var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-              var result = moneyTotalTemp - moneyTotalItem;
+              var moneyTotalTemp =
+                moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+              var result = moneyTotalTemp - moneyTotalItem
               setTaxPercentValue(taxPercent)
               setTaxMoneyValue(result)
               setMoneyFinish(moneyTotalTemp)
               setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
             } else {
-
             }
           } else {
-            var count = 0;
+            var count = 0
             array[billIndex].forEach((values1, index1) => {
               if (values1.sku === objectVariant.sku) {
                 count++
               }
-              var result = array[billIndex].findIndex(x => x.sku === objectVariant.sku)
+              var result = array[billIndex].findIndex(
+                (x) => x.sku === objectVariant.sku
+              )
               if (result === -1) {
-                array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
+                array[billIndex].push({
+                  quantityAvailable: quantityTotal,
+                  sale_price: objectVariant.sale_price,
+                  title: objectVariant.title,
+                  product_id: record.product_id,
+                  sku: objectVariant.sku,
+                  supplier: objectVariant.supplier,
+                  options: objectVariant.options,
+                  quantity: quantity,
+                  total_cost: quantity * objectVariant.sale_price,
+                  voucher: '',
+                  discount: 0,
+                  final_cost: 0,
+                })
                 setBillQuantity([...array])
                 openNotificationAddProductErrorAddProductSuccess()
                 modal2VisibleModal(false)
@@ -1284,7 +1301,7 @@ export default function Sell() {
                   var arrayBillQuantity = [...billQuantity]
                   arrayBillQuantity[billIndex][0].mark = array9
                   setBillQuantity([...arrayBillQuantity])
-                  var moneyTotalItem = 0;
+                  var moneyTotalItem = 0
                   array[billIndex].forEach((values30, index30) => {
                     if (index30 !== 0) {
                       moneyTotalItem += values30.total_cost
@@ -1292,38 +1309,35 @@ export default function Sell() {
                   })
                   setMoneyTotal(moneyTotalItem)
 
+                  var taxPercent = 0
+                  tax &&
+                    tax.length > 0 &&
+                    tax.forEach((values40, index40) => {
+                      taxDefault &&
+                        taxDefault.length > 0 &&
+                        taxDefault.forEach((values41, index41) => {
+                          if (values40.name === values41) {
+                            var numberValue = values40.value.split('%')[0]
 
-
-
-                  var taxPercent = 0;
-                  tax && tax.length > 0 && tax.forEach((values40, index40) => {
-                    taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-                      if (values40.name === values41) {
-                        var numberValue = values40.value.split('%')[0]
-
-                        taxPercent += parseInt(numberValue)
-                      }
+                            taxPercent += parseInt(numberValue)
+                          }
+                        })
                     })
-                  })
-                  var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-                  var result = moneyTotalTemp - moneyTotalItem;
+                  var moneyTotalTemp =
+                    moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+                  var result = moneyTotalTemp - moneyTotalItem
                   setTaxPercentValue(taxPercent)
                   setTaxMoneyValue(result)
                   setMoneyFinish(moneyTotalTemp)
                   setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
                 } else {
-
                 }
               }
-
-
             })
             if (count > 0) {
               openNotificationAddProductErrorAddProduct()
             }
-
           }
-
         } else {
           openNotificationAddProductError()
         }
@@ -1336,13 +1350,23 @@ export default function Sell() {
         setRecord(record)
 
         if (array[billIndex].length === 0) {
-          array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
+          array[billIndex].push({
+            quantityAvailable: quantityTotal,
+            sale_price: objectVariant.sale_price,
+            title: objectVariant.title,
+            product_id: record.product_id,
+            sku: objectVariant.sku,
+            supplier: objectVariant.supplier,
+            options: objectVariant.options,
+            quantity: quantity,
+            total_cost: quantity * objectVariant.sale_price,
+            voucher: '',
+            discount: 0,
+            final_cost: 0,
+          })
           openNotificationAddProductErrorAddProductSuccess()
           setBillQuantity([...array])
           modal2VisibleModal(false)
-
-
-
 
           setQuantity(1)
           if (billQuantity && billQuantity.length > 0) {
@@ -1353,9 +1377,7 @@ export default function Sell() {
             arrayBillQuantity[billIndex][0].mark = array9
             setBillQuantity([...arrayBillQuantity])
 
-
-
-            var moneyTotalItem = 0;
+            var moneyTotalItem = 0
             array[billIndex].forEach((values30, index30) => {
               if (index30 !== 0) {
                 moneyTotalItem += values30.total_cost
@@ -1363,38 +1385,54 @@ export default function Sell() {
             })
             setMoneyTotal(moneyTotalItem)
 
+            var taxPercent = 0
+            tax &&
+              tax.length > 0 &&
+              tax.forEach((values40, index40) => {
+                taxDefault &&
+                  taxDefault.length > 0 &&
+                  taxDefault.forEach((values41, index41) => {
+                    if (values40.name === values41) {
+                      var numberValue = values40.value.split('%')[0]
 
-
-
-            var taxPercent = 0;
-            tax && tax.length > 0 && tax.forEach((values40, index40) => {
-              taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-                if (values40.name === values41) {
-                  var numberValue = values40.value.split('%')[0]
-
-                  taxPercent += parseInt(numberValue)
-                }
+                      taxPercent += parseInt(numberValue)
+                    }
+                  })
               })
-            })
-         
-            var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-            var result = moneyTotalTemp - moneyTotalItem;
+
+            var moneyTotalTemp =
+              moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+            var result = moneyTotalTemp - moneyTotalItem
             setTaxPercentValue(taxPercent)
             setTaxMoneyValue(result)
             setMoneyFinish(moneyTotalTemp)
             setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
           } else {
-
           }
         } else {
-          var count = 0;
+          var count = 0
           array[billIndex].forEach((values1, index1) => {
             if (values1.sku === objectVariant.sku) {
               count++
             }
-            var result = array[billIndex].findIndex(x => x.sku === objectVariant.sku)
+            var result = array[billIndex].findIndex(
+              (x) => x.sku === objectVariant.sku
+            )
             if (result === -1) {
-              array[billIndex].push({ quantityAvailable: quantityTotal, sale_price: objectVariant.sale_price, title: objectVariant.title, product_id: record.product_id, sku: objectVariant.sku, supplier: objectVariant.supplier, options: objectVariant.options, quantity: quantity, total_cost: quantity * objectVariant.sale_price, voucher: '', discount: 0, final_cost: 0 })
+              array[billIndex].push({
+                quantityAvailable: quantityTotal,
+                sale_price: objectVariant.sale_price,
+                title: objectVariant.title,
+                product_id: record.product_id,
+                sku: objectVariant.sku,
+                supplier: objectVariant.supplier,
+                options: objectVariant.options,
+                quantity: quantity,
+                total_cost: quantity * objectVariant.sale_price,
+                voucher: '',
+                discount: 0,
+                final_cost: 0,
+              })
               setBillQuantity([...array])
               openNotificationAddProductErrorAddProductSuccess()
               modal2VisibleModal(false)
@@ -1405,7 +1443,7 @@ export default function Sell() {
                 var arrayBillQuantity = [...billQuantity]
                 arrayBillQuantity[billIndex][0].mark = array9
                 setBillQuantity([...arrayBillQuantity])
-                var moneyTotalItem = 0;
+                var moneyTotalItem = 0
                 array[billIndex].forEach((values30, index30) => {
                   if (index30 !== 0) {
                     moneyTotalItem += values30.total_cost
@@ -1413,53 +1451,51 @@ export default function Sell() {
                 })
                 setMoneyTotal(moneyTotalItem)
 
+                var taxPercent = 0
+                tax &&
+                  tax.length > 0 &&
+                  tax.forEach((values40, index40) => {
+                    taxDefault &&
+                      taxDefault.length > 0 &&
+                      taxDefault.forEach((values41, index41) => {
+                        if (values40.name === values41) {
+                          var numberValue = values40.value.split('%')[0]
 
-
-
-                var taxPercent = 0;
-                tax && tax.length > 0 && tax.forEach((values40, index40) => {
-                  taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-                    if (values40.name === values41) {
-                      var numberValue = values40.value.split('%')[0]
-
-                      taxPercent += parseInt(numberValue)
-                    }
+                          taxPercent += parseInt(numberValue)
+                        }
+                      })
                   })
-                })
-                var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-                var result = moneyTotalTemp - moneyTotalItem;
+                var moneyTotalTemp =
+                  moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+                var result = moneyTotalTemp - moneyTotalItem
                 setTaxPercentValue(taxPercent)
                 setTaxMoneyValue(result)
                 setMoneyFinish(moneyTotalTemp)
                 setMoneyPredict(TienThoi(parseInt(moneyTotalTemp)))
               } else {
-
               }
             }
-
-
           })
           if (count > 0) {
             openNotificationAddProductErrorAddProduct()
           }
-
         }
-
       } else {
         openNotificationAddProductError()
       }
     }
-
-
-
   }
   const openNotificationErrorQuantityAvailable = (name, data) => {
     notification.warning({
       message: 'Nhắc nhở',
-      description:
-        <div>Số lượng sản phẩm <b>{name}</b> chỉ còn lại: <b style={{ color: 'red', fontSize: '1rem' }}>{data}</b></div>
-    });
-  };
+      description: (
+        <div>
+          Số lượng sản phẩm <b>{name}</b> chỉ còn lại:{' '}
+          <b style={{ color: 'red', fontSize: '1rem' }}>{data}</b>
+        </div>
+      ),
+    })
+  }
   const onChangeQuantityBill = (value, index1, index2) => {
     setDiscount(0)
     setPromotionValue('default')
@@ -1467,11 +1503,11 @@ export default function Sell() {
       value = 1
       var array = [...billQuantity]
       array[index1][index2].quantity = value
-      array[index1][index2].total_cost = value * array[index1][index2].sale_price
+      array[index1][index2].total_cost =
+        value * array[index1][index2].sale_price
       setBillQuantity([...array])
 
-
-      var moneyTotalItem = 0;
+      var moneyTotalItem = 0
       array[index1].forEach((values30, index30) => {
         if (index30 !== 0) {
           moneyTotalItem += values30.total_cost
@@ -1479,20 +1515,22 @@ export default function Sell() {
       })
       setMoneyTotal(moneyTotalItem)
 
+      var taxPercent = 0
+      tax &&
+        tax.length > 0 &&
+        tax.forEach((values40, index40) => {
+          taxDefault &&
+            taxDefault.length > 0 &&
+            taxDefault.forEach((values41, index41) => {
+              if (values40.name === values41) {
+                var numberValue = values40.value.split('%')[0]
 
-
-      var taxPercent = 0;
-      tax && tax.length > 0 && tax.forEach((values40, index40) => {
-        taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-          if (values40.name === values41) {
-            var numberValue = values40.value.split('%')[0]
-
-            taxPercent += parseInt(numberValue)
-          }
+                taxPercent += parseInt(numberValue)
+              }
+            })
         })
-      })
-      var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-      var result = moneyTotalTemp - moneyTotalItem;
+      var moneyTotalTemp = moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+      var result = moneyTotalTemp - moneyTotalItem
       setTaxPercentValue(taxPercent)
       setTaxMoneyValue(result)
       setMoneyFinish(moneyTotalTemp)
@@ -1500,11 +1538,11 @@ export default function Sell() {
       var array = [...billQuantity]
       if (orderStatus === 'pre-order' || orderStatus === 'order list') {
         array[index1][index2].quantity = value
-        array[index1][index2].total_cost = value * array[index1][index2].sale_price
+        array[index1][index2].total_cost =
+          value * array[index1][index2].sale_price
         setBillQuantity([...array])
 
-
-        var moneyTotalItem = 0;
+        var moneyTotalItem = 0
         array[index1].forEach((values30, index30) => {
           if (index30 !== 0) {
             moneyTotalItem += values30.total_cost
@@ -1512,20 +1550,23 @@ export default function Sell() {
         })
         setMoneyTotal(moneyTotalItem)
 
+        var taxPercent = 0
+        tax &&
+          tax.length > 0 &&
+          tax.forEach((values40, index40) => {
+            taxDefault &&
+              taxDefault.length > 0 &&
+              taxDefault.forEach((values41, index41) => {
+                if (values40.name === values41) {
+                  var numberValue = values40.value.split('%')[0]
 
-
-        var taxPercent = 0;
-        tax && tax.length > 0 && tax.forEach((values40, index40) => {
-          taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-            if (values40.name === values41) {
-              var numberValue = values40.value.split('%')[0]
-
-              taxPercent += parseInt(numberValue)
-            }
+                  taxPercent += parseInt(numberValue)
+                }
+              })
           })
-        })
-        var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-        var result = moneyTotalTemp - moneyTotalItem;
+        var moneyTotalTemp =
+          moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+        var result = moneyTotalTemp - moneyTotalItem
         setTaxPercentValue(taxPercent)
         setTaxMoneyValue(result)
         setMoneyFinish(moneyTotalTemp)
@@ -1534,15 +1575,17 @@ export default function Sell() {
         if (parseInt(value) > parseInt(quantityAvailableValue)) {
           array[index1][index2].quantity = quantityAvailableValue
           setBillQuantity([...array])
-          openNotificationErrorQuantityAvailable(array[index1][index2].title, array[index1][index2].quantityAvailable)
+          openNotificationErrorQuantityAvailable(
+            array[index1][index2].title,
+            array[index1][index2].quantityAvailable
+          )
         } else {
-
           array[index1][index2].quantity = value
-          array[index1][index2].total_cost = value * array[index1][index2].sale_price
+          array[index1][index2].total_cost =
+            value * array[index1][index2].sale_price
           setBillQuantity([...array])
 
-
-          var moneyTotalItem = 0;
+          var moneyTotalItem = 0
           array[index1].forEach((values30, index30) => {
             if (index30 !== 0) {
               moneyTotalItem += values30.total_cost
@@ -1550,52 +1593,49 @@ export default function Sell() {
           })
           setMoneyTotal(moneyTotalItem)
 
+          var taxPercent = 0
+          tax &&
+            tax.length > 0 &&
+            tax.forEach((values40, index40) => {
+              taxDefault &&
+                taxDefault.length > 0 &&
+                taxDefault.forEach((values41, index41) => {
+                  if (values40.name === values41) {
+                    var numberValue = values40.value.split('%')[0]
 
-
-          var taxPercent = 0;
-          tax && tax.length > 0 && tax.forEach((values40, index40) => {
-            taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-              if (values40.name === values41) {
-                var numberValue = values40.value.split('%')[0]
-
-                taxPercent += parseInt(numberValue)
-              }
+                    taxPercent += parseInt(numberValue)
+                  }
+                })
             })
-          })
-          var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-          var result = moneyTotalTemp - moneyTotalItem;
+          var moneyTotalTemp =
+            moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+          var result = moneyTotalTemp - moneyTotalItem
           setTaxPercentValue(taxPercent)
           setTaxMoneyValue(result)
           setMoneyFinish(moneyTotalTemp)
         }
       }
-
     }
     // var { value, name } = e.target;
-
-
   }
   const onClickDeleteBillQuantityItem = (index1, index2, sku) => {
     var array = [...billQuantity]
     var arrayMark = [...billQuantity[billIndex][0].mark]
     array[index1].splice(index2, 1)
-    arrayMark && arrayMark.length > 0 && arrayMark.forEach((values6, index6) => {
-      if (values6 === sku) {
-        arrayMark.splice(index6, 1)
-        var arrayResult = [...billQuantity]
-        arrayResult[billIndex][0].mark = arrayMark
-        setBillQuantity([...arrayResult])
-      }
-    })
+    arrayMark &&
+      arrayMark.length > 0 &&
+      arrayMark.forEach((values6, index6) => {
+        if (values6 === sku) {
+          arrayMark.splice(index6, 1)
+          var arrayResult = [...billQuantity]
+          arrayResult[billIndex][0].mark = arrayMark
+          setBillQuantity([...arrayResult])
+        }
+      })
 
     setBillQuantity([...array])
 
-
-
-
-
-
-    var moneyTotalItem = 0;
+    var moneyTotalItem = 0
     array[index1].forEach((values30, index30) => {
       if (index30 !== 0) {
         moneyTotalItem += values30.total_cost
@@ -1603,231 +1643,725 @@ export default function Sell() {
     })
     setMoneyTotal(moneyTotalItem)
 
+    var taxPercent = 0
+    tax &&
+      tax.length > 0 &&
+      tax.forEach((values40, index40) => {
+        taxDefault &&
+          taxDefault.length > 0 &&
+          taxDefault.forEach((values41, index41) => {
+            if (values40.name === values41) {
+              var numberValue = values40.value.split('%')[0]
 
-
-    var taxPercent = 0;
-    tax && tax.length > 0 && tax.forEach((values40, index40) => {
-      taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-        if (values40.name === values41) {
-          var numberValue = values40.value.split('%')[0]
-
-          taxPercent += parseInt(numberValue)
-        }
+              taxPercent += parseInt(numberValue)
+            }
+          })
       })
-    })
-    var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-    var result = moneyTotalTemp - moneyTotalItem;
+    var moneyTotalTemp = moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+    var result = moneyTotalTemp - moneyTotalItem
     setTaxPercentValue(taxPercent)
     setTaxMoneyValue(result)
     setMoneyFinish(moneyTotalTemp)
-
   }
   const [productSearch, setProductSearch] = useState([])
 
   const apiSearchData = async (value) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiProductSeller({ keyword: value, branch: branchId, page: 1, page_size: 50 });
+      const res = await apiProductSeller({
+        keyword: value,
+        branch: branchId,
+        page: 1,
+        page_size: 50,
+      })
       if (res.status === 200) {
         setProductSearch(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
       // openNotification();
       // history.push(ROUTES.NEWS);
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
   const contentHoverProduct = (url) => {
     return (
-      <img src={url} style={{ width: '40rem', height: '20rem', objectFit: 'contain' }} alt="" />
+      <img
+        src={url}
+        style={{ width: '40rem', height: '20rem', objectFit: 'contain' }}
+        alt=""
+      />
     )
   }
 
   const content = (
     <div className={styles['popover']}>
-
-      {
-        productSearch && productSearch.length > 0 ? (productSearch && productSearch.length > 0 && productSearch.map((values, index) => {
-          return (
-            values && values.variants && values.variants.length > 0 ? (values && values.variants && values.variants.map((values1, index1) => {
-              return (
-                <div style={{ width: '100%' }} onClick={() => { onClickModal2Visible(values1, values); onClickMarkVariant(values1.sku) }} className={styles['product-search']}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                    <Popover placement="right" content={() => contentHoverProduct(values1.image[0])}>
-                      <img src={values1.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-                    </Popover>
+      {productSearch && productSearch.length > 0 ? (
+        productSearch &&
+        productSearch.length > 0 &&
+        productSearch.map((values, index) => {
+          return values && values.variants && values.variants.length > 0 ? (
+            values &&
+              values.variants &&
+              values.variants.map((values1, index1) => {
+                return (
+                  <div
+                    style={{ width: '100%' }}
+                    onClick={() => {
+                      onClickModal2Visible(values1, values)
+                      onClickMarkVariant(values1.sku)
+                    }}
+                    className={styles['product-search']}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Popover
+                        placement="right"
+                        content={() => contentHoverProduct(values1.image[0])}
+                      >
+                        <img
+                          src={values1.image[0]}
+                          style={{
+                            width: '5rem',
+                            height: '5rem',
+                            objectFit: 'contain',
+                          }}
+                          alt=""
+                        />
+                      </Popover>
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {values1.title}
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        marginLeft: '1rem',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div>{`${formatCash(String(values1.sale_price))}`}</div>
+                      <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: '#50D648',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          <CheckCircleOutlined />
+                        </div>
+                        <div
+                          style={{
+                            color: '#50D648',
+                            marginLeft: '0.25rem',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          {values1.available_stock_quantity}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: 'orange',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          <AlertOutlined />
+                        </div>
+                        <div
+                          style={{
+                            color: 'orange',
+                            marginLeft: '0.25rem',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          {values1.low_stock_quantity}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: 'red',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          <CloseCircleOutlined />
+                        </div>
+                        <div
+                          style={{
+                            color: 'red',
+                            marginLeft: '0.25rem',
+                            borderRadius: '50%',
+                            fontSize: '1.25rem',
+                          }}
+                        >
+                          {values1.out_stock_quantity}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}  >{values1.title}</div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
-                    <div>{`${formatCash(String(values1.sale_price))}`}</div>
-                    <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
+                )
+              })
+          ) : (
+            <div
+              style={{ width: '100%' }}
+              onClick={() => {
+                onClickAddProductSimple(values)
+                onClickMark(values.sku)
+              }}
+              className={styles['product-search']}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                }}
+              >
+                <Popover
+                  placement="right"
+                  content={() => contentHoverProduct(values.image[0])}
+                >
+                  <img
+                    src={values.image[0]}
+                    style={{
+                      width: '5rem',
+                      height: '5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
+                </Popover>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                {values.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginLeft: '1rem',
+                  alignItems: 'center',
+                }}
+              >
+                <div>{`${formatCash(String(values.sale_price))}`}</div>
+                <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: '#50D648',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <CheckCircleOutlined />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                      <div style={{ color: '#50D648', borderRadius: '50%', fontSize: '1.25rem' }}><CheckCircleOutlined /></div>
-                      <div style={{ color: '#50D648', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.available_stock_quantity}</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                      <div style={{ color: 'orange', borderRadius: '50%', fontSize: '1.25rem' }}><AlertOutlined /></div>
-                      <div style={{ color: 'orange', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.low_stock_quantity}</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                      <div style={{ color: 'red', borderRadius: '50%', fontSize: '1.25rem' }}><CloseCircleOutlined /></div>
-                      <div style={{ color: 'red', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.out_stock_quantity}</div>
-                    </div>
+                  <div
+                    style={{
+                      color: '#50D648',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.available_stock_quantity}
                   </div>
                 </div>
-              )
-            })) : (
-              <div style={{ width: '100%' }} onClick={() => { onClickAddProductSimple(values); onClickMark(values.sku) }} className={styles['product-search']}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                  <Popover placement="right" content={() => contentHoverProduct(values.image[0])}>
-                    <img src={values.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-                  </Popover>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}  >{values.name}</div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
-                  <div>{`${formatCash(String(values.sale_price))}`}</div>
-                  <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <div style={{ color: '#50D648', borderRadius: '50%', fontSize: '1.25rem' }}><CheckCircleOutlined /></div>
-                    <div style={{ color: '#50D648', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.available_stock_quantity}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'orange',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <AlertOutlined />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <div style={{ color: 'orange', borderRadius: '50%', fontSize: '1.25rem' }}><AlertOutlined /></div>
-                    <div style={{ color: 'orange', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.low_stock_quantity}</div>
+                  <div
+                    style={{
+                      color: 'orange',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.low_stock_quantity}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                    <div style={{ color: 'red', borderRadius: '50%', fontSize: '1.25rem' }}><CloseCircleOutlined /></div>
-                    <div style={{ color: 'red', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.out_stock_quantity}</div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'red',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <CloseCircleOutlined />
+                  </div>
+                  <div
+                    style={{
+                      color: 'red',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.out_stock_quantity}
                   </div>
                 </div>
               </div>
-
-
-            ))
-        })) :
-          (
-            productSelect && productSelect.length > 0 ? (productSelect && productSelect.length > 0 && productSelect.map((values, index) => {
-
-              return (
-
-                values && values.variants && values.variants.length > 0 ? (values && values.variants && values.variants.map((values1, index1) => {
-                  if (index1 > -1) {
-                    return (
-                      <div style={{ width: '100%' }} onClick={() => { onClickModal2Visible(values1, values); onClickMarkVariant(values1.sku) }} className={styles['product-search']}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                          <Popover placement="right" content={() => contentHoverProduct(values1.image[0])}>
-                            <img src={values1.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-                          </Popover>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}  >{values1.title}</div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
-                          <div>{`${formatCash(String(values1.sale_price))}`}</div>
-                          <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                            <div style={{ color: '#50D648', borderRadius: '50%', fontSize: '1.25rem' }}><CheckCircleOutlined /></div>
-                            <div style={{ color: '#50D648', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.available_stock_quantity}</div>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                            <div style={{ color: 'orange', borderRadius: '50%', fontSize: '1.25rem' }}><AlertOutlined /></div>
-                            <div style={{ color: 'orange', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.low_stock_quantity}</div>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                            <div style={{ color: 'red', borderRadius: '50%', fontSize: '1.25rem' }}><CloseCircleOutlined /></div>
-                            <div style={{ color: 'red', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values1.out_stock_quantity}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  }
-
-                })) : (
-                  <div style={{ width: '100%', }} onClick={() => { onClickAddProductSimple(values); onClickMark(values.sku) }} className={styles['product-search']}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                      <Popover placement="right" content={() => contentHoverProduct(values.image[0])}>
-                        <img src={values.image[0]} style={{ width: '5rem', height: '5rem', objectFit: 'contain' }} alt="" />
-                      </Popover>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}  >{values.name}</div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginLeft: '1rem', alignItems: 'center' }}>
-                      <div>{`${formatCash(String(values.sale_price))}`}</div>
-                      <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                        <div style={{ color: '#50D648', borderRadius: '50%', fontSize: '1.25rem' }}><CheckCircleOutlined /></div>
-                        <div style={{ color: '#50D648', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.available_stock_quantity}</div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                        <div style={{ color: 'orange', borderRadius: '50%', fontSize: '1.25rem' }}><AlertOutlined /></div>
-                        <div style={{ color: 'orange', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.low_stock_quantity}</div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                        <div style={{ color: 'red', borderRadius: '50%', fontSize: '1.25rem' }}><CloseCircleOutlined /></div>
-                        <div style={{ color: 'red', marginLeft: '0.25rem', borderRadius: '50%', fontSize: '1.25rem' }}>{values.out_stock_quantity}</div>
-                      </div>
-                    </div>
-                  </div>)
-
-              )
-
-            })) : (<div style={{ color: 'black', fontSize: '1.25rem', fontWeight: '600', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>Không tìm thấy sản phẩm ở chi nhánh này</div>)
+            </div>
           )
-
-      }
-
-    </div >
-  );
+        })
+      ) : productSelect && productSelect.length > 0 ? (
+        productSelect &&
+        productSelect.length > 0 &&
+        productSelect.map((values, index) => {
+          return values && values.variants && values.variants.length > 0 ? (
+            values &&
+              values.variants &&
+              values.variants.map((values1, index1) => {
+                if (index1 > -1) {
+                  return (
+                    <div
+                      style={{ width: '100%' }}
+                      onClick={() => {
+                        onClickModal2Visible(values1, values)
+                        onClickMarkVariant(values1.sku)
+                      }}
+                      className={styles['product-search']}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'flex-start',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Popover
+                          placement="right"
+                          content={() => contentHoverProduct(values1.image[0])}
+                        >
+                          <img
+                            src={values1.image[0]}
+                            style={{
+                              width: '5rem',
+                              height: '5rem',
+                              objectFit: 'contain',
+                            }}
+                            alt=""
+                          />
+                        </Popover>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        {values1.title}
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          marginLeft: '1rem',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div>{`${formatCash(String(values1.sale_price))}`}</div>
+                        <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: '#50D648',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            <CheckCircleOutlined />
+                          </div>
+                          <div
+                            style={{
+                              color: '#50D648',
+                              marginLeft: '0.25rem',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            {values1.available_stock_quantity}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: 'orange',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            <AlertOutlined />
+                          </div>
+                          <div
+                            style={{
+                              color: 'orange',
+                              marginLeft: '0.25rem',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            {values1.low_stock_quantity}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: 'red',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            <CloseCircleOutlined />
+                          </div>
+                          <div
+                            style={{
+                              color: 'red',
+                              marginLeft: '0.25rem',
+                              borderRadius: '50%',
+                              fontSize: '1.25rem',
+                            }}
+                          >
+                            {values1.out_stock_quantity}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+              })
+          ) : (
+            <div
+              style={{ width: '100%' }}
+              onClick={() => {
+                onClickAddProductSimple(values)
+                onClickMark(values.sku)
+              }}
+              className={styles['product-search']}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                }}
+              >
+                <Popover
+                  placement="right"
+                  content={() => contentHoverProduct(values.image[0])}
+                >
+                  <img
+                    src={values.image[0]}
+                    style={{
+                      width: '5rem',
+                      height: '5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
+                </Popover>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                {values.name}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginLeft: '1rem',
+                  alignItems: 'center',
+                }}
+              >
+                <div>{`${formatCash(String(values.sale_price))}`}</div>
+                <div style={{ marginLeft: '0.5rem' }}>VNĐ</div>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: '#50D648',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <CheckCircleOutlined />
+                  </div>
+                  <div
+                    style={{
+                      color: '#50D648',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.available_stock_quantity}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'orange',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <AlertOutlined />
+                  </div>
+                  <div
+                    style={{
+                      color: 'orange',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.low_stock_quantity}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'red',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    <CloseCircleOutlined />
+                  </div>
+                  <div
+                    style={{
+                      color: 'red',
+                      marginLeft: '0.25rem',
+                      borderRadius: '50%',
+                      fontSize: '1.25rem',
+                    }}
+                  >
+                    {values.out_stock_quantity}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })
+      ) : (
+        <div
+          style={{
+            color: 'black',
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          Không tìm thấy sản phẩm ở chi nhánh này
+        </div>
+      )}
+    </div>
+  )
 
   const openNotificationSuccessAddCustomer = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Thêm mới khách hàng thành công.',
-    });
-  };
+      description: 'Thêm mới khách hàng thành công.',
+    })
+  }
   const openNotificationErrorNameCustomer = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Tên khách hàng phải là chữ',
-    });
-  };
+      description: 'Tên khách hàng phải là chữ',
+    })
+  }
   const openNotificationErrorNameCustomerNull = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Bạn chưa nhập tên khách hàng.',
-    });
-  };
+      description: 'Bạn chưa nhập tên khách hàng.',
+    })
+  }
 
   const openNotificationErrorPhone = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Liên hệ phải là số và có độ dài là 10.',
-    });
-  };
+      description: 'Liên hệ phải là số và có độ dài là 10.',
+    })
+  }
   const openNotificationErrorAddCustomer = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Liên hệ đã tồn tại.',
-    });
-  };
+      description: 'Liên hệ đã tồn tại.',
+    })
+  }
   const addCustomerData = async (value) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await addCustomer(value);
+      const res = await addCustomer(value)
       if (res.status === 200) {
         setCustomer(res.data.data)
         await getAllCustomerData()
@@ -1839,20 +2373,22 @@ export default function Sell() {
       } else {
         openNotificationErrorAddCustomer()
       }
-      dispatch({ type: ACTION.LOADING, data: false });
-     
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
   const onFinishAddCustomer = (values) => {
-    var now = moment().get('year');
-  
+    var now = moment().get('year')
+
     now -= parseInt(value)
-    if (customerName && customerName !== "" || customerName && customerName !== " " || customerName && customerName !== "default") {
+    if (
+      (customerName && customerName !== '') ||
+      (customerName && customerName !== ' ') ||
+      (customerName && customerName !== 'default')
+    ) {
       if (!isNaN(customerName) || isNaN(randomPhoneValue)) {
         if (!isNaN(customerName)) {
           openNotificationErrorNameCustomer()
@@ -1866,76 +2402,69 @@ export default function Sell() {
             phone: randomPhoneValue,
             type: customerName,
             first_name: customerName,
-            last_name: "",
+            last_name: '',
             gender: valueSex,
             birthday: `${now}/01/01`,
             address: values.address,
             ward: values.ward,
             district: values.district,
             province: values.ward,
-            balance: []
+            balance: [],
           }
           addCustomerData(object)
         } else {
           if (!regex.test(randomPhoneValue)) {
             openNotificationErrorPhone()
           }
-
         }
       }
     } else {
       openNotificationErrorNameCustomerNull()
     }
-
-  };
+  }
 
   const getCustomerData = async (data) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await getCustomer({ keyword: data, page: 1, page_size: 50 });
-     
+      const res = await getCustomer({ keyword: data, page: 1, page_size: 50 })
+
       if (res.status === 200) {
-
         setCustomer(res.data.data)
-
       }
-      dispatch({ type: ACTION.LOADING, data: false });
-     
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const getCustomerDataCustomeAlone = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await getCustomer({ keyword: 'Khách lẻ', page: 1, page_size: 50 });
-  
+      const res = await getCustomer({
+        keyword: 'Khách lẻ',
+        page: 1,
+        page_size: 50,
+      })
+
       if (res.status === 200) {
-
-    
         setCustomerOnClick([...res.data.data])
-        setValueSearchCustomer(`${res.data.data[0].first_name} - ${res.data.data[0].phone}`)
-
-
+        setValueSearchCustomer(
+          `${res.data.data[0].first_name} - ${res.data.data[0].phone}`
+        )
 
         var arrayCustomerSelect = [...billQuantity]
         arrayCustomerSelect[billIndex][0].customer = res.data.data
         setBillQuantity([...arrayCustomerSelect])
       }
-      dispatch({ type: ACTION.LOADING, data: false });
- 
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
 
   const onChangeCustomerOdd = (e) => {
-   
     setCustomerOddMain(e.target.checked)
     if (e.target.checked) {
       setValueSearchCustomer('Khách lẻ')
@@ -1954,21 +2483,19 @@ export default function Sell() {
     setCustomerName(e.target.value)
   }
 
-
   const apiFilterCityData = async (object) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiFilterCity({ keyword: object });
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiFilterCity({ keyword: object })
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
       // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
-  };
+  }
   function handleChangeCity(value) {
     apiFilterCityData(value)
   }
@@ -1979,36 +2506,92 @@ export default function Sell() {
     setCustomerOnClick([...array])
     setValueSearchCustomer(`${values.first_name} - ${values.phone}`)
 
-
-
     var arrayCustomerSelect = [...billQuantity]
     arrayCustomerSelect[billIndex][0].customer = array
     setBillQuantity([...arrayCustomerSelect])
   }
   const contentCustomer = (
-
-    <div className={styles['shadow']} style={{ display: 'flex', height: '20rem', maxWidth: '100%', backgroundColor: 'white', zIndex: '999', maxHeight: '100%', overflow: 'auto', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-
-      {
-        customer && customer.length > 0 ? (customer && customer.length > 0 && customer.map((values, index) => {
-          return (
-            <div onClick={() => onClickInformation(values)} className={styles['informaton__customer-search']}>
-              <div><img src={user} style={{ width: '2rem', height: '2rem', marginRight: '0.5rem', objectFit: 'contain' }} alt="" /></div>
-              <div style={{ color: 'black', fontWeight: '600' }}>{values.first_name} - </div>
-              <div style={{ color: 'black', fontWeight: '600' }}>{values.phone}</div>
-            </div>
-          )
-        })) : (customerBackup && customerBackup.length > 0 && customerBackup.map((values, index) => {
-          return (
-            <div onClick={() => onClickInformation(values)} className={styles['informaton__customer-search']}>
-              <div><img src={user} style={{ width: '2rem', height: '2rem', marginRight: '0.5rem', objectFit: 'contain' }} alt="" /></div>
-              <div style={{ color: 'black', fontWeight: '600' }}>{`${values.first_name} ${values.last_name} - `}</div>
-              <div style={{ marginLeft: '0.25rem', color: 'black', fontWeight: '600' }}>{values.phone}</div>
-            </div>
-          )
-        }))
-
-      }
+    <div
+      className={styles['shadow']}
+      style={{
+        display: 'flex',
+        height: '20rem',
+        maxWidth: '100%',
+        backgroundColor: 'white',
+        zIndex: '999',
+        maxHeight: '100%',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        width: '100%',
+        flexDirection: 'column',
+      }}
+    >
+      {customer && customer.length > 0
+        ? customer &&
+          customer.length > 0 &&
+          customer.map((values, index) => {
+            return (
+              <div
+                onClick={() => onClickInformation(values)}
+                className={styles['informaton__customer-search']}
+              >
+                <div>
+                  <img
+                    src={user}
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      marginRight: '0.5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
+                </div>
+                <div style={{ color: 'black', fontWeight: '600' }}>
+                  {values.first_name} -{' '}
+                </div>
+                <div style={{ color: 'black', fontWeight: '600' }}>
+                  {values.phone}
+                </div>
+              </div>
+            )
+          })
+        : customerBackup &&
+          customerBackup.length > 0 &&
+          customerBackup.map((values, index) => {
+            return (
+              <div
+                onClick={() => onClickInformation(values)}
+                className={styles['informaton__customer-search']}
+              >
+                <div>
+                  <img
+                    src={user}
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      marginRight: '0.5rem',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
+                </div>
+                <div
+                  style={{ color: 'black', fontWeight: '600' }}
+                >{`${values.first_name} ${values.last_name} - `}</div>
+                <div
+                  style={{
+                    marginLeft: '0.25rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  {values.phone}
+                </div>
+              </div>
+            )
+          })}
     </div>
   )
 
@@ -2017,41 +2600,42 @@ export default function Sell() {
       // Math.random should be unique because of its seeding algorithm.
       // Convert it to base 36 (numbers + letters), and grab the first 9 characters
       // after the decimal.
-      return String(Math.floor(Math.random() * 10));
-    };
-    return (S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
+      return String(Math.floor(Math.random() * 10))
+    }
+    return S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4()
   }
   const onChangeRandom = (e) => {
     setRandomPhoneValue(e.target.value)
   }
 
-
   const onClickSearchCustomer = () => {
     if (customerBackup && customerBackup.length > 0) {
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } else {
-      dispatch({ type: ACTION.LOADING, data: true });
+      dispatch({ type: ACTION.LOADING, data: true })
     }
   }
 
   const onChangeTax = (e) => {
     setTaxDefault(e)
-    var taxPercent = 0;
+    var taxPercent = 0
 
-    tax && tax.length > 0 && tax.forEach((values40, index40) => {
-      e && e.length > 0 && e.forEach((values41, index41) => {
-        if (values40.name === values41) {
-          var numberValue = values40.value.split('%')[0]
+    tax &&
+      tax.length > 0 &&
+      tax.forEach((values40, index40) => {
+        e &&
+          e.length > 0 &&
+          e.forEach((values41, index41) => {
+            if (values40.name === values41) {
+              var numberValue = values40.value.split('%')[0]
 
-          taxPercent += parseInt(numberValue)
-        }
+              taxPercent += parseInt(numberValue)
+            }
+          })
       })
-    })
 
-
-
-    var moneyTotalTemp = moneyTotal + ((taxPercent * moneyTotal) / 100)
-    var result = moneyTotalTemp - moneyTotal;
+    var moneyTotalTemp = moneyTotal + (taxPercent * moneyTotal) / 100
+    var result = moneyTotalTemp - moneyTotal
     setTaxPercentValue(taxPercent)
     setTaxMoneyValue(result)
     setMoneyFinish(moneyTotalTemp)
@@ -2060,21 +2644,19 @@ export default function Sell() {
   const apiCheckPromotionData = async (object, count) => {
     if (count === 1) {
       try {
-        dispatch({ type: ACTION.LOADING, data: true });
-        const res = await apiCheckPromotion(object);
+        dispatch({ type: ACTION.LOADING, data: true })
+        const res = await apiCheckPromotion(object)
         if (res.status === 200) {
           setVoucherSaveCheck(count)
           setVoucherSave(object.voucher)
           await getAllPromotionData()
-          var taxPercent1 = 0;
+          var taxPercent1 = 0
           taxPercent1 += res.data.data.value
 
           setDiscount(taxPercent1)
           var discountMoneyValue = (taxPercent1 * moneyTotal) / 100
           var moneyTotalTemp = moneyFinish - discountMoneyValue
 
-
-
           // var moneyTotalTemp = moneyFinish - ((taxPercent1 * moneyFinish) / 100)
           var moneyTempItem = moneyFinish - moneyTotalTemp
 
@@ -2084,31 +2666,27 @@ export default function Sell() {
           setDiscountMoney(Math.round(discountMoneyValue))
         } else {
           openNotificationAddProductErrorBill()
-
         }
         // if (res.status === 200) setUsers(res.data);
-        dispatch({ type: ACTION.LOADING, data: false });
+        dispatch({ type: ACTION.LOADING, data: false })
       } catch (error) {
-
-        dispatch({ type: ACTION.LOADING, data: false });
+        dispatch({ type: ACTION.LOADING, data: false })
       }
     } else {
       try {
-        dispatch({ type: ACTION.LOADING, data: true });
-        const res = await getPromoton({ name: object });
+        dispatch({ type: ACTION.LOADING, data: true })
+        const res = await getPromoton({ name: object })
         if (res.status === 200) {
           setVoucherSaveCheck(count)
           setVoucherSave(object.voucher)
           await getAllPromotionData()
-          var taxPercent1 = 0;
+          var taxPercent1 = 0
           taxPercent1 += res.data.data[0].value
 
           setDiscount(taxPercent1)
           var discountMoneyValue = (taxPercent1 * moneyTotal) / 100
           var moneyTotalTemp = moneyFinish - discountMoneyValue
 
-
-
           // var moneyTotalTemp = moneyFinish - ((taxPercent1 * moneyFinish) / 100)
           var moneyTempItem = moneyFinish - moneyTotalTemp
 
@@ -2118,21 +2696,16 @@ export default function Sell() {
           setDiscountMoney(Math.round(discountMoneyValue))
         } else {
           openNotificationAddProductErrorBill()
-
         }
         // if (res.status === 200) setUsers(res.data);
-        dispatch({ type: ACTION.LOADING, data: false });
+        dispatch({ type: ACTION.LOADING, data: false })
       } catch (error) {
-
-        dispatch({ type: ACTION.LOADING, data: false });
+        dispatch({ type: ACTION.LOADING, data: false })
       }
     }
-
-  };
+  }
 
   const onChangePromotionValue = async (e) => {
-
-
     setVoucherSave(e)
     if (e === 'default') {
       var moneyNew = moneyFinish + moneyTemp
@@ -2145,7 +2718,6 @@ export default function Sell() {
     }
   }
 
-
   const onChangeReceiveMethod = (e) => {
     setReceiveMethod(e.target.value)
   }
@@ -2156,40 +2728,37 @@ export default function Sell() {
   const openNotificationErrorBillQuantity = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Bạn chưa tạo hóa đơn.',
-    });
-  };
+      description: 'Bạn chưa tạo hóa đơn.',
+    })
+  }
   const openNotificationSuccessOrder = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Thanh toán hóa đơn thành công.',
-    });
-  };
+      description: 'Thanh toán hóa đơn thành công.',
+    })
+  }
   const openNotificationErrorOrder = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Thanh toán hóa đơn thất bại.',
-    });
-  };
+      description: 'Thanh toán hóa đơn thất bại.',
+    })
+  }
   const apiOrderVoucherData = async (object, randomFinish) => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true });
-      const res = await apiOrderVoucher(object);
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiOrderVoucher(object)
       if (res.status === 200) {
         await apiAllOrderData()
-        setOrderStatus("order now")
-        setPaymentMethod("1")
-        setNote("")
-        setReceiveMethod("2")
+        setOrderStatus('order now')
+        setPaymentMethod('1')
+        setNote('')
+        setReceiveMethod('2')
         setMoneyPredict([])
-        setPaidCustomerMoney("")
+        setPaidCustomerMoney('')
         setTaxDefault(['VAT'])
-        setVoucher("")
-        setPromotionValue("default")
-        setValueSearchCustomer("")
+        setVoucher('')
+        setPromotionValue('default')
+        setValueSearchCustomer('')
         var array = [...billQuantity]
         array.splice(billIndex, 1)
         if (array && array.length === 0) {
@@ -2197,7 +2766,7 @@ export default function Sell() {
         }
 
         if (array.length > 0) {
-          var checkValue = 0;
+          var checkValue = 0
           array.forEach((values1, index1) => {
             if (values1.length > 1) {
               checkValue++
@@ -2206,22 +2775,18 @@ export default function Sell() {
             if (values1 && values1.length > 0) {
               values1.forEach((values2, index2) => {
                 if (index2 === 0) {
-
                   if (billIndex !== 0) {
-
-
                     if (array && array.length === 1) {
                       setBillQuantityStatus(values2.values) //
                       setBillName(`1000${values2.values}`)
                       if (billQuantity && billQuantity.length > 0) {
-                        var count = 0;
+                        var count = 0
                         billQuantity.forEach((values00, index00) => {
-
                           values00.forEach((values100, index100) => {
                             if (index100 === 0) {
                               if (values2.values === values100.values) {
-                                //     
-                                count++;
+                                //
+                                count++
                               }
                             }
                           })
@@ -2229,32 +2794,23 @@ export default function Sell() {
 
                         if (moneyFinish > 0) {
                           if (count > 0) {
-
                             setConfirm(1)
                           } else {
                             setConfirm(0)
                           }
-
                         } else {
-
-
                         }
                       } else {
-
                       }
-
-
-
                     } else {
                       setBillQuantityStatus(-1)
                       if (billQuantity && billQuantity.length > 0) {
-                        var count = 0;
+                        var count = 0
                         billQuantity.forEach((values, index) => {
                           values.forEach((values1, index1) => {
                             if (index1 === 0) {
                               if (-1 === values1.values) {
-
-                                count++;
+                                count++
                               }
                             }
                           })
@@ -2262,33 +2818,26 @@ export default function Sell() {
 
                         if (moneyFinish > 0) {
                           if (count > 0) {
-
                             setConfirm(1)
                           } else {
                             setConfirm(0)
                           }
-
                         } else {
-
-
                         }
                       } else {
-
                       }
                     }
-                  }
-                  else {
-
+                  } else {
                     if (array && array.length === 1) {
                       setBillQuantityStatus(-1)
                       if (billQuantity && billQuantity.length > 0) {
-                        var count = 0;
+                        var count = 0
                         billQuantity.forEach((values, index) => {
                           values.forEach((values1, index1) => {
                             if (index1 === 0) {
                               if (-1 === values1.values) {
-                                //     
-                                count++;
+                                //
+                                count++
                               }
                             }
                           })
@@ -2296,29 +2845,23 @@ export default function Sell() {
 
                         if (moneyFinish > 0) {
                           if (count > 0) {
-
                             setConfirm(1)
                           } else {
                             setConfirm(0)
                           }
-
                         } else {
-
-
                         }
                       } else {
-
                       }
                     } else {
                       setBillQuantityStatus(-1)
                       if (billQuantity && billQuantity.length > 0) {
-                        var count = 0;
+                        var count = 0
                         billQuantity.forEach((values, index) => {
                           values.forEach((values1, index1) => {
                             if (index1 === 0) {
                               if (-1 === values1.values) {
-
-                                count++;
+                                count++
                               }
                             }
                           })
@@ -2326,31 +2869,20 @@ export default function Sell() {
 
                         if (moneyFinish > 0) {
                           if (count > 0) {
-
                             setConfirm(1)
                           } else {
                             setConfirm(0)
                           }
-
                         } else {
-
-
                         }
                       } else {
-
                       }
                     }
-
                   }
                 } else {
-
-
                 }
               })
-
             }
-
-
           })
           if (checkValue === 0) {
             setConfirm(-1)
@@ -2358,7 +2890,7 @@ export default function Sell() {
         }
 
         if (array && array.length === 1) {
-          var moneyTotalItem = 0;
+          var moneyTotalItem = 0
           if (billIndex - 1 >= 0) {
             array[billIndex - 1].forEach((values30, index30) => {
               if (index30 !== 0) {
@@ -2366,30 +2898,32 @@ export default function Sell() {
               }
             })
             setMoneyTotal(moneyTotalItem)
-            var taxPercent = 0;
-            tax && tax.length > 0 && tax.forEach((values40, index40) => {
-              taxDefault && taxDefault.length > 0 && taxDefault.forEach((values41, index41) => {
-                if (values40.name === values41) {
-                  var numberValue = values40.value.split('%')[0]
+            var taxPercent = 0
+            tax &&
+              tax.length > 0 &&
+              tax.forEach((values40, index40) => {
+                taxDefault &&
+                  taxDefault.length > 0 &&
+                  taxDefault.forEach((values41, index41) => {
+                    if (values40.name === values41) {
+                      var numberValue = values40.value.split('%')[0]
 
-                  taxPercent += parseInt(numberValue)
-                }
+                      taxPercent += parseInt(numberValue)
+                    }
+                  })
               })
-            })
-            var moneyTotalTemp = moneyTotalItem + ((taxPercent * moneyTotalItem) / 100)
-            var result = moneyTotalTemp - moneyTotalItem;
+            var moneyTotalTemp =
+              moneyTotalItem + (taxPercent * moneyTotalItem) / 100
+            var result = moneyTotalTemp - moneyTotalItem
             setTaxPercentValue(taxPercent)
             setTaxMoneyValue(result)
             setMoneyFinish(moneyTotalTemp)
           }
-
         }
-
 
         if (billIndex === 0) {
           setBillIndex(array && array.length > 0 ? 0 : 0)
         } else {
-
           setBillIndex(array && array.length > 0 ? array.length - 1 : 0)
         }
 
@@ -2404,88 +2938,102 @@ export default function Sell() {
         openNotificationErrorOrder()
       }
       // if (res.status === 200) setUsers(res.data);
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-
-      dispatch({ type: ACTION.LOADING, data: false });
+      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
 
   const openNotificationErrorBillQuantityNotChoose = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Bạn chưa chọn hóa đơn cần thanh toán.',
-    });
-  };
+      description: 'Bạn chưa chọn hóa đơn cần thanh toán.',
+    })
+  }
   const openNotificationErrorBillQuantityNotChooseProduct = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Hóa đơn này chưa có sản phẩm.',
-    });
-  };
+      description: 'Hóa đơn này chưa có sản phẩm.',
+    })
+  }
   const openNotificationErrorBranchId = () => {
     notification.error({
       message: 'Thất bại',
-      description:
-        'Không tìm thấy chi nhánh làm việc của nhân viên này.',
-    });
-  };
+      description: 'Không tìm thấy chi nhánh làm việc của nhân viên này.',
+    })
+  }
   const openNotificationErrorCustomerId = () => {
     notification.warning({
       message: 'Nhắc nhở',
-      description:
-        'Bạn chưa chọn thông tin khách hàng cần thanh toán.',
-    });
-  };
+      description: 'Bạn chưa chọn thông tin khách hàng cần thanh toán.',
+    })
+  }
   const openNotificationErrorTax = () => {
     notification.warning({
       message: 'Nhắc nhở',
-      description:
-        'Bạn chưa chọn thuế.',
-    });
-  };
-
+      description: 'Bạn chưa chọn thuế.',
+    })
+  }
 
   const onClickPayment = () => {
     if (billQuantity && billQuantity.length > 0) {
-      var count = 0;
+      var count = 0
       billQuantity.forEach((values, index) => {
         values.forEach((values1, index1) => {
           if (index1 === 0) {
             if (billQuantityStatus === values1.values) {
-              //     
-              count++;
+              //
+              count++
             }
           }
         })
       })
-      //  && 
+      //  &&
       if (moneyFinish > 0) {
         if (count > 0) {
           if (customerOnClick && customerOnClick.length === 0) {
             openNotificationErrorCustomerId()
           } else {
-
-            if ((taxDefault && taxDefault.length === 0) || ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) || ((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
-              if ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) {
+            if (
+              (taxDefault && taxDefault.length === 0) ||
+              (branchId && branchId === '') ||
+              (branchId && branchId === ' ') ||
+              (branchId && branchId === 'default') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === '') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === ' ') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === 'default')
+            ) {
+              if (
+                (branchId && branchId === '') ||
+                (branchId && branchId === ' ') ||
+                (branchId && branchId === 'default')
+              ) {
                 openNotificationErrorBranchId()
               }
-              if (((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
+              if (
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === '') ||
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === ' ') ||
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === 'default')
+              ) {
                 openNotificationErrorCustomerId()
               }
               if (taxDefault && taxDefault.length === 0) {
                 openNotificationErrorTax()
               }
-           
             } else {
-
               var arrayFinish = [...billQuantity]
               billQuantity.forEach((values200, index200) => {
                 values200.forEach((values300, index300) => {
                   if (index300 !== 0) {
-                    arrayFinish[index200][index300].voucher = voucherSave ? voucherSave : ''
+                    arrayFinish[index200][index300].voucher = voucherSave
+                      ? voucherSave
+                      : ''
                   }
                 })
               })
@@ -2498,81 +3046,135 @@ export default function Sell() {
                     }
                   })
                 }
-
-
               })
               var arrayVoucher = [...arrayFinishMain]
               var discountMoneyVoucher = parseInt(discountMoney)
               arrayFinishMain.forEach((values, index) => {
                 if (discountMoneyVoucher > values.total_cost) {
                   arrayVoucher[index].discount = values.total_cost
-                  arrayVoucher[index].final_cost = values.total_cost - arrayVoucher[index].discount
+                  arrayVoucher[index].final_cost =
+                    values.total_cost - arrayVoucher[index].discount
                   discountMoneyVoucher -= values.total_cost
                 } else {
                   arrayVoucher[index].discount = discountMoneyVoucher
-                  arrayVoucher[index].final_cost = values.total_cost - arrayVoucher[index].discount
-                  discountMoneyVoucher = 0;
+                  arrayVoucher[index].final_cost =
+                    values.total_cost - arrayVoucher[index].discount
+                  discountMoneyVoucher = 0
                 }
               })
-              payment && payment.length > 0 && payment.forEach((values, index) => {
-                if (values.payment_id === paymentMethod) {
-                  setPaymentForm(values.name)
-                }
-              })
-              shipping && shipping.length > 0 && shipping.forEach((values, index) => {
-                if (values.transport_id === receiveMethod) {
-                  setReceiveMethodName(values.name)
-                }
-              })
+              payment &&
+                payment.length > 0 &&
+                payment.forEach((values, index) => {
+                  if (values.payment_id === paymentMethod) {
+                    setPaymentForm(values.name)
+                  }
+                })
+              shipping &&
+                shipping.length > 0 &&
+                shipping.forEach((values, index) => {
+                  if (values.transport_id === receiveMethod) {
+                    setReceiveMethodName(values.name)
+                  }
+                })
               if (voucherSaveCheck === 1) {
                 const object = {
                   branch: branchId,
                   customer: customerOnClick[0].customer_id,
-                  order_details: arrayFinishMain && arrayFinishMain.length > 0 ? arrayFinishMain : [],
-                  payment: (paymentMethod && paymentMethod !== '') || (paymentMethod && paymentMethod !== ' ') || (paymentMethod && paymentMethod !== 'default') ? paymentMethod : '',
-                  tax_list: taxDefault && taxDefault.length > 0 ? taxDefault : [],
-                  voucher: (voucherSave && voucherSave !== '') || (voucherSave && voucherSave !== ' ') || (voucherSave && voucherSave !== 'default') ? voucherSave : '',
-                  transport: (receiveMethod && receiveMethod !== '') || (receiveMethod && receiveMethod !== ' ') || (receiveMethod && receiveMethod !== 'default') ? receiveMethod : '',
-                  total_cost: parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
-                  discount: parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
-                  final_cost: parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
-                  latitude: "",
-                  longtitude: "",
-                  note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
+                  order_details:
+                    arrayFinishMain && arrayFinishMain.length > 0
+                      ? arrayFinishMain
+                      : [],
+                  payment:
+                    (paymentMethod && paymentMethod !== '') ||
+                    (paymentMethod && paymentMethod !== ' ') ||
+                    (paymentMethod && paymentMethod !== 'default')
+                      ? paymentMethod
+                      : '',
+                  tax_list:
+                    taxDefault && taxDefault.length > 0 ? taxDefault : [],
+                  voucher:
+                    (voucherSave && voucherSave !== '') ||
+                    (voucherSave && voucherSave !== ' ') ||
+                    (voucherSave && voucherSave !== 'default')
+                      ? voucherSave
+                      : '',
+                  transport:
+                    (receiveMethod && receiveMethod !== '') ||
+                    (receiveMethod && receiveMethod !== ' ') ||
+                    (receiveMethod && receiveMethod !== 'default')
+                      ? receiveMethod
+                      : '',
+                  total_cost:
+                    parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
+                  discount:
+                    parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
+                  final_cost:
+                    parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
+                  latitude: '',
+                  longtitude: '',
+                  note:
+                    (note && note !== '') ||
+                    (note && note !== ' ') ||
+                    (note && note !== 'default')
+                      ? note
+                      : '',
                 }
                 modal3VisibleModal(true)
-
 
                 setOrderDetail(object.order_details)
               } else {
                 const object = {
                   branch: branchId,
                   customer: customerOnClick[0].customer_id,
-                  order_details: arrayFinishMain && arrayFinishMain.length > 0 ? arrayFinishMain : [],
-                  payment_id: (paymentMethod && paymentMethod !== '') || (paymentMethod && paymentMethod !== ' ') || (paymentMethod && paymentMethod !== 'default') ? paymentMethod : '',
-                  tax_list: taxDefault && taxDefault.length > 0 ? taxDefault : [],
-                  promotion: (voucherSave && voucherSave !== '') || (voucherSave && voucherSave !== ' ') || (voucherSave && voucherSave !== 'default') ? voucherSave : '',
-                  transport: (receiveMethod && receiveMethod !== '') || (receiveMethod && receiveMethod !== ' ') || (receiveMethod && receiveMethod !== 'default') ? receiveMethod : '',
-                  total_cost: parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
-                  discount: parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
-                  final_cost: parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
-                  latitude: "",
-                  longtitude: "",
-                  note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
+                  order_details:
+                    arrayFinishMain && arrayFinishMain.length > 0
+                      ? arrayFinishMain
+                      : [],
+                  payment_id:
+                    (paymentMethod && paymentMethod !== '') ||
+                    (paymentMethod && paymentMethod !== ' ') ||
+                    (paymentMethod && paymentMethod !== 'default')
+                      ? paymentMethod
+                      : '',
+                  tax_list:
+                    taxDefault && taxDefault.length > 0 ? taxDefault : [],
+                  promotion:
+                    (voucherSave && voucherSave !== '') ||
+                    (voucherSave && voucherSave !== ' ') ||
+                    (voucherSave && voucherSave !== 'default')
+                      ? voucherSave
+                      : '',
+                  transport:
+                    (receiveMethod && receiveMethod !== '') ||
+                    (receiveMethod && receiveMethod !== ' ') ||
+                    (receiveMethod && receiveMethod !== 'default')
+                      ? receiveMethod
+                      : '',
+                  total_cost:
+                    parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
+                  discount:
+                    parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
+                  final_cost:
+                    parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
+                  latitude: '',
+                  longtitude: '',
+                  note:
+                    (note && note !== '') ||
+                    (note && note !== ' ') ||
+                    (note && note !== 'default')
+                      ? note
+                      : '',
                 }
                 modal3VisibleModal(true)
                 setOrderDetail(object.order_details)
               }
-
             }
           }
         } else {
           openNotificationErrorBillQuantityNotChoose()
         }
-
       } else {
         openNotificationErrorBillQuantityNotChooseProduct()
-
       }
     } else {
       openNotificationErrorBillQuantity()
@@ -2580,39 +3182,58 @@ export default function Sell() {
   }
   const onClickPaymentFinish = () => {
     if (billQuantity && billQuantity.length > 0) {
-      var count = 0;
+      var count = 0
       billQuantity.forEach((values, index) => {
         values.forEach((values1, index1) => {
           if (index1 === 0) {
             if (billQuantityStatus === values1.values) {
-              //     
-              count++;
+              //
+              count++
             }
           }
         })
       })
-      //  && 
+      //  &&
       if (moneyFinish > 0) {
         if (count > 0) {
           if (customerOnClick && customerOnClick.length === 0) {
             openNotificationErrorCustomerId()
           } else {
-
-            if ((taxDefault && taxDefault.length === 0) || ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) || ((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
-              if ((branchId && branchId === "") || (branchId && branchId === " ") || (branchId && branchId === "default")) {
+            if (
+              (taxDefault && taxDefault.length === 0) ||
+              (branchId && branchId === '') ||
+              (branchId && branchId === ' ') ||
+              (branchId && branchId === 'default') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === '') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === ' ') ||
+              (customerOnClick[0].customer_id &&
+                customerOnClick[0].customer_id === 'default')
+            ) {
+              if (
+                (branchId && branchId === '') ||
+                (branchId && branchId === ' ') ||
+                (branchId && branchId === 'default')
+              ) {
                 openNotificationErrorBranchId()
               }
-              if (((customerOnClick[0].customer_id && customerOnClick[0].customer_id === "") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === " ") || (customerOnClick[0].customer_id && customerOnClick[0].customer_id === "default"))) {
+              if (
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === '') ||
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === ' ') ||
+                (customerOnClick[0].customer_id &&
+                  customerOnClick[0].customer_id === 'default')
+              ) {
                 openNotificationErrorCustomerId()
               }
               if (taxDefault && taxDefault.length === 0) {
                 openNotificationErrorTax()
               }
-           
             } else {
-
               var arrayFinish = [...billQuantity]
-              var randomFinish = -1;
+              var randomFinish = -1
 
               var arrayFinishMain = []
               arrayFinish.forEach((values, index) => {
@@ -2623,120 +3244,184 @@ export default function Sell() {
                     }
                   })
                 }
-
-
               })
               var arrayVoucher = [...arrayFinishMain]
               var discountMoneyVoucher = parseInt(discountMoney)
               arrayFinishMain.forEach((values, index) => {
                 if (discountMoneyVoucher > values.total_cost) {
                   arrayVoucher[index].discount = values.total_cost
-                  arrayVoucher[index].final_cost = values.total_cost - arrayVoucher[index].discount
+                  arrayVoucher[index].final_cost =
+                    values.total_cost - arrayVoucher[index].discount
                   discountMoneyVoucher -= values.total_cost
                 } else {
                   arrayVoucher[index].discount = discountMoneyVoucher
-                  arrayVoucher[index].final_cost = values.total_cost - arrayVoucher[index].discount
-                  discountMoneyVoucher = 0;
+                  arrayVoucher[index].final_cost =
+                    values.total_cost - arrayVoucher[index].discount
+                  discountMoneyVoucher = 0
                 }
               })
               billQuantity.forEach((values200, index200) => {
-
                 values200.forEach((values300, index300) => {
                   if (index300 !== 0) {
                     if (arrayFinish[index200][index300].discount > 0) {
-                      arrayFinish[index200][index300].voucher = voucherSave ? voucherSave : ''
+                      arrayFinish[index200][index300].voucher = voucherSave
+                        ? voucherSave
+                        : ''
                     } else {
                       arrayFinish[index200][index300].voucher = ''
                     }
-
                   } else {
                     randomFinish = values300.values
                   }
                 })
               })
-              payment && payment.length > 0 && payment.forEach((values, index) => {
-                if (values.payment_id === paymentMethod) {
-                  setPaymentForm(values.name)
-                }
-              })
-              shipping && shipping.length > 0 && shipping.forEach((values, index) => {
-                if (values.transport_id === receiveMethod) {
-                  setReceiveMethodName(values.name)
-                }
-              })
-              var taxNewFinish = []
-              tax && tax.length > 0 && tax.forEach((values500, index500) => {
-                taxDefault && taxDefault.length > 0 && taxDefault.forEach((values501, index501) => {
-                  if (values500.name === values501) {
-                    taxNewFinish.push(values500.tax_id)
+              payment &&
+                payment.length > 0 &&
+                payment.forEach((values, index) => {
+                  if (values.payment_id === paymentMethod) {
+                    setPaymentForm(values.name)
                   }
                 })
-              })
+              shipping &&
+                shipping.length > 0 &&
+                shipping.forEach((values, index) => {
+                  if (values.transport_id === receiveMethod) {
+                    setReceiveMethodName(values.name)
+                  }
+                })
+              var taxNewFinish = []
+              tax &&
+                tax.length > 0 &&
+                tax.forEach((values500, index500) => {
+                  taxDefault &&
+                    taxDefault.length > 0 &&
+                    taxDefault.forEach((values501, index501) => {
+                      if (values500.name === values501) {
+                        taxNewFinish.push(values500.tax_id)
+                      }
+                    })
+                })
               if (voucherSaveCheck === 1) {
                 const object = {
                   branch: branchId,
                   customer: customerOnClick[0].customer_id,
-                  order_details: arrayFinishMain && arrayFinishMain.length > 0 ? arrayFinishMain : [],
-                  payment: (paymentMethod && paymentMethod !== '') || (paymentMethod && paymentMethod !== ' ') || (paymentMethod && paymentMethod !== 'default') ? paymentMethod : '',
-                  taxes: taxNewFinish && taxNewFinish.length > 0 ? taxNewFinish : [],
-                  voucher: (voucherSave && voucherSave !== '') || (voucherSave && voucherSave !== ' ') || (voucherSave && voucherSave !== 'default') ? voucherSave : '',
-                  transport: (receiveMethod && receiveMethod !== '') || (receiveMethod && receiveMethod !== ' ') || (receiveMethod && receiveMethod !== 'default') ? receiveMethod : '',
-                  total_cost: parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
-                  discount: parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
-                  final_cost: parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
-                  latitude: "",
+                  order_details:
+                    arrayFinishMain && arrayFinishMain.length > 0
+                      ? arrayFinishMain
+                      : [],
+                  payment:
+                    (paymentMethod && paymentMethod !== '') ||
+                    (paymentMethod && paymentMethod !== ' ') ||
+                    (paymentMethod && paymentMethod !== 'default')
+                      ? paymentMethod
+                      : '',
+                  taxes:
+                    taxNewFinish && taxNewFinish.length > 0 ? taxNewFinish : [],
+                  voucher:
+                    (voucherSave && voucherSave !== '') ||
+                    (voucherSave && voucherSave !== ' ') ||
+                    (voucherSave && voucherSave !== 'default')
+                      ? voucherSave
+                      : '',
+                  transport:
+                    (receiveMethod && receiveMethod !== '') ||
+                    (receiveMethod && receiveMethod !== ' ') ||
+                    (receiveMethod && receiveMethod !== 'default')
+                      ? receiveMethod
+                      : '',
+                  total_cost:
+                    parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
+                  discount:
+                    parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
+                  final_cost:
+                    parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
+                  latitude: '',
                   type: orderStatus,
-                  longtitude: "",
-                  note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
+                  longtitude: '',
+                  note:
+                    (note && note !== '') ||
+                    (note && note !== ' ') ||
+                    (note && note !== 'default')
+                      ? note
+                      : '',
                 }
-
 
                 apiOrderVoucherData(object, randomFinish)
               } else {
                 var taxNewFinish = []
-                tax && tax.length > 0 && tax.forEach((values500, index500) => {
-                  taxDefault && taxDefault.length > 0 && taxDefault.forEach((values501, index501) => {
-                    if (values500.name === values501) {
-                      taxNewFinish.push(values500.tax_id)
+                tax &&
+                  tax.length > 0 &&
+                  tax.forEach((values500, index500) => {
+                    taxDefault &&
+                      taxDefault.length > 0 &&
+                      taxDefault.forEach((values501, index501) => {
+                        if (values500.name === values501) {
+                          taxNewFinish.push(values500.tax_id)
+                        }
+                      })
+                  })
+                var promotionValueFinish = ''
+                promotion &&
+                  promotion.length > 0 &&
+                  promotion.forEach((values600, index600) => {
+                    if (values600.name === voucherSave) {
+                      promotionValueFinish = values600.promotion_id
                     }
                   })
-                })
-                var promotionValueFinish = ""
-                promotion && promotion.length > 0 && promotion.forEach((values600, index600) => {
-                  if (values600.name === voucherSave) {
-                    promotionValueFinish = values600.promotion_id
-                  }
-                })
                 const object = {
                   branch: branchId,
                   customer: customerOnClick[0].customer_id,
-                  order_details: arrayFinishMain && arrayFinishMain.length > 0 ? arrayFinishMain : [],
-                  payment: (paymentMethod && paymentMethod !== '') || (paymentMethod && paymentMethod !== ' ') || (paymentMethod && paymentMethod !== 'default') ? paymentMethod : '',
-                  taxes: taxNewFinish && taxNewFinish.length > 0 ? taxNewFinish : [],
-                  promotion: (promotionValueFinish && promotionValueFinish !== '') || (promotionValueFinish && promotionValueFinish !== ' ') || (promotionValueFinish && promotionValueFinish !== 'default') ? promotionValueFinish : '',
-                  transport: (receiveMethod && receiveMethod !== '') || (receiveMethod && receiveMethod !== ' ') || (receiveMethod && receiveMethod !== 'default') ? receiveMethod : '',
-                  total_cost: parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
-                  discount: parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
-                  final_cost: parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
-                  latitude: "",
-                  longtitude: "",
+                  order_details:
+                    arrayFinishMain && arrayFinishMain.length > 0
+                      ? arrayFinishMain
+                      : [],
+                  payment:
+                    (paymentMethod && paymentMethod !== '') ||
+                    (paymentMethod && paymentMethod !== ' ') ||
+                    (paymentMethod && paymentMethod !== 'default')
+                      ? paymentMethod
+                      : '',
+                  taxes:
+                    taxNewFinish && taxNewFinish.length > 0 ? taxNewFinish : [],
+                  promotion:
+                    (promotionValueFinish && promotionValueFinish !== '') ||
+                    (promotionValueFinish && promotionValueFinish !== ' ') ||
+                    (promotionValueFinish && promotionValueFinish !== 'default')
+                      ? promotionValueFinish
+                      : '',
+                  transport:
+                    (receiveMethod && receiveMethod !== '') ||
+                    (receiveMethod && receiveMethod !== ' ') ||
+                    (receiveMethod && receiveMethod !== 'default')
+                      ? receiveMethod
+                      : '',
+                  total_cost:
+                    parseInt(moneyTotal) > 0 ? parseInt(moneyTotal) : 0,
+                  discount:
+                    parseInt(discountMoney) > 0 ? parseInt(discountMoney) : 0,
+                  final_cost:
+                    parseInt(moneyFinish) > 0 ? parseInt(moneyFinish) : 0,
+                  latitude: '',
+                  longtitude: '',
                   type: orderStatus,
-                  note: (note && note !== '') || (note && note !== ' ') || (note && note !== 'default') ? note : ''
+                  note:
+                    (note && note !== '') ||
+                    (note && note !== ' ') ||
+                    (note && note !== 'default')
+                      ? note
+                      : '',
                 }
 
                 apiOrderVoucherData(object, randomFinish)
                 //  apiOrderPromotionData(object)
               }
-
             }
           }
         } else {
           openNotificationErrorBillQuantityNotChoose()
         }
-
       } else {
         openNotificationErrorBillQuantityNotChooseProduct()
-
       }
     } else {
       openNotificationErrorBillQuantity()
@@ -2755,218 +3440,252 @@ export default function Sell() {
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
-      render: (text, record) => `${formatCash(
-        String(text))}`
+      render: (text, record) => `${formatCash(String(text))}`,
     },
     {
       title: 'Đơn giá',
       dataIndex: 'sale_price',
-      render: (text, record) => `${formatCash(
-        String(text))} VNĐ`
+      render: (text, record) => `${formatCash(String(text))} VNĐ`,
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'total_cost',
-      render: (text, record) => `${formatCash(
-        String(text))} VNĐ`
+      render: (text, record) => `${formatCash(String(text))} VNĐ`,
     },
     {
       title: 'Chiết khấu',
       dataIndex: 'discount',
-      render: (text, record) => `${formatCash(
-        String(text))} VNĐ`
+      render: (text, record) => `${formatCash(String(text))} VNĐ`,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
-      render: (text, record) => `${formatCash(
-        String(text))} VNĐ`
+      render: (text, record) => `${formatCash(String(text))} VNĐ`,
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
       dataIndex: 'voucher',
-      render: (text, record) => record && record.discount > 0 ? text : ('')
+      render: (text, record) => (record && record.discount > 0 ? text : ''),
     },
-  ];
+  ]
 
   const onChangeOrderStatus = (e) => {
     setOrderStatus(e.target.value)
   }
 
-
-  var sumOutput = [];
+  var sumOutput = []
 
   const TienThoi = (sumTong) => {
     if (sumTong <= 500000 && sumTong > 200000) {
-      sum500k(sumTong, sumTong);
+      sum500k(sumTong, sumTong)
     } else if (sumTong <= 200000 && sumTong > 100000) {
-      sum200k(sumTong, sumTong);
+      sum200k(sumTong, sumTong)
     } else if (sumTong <= 100000 && sumTong > 50000) {
-      sum100k(sumTong, sumTong);
+      sum100k(sumTong, sumTong)
     } else if (sumTong <= 50000 && sumTong > 20000) {
-      sum50k(sumTong, sumTong);
+      sum50k(sumTong, sumTong)
     } else if (sumTong <= 20000 && sumTong >= 10000) {
-      sum20k(sumTong, sumTong);
+      sum20k(sumTong, sumTong)
     }
-    sumOutput.push(sumTong);
-    return locTrung();
-  };
+    sumOutput.push(sumTong)
+    return locTrung()
+  }
 
   const sum500k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number500 = 0;
+    var sum = 0
+    var number500 = 0
     if (sumRemain % 500000 == 0) {
-      number500 = parseInt(sumRemain / 500000);
+      number500 = parseInt(sumRemain / 500000)
     } else {
-      number500 = parseInt(sumRemain / 500000) + 1;
+      number500 = parseInt(sumRemain / 500000) + 1
     }
     for (var i = number500; i >= 0; i--) {
       if (sumRemain - i * 500000 <= 0) {
-        sum = i * 500000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 500000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
-        sum200k(sumTong, sumRemain - i * 500000);
+        sum200k(sumTong, sumRemain - i * 500000)
       }
     }
-  };
+  }
 
   const sum200k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number200 = 0;
+    var sum = 0
+    var number200 = 0
     if (sumRemain % 200000 == 0) {
-      number200 = parseInt(sumRemain / 200000);
+      number200 = parseInt(sumRemain / 200000)
     } else {
-      number200 = parseInt(sumRemain / 200000) + 1;
+      number200 = parseInt(sumRemain / 200000) + 1
     }
     for (var i = number200; i >= 0; i--) {
       if (sumRemain - i * 200000 <= 0) {
-        sum = i * 200000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 200000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
-        sum100k(sumTong, sumRemain - i * 200000);
+        sum100k(sumTong, sumRemain - i * 200000)
       }
     }
-  };
+  }
 
   const sum100k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number100 = 0;
+    var sum = 0
+    var number100 = 0
     if (sumRemain % 100000 == 0) {
-      number100 = parseInt(sumRemain / 100000);
+      number100 = parseInt(sumRemain / 100000)
     } else {
-      number100 = parseInt(sumRemain / 100000) + 1;
+      number100 = parseInt(sumRemain / 100000) + 1
     }
     for (var i = number100; i >= 0; i--) {
       if (sumRemain - i * 100000 <= 0) {
-        sum = i * 100000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 100000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
-        sum50k(sumTong, sumRemain - i * 100000);
+        sum50k(sumTong, sumRemain - i * 100000)
       }
     }
-  };
+  }
 
   const sum50k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number50 = 0;
+    var sum = 0
+    var number50 = 0
     if (sumRemain % 50000 == 0) {
-      number50 = parseInt(sumRemain / 50000);
+      number50 = parseInt(sumRemain / 50000)
     } else {
-      number50 = parseInt(sumRemain / 50000) + 1;
+      number50 = parseInt(sumRemain / 50000) + 1
     }
     for (var i = number50; i >= 0; i--) {
       if (sumRemain - i * 50000 <= 0) {
-        sum = i * 50000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 50000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
-        sum20k(sumTong, sumRemain - i * 50000);
+        sum20k(sumTong, sumRemain - i * 50000)
       }
     }
-  };
+  }
 
   const sum20k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number20 = 0;
+    var sum = 0
+    var number20 = 0
     if (sumRemain % 20000 == 0) {
-      number20 = parseInt(sumRemain / 20000);
+      number20 = parseInt(sumRemain / 20000)
     } else {
-      number20 = parseInt(sumRemain / 20000) + 1;
+      number20 = parseInt(sumRemain / 20000) + 1
     }
     for (var i = number20; i >= 0; i--) {
       if (sumRemain - i * 20000 <= 0) {
-        sum = i * 20000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 20000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
-        sum10k(sumTong, sumRemain - i * 20000);
+        sum10k(sumTong, sumRemain - i * 20000)
       }
     }
-  };
+  }
 
   const sum10k = (sumTong, sumRemain) => {
-    var sum = 0;
-    var number10 = 0;
+    var sum = 0
+    var number10 = 0
     if (sumRemain % 10000 == 0) {
-      number10 = parseInt(sumRemain / 10000);
+      number10 = parseInt(sumRemain / 10000)
     } else {
-      number10 = parseInt(sumRemain / 10000) + 1;
+      number10 = parseInt(sumRemain / 10000) + 1
     }
     for (var i = number10; i > 0; i--) {
       if (sumRemain - i * 10000 <= 0) {
-        sum = i * 10000;
-        sumOutput.push(sumTong - sumRemain + sum);
+        sum = i * 10000
+        sumOutput.push(sumTong - sumRemain + sum)
       } else {
       }
     }
-  };
+  }
 
   const locTrung = () => {
-    var min = 1000000;
+    var min = 1000000
     sumOutput.map((i) => {
-      if (i < min) min = i;
-    });
+      if (i < min) min = i
+    })
 
-    var lst = [10000, 20000, 50000, 100000, 200000, 500000];
+    var lst = [10000, 20000, 50000, 100000, 200000, 500000]
 
     lst.map((i) => {
-      if (i > min) sumOutput.push(i);
-    });
+      if (i > min) sumOutput.push(i)
+    })
 
-    var result = [];
+    var result = []
     for (var i = 0; i < sumOutput.length; i++) {
-      var isHave = false;
+      var isHave = false
       for (var j = 0; j < result.length; j++) {
-        if (result[j] == sumOutput[i]) isHave = true;
+        if (result[j] == sumOutput[i]) isHave = true
       }
 
-      if (!isHave) result.push(sumOutput[i]);
+      if (!isHave) result.push(sumOutput[i])
     }
     result = _.sortBy(result, (o) => {
-      return o;
-    });
+      return o
+    })
 
-    return result;
-  };
+    return result
+  }
   const contentCustomerOrderList = (text) => {
     return (
       <div className={styles['customer__information-view']}>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Tên: </div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Tên:{' '}
+          </div>
           <div>{text ? text.first_name : ''}</div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Địa chỉ: </div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Địa chỉ:{' '}
+          </div>
           <div>{text ? text.address : ''}</div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Thành phố/quận: </div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Thành phố/quận:{' '}
+          </div>
           <div>{text ? `${text.province}/${text.district}` : ''}</div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Số điện thoại: </div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Số điện thoại:{' '}
+          </div>
           <div>{text ? text.phone : ''}</div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Giới tính: </div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Giới tính:{' '}
+          </div>
           <div>{text ? text.gender : ''}</div>
         </div>
       </div>
@@ -2976,92 +3695,329 @@ export default function Sell() {
     return (
       <div className={styles['customer__information-view']}>
         <div>
-          <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600', marginRight: '0.25rem' }}>Phương thức thanh toán </div>
+          <div
+            style={{
+              color: 'black',
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Phương thức thanh toán{' '}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Loại: </div>
-          <div>{record && record.payment && record.payment.name ? record.payment.name : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Loại:{' '}
+          </div>
+          <div>
+            {record && record.payment && record.payment.name
+              ? record.payment.name
+              : ''}
+          </div>
         </div>
 
-
-
-
-        <div style={{ borderTop: '1px solid grey', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
-          <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600', marginRight: '0.25rem' }}>Thuế </div>
+        <div
+          style={{
+            borderTop: '1px solid grey',
+            paddingTop: '0.75rem',
+            marginTop: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              color: 'black',
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Thuế{' '}
+          </div>
         </div>
-        {
-          record && record.taxes && record.taxes.map((values, index) => {
+        {record &&
+          record.taxes &&
+          record.taxes.map((values, index) => {
             return (
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem', alignItems: 'center', width: '100%', }}>
-                  <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Tên: </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  flexDirection: 'column',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    marginBottom: '0.5rem',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'black',
+                      fontWeight: '600',
+                      marginRight: '0.25rem',
+                    }}
+                  >
+                    Tên:{' '}
+                  </div>
                   <div>{values && values.name ? values.name : ''}</div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-                  <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Giá trị: </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      color: 'black',
+                      fontWeight: '600',
+                      marginRight: '0.25rem',
+                    }}
+                  >
+                    Giá trị:{' '}
+                  </div>
                   <div>{values && values.value ? values.value : ''}</div>
                 </div>
-
               </div>
             )
-          })
-        }
+          })}
 
+        <div
+          style={{
+            borderTop: '1px solid grey',
+            paddingTop: '0.75rem',
+            marginTop: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              color: 'black',
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Chi nhánh{' '}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Tên:{' '}
+          </div>
+          <div>
+            {record && record.branch && record.branch.name
+              ? record.branch.name
+              : ''}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Số điện thoại:{' '}
+          </div>
+          <div>
+            {record && record.branch && record.branch.phone
+              ? record.branch.phone
+              : ''}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Địa chỉ:{' '}
+          </div>
+          <div>
+            {record && record.branch && record.branch.address
+              ? record.branch.address
+              : ''}
+          </div>
+        </div>
+        <div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Thành phố/quận:{' '}
+          </div>
+          <div>
+            {record &&
+            record.branch &&
+            record.branch.district &&
+            record.branch.ward
+              ? `${record.branch.ward}/${record.branch.district}`
+              : ''}
+          </div>
+        </div>
 
-
-
-        <div style={{ borderTop: '1px solid grey', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
-          <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600', marginRight: '0.25rem' }}>Chi nhánh </div>
+        <div
+          style={{
+            borderTop: '1px solid grey',
+            paddingTop: '0.75rem',
+            marginTop: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              color: 'black',
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Nhân viên{' '}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Tên: </div>
-          <div>{record && record.branch && record.branch.name ? record.branch.name : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Tên:{' '}
+          </div>
+          <div>
+            {record &&
+            record.employee &&
+            record.employee.first_name &&
+            record.employee.last_name
+              ? `${record.employee.first_name} ${record.employee.last_name}`
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Số điện thoại: </div>
-          <div>{record && record.branch && record.branch.phone ? record.branch.phone : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Số điện thoại:{' '}
+          </div>
+          <div>
+            {record && record.employee && record.employee.phone
+              ? record.employee.phone
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Địa chỉ: </div>
-          <div>{record && record.branch && record.branch.address ? record.branch.address : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Địa chỉ:{' '}
+          </div>
+          <div>
+            {record && record.employee && record.employee.address
+              ? record.employee.address
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Thành phố/quận: </div>
-          <div>{record && record.branch && record.branch.district && record.branch.ward ? `${record.branch.ward}/${record.branch.district}` : ''}</div>
-        </div>
-
-
-
-        <div style={{ borderTop: '1px solid grey', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
-          <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600', marginRight: '0.25rem' }}>Nhân viên </div>
-        </div>
-        <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Tên: </div>
-          <div>{record && record.employee && record.employee.first_name && record.employee.last_name ? `${record.employee.first_name} ${record.employee.last_name}` : ''}</div>
-        </div>
-        <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Số điện thoại: </div>
-          <div>{record && record.employee && record.employee.phone ? record.employee.phone : ''}</div>
-        </div>
-        <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Địa chỉ: </div>
-          <div>{record && record.employee && record.employee.address ? record.employee.address : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Thành phố/quận:{' '}
+          </div>
+          <div>
+            {record &&
+            record.employee &&
+            record.employee.district &&
+            record.employee.province
+              ? `${record.employee.province}/${record.employee.district}`
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Thành phố/quận: </div>
-          <div>{record && record.employee && record.employee.district && record.employee.province ? `${record.employee.province}/${record.employee.district}` : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Công ty:{' '}
+          </div>
+          <div>
+            {record && record.employee && record.employee.company_name
+              ? record.employee.company_name
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Công ty: </div>
-          <div>{record && record.employee && record.employee.company_name ? record.employee.company_name : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Vai trò:{' '}
+          </div>
+          <div>
+            {record && record.employee && record.employee._role
+              ? record.employee._role
+              : ''}
+          </div>
         </div>
         <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Vai trò: </div>
-          <div>{record && record.employee && record.employee._role ? record.employee._role : ''}</div>
-        </div>
-        <div>
-          <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem' }}>Email: </div>
-          <div>{record && record.employee && record.employee.email ? record.employee.email : ''}</div>
+          <div
+            style={{
+              color: 'black',
+              fontWeight: '600',
+              marginRight: '0.25rem',
+            }}
+          >
+            Email:{' '}
+          </div>
+          <div>
+            {record && record.employee && record.employee.email
+              ? record.employee.email
+              : ''}
+          </div>
         </div>
       </div>
     )
@@ -3070,35 +4026,64 @@ export default function Sell() {
     {
       title: 'Mã hóa đơn',
       dataIndex: 'order_id',
-      render: (text, record) => text ? <Popover placement="right" content={() => contentCodeOrderList(record)} ><div style={{ color: '#336CFB', cursor: 'pointer' }}>{text}</div> </Popover> : ''
+      render: (text, record) =>
+        text ? (
+          <Popover
+            placement="right"
+            content={() => contentCodeOrderList(record)}
+          >
+            <div style={{ color: '#336CFB', cursor: 'pointer' }}>{text}</div>{' '}
+          </Popover>
+        ) : (
+          ''
+        ),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      render: (text, record) => text ? moment(text).format("YYYY-MM-DD, HH:mm:ss") : ''
+      render: (text, record) =>
+        text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
     },
     {
       title: 'Khách hàng',
       dataIndex: 'customer',
-      render: (text, record) => text ? <Popover content={() => contentCustomerOrderList(text)} ><div style={{ color: '#336CFB', cursor: 'pointer' }}>{text.first_name}</div> </Popover> : ''
+      render: (text, record) =>
+        text ? (
+          <Popover content={() => contentCustomerOrderList(text)}>
+            <div style={{ color: '#336CFB', cursor: 'pointer' }}>
+              {text.first_name}
+            </div>{' '}
+          </Popover>
+        ) : (
+          ''
+        ),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
-      render: (text, record) => text ? <div style={{ color: '#50D648' }}>{record.status}</div> : ''
+      render: (text, record) =>
+        text ? <div style={{ color: '#50D648' }}>{record.status}</div> : '',
     },
-  
+
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
-      render: (text, record) => text ? <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>{`${formatCash(String(text))} VNĐ`}</div> : 0
+      render: (text, record) =>
+        text ? (
+          <div
+            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
+          >{`${formatCash(String(text))} VNĐ`}</div>
+        ) : (
+          0
+        ),
     },
-  ];
+  ]
   const columnsDetailOrder = [
     {
       title: 'Giá bán',
       dataIndex: 'sale_price',
-      render: (text, record) => text ? <div >{`${formatCash(String(text))} VNĐ`}</div> : 0
+      render: (text, record) =>
+        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
     },
     {
       title: 'Tên sản phẩm',
@@ -3109,8 +4094,6 @@ export default function Sell() {
       dataIndex: 'sku',
     },
 
-
-
     {
       title: 'Nhà cung cấp',
       dataIndex: 'supplier',
@@ -3119,33 +4102,85 @@ export default function Sell() {
       title: 'Thuộc tính',
       dataIndex: 'optionsMain',
       width: 200,
-      render: (text, record) => record && record.options && record.options.length > 0 ? (<div>{record.options.map((values, index) => {
-        return (
-          <div style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>-Thuộc tính: </div>
-              <div>{values.name}.</div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <div style={{ color: 'black', fontWeight: '600', marginRight: '0.25rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', }}>-Kích thước: </div>
-              <div>{values.values}.</div>
-            </div>
+      render: (text, record) =>
+        record && record.options && record.options.length > 0 ? (
+          <div>
+            {record.options.map((values, index) => {
+              return (
+                <div
+                  style={{
+                    display: 'flex',
+                    marginBottom: '1rem',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        fontWeight: '600',
+                        marginRight: '0.25rem',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      -Thuộc tính:{' '}
+                    </div>
+                    <div>{values.name}.</div>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'black',
+                        fontWeight: '600',
+                        marginRight: '0.25rem',
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      -Kích thước:{' '}
+                    </div>
+                    <div>{values.values}.</div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        )
-      })}</div>) : ('')
+        ) : (
+          ''
+        ),
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
-      render: (text, record) => text ? <div >{`${formatCash(String(text))}`}</div> : 0
+      render: (text, record) =>
+        text ? <div>{`${formatCash(String(text))}`}</div> : 0,
     },
-
-
 
     {
       title: 'Tổng tiền',
       dataIndex: 'total_cost',
-      render: (text, record) => text ? <div >{`${formatCash(String(text))} VNĐ`}</div> : 0
+      render: (text, record) =>
+        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
@@ -3154,18 +4189,26 @@ export default function Sell() {
     {
       title: 'Giảm giá',
       dataIndex: 'discount',
-      render: (text, record) => text ? <div >{`${formatCash(String(text))} VNĐ`}</div> : 0
+      render: (text, record) =>
+        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
-      render: (text, record) => text ? <div style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}>{`${formatCash(String(text))} VNĐ`}</div> : 0
+      render: (text, record) =>
+        text ? (
+          <div
+            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
+          >{`${formatCash(String(text))} VNĐ`}</div>
+        ) : (
+          0
+        ),
     },
-  ];
+  ]
   const apiAllOrderDataTable = async (page, page_size) => {
     try {
       setLoadingTable(true)
-      const res = await apiAllOrder({ page: page, page_size: page_size });
+      const res = await apiAllOrder({ page: page, page_size: page_size })
       if (res.status === 200) {
         setCountTable(res.data.count)
       }
@@ -3173,27 +4216,32 @@ export default function Sell() {
     } catch (error) {
       setLoadingTable(false)
     }
-  };
+  }
   const apiAllOrderDataTableOrderDetail = async (e) => {
     try {
       setLoadingTable(true)
-      const res = await apiAllOrder({ keyword: e, page: 1, page_size: 10 });
+      const res = await apiAllOrder({ keyword: e, page: 1, page_size: 10 })
       if (res.status === 200) {
         setCountTable(res.data.count)
-        let now = moment();
+        let now = moment()
         var array = []
-        res.data.data && res.data.data.length > 0 && res.data.data.forEach((values, index) => {
-          if (moment(values.create_date).format('YYYY-MM-DD') === now.format("YYYY-MM-DD")) {
-            array.push(values)
-          }
-        })
+        res.data.data &&
+          res.data.data.length > 0 &&
+          res.data.data.forEach((values, index) => {
+            if (
+              moment(values.create_date).format('YYYY-MM-DD') ===
+              now.format('YYYY-MM-DD')
+            ) {
+              array.push(values)
+            }
+          })
         setOrderToday([...array])
       }
       setLoadingTable(false)
     } catch (error) {
       setLoadingTable(false)
     }
-  };
+  }
   function onShowSizeChangeTable(current, pageSize) {
     apiAllOrderDataTable(current, pageSize)
   }
@@ -3207,1681 +4255,3498 @@ export default function Sell() {
       clearTimeout(typingTimeoutRef.current)
     }
     typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value;
-      apiAllOrderDataTableOrderDetail(value);
-    }, 300);
-    // 
-  };
-
+      const value = e.target.value
+      apiAllOrderDataTableOrderDetail(value)
+    }, 300)
+    //
+  }
 
   return (
     <>
-      <Online>
-
-        <div className={styles["sell_manager"]}>
-          <div className={styles["sell_manager_title"]}>
-            <Row className={styles["sell_manager_title_row_top"]}>
-              <Col
-                className={styles["sell_manager_title_row_col"]}
-                xs={24}
-                sm={24}
-                md={14}
-                lg={14}
-                xl={14}
-              >
-
-                <div style={{ width: '50%' }}>
-                  {
-                    roleName === 'employee' ? (
-                      <Select style={{ width: '50%' }}
-                        placeholder="Chọn chi nhánh"
-                        optionFilterProp="children"
-                        showSearch
-                        disabled
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        } value={branchId} onChange={handleChange}>
-                        {
-                          branch && branch.length > 0 && branch.map((values, index) => {
-                            return (
-                              <Option value={values.branch_id}>{values.name}</Option>
-                            )
-                          })
-                        }
-                      </Select>
-                    ) : (
-                      <Select style={{ width: '100%' }}
-                        placeholder="Chọn chi nhánh"
-                        optionFilterProp="children"
-                        showSearch
-                        
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        } value={branchId} onChange={handleChange}>
-                        {
-                          branch && branch.length > 0 && branch.map((values, index) => {
-                            return (
-                              <Option value={values.branch_id}>{values.name}</Option>
-                            )
-                          })
-                        }
-                      </Select>
-                    )
-                  }
-
-                </div>
-
-              </Col>
-              <Col
-                className={styles["sell_manager_title_row_col_home"]}
-                xs={24}
-                sm={24}
-                md={8}
-                lg={8}
-                xl={8}
-              >
-                <FunctionShortcut />
-              </Col>
-
-
-            </Row>
-            <Row className={styles["sell_manager_title_row_fix"]}>
-              {
-                billQuantity && billQuantity.length > 0 && billQuantity.map((values, index) => {
-                  return (
-                    billQuantityStatus === values[0].values ? (<Col
-                      className={styles["sell_manager_title_row_col_item_active"]}
-                      xs={24}
-                      sm={24}
-                      md={3}
-                      lg={3}
-                      xl={3}
-                    >
-                      <div className={styles["sell_manager_title_row_col_orders"]} >
-                        <div onClick={() => onClickBillIndex(index, values[0].values, (parseInt(branchId) * 10000) + values[0].values)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                          <div
-                            className={
-                              styles["sell_manager_title_row_col_orders_title"]
-                            }
-                          >
-                            Hóa đơn
-                          </div>
-                          <div>{(parseInt(branchId) * 10000) + values[0].values}</div>
-
-                        </div>
-                        <div onClick={() => onClickDeleteBillQuantity(index, values[0].values)} style={{ position: 'absolute', top: '0', right: '0' }}><CloseOutlined style={{ paddingRight: '0.25rem', fontSize: '1rem', color: 'red' }} /></div>
-                      </div>
-
-                    </Col>) : (<Col
-                      className={styles["sell_manager_title_row_col_item"]}
-                      xs={24}
-                      sm={24}
-                      md={3}
-                      lg={3}
-                      xl={3}
-                    >
-
-                      <div className={styles["sell_manager_title_row_col_orders"]} >
-                        <div onClick={() => onClickBillIndex(index, values[0].values, (parseInt(branchId) * 10000) + values[0].values)} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-                          <div
-                            className={
-                              styles["sell_manager_title_row_col_orders_title"]
-                            }
-                          >
-                            Hóa đơn
-                          </div>
-                          <div>{(parseInt(branchId) * 10000) + values[0].values}</div>
-
-                        </div>
-                        <div onClick={() => onClickDeleteBillQuantity(index, values[0].values)} style={{ position: 'absolute', top: '0', right: '0' }}><CloseOutlined style={{ paddingRight: '0.25rem', fontSize: '1rem', color: 'red' }} /></div>
-                      </div>
-                    </Col>)
-                  )
-                })
+      <div className={styles['sell_manager']}>
+        <div className={styles['sell_manager_title']}>
+          <Row wrap={false} justify="space-between" style={{ width: '100%' }}>
+            <Select
+              size="large"
+              style={{ width: isMobile ? 180 : 300 }}
+              placeholder="Chọn chi nhánh"
+              optionFilterProp="children"
+              showSearch
+              disabled={roleName === 'employee' ? true : false}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-
-              <Col
-
-                className={styles["sell_manager_title_row_col_item_add"]}
-                xs={24}
-                sm={24}
-                md={5}
-                lg={5}
-                xl={5}
-              >
-                <div className={styles["sell_manager_title_row_col_orders_add"]}>
-                  <div onClick={onClickCreateBill} style={{ width: '2rem' }}>
-                    <PlusCircleOutlined
-                      style={{
-                        fontSize: "1.75rem",
-                        color: "white",
-                        fontWeight: "900",
-                      }}
-                      theme="outlined"
-                    />
-                  </div>
-                  {
-                    confirm === 0 ? (<div style={{ color: 'red', fontSize: '1rem', fontWeight: '600', marginLeft: '1rem' }}>Chưa chọn hóa đơn</div>) : (confirm === 1 && billName !== '' ? (<div style={{ color: '#50D648', fontSize: '1rem', fontWeight: '600', marginLeft: '1rem' }}>{`Đang xử lý hóa đơn: ${billName}`}</div>) : (''))
-                  }
-
-                </div>
-              </Col>
-
-            </Row>
-            <Row className={styles["sell_manager_title_row"]}>
-              <Col
-                className={styles["sell_manager_title_row_col"]}
-                xs={24}
-                sm={24}
-                md={14}
-                lg={14}
-                xl={14}
-              >
-
-                <div style={{ width: '100%' }} className={styles["sell_manager_title_row_col_parent"]}>
-                  <Dropdown style={{ width: '100' }} trigger={['click']} overlay={content}>
-                    <Input style={{ width: '100%' }} name="name" value={valueSearch} enterButton onChange={onSearch} className={styles["orders_manager_content_row_col_search"]}
-                      placeholder="Tìm kiếm sản phẩm" autocomplete="off" allowClear />
-                  </Dropdown>
-                </div>
-
-              </Col>
-              <Col
-                className={styles["sell_manager_title_row_col"]}
-                xs={24}
-                sm={24}
-                md={8}
-                lg={8}
-                xl={8}
-              >
-
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} >
-                  <Radio.Group style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', }} onChange={onChangeOrderStatus} value={orderStatus}>
-                    <Radio style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }} value="order now">Order now</Radio>
-                    <Radio style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }} value="pre-order">Pre-order</Radio>
-                  </Radio.Group>
-                  <Button onClick={showDrawerOrderList} type="primary" danger>Danh sách order</Button>
-                </div>
-
-              </Col>
-            </Row>
-          </div>
-
-          <div className={styles["sell_manager_content"]}>
-            <Row className={styles["sell_manager_content_row"]}>
-              <Col
-                className={styles["sell_manager_content_row_col"]}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={15}
-                xl={15}
-              >
-                <div>
-                  <div className={styles["sell_manager_content_row_col_bottom"]}>
-                    <Row
-                      className={
-                        styles["sell_manager_content_row_col_bottom_row"]
-                      }
+              value={branchId}
+              onChange={handleChange}
+            >
+              {branch.map((values, index) => {
+                return <Option value={values.branch_id}>{values.name}</Option>
+              })}
+            </Select>
+            <FunctionShortcut />
+          </Row>
+          <Row className={styles['sell_manager_title_row_fix']}>
+            {billQuantity &&
+              billQuantity.length > 0 &&
+              billQuantity.map((values, index) => {
+                return billQuantityStatus === values[0].values ? (
+                  <Col
+                    className={styles['sell_manager_title_row_col_item_active']}
+                    xs={24}
+                    sm={24}
+                    md={3}
+                    lg={3}
+                    xl={3}
+                  >
+                    <div
+                      className={styles['sell_manager_title_row_col_orders']}
                     >
-                      <Col
-                        className={
-                          styles["sell_manager_content_row_col_bottom_row_col"]
+                      <div
+                        onClick={() =>
+                          onClickBillIndex(
+                            index,
+                            values[0].values,
+                            parseInt(branchId) * 10000 + values[0].values
+                          )
                         }
-                        xs={24}
-                        sm={24}
-                        md={24}
-                        lg={24}
-                        xl={24}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
                       >
-                     
                         <div
                           className={
-                            styles[
-                            "sell_manager_content_row_col_bottom_row_col_empty"
-                            ]
+                            styles['sell_manager_title_row_col_orders_title']
                           }
                         >
-                          {
-                            billQuantity && billQuantity.length > 0 ? (<div style={{ width: '100%', height: '30rem', maxHeight: '100%', overflow: 'auto', backgroundColor: 'white', border: '1px solid rgb(235, 225, 225)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column  ' }}>
-                                <Row style={{ display: 'flex', borderBottom: '1px solid rgb(226, 213, 213)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }} >
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={1}><div style={{ fontSize: '1rem', textAlign: 'center' }}>STT</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Mã SKU</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Tên sản phẩm</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Đơn vị</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Số lượng</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Đơn giá</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>Thành tiền</div></Col>
-                                  <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={1}></Col>
-                                </Row>
-                                {
-                                  billQuantity && billQuantity.length > 0 && billQuantity.map((values, index) => {
-                                    if (index === billIndex) {
-                                      return (
-                                        values.map((values1, index1) => {
-                                          if (index1 !== 0) {
-                                            return (
-                                              <Row style={{ display: 'flex', marginTop: '1rem', borderBottom: '1px solid rgb(226, 213, 213)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }} >
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={1}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{index1}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{values1.sku}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{values1.title}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{record.unit}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>
-
-                                                  {
-                                                    confirm === 1 ? (<InputNumber min={1}
-                                                      max={1000000} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                                      parser={value => value.replace(/\$\s?|(,*)/g, '')} value={values1.quantity} name="quantity" onChange={(e) =>
-
-                                                        onChangeQuantityBill(e, index, index1)} />) : (<InputNumber disabled formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                                          parser={value => value.replace(/\$\s?|(,*)/g, '')} value={values1.quantity} name="quantity" onChange={(e) =>
-
-                                                            onChangeQuantityBill(e, index, index1)} />)
-                                                  }
-                                                </div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{values1.sale_price}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={3}><div style={{ fontSize: '1rem', textAlign: 'center' }}>{`${formatCash(String(values1.sale_price * values1.quantity))} VNĐ`}</div></Col>
-                                                <Col style={{ width: '100%' }} xs={24} sm={11} md={7} lg={5} xl={1}><DeleteOutlined onClick={() => onClickDeleteBillQuantityItem(index, index1, values1.sku)} style={{ color: 'red', fontSize: '1.5rem', cursor: 'pointer' }} /></Col>
-                                              </Row>
-                                            )
-                                          }
-
-                                        })
-                                      )
-                                    }
-
-                                  })
-                                }
-
-                              </div>
-                            </div>) : (<div
-                              className={
-                                styles[
-                                "sell_manager_content_row_col_bottom_row_col_empty"
-                                ]
-                              }
-                            >
-                              <div style={{ marginBottom: '1rem' }}><img src={emptyProduct} style={{ width: '7.5rem', height: '7.5rem', objectFit: 'contain' }} alt="" /></div>
-                              <div>      Cửa hàng của bạn chưa có hóa đơn nào</div>
-
-                            </div>)
-                          }
+                          Hóa đơn
                         </div>
-                      </Col>
-                      {
-                        productSelect && productSelect.length > 0 ? (
-                          <Col
-                            className={
-                              styles["sell_manager_content_row_col_bottom_row_col"]
-                            }
-                            xs={24}
-                            sm={24}
-                            md={24}
-                            lg={24}
-                            xl={24}
+                        <div>
+                          {parseInt(branchId) * 10000 + values[0].values}
+                        </div>
+                      </div>
+                      <div
+                        onClick={() =>
+                          onClickDeleteBillQuantity(index, values[0].values)
+                        }
+                        style={{ position: 'absolute', top: '0', right: '0' }}
+                      >
+                        <CloseOutlined
+                          style={{
+                            paddingRight: '0.25rem',
+                            fontSize: '1rem',
+                            color: 'red',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </Col>
+                ) : (
+                  <Col
+                    className={styles['sell_manager_title_row_col_item']}
+                    xs={24}
+                    sm={24}
+                    md={3}
+                    lg={3}
+                    xl={3}
+                  >
+                    <div
+                      className={styles['sell_manager_title_row_col_orders']}
+                    >
+                      <div
+                        onClick={() =>
+                          onClickBillIndex(
+                            index,
+                            values[0].values,
+                            parseInt(branchId) * 10000 + values[0].values
+                          )
+                        }
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                        }}
+                      >
+                        <div
+                          className={
+                            styles['sell_manager_title_row_col_orders_title']
+                          }
+                        >
+                          Hóa đơn
+                        </div>
+                        <div>
+                          {parseInt(branchId) * 10000 + values[0].values}
+                        </div>
+                      </div>
+                      <div
+                        onClick={() =>
+                          onClickDeleteBillQuantity(index, values[0].values)
+                        }
+                        style={{ position: 'absolute', top: '0', right: '0' }}
+                      >
+                        <CloseOutlined
+                          style={{
+                            paddingRight: '0.25rem',
+                            fontSize: '1rem',
+                            color: 'red',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </Col>
+                )
+              })}
+
+            <Col
+              className={styles['sell_manager_title_row_col_item_add']}
+              xs={24}
+              sm={24}
+              md={5}
+              lg={5}
+              xl={5}
+            >
+              <div className={styles['sell_manager_title_row_col_orders_add']}>
+                <div
+                  onClick={onClickCreateBill}
+                  style={{ width: '2rem', marginTop: 15 }}
+                >
+                  <PlusCircleOutlined
+                    style={{
+                      fontSize: '1.75rem',
+                      color: 'white',
+                      fontWeight: '900',
+                    }}
+                    theme="outlined"
+                  />
+                </div>
+                {confirm === 0 ? (
+                  <div
+                    style={{
+                      color: 'red',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      marginLeft: '1rem',
+                    }}
+                  >
+                    Chưa chọn hóa đơn
+                  </div>
+                ) : confirm === 1 && billName !== '' ? (
+                  <div
+                    style={{
+                      color: '#50D648',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      marginLeft: '1rem',
+                    }}
+                  >{`Đang xử lý hóa đơn: ${billName}`}</div>
+                ) : (
+                  ''
+                )}
+              </div>
+            </Col>
+          </Row>
+          <Row className={styles['sell_manager_title_row']}>
+            <Col
+              className={styles['sell_manager_title_row_col']}
+              xs={24}
+              sm={24}
+              md={14}
+              lg={14}
+              xl={14}
+            >
+              <div
+                style={{ width: '100%' }}
+                className={styles['sell_manager_title_row_col_parent']}
+              >
+                <Dropdown
+                  style={{ width: '100' }}
+                  trigger={['click']}
+                  overlay={content}
+                >
+                  <Input
+                    style={{ width: '100%' }}
+                    name="name"
+                    value={valueSearch}
+                    enterButton
+                    size="large"
+                    onChange={onSearch}
+                    className="br-15__input"
+                    placeholder="Tìm kiếm sản phẩm"
+                    autocomplete="off"
+                    allowClear
+                  />
+                </Dropdown>
+              </div>
+            </Col>
+            <Col
+              className={styles['sell_manager_title_row_col']}
+              xs={24}
+              sm={24}
+              md={8}
+              lg={8}
+              xl={8}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: !isMobile && 'center',
+                  flexDirection: isMobile && 'column',
+                }}
+              >
+                <Radio.Group
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: isMobile && 'space-between',
+                    alignItems: 'center',
+                    marginBottom: isMobile && 15,
+                  }}
+                  onChange={onChangeOrderStatus}
+                  value={orderStatus}
+                >
+                  <Radio
+                    style={{
+                      color: 'white',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                    }}
+                    value="order now"
+                  >
+                    Order now
+                  </Radio>
+                  <Radio
+                    style={{
+                      color: 'white',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                    }}
+                    value="pre-order"
+                  >
+                    Pre-order
+                  </Radio>
+                </Radio.Group>
+                <Button
+                  className="br-15__button"
+                  size="large"
+                  onClick={showDrawerOrderList}
+                  type="primary"
+                  danger
+                  style={{ width: 'max-content' }}
+                >
+                  Danh sách order
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </div>
+
+        <Row style={{ width: '100%', marginBottom: 15 }}>
+          <Col xs={24} sm={24} md={24} lg={15} xl={15}>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                marginRight: 7,
+              }}
+            >
+              <Row
+                className={styles['sell_manager_content_row_col_bottom_row']}
+              >
+                <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                  <div
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_bottom_row_col_empty'
+                      ]
+                    }
+                  >
+                    {billQuantity && billQuantity.length > 0 ? (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '30rem',
+                          maxHeight: '100%',
+                          overflow: 'auto',
+                          backgroundColor: 'white',
+                          border: '1px solid rgb(235, 225, 225)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                            width: '100%',
+                            flexDirection: 'column  ',
+                          }}
+                        >
+                          <Row
+                            style={{
+                              display: 'flex',
+                              borderBottom: '1px solid rgb(226, 213, 213)',
+                              paddingBottom: '1rem',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              width: '100%',
+                            }}
                           >
-                            <div className={styles['product_show']}>
-                              <Tabs defaultActiveKey="0" >
-                                {
-                                  category && category.length > 0 && category.map((values20, index20) => {
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={1}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                STT
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Mã SKU
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Tên sản phẩm
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Đơn vị
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Số lượng
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Đơn giá
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={3}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                Thành tiền
+                              </div>
+                            </Col>
+                            <Col
+                              style={{ width: '100%' }}
+                              xs={24}
+                              sm={11}
+                              md={7}
+                              lg={5}
+                              xl={1}
+                            ></Col>
+                          </Row>
+                          {billQuantity &&
+                            billQuantity.length > 0 &&
+                            billQuantity.map((values, index) => {
+                              if (index === billIndex) {
+                                return values.map((values1, index1) => {
+                                  if (index1 !== 0) {
                                     return (
-                                      <TabPane tab={values20.name} key={index20}>
-
-                                        <Row style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                                          {
-                                            values20.data && values20.data.length > 0 && values20.data.map((values, index) => {
-
-                                              return (
-                                                values.variants && values.variants.length > 0 ? (
-                                                  values.variants.map((values3, index3) => {
-                                                    return (
-
-                                                      <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={7} xl={7} >
-                                                        <div
-                                                          onClick={() => { onClickModal2Visible(values3, values) }}
-                                                          // onClick={() => onClickModal2Visible(values3, values)}
-                                                          className={
-                                                            styles[
-                                                            "sell_manager_content_row_col_bottom_row_col_bottom_col_parent"
-                                                            ]
-                                                          }
-                                                        >
-                                                          <div
-                                                            onClick={() => onClickMarkVariant(values3.sku)}
-                                                            className={
-                                                              styles[
-                                                              "sell_manager_content_row_col_bottom_row_col_bottom_col_product"
-                                                              ]
-                                                            }
-                                                          >
-                                                            <div
-                                                              className={
-                                                                styles[
-                                                                "sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent"
-                                                                ]
-                                                              }
-                                                            >
-                                                              <img
-                                                                className={
-                                                                  styles[
-                                                                  "sell_manager_content_row_col_bottom_row_col_bottom_col_product_image"
-                                                                  ]
-                                                                }
-                                                                src={values3.image[0]}
-                                                                alt=""
-                                                              />
-                                                            </div>
-                                                            <div className={styles["product_information"]}>
-                                                              <div>{values3.title}</div>
-                                                              <div>{`Giá : ${formatCash(
-                                                                String(values3.sale_price))} VNĐ`}</div>
-                                                            </div>
-
-                                                            {
-                                                              billQuantity && billQuantity.length > 0 && billQuantity[billIndex][0].mark && billQuantity[billIndex][0].mark ? (billQuantity[billIndex][0].mark && billQuantity[billIndex][0].mark.length > 0 && billQuantity[billIndex][0].mark.map((values5, index5) => {
-                                                                return (
-                                                                  values5 === values3.sku ? (
-                                                                    <div style={{ position: 'absolute', top: '0', right: '0' }}><CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#01F701' }} /></div>
-                                                                  ) : (
-                                                                    ''
-                                                                  )
-                                                                )
-                                                              })) : ('')
-
-                                                            }
-
-
-
-                                                          </div>
-
-                                                        </div>
-                                                      </Col>
-
+                                      <Row
+                                        style={{
+                                          display: 'flex',
+                                          marginTop: '1rem',
+                                          borderBottom:
+                                            '1px solid rgb(226, 213, 213)',
+                                          paddingBottom: '1rem',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
+                                          width: '100%',
+                                        }}
+                                      >
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={1}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {index1}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {values1.sku}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {values1.title}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {record.unit}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {confirm === 1 ? (
+                                              <InputNumber
+                                                min={1}
+                                                max={1000000}
+                                                formatter={(value) =>
+                                                  `${value}`.replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    ','
+                                                  )
+                                                }
+                                                parser={(value) =>
+                                                  value.replace(
+                                                    /\$\s?|(,*)/g,
+                                                    ''
+                                                  )
+                                                }
+                                                value={values1.quantity}
+                                                name="quantity"
+                                                onChange={(e) =>
+                                                  onChangeQuantityBill(
+                                                    e,
+                                                    index,
+                                                    index1
+                                                  )
+                                                }
+                                              />
+                                            ) : (
+                                              <InputNumber
+                                                disabled
+                                                formatter={(value) =>
+                                                  `${value}`.replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    ','
+                                                  )
+                                                }
+                                                parser={(value) =>
+                                                  value.replace(
+                                                    /\$\s?|(,*)/g,
+                                                    ''
+                                                  )
+                                                }
+                                                value={values1.quantity}
+                                                name="quantity"
+                                                onChange={(e) =>
+                                                  onChangeQuantityBill(
+                                                    e,
+                                                    index,
+                                                    index1
+                                                  )
+                                                }
+                                              />
+                                            )}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >
+                                            {values1.sale_price}
+                                          </div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={3}
+                                        >
+                                          <div
+                                            style={{
+                                              fontSize: '1rem',
+                                              textAlign: 'center',
+                                            }}
+                                          >{`${formatCash(
+                                            String(
+                                              values1.sale_price *
+                                                values1.quantity
+                                            )
+                                          )} VNĐ`}</div>
+                                        </Col>
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={11}
+                                          md={7}
+                                          lg={5}
+                                          xl={1}
+                                        >
+                                          <DeleteOutlined
+                                            onClick={() =>
+                                              onClickDeleteBillQuantityItem(
+                                                index,
+                                                index1,
+                                                values1.sku
+                                              )
+                                            }
+                                            style={{
+                                              color: 'red',
+                                              fontSize: '1.5rem',
+                                              cursor: 'pointer',
+                                            }}
+                                          />
+                                        </Col>
+                                      </Row>
+                                    )
+                                  }
+                                })
+                              }
+                            })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className={
+                          styles[
+                            'sell_manager_content_row_col_bottom_row_col_empty'
+                          ]
+                        }
+                      >
+                        <div style={{ marginBottom: '1rem' }}>
+                          <img
+                            src={emptyProduct}
+                            style={{
+                              width: '7.5rem',
+                              height: '7.5rem',
+                              objectFit: 'contain',
+                            }}
+                            alt=""
+                          />
+                        </div>
+                        <div
+                          style={{
+                            color: 'black',
+                            fontSize: '1.25rem',
+                            fontWeight: 600,
+                            textAlign: 'center',
+                          }}
+                        >
+                          Cửa hàng của bạn chưa có hóa đơn nào
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+                {productSelect && productSelect.length > 0 ? (
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                    <div
+                      className={styles['product_show']}
+                      style={{
+                        height: '30rem',
+                        maxHeight: '100%',
+                        backgroundColor: 'white',
+                        marginRight: !isMobile && 7,
+                        marginTop: 15,
+                        marginBottom: isMobile && 15,
+                      }}
+                    >
+                      <Tabs defaultActiveKey="0">
+                        {category &&
+                          category.length > 0 &&
+                          category.map((values20, index20) => {
+                            return (
+                              <TabPane tab={values20.name} key={index20}>
+                                <Row
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-start',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                  }}
+                                >
+                                  {values20.data &&
+                                    values20.data.length > 0 &&
+                                    values20.data.map((values, index) => {
+                                      return values.variants &&
+                                        values.variants.length > 0 ? (
+                                        values.variants.map(
+                                          (values3, index3) => {
+                                            return (
+                                              <Col
+                                                style={{ width: '100%' }}
+                                                xs={24}
+                                                sm={24}
+                                                md={11}
+                                                lg={7}
+                                                xl={7}
+                                              >
+                                                <div
+                                                  onClick={() => {
+                                                    onClickModal2Visible(
+                                                      values3,
+                                                      values
                                                     )
-
-                                                  })
-                                                ) : (
-
-                                                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={7} xl={7} >
+                                                  }}
+                                                  // onClick={() => onClickModal2Visible(values3, values)}
+                                                  className={
+                                                    styles[
+                                                      'sell_manager_content_row_col_bottom_row_col_bottom_col_parent'
+                                                    ]
+                                                  }
+                                                >
+                                                  <div
+                                                    onClick={() =>
+                                                      onClickMarkVariant(
+                                                        values3.sku
+                                                      )
+                                                    }
+                                                    className={
+                                                      styles[
+                                                        'sell_manager_content_row_col_bottom_row_col_bottom_col_product'
+                                                      ]
+                                                    }
+                                                  >
                                                     <div
-                                                      onClick={() => onClickAddProductSimple(values)}
-                                                      // onClick={() => onClickModal2Visible(values3, values)}
                                                       className={
                                                         styles[
-                                                        "sell_manager_content_row_col_bottom_row_col_bottom_col_parent"
+                                                          'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent'
                                                         ]
                                                       }
                                                     >
-                                                      <div
-                                                        onClick={() => onClickMark(values.sku)}
+                                                      <img
                                                         className={
                                                           styles[
-                                                          "sell_manager_content_row_col_bottom_row_col_bottom_col_product"
+                                                            'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image'
                                                           ]
                                                         }
-                                                      >
-                                                        <div
-                                                          className={
-                                                            styles[
-                                                            "sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent"
-                                                            ]
+                                                        src={values3.image[0]}
+                                                        alt=""
+                                                      />
+                                                    </div>
+                                                    <div
+                                                      className={
+                                                        styles[
+                                                          'product_information'
+                                                        ]
+                                                      }
+                                                    >
+                                                      <div>{values3.title}</div>
+                                                      <div>{`Giá : ${formatCash(
+                                                        String(
+                                                          values3.sale_price
+                                                        )
+                                                      )} VNĐ`}</div>
+                                                    </div>
+
+                                                    {billQuantity &&
+                                                    billQuantity.length > 0 &&
+                                                    billQuantity[billIndex][0]
+                                                      .mark &&
+                                                    billQuantity[billIndex][0]
+                                                      .mark
+                                                      ? billQuantity[
+                                                          billIndex
+                                                        ][0].mark &&
+                                                        billQuantity[
+                                                          billIndex
+                                                        ][0].mark.length > 0 &&
+                                                        billQuantity[
+                                                          billIndex
+                                                        ][0].mark.map(
+                                                          (values5, index5) => {
+                                                            return values5 ===
+                                                              values3.sku ? (
+                                                              <div
+                                                                style={{
+                                                                  position:
+                                                                    'absolute',
+                                                                  top: '0',
+                                                                  right: '0',
+                                                                }}
+                                                              >
+                                                                <CheckOutlined
+                                                                  style={{
+                                                                    fontSize:
+                                                                      '1.5rem',
+                                                                    fontWeight:
+                                                                      '600',
+                                                                    color:
+                                                                      '#01F701',
+                                                                  }}
+                                                                />
+                                                              </div>
+                                                            ) : (
+                                                              ''
+                                                            )
                                                           }
+                                                        )
+                                                      : ''}
+                                                  </div>
+                                                </div>
+                                              </Col>
+                                            )
+                                          }
+                                        )
+                                      ) : (
+                                        <Col
+                                          style={{ width: '100%' }}
+                                          xs={24}
+                                          sm={24}
+                                          md={11}
+                                          lg={7}
+                                          xl={7}
+                                        >
+                                          <div
+                                            onClick={() =>
+                                              onClickAddProductSimple(values)
+                                            }
+                                            // onClick={() => onClickModal2Visible(values3, values)}
+                                            className={
+                                              styles[
+                                                'sell_manager_content_row_col_bottom_row_col_bottom_col_parent'
+                                              ]
+                                            }
+                                          >
+                                            <div
+                                              onClick={() =>
+                                                onClickMark(values.sku)
+                                              }
+                                              className={
+                                                styles[
+                                                  'sell_manager_content_row_col_bottom_row_col_bottom_col_product'
+                                                ]
+                                              }
+                                            >
+                                              <div
+                                                className={
+                                                  styles[
+                                                    'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent'
+                                                  ]
+                                                }
+                                              >
+                                                <img
+                                                  className={
+                                                    styles[
+                                                      'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image'
+                                                    ]
+                                                  }
+                                                  src={values.image[0]}
+                                                  alt=""
+                                                />
+                                              </div>
+                                              <div
+                                                className={
+                                                  styles['product_information']
+                                                }
+                                              >
+                                                <div>{values.name}</div>
+                                                <div>{`Giá : ${formatCash(
+                                                  String(values.sale_price)
+                                                )} VNĐ`}</div>
+                                              </div>
+                                              {/* <div style={{ position: 'absolute', top: '0', right: '0' }}><CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#01F701' }} /></div> */}
+                                              {billQuantity &&
+                                              billQuantity.length > 0 &&
+                                              billQuantity[billIndex][0].mark &&
+                                              billQuantity[billIndex][0].mark
+                                                ? billQuantity[billIndex][0]
+                                                    .mark &&
+                                                  billQuantity[billIndex][0]
+                                                    .mark.length > 0 &&
+                                                  billQuantity[
+                                                    billIndex
+                                                  ][0].mark.map(
+                                                    (values5, index5) => {
+                                                      return values5 ===
+                                                        values.sku ? (
+                                                        <div
+                                                          style={{
+                                                            position:
+                                                              'absolute',
+                                                            top: '0',
+                                                            right: '0',
+                                                          }}
                                                         >
-                                                          <img
-                                                            className={
-                                                              styles[
-                                                              "sell_manager_content_row_col_bottom_row_col_bottom_col_product_image"
-                                                              ]
-                                                            }
-                                                            src={values.image[0]}
-                                                            alt=""
+                                                          <CheckOutlined
+                                                            style={{
+                                                              fontSize:
+                                                                '1.5rem',
+                                                              fontWeight: '600',
+                                                              color: '#01F701',
+                                                            }}
                                                           />
                                                         </div>
-                                                        <div className={styles["product_information"]}>
-                                                          <div>{values.name}</div>
-                                                          <div>{`Giá : ${formatCash(
-                                                            String(values.sale_price))} VNĐ`}</div>
-                                                        </div>
-                                                        {/* <div style={{ position: 'absolute', top: '0', right: '0' }}><CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#01F701' }} /></div> */}
-                                                        {
-                                                          billQuantity && billQuantity.length > 0 && billQuantity[billIndex][0].mark && billQuantity[billIndex][0].mark ? (billQuantity[billIndex][0].mark && billQuantity[billIndex][0].mark.length > 0 && billQuantity[billIndex][0].mark.map((values5, index5) => {
-                                                            return (
-                                                              values5 === values.sku ? (
-                                                                <div style={{ position: 'absolute', top: '0', right: '0' }}><CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#01F701' }} /></div>
-                                                              ) : (
-                                                                ''
-                                                              )
-                                                            )
-                                                          })) : ('')
-
-                                                        }
-                                                      </div>
-
-                                                    </div>
-                                                  </Col>
-
-                                                )
-
-
-
-                                              )
-                                            })
-                                          }
-
-
-                                        </Row>
-
-                                      </TabPane>
-                                    )
-                                  })
-                                }
-
-
-                              </Tabs>
-
-                            </div>
-                       
-                          </Col>
-                        ) : ('')
-                      }
-
-                    </Row>
-                  </div>
-                </div>
-              </Col>
-              <Col
-                className={styles["sell_manager_content_row_col_right"]}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={8}
-                xl={8}
+                                                      ) : (
+                                                        ''
+                                                      )
+                                                    }
+                                                  )
+                                                : ''}
+                                            </div>
+                                          </div>
+                                        </Col>
+                                      )
+                                    })}
+                                </Row>
+                              </TabPane>
+                            )
+                          })}
+                      </Tabs>
+                    </div>
+                  </Col>
+                ) : (
+                  ''
+                )}
+              </Row>
+            </div>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={9} xl={9}>
+            <div
+              style={{
+                height: '100%',
+                backgroundColor: 'white',
+                padding: '1rem',
+                marginLeft: !isMobile && 7,
+              }}
+            >
+              <Form
+                className={
+                  styles['sell_manager_content_row_col_right_parent_content']
+                }
               >
-                <div
-                  className={styles["sell_manager_content_row_col_right_parent"]}
-                >
-                  <Form
+                <div>
+                  <Row
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <Row
+                      justify="space-between"
+                      style={{ width: '100%' }}
+                      wrap={false}
+                    >
+                      <Dropdown
+                        style={{ width: '100%' }}
+                        trigger={['click']}
+                        overlay={contentCustomer}
+                      >
+                        <Input
+                          style={{ width: '100%' }}
+                          name="name"
+                          onClick={onClickSearchCustomer}
+                          value={valueSearchCustomer}
+                          enterButton
+                          onChange={onSearchCustomer}
+                          className="br-15__input"
+                          size="large"
+                          placeholder="Tìm khách hàng theo tên, số điện thoại"
+                          autocomplete="off"
+                          allowClear
+                        />
+                      </Dropdown>
+
+                      <Button
+                        size="large"
+                        style={{ marginLeft: 20 }}
+                        onClick={showDrawer}
+                        icon={<PlusOutlined style={{ fontSize: 15 }} />}
+                        type="primary"
+                      ></Button>
+                    </Row>
+
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={24}
+                      xl={24}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        margin: '1.5rem 0 0 0 ',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Checkbox
+                        disabled={
+                          billQuantity && billQuantity.length ? false : true
+                        }
+                        checked={customerOddMain}
+                        value={customerOddMain}
+                        style={{ color: 'black', fontWeight: '600' }}
+                        onChange={onChangeCustomerOdd}
+                      >
+                        Khách lẻ
+                      </Checkbox>
+                    </Col>
+                  </Row>
+
+                  {billQuantity &&
+                  billQuantity.length > 0 &&
+                  billQuantity[billIndex][0].customer &&
+                  billQuantity[billIndex][0].customer.length > 0 ? (
+                    billQuantity[billIndex][0].customer.map((values, index) => {
+                      return (
+                        <div
+                          style={{
+                            width: '100%',
+                            borderBottom: '1px solid rgb(235, 225, 225)',
+                            marginBottom: '1.25rem',
+                          }}
+                        >
+                          <div
+                            style={{ marginTop: '1.25rem' }}
+                            className={
+                              styles[
+                                'sell_manager_content_row_col_right_parent_content_money_fix'
+                              ]
+                            }
+                          >
+                            <div
+                              style={{
+                                width: '100%',
+                                fontWeight: '600',
+                                color: 'black',
+                                paddingBottom: '1rem',
+                              }}
+                            >{`Tên khách hàng: ${values.first_name} - ${values.phone}.`}</div>
+                          </div>
+                          <div
+                            className={
+                              styles[
+                                'sell_manager_content_row_col_right_parent_content_money_fix'
+                              ]
+                            }
+                          >
+                            <div
+                              style={{
+                                width: '100%',
+                                fontWeight: '600',
+                                color: 'black',
+                                paddingBottom: '1rem',
+                              }}
+                            >{`Địa chỉ: ${values.address}.`}</div>
+                          </div>
+                          <div
+                            className={
+                              styles[
+                                'sell_manager_content_row_col_right_parent_content_money_fix'
+                              ]
+                            }
+                          >
+                            {values.balance && values.balance.length > 0 ? (
+                              <div
+                                onClick={showDrawerOrder}
+                                style={{
+                                  cursor: 'pointer',
+                                  color: '#336CFB',
+                                  width: '100%',
+                                  fontWeight: '600',
+                                  paddingBottom: '1.5rem',
+                                }}
+                              >
+                                {values.balance && values.balance.length > 0
+                                  ? `Đơn hàng đã mua: ${values.balance.length}`
+                                  : `Đơn hàng đã mua: 0`}
+                              </div>
+                            ) : (
+                              <div
+                                onClick={showDrawerOrder}
+                                style={{
+                                  cursor: 'pointer',
+                                  color: '#336CFB',
+                                  width: '100%',
+                                  fontWeight: '600',
+                                  paddingBottom: '1.5rem',
+                                }}
+                              >
+                                {values.balance && values.balance.length > 0
+                                  ? `Đơn hàng đã mua: ${values.balance.length}`
+                                  : `Đơn hàng đã mua: 0`}
+                              </div>
+                            )}
+                          </div>
+
+                          <div
+                            className={
+                              styles[
+                                'sell_manager_content_row_col_right_parent_content_money_fix'
+                              ]
+                            }
+                          >
+                            <div
+                              style={{
+                                width: '100%',
+                                fontWeight: '600',
+                                color: 'black',
+                                paddingBottom: '1.5rem',
+                              }}
+                            >
+                              Quà tặng
+                            </div>
+                            <Form.Item
+                              style={{ width: '100%' }}
+                              name="selectGift"
+                              // label="Select"
+                              hasFeedback
+                              rules={[
+                                {
+                                  required: true,
+                                  message: 'Giá trị rỗng!',
+                                },
+                              ]}
+                            >
+                              <Select
+                                style={{ width: '100%' }}
+                                defaultValue="default"
+                              >
+                                <Option value="default">Chọn quà tặng</Option>
+                                <Option value="voucherA">Quà tặng A</Option>
+                                <Option value="voucherB">Quà tặng B</Option>
+                              </Select>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <div style={{ marginBottom: '1rem' }}></div>
+                  )}
+
+                  <div
+                    style={{ marginBottom: '1.5rem' }}
                     className={
-                      styles["sell_manager_content_row_col_right_parent_content"]
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money_radio'
+                      ]
                     }
                   >
-                    <div>
-                      <div
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_search"
-                          ]
-                        }
-                      >
-                        <Row
-                          className={
-                            styles[
-                            "sell_manager_content_row_col_right_parent_search_row"
-                            ]
-                          }
-                        >
-                        </Row>
-                      </div>
-                      <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div>Phương thức nhận hàng</div>
 
-                        {
-                          billQuantity && billQuantity.length > 0 ? (<Col xs={24} sm={24} md={20} lg={20} xl={20} style={{ width: '100%' }}>
+                    <Radio.Group
+                      value={receiveMethod}
+                      onChange={onChangeReceiveMethod}
+                    >
+                      {shipping &&
+                        shipping.length > 0 &&
+                        shipping.map((values, index) => {
+                          return (
+                            <Radio
+                              style={{ marginTop: '0.5rem' }}
+                              value={values.transport_id}
+                            >
+                              {values.name}
+                            </Radio>
+                          )
+                        })}
+                    </Radio.Group>
+                  </div>
 
-                            {
-                              customerBackup && customerBackup.length > 0 && billQuantity && billQuantity.length > 0 ? (<Dropdown style={{ width: '100%' }} trigger={['click']} overlay={contentCustomer}>
-                                <Input style={{ width: '100%' }} name="name" onClick={onClickSearchCustomer} value={valueSearchCustomer} enterButton onChange={onSearchCustomer} className={styles["orders_manager_content_row_col_search"]}
-                                  placeholder="Tìm khách hàng theo tên, số điện thoại" autocomplete="off" allowClear />
-                              </Dropdown>) : (
-                                <Input style={{ width: '100%' }} name="name" onClick={onClickSearchCustomer} value={valueSearchCustomer} enterButton onChange={onSearchCustomer} className={styles["orders_manager_content_row_col_search"]}
-                                  placeholder="Tìm khách hàng theo tên, số điện thoại" autocomplete="off" allowClear />
-                              )
-                            }
+                  <div
+                    style={{ marginBottom: '1.5rem' }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money_radio'
+                      ]
+                    }
+                  >
+                    <div>Chọn hình thức thanh toán</div>
 
-                          </Col>) : (<Col xs={24} sm={24} md={20} lg={20} xl={20} style={{ width: '100%' }}>
+                    <Radio.Group
+                      value={paymentMethod}
+                      onChange={onChangePaymentMethod}
+                    >
+                      {payment &&
+                        payment.length > 0 &&
+                        payment.map((values, index) => {
+                          return (
+                            <Radio
+                              style={{ marginTop: '0.5rem' }}
+                              value={values.payment_id}
+                            >
+                              {values.name}
+                            </Radio>
+                          )
+                        })}
+                    </Radio.Group>
+                  </div>
 
-                            {
-                              customerBackup && customerBackup.length > 0 && billQuantity && billQuantity.length > 0 ? (<Dropdown style={{ width: '100%' }} trigger={['click']} overlay={contentCustomer}>
-                                <Input disabled style={{ width: '100%' }} name="name" onClick={onClickSearchCustomer} value={valueSearchCustomer} enterButton onChange={onSearchCustomer} className={styles["orders_manager_content_row_col_search"]}
-                                  placeholder="Tìm khách hàng theo tên, số điện thoại" autocomplete="off" allowClear />
-                              </Dropdown>) : (
-                                <Input disabled style={{ width: '100%' }} name="name" onClick={onClickSearchCustomer} value={valueSearchCustomer} enterButton onChange={onSearchCustomer} className={styles["orders_manager_content_row_col_search"]}
-                                  placeholder="Tìm khách hàng theo tên, số điện thoại" autocomplete="off" allowClear />
-                              )
-                            }
-
-                          </Col>)
-                        }
-
-                        <Col xs={24} sm={24} md={3} lg={3} xl={3} style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                          <Button onClick={showDrawer} icon={<PlusOutlined />} type="primary"></Button>
-                        </Col>
-                        <Col xs={24} sm={24} md={24} lg={24} xl={24} style={{ width: '100%', display: 'flex', margin: '1.5rem 0 0 0 ', justifyContent: 'flex-start', alignItems: 'center' }}>
-                          {
-                            billQuantity && billQuantity.length > 0 ? (<Checkbox checked={customerOddMain} value={customerOddMain} style={{ color: 'black', fontWeight: '600' }} onChange={onChangeCustomerOdd}>Khách lẻ</Checkbox>) : (<Checkbox disabled style={{ color: 'black', fontWeight: '600' }}>Khách lẻ</Checkbox>)
-                          }
-
-                        </Col>
-                      </Row>
-                   
-                      {
-                        billQuantity && billQuantity.length > 0 && billQuantity[billIndex][0].customer && billQuantity[billIndex][0].customer.length > 0 ? (
-                          billQuantity[billIndex][0].customer.map((values, index) => {
-                            return (
-
-                              <div style={{ width: '100%', borderBottom: '1px solid rgb(235, 225, 225)', marginBottom: '1.25rem' }}>
-                                <div
-                                  style={{ marginTop: '1.25rem' }}
-                                  className={
-                                    styles[
-                                    "sell_manager_content_row_col_right_parent_content_money_fix"
-                                    ]
+                  <div
+                    style={{ marginBottom: '1rem' }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money_radio'
+                      ]
+                    }
+                  >
+                    <div>Tiền khách đưa</div>
+                    <Row
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        flexWrap: 'nowrap',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      {moneyPredict.length ? (
+                        moneyPredict.map((values, index) => {
+                          return (
+                            <Col
+                              style={{ width: '100%', marginTop: '0.5rem' }}
+                              xs={24}
+                              sm={11}
+                              md={11}
+                              lg={7}
+                              xl={7}
+                            >
+                              {indexPaymentMoney === index ? (
+                                <Button
+                                  style={{
+                                    width: '7rem',
+                                    backgroundColor: '#50D648',
+                                  }}
+                                  onClick={() =>
+                                    onClickPredictMoney(values, index)
                                   }
-                                >
-                                  <div style={{ width: '100%', fontWeight: '600', color: 'black', paddingBottom: '1rem' }}>{`Tên khách hàng: ${values.first_name} - ${values.phone}.`}</div>
-                                </div>
-                                <div
-                                  className={
-                                    styles[
-                                    "sell_manager_content_row_col_right_parent_content_money_fix"
-                                    ]
+                                  type="primary"
+                                >{`${formatCash(
+                                  String(values || 100000)
+                                )} VNĐ`}</Button>
+                              ) : (
+                                <Button
+                                  style={{ width: '7rem' }}
+                                  onClick={() =>
+                                    onClickPredictMoney(values, index)
                                   }
-                                >
-                                  <div style={{ width: '100%', fontWeight: '600', color: 'black', paddingBottom: '1rem' }}>{`Địa chỉ: ${values.address}.`}</div>
-                                </div>
-                                <div
-                                  className={
-                                    styles[
-                                    "sell_manager_content_row_col_right_parent_content_money_fix"
-                                    ]
-                                  }
-                                >
-                                  {
-                                    values.balance && values.balance.length > 0 ? (<div onClick={showDrawerOrder} style={{ cursor: 'pointer', color: '#336CFB', width: '100%', fontWeight: '600', paddingBottom: '1.5rem' }}>
-                                      {
-                                        values.balance && values.balance.length > 0 ? (`Đơn hàng đã mua: ${values.balance.length}`) : (`Đơn hàng đã mua: 0`)
-                                      }
-                                    </div>) : (<div onClick={showDrawerOrder} style={{ cursor: 'pointer', color: '#336CFB', width: '100%', fontWeight: '600', paddingBottom: '1.5rem' }}>
-                                      {
-                                        values.balance && values.balance.length > 0 ? (`Đơn hàng đã mua: ${values.balance.length}`) : (`Đơn hàng đã mua: 0`)
-                                      }
-                                    </div>)
-                                  }
-
-                                </div>
-
-
-                                <div
-                                  className={
-                                    styles[
-                                    "sell_manager_content_row_col_right_parent_content_money_fix"
-                                    ]
-                                  }
-                                >
-                                  <div style={{ width: '100%', fontWeight: '600', color: 'black', paddingBottom: '1.5rem' }}>Quà tặng</div>
-                                  <Form.Item
-                                    style={{ width: '100%' }}
-                                    name="selectGift"
-                                    // label="Select"
-                                    hasFeedback
-                                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                                  >
-
-                                    <Select style={{ width: '100%' }} defaultValue="default">
-                                      <Option value="default">Chọn quà tặng</Option>
-                                      <Option value="voucherA">Quà tặng A</Option>
-                                      <Option value="voucherB">Quà tặng B</Option>
-                                    </Select>
-                                  </Form.Item>
-                                </div>
-
-
-
-                              </div>
-
-                            )
-                          })
-                        ) : (<div style={{ marginBottom: '1rem' }}></div>)
-                      }
-
-
-
-
-                      <div
-                        style={{ marginBottom: '1.5rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money_radio"
-                          ]
-                        }
-                      >
-                        <div>Phương thức nhận hàng</div>
-
-                        <Radio.Group value={receiveMethod} onChange={onChangeReceiveMethod}>
-                          {
-                            shipping && shipping.length > 0 && shipping.map((values, index) => {
-                              return (
-                                <Radio style={{ marginTop: '0.5rem' }} value={values.transport_id}>{values.name}</Radio>
-                              )
-                            })
-                          }
-
-
-                        </Radio.Group>
-
-                      </div>
-
-
-                      <div
-                        style={{ marginBottom: '1.5rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money_radio"
-                          ]
-                        }
-                      >
-                        <div>Chọn hình thức thanh toán</div>
-
-                        <Radio.Group value={paymentMethod} onChange={onChangePaymentMethod}>
-                          {
-                            payment && payment.length > 0 && payment.map((values, index) => {
-                              return (
-                                <Radio style={{ marginTop: '0.5rem' }} value={values.payment_id}>{values.name}</Radio>
-                              )
-                            })
-                          }
-
-                        </Radio.Group>
-
-                      </div>
-
-                      <div
-                        style={{ marginBottom: '1rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money_radio"
-                          ]
-                        }
-                      >
-                        <div>Tiền khách đưa</div>
-                        {
-                          moneyPredict && moneyPredict.length > 0 ? (<Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                            {
-                              moneyPredict && moneyPredict.length > 0 && moneyPredict.map((values, index) => {
-                                return (
-                                  <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-                                    {
-                                      indexPaymentMoney === index ? (<Button style={{ width: '7rem', backgroundColor: '#50D648' }} onClick={() => onClickPredictMoney(values, index)} type="primary">{`${formatCash(
-                                        String(values))} VNĐ`}</Button>) : (<Button style={{ width: '7rem' }} onClick={() => onClickPredictMoney(values, index)} type="primary">{`${formatCash(
-                                          String(values))} VNĐ`}</Button>)
-                                    }
-
-                                  </Col>
-                                )
-                              })
-                            }
-
-                          </Row>) : (<Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-                              <Button style={{ width: '7rem' }} type="primary">100.000 VNĐ</Button>
+                                  type="primary"
+                                >{`${formatCash(
+                                  String(values || 200000)
+                                )} VNĐ`}</Button>
+                              )}
                             </Col>
-                            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-                              <Button style={{ width: '7rem' }} type="primary">200.000 VNĐ</Button>
-                            </Col>
-                            <Col style={{ width: '100%', marginTop: '0.5rem' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-                              <Button style={{ width: '7rem' }} type="primary">500.000 VNĐ</Button>
-                            </Col>
-
-                          </Row>)
-                        }
-
-
-                      </div>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money_fix"
-                          ]
-                        }
-                      >
-                        <div style={{ fontWeight: '600', color: 'red', fontSize: '1rem' }}> Tiền thối</div>
-                        <div style={{ fontWeight: '600', color: 'red', fontSize: '1rem' }}>{
-                          paidCustomerMoney ?
-                            `${formatCash(
-                              String(paidCustomerMoney))} VNĐ` : '0 VNĐ'}</div>
-                      </div>
-
-
-                      <Input
-                        value={note}
-                        onChange={onChangeNote}
-                        prefix={<EditOutlined />}
-                        style={{ paddingLeft: '0.5rem', marginBottom: '1.5rem' }}
-                        placeholder="Nhập ghi chú đơn hàng"
-                      />
-
-                      <div
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money"
-                          ]
-                        }
-                      >
-                        <div style={{ fontWeight: '600', color: 'black', marginRight: '1rem' }}>Thuế</div>
-                        <div style={{ width: '100%' }}>
-
-                          <Select showSearch
-                            mode="multiple"
-                            style={{ width: '100%' }}
-                            placeholder="Chọn thuế"
-                            optionFilterProp="children"
-
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-
-
-
-
-
-                            onChange={onChangeTax}
-                            value={taxDefault}
-                          >
-                            {/* <Option value="default">Tất cả thuế</Option> */}
-                            {
-                              tax && tax.length > 0 && tax.map((values, index) => {
-                                return (
-                                  <Option value={values.name}>{values.name}</Option>
-                                )
-                              })
-                            }
-                          </Select>
-
-                        </div>
-                      </div>
-                      {
-                        moneyFinish && moneyFinish > 0 ? (
-                          promotionValue && promotionValue === 'default' ? (<div
-                            style={{ paddingTop: '0.5rem' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', marginRight: '1rem' }}>Voucher</div>
-
-                            <Input style={{ width: '100%' }} name="name" value={voucher} enterButton onChange={onChangeVoucher} className={styles["orders_manager_content_row_col_search"]}
-                              placeholder="Nhập voucher" autocomplete="off" allowClear />
-                          </div>) : (<div
-                            style={{ paddingTop: '0.5rem' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', marginRight: '1rem' }}>Voucher</div>
-                            <Input disabled style={{ width: '100%' }} name="name" value={voucher} enterButton onChange={onChangeVoucher} className={styles["orders_manager_content_row_col_search"]}
-                              placeholder="Nhập voucher" autocomplete="off" allowClear />
-                          </div>)
-                        ) : (
-                          promotionValue && promotionValue === 'Chọn voucher' ? (<div
-                            style={{ paddingTop: '0.5rem' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', marginRight: '1rem' }}>Voucher</div>
-                            <Input disabled style={{ width: '100%' }} name="name" value={voucher} enterButton onChange={onChangeVoucher} className={styles["orders_manager_content_row_col_search"]}
-                              placeholder="Nhập voucher" autocomplete="off" allowClear />
-                          </div>) : (<div
-                            style={{ paddingTop: '0.5rem' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', marginRight: '1rem' }}>Voucher</div>
-                            <Input disabled style={{ width: '100%' }} name="name" value={voucher} enterButton onChange={onChangeVoucher} className={styles["orders_manager_content_row_col_search"]}
-                              placeholder="Nhập voucher" autocomplete="off" allowClear />
-                          </div>)
-                        )
-                      }
-
-
-
-                      {
-                        moneyFinish && moneyFinish > 0 ? (
-                          <div
-                            style={{ margin: '1.25rem 0 1rem 0' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', }}>Áp dụng CTKM</div>
-                            {
-                              voucher && voucher !== '' || voucher && voucher !== 'default' || voucher && voucher !== ' ' ? (<Select style={{ width: '100%' }} disabled defaultValue="default">
-                                <Option value="default">Chọn voucher</Option>
-                                {
-                                  promotion && promotion.length > 0 && promotion.map((values, index) => {
-                                    return (
-                                      <Option value={values}>{values}</Option>
-                                    )
-                                  })
-                                }
-
-
-
-                              </Select>) : (<Select style={{ width: '100%' }} placeHolder="Chọn voucher" value={promotionValue} onChange={onChangePromotionValue} >
-                                <Option value="default">Không dùng</Option>
-                                {
-
-                                  promotion && promotion.length > 0 && promotion.map((values, index) => {
-                                    return (
-                                      <Option value={values.name}>{values.name}</Option>
-                                    )
-                                  })
-                                }
-
-
-
-                              </Select>)
-                            }
-
-                          </div>
-                        ) : (
-                          <div
-                            style={{ margin: '1.25rem 0 1rem 0' }}
-                            className={
-                              styles[
-                              "sell_manager_content_row_col_right_parent_content_money_fix"
-                              ]
-                            }
-                          >
-                            <div style={{ fontWeight: '600', color: 'black', }}>Áp dụng CTKM</div>
-                            {
-                              voucher && voucher !== '' || voucher && voucher !== 'default' || voucher && voucher !== ' ' ? (<Select style={{ width: '100%' }} disabled defaultValue="default">
-                                <Option value="default">Không</Option>
-                                {
-                                  promotion && promotion.length > 0 && promotion.map((values, index) => {
-                                    return (
-                                      <Option value={values}>{values}</Option>
-                                    )
-                                  })
-                                }
-
-
-
-                              </Select>) : (<Select style={{ width: '100%' }} disabled placeHolder="Chọn voucher" value={promotionValue} onChange={onChangePromotionValue} >
-
-                                {
-                                  promotion && promotion.length > 0 && promotion.map((values, index) => {
-                                    return (
-                                      <Option value={values}>{values}</Option>
-                                    )
-                                  })
-                                }
-
-
-
-                              </Select>)
-                            }
-
-                          </div>
-                        )
-                      }
-
-                      <div
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money"
-                          ]
-                        }
-                      >
-                        <div style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}>Tổng tiền</div>
-                        <div style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}>
-                          {
-                            confirm === 1 && moneyTotal && billQuantity && billQuantity.length > 0 && moneyTotal > 0 ? (`${formatCash(
-                              String(moneyTotal))} VNĐ`) : ('0 VNĐ')
-                          }
-
-                        </div>
-                      </div>
-
-                      <div
-                        style={{ paddingBottom: '0.25rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money"
-                          ]
-                        }
-                      >
-                        <div
-                          style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}
-                        >
-                          Chiết khấu
-                        </div>
-                        <div style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}>
-                          {
-                            confirm === 1 && discount && billQuantity && billQuantity.length > 0 && discount > 0 && discountMoney && discountMoney > 0 ? (`-${formatCash(
-                              String(discountMoney))} VNĐ`) : ('0 VNĐ')
-                          }
-                         
-                        </div>
-                      </div>
-                      <div
-                        style={{ paddingBottom: '0.25rem' }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money"
-                          ]
-                        }
-                      >
-                        <div
-                          style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}
-                        >
-                          Tổng thuế
-                        </div>
-                        <div style={{ fontWeight: '600', color: 'black', fontSize: '1rem' }}>
-                          {
-                            confirm === 1 && taxPercentValue && billQuantity && billQuantity.length > 0 && taxPercentValue > 0 && taxMoneyValue && taxMoneyValue > 0 ? (`+${formatCash(
-                              String(taxMoneyValue))} VNĐ`) : ('0 VNĐ')
-                          }
-                    
-                        </div>
-                      </div>
-                      <div
-                        style={{ borderTop: '1px solid grey', paddingTop: '1rem', }}
-                        className={
-                          styles[
-                          "sell_manager_content_row_col_right_parent_content_money"
-                          ]
-                        }
-                      >
-                        <div
-                          style={{ fontWeight: '600', color: 'black', fontSize: '1.25rem' }}
-                        >
-                          Thành tiền
-                        </div>
-                        <div style={{ fontWeight: '600', color: 'black', fontSize: '1.25rem' }}>
-                          {
-                            confirm === 1 && moneyFinish && billQuantity && billQuantity.length > 0 && moneyFinish > 0 ? (`${formatCash(
-                              String(moneyFinish))} VNĐ`) : ('0 VNĐ')
-                          }
-                        </div>
-                      </div>
-
-
-                    </div>
-
+                          )
+                        })
+                      ) : (
+                        <>
+                          <Button type="primary">100.000 VND</Button>
+                          <Button type="primary">200.000 VND</Button>
+                          <Button type="primary">300.000 VND</Button>
+                        </>
+                      )}
+                    </Row>
+                  </div>
+                  <div
+                    style={{ marginBottom: '0.5rem' }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money_fix'
+                      ]
+                    }
+                  >
                     <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'red',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Tiền thối
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'red',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {paidCustomerMoney
+                        ? `${formatCash(String(paidCustomerMoney))} VNĐ`
+                        : '0 VNĐ'}
+                    </div>
+                  </div>
+
+                  <Input
+                    size="large"
+                    value={note}
+                    onChange={onChangeNote}
+                    prefix={<EditOutlined />}
+                    placeholder="Nhập ghi chú đơn hàng"
+                    style={{ marginBottom: 23 }}
+                  />
+
+                  <div
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money'
+                      ]
+                    }
+                  >
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        marginRight: '1rem',
+                      }}
+                    >
+                      Thuế
+                    </div>
+                    <div style={{ width: '100%' }}>
+                      <Select
+                        size="large"
+                        showSearch
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="Chọn thuế"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
+                        onChange={onChangeTax}
+                        value={taxDefault}
+                      >
+                        {/* <Option value="default">Tất cả thuế</Option> */}
+                        {tax &&
+                          tax.length > 0 &&
+                          tax.map((values, index) => {
+                            return (
+                              <Option value={values.name}>{values.name}</Option>
+                            )
+                          })}
+                      </Select>
+                    </div>
+                  </div>
+                  {moneyFinish && moneyFinish > 0 ? (
+                    <div
+                      style={{ paddingTop: '0.5rem' }}
                       className={
                         styles[
-                        "sell_manager_content_row_col_right_parent_content_money_input_button"
+                          'sell_manager_content_row_col_right_parent_content_money_fix'
                         ]
                       }
                     >
-                      <div>
-                
+                      <div
+                        style={{
+                          fontWeight: '600',
+                          color: 'black',
+                          marginRight: '1rem',
+                        }}
+                      >
+                        Voucher
                       </div>
-                      <div>
-                        <Button
-                          onClick={onClickPayment}
-                          style={{ borderRadius: '0.25rem' }}
-                          size="large"
-                          className={styles["button_background_right"]}
-                        >
-                          Thanh toán (F5)
-                        </Button>
-                      </div>
+                      <Input
+                        disabled={
+                          promotionValue && promotionValue === 'default'
+                            ? false
+                            : true
+                        }
+                        style={{ width: '100%' }}
+                        name="name"
+                        value={voucher}
+                        enterButton
+                        onChange={onChangeVoucher}
+                        size="large"
+                        placeholder="Nhập voucher"
+                        autocomplete="off"
+                        allowClear
+                      />
                     </div>
-                  </Form>
-                </div>
-              </Col>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem', alignItems: 'center', width: '100%', color: 'black', fontSize: '1rem', fontWeight: '600' }}>
-                {
-                  `Tên nhân viên: ${userEmployee.first_name} ${userEmployee.last_name}`
-                }
-              </div>
-            </Row>
-          </div>
-        </div>
-        <Modal
-          title="Tùy chọn"
-          centered
-          width={1000}
-          footer={null}
-          visible={modal2Visible}
-          onOk={() => modal2VisibleModal(false)}
-          onCancel={() => modal2VisibleModal(false)}
-        >
-          <Row style={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
-            <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-              <Row style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <Popover placement="right" content={() => contentHoverVariant(objectVariant.image[0])}>
-                    <img src={objectVariant && objectVariant.image && objectVariant.image.length > 0 ? objectVariant.image[0] : ''} style={{ width: '100%', cursor: 'pointer', height: '100%', objectFit: 'contain' }} alt="" />
-                  </Popover>
-                </Col>
-                <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    {
-                      objectVariant && objectVariant.image && objectVariant.image.length > 0 && objectVariant.image.map((values, index) => {
-                        if (index !== 0) {
-                          return (
-                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-                              <Popover placement="right" content={() => contentHoverVariant(values)}>
-                                <img src={values} style={{ marginTop: '1rem', cursor: 'pointer', width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
-                              </Popover>
-                            </Col>
-                          )
-                        }
-
-                      })
-                    }
-
-                  </Row>
-                </Col>
-              </Row>
-            </Col>
-            <Col style={{ width: '100%', marginLeft: '1.5rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
-              <div className={styles['variant']}>
-                <div style={{ color: 'black', fontWeight: '600', width: '100%', fontSize: '1.5rem' }}>{objectVariant.title}</div>
-                <div style={{ width: '100%' }}>
-                  <div style={{ color: 'black', fontSize: '1.5rem', fontWeight: '600' }}>{`${formatCash(
-                    String(objectVariant.sale_price))} đ`}</div>
-                  <div style={{ textDecoration: 'line-through', color: 'grey', fontSize: '1.25rem', marginLeft: '1rem', fontWeight: '600' }}>{`${formatCash(
-                    String(objectVariant.sale_price * 2))} đ`}</div>
-                </div>
-                <div style={{ width: '100%' }}>
-                  <div style={{ color: 'grey', fontSize: '1rem', fontWeight: '600', }}>Màu sắc: </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                    {
-                      record && record.attributes && record.attributes.length > 0 && record.attributes.map((values1, index1) => {
-                        if (index1 === 0) {
-                          return (
-                            values1.values.map((values2, index2) => {
-                              if (index2 === color) {
-                                return (
-
-                                  <div style={{ color: 'black', marginLeft: '1rem', fontWeight: '600', fontSize: '1.25rem' }}>{values2}</div>
-                                )
-                              }
-                            })
-                          )
-                        }
-                      })
-                    }
-                  </div>
-                </div>
-                <div style={{ width: '100%', marginTop: '0.5rem' }}>
-                  {
-                    record && record.attributes && record.attributes.length > 0 && record.attributes.map((values1, index1) => {
-                      if (index1 === 0) {
-                        return (
-                          values1.values.map((values2, index2) => {
-                            if (index2 === color) {
-                              return (
-
-                                <div onClick={() => onClickColor(index2, values2)} style={{ backgroundColor: '#E6F2FF', fontWeight: '600', border: '1px solid #165FB4', color: 'black', marginRight: '1rem', padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.25rem' }}>{values2}</div>
-                              )
-                            } else {
-                              return (
-
-                                <div onClick={() => onClickColor(index2, values2)} style={{ backgroundColor: '#F2F2F2', color: 'black', marginRight: '1rem', padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.25rem' }}>{values2}</div>
-                              )
-                            }
-                          })
-                        )
+                  ) : (
+                    <div
+                      style={{ paddingTop: '0.5rem' }}
+                      className={
+                        styles[
+                          'sell_manager_content_row_col_right_parent_content_money_fix'
+                        ]
                       }
-                    })
-                  }
-                </div>
-
-
-
-
-
-                <div style={{ width: '100%', marginTop: '0.5rem' }}>
-                  <div style={{ color: 'grey', fontSize: '1rem', fontWeight: '600', }}>Kích thước: </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                    {
-                      record && record.attributes && record.attributes.length > 0 && record.attributes.map((values1, index1) => {
-                        if (index1 === 1) {
-                          return (
-                            values1.values.map((values2, index2) => {
-                              if (index2 === size) {
-                                return (
-
-                                  <div style={{ color: 'black', marginLeft: '1rem', fontWeight: '600', fontSize: '1.25rem' }}>{values2}</div>
-                                )
-                              }
-                            })
-                          )
-                        }
-                      })
-                    }
-                  </div>
-                </div>
-                <div style={{ width: '100%', marginTop: '0.5rem' }}>
-                  {
-                    record && record.attributes && record.attributes.length > 0 && record.attributes.map((values1, index1) => {
-                      if (index1 === 1) {
-                        return (
-                          values1.values.map((values2, index2) => {
-                            if (index2 === size) {
-                              return (
-
-                                <div onClick={() => onClickSize(index2, values2)} style={{ backgroundColor: '#E6F2FF', fontWeight: '600', border: '1px solid #165FB4', color: 'black', marginRight: '1rem', padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.25rem' }}>{values2}</div>
-                              )
-                            } else {
-                              return (
-
-                                <div onClick={() => onClickSize(index2, values2)} style={{ backgroundColor: '#F2F2F2', color: 'black', marginRight: '1rem', padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.25rem' }}>{values2}</div>
-                              )
-                            }
-                          })
-                        )
-                      }
-                    })
-                  }
-                </div>
-                <div style={{ width: '100%', flexDirection: 'column', marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                  <div style={{ color: 'grey', fontSize: '1rem', marginTop: '0.25rem', fontWeight: '600', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>Số lượng: </div>
-                  <div style={{ width: '100%', marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                    <ButtonGroup style={{ width: '100%', marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                      {
-                        orderStatus === 'order now' ? (parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity) > 0 ? (<Button onClick={decline}>
-                          <MinusOutlined />
-                        </Button>) : (<Button disabled onClick={decline}>
-                          <MinusOutlined />
-                        </Button>)) : (<Button onClick={decline}>
-                          <MinusOutlined />
-                        </Button>)
-                      }
-
-                      {
-                        orderStatus === 'order now' ? (parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity) > 0 ? (
-                          <Input
-                            value={quantity} style={{ width: '5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }} name="quantity" onChange={onChangeQuantity} />) : (<Input
-                              disabled
-                              value={quantity} style={{ width: '5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }} name="quantity" onChange={onChangeQuantity} />)
-                        ) : (<Input
-                          value={quantity} style={{ width: '5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }} name="quantity" onChange={onChangeQuantity} />)
-                      }
-
-
-
-                      {
-                        orderStatus === 'order now' ? (parseInt(objectVariant.available_stock_quantity) + parseInt(objectVariant.low_stock_quantity) > 0 ? (<Button onClick={increase}>
-                          <PlusOutlined />
-                        </Button>) : (<Button disabled onClick={increase}>
-                          <PlusOutlined />
-                        </Button>)) : (<Button onClick={increase}>
-                          <PlusOutlined />
-                        </Button>)
-                      }
-
-
-
-                    </ButtonGroup>
-                  </div>
-                </div>
-                <div>
-                  <div></div>
-                  <div></div>
-                </div>
-              </div>
-            </Col>
-            {
-              checkQuantity.length === 0 ? (checkVariantSize.length === 1 && checkVariantColor.length === 1 && checkQuantity.length === 0 ? (<div onClick={onClickAddProductVariant} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button type="primary" style={{ width: '10rem' }}>Thêm vào giỏ hàng</Button></div>) : (
-                checkVariantSize.length === 0 && checkVariantColor.length === 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button disabled type="primary" style={{ width: '10rem' }}>Chưa có thuộc tính</Button></div>) : (
-                  checkQuantity.length === 1 ? (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}>
-                    <Button disabled type="primary" style={{ width: '10rem' }}>Không đủ hàng</Button>
-                  </div>) : (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}>
-                    <Button disabled type="primary" style={{ width: '10rem' }}>Hết hàng</Button>
-                  </div>)
-
-                )
-              )) : (checkVariantSize.length === 1 && checkVariantColor.length === 1 && checkQuantity.length === 0 ? (<div onClick={onClickAddProductVariant} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button type="primary" style={{ width: '10rem' }}>Thêm vào giỏ hàng</Button></div>) : (
-                checkVariantSize.length === 0 && checkVariantColor.length === 0 ? (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}><Button disabled type="primary" style={{ width: '10rem' }}>Chưa có thuộc tính</Button></div>) : (
-                  checkQuantity.length === 1 ? (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}>
-                    <Button disabled type="primary" style={{ width: '10rem' }}>Không đủ hàng</Button>
-                  </div>) : (<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', marginTop: '1rem' }}>
-                    <Button disabled type="primary" style={{ width: '10rem' }}>Hết hàng</Button>
-                  </div>)
-
-                )
-              ))
-            }
-
-          </Row>
-        </Modal>
-        <Drawer
-          title="Thêm mới khách hàng"
-          width={1000}
-          onClose={onClose}
-          visible={visible}
-          bodyStyle={{ paddingBottom: 80 }}
-        >
-          <Form
-            layout="vertical"
-            initialValues={branchDetail}
-            form={form}
-            onFinish={onFinishAddCustomer}
-            style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-              <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Tên khách hàng</div>
-                <Input value={customerName} onChange={onChangeCustomerName} placeholder="Nhập tên khách hàng" />
-
-
-              </Col>
-              <Col style={{ width: '100%', marginBottom: '1.5rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}><b style={{ color: 'red' }}>*</b>Liên hệ</div>
-                <Input value={randomPhoneValue} onChange={onChangeRandom} placeholder="Nhập liên hệ" />
-
-              </Col>
-            </Row>
-
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Tỉnh/thành phố</div>
-                <Form.Item
-
-                  name="ward"
-
-                >
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn tỉnh/thành phố"
-                    optionFilterProp="children"
-
-
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    } value={city ? city : 'default'} onChange={(event) => { handleChangeCity(event) }}>
-                    <Option value="default">Tất cả tỉnh/thành phố</Option>
-                    {
-                      provinceMain && provinceMain.length > 0 && provinceMain.map((values, index) => {
-                        return (
-                          <Option value={values.province_name}>{values.province_name}</Option>
-                        )
-                      })
-                    }
-                  </Select>
-                </Form.Item>
-
-              </Col>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Độ tuổi</div>
-                <Radio.Group onChange={onChangeBirthday} value={value}>
-                  <Radio value={'18'}>Dưới 18</Radio>
-                  <Radio value={'25'}>18 đến 25</Radio>
-                  <Radio value={'35'}>25 đến 35</Radio>
-                  <Radio value={'100'}>Trên 35</Radio>
-                </Radio.Group>
-
-              </Col>
-            </Row>
-
-            <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%', }}>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Quận/huyện</div>
-                <Form.Item
-
-                  name="district"
-
-                >
-                  <Select showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn quận/huyện"
-                    optionFilterProp="children"
-
-
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    } >
-                    <Option value="default">Tất cả quận/huyện</Option>
-                    {
-                      districtMainAPI && districtMainAPI.length > 0 ? (districtMainAPI && districtMainAPI.length > 0 && districtMainAPI.map((values, index) => {
-                        return (
-                          <Option value={values.district_name}>{values.district_name}</Option>
-                        )
-                      })) : (districtMain && districtMain.length > 0 && districtMain.map((values, index) => {
-                        return (
-                          <Option value={values.district_name}>{values.district_name}</Option>
-                        )
-                      }))
-                    }
-                  </Select>
-                </Form.Item>
-
-              </Col>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Địa chỉ</div>
-                <Form.Item
-
-                  name="address"
-
-                >
-                  <Input placeholder="Nhập địa chỉ" />
-                </Form.Item>
-
-              </Col>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-
-
-              </Col>
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ color: 'black', fontWeight: '600', marginBottom: '0.5rem' }}>Giới tính</div>
-
-                <Radio.Group onChange={onChangeSex} value={valueSex}>
-                  <Radio value={'Nam'}>Nam</Radio>
-                  <Radio value={'Nữ'}>Nữ</Radio>
-                  <Radio value={'Khác'}>Khác</Radio>
-                </Radio.Group>
-
-
-              </Col>
-            </Row>
-
-            <Form.Item style={{ display: 'flex', marginTop: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                <Button htmlType="submit" type="primary" style={{ with: '10rem' }}>Thêm khách hàng</Button>
-              </div>
-
-            </Form.Item>
-          </Form>
-        </Drawer>
-        <Drawer
-          title="Đơn hàng đặt gần nhất"
-          width={600}
-          onClose={onCloseOrder}
-          visible={visibleOrder}
-          bodyStyle={{ paddingBottom: 80 }}
-        >
-          {
-            customerOnClick && customerOnClick.length > 0 && customerOnClick.balance && customerOnClick.balance.length > 0 ? (
-              <div style={{
-                height: '100%', maxHeight: '100%', overflow: 'auto',
-                display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column'
-              }}>
-                < div className={styles['order']} >
-                  <div>
-                    <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Nguyễn Văn A - 0384943497</div>
-                    <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
-                  </div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Giày thể thao kiểu dáng Hàn Quốc</div>
-                  <div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>Màu: Đỏ Đen, Size: 38</div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
-                  </div>
-                  <div style={{ color: 'grey', paddingBottom: '1rem', borderBottom: '1px solid rgb(233, 217, 217)', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>250,000 VNĐ</div>
-                  <div style={{ color: 'black', paddingBottom: '1rem', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', fontWeight: '600', marginTop: '0.5rem', alignItems: 'center', width: '100%' }}>Thành tiền: 500,000 VNĐ</div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem' }}>Đặt lại</Button></div>
-                </div>
-                <div className={styles['order']}>
-                  <div>
-                    <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Nguyễn Văn A - 0384943497</div>
-                    <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
-                  </div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Giày thể thao kiểu dáng Hàn Quốc</div>
-                  <div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>Màu: Đỏ Đen, Size: 38</div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
-                  </div>
-                  <div style={{ color: 'grey', paddingBottom: '1rem', borderBottom: '1px solid rgb(233, 217, 217)', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>250,000 VNĐ</div>
-                  <div style={{ color: 'black', paddingBottom: '1rem', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', fontWeight: '600', marginTop: '0.5rem', alignItems: 'center', width: '100%' }}>Thành tiền: 500,000 VNĐ</div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem' }}>Đặt lại</Button></div>
-                </div>
-                <div className={styles['order']}>
-                  <div>
-                    <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Nguyễn Văn A - 0384943497</div>
-                    <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
-                  </div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Giày thể thao kiểu dáng Hàn Quốc</div>
-                  <div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>Màu: Đỏ Đen, Size: 38</div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
-                  </div>
-                  <div style={{ color: 'grey', paddingBottom: '1rem', borderBottom: '1px solid rgb(233, 217, 217)', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>250,000 VNĐ</div>
-                  <div style={{ color: 'black', paddingBottom: '1rem', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', fontWeight: '600', marginTop: '0.5rem', alignItems: 'center', width: '100%' }}>Thành tiền: 500,000 VNĐ</div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem' }}>Đặt lại</Button></div>
-                </div>
-                <div className={styles['order']}>
-                  <div>
-                    <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Nguyễn Văn A - 0384943497</div>
-                    <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
-                  </div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}>Giày thể thao kiểu dáng Hàn Quốc</div>
-                  <div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>Màu: Đỏ Đen, Size: 38</div>
-                    <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
-                  </div>
-                  <div style={{ color: 'grey', paddingBottom: '1rem', borderBottom: '1px solid rgb(233, 217, 217)', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>250,000 VNĐ</div>
-                  <div style={{ color: 'black', paddingBottom: '1rem', fontSize: '1rem', display: 'flex', justifyContent: 'flex-end', fontWeight: '600', marginTop: '0.5rem', alignItems: 'center', width: '100%' }}>Thành tiền: 500,000 VNĐ</div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem' }}>Đặt lại</Button></div>
-                </div>
-              </div>
-            ) : ('Chưa có đơn hàng nào')
-          }
-
-        </Drawer>
-        <Modal
-          title="Chi tiết thông tin đơn hàng"
-          centered
-          width={1000}
-          footer={null}
-          visible={modal3Visible}
-          onOk={() => modal3VisibleModal(false)}
-          onCancel={() => modal3VisibleModal(false)}
-        >
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-
-            {
-              billQuantity && billQuantity.length > 0 && billQuantity[billIndex][0].customer && billQuantity[billIndex][0].customer.length > 0 && billQuantity[billIndex][0].customer.map((values1, index1) => {
-                return (
-                  <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                        <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Tên khách hàng:</div>
-                        <div>{values1.first_name}</div>
+                    >
+                      <div
+                        style={{
+                          fontWeight: '600',
+                          color: 'black',
+                          marginRight: '1rem',
+                        }}
+                      >
+                        Voucher
                       </div>
-                    </Col>
-                    <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                        <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Địa chỉ:</div>
-                        <div>{values1.address}</div>
-                      </div>
-                    </Col>
-                  </Row>
-                )
-              })
-            }
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Phương thức nhận hàng:</div>
-                  <div>{receiveMethodName}</div>
-                </div>
-              </Col>
-              <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Hình thức thanh toán:</div>
-                  <div>{paymentForm}</div>
-                </div>
-              </Col>
-            </Row>
-            <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginBottom: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Thuế:</div>
-                  {
-                    taxDefault && taxDefault.length > 0 && taxDefault.map((values, index) => {
-                      if (index === 0) {
-                        return <div>{`${values}`}</div>
+                      <Input
+                        disabled
+                        style={{ width: '100%' }}
+                        name="name"
+                        value={voucher}
+                        enterButton
+                        onChange={onChangeVoucher}
+                        size="large"
+                        placeholder="Nhập voucher"
+                        autocomplete="off"
+                        allowClear
+                      />
+                    </div>
+                  )}
 
-                      } else {
-                        return <div>{`, ${values}`}</div>
-
+                  {moneyFinish && moneyFinish > 0 ? (
+                    <div
+                      style={{ margin: '1.25rem 0 1rem 0' }}
+                      className={
+                        styles[
+                          'sell_manager_content_row_col_right_parent_content_money_fix'
+                        ]
                       }
+                    >
+                      <div style={{ fontWeight: '600', color: 'black' }}>
+                        Áp dụng CTKM
+                      </div>
+                      {(voucher && voucher !== '') ||
+                      (voucher && voucher !== 'default') ||
+                      (voucher && voucher !== ' ') ? (
+                        <Select
+                          style={{ width: '100%' }}
+                          disabled
+                          defaultValue="default"
+                        >
+                          <Option value="default">Chọn voucher</Option>
+                          {promotion &&
+                            promotion.length > 0 &&
+                            promotion.map((values, index) => {
+                              return <Option value={values}>{values}</Option>
+                            })}
+                        </Select>
+                      ) : (
+                        <Select
+                          size="large"
+                          style={{ width: '100%' }}
+                          placeHolder="Chọn voucher"
+                          value={promotionValue}
+                          onChange={onChangePromotionValue}
+                        >
+                          <Option value="default">Không dùng</Option>
+                          {promotion &&
+                            promotion.length > 0 &&
+                            promotion.map((values, index) => {
+                              return (
+                                <Option value={values.name}>
+                                  {values.name}
+                                </Option>
+                              )
+                            })}
+                        </Select>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      style={{ margin: '1.25rem 0 1rem 0' }}
+                      className={
+                        styles[
+                          'sell_manager_content_row_col_right_parent_content_money_fix'
+                        ]
+                      }
+                    >
+                      <div style={{ fontWeight: '600', color: 'black' }}>
+                        Áp dụng CTKM
+                      </div>
+                      {(voucher && voucher !== '') ||
+                      (voucher && voucher !== 'default') ||
+                      (voucher && voucher !== ' ') ? (
+                        <Select
+                          style={{ width: '100%' }}
+                          disabled
+                          defaultValue="default"
+                        >
+                          <Option value="default">Không</Option>
+                          {promotion &&
+                            promotion.length > 0 &&
+                            promotion.map((values, index) => {
+                              return <Option value={values}>{values}</Option>
+                            })}
+                        </Select>
+                      ) : (
+                        <Select
+                          size="large"
+                          style={{ width: '100%' }}
+                          disabled
+                          placeHolder="Chọn voucher"
+                          value={promotionValue}
+                          onChange={onChangePromotionValue}
+                        >
+                          {promotion &&
+                            promotion.length > 0 &&
+                            promotion.map((values, index) => {
+                              return <Option value={values}>{values}</Option>
+                            })}
+                        </Select>
+                      )}
+                    </div>
+                  )}
 
+                  <div
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money'
+                      ]
                     }
+                  >
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Tổng tiền
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {confirm === 1 &&
+                      moneyTotal &&
+                      billQuantity &&
+                      billQuantity.length > 0 &&
+                      moneyTotal > 0
+                        ? `${formatCash(String(moneyTotal))} VNĐ`
+                        : '0 VNĐ'}
+                    </div>
+                  </div>
 
-                    )
-                  }
-
-                </div>
-              </Col>
-              <Col style={{ width: '100%', }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Ghi chú:</div>
-                  <div>{note ? note : 'không có ghi chú'}</div>
-                </div>
-              </Col>
-            </Row>
-            <Table style={{ marginTop: '0.5rem', marginBottom: '1rem' }} pagination={false} bordered columns={columnsTable} dataSource={orderDetail} scroll={{ y: 250 }} />
-
-            <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Tổng tiền:</div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>
-                    {
-                      confirm === 1 && moneyTotal && billQuantity && billQuantity.length > 0 && moneyTotal > 0 ? (`${formatCash(
-                        String(moneyTotal))} VNĐ`) : ('0 VNĐ')
+                  <div
+                    style={{ paddingBottom: '0.25rem' }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money'
+                      ]
                     }
-
+                  >
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Chiết khấu
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {confirm === 1 &&
+                      discount &&
+                      billQuantity &&
+                      billQuantity.length > 0 &&
+                      discount > 0 &&
+                      discountMoney &&
+                      discountMoney > 0
+                        ? `-${formatCash(String(discountMoney))} VNĐ`
+                        : '0 VNĐ'}
+                    </div>
+                  </div>
+                  <div
+                    style={{ paddingBottom: '0.25rem' }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money'
+                      ]
+                    }
+                  >
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      Tổng thuế
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {confirm === 1 &&
+                      taxPercentValue &&
+                      billQuantity &&
+                      billQuantity.length > 0 &&
+                      taxPercentValue > 0 &&
+                      taxMoneyValue &&
+                      taxMoneyValue > 0
+                        ? `+${formatCash(String(taxMoneyValue))} VNĐ`
+                        : '0 VNĐ'}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      borderTop: '1px solid grey',
+                      paddingTop: '1rem',
+                    }}
+                    className={
+                      styles[
+                        'sell_manager_content_row_col_right_parent_content_money'
+                      ]
+                    }
+                  >
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1.25rem',
+                      }}
+                    >
+                      Thành tiền
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: '600',
+                        color: 'black',
+                        fontSize: '1.25rem',
+                      }}
+                    >
+                      {confirm === 1 &&
+                      moneyFinish &&
+                      billQuantity &&
+                      billQuantity.length > 0 &&
+                      moneyFinish > 0
+                        ? `${formatCash(String(moneyFinish))} VNĐ`
+                        : '0 VNĐ'}
+                    </div>
                   </div>
                 </div>
-              </Col>
 
-            </Row>
-
-            <Row style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Chiết khấu:</div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>
-                    {
-                      confirm === 1 && discount && billQuantity && billQuantity.length > 0 && discount > 0 && discountMoney && discountMoney > 0 ? (`-${formatCash(
-                        String(discountMoney))} VNĐ`) : ('0 VNĐ')
-                    }</div>
+                <div
+                  className={
+                    styles[
+                      'sell_manager_content_row_col_right_parent_content_money_input_button'
+                    ]
+                  }
+                >
+                  <div></div>
+                  <div>
+                    <Button
+                      onClick={onClickPayment}
+                      style={{ borderRadius: '0.25rem' }}
+                      size="large"
+                      className={styles['button_background_right']}
+                    >
+                      Thanh toán (F5)
+                    </Button>
+                  </div>
                 </div>
-              </Col>
-
-            </Row>
-
-
-            <Row style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem', alignItems: 'center', width: '100%' }}>
-
-              <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>Tổng thuế:</div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginRight: '0.25rem' }}>  {
-                    confirm === 1 && taxPercentValue && billQuantity && billQuantity.length > 0 && taxPercentValue > 0 && taxMoneyValue && taxMoneyValue > 0 ? (`+${formatCash(
-                      String(taxMoneyValue))} VNĐ`) : ('0 VNĐ')
-                  }</div>
-                </div>
-              </Col>
-            </Row>
-
-            <Row style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', marginTop: '1.5rem', borderTop: '1px solid grey', margin: '1rem 0', alignItems: 'center', width: '100%' }}>
-
-              <Col style={{ width: '100%', }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1.25rem', marginRight: '0.25rem' }}>Thành tiền:</div>
-                  <div style={{ color: 'black', fontWeight: '600', fontSize: '1.25rem', marginRight: '0.25rem' }}>     {
-                    confirm === 1 && moneyFinish && billQuantity && billQuantity.length > 0 && moneyFinish > 0 ? (`${formatCash(
-                      String(moneyFinish))} VNĐ`) : ('0 VNĐ')
-                  }</div>
-                </div>
-              </Col>
-            </Row>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <Button
-                onClick={onClickPaymentFinish}
-                style={{ borderRadius: '0.25rem' }}
-                size="large"
-                className={styles["button_background_right"]}
+              </Form>
+            </div>
+          </Col>
+        </Row>
+      </div>
+      <Modal
+        title="Tùy chọn"
+        centered
+        width={1000}
+        footer={null}
+        visible={modal2Visible}
+        onOk={() => modal2VisibleModal(false)}
+        onCancel={() => modal2VisibleModal(false)}
+      >
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Row
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
               >
-                Đồng ý
+                <Popover
+                  placement="right"
+                  content={() => contentHoverVariant(objectVariant.image[0])}
+                >
+                  <img
+                    src={
+                      objectVariant &&
+                      objectVariant.image &&
+                      objectVariant.image.length > 0
+                        ? objectVariant.image[0]
+                        : ''
+                    }
+                    style={{
+                      width: '100%',
+                      cursor: 'pointer',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                    alt=""
+                  />
+                </Popover>
+              </Col>
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
+              >
+                <Row
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {objectVariant &&
+                    objectVariant.image &&
+                    objectVariant.image.length > 0 &&
+                    objectVariant.image.map((values, index) => {
+                      if (index !== 0) {
+                        return (
+                          <Col
+                            style={{ width: '100%' }}
+                            xs={24}
+                            sm={24}
+                            md={11}
+                            lg={11}
+                            xl={7}
+                          >
+                            <Popover
+                              placement="right"
+                              content={() => contentHoverVariant(values)}
+                            >
+                              <img
+                                src={values}
+                                style={{
+                                  marginTop: '1rem',
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain',
+                                }}
+                                alt=""
+                              />
+                            </Popover>
+                          </Col>
+                        )
+                      }
+                    })}
+                </Row>
+              </Col>
+            </Row>
+          </Col>
+          <Col
+            style={{ width: '100%', marginLeft: '1.5rem' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <div className={styles['variant']}>
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  width: '100%',
+                  fontSize: '1.5rem',
+                }}
+              >
+                {objectVariant.title}
+              </div>
+              <div style={{ width: '100%' }}>
+                <div
+                  style={{
+                    color: 'black',
+                    fontSize: '1.5rem',
+                    fontWeight: '600',
+                  }}
+                >{`${formatCash(String(objectVariant.sale_price))} đ`}</div>
+                <div
+                  style={{
+                    textDecoration: 'line-through',
+                    color: 'grey',
+                    fontSize: '1.25rem',
+                    marginLeft: '1rem',
+                    fontWeight: '600',
+                  }}
+                >{`${formatCash(String(objectVariant.sale_price * 2))} đ`}</div>
+              </div>
+              <div style={{ width: '100%' }}>
+                <div
+                  style={{ color: 'grey', fontSize: '1rem', fontWeight: '600' }}
+                >
+                  Màu sắc:{' '}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                  }}
+                >
+                  {record &&
+                    record.attributes &&
+                    record.attributes.length > 0 &&
+                    record.attributes.map((values1, index1) => {
+                      if (index1 === 0) {
+                        return values1.values.map((values2, index2) => {
+                          if (index2 === color) {
+                            return (
+                              <div
+                                style={{
+                                  color: 'black',
+                                  marginLeft: '1rem',
+                                  fontWeight: '600',
+                                  fontSize: '1.25rem',
+                                }}
+                              >
+                                {values2}
+                              </div>
+                            )
+                          }
+                        })
+                      }
+                    })}
+                </div>
+              </div>
+              <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                {record &&
+                  record.attributes &&
+                  record.attributes.length > 0 &&
+                  record.attributes.map((values1, index1) => {
+                    if (index1 === 0) {
+                      return values1.values.map((values2, index2) => {
+                        if (index2 === color) {
+                          return (
+                            <div
+                              onClick={() => onClickColor(index2, values2)}
+                              style={{
+                                backgroundColor: '#E6F2FF',
+                                fontWeight: '600',
+                                border: '1px solid #165FB4',
+                                color: 'black',
+                                marginRight: '1rem',
+                                padding: '0.5rem 1rem',
+                                cursor: 'pointer',
+                                borderRadius: '0.25rem',
+                              }}
+                            >
+                              {values2}
+                            </div>
+                          )
+                        } else {
+                          return (
+                            <div
+                              onClick={() => onClickColor(index2, values2)}
+                              style={{
+                                backgroundColor: '#F2F2F2',
+                                color: 'black',
+                                marginRight: '1rem',
+                                padding: '0.5rem 1rem',
+                                cursor: 'pointer',
+                                borderRadius: '0.25rem',
+                              }}
+                            >
+                              {values2}
+                            </div>
+                          )
+                        }
+                      })
+                    }
+                  })}
+              </div>
+
+              <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                <div
+                  style={{ color: 'grey', fontSize: '1rem', fontWeight: '600' }}
+                >
+                  Kích thước:{' '}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                  }}
+                >
+                  {record &&
+                    record.attributes &&
+                    record.attributes.length > 0 &&
+                    record.attributes.map((values1, index1) => {
+                      if (index1 === 1) {
+                        return values1.values.map((values2, index2) => {
+                          if (index2 === size) {
+                            return (
+                              <div
+                                style={{
+                                  color: 'black',
+                                  marginLeft: '1rem',
+                                  fontWeight: '600',
+                                  fontSize: '1.25rem',
+                                }}
+                              >
+                                {values2}
+                              </div>
+                            )
+                          }
+                        })
+                      }
+                    })}
+                </div>
+              </div>
+              <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                {record &&
+                  record.attributes &&
+                  record.attributes.length > 0 &&
+                  record.attributes.map((values1, index1) => {
+                    if (index1 === 1) {
+                      return values1.values.map((values2, index2) => {
+                        if (index2 === size) {
+                          return (
+                            <div
+                              onClick={() => onClickSize(index2, values2)}
+                              style={{
+                                backgroundColor: '#E6F2FF',
+                                fontWeight: '600',
+                                border: '1px solid #165FB4',
+                                color: 'black',
+                                marginRight: '1rem',
+                                padding: '0.5rem 1rem',
+                                cursor: 'pointer',
+                                borderRadius: '0.25rem',
+                              }}
+                            >
+                              {values2}
+                            </div>
+                          )
+                        } else {
+                          return (
+                            <div
+                              onClick={() => onClickSize(index2, values2)}
+                              style={{
+                                backgroundColor: '#F2F2F2',
+                                color: 'black',
+                                marginRight: '1rem',
+                                padding: '0.5rem 1rem',
+                                cursor: 'pointer',
+                                borderRadius: '0.25rem',
+                              }}
+                            >
+                              {values2}
+                            </div>
+                          )
+                        }
+                      })
+                    }
+                  })}
+              </div>
+              <div
+                style={{
+                  width: '100%',
+                  flexDirection: 'column',
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'grey',
+                    fontSize: '1rem',
+                    marginTop: '0.25rem',
+                    fontWeight: '600',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  Số lượng:{' '}
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    marginTop: '0.5rem',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                  }}
+                >
+                  <ButtonGroup
+                    style={{
+                      width: '100%',
+                      marginTop: '0.5rem',
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {orderStatus === 'order now' ? (
+                      parseInt(objectVariant.available_stock_quantity) +
+                        parseInt(objectVariant.low_stock_quantity) >
+                      0 ? (
+                        <Button onClick={decline}>
+                          <MinusOutlined />
+                        </Button>
+                      ) : (
+                        <Button disabled onClick={decline}>
+                          <MinusOutlined />
+                        </Button>
+                      )
+                    ) : (
+                      <Button onClick={decline}>
+                        <MinusOutlined />
+                      </Button>
+                    )}
+
+                    {orderStatus === 'order now' ? (
+                      parseInt(objectVariant.available_stock_quantity) +
+                        parseInt(objectVariant.low_stock_quantity) >
+                      0 ? (
+                        <Input
+                          value={quantity}
+                          style={{
+                            width: '5rem',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            textAlign: 'center',
+                          }}
+                          name="quantity"
+                          onChange={onChangeQuantity}
+                        />
+                      ) : (
+                        <Input
+                          disabled
+                          value={quantity}
+                          style={{
+                            width: '5rem',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            textAlign: 'center',
+                          }}
+                          name="quantity"
+                          onChange={onChangeQuantity}
+                        />
+                      )
+                    ) : (
+                      <Input
+                        value={quantity}
+                        style={{
+                          width: '5rem',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          textAlign: 'center',
+                        }}
+                        name="quantity"
+                        onChange={onChangeQuantity}
+                      />
+                    )}
+
+                    {orderStatus === 'order now' ? (
+                      parseInt(objectVariant.available_stock_quantity) +
+                        parseInt(objectVariant.low_stock_quantity) >
+                      0 ? (
+                        <Button onClick={increase}>
+                          <PlusOutlined />
+                        </Button>
+                      ) : (
+                        <Button disabled onClick={increase}>
+                          <PlusOutlined />
+                        </Button>
+                      )
+                    ) : (
+                      <Button onClick={increase}>
+                        <PlusOutlined />
+                      </Button>
+                    )}
+                  </ButtonGroup>
+                </div>
+              </div>
+              <div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          </Col>
+          {checkQuantity.length === 0 ? (
+            checkVariantSize.length === 1 &&
+            checkVariantColor.length === 1 &&
+            checkQuantity.length === 0 ? (
+              <div
+                onClick={onClickAddProductVariant}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginTop: '1rem',
+                }}
+              >
+                <Button type="primary" style={{ width: '10rem' }}>
+                  Thêm vào giỏ hàng
+                </Button>
+              </div>
+            ) : checkVariantSize.length === 0 &&
+              checkVariantColor.length === 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginTop: '1rem',
+                }}
+              >
+                <Button disabled type="primary" style={{ width: '10rem' }}>
+                  Chưa có thuộc tính
+                </Button>
+              </div>
+            ) : checkQuantity.length === 1 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginTop: '1rem',
+                }}
+              >
+                <Button disabled type="primary" style={{ width: '10rem' }}>
+                  Không đủ hàng
+                </Button>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginTop: '1rem',
+                }}
+              >
+                <Button disabled type="primary" style={{ width: '10rem' }}>
+                  Hết hàng
+                </Button>
+              </div>
+            )
+          ) : checkVariantSize.length === 1 &&
+            checkVariantColor.length === 1 &&
+            checkQuantity.length === 0 ? (
+            <div
+              onClick={onClickAddProductVariant}
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+                marginTop: '1rem',
+              }}
+            >
+              <Button type="primary" style={{ width: '10rem' }}>
+                Thêm vào giỏ hàng
               </Button>
             </div>
-          </div>
-        </Modal>
-        <Drawer
-          title="Danh sách đơn hàng"
-          width='95%'
-          onClose={onCloseOrderList}
-          visible={visibleOrderList}
-          bodyStyle={{ paddingBottom: 80 }}
-
+          ) : checkVariantSize.length === 0 &&
+            checkVariantColor.length === 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+                marginTop: '1rem',
+              }}
+            >
+              <Button disabled type="primary" style={{ width: '10rem' }}>
+                Chưa có thuộc tính
+              </Button>
+            </div>
+          ) : checkQuantity.length === 1 ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+                marginTop: '1rem',
+              }}
+            >
+              <Button disabled type="primary" style={{ width: '10rem' }}>
+                Không đủ hàng
+              </Button>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+                marginTop: '1rem',
+              }}
+            >
+              <Button disabled type="primary" style={{ width: '10rem' }}>
+                Hết hàng
+              </Button>
+            </div>
+          )}
+        </Row>
+      </Modal>
+      <Drawer
+        title="Thêm mới khách hàng"
+        width={isMobile ? '100%' : 1000}
+        onClose={onClose}
+        visible={visible}
+        bodyStyle={{ paddingBottom: 80 }}
+      >
+        <Form
+          layout="vertical"
+          initialValues={branchDetail}
+          form={form}
+          onFinish={onFinishAddCustomer}
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
         >
-          <Tabs defaultActiveKey="2" >
-         
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginBottom: '1.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <b style={{ color: 'red' }}>*</b>Tên khách hàng
+              </div>
+              <Input
+                size="large"
+                value={customerName}
+                onChange={onChangeCustomerName}
+                placeholder="Nhập tên khách hàng"
+              />
+            </Col>
+            <Col
+              style={{ width: '100%', marginBottom: '1.5rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                <b style={{ color: 'red' }}>*</b>Liên hệ
+              </div>
+              <Input
+                size="large"
+                value={randomPhoneValue}
+                onChange={onChangeRandom}
+                placeholder="Nhập liên hệ"
+              />
+            </Col>
+          </Row>
 
-            <TabPane tab="Đơn hàng trong ngày" key="2">
-
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginBottom: '1rem', }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                  <div style={{ width: '100%' }}>
-                    <Input style={{ width: '100%' }} name="name" value={valueSearchOrderDetail} enterButton onChange={onSearchOrderDetail} className={styles["orders_manager_content_row_col_search"]}
-                      placeholder="Tìm kiếm theo mã, theo tên" allowClear />
-                  </div>
-                </Col>
-               
-              </Row>
-              <div style={{ width: '100%', border: '1px solid rgb(243, 234, 234)' }}>
-                <Table rowSelection={rowSelectionOrderList} bordered columns={columnsOrderList} dataSource={orderToday} scroll={{ y: 300 }}
-                  rowKey="_id"
-                  pagination={false}
-                  loading={loadingTable}
-
-                  expandable={{
-                    expandedRowRender: record => {
-
-                      return (
-                        <div style={{ backgroundColor: 'white', border: '1px solid white' }}>
-                          < Table bordered columns={columnsDetailOrder} dataSource={record && record.order_details && record.order_details.length > 0 ? record.order_details : []} scroll={{ y: 500 }} />
-
-                        </div>)
-
-                    },
-                    expandedRowKeys: selectedRowKeysOrderList,
-                    expandIconColumnIndex: -1,
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Tỉnh/thành phố
+              </div>
+              <Form.Item name="ward">
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn tỉnh/thành phố"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                  value={city ? city : 'default'}
+                  onChange={(event) => {
+                    handleChangeCity(event)
                   }}
+                >
+                  <Option value="default">Tất cả tỉnh/thành phố</Option>
+                  {provinceMain &&
+                    provinceMain.length > 0 &&
+                    provinceMain.map((values, index) => {
+                      return (
+                        <Option value={values.province_name}>
+                          {values.province_name}
+                        </Option>
+                      )
+                    })}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Độ tuổi
+              </div>
+              <Radio.Group onChange={onChangeBirthday} value={value}>
+                <Radio value={'18'}>Dưới 18</Radio>
+                <Radio value={'25'}>18 đến 25</Radio>
+                <Radio value={'35'}>25 đến 35</Radio>
+                <Radio value={'100'}>Trên 35</Radio>
+              </Radio.Group>
+            </Col>
+          </Row>
 
-                />
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Quận/huyện
+              </div>
+              <Form.Item name="district">
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  <Option value="default">Tất cả quận/huyện</Option>
+                  {districtMainAPI && districtMainAPI.length > 0
+                    ? districtMainAPI &&
+                      districtMainAPI.length > 0 &&
+                      districtMainAPI.map((values, index) => {
+                        return (
+                          <Option value={values.district_name}>
+                            {values.district_name}
+                          </Option>
+                        )
+                      })
+                    : districtMain &&
+                      districtMain.length > 0 &&
+                      districtMain.map((values, index) => {
+                        return (
+                          <Option value={values.district_name}>
+                            {values.district_name}
+                          </Option>
+                        )
+                      })}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Địa chỉ
+              </div>
+              <Form.Item name="address">
+                <Input placeholder="Nhập địa chỉ" size="large" />
+              </Form.Item>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            ></Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Giới tính
               </div>
 
-              <Pagination
-                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '1rem' }}
-                showSizeChanger
-                onShowSizeChange={onShowSizeChangeTable}
-                defaultCurrent={10}
-                onChange={onChangeTable}
-                total={countTable}
+              <Radio.Group onChange={onChangeSex} value={valueSex}>
+                <Radio value={'Nam'}>Nam</Radio>
+                <Radio value={'Nữ'}>Nữ</Radio>
+                <Radio value={'Khác'}>Khác</Radio>
+              </Radio.Group>
+            </Col>
+          </Row>
+
+          <Form.Item
+            style={{
+              display: 'flex',
+              marginTop: '1rem',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Button htmlType="submit" type="primary" size="large">
+                Thêm khách hàng
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Drawer>
+      <Drawer
+        title="Đơn hàng đặt gần nhất"
+        width={600}
+        onClose={onCloseOrder}
+        visible={visibleOrder}
+        bodyStyle={{ paddingBottom: 80 }}
+      >
+        {customerOnClick &&
+        customerOnClick.length > 0 &&
+        customerOnClick.balance &&
+        customerOnClick.balance.length > 0 ? (
+          <div
+            style={{
+              height: '100%',
+              maxHeight: '100%',
+              overflow: 'auto',
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
+            }}
+          >
+            <div className={styles['order']}>
+              <div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                  }}
+                >
+                  Nguyễn Văn A - 0384943497
+                </div>
+                <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
+              </div>
+              <div
+                style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
+              >
+                Giày thể thao kiểu dáng Hàn Quốc
+              </div>
+              <div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>
+                  Màu: Đỏ Đen, Size: 38
+                </div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
+              </div>
+              <div
+                style={{
+                  color: 'grey',
+                  paddingBottom: '1rem',
+                  borderBottom: '1px solid rgb(233, 217, 217)',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                250,000 VNĐ
+              </div>
+              <div
+                style={{
+                  color: 'black',
+                  paddingBottom: '1rem',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  fontWeight: '600',
+                  marginTop: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                Thành tiền: 500,000 VNĐ
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button type="primary" style={{ width: '7.5rem' }}>
+                  Đặt lại
+                </Button>
+              </div>
+            </div>
+            <div className={styles['order']}>
+              <div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                  }}
+                >
+                  Nguyễn Văn A - 0384943497
+                </div>
+                <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
+              </div>
+              <div
+                style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
+              >
+                Giày thể thao kiểu dáng Hàn Quốc
+              </div>
+              <div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>
+                  Màu: Đỏ Đen, Size: 38
+                </div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
+              </div>
+              <div
+                style={{
+                  color: 'grey',
+                  paddingBottom: '1rem',
+                  borderBottom: '1px solid rgb(233, 217, 217)',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                250,000 VNĐ
+              </div>
+              <div
+                style={{
+                  color: 'black',
+                  paddingBottom: '1rem',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  fontWeight: '600',
+                  marginTop: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                Thành tiền: 500,000 VNĐ
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button type="primary" style={{ width: '7.5rem' }}>
+                  Đặt lại
+                </Button>
+              </div>
+            </div>
+            <div className={styles['order']}>
+              <div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                  }}
+                >
+                  Nguyễn Văn A - 0384943497
+                </div>
+                <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
+              </div>
+              <div
+                style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
+              >
+                Giày thể thao kiểu dáng Hàn Quốc
+              </div>
+              <div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>
+                  Màu: Đỏ Đen, Size: 38
+                </div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
+              </div>
+              <div
+                style={{
+                  color: 'grey',
+                  paddingBottom: '1rem',
+                  borderBottom: '1px solid rgb(233, 217, 217)',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                250,000 VNĐ
+              </div>
+              <div
+                style={{
+                  color: 'black',
+                  paddingBottom: '1rem',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  fontWeight: '600',
+                  marginTop: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                Thành tiền: 500,000 VNĐ
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button type="primary" style={{ width: '7.5rem' }}>
+                  Đặt lại
+                </Button>
+              </div>
+            </div>
+            <div className={styles['order']}>
+              <div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                  }}
+                >
+                  Nguyễn Văn A - 0384943497
+                </div>
+                <div style={{ color: 'grey' }}>10:00am, 03/08/2021</div>
+              </div>
+              <div
+                style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
+              >
+                Giày thể thao kiểu dáng Hàn Quốc
+              </div>
+              <div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>
+                  Màu: Đỏ Đen, Size: 38
+                </div>
+                <div style={{ color: 'grey', fontSize: '1rem' }}>x2</div>
+              </div>
+              <div
+                style={{
+                  color: 'grey',
+                  paddingBottom: '1rem',
+                  borderBottom: '1px solid rgb(233, 217, 217)',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                250,000 VNĐ
+              </div>
+              <div
+                style={{
+                  color: 'black',
+                  paddingBottom: '1rem',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  fontWeight: '600',
+                  marginTop: '0.5rem',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                Thành tiền: 500,000 VNĐ
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button type="primary" style={{ width: '7.5rem' }}>
+                  Đặt lại
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          'Chưa có đơn hàng nào'
+        )}
+      </Drawer>
+      <Modal
+        title="Chi tiết thông tin đơn hàng"
+        centered
+        width={1000}
+        footer={null}
+        visible={modal3Visible}
+        onOk={() => modal3VisibleModal(false)}
+        onCancel={() => modal3VisibleModal(false)}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          {billQuantity &&
+            billQuantity.length > 0 &&
+            billQuantity[billIndex][0].customer &&
+            billQuantity[billIndex][0].customer.length > 0 &&
+            billQuantity[billIndex][0].customer.map((values1, index1) => {
+              return (
+                <Row
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <Col
+                    style={{ width: '100%', marginBottom: '1rem' }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={11}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          fontSize: '1rem',
+                          marginRight: '0.25rem',
+                        }}
+                      >
+                        Tên khách hàng:
+                      </div>
+                      <div>{values1.first_name}</div>
+                    </div>
+                  </Col>
+                  <Col
+                    style={{ width: '100%', marginBottom: '1rem' }}
+                    xs={24}
+                    sm={24}
+                    md={11}
+                    lg={11}
+                    xl={11}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: 'black',
+                          fontWeight: '600',
+                          fontSize: '1rem',
+                          marginRight: '0.25rem',
+                        }}
+                      >
+                        Địa chỉ:
+                      </div>
+                      <div>{values1.address}</div>
+                    </div>
+                  </Col>
+                </Row>
+              )
+            })}
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginBottom: '1rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Phương thức nhận hàng:
+                </div>
+                <div>{receiveMethodName}</div>
+              </div>
+            </Col>
+            <Col
+              style={{ width: '100%', marginBottom: '1rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Hình thức thanh toán:
+                </div>
+                <div>{paymentForm}</div>
+              </div>
+            </Col>
+          </Row>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginBottom: '1rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Thuế:
+                </div>
+                {taxDefault &&
+                  taxDefault.length > 0 &&
+                  taxDefault.map((values, index) => {
+                    if (index === 0) {
+                      return <div>{`${values}`}</div>
+                    } else {
+                      return <div>{`, ${values}`}</div>
+                    }
+                  })}
+              </div>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Ghi chú:
+                </div>
+                <div>{note ? note : 'không có ghi chú'}</div>
+              </div>
+            </Col>
+          </Row>
+          <Table
+            style={{ marginTop: '0.5rem', marginBottom: '1rem' }}
+            pagination={false}
+            bordered
+            columns={columnsTable}
+            dataSource={orderDetail}
+            scroll={{ y: 250 }}
+          />
+
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginTop: '1rem' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Tổng tiền:
+                </div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  {confirm === 1 &&
+                  moneyTotal &&
+                  billQuantity &&
+                  billQuantity.length > 0 &&
+                  moneyTotal > 0
+                    ? `${formatCash(String(moneyTotal))} VNĐ`
+                    : '0 VNĐ'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginTop: '1rem' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Chiết khấu:
+                </div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  {confirm === 1 &&
+                  discount &&
+                  billQuantity &&
+                  billQuantity.length > 0 &&
+                  discount > 0 &&
+                  discountMoney &&
+                  discountMoney > 0
+                    ? `-${formatCash(String(discountMoney))} VNĐ`
+                    : '0 VNĐ'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginBottom: '0.5rem',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', marginTop: '1rem' }}
+              xs={24}
+              sm={24}
+              md={24}
+              lg={24}
+              xl={24}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Tổng thuế:
+                </div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  {' '}
+                  {confirm === 1 &&
+                  taxPercentValue &&
+                  billQuantity &&
+                  billQuantity.length > 0 &&
+                  taxPercentValue > 0 &&
+                  taxMoneyValue &&
+                  taxMoneyValue > 0
+                    ? `+${formatCash(String(taxMoneyValue))} VNĐ`
+                    : '0 VNĐ'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              paddingTop: '1rem',
+              marginTop: '1.5rem',
+              borderTop: '1px solid grey',
+              margin: '1rem 0',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1.25rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  Thành tiền:
+                </div>
+                <div
+                  style={{
+                    color: 'black',
+                    fontWeight: '600',
+                    fontSize: '1.25rem',
+                    marginRight: '0.25rem',
+                  }}
+                >
+                  {' '}
+                  {confirm === 1 &&
+                  moneyFinish &&
+                  billQuantity &&
+                  billQuantity.length > 0 &&
+                  moneyFinish > 0
+                    ? `${formatCash(String(moneyFinish))} VNĐ`
+                    : '0 VNĐ'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Button
+              onClick={onClickPaymentFinish}
+              style={{ borderRadius: '0.25rem' }}
+              size="large"
+              className={styles['button_background_right']}
+            >
+              Đồng ý
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Drawer
+        title="Danh sách đơn hàng"
+        width="95%"
+        onClose={onCloseOrderList}
+        visible={visibleOrderList}
+        bodyStyle={{ paddingBottom: 80 }}
+      >
+        <Tabs defaultActiveKey="2">
+          <TabPane tab="Đơn hàng trong ngày" key="2">
+            <Row
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Col
+                style={{ width: '100%', marginBottom: '1rem' }}
+                xs={24}
+                sm={24}
+                md={11}
+                lg={11}
+                xl={11}
+              >
+                <div style={{ width: '100%' }}>
+                  <Input
+                    style={{ width: '100%' }}
+                    name="name"
+                    value={valueSearchOrderDetail}
+                    enterButton
+                    onChange={onSearchOrderDetail}
+                    className={styles['orders_manager_content_row_col_search']}
+                    placeholder="Tìm kiếm theo mã, theo tên"
+                    allowClear
+                  />
+                </div>
+              </Col>
+            </Row>
+            <div
+              style={{ width: '100%', border: '1px solid rgb(243, 234, 234)' }}
+            >
+              <Table
+                rowSelection={rowSelectionOrderList}
+                bordered
+                columns={columnsOrderList}
+                dataSource={orderToday}
+                scroll={{ y: 300 }}
+                rowKey="_id"
+                pagination={false}
+                loading={loadingTable}
+                expandable={{
+                  expandedRowRender: (record) => {
+                    return (
+                      <div
+                        style={{
+                          backgroundColor: 'white',
+                          border: '1px solid white',
+                        }}
+                      >
+                        <Table
+                          bordered
+                          columns={columnsDetailOrder}
+                          dataSource={
+                            record &&
+                            record.order_details &&
+                            record.order_details.length > 0
+                              ? record.order_details
+                              : []
+                          }
+                          scroll={{ y: 500 }}
+                        />
+                      </div>
+                    )
+                  },
+                  expandedRowKeys: selectedRowKeysOrderList,
+                  expandIconColumnIndex: -1,
+                }}
               />
-            </TabPane>
+            </div>
 
-          </Tabs>
-        </Drawer>
-
-      </Online>
-
-
-    </ >
-  );
+            <Pagination
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                marginTop: '1rem',
+              }}
+              showSizeChanger
+              onShowSizeChange={onShowSizeChangeTable}
+              defaultCurrent={10}
+              onChange={onChangeTable}
+              total={countTable}
+            />
+          </TabPane>
+        </Tabs>
+      </Drawer>
+    </>
+  )
 }

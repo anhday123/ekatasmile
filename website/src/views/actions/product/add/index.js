@@ -209,11 +209,7 @@ export default function ProductAdd() {
                 width: '100%',
               }}
             >
-              <Button
-                style={{ width: '7.5rem' }}
-                htmlType="submit"
-                type="primary"
-              >
+              <Button size="large" htmlType="submit" type="primary">
                 Thêm
               </Button>
             </div>

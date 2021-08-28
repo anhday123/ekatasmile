@@ -172,7 +172,10 @@ export default function PromotionAdd(props) {
                   name="name"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input placeholder="Nhập tên chương trình khuyến mãi" />
+                  <Input
+                    placeholder="Nhập tên chương trình khuyến mãi"
+                    size="large"
+                  />
                 </Form.Item>
               </div>
             </Col>
@@ -219,6 +222,7 @@ export default function PromotionAdd(props) {
                           rules={[{ required: true, message: 'Giá trị rỗng' }]}
                         >
                           <Select
+                            size="large"
                             className={
                               styles['promotion_add_form_left_select_child']
                             }
@@ -263,6 +267,8 @@ export default function PromotionAdd(props) {
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                         >
                           <InputNumber
+                            size="large"
+                            className="br-15__input"
                             placeholder="Nhập giá trị"
                             style={{ width: '100%' }}
                             formatter={(value) =>
@@ -324,7 +330,10 @@ export default function PromotionAdd(props) {
                           name="amount"
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                         >
-                          <Input placeholder="Nhập số lượng vourcher" />
+                          <Input
+                            placeholder="Nhập số lượng vourcher"
+                            size="large"
+                          />
                         </Form.Item>
                       </div>
                     </div>
@@ -358,6 +367,7 @@ export default function PromotionAdd(props) {
                           rules={[{ required: true, message: 'Giá trị rỗng' }]}
                         >
                           <Select
+                            size="large"
                             mode="multiple"
                             className={
                               styles['promotion_add_form_left_select_child']
@@ -402,11 +412,7 @@ export default function PromotionAdd(props) {
 
           <div className={styles['promotion_add_button']}>
             <Form.Item>
-              <Button
-                style={{ width: '7.5rem' }}
-                type="primary"
-                htmlType="submit"
-              >
+              <Button size="large" type="primary" htmlType="submit">
                 Tạo
               </Button>
             </Form.Item>

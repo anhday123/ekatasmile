@@ -28,8 +28,13 @@ import { getCustomer } from 'apis/customer'
 import CustomerAdd from '../actions/customer/add'
 import { getAllBranch } from 'apis/branch'
 import { apiAllTax } from 'apis/tax'
+<<<<<<< HEAD
 import { apiCheckPromotion, getPromoton } from 'apis/promotion'
 import { apiOrderPromotion, apiOrderVoucher } from 'apis/order'
+=======
+import { getPromoton } from 'apis/promotion'
+import { ROUTES } from 'consts'
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
 function formatCash(str) {
   return str
     .toString()
@@ -338,11 +343,17 @@ export default function OrderCreateShipping() {
   return (
     <div className={styles['order-create-shipping']}>
       <div style={{ background: 'white', padding: '20px' }}>
-        <Row align="middle" style={{ fontSize: 18, fontWeight: 600 }}>
-          <ArrowLeftOutlined
-            style={{ cursor: 'pointer' }}
-            onClick={() => history.push('/order-list')}
-          />
+        <Row
+          align="middle"
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            cursor: 'pointer',
+            width: 'max-content',
+          }}
+          onClick={() => history.push(ROUTES.ORDER_LIST)}
+        >
+          <ArrowLeftOutlined style={{ marginRight: 5 }} />
           Tạo đơn hàng
         </Row>
         <Divider />
@@ -351,6 +362,7 @@ export default function OrderCreateShipping() {
             <div className={styles['block']}>
               <div className={styles['title']}>Chi nhánh</div>
               <Select
+<<<<<<< HEAD
                 style={{ width: '200px' }}
                 onChange={(e) => setBranch(e)}
                 placeholder="chọn chi nhánh"
@@ -360,22 +372,26 @@ export default function OrderCreateShipping() {
                   .map((e) => (
                     <Select.Option value={e.branch_id}>{e.name}</Select.Option>
                   ))}
+=======
+                size="large"
+                style={{ width: '200px' }}
+                placeholder="chọn chi nhánh"
+              >
+                {branchList.map((e) => (
+                  <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                ))}
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
               </Select>
               <div className={styles['title']}>Sản phẩm</div>
               <AutoComplete
+                size="large"
                 options={options}
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginBottom: 10 }}
                 onSelect={onSelect}
                 onSearch={handleSearch}
                 onFocus={handleSearch}
-              >
-                <div>
-                  <Input.Search
-                    enterButton="Tìm kiếm"
-                    style={{ marginBottom: 20 }}
-                  />
-                </div>
-              </AutoComplete>
+                placeholder="Tìm kiếm sản phẩm"
+              />
 
               <Table columns={columns} size="small" dataSource={productData} />
             </div>
@@ -385,6 +401,7 @@ export default function OrderCreateShipping() {
                 <Col span={12}>
                   <div style={{ fontWeight: 500 }}>Ghi chú đơn hàng</div>
                   <Input
+                    size="large"
                     placeholder="Ghi chú đơn hàng tại đây"
                     onChange={(e) => setNote(e.target.value)}
                   />
@@ -394,10 +411,14 @@ export default function OrderCreateShipping() {
                     <div style={{ color: 'blue' }}>Thuế</div>
                     <Select
                       mode="tags"
-                      // size={size}
+                      size="large"
                       placeholder="Please select"
+<<<<<<< HEAD
                       defaultValue={tax}
                       onChange={addTax}
+=======
+                      defaultValue={['1']}
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       style={{ width: '100%' }}
                     >
                       {taxList
@@ -409,12 +430,21 @@ export default function OrderCreateShipping() {
                         ))}
                     </Select>
                     <div style={{ color: 'blue' }}>voucher</div>
+<<<<<<< HEAD
                     <Input
                       disabled={promotion}
                       onChange={(e) => checkVoucher(e.target.value)}
                     />
                     <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
                     <Select
+=======
+
+                    <Input size="large" />
+                    <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
+                    <Select
+                      size="large"
+                      // onChange={handleChange}
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                       style={{ width: '100%' }}
                       disabled={voucher}
                       allowClear
@@ -550,7 +580,11 @@ export default function OrderCreateShipping() {
             </div>
             <Divider />
             <Row justify="end">
+<<<<<<< HEAD
               <Button type="primary" onClick={createOrder}>
+=======
+              <Button size="large" type="primary">
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
                 Thanh toán
               </Button>
             </Row>
@@ -575,18 +609,14 @@ export default function OrderCreateShipping() {
                     </div>
                   </Row>
                   <AutoComplete
+                    placeholder="Tìm kiếm khách hàng"
+                    size="large"
                     options={customerOptions}
                     onSelect={onChooseCustomer}
                     onSearch={customerSearch}
                     onFocus={customerSearch}
                     style={{ width: '100%' }}
-                  >
-                    <Input
-                      placeholder="Tìm kiếm khách hàng"
-                      prefix={<SearchOutlined />}
-                      style={{ width: '100%' }}
-                    />
-                  </AutoComplete>
+                  />
 
                   <Divider />
                 </>
@@ -655,6 +685,7 @@ export default function OrderCreateShipping() {
         </Row>
       </div>
       <Drawer
+        title="Tạo khách hàng"
         visible={showCreate}
         onClose={() => setShowCreate(false)}
         width="75%"

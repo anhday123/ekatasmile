@@ -1,416 +1,408 @@
 .login {
-    background-color: #f0f2f5;
-    // display: flex;
-    // justify-content: center;
-    // align-items: flex-start;
-    // flex-direction: column;
-    width: 100vw;
-    height: 100vh;
-    // background-image: url("https://gw.alipayobjects.com/zos/rmsportal/TVYTbAXWheQpRcWDaDMu.svg");
-    background-image: url(('./../../assets/img/layer.jpg'));
-    background-repeat: no-repeat;
-    background-size: cover;
-    overflow: auto;
-    // min-height: 100vh;
-    // background-position: center 110px;
-    // background-size: 100%;
-    // background-attachment: fixed;
-    // overflow: scroll;
-    // background-size: contain;
+  background-color: #f0f2f5;
+  // display: flex;
+  // justify-content: center;
+  // align-items: flex-start;
+  // flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  // background-image: url("https://gw.alipayobjects.com/zos/rmsportal/TVYTbAXWheQpRcWDaDMu.svg");
+  background-image: url(('./../../assets/img/layer.jpg'));
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: auto;
+  // min-height: 100vh;
+  // background-position: center 110px;
+  // background-size: 100%;
+  // background-attachment: fixed;
+  // overflow: scroll;
+  // background-size: contain;
+}
+
+.login_img {
+  width: 15rem;
+  height: 10rem;
+  // width: 5rem;
+  // height: 5rem;
+  object-fit: contain;
+}
+
+.login_img_parent {
+  display: flex;
+  padding: 2rem 0 1rem 0;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.login_img_parent > div {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #1890ff;
+}
+.login_choose_parent {
+  width: 100%;
+  display: flex;
+  margin-bottom: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+.login_choose {
+  display: flex;
+  width: 15rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login_choose_login {
+  margin-right: 3rem;
+}
+
+.login_choose > div {
+  cursor: pointer;
+}
+.login_choose > div:hover {
+  color: #24a7ec;
+}
+.login_choose_status_active {
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #24a7ec;
+  font-size: 1.25rem;
+  color: #24a7ec;
+  height: 2.5rem;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.login_choose_status {
+  /* padding-bottom: 1rem;
+      border-bottom: 2px solid #24a7ec; */
+  font-size: 1.25rem;
+  height: 2.5rem;
+  padding-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+}
+.login_bottom {
+  display: flex;
+  width: 100%;
+  margin-top: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.login_bottom_left > div {
+  color: #24a7ec;
+  // font-size: 1rem;
+  cursor: pointer;
+  // font-weight: 600;
+}
+.login_bottom_left_checkbox {
+  color: white;
+  font-size: 1rem;
+}
+.login_bottom_left_button_parent {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@media only screen and (min-width: 320px) {
+  .login_bottom_email {
+    width: 18.5rem;
   }
-  
-  .login_img {
-    width: 15rem;
-    height: 10rem;
-    // width: 5rem;
-    // height: 5rem;
-    object-fit: contain;
+  .login_bottom_password {
+    width: 18.5rem;
   }
-  
-  .login_img_parent {
+  .login_bottom_left {
     display: flex;
-    padding: 2rem 0 1rem 0;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 18.5rem;
+  }
+  .login_bottom_left_button {
+    width: 18.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
+    font-weight: 600;
+    height: 2.5rem;
   }
-  .login_img_parent > div {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #1890FF;
-  }
-  .login_choose_parent {
-    width: 100%;
+  .confirm_otp_input > div {
     display: flex;
     margin-bottom: 1rem;
-    justify-content: center;
-    align-items: center;
-  }
-  .login_choose {
-    display: flex;
-    width: 15rem;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .login_choose_login {
-    margin-right: 3rem;
-  }
-  
-  .login_choose > div {
-    cursor: pointer;
-  }
-  .login_choose > div:hover {
-    color: #24a7ec;
-  }
-  .login_choose_status_active {
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #24a7ec;
-    font-size: 1.25rem;
-    color: #24a7ec;
-    height: 2.5rem;
-    cursor: pointer;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .login_choose_status {
-    /* padding-bottom: 1rem;
-      border-bottom: 2px solid #24a7ec; */
-    font-size: 1.25rem;
-    height: 2.5rem;
-    padding-bottom: 0.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    color: white;
-  }
-  .login_bottom {
-    display: flex;
-    width: 100%;
-    margin-top: 1rem;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  .login_bottom_left > div {
-    color: #24a7ec;
-    // font-size: 1rem;
-    cursor: pointer;
-    // font-weight: 600;
-  }
-  .login_bottom_left_checkbox {
-    color: white;
-    font-size: 1rem;
-  }
-  .login_bottom_left_button_parent {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  @media only screen and (min-width: 320px) {
-    .login_bottom_email {
-      width: 18.5rem;
-    }
-    .login_bottom_password {
-      width: 18.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 18.5rem;
-    }
-    .login_bottom_left_button {
-      width: 18.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 20.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 300px) {
-    .login_bottom_email {
-      width: 16.5rem;
-    }
-    .login_bottom_password {
-      width: 16.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 16.5rem;
-    }
-    .login_bottom_left_button {
-      width: 16.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 20.5rem;
-      color:white;
-  
-    }
-  }
-  
-  @media only screen and (min-width: 380px) {
-    .login_bottom_email {
-      width: 20.5rem;
-    }
-    .login_bottom_password {
-      width: 20.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 20.5rem;
-    }
-    .login_bottom_left_button {
-      width: 20.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 20.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 576px) {
-    .login_bottom_email {
-      width: 22.5rem;
-    }
-    .login_bottom_password {
-      width: 22.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 22.5rem;
-    }
-    .login_bottom_left_button {
-      width: 22.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 22.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 768px) {
-    .login_bottom_email {
-      width: 22.5rem;
-    }
-    .login_bottom_password {
-      width: 22.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 22.5rem;
-    }
-    .login_bottom_left_button {
-      width: 22.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 22.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 992px) {
-    .login_bottom_email {
-      width: 22.5rem;
-    }
-    .login_bottom_password {
-      width: 22.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 22.5rem;
-    }
-    .login_bottom_left_button {
-      width: 22.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 22.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 1200px) {
-    .login_bottom_email {
-      width: 22.5rem;
-    }
-    .login_bottom_password {
-      width: 22.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 22.5rem;
-    }
-    .login_bottom_left_button {
-      width: 22.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      padding-bottom: 0.75rem;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 22.5rem;
-      color:white;
-  
-    }
-  }
-  @media only screen and (min-width: 1600px) {
-    .login_bottom_email {
-      width: 22.5rem;
-    }
-    .login_bottom_password {
-      width: 22.5rem;
-    }
-    .login_bottom_left {
-      display: flex;
-      justify-content: space-between;
-      /* align-items: center; */
-      width: 22.5rem;
-    }
-    .login_bottom_left_button {
-      width: 22.5rem;
-      font-size: 1.25rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 600;
-      height: 2.5rem;
-    }
-    .confirm_otp_input > div {
-      display: flex;
-      margin-bottom: 1rem;
-      justify-content: flex-start;
-      align-items: center;
-      width: 22.5rem;
-      color:white;
-  
-    }
-  }
-  .copyright {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100vw;
-    font-size: 1rem;
-    /* font-weight: 600; */
-    color: white;
-    margin-bottom: 1.5rem;
-    position: fixed;
-    bottom: 0;
-    /* height: 50%; */
-  }
-  
-  .confirm_otp {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    flex-direction: column;
-  }
-  .confirm_otp > div {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 0.5rem;
-    align-items: center;
-    width: 100%;
-    color:white;
-  }
-  .confirm_otp_input {
-    display: flex;
     justify-content: flex-start;
     align-items: center;
-    // width: 100%;
-    margin-top: 1rem;
-    flex-direction: column;
+    width: 20.5rem;
+    color: white;
   }
+}
+@media only screen and (min-width: 300px) {
+  .login_bottom_email {
+    width: 16.5rem;
+  }
+  .login_bottom_password {
+    width: 16.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 16.5rem;
+  }
+  .login_bottom_left_button {
+    width: 16.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 20.5rem;
+    color: white;
+  }
+}
+
+@media only screen and (min-width: 380px) {
+  .login_bottom_email {
+    width: 20.5rem;
+  }
+  .login_bottom_password {
+    width: 20.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 20.5rem;
+  }
+  .login_bottom_left_button {
+    width: 20.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 20.5rem;
+    color: white;
+  }
+}
+@media only screen and (min-width: 576px) {
+  .login_bottom_email {
+    width: 22.5rem;
+  }
+  .login_bottom_password {
+    width: 22.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 22.5rem;
+  }
+  .login_bottom_left_button {
+    width: 22.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 22.5rem;
+    color: white;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .login_bottom_email {
+    width: 22.5rem;
+  }
+  .login_bottom_password {
+    width: 22.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 22.5rem;
+  }
+  .login_bottom_left_button {
+    width: 22.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 22.5rem;
+    color: white;
+  }
+}
+@media only screen and (min-width: 992px) {
+  .login_bottom_email {
+    width: 22.5rem;
+  }
+  .login_bottom_password {
+    width: 22.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 22.5rem;
+  }
+  .login_bottom_left_button {
+    width: 22.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 22.5rem;
+    color: white;
+  }
+}
+@media only screen and (min-width: 1200px) {
+  .login_bottom_email {
+    width: 22.5rem;
+  }
+  .login_bottom_password {
+    width: 22.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 22.5rem;
+  }
+  .login_bottom_left_button {
+    width: 22.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    padding-bottom: 0.75rem;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 22.5rem;
+    color: white;
+  }
+}
+@media only screen and (min-width: 1600px) {
+  .login_bottom_email {
+    width: 22.5rem;
+  }
+  .login_bottom_password {
+    width: 22.5rem;
+  }
+  .login_bottom_left {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+    width: 22.5rem;
+  }
+  .login_bottom_left_button {
+    width: 22.5rem;
+    font-size: 1.25rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    height: 2.5rem;
+  }
+  .confirm_otp_input > div {
+    display: flex;
+    margin-bottom: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    width: 22.5rem;
+    color: white;
+  }
+}
+.copyright {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  font-size: 1rem;
+  /* font-weight: 600; */
+  color: white;
+  margin-bottom: 1.5rem;
+  position: fixed;
+  bottom: 0;
+  /* height: 50%; */
+}
+
+.confirm_otp {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+.confirm_otp > div {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  align-items: center;
+  width: 100%;
+  color: white;
+}
+.confirm_otp_input {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  // width: 100%;
+  margin-top: 1rem;
+  flex-direction: column;
+}

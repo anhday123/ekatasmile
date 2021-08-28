@@ -496,7 +496,7 @@ export default function Supplier() {
             Quản lý nhà cung cấp
           </div>
           <Button
-            className={styles['supplier_manager_search_right']}
+            size="large"
             type="primary"
             icon={<PlusCircleOutlined />}
             onClick={showDrawerUpdate}
@@ -522,6 +522,7 @@ export default function Supplier() {
           >
             <div style={{ width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 name="name"
                 value={valueSearch}
@@ -544,6 +545,7 @@ export default function Supplier() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
@@ -581,6 +583,7 @@ export default function Supplier() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 showSearch
                 style={{ width: '100%' }}
                 placeholder="Select a person"
@@ -625,6 +628,8 @@ export default function Supplier() {
           >
             <div>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                 value={
                   clear === 1
@@ -655,11 +660,7 @@ export default function Supplier() {
             marginTop: '1rem',
           }}
         >
-          <Button
-            onClick={onClickClear}
-            type="primary"
-            style={{ width: '7.5rem' }}
-          >
+          <Button onClick={onClickClear} type="primary" size="large">
             Xóa tất cả lọc
           </Button>
         </div>
@@ -672,7 +673,7 @@ export default function Supplier() {
               width: '100%',
             }}
           >
-            <Button type="primary" onClick={showDrawer}>
+            <Button type="primary" onClick={showDrawer} size="large">
               Cập nhật thông tin
             </Button>
           </div>

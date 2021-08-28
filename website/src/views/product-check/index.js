@@ -117,7 +117,7 @@ export default function ProductCheck() {
       key: i,
       stt: i,
       ticketCode: (
-        <Link to="/actions/product-check/view/8" style={{ color: '#2400FF' }}>
+        <Link to={ROUTES.PRODUCT_CHECK_ADD} style={{ color: '#2400FF' }}>
           GH {i}
         </Link>
       ),
@@ -164,6 +164,7 @@ export default function ProductCheck() {
               icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
               type="primary"
               onClick={() => setShowCreate(true)}
+              size="large"
             >
               Tạo phiếu kiểm
             </Button>
@@ -186,7 +187,11 @@ export default function ProductCheck() {
             xl={7}
           >
             <div style={{ width: '100%' }}>
-              <Search placeholder="Tìm kiếm theo mã, theo tên" enterButton />
+              <Input
+                size="large"
+                placeholder="Tìm kiếm theo mã, theo tên"
+                enterButton
+              />
             </div>
           </Col>
           <Col
@@ -199,6 +204,8 @@ export default function ProductCheck() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
@@ -218,9 +225,11 @@ export default function ProductCheck() {
             lg={11}
             xl={7}
           >
-            <div style={{ width: '100%' }}>
-              <DatePicker style={{ width: '100%' }} />
-            </div>
+            <DatePicker
+              size="large"
+              className="br-15__date-picker"
+              style={{ width: '100%' }}
+            />
           </Col>
           <Col
             style={{ width: '100%', marginTop: '1rem' }}
@@ -232,6 +241,7 @@ export default function ProductCheck() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc theo người dùng"
               >
@@ -281,9 +291,9 @@ export default function ProductCheck() {
                 xl={6}
               >
                 <Button
+                  size="large"
                   icon={<FileExcelOutlined />}
                   style={{
-                    width: '7.5rem',
                     backgroundColor: '#004F88',
                     color: 'white',
                   }}
@@ -307,9 +317,9 @@ export default function ProductCheck() {
                 xl={6}
               >
                 <Button
+                  size="large"
                   icon={<FileExcelOutlined />}
                   style={{
-                    width: '7.5rem',
                     backgroundColor: '#008816',
                     color: 'white',
                   }}
@@ -331,7 +341,9 @@ export default function ProductCheck() {
             rowSelection={rowSelection}
             columns={columnsPromotion}
             dataSource={dataPromotion}
-            scroll={{ y: 500 }}
+            style={{
+              width: '100%',
+            }}
           />
         </div>
       </div>
@@ -340,6 +352,9 @@ export default function ProductCheck() {
         onClose={() => setShowCreate(false)}
         width="75%"
         title="Tạo phiếu kiểm hàng"
+        bodyStyle={{
+          padding: 0,
+        }}
       >
         <ProductCheckAdd close={() => setShowCreate(false)} />
       </Drawer>

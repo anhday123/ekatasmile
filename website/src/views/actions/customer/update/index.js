@@ -9,6 +9,7 @@ import moment from 'moment';
 import { useEffect, useState } from "react";
 import { updateCustomer } from "../../../../apis/customer";
 import { apiProvince, apiDistrict } from "../../../../apis/information";
+import { ROUTES } from "consts";
 
 
 const dateFormat = 'YYYY/MM/DD';
@@ -97,7 +98,7 @@ export default function CustomerUpdate(props) {
       width={1000}
     >
       <div className={styles["supplier_add"]}>
-        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to="/customer/12">
+        <Link className={styles["supplier_add_back_parent"]} style={{ borderBottom: '1px solid rgb(233, 220, 220)', paddingBottom: '1rem' }} to={ROUTES.CUSTOMER}>
 
           <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div className={styles["supplier_add_back"]}>Cập nhật thông tin khách hàng</div>
@@ -127,7 +128,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Input placeholder="GH6789" disabled />
+                          <Input placeholder="GH6789" disabled size="large"/>
                         </Form.Item>
                       </div>
                     </Col>
@@ -143,7 +144,7 @@ export default function CustomerUpdate(props) {
                           fieldKey={[fieldKey, 'birthday']}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <DatePicker style={{ width: '100%' }} placeholder={moment('2021/06/28', dateFormat)} />
+                          <DatePicker size="large" className="br-15__date-picker" style={{ width: '100%' }} placeholder={moment('2021/06/28', dateFormat)} />
                         </Form.Item>
                       </div>
                     </Col>
@@ -159,7 +160,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Input placeholder="0384943497" />
+                          <Input placeholder="0384943497" size="large" />
                         </Form.Item>
                       </div>
                     </Col>
@@ -173,7 +174,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Select placeholder="Tiềm năng">
+                          <Select placeholder="Tiềm năng" size="large">
                             <Option value="potential">Tiềm năng</Option>
                             <Option value="vangLai">Vãng lai</Option>
                           </Select>
@@ -190,7 +191,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Input placeholder="27/27, đường Ngô Y Linh" />
+                          <Input placeholder="27/27, đường Ngô Y Linh" size="large"/>
                         </Form.Item>
                       </div>
                     </Col>
@@ -204,7 +205,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Input placeholder="Tỷ" />
+                          <Input placeholder="Tỷ" size="large"/>
                         </Form.Item>
                       </div>
                     </Col>
@@ -219,7 +220,7 @@ export default function CustomerUpdate(props) {
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
 
                         >
-                          <Select placeholder="Hồ Chí Minh" showSearch
+                          <Select size="large" placeholder="Hồ Chí Minh" showSearch
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -242,7 +243,7 @@ export default function CustomerUpdate(props) {
                           className={styles["supplier_add_content_supplier_code_input"]}
                           rules={[{ required: true, message: "Giá trị rỗng!" }]}
                         >
-                          <Input placeholder="Nguyễn" />
+                          <Input placeholder="Nguyễn" size="large"/>
                         </Form.Item>
                       </div>
                     </Col>
@@ -256,7 +257,7 @@ export default function CustomerUpdate(props) {
 
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                         >
-                          <Select placeholder="q1" showSearch
+                          <Select placeholder="q1" showSearch size="large"
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -276,7 +277,7 @@ export default function CustomerUpdate(props) {
                         className={styles["supplier_add_content_supplier_code_input"]}
                         rules={[{ required: true, message: "Giá trị rỗng!" }]}
                       >
-                        <Input placeholder="GH6789" disabled hidden />
+                        <Input placeholder="GH6789" disabled hidden size="large"/>
                       </Form.Item></Col>
                   </Row>
                 ))}
@@ -287,7 +288,7 @@ export default function CustomerUpdate(props) {
           <Row className={styles["supplier_add_content_supplier_button"]}>
             <Col style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
               <Form.Item>
-                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
+                <Button size="large" type="primary" htmlType="submit">
                   Cập nhật
                 </Button>
               </Form.Item>

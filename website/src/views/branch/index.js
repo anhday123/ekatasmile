@@ -504,7 +504,6 @@ export default function Branch() {
           <Link
             className={styles['supplier_add_back_parent']}
             style={{
-              paddingBottom: '1rem',
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',
@@ -549,6 +548,7 @@ export default function Branch() {
           >
             <div style={{ width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 name="name"
                 value={valueSearch}
@@ -575,6 +575,8 @@ export default function Branch() {
           >
             <div style={{ width: '100%' }}>
               <RangePicker
+                size="large"
+                className="br-15__date-picker"
                 value={
                   clear === 1
                     ? []
@@ -604,6 +606,7 @@ export default function Branch() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Select a person"
                 optionFilterProp="children"
@@ -636,33 +639,11 @@ export default function Branch() {
             marginTop: '1rem',
           }}
         >
-          <Button
-            onClick={onClickClear}
-            type="primary"
-            style={{ width: '7.5rem' }}
-          >
+          <Button onClick={onClickClear} type="primary" size="large">
             Xóa tất cả lọc
           </Button>
         </div>
-        {selectedRowKeys && selectedRowKeys.length > 0 ? (
-          <Radio.Group
-            style={{
-              display: 'flex',
-              marginTop: '1rem',
-              justifyContent: 'flex-start',
-              width: '100%',
-            }}
-          >
-            <Radio onClick={showDrawerUpdate} value={1}>
-              Cập nhật hàng loạt
-            </Radio>
-            <Radio onClick={showDrawer} value={2}>
-              Cập nhật riêng lẻ
-            </Radio>
-          </Radio.Group>
-        ) : (
-          ''
-        )}
+
         <div
           style={{
             width: '100%',
@@ -674,13 +655,15 @@ export default function Branch() {
             rowKey="_id"
             loading={loading}
             bordered
-            rowSelection={rowSelection}
             columns={columnsPromotion}
             dataSource={branch}
-            scroll={{ y: 500 }}
+            style={{
+              width: '100%',
+            }}
           />
         </div>
       </div>
+<<<<<<< HEAD
 
       <Drawer
         title="Cập nhật thông tin chi nhánh"
@@ -1358,6 +1341,8 @@ export default function Branch() {
       >
         <BranchView data={data} />
       </Drawer>
+=======
+>>>>>>> aa8f489e9e8f9a195ad41b314fd3b61fc2ec8042
     </>
   )
 }

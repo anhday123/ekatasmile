@@ -15,6 +15,7 @@ import {
   Radio,
   DatePicker,
   Table,
+  Space,
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons'
@@ -26,6 +27,7 @@ import { apiAllInventory } from '../../../../apis/inventory'
 import XLSX from 'xlsx'
 import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
+import { ROUTES } from 'consts'
 const { Option } = Select
 const { Search } = Input
 export default function ShippingProductAdd(props) {
@@ -410,7 +412,6 @@ export default function ShippingProductAdd(props) {
           className={styles['supplier_add_content']}
           onFinish={onFinish}
         >
-          
           <div
             style={{
               display: 'flex',
@@ -421,14 +422,14 @@ export default function ShippingProductAdd(props) {
               color: 'black',
               fontWeight: '600',
               fontSize: '1rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
-            onClick={() => history.goBack()}
+            onClick={() => history.push(ROUTES.SHIPPING_PRODUCT)}
           >
-            <ArrowLeftOutlined style={{marginRight: 7}}/>
+            <ArrowLeftOutlined style={{ marginRight: 7 }} />
             Thông tin phiếu chuyển
           </div>
-          <Row style={{ width: '100%' }}>
+          <Row style={{ width: '100%' }} align="middle">
             <span
               style={{
                 marginBottom: '0.5rem',
@@ -440,6 +441,8 @@ export default function ShippingProductAdd(props) {
             </span>
             <Form.Item name="ship_date">
               <DatePicker
+                size="large"
+                className="br-15__date-picker"
                 style={{ width: 250 }}
                 showTime
                 defaultValue={moment()}
@@ -490,47 +493,32 @@ export default function ShippingProductAdd(props) {
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  {deliveryFlow.fromtype === 'BRANCH' ? (
-                    <Select
-                      placeholder="Chọn nơi chuyển"
-                      showSearch
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(e) =>
-                        setDeliveryFlow({ ...deliveryFlow, from: e })
-                      }
-                      optionFilterProp="children"
-                    >
-                      {branchList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Option value={e.branch_id}>{e.name}</Option>
-                        ))}
-                    </Select>
-                  ) : (
-                    <Select
-                      placeholder="Chọn nơi chuyển"
-                      showSearch
-                      onChange={(e) =>
-                        setDeliveryFlow({ ...deliveryFlow, from: e })
-                      }
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      optionFilterProp="children"
-                    >
-                      {warehouseList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Option value={e.warehouse_id}>{e.name}</Option>
-                        ))}
-                    </Select>
-                  )}
+                  <Select
+                    size="large"
+                    placeholder="Chọn nơi chuyển"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    onChange={(e) =>
+                      setDeliveryFlow({ ...deliveryFlow, from: e })
+                    }
+                    optionFilterProp="children"
+                  >
+                    {deliveryFlow.fromtype === 'BRANCH'
+                      ? branchList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Option value={e.branch_id}>{e.name}</Option>
+                          ))
+                      : warehouseList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Option value={e.warehouse_id}>{e.name}</Option>
+                          ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
@@ -556,7 +544,7 @@ export default function ShippingProductAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="note"
                 >
-                  <Input placeholder="Nhập ghi chú" />
+                  <Input placeholder="Nhập ghi chú" size="large" />
                 </Form.Item>
               </div>
             </Col>
@@ -606,47 +594,32 @@ export default function ShippingProductAdd(props) {
                   hasFeedback
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  {deliveryFlow.totype === 'BRANCH' ? (
-                    <Select
-                      placeholder="Chọn nơi nhận"
-                      showSearch
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(e) =>
-                        setDeliveryFlow({ ...deliveryFlow, to: e })
-                      }
-                      optionFilterProp="children"
-                    >
-                      {branchList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Option value={e.branch_id}>{e.name}</Option>
-                        ))}
-                    </Select>
-                  ) : (
-                    <Select
-                      placeholder="Chọn nơi nhận"
-                      showSearch
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      onChange={(e) =>
-                        setDeliveryFlow({ ...deliveryFlow, to: e })
-                      }
-                      optionFilterProp="children"
-                    >
-                      {warehouseList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Option value={e.warehouse_id}>{e.name}</Option>
-                        ))}
-                    </Select>
-                  )}
+                  <Select
+                    size="large"
+                    placeholder="Chọn nơi nhận"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    onChange={(e) =>
+                      setDeliveryFlow({ ...deliveryFlow, to: e })
+                    }
+                    optionFilterProp="children"
+                  >
+                    {deliveryFlow.totype === 'BRANCH'
+                      ? branchList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Option value={e.branch_id}>{e.name}</Option>
+                          ))
+                      : warehouseList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Option value={e.warehouse_id}>{e.name}</Option>
+                          ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
@@ -672,7 +645,11 @@ export default function ShippingProductAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="tag"
                 >
-                  <Select mode="tags" style={{ width: '100%' }}></Select>
+                  <Select
+                    size="large"
+                    mode="tags"
+                    style={{ width: '100%' }}
+                  ></Select>
                 </Form.Item>
               </div>
             </Col>
@@ -694,6 +671,8 @@ export default function ShippingProductAdd(props) {
           </div>
 
           <AutoComplete
+            placeholder="Tìm kiếm theo mã, theo tên"
+            size="large"
             dropdownMatchSelectWidth={252}
             style={{
               width: '100%',
@@ -702,78 +681,26 @@ export default function ShippingProductAdd(props) {
             onSelect={onSelect}
             onSearch={handleSearch}
             onFocus={handleSearch}
-          >
-            <div
-              style={{
-                display: 'flex',
-                margin: '1rem 0',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                style={{ width: '100%' }}
-                placeholder="Tìm kiếm theo mã, theo tên"
-                enterButton
-              />
-            </div>
-          </AutoComplete>
-          {/*
-          <div onClick={showDrawer} style={{ display: 'flex', marginBottom: '1rem', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}><Button type="primary" style={{ width: '7.5rem', display: 'flex', justifyContent: 'center' }}>Thêm sản phẩm</Button></div>
-        */}
+          />
+
           <Row
             style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
               width: '100%',
+              marginTop: 20,
             }}
+            justify="end"
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={12}
-              lg={12}
-              xl={12}
+            <Button
+              size="large"
+              icon={<FileExcelOutlined />}
+              onClick={() => setModalImportVisible(true)}
+              style={{
+                backgroundColor: '#004F88',
+                color: 'white',
+              }}
             >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{
-                    width: '100%',
-                    marginBottom: '1rem',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                  }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={6}
-                >
-                  <Button
-                    icon={<FileExcelOutlined />}
-                    onClick={() => setModalImportVisible(true)}
-                    style={{
-                      width: '7.5rem',
-                      backgroundColor: '#004F88',
-                      color: 'white',
-                    }}
-                  >
-                    Nhập excel
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
+              Nhập excel
+            </Button>
           </Row>
 
           <Row style={{ width: '100%' }}>
@@ -847,43 +774,19 @@ export default function ShippingProductAdd(props) {
               scroll={{ y: 500 }}
             />
           </div>
-          {selectedRowKeysMain && selectedRowKeysMain.length > 0 ? (
-            <div
-              style={{
-                marginTop: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Button type="primary" danger style={{ width: '7.5rem' }}>
-                Xóa sản phẩm
-              </Button>
-            </div>
-          ) : (
-            ''
-          )}
-          <Row
-            style={{ marginTop: '1rem' }}
-            className={styles['supplier_add_content_supplier_button']}
-          >
-            <Col
-              style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={4}
-              xl={3}
-            >
-              <Form.Item>
+
+          <Row justify="end" style={{ marginTop: '1rem', width: '100%' }}>
+            <Space size="large">
+              {selectedRowKeysMain.length ? (
+                <Button size="large" type="primary" danger>
+                  Xóa sản phẩm
+                </Button>
+              ) : (
+                ''
+              )}
+              <Form.Item style={{ marginBottom: 0 }}>
                 <Button
-                  style={{ width: '7.5rem' }}
+                  size="large"
                   type="primary"
                   htmlType="submit"
                   onClick={() => setFlag(1)}
@@ -891,24 +794,9 @@ export default function ShippingProductAdd(props) {
                   Lưu
                 </Button>
               </Form.Item>
-            </Col>
-            <Col
-              style={{
-                width: '100%',
-                marginLeft: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={4}
-              xl={3}
-            >
-              <Form.Item>
+              <Form.Item style={{ marginBottom: 0 }}>
                 <Button
-                  style={{ width: '7.5rem' }}
+                  size="large"
                   type="primary"
                   htmlType="submit"
                   onClick={() => setFlag(0)}
@@ -916,7 +804,7 @@ export default function ShippingProductAdd(props) {
                   Chuyển
                 </Button>
               </Form.Item>
-            </Col>
+            </Space>
           </Row>
         </Form>
 
