@@ -23,7 +23,7 @@ import { apiProvince } from 'apis/information'
 import { addBranch, apiFilterCity } from 'apis/branch'
 
 const { Option } = Select
-export default function BranchAdd() {
+export default function BranchAdd({ reload }) {
   const dispatch = useDispatch()
   const history = useHistory()
   const location = useLocation()
@@ -65,8 +65,9 @@ export default function BranchAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await addBranch(object)
-      console.log(res)
       if (res.status === 200) {
+        await reload()
+
         openNotification()
 
         modal2VisibleModal(false)
@@ -100,14 +101,13 @@ export default function BranchAdd() {
 
       dispatch({ type: ACTION.LOADING, data: true })
       const body = {
-        address: values && values.address ? values.address.toLowerCase() : '',
-        district: values.district.toLowerCase(),
-        name: values.branchName.toLowerCase(),
+        address: values && values.address ? values.address : '',
+        district: values.district,
+        name: values.branchName,
         phone: values.phoneNumber,
-        latitude: ' ',
-        longtitude: ' ',
-        ward: values.city.toLowerCase(),
-        province: ' ',
+        latitude: '',
+        longtitude: '',
+        province: 'values.city',
         store: values.store,
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -174,6 +174,10 @@ export default function BranchAdd() {
     apiProvinceData()
     getAllStoreData()
   }, [])
+
+  useEffect(() => {
+    if (!modal2Visible) form.resetFields()
+  }, [modal2Visible])
 
   return (
     <>
@@ -438,6 +442,7 @@ export default function BranchAdd() {
                     rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                   >
                     <Select
+                      size="large"
                       showSearch
                       style={{ width: '100%' }}
                       placeholder="Select a person"

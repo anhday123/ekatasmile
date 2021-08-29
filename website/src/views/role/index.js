@@ -1,7 +1,7 @@
 import styles from './../role/role.module.scss'
 import React, { useState, useEffect } from 'react'
 import { ACTION } from './../../consts/index'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   Col,
@@ -29,7 +29,7 @@ const { Panel } = Collapse
 export default function Role() {
   const { TabPane } = Tabs
   const dispatch = useDispatch()
-
+  const dataUser = useSelector((state) => state.login.dataUser)
   const [visible, setVisible] = useState(false)
   const [permission, setPermission] = useState([])
 
@@ -128,12 +128,7 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  useEffect(() => {
-    apiAllRoleData()
-  }, [])
-  useEffect(() => {
-    apiAllMenuData()
-  }, [])
+
   const [rolePermission, setRolePermission] = useState([])
   const apiAllRolePermissionData = async () => {
     try {
@@ -147,10 +142,6 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-
-  useEffect(() => {
-    apiAllRolePermissionData()
-  }, [])
 
   const openNotificationAddRole = () => {
     notification.success({
@@ -230,25 +221,22 @@ export default function Role() {
       openNotificationAddRoleError()
     }
   }
-  const [index1, setIndex1] = useState(-1)
-  const onClickDeleteActive = (id, index) => {
-    const object = {
-      active: true,
-      permission_list: [],
-      menu_list: [],
-    }
-    setIndex1(index)
-    apiUpdateRoleData(object, id)
-  }
+
   const onClickDeleteDisable = (e, id, index) => {
     const object = {
       active: e ? e : false,
       permission_list: [...rolePermission[index].permission_list],
       menu_list: [...rolePermission[index].menu_list],
     }
-    setIndex1(index)
     apiUpdateRoleData(object, id, e)
   }
+
+  useEffect(() => {
+    apiAllMenuData()
+    apiAllRoleData()
+    apiAllRolePermissionData()
+  }, [])
+
   return (
     <>
       <div
@@ -319,7 +307,11 @@ export default function Role() {
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
-              if (values.active) {
+              if (
+                values.name !== 'ADMIN' ||
+                (dataUser.data.role.name !== 'BUSINESS' &&
+                  values.name === 'BUSINESS')
+              )
                 return (
                   <Panel
                     extra={
@@ -407,95 +399,6 @@ export default function Role() {
                     </Tabs>
                   </Panel>
                 )
-              } else {
-                return (
-                  <Panel
-                    extra={
-                      <Switch
-                        defaultChecked={values.active}
-                        onChange={(e) =>
-                          onClickDeleteDisable(e, values.role_id, index)
-                        }
-                      />
-                    }
-                    header={`Permission ${values.name}`}
-                    key={values.role_id}
-                  >
-                    <Tabs defaultActiveKey="1">
-                      <TabPane tab="Quyền" key="1">
-                        <Checkbox.Group
-                          style={{ width: '100%' }}
-                          defaultValue={values.permission_list}
-                          onChange={onChange}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              paddingTop: '1rem',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            {permission.map((values1, index1) => {
-                              return (
-                                <Col
-                                  style={{
-                                    width: '100%',
-                                    marginBottom: '1rem',
-                                  }}
-                                  xs={24}
-                                  sm={11}
-                                  md={7}
-                                  lg={7}
-                                  xl={5}
-                                >
-                                  <Checkbox value={values1}>{values1}</Checkbox>
-                                </Col>
-                              )
-                            })}
-                          </Row>
-                        </Checkbox.Group>
-                      </TabPane>
-                      <TabPane tab="Menu hiển thị" key="2">
-                        <Checkbox.Group
-                          style={{ width: '100%' }}
-                          defaultValue={values.menu_list}
-                          onChange={onChangeMenu}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              paddingTop: '1rem',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            {menu.map((values1, index1) => {
-                              return (
-                                <Col
-                                  style={{
-                                    width: '100%',
-                                    marginBottom: '1rem',
-                                  }}
-                                  xs={24}
-                                  sm={11}
-                                  md={7}
-                                  lg={7}
-                                  xl={5}
-                                >
-                                  <Checkbox value={values1}>{values1}</Checkbox>
-                                </Col>
-                              )
-                            })}
-                          </Row>
-                        </Checkbox.Group>
-                      </TabPane>
-                    </Tabs>
-                  </Panel>
-                )
-              }
             })}
           </Collapse>
         </div>

@@ -10,24 +10,23 @@ import {
   notification,
   Radio,
 } from 'antd'
-import { useHistory } from 'react-router-dom'
 import { addCustomer } from '../../../../apis/customer'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
-import { ROUTES } from 'consts'
 const { Option } = Select
-export default function CustomerAdd(props) {
+export default function CustomerAdd({ close, reload }) {
   const [gender, setGender] = useState('male')
+  const [birthday, setBirthday] = useState(null)
   const dispatch = useDispatch()
   const [Location, setLocation] = useState({ province: [], district: [] })
-  let history = useHistory()
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
       description: 'Cập nhật thông tin khách hàng thành công.',
     })
   }
+
   const onFinish = async (values) => {
     try {
       dispatch({ type: 'LOADING', data: true })
@@ -36,27 +35,25 @@ export default function CustomerAdd(props) {
         first_name: values.first_name,
         last_name: values.last_name,
         phone: values.phone,
-        type: props.hiddenType ? 'vangLai' : values.type,
-        birthday: values.birthday ? values.birthday : '',
-        address: values.address ? values.address : '',
-        province: values.province ? values.province : '',
-        district: values.district ? values.district : '',
-        ward: '',
+        type: values.type || '',
+        birthday: birthday || '',
+        address: values.address || '',
+        province: values.province || '',
+        district: values.district || '',
         balance: [],
       }
+      console.log(JSON.stringify(obj))
       const res = await addCustomer(obj)
+      console.log('result', res)
       if (res.status == 200 && res.data.data) {
-        // console.log("Success:", values);
+        await reload()
         openNotification()
-        dispatch({ type: 'LOADING', data: false })
-        props.close()
-      } else {
-        throw res
-      }
+        close()
+      } else notification.error({ message: 'Tạo khách hàng không thành công!' })
+      dispatch({ type: 'LOADING', data: false })
     } catch (e) {
       console.log(e)
       dispatch({ type: 'LOADING', data: false })
-      notification.error({ message: 'Thất bại', description: e.data.message })
     }
   }
   const getAddress = async (api, callback, key, params) => {
@@ -72,23 +69,13 @@ export default function CustomerAdd(props) {
     }
   }
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo)
-  }
-  function onChange(date, dateString) {
-    console.log(date, dateString)
-  }
   useEffect(() => {
     getAddress(apiProvince, setLocation, 'province')
   }, [])
   return (
     <>
       <div className={styles['supplier_add']}>
-        <Form
-          className={styles['supplier_add_content']}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-        >
+        <Form className={styles['supplier_add_content']} onFinish={onFinish}>
           <Row
             style={{
               display: 'flex',
@@ -177,7 +164,10 @@ export default function CustomerAdd(props) {
                     size="large"
                     className="br-15__date-picker"
                     style={{ width: '100%' }}
-                    onChange={onChange}
+                    onChange={(date, dateString) => {
+                      if (date) setBirthday(dateString)
+                      else setBirthday(null)
+                    }}
                   />
                 </Form.Item>
               </div>
@@ -211,39 +201,37 @@ export default function CustomerAdd(props) {
                 </Form.Item>
               </div>
             </Col>
-            {!props.hiddenType && (
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={11}
-                lg={11}
-                xl={11}
-              >
-                <div>
-                  <div
-                    style={{
-                      marginBottom: '0.5rem',
-                      color: 'black',
-                      fontWeight: '600',
-                    }}
-                  >
-                    <span style={{ color: '#ff4d4f' }}>*</span> Loại khách hàng
-                  </div>
-                  <Form.Item
-                    name="type"
-                    hasFeedback
-                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                  >
-                    <Select placeholder="Chọn loại khách hàng" size="large">
-                      {/* <Option value="vip">VIP</Option> */}
-                      <Option value="potential">Tiềm năng</Option>
-                      <Option value="vangLai">Vãng lai</Option>
-                    </Select>
-                  </Form.Item>
+
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  <span style={{ color: '#ff4d4f' }}>*</span> Loại khách hàng
                 </div>
-              </Col>
-            )}
+                <Form.Item
+                  name="type"
+                  hasFeedback
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                >
+                  <Select placeholder="Chọn loại khách hàng" size="large">
+                    <Option value="Tiềm năng">Tiềm năng</Option>
+                    <Option value="Vãng lai">Vãng lai</Option>
+                  </Select>
+                </Form.Item>
+              </div>
+            </Col>
 
             <Col
               style={{ width: '100%' }}
@@ -334,32 +322,6 @@ export default function CustomerAdd(props) {
                       <Option value={e.district_name}>{e.district_name}</Option>
                     ))}
                   </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    color: 'black',
-                    fontWeight: '600',
-                  }}
-                >
-                  Email
-                </div>
-                <Form.Item
-                  className={styles['supplier_add_content_supplier_code_input']}
-                  name="email"
-                >
-                  <Input size="large" placeholder="Nhập email" />
                 </Form.Item>
               </div>
             </Col>

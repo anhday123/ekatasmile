@@ -1,14 +1,16 @@
 import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES } from 'consts/index'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
-import { Link, useHistory } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 
+//icons
+import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
+
+//antd
 import {
   Switch,
-  Radio,
   Drawer,
   Input,
   Row,
@@ -19,10 +21,13 @@ import {
   Table,
   Form,
   Button,
+  Space,
+  Modal,
 } from 'antd'
 
 //components
 import BranchAdd from 'components/branch/branch-add'
+import BranchView from 'views/actions/branch/view'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
@@ -33,70 +38,42 @@ import {
   apiUpdateBranch,
   getAllBranch,
 } from 'apis/branch'
-import BranchView from 'views/actions/branch/view'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Branch() {
-  const history = useHistory()
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
-  const [visibleUpdate, setVisibleUpdate] = useState(false)
+  const [visibleUpdate, setVisibleUpdate] = useState(true)
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState({})
   const [viewBranch, setViewBranch] = useState(false)
-  const [store, setStore] = useState([])
-  const [branch, setBranch] = useState([])
+  const [stores, setStores] = useState([])
+  const [branchs, setBranchs] = useState([])
+  const [countBranch, setCountBranch] = useState(0)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [page, setPage] = useState(1)
+  const [page_size, setPage_size] = useState(20)
+  const [paramsFilter, setParamsFilter] = useState({})
+  const [formUpdateBranch] = Form.useForm()
 
   const typingTimeoutRef = useRef(null)
-  const apiSearchData = async (value, data) => {
-    if (data === 1) {
-      try {
-        setLoading(true)
-        const res = await apiSearch({ keyword: value })
 
-        if (res.status === 200) setBranch(res.data.data)
-        setLoading(false)
-      } catch (error) {
-        setLoading(false)
-      }
+  const [valueDate, setValueDate] = useState(null)
+  function onChangeDate(date, dateStrings) {
+    setPage(1)
+    if (date) {
+      setValueDate(date)
+      paramsFilter.from_date = dateStrings[0]
+      paramsFilter.to_date = dateStrings[1]
     } else {
-      try {
-        setLoading(true)
-
-        const res = await apiSearch({ store: value })
-        console.log(res)
-        if (res.status === 200) setBranch(res.data.data)
-        setLoading(false)
-      } catch (error) {
-        setLoading(false)
-      }
+      setValueDate(null)
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
     }
-  }
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
 
-      const res = await apiSearch({ from_date: start, to_date: end })
-      console.log(res)
-      if (res.status === 200) setBranch(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
-  const [clear, setClear] = useState(-1)
-  function onChangeDate(dates, dateStrings) {
-    setClear(-1)
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    apiSearchDateData(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
+    setParamsFilter({ ...paramsFilter })
+    getAllBranchData({ page: 1, page_size, ...paramsFilter })
   }
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -106,14 +83,18 @@ export default function Branch() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-      apiSearchData(value, 1)
-    }, 300)
+      setPage(1)
+      if (value) paramsFilter.keyword = value
+      else delete paramsFilter.keyword
+
+      getAllBranchData({ page: 1, page_size, ...paramsFilter })
+      setParamsFilter({ ...paramsFilter })
+    }, 750)
   }
-  const columnsPromotion = [
+  const columnsBranch = [
     {
       title: 'Mã chi nhánh',
       dataIndex: 'code',
-      width: 150,
       render: (text, record) => (
         <div
           onClick={() => {
@@ -129,57 +110,224 @@ export default function Branch() {
     {
       title: 'Tên chi nhánh',
       dataIndex: 'name',
-      width: 150,
       render: (text, record) => <div>{text}</div>,
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      width: 150,
-      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      render: (text, record) =>
+        text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
     },
     {
       title: 'Cửa hàng',
       dataIndex: 'store',
-      width: 150,
       render: (text, record) =>
         record && record.store && record.store.name ? record.store.name : '',
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
-      width: 150,
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
-      width: 150,
     },
 
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
-      width: 150,
     },
     {
       title: 'Thành phố',
       dataIndex: 'ward',
-      width: 150,
     },
 
     {
-      title: 'Trạng thái',
+      title: 'Hành động',
       dataIndex: 'active',
       fixed: 'right',
-      width: 100,
-      render: (text, record) =>
-        text ? (
-          <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} />
-        ) : (
-          <Switch onChange={(e) => onChangeSwitch(e, record)} />
-        ),
+      render: (text, record) => (
+        <Space size="large">
+          <Switch
+            defaultChecked={text}
+            onChange={(e) => onChangeSwitch(e, record)}
+          />
+          <ModalUpdateBranch record={record} />
+        </Space>
+      ),
     },
   ]
+
+  const ModalUpdateBranch = ({ record }) => {
+    const [visibleUpdateBranch, setVisibleUpdateBranch] = useState(false)
+    const toggleUpdateBranch = () =>
+      setVisibleUpdateBranch(!visibleUpdateBranch)
+    useEffect(() => {
+      if (!visibleUpdateBranch) formUpdateBranch.resetFields()
+      else {
+        formUpdateBranch.setFieldsValue({
+          name: record.name,
+          address: record.address,
+          phone: record.phone,
+          province: record.province,
+          store: record.store.store_id,
+          district: record.district,
+        })
+      }
+    }, [visibleUpdateBranch])
+
+    return (
+      <>
+        <EditOutlined
+          style={{ color: '#1890FF', fontSize: 18, cursor: 'pointer' }}
+          onClick={toggleUpdateBranch}
+        />
+        <Modal
+          width={750}
+          title="Cập nhật chi nhánh"
+          visible={visibleUpdateBranch}
+          onCancel={toggleUpdateBranch}
+          onOk={async () => {
+            const body = formUpdateBranch.getFieldValue()
+            apiUpdateInfoBranch(
+              {
+                name: body.name,
+                address: body.address,
+                phone: body.phone,
+                province: body.province,
+                store: body.store,
+                district: body.district,
+              },
+              record.branch_id
+            )
+          }}
+        >
+          <Form form={formUpdateBranch} layout="vertical">
+            <Row justify="space-between" align="middle">
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item
+                  name="name"
+                  label="Tên chi nhánh"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập tên chi nhánh' },
+                  ]}
+                >
+                  <Input size="large" placeholder="Nhập tên chi nhánh" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item name="address" label="Địa chỉ">
+                  <Input size="large" placeholder="Nhập địa chỉ" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="space-between" align="middle">
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item
+                  name="phone"
+                  label="Liên hệ"
+                  rules={[{ required: true, message: 'Vui lòng nhập liên hệ' }]}
+                >
+                  <Input size="large" placeholder="Nhập liên hệ" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item
+                  name="province"
+                  label="Tỉnh/thành phố"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập tỉnh/thành phố' },
+                  ]}
+                >
+                  <Select
+                    allowClear
+                    size="large"
+                    showSearch
+                    style={{ width: '100%' }}
+                    placeholder="Chọn tỉnh/thành phố"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {province.map((values, index) => {
+                      return (
+                        <Option value={values.province_name} key={index}>
+                          {values.province_name}
+                        </Option>
+                      )
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="space-between" align="middle">
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item
+                  name="store"
+                  label="Cửa hàng"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập cửa hàng' },
+                  ]}
+                >
+                  <Select
+                    allowClear
+                    size="large"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Chọn cửa hàng"
+                  >
+                    {stores.map((values, index) => {
+                      return (
+                        <Option value={values.store_id} key={index}>
+                          {values.name}
+                        </Option>
+                      )
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+                <Form.Item
+                  name="district"
+                  label="Quận/huyện"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập quận/huyện' },
+                  ]}
+                >
+                  <Select
+                    allowClear
+                    size="large"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    placeholder="Chọn quận/huyện"
+                  >
+                    {district.map((values, index) => {
+                      return (
+                        <Option value={values.district_name} key={index}>
+                          {values.district_name}
+                        </Option>
+                      )
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+      </>
+    )
+  }
 
   const [arrayUpdate, setArrayUpdate] = useState([])
   const openNotification = (check) => {
@@ -212,14 +360,18 @@ export default function Branch() {
     })
   }
 
-  const apiUpdateBranchData = async (object, id, check) => {
+  const apiUpdateInfoBranch = async (object, id) => {
     try {
       setLoading(true)
       const res = await apiUpdateBranch(object, id)
+      console.log('body', object)
+      console.log('result', res)
       if (res.status === 200) {
-        await getAllBranchData()
-        openNotification(check)
+        await getAllBranchData({ page: 1, page_size, ...paramsFilter })
         setSelectedRowKeys([])
+        notification.success({
+          message: 'Cập nhật thông tin chi nhánh thành công!',
+        })
       } else {
         openNotificationError()
       }
@@ -230,12 +382,13 @@ export default function Branch() {
     }
   }
 
-  const getAllBranchData = async () => {
+  const getAllBranchData = async (params) => {
     try {
       setLoading(true)
-      const res = await getAllBranch()
+      const res = await getAllBranch(params)
       if (res.status === 200) {
-        setBranch(res.data.data)
+        setBranchs(res.data.data)
+        setCountBranch(res.data.count)
       }
       setLoading(false)
     } catch (error) {
@@ -247,9 +400,9 @@ export default function Branch() {
     try {
       setLoading(true)
       const res = await getAllStore()
-      console.log(res)
+      console.log('store', res)
       if (res.status === 200) {
-        setStore(res.data.data)
+        setStores(res.data.data)
       }
       setLoading(false)
     } catch (error) {
@@ -257,16 +410,10 @@ export default function Branch() {
     }
   }
 
-  const showDrawer = () => {
-    setVisible(true)
-  }
-
   const onClose = () => {
     setVisible(false)
   }
-  const showDrawerUpdate = () => {
-    setVisibleUpdate(true)
-  }
+
   const openNotificationErrorFormatPhone = (data) => {
     notification.error({
       message: 'Lỗi',
@@ -296,195 +443,59 @@ export default function Branch() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-  const onCloseUpdateFunc = (data) => {
-    if (data === 1) {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          console.log(values)
-          console.log('_________________678678')
-          if (isNaN(values.phone)) {
-            if (isNaN(values.phone)) {
-              openNotificationErrorFormatPhone('Liên hệ')
-            }
-          } else {
-            if (regex.test(values.phone)) {
-              console.log(values)
-              const object = {
-                // code: values.branchCode.toLowerCase(),
-                name: values.name.toLowerCase(),
-                phone: values.phone,
-                latitude: ' ',
-                longtitude: ' ',
-                // default: values.defaultStore,
-                address:
-                  values && values.address ? values.address.toLowerCase() : '',
-                ward: values.ward.toLowerCase(),
-                district: values.district.toLowerCase(),
-                province: ' ',
-                store:
-                  values && values.store && values.store.store_id
-                    ? values.store.store_id
-                    : values.store,
-              }
-              console.log(object)
-              console.log('0--------------------------')
-              apiUpdateBranchDataUpdateMulti(object, values.branch_id)
-            } else {
-              openNotificationErrorFormatPhone('Liên hệ')
-            }
-          }
-        })
-    } else {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          if (isNaN(values.phone)) {
-            if (isNaN(values.phone)) {
-              openNotificationErrorFormatPhone('Liên hệ')
-            }
-          } else {
-            if (regex.test(values.phone)) {
-              console.log(values)
-              const object = {
-                // code: values.branchCode.toLowerCase(),
-                name: values.name.toLowerCase(),
-                phone: values.phone,
-                latitude: ' ',
-                longtitude: ' ',
-                // default: values.defaultStore,
-                address:
-                  arrayUpdate[0] && arrayUpdate[0].address
-                    ? arrayUpdate[0].address.toLowerCase()
-                    : '',
-                ward: arrayUpdate[0].ward.toLowerCase(),
-                district: arrayUpdate[0].district.toLowerCase(),
-                province: ' ',
-                store:
-                  arrayUpdate[0] &&
-                  arrayUpdate[0].store &&
-                  arrayUpdate[0].store.store_id
-                    ? arrayUpdate[0].store.store_id
-                    : arrayUpdate[0].store,
-              }
-              console.log(object)
-              console.log('0--------------------------')
-              apiUpdateBranchDataUpdateMulti(object, values.branch_id)
-            } else {
-              openNotificationErrorFormatPhone('Liên hệ')
-            }
-          }
-        })
-    }
-  }
 
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
-    setSelectedRowKeys(selectedRowKeys)
-    const array = []
-    branch &&
-      branch.length > 0 &&
-      branch.forEach((values, index) => {
-        selectedRowKeys.forEach((values1, index1) => {
-          if (values._id === values1) {
-            array.push(values)
-          }
-        })
-      })
-    setArrayUpdate([...array])
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-  const openNotificationClear = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Dữ liệu đã được reset về ban đầu.',
-    })
-  }
-  const [storeSelect, setStoreSelect] = useState('')
+  const [storeSelect, setStoreSelect] = useState()
   const handleChange = async (value) => {
-    console.log(`selected ${value}`)
     setStoreSelect(value)
-    if (value > -1) {
-      apiSearchData(value, 2)
-    } else {
-      await getAllBranchData()
-    }
+    setPage(1)
+    if (value) paramsFilter.store = value
+    else delete paramsFilter.store
+
+    getAllBranchData({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
   }
-  const dateFormat = 'YYYY/MM/DD'
   const onClickClear = async () => {
-    await getAllBranchData()
-    openNotificationClear()
+    await getAllBranchData({ page: 1, page_size })
     setValueSearch('')
-    setClear(1)
-    setStoreSelect('default')
+    setPage(1)
+    setValueDate(null)
+    setStoreSelect()
     setSelectedRowKeys([])
-    setStart([])
-    setEnd([])
   }
   const [district, setDistrict] = useState([])
-  const apiDistrictData = async () => {
+  const apiDistrictData = async (params) => {
     try {
-      setLoading(true)
-      const res = await apiDistrict()
-      console.log(res)
+      const res = await apiDistrict(params)
       if (res.status === 200) {
         setDistrict(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
     } catch (error) {
-      setLoading(false)
+      console.log(error)
     }
   }
   const [province, setProvince] = useState([])
   const apiProvinceData = async () => {
     try {
-      setLoading(true)
       const res = await apiProvince()
-      console.log(res)
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
     } catch (error) {
-      setLoading(false)
+      console.log(error)
     }
   }
 
   useEffect(() => {
     apiProvinceData()
     getAllStoreData()
-    getAllBranchData()
+    getAllBranchData({ page, page_size })
     apiDistrictData()
   }, [])
-  const [districtMain, setDistrictMain] = useState([])
-  const apiFilterCityData = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiFilterCity({ keyword: object })
-      console.log(res)
-      if (res.status === 200) {
-        setDistrictMain(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
-  }
 
   function onChangeSwitch(checked, record) {
-    apiUpdateBranchData(
-      { ...record, active: checked },
-      record.branch_id,
-      checked ? 1 : 2
+    apiUpdateInfoBranch(
+      { active: checked, store: record.store.store_id },
+      record.branch_id
     )
   }
 
@@ -523,18 +534,15 @@ export default function Branch() {
               }}
               className={styles['supplier_add_back']}
             >
-              Quản lý chi nhánh A
+              Quản lý chi nhánh
             </div>
           </Link>
-          <div className={styles['promotion_manager_button']}>
-            <BranchAdd />
-          </div>
+          <BranchAdd reload={getAllBranchData} />
         </div>
         <Row
+          justify="space-between"
+          align="middle"
           style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
             width: '100%',
           }}
         >
@@ -564,8 +572,6 @@ export default function Branch() {
             style={{
               width: '100%',
               marginTop: '1rem',
-              marginLeft: '1rem',
-              marginRight: '1rem',
             }}
             xs={24}
             sm={24}
@@ -577,13 +583,7 @@ export default function Branch() {
               <RangePicker
                 size="large"
                 className="br-15__date-picker"
-                value={
-                  clear === 1
-                    ? []
-                    : start !== ''
-                    ? [moment(start, dateFormat), moment(end, dateFormat)]
-                    : []
-                }
+                value={valueDate}
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
@@ -606,26 +606,22 @@ export default function Branch() {
           >
             <div style={{ width: '100%' }}>
               <Select
+                allowClear
                 size="large"
                 style={{ width: '100%' }}
-                placeholder="Select a person"
+                placeholder="Tìm kiếm theo cửa hàng"
                 optionFilterProp="children"
                 showSearch
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
                   0
                 }
-                value={storeSelect ? storeSelect : 'default'}
+                value={storeSelect}
                 onChange={handleChange}
               >
-                <Option value="default">Tất cả cửa hàng</Option>
-                {store &&
-                  store.length > 0 &&
-                  store.map((values, index) => {
-                    return (
-                      <Option value={values.store_id}>{values.name}</Option>
-                    )
-                  })}
+                {stores.map((values, index) => {
+                  return <Option value={values.store_id}>{values.name}</Option>
+                })}
               </Select>
             </div>
           </Col>
@@ -654,689 +650,33 @@ export default function Branch() {
           <Table
             rowKey="_id"
             loading={loading}
-            bordered
-            columns={columnsPromotion}
-            dataSource={branch}
-            style={{
-              width: '100%',
+            columns={columnsBranch}
+            dataSource={branchs}
+            pagination={{
+              position: ['bottomLeft'],
+              current: page,
+              defaultPageSize: 20,
+              pageSizeOptions: [20, 30, 50, 100],
+              showQuickJumper: true,
+              onChange: (page, pageSize) => {
+                setSelectedRowKeys([])
+                setPage(page)
+                setPage_size(pageSize)
+                getAllBranchData({ page, page_size: pageSize, ...paramsFilter })
+              },
+              total: countBranch,
             }}
+            size="small"
           />
         </div>
       </div>
 
       <Drawer
-        title="Cập nhật thông tin chi nhánh"
-        width={1000}
-        onClose={onClose}
-        visible={visible}
-        bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={() => onCloseUpdateFunc(1)} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
-      >
-        {arrayUpdate &&
-          arrayUpdate.length > 0 &&
-          arrayUpdate.map((values, index) => {
-            const obj = Object.keys(values)
-            return (
-              <Form
-                style={{
-                  borderBottom: '1px solid rgb(238, 224, 224)',
-                  paddingBottom: '1.5rem',
-                }}
-                className={styles['supplier_add_content']}
-                layout="vertical"
-                initialValues={values}
-              >
-                <Row
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {obj.map((data) => {
-                    if (data === 'name') {
-                      const InputName = () => (
-                        <Input
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Tên chi nhánh
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'phone') {
-                      const InputName = () => (
-                        <Input
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Liên hệ
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'address') {
-                      const InputName = () => (
-                        <Input
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Địa chỉ
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'ward') {
-                      const InputName = () => (
-                        <Select
-                          defaultValue={values[data]}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Select a person"
-                          optionFilterProp="children"
-                          // onChange={handleChangeCity}
-
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
-                            arrayUpdate[index][data] = event
-                            handleChangeCity(event)
-                          }}
-                        >
-                          {province &&
-                            province.length > 0 &&
-                            province.map((values, index) => {
-                              return (
-                                <Option value={values.province_name}>
-                                  {values.province_name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Tỉnh/thành phố
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'district') {
-                      const InputName = () => (
-                        <Select
-                          defaultValue={values[data]}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Select a person"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {districtMain && districtMain.length > 0
-                            ? districtMain &&
-                              districtMain.length > 0 &&
-                              districtMain.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>
-                                    {values.district_name}
-                                  </Option>
-                                )
-                              })
-                            : district &&
-                              district.length > 0 &&
-                              district.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>
-                                    {values.district_name}
-                                  </Option>
-                                )
-                              })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Quận/huyện
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'store') {
-                      const InputName = () => (
-                        <Select
-                          defaultValue={values[data].store_id}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Chọn cửa hàng"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            // const value =
-                            //   event.target.value;
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {store &&
-                            store.length > 0 &&
-                            store.map((values, index) => {
-                              return (
-                                <Option value={values.store_id}>
-                                  {values.name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Cửa hàng
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                  })}
-                </Row>
-              </Form>
-            )
-          })}
-      </Drawer>
-
-      <Drawer
-        title="Cập nhật thông tin chi nhánh"
-        width={1000}
-        onClose={onCloseUpdate}
-        visible={visibleUpdate}
-        bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={() => onCloseUpdateFunc(2)} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
-      >
-        {arrayUpdate &&
-          arrayUpdate.length > 0 &&
-          arrayUpdate.map((values, index) => {
-            const obj = Object.keys(values)
-            if (index === 0) {
-              return (
-                <Form
-                  style={{
-                    borderBottom: '1px solid rgb(238, 224, 224)',
-                    paddingBottom: '1.5rem',
-                  }}
-                  className={styles['supplier_add_content']}
-                  // form={form}
-                  layout="vertical"
-                  initialValues={values}
-                >
-                  <Row
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    {obj.map((data) => {
-                      if (data === 'name') {
-                        const InputName = () => (
-                          <Input
-                            disabled
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Tên chi nhánh
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'phone') {
-                        const InputName = () => (
-                          <Input
-                            disabled
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Liên hệ
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'address') {
-                        const InputName = () => (
-                          <Input
-                            defaultValue={values[data]}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              arrayUpdate[index][data] = value
-                            }}
-                          />
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Địa chỉ
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'ward') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                              handleChangeCity(event)
-                            }}
-                          >
-                            {province &&
-                              province.length > 0 &&
-                              province.map((values, index) => {
-                                return (
-                                  <Option value={values.province_name}>
-                                    {values.province_name}
-                                  </Option>
-                                )
-                              })}
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Tỉnh/thành phố
-                              </div>
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'district') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={values[data]}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Select a person"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                            }}
-                          >
-                            {districtMain && districtMain.length > 0
-                              ? districtMain &&
-                                districtMain.length > 0 &&
-                                districtMain.map((values, index) => {
-                                  return (
-                                    <Option value={values.district_name}>
-                                      {values.district_name}
-                                    </Option>
-                                  )
-                                })
-                              : district &&
-                                district.length > 0 &&
-                                district.map((values, index) => {
-                                  return (
-                                    <Option value={values.district_name}>
-                                      {values.district_name}
-                                    </Option>
-                                  )
-                                })}
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Quận/huyện
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                      if (data === 'store') {
-                        const InputName = () => (
-                          <Select
-                            defaultValue={values[data].store_id}
-                            showSearch
-                            style={{ width: '100%' }}
-                            placeholder="Chọn cửa hàng"
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            onChange={(event) => {
-                              arrayUpdate[index][data] = event
-                            }}
-                          >
-                            {store &&
-                              store.length > 0 &&
-                              store.map((values, index) => {
-                                return (
-                                  <Option value={values.store_id}>
-                                    {values.name}
-                                  </Option>
-                                )
-                              })}
-                          </Select>
-                        )
-                        return (
-                          <Col
-                            style={{ width: '100%' }}
-                            xs={24}
-                            sm={24}
-                            md={11}
-                            lg={11}
-                            xl={11}
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  color: 'black',
-                                  fontWeight: '600',
-                                  marginBottom: '0.5rem',
-                                  marginTop: '1rem',
-                                }}
-                              >
-                                Cửa hàng
-                              </div>
-
-                              <InputName />
-                            </div>
-                          </Col>
-                        )
-                      }
-                    })}
-                  </Row>
-                </Form>
-              )
-            }
-          })}
-      </Drawer>
-      <Drawer
         visible={viewBranch}
         onClose={() => setViewBranch(false)}
         title="Chi tiết chi nhánh"
         width="75%"
+        bodyStyle={{ padding: 0 }}
       >
         <BranchView data={data} />
       </Drawer>

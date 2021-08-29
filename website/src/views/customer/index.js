@@ -1,5 +1,5 @@
 import styles from './../customer/customer.module.scss'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   Switch,
   Input,
@@ -25,10 +25,15 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 
 export default function Customer() {
+  const typingTimeoutRef = useRef(null)
+
+  const [page, setPage] = useState(1)
+  const [page_size, setPage_size] = useState(20)
+  const [countCustomer, setCountCustomer] = useState(0)
+  const [paramsFilter, setParamsFilter] = useState({})
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [customerList, setCustomerList] = useState([])
-  const [pagination, setPagination] = useState({ page: 1, size: 10 })
   const [tableLoading, setTableLoading] = useState(false)
   const [infoCustomer, setInfoCustomer] = useState({})
   const [showCreate, setShowCreate] = useState(false)
@@ -39,21 +44,53 @@ export default function Customer() {
   })
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
   const [customerListUpdate, setCustomerListUpdate] = useState([])
-  const onSearch = (value) => {
-    getAllCustomer({ _full_name: value })
-    changeFilter('search', value)
-  }
-  function onChange(dates, dateStrings) {
-    getAllCustomer({ from_date: dateStrings[0], to_date: dateStrings[1] })
-    changeFilter('date', [moment(dateStrings[0]), moment(dateStrings[1])])
+  const [valueSearch, setValueSearch] = useState('')
+  const [valueDate, setValueDate] = useState(null)
+  const [valueTypeCustomer, setValueTypeCustomer] = useState()
+
+  const onSearch = (e) => {
+    setValueSearch(e.target.value)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value
+      setPage(1)
+      if (value) paramsFilter._full_name = value
+      else delete paramsFilter._full_name
+
+      getAllCustomer({ page: 1, page_size, ...paramsFilter })
+      setParamsFilter({ ...paramsFilter })
+    }, 750)
   }
 
-  function handleChange(value) {
-    getAllCustomer({ type: value })
-    changeFilter('category', value)
+  function onChangeDate(date, dateStrings) {
+    if (date) {
+      setValueDate(date)
+      paramsFilter.from_date = dateStrings[0]
+      paramsFilter.to_date = dateStrings[1]
+    } else {
+      setValueDate(null)
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
+    }
+    setPage(1)
+    getAllCustomer({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
   }
+
+  function onChangeTypeCustomer(value) {
+    setPage(1)
+    setValueTypeCustomer(value)
+    if (value) paramsFilter.type = value
+    else delete paramsFilter.type
+    getAllCustomer({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
+  }
+
   const changeActiveCustomer = async (id, status) => {
     try {
+      setTableLoading(true)
       const res = await updateCustomer(id, { active: status })
       if (res.status === 200) {
         if (status) {
@@ -62,16 +99,13 @@ export default function Customer() {
           notification.success({ message: 'Vô hiệu hóa khách hàng thành công' })
         }
       }
+      setTableLoading(false)
     } catch (e) {
       console.log(e)
-      notification.error({ message: 'Thay thay đổi trạng thái thất bại' })
+      setTableLoading(false)
     }
   }
-  const changeFilter = (key, val) => {
-    setCustomerFilter((e) => {
-      return { ...e, [key]: val }
-    })
-  }
+
   const columnsPromotion = [
     {
       title: 'Mã khách hàng',
@@ -102,16 +136,6 @@ export default function Customer() {
       title: 'Loại khách hàng',
       dataIndex: 'type',
       width: 150,
-      render(data) {
-        if (data && data.toUpperCase() == 'POTENTIAL') {
-          return 'Tiềm năng'
-        } else return 'Vãng lai'
-      },
-    },
-    {
-      title: 'Chi nhánh',
-      dataIndex: 'branch',
-      width: 150,
     },
     {
       title: 'Ngày sinh',
@@ -120,11 +144,6 @@ export default function Customer() {
       render(data) {
         return data && moment(data).format('L')
       },
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      width: 150,
     },
     {
       title: 'Liên hệ',
@@ -150,7 +169,6 @@ export default function Customer() {
       title: 'Trạng thái',
       dataIndex: 'active',
       width: 120,
-      fixed: 'right',
       render(data, record) {
         return (
           <Switch
@@ -161,7 +179,6 @@ export default function Customer() {
       },
     },
   ]
-  const changePagi = (page, size) => setPagination({ page, size })
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -176,16 +193,13 @@ export default function Customer() {
   const getAllCustomer = async (params) => {
     setTableLoading(true)
     try {
-      const res = await getCustomer({
-        ...params,
-        page: pagination.page,
-        page_size: pagination.size,
-      })
+      const res = await getCustomer(params)
 
       if (res.status === 200 && res.data.success) {
         setCustomerList(res.data.data)
-        setTableLoading(false)
+        setCountCustomer(res.data.count)
       }
+      setTableLoading(false)
     } catch (e) {
       console.log(e)
       setTableLoading(false)
@@ -193,8 +207,11 @@ export default function Customer() {
   }
 
   const clearFilter = () => {
-    getAllCustomer()
-    setCustomerFilter({ search: '', date: [], category: undefined })
+    getAllCustomer({ page: 1, page_size })
+    setValueSearch('')
+    setValueDate(null)
+    setValueTypeCustomer()
+    setParamsFilter({})
   }
   const openUpdateDrawer = () => {
     var tmp = []
@@ -208,7 +225,7 @@ export default function Customer() {
     }, 300)
   }
   useEffect(() => {
-    getAllCustomer()
+    getAllCustomer({ page, page_size, ...paramsFilter })
   }, [])
   return (
     <>
@@ -255,9 +272,10 @@ export default function Customer() {
           >
             <Input
               placeholder="Tìm kiếm theo tên"
-              value={customerFilter.search}
-              onChange={(e) => onSearch(e.target.value)}
+              value={valueSearch}
+              onChange={(e) => onSearch(e)}
               size="large"
+              allowClear
             />
           </Col>
           <Col
@@ -280,8 +298,8 @@ export default function Customer() {
                     moment().endOf('month'),
                   ],
                 }}
-                value={customerFilter.date}
-                onChange={onChange}
+                value={valueDate}
+                onChange={onChangeDate}
               />
             </div>
           </Col>
@@ -298,11 +316,12 @@ export default function Customer() {
                 size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc theo khách hàng"
-                value={customerFilter.category}
-                onChange={handleChange}
+                value={valueTypeCustomer}
+                onChange={onChangeTypeCustomer}
+                allowClear
               >
-                <Option value="POTENTIAL">Khách hàng tiềm năng</Option>
-                <Option value="VANGLAI">Khách hàng vãng lai</Option>
+                <Option value="Tiềm năng">Khách hàng tiềm năng</Option>
+                <Option value="Vãng lai">Khách hàng vãng lai</Option>
               </Select>
             </div>
           </Col>
@@ -331,10 +350,23 @@ export default function Customer() {
             rowSelection={rowSelection}
             rowKey="_id"
             loading={tableLoading}
-            pagination={{ onChange: changePagi }}
             columns={columnsPromotion}
             dataSource={customerList}
-            scroll={{ y: 500 }}
+            size="small"
+            pagination={{
+              position: ['bottomLeft'],
+              current: page,
+              defaultPageSize: 20,
+              pageSizeOptions: [20, 30, 50, 100],
+              showQuickJumper: true,
+              onChange: (page, pageSize) => {
+                setSelectedRowKeys([])
+                setPage(page)
+                setPage_size(pageSize)
+                getAllCustomer({ page, page_size: pageSize, ...paramsFilter })
+              },
+              total: countCustomer,
+            }}
           />
         </div>
       </div>
@@ -356,7 +388,10 @@ export default function Customer() {
         width="75%"
         title="Thêm khách hàng"
       >
-        <CustomerAdd close={() => setShowCreate(false)} />
+        <CustomerAdd
+          reload={() => getAllCustomer({ page: 1, page_size, ...paramsFilter })}
+          close={() => setShowCreate(false)}
+        />
       </Drawer>
     </>
   )

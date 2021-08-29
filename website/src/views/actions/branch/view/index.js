@@ -239,30 +239,25 @@ export default function BranchView(props) {
     {
       title: 'Mã nhân sự',
       dataIndex: 'user_id',
-      width: 150,
       render: (text, record) => <div>{text}</div>,
     },
     {
       title: 'Tên đăng nhập',
       dataIndex: 'username',
-      width: 150,
     },
 
     {
       title: 'Chi nhánh',
       dataIndex: 'branch',
-      width: 150,
       render: (text, record) => <div>{text.name}</div>,
     },
     {
       title: 'Chức vụ',
       dataIndex: '_role',
-      width: 150,
     },
     {
       title: 'Tên nhân sự',
       dataIndex: 'name',
-      width: 150,
       render: (text, record) => (
         <div>{`${record.first_name} ${record.last_name}`}</div>
       ),
@@ -270,35 +265,29 @@ export default function BranchView(props) {
     {
       title: 'Ngày gia nhập',
       dataIndex: 'create_date',
-      width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
     },
     {
       title: 'Email',
       dataIndex: 'email',
-      width: 150,
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
-      width: 150,
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
-      width: 150,
     },
 
     {
       title: 'Tỉnh/thành phố',
       dataIndex: 'province',
-      width: 150,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'active',
       fixed: 'right',
-      width: 100,
       render: (text, record) =>
         text ? (
           <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} />
@@ -451,7 +440,7 @@ export default function BranchView(props) {
       duration: 5,
       description: (
         <div>
-          Nhân sự <b>{name}</b> đã được phân vào chi nhánh{' '}
+          Nhân sự <b>{name}</b> đã được phân vào chi nhánh
           <b>{props.data.name}</b>.
         </div>
       ),
@@ -1039,9 +1028,8 @@ export default function BranchView(props) {
                   columns={columns}
                   rowSelection={rowSelection}
                   dataSource={employee}
-                  scroll={{ y: 500 }}
                 />
-              </div>{' '}
+              </div>
             </div>
           </div>
 
@@ -1080,9 +1068,8 @@ export default function BranchView(props) {
                       lg={24}
                       xl={24}
                     >
-                      {' '}
                       <div>
-                        <b>Tên nhân sự:</b>{' '}
+                        <b>Tên nhân sự:</b>
                         {`${record.first_name} ${record.last_name}`}
                       </div>
                     </Col>
@@ -1145,7 +1132,7 @@ export default function BranchView(props) {
                       xl={24}
                     >
                       <div>
-                        <b>Chức vụ:</b>{' '}
+                        <b>Chức vụ:</b>
                         {record && record.role ? record.role.name : ''}
                       </div>
                     </Col>
@@ -1209,7 +1196,7 @@ export default function BranchView(props) {
                       xl={24}
                     >
                       <div>
-                        <b>Ngày tạo:</b>{' '}
+                        <b>Ngày tạo:</b>
                         {moment(record.create_date).format('YYYY-MM-DD')}
                       </div>
                     </Col>
