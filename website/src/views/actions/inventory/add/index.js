@@ -18,7 +18,7 @@ import { apiAddInventory } from '../../../../apis/inventory'
 import { apiFilterCity, getAllBranch } from '../../../../apis/branch'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
 const { Option } = Select
-export default function InventoryAdd(props) {
+export default function InventoryAdd({ close, reload }) {
   const [form] = Form.useForm()
   const dispatch = useDispatch()
   const openNotification = () => {
@@ -72,8 +72,9 @@ export default function InventoryAdd(props) {
       const res = await apiAddInventory(object)
       console.log(res)
       if (res.status === 200) {
+        await reload()
         openNotification()
-        props.close()
+        close()
       } else {
         openNotificationErrorCode()
       }
@@ -97,16 +98,15 @@ export default function InventoryAdd(props) {
       } else {
         if (regex.test(values.phoneNumber)) {
           const object = {
-            name: values.inventoryName.toLowerCase(),
-            type: values.inventoryType.toLowerCase(),
+            name: values.inventoryName,
+            type: values.inventoryType,
             phone: values.phoneNumber,
             capacity: 1,
             monthly_cost: values.maintainCost,
-            address:
-              values && values.address ? values.address.toLowerCase() : '',
+            address: values && values.address ? values.address : '',
             ward: ' ',
-            district: values.district.toLowerCase(),
-            province: values.city.toLowerCase(),
+            district: values.district,
+            province: values.city,
           }
           apiAddInventoryData(object)
         } else {
@@ -121,16 +121,15 @@ export default function InventoryAdd(props) {
       } else {
         if (regex.test(values.phoneNumber)) {
           const object = {
-            name: values.inventoryName.toLowerCase(),
-            type: values.inventoryType.toLowerCase(),
+            name: values.inventoryName,
+            type: values.inventoryType,
             phone: values.phoneNumber,
             capacity: 1,
             monthly_cost: 0,
-            address:
-              values && values.address ? values.address.toLowerCase() : '',
+            address: values && values.address ? values.address : '',
             ward: ' ',
-            district: values.district.toLowerCase(),
-            province: values.city.toLowerCase(),
+            district: values.district,
+            province: values.city,
           }
           apiAddInventoryData(object)
         } else {
@@ -282,6 +281,7 @@ export default function InventoryAdd(props) {
                 </div>
                 <Form.Item name="maintainCost">
                   <InputNumber
+                    placeholder="Nhập phí duy trì tháng"
                     size="large"
                     className="br-15__input"
                     style={{ width: '100%' }}

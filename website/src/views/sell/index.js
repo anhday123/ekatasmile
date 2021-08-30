@@ -108,7 +108,9 @@ export default function Sell() {
   const [voucherSave, setVoucherSave] = useState('')
   const [voucherSaveCheck, setVoucherSaveCheck] = useState(-1)
   const [tax, setTax] = useState([])
-  const [branchId, setBranchId] = useState()
+  const [branchId, setBranchId] = useState(
+    dataUser.data.branch ? dataUser.data.branch.branch_id : undefined
+  )
   const dispatch = useDispatch()
   const [promotion, setPromotion] = useState([])
   const [value, setValue] = useState('18')
@@ -162,12 +164,9 @@ export default function Sell() {
   const apiProductCategoryDataMerge = async (value) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const branch_id = JSON.parse(localStorage.getItem('branch_id'))
 
-      const res = await apiProductCategoryMerge({
-        branch: branch_id.data.branch.branch_id,
-      })
-
+      const res = await apiProductCategoryMerge({ branch: branchId })
+      console.log('category', res)
       if (res.status === 200) {
         setCategory(res.data.data)
       }
@@ -913,11 +912,6 @@ export default function Sell() {
 
   useEffect(() => {
     setRoleName(dataUser.data.role.name.toLowerCase() || '')
-    setBranchId(
-      dataUser.data.role.branch
-        ? dataUser.data.role.branch.branch_id
-        : undefined
-    )
   }, [])
 
   //get width device
@@ -977,23 +971,16 @@ export default function Sell() {
     apiProductSellerDataMain(e)
   }
   const [city, setCity] = useState('')
-
   const [branchDetail, setBranchDetail] = useState({})
   const getAllBranchData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getAllBranch()
       if (res.status === 200) {
-        var object = {}
-        const branch_id = JSON.parse(localStorage.getItem('branch_id'))
+        const branch = res.data.data.find((e) => e.branch_id === branchId)
 
-        res.data.data &&
-          res.data.data.forEach((values, index) => {
-            if (values.branch_id === branch_id.data.branch.branch_id) {
-              object = values
-            }
-          })
-        setBranchDetail(object)
+        if (branch) setBranchDetail(branch)
+
         setBranch(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -4979,165 +4966,33 @@ export default function Sell() {
                     <div
                       className={`${styles['product_show']} ${styles['card']}`}
                       style={{
-                        height: '30rem',
-                        maxHeight: '100%',
-                        backgroundColor: 'white',
                         marginRight: !isMobile && 7,
                         marginTop: 15,
                         marginBottom: isMobile && 15,
                       }}
                     >
                       <Tabs defaultActiveKey="0">
-                        {category &&
-                          category.length > 0 &&
-                          category.map((values20, index20) => {
-                            return (
-                              <TabPane tab={values20.name} key={index20}>
-                                <Row
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'flex-start',
-                                    alignItems: 'center',
-                                    width: '100%',
-                                  }}
-                                >
-                                  {values20.data &&
-                                    values20.data.length > 0 &&
-                                    values20.data.map((values, index) => {
-                                      return values.variants &&
-                                        values.variants.length > 0 ? (
-                                        values.variants.map(
-                                          (values3, index3) => {
-                                            return (
-                                              <Col
-                                                style={{ width: '100%' }}
-                                                xs={24}
-                                                sm={24}
-                                                md={11}
-                                                lg={7}
-                                                xl={7}
-                                              >
-                                                <div
-                                                  onClick={() => {
-                                                    onClickModal2Visible(
-                                                      values3,
-                                                      values
-                                                    )
-                                                  }}
-                                                  // onClick={() => onClickModal2Visible(values3, values)}
-                                                  className={
-                                                    styles[
-                                                      'sell_manager_content_row_col_bottom_row_col_bottom_col_parent'
-                                                    ]
-                                                  }
-                                                >
-                                                  <div
-                                                    onClick={() =>
-                                                      onClickMarkVariant(
-                                                        values3.sku
-                                                      )
-                                                    }
-                                                    className={
-                                                      styles[
-                                                        'sell_manager_content_row_col_bottom_row_col_bottom_col_product'
-                                                      ]
-                                                    }
-                                                  >
-                                                    <div
-                                                      className={
-                                                        styles[
-                                                          'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent'
-                                                        ]
-                                                      }
-                                                    >
-                                                      <img
-                                                        className={
-                                                          styles[
-                                                            'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image'
-                                                          ]
-                                                        }
-                                                        src={values3.image[0]}
-                                                        alt=""
-                                                      />
-                                                    </div>
-                                                    <div
-                                                      className={
-                                                        styles[
-                                                          'product_information'
-                                                        ]
-                                                      }
-                                                    >
-                                                      <div>{values3.title}</div>
-                                                      <div>{`Giá : ${formatCash(
-                                                        String(
-                                                          values3.sale_price
-                                                        )
-                                                      )} VNĐ`}</div>
-                                                    </div>
-
-                                                    {billQuantity &&
-                                                    billQuantity.length > 0 &&
-                                                    billQuantity[billIndex][0]
-                                                      .mark &&
-                                                    billQuantity[billIndex][0]
-                                                      .mark
-                                                      ? billQuantity[
-                                                          billIndex
-                                                        ][0].mark &&
-                                                        billQuantity[
-                                                          billIndex
-                                                        ][0].mark.length > 0 &&
-                                                        billQuantity[
-                                                          billIndex
-                                                        ][0].mark.map(
-                                                          (values5, index5) => {
-                                                            return values5 ===
-                                                              values3.sku ? (
-                                                              <div
-                                                                style={{
-                                                                  position:
-                                                                    'absolute',
-                                                                  top: '0',
-                                                                  right: '0',
-                                                                }}
-                                                              >
-                                                                <CheckOutlined
-                                                                  style={{
-                                                                    fontSize:
-                                                                      '1.5rem',
-                                                                    fontWeight:
-                                                                      '600',
-                                                                    color:
-                                                                      '#01F701',
-                                                                  }}
-                                                                />
-                                                              </div>
-                                                            ) : (
-                                                              ''
-                                                            )
-                                                          }
-                                                        )
-                                                      : ''}
-                                                  </div>
-                                                </div>
-                                              </Col>
-                                            )
-                                          }
-                                        )
-                                      ) : (
-                                        <Col
-                                          style={{ width: '100%' }}
-                                          xs={24}
-                                          sm={24}
-                                          md={11}
-                                          lg={7}
-                                          xl={7}
-                                        >
+                        {category.map((values20, index20) => {
+                          return (
+                            <TabPane tab={values20.name} key={index20}>
+                              <Row
+                                justify="space-around"
+                                align="middle"
+                                style={{ width: '100%' }}
+                              >
+                                {values20.data &&
+                                  values20.data.map((values, index) => {
+                                    return values.variants &&
+                                      values.variants.length > 0 ? (
+                                      values.variants.map((values3, index3) => {
+                                        return (
                                           <div
-                                            onClick={() =>
-                                              onClickAddProductSimple(values)
-                                            }
-                                            // onClick={() => onClickModal2Visible(values3, values)}
+                                            onClick={() => {
+                                              onClickModal2Visible(
+                                                values3,
+                                                values
+                                              )
+                                            }}
                                             className={
                                               styles[
                                                 'sell_manager_content_row_col_bottom_row_col_bottom_col_parent'
@@ -5146,7 +5001,7 @@ export default function Sell() {
                                           >
                                             <div
                                               onClick={() =>
-                                                onClickMark(values.sku)
+                                                onClickMarkVariant(values3.sku)
                                               }
                                               className={
                                                 styles[
@@ -5167,7 +5022,10 @@ export default function Sell() {
                                                       'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image'
                                                     ]
                                                   }
-                                                  src={values.image[0]}
+                                                  src={
+                                                    values3.image[0] ||
+                                                    'https://d1hr39umie8233.cloudfront.net/2021/08/30/44d6f1a8-379b-4938-9da1-ab3584dadbe5/1630307173785/0/ecomfullfillment/ta%09i%20xuo%02%01ng.png'
+                                                  }
                                                   alt=""
                                                 />
                                               </div>
@@ -5176,12 +5034,20 @@ export default function Sell() {
                                                   styles['product_information']
                                                 }
                                               >
-                                                <div>{values.name}</div>
+                                                <div
+                                                  className={
+                                                    styles[
+                                                      'product_information_title'
+                                                    ]
+                                                  }
+                                                >
+                                                  {values3.title}
+                                                </div>
                                                 <div>{`Giá : ${formatCash(
-                                                  String(values.sale_price)
+                                                  String(values3.sale_price)
                                                 )} VNĐ`}</div>
                                               </div>
-                                              {/* <div style={{ position: 'absolute', top: '0', right: '0' }}><CheckOutlined style={{ fontSize: '1.5rem', fontWeight: '600', color: '#01F701' }} /></div> */}
+
                                               {billQuantity &&
                                               billQuantity.length > 0 &&
                                               billQuantity[billIndex][0].mark &&
@@ -5195,7 +5061,7 @@ export default function Sell() {
                                                   ][0].mark.map(
                                                     (values5, index5) => {
                                                       return values5 ===
-                                                        values.sku ? (
+                                                        values3.sku ? (
                                                         <div
                                                           style={{
                                                             position:
@@ -5221,13 +5087,109 @@ export default function Sell() {
                                                 : ''}
                                             </div>
                                           </div>
-                                        </Col>
-                                      )
-                                    })}
-                                </Row>
-                              </TabPane>
-                            )
-                          })}
+                                        )
+                                      })
+                                    ) : (
+                                      <div
+                                        onClick={() =>
+                                          onClickAddProductSimple(values)
+                                        }
+                                        className={
+                                          styles[
+                                            'sell_manager_content_row_col_bottom_row_col_bottom_col_parent'
+                                          ]
+                                        }
+                                      >
+                                        <div
+                                          onClick={() =>
+                                            onClickMark(values.sku)
+                                          }
+                                          className={
+                                            styles[
+                                              'sell_manager_content_row_col_bottom_row_col_bottom_col_product'
+                                            ]
+                                          }
+                                        >
+                                          <div
+                                            className={
+                                              styles[
+                                                'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image_parent'
+                                              ]
+                                            }
+                                          >
+                                            <img
+                                              className={
+                                                styles[
+                                                  'sell_manager_content_row_col_bottom_row_col_bottom_col_product_image'
+                                                ]
+                                              }
+                                              src={
+                                                values.image[0] ||
+                                                'https://d1hr39umie8233.cloudfront.net/2021/08/30/44d6f1a8-379b-4938-9da1-ab3584dadbe5/1630307173785/0/ecomfullfillment/ta%09i%20xuo%02%01ng.png'
+                                              }
+                                              alt=""
+                                            />
+                                          </div>
+                                          <div
+                                            className={
+                                              styles['product_information']
+                                            }
+                                          >
+                                            <div
+                                              className={
+                                                styles[
+                                                  'product_information_title'
+                                                ]
+                                              }
+                                            >
+                                              {values.name}
+                                            </div>
+                                            <div>{`Giá : ${formatCash(
+                                              String(values.sale_price)
+                                            )} VNĐ`}</div>
+                                          </div>
+                                          {billQuantity &&
+                                          billQuantity.length > 0 &&
+                                          billQuantity[billIndex][0].mark &&
+                                          billQuantity[billIndex][0].mark
+                                            ? billQuantity[billIndex][0].mark &&
+                                              billQuantity[billIndex][0].mark
+                                                .length > 0 &&
+                                              billQuantity[
+                                                billIndex
+                                              ][0].mark.map(
+                                                (values5, index5) => {
+                                                  return values5 ===
+                                                    values.sku ? (
+                                                    <div
+                                                      style={{
+                                                        position: 'absolute',
+                                                        top: '0',
+                                                        right: '0',
+                                                      }}
+                                                    >
+                                                      <CheckOutlined
+                                                        style={{
+                                                          fontSize: '1.5rem',
+                                                          fontWeight: '600',
+                                                          color: '#01F701',
+                                                        }}
+                                                      />
+                                                    </div>
+                                                  ) : (
+                                                    ''
+                                                  )
+                                                }
+                                              )
+                                            : ''}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                              </Row>
+                            </TabPane>
+                          )
+                        })}
                       </Tabs>
                     </div>
                   </Col>
@@ -5240,7 +5202,7 @@ export default function Sell() {
           <Col xs={24} sm={24} md={24} lg={9} xl={9}>
             <div
               style={{
-                height: '100%',
+                height: 'max-content',
                 backgroundColor: 'white',
                 padding: '1rem',
                 marginLeft: !isMobile && 7,
@@ -5326,134 +5288,136 @@ export default function Sell() {
                   {billQuantity &&
                   billQuantity.length > 0 &&
                   billQuantity[billIndex][0].customer &&
-                  billQuantity[billIndex][0].customer.length > 0 ? (
-                    billQuantity[billIndex][0].customer.map((values, index) => {
-                      return (
-                        <div
-                          style={{
-                            width: '100%',
-                            borderBottom: '1px solid rgb(235, 225, 225)',
-                            marginBottom: '1.25rem',
-                          }}
-                        >
-                          <div
-                            style={{ marginTop: '1.25rem' }}
-                            className={
-                              styles[
-                                'sell_manager_content_row_col_right_parent_content_money_fix'
-                              ]
-                            }
-                          >
+                  billQuantity[billIndex][0].customer.length > 0
+                    ? billQuantity[billIndex][0].customer.map(
+                        (values, index) => {
+                          return (
                             <div
                               style={{
                                 width: '100%',
-                                fontWeight: '600',
-                                color: 'black',
-                                paddingBottom: '1rem',
+                                borderBottom: '1px solid rgb(235, 225, 225)',
+                                marginBottom: '1.25rem',
                               }}
-                            >{`Tên khách hàng: ${values.first_name} - ${values.phone}.`}</div>
-                          </div>
-                          <div
-                            className={
-                              styles[
-                                'sell_manager_content_row_col_right_parent_content_money_fix'
-                              ]
-                            }
-                          >
-                            <div
-                              style={{
-                                width: '100%',
-                                fontWeight: '600',
-                                color: 'black',
-                                paddingBottom: '1rem',
-                              }}
-                            >{`Địa chỉ: ${values.address}.`}</div>
-                          </div>
-                          <div
-                            className={
-                              styles[
-                                'sell_manager_content_row_col_right_parent_content_money_fix'
-                              ]
-                            }
-                          >
-                            {values.balance && values.balance.length > 0 ? (
+                            >
                               <div
-                                onClick={showDrawerOrder}
-                                style={{
-                                  cursor: 'pointer',
-                                  color: '#336CFB',
-                                  width: '100%',
-                                  fontWeight: '600',
-                                  paddingBottom: '1.5rem',
-                                }}
+                                style={{ marginTop: '1.25rem' }}
+                                className={
+                                  styles[
+                                    'sell_manager_content_row_col_right_parent_content_money_fix'
+                                  ]
+                                }
                               >
-                                {values.balance && values.balance.length > 0
-                                  ? `Đơn hàng đã mua: ${values.balance.length}`
-                                  : `Đơn hàng đã mua: 0`}
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    fontWeight: '600',
+                                    color: 'black',
+                                    paddingBottom: '1rem',
+                                  }}
+                                >{`Tên khách hàng: ${values.first_name} - ${values.phone}.`}</div>
                               </div>
-                            ) : (
                               <div
-                                onClick={showDrawerOrder}
-                                style={{
-                                  cursor: 'pointer',
-                                  color: '#336CFB',
-                                  width: '100%',
-                                  fontWeight: '600',
-                                  paddingBottom: '1.5rem',
-                                }}
+                                className={
+                                  styles[
+                                    'sell_manager_content_row_col_right_parent_content_money_fix'
+                                  ]
+                                }
                               >
-                                {values.balance && values.balance.length > 0
-                                  ? `Đơn hàng đã mua: ${values.balance.length}`
-                                  : `Đơn hàng đã mua: 0`}
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    fontWeight: '600',
+                                    color: 'black',
+                                    paddingBottom: '1rem',
+                                  }}
+                                >{`Địa chỉ: ${values.address}.`}</div>
                               </div>
-                            )}
-                          </div>
+                              <div
+                                className={
+                                  styles[
+                                    'sell_manager_content_row_col_right_parent_content_money_fix'
+                                  ]
+                                }
+                              >
+                                {values.balance && values.balance.length > 0 ? (
+                                  <div
+                                    onClick={showDrawerOrder}
+                                    style={{
+                                      cursor: 'pointer',
+                                      color: '#336CFB',
+                                      width: '100%',
+                                      fontWeight: '600',
+                                      paddingBottom: '1.5rem',
+                                    }}
+                                  >
+                                    {values.balance && values.balance.length > 0
+                                      ? `Đơn hàng đã mua: ${values.balance.length}`
+                                      : `Đơn hàng đã mua: 0`}
+                                  </div>
+                                ) : (
+                                  <div
+                                    onClick={showDrawerOrder}
+                                    style={{
+                                      cursor: 'pointer',
+                                      color: '#336CFB',
+                                      width: '100%',
+                                      fontWeight: '600',
+                                      paddingBottom: '1.5rem',
+                                    }}
+                                  >
+                                    {values.balance && values.balance.length > 0
+                                      ? `Đơn hàng đã mua: ${values.balance.length}`
+                                      : `Đơn hàng đã mua: 0`}
+                                  </div>
+                                )}
+                              </div>
 
-                          <div
-                            className={
-                              styles[
-                                'sell_manager_content_row_col_right_parent_content_money_fix'
-                              ]
-                            }
-                          >
-                            <div
-                              style={{
-                                width: '100%',
-                                fontWeight: '600',
-                                color: 'black',
-                                paddingBottom: '1.5rem',
-                              }}
-                            >
-                              Quà tặng
-                            </div>
-                            <Form.Item
-                              style={{ width: '100%' }}
-                              name="selectGift"
-                              // label="Select"
-                              hasFeedback
-                              rules={[
-                                {
-                                  required: true,
-                                  message: 'Giá trị rỗng!',
-                                },
-                              ]}
-                            >
-                              <Select
-                                style={{ width: '100%' }}
-                                defaultValue="default"
+                              <div
+                                className={
+                                  styles[
+                                    'sell_manager_content_row_col_right_parent_content_money_fix'
+                                  ]
+                                }
                               >
-                                <Option value="default">Chọn quà tặng</Option>
-                                <Option value="voucherA">Quà tặng A</Option>
-                                <Option value="voucherB">Quà tặng B</Option>
-                              </Select>
-                            </Form.Item>
-                          </div>
-                        </div>
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    fontWeight: '600',
+                                    color: 'black',
+                                    paddingBottom: '1.5rem',
+                                  }}
+                                >
+                                  Quà tặng
+                                </div>
+                                <Form.Item
+                                  style={{ width: '100%' }}
+                                  name="selectGift"
+                                  // label="Select"
+                                  hasFeedback
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: 'Giá trị rỗng!',
+                                    },
+                                  ]}
+                                >
+                                  <Select
+                                    style={{ width: '100%' }}
+                                    defaultValue="default"
+                                  >
+                                    <Option value="default">
+                                      Chọn quà tặng
+                                    </Option>
+                                    <Option value="voucherA">Quà tặng A</Option>
+                                    <Option value="voucherB">Quà tặng B</Option>
+                                  </Select>
+                                </Form.Item>
+                              </div>
+                            </div>
+                          )
+                        }
                       )
-                    })
-                  ) : (
-                    <div style={{ marginBottom: '1rem' }}></div>
-                  )}
+                    : ''}
 
                   <div
                     style={{ marginBottom: '1.5rem' }}
