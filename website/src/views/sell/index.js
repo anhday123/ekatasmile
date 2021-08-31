@@ -42,6 +42,7 @@ import {
   Form,
   Col,
   Tabs,
+  Popconfirm,
 } from 'antd'
 
 //apis
@@ -372,7 +373,7 @@ export default function Sell() {
       typingTimeoutRef.current = setTimeout(() => {
         const value = e.target.value
         apiSearchData(value)
-      }, 300)
+      }, 750)
     }
   }
 
@@ -478,8 +479,11 @@ export default function Sell() {
     })
   }
 
-  const [arrayRandom, setArrayRandom] = useState([1, 2, 3, 4, 5])
-  const [billQuantity, setBillQuantity] = useState([])
+  const [arrayRandom, setArrayRandom] = useState([2, 3, 4, 5])
+  const [billQuantity, setBillQuantity] = useState([
+    [{ values: 1, mark: [], customer: [] }],
+  ])
+
   const onClickCreateBill = () => {
     setConfirm(1)
     if (billQuantity && billQuantity.length > 4) {
@@ -585,9 +589,7 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-                    } else {
                     }
-                  } else {
                   }
                 } else {
                   setBillQuantityStatus(-1)
@@ -611,9 +613,7 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-                    } else {
                     }
-                  } else {
                   }
                 }
               } else {
@@ -640,9 +640,7 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-                    } else {
                     }
-                  } else {
                   }
                 } else {
                   setBillQuantityStatus(-1)
@@ -666,13 +664,10 @@ export default function Sell() {
                       } else {
                         setConfirm(0)
                       }
-                    } else {
                     }
-                  } else {
                   }
                 }
               }
-            } else {
             }
           })
         }
@@ -1659,8 +1654,6 @@ export default function Sell() {
       const res = await apiProductSeller({
         keyword: value,
         branch: branchId,
-        page: 1,
-        page_size: 50,
       })
       if (res.status === 200) {
         setProductSearch(res.data.data)
@@ -1676,7 +1669,12 @@ export default function Sell() {
     return (
       <img
         src={url}
-        style={{ width: '40rem', height: '20rem', objectFit: 'contain' }}
+        style={{
+          width: '40rem',
+          height: '20rem',
+          objectFit: 'contain',
+          zIndex: 99999,
+        }}
         alt=""
       />
     )
@@ -1685,8 +1683,6 @@ export default function Sell() {
   const content = (
     <div className={styles['popover']}>
       {productSearch && productSearch.length > 0 ? (
-        productSearch &&
-        productSearch.length > 0 &&
         productSearch.map((values, index) => {
           return values && values.variants && values.variants.length > 0 ? (
             values &&
@@ -4314,20 +4310,26 @@ export default function Sell() {
                           {parseInt(branchId) * 10000 + values[0].values}
                         </div>
                       </div>
-                      <div
-                        onClick={() =>
+                      <Popconfirm
+                        title="Bạn có muốn bỏ hoá đơn này?"
+                        okText="Ok"
+                        cancelText="No"
+                        onConfirm={() =>
                           onClickDeleteBillQuantity(index, values[0].values)
                         }
-                        style={{ position: 'absolute', top: '0', right: '0' }}
                       >
-                        <CloseOutlined
-                          style={{
-                            paddingRight: '0.25rem',
-                            fontSize: '1rem',
-                            color: 'red',
-                          }}
-                        />
-                      </div>
+                        <div
+                          style={{ position: 'absolute', top: '0', right: '0' }}
+                        >
+                          <CloseOutlined
+                            style={{
+                              paddingRight: '0.25rem',
+                              fontSize: '1rem',
+                              color: 'red',
+                            }}
+                          />
+                        </div>
+                      </Popconfirm>
                     </div>
                   </Col>
                 ) : (
@@ -5490,7 +5492,6 @@ export default function Sell() {
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        flexWrap: 'nowrap',
                         alignItems: 'center',
                         width: '100%',
                       }}

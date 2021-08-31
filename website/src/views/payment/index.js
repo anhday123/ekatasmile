@@ -26,7 +26,8 @@ import {
   ArrowLeftOutlined,
   CheckOutlined,
 } from '@ant-design/icons'
-import { ROUTES } from 'consts'
+import { ROUTES, PERMISSIONS } from 'consts'
+import Permission from 'components/permission'
 export default function Payment() {
   const [temp, setTemp] = useState(0)
   const [visible, setVisible] = useState(false)
@@ -94,14 +95,16 @@ export default function Payment() {
             <ArrowLeftOutlined style={{ fontSize: '1rem', marginRight: 5 }} />
             Hình thức thanh toán
           </Link>
-          <Button
-            size="large"
-            type="primary"
-            onClick={() => setPaymentTypeModal(true)}
-            icon={<CreditCardOutlined />}
-          >
-            Thêm hình thức thanh toán
-          </Button>
+          <Permission permissions={[PERMISSIONS.them_hinh_thuc_thanh_toan]}>
+            <Button
+              size="large"
+              type="primary"
+              onClick={() => setPaymentTypeModal(true)}
+              icon={<CreditCardOutlined />}
+            >
+              Thêm hình thức thanh toán
+            </Button>
+          </Permission>
         </Row>
 
         <Row

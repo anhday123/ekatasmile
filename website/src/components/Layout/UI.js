@@ -58,6 +58,7 @@ import Permission from 'components/permission'
 import { Link, useLocation, useRouteMatch } from 'react-router-dom'
 import { Row, Col } from 'antd'
 import { getStoreSelectValue } from './../../actions/store/index'
+import { PERMISSIONS } from 'consts'
 
 //apis
 import { apiAllRole, updateUser, apiSearch } from 'apis/user'
@@ -137,145 +138,145 @@ const UI = (props) => {
     {
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
-      permissions: [],
+      permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined className={styles['icon_parent']} />,
     },
     {
       path: ROUTES.SELL,
       title: 'Bán hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.ban_hang],
       icon: <ShoppingCartOutlined />,
     },
     {
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.danh_sach_don_hang],
       icon: <NoteAddIcon />,
     },
     {
       path: ROUTES.BUSINESS,
       title: 'Business Management',
-      permissions: [],
+      permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
     {
       path: 'product',
       title: 'Sản phẩm',
-      permissions: [],
+      permissions: [PERMISSIONS.san_pham],
       icon: <FormOutlined />,
       menuItems: [
         {
           icon: <GiftOutlined />,
           path: ROUTES.PRODUCT,
           title: 'Quản lý sản phẩm',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_san_pham],
         },
         {
           icon: <BankOutlined />,
           path: ROUTES.INVENTORY,
           title: 'Quản lý kho',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_kho],
         },
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
           title: 'Quản lý chuyển hàng',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_chuyen_hang],
         },
         {
           icon: <GoldOutlined />,
           path: ROUTES.SUPPLIER,
           title: 'Quản lý nhà cung cấp',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_nha_cung_cap],
         },
         {
           icon: <AccountBookOutlined />,
           path: ROUTES.GUARANTEE,
           title: 'Quản lý bảo hành',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_bao_hanh],
         },
       ],
     },
     {
       path: ROUTES.PROMOTION,
       title: 'Khuyến mãi',
-      permissions: [],
+      permissions: [PERMISSIONS.khuyen_mai],
       icon: <TagsOutlined />,
     },
     {
       path: ROUTES.PRODUCT_CHECK,
       title: 'Kiểm hàng cuối ngày',
-      permissions: [],
+      permissions: [PERMISSIONS.kiem_hang_cuoi_ngay],
       icon: <AlertOutlined />,
     },
     {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.quan_li_khach_hang],
       icon: <UserAddOutlined />,
     },
     {
       path: 'report',
       title: 'Báo cáo đơn hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.bao_cao_don_hang],
       icon: <DollarCircleOutlined />,
       menuItems: [
         {
           icon: <GraphicEqIcon />,
           path: ROUTES.REPORT_END_DAY,
           title: 'Báo cáo cuối ngày',
-          permissions: [],
+          permissions: [PERMISSIONS.bao_cao_cuoi_ngay],
         },
         {
           icon: <ReplyAllIcon />,
           path: ROUTES.REPORT_IMPORT,
           title: 'Báo cáo nhập hàng',
-          permissions: [],
+          permissions: [PERMISSIONS.bao_cao_nhap_hang],
         },
         {
           icon: <FastfoodIcon />,
           path: ROUTES.REPORT_INVENTORY,
           title: 'Báo cáo tồn kho',
-          permissions: [],
+          permissions: [PERMISSIONS.bao_cao_ton_kho],
         },
         {
           icon: <FastfoodIcon />,
           path: ROUTES.REPORT_FINANCIAL,
           title: 'Báo cáo tài chính',
-          permissions: [],
+          permissions: [PERMISSIONS.bao_cao_tai_chinh],
         },
       ],
     },
     {
       path: 'transport',
       title: 'Vận chuyển',
-      permissions: [],
+      permissions: [PERMISSIONS.van_chuyen],
       icon: <DollarCircleOutlined />,
       menuItems: [
         {
           icon: <ClusterOutlined />,
           path: ROUTES.SHIPPING_CONTROL,
           title: 'Đối soát vận chuyển',
-          permissions: [],
+          permissions: [PERMISSIONS.doi_soat_van_chuyen],
         },
         {
           icon: <CarOutlined />,
           path: ROUTES.SHIPPING,
           title: 'Quản lý đối tác vận chuyển',
-          permissions: [],
+          permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
         },
       ],
     },
     {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình thông tin',
-      permissions: [],
+      permissions: [PERMISSIONS.cau_hinh_thong_tin],
       icon: <SettingOutlined />,
     },
     {
       path: ROUTES.ROLE,
       title: 'Quản lý phân quyền',
-      permissions: [],
+      permissions: [PERMISSIONS.quan_li_phan_quyen],
       icon: <PartitionOutlined />,
     },
   ]
@@ -285,24 +286,42 @@ const UI = (props) => {
       {_menu.menuItems ? (
         <Menu.SubMenu
           key={_menu.path}
-          icon={_menu.icon}
-          title={<span style={{ fontSize: '1rem' }}>{_menu.title}</span>}
+          title={
+            <div
+              style={{
+                fontSize: '0.8rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {_menu.icon}
+              {_menu.title}
+            </div>
+          }
         >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
               <Menu.Item
                 key={e.path}
-                icon={e.icon}
                 style={{
-                  fontSize: '1rem',
+                  fontSize: '0.8rem',
                   color: 'black',
                   backgroundColor: location.pathname === e.path && '#e7e9fb',
                 }}
               >
                 <Link
                   to={e.path}
-                  style={{ color: !collapsed ? 'black' : 'white' }}
+                  style={{
+                    color: !collapsed ? 'black' : 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
                 >
+                  {e.icon}
                   {e.title}
                 </Link>
               </Menu.Item>
@@ -311,18 +330,24 @@ const UI = (props) => {
         </Menu.SubMenu>
       ) : (
         <Menu.Item
-          icon={_menu.icon}
           key={_menu.path}
           style={{
-            fontSize: '1rem',
+            fontSize: '0.8rem',
             color: 'black',
             backgroundColor: location.pathname === _menu.path && '#e7e9fb',
           }}
         >
           <Link
             to={_menu.path}
-            style={{ color: !collapsed ? 'black' : 'white' }}
+            style={{
+              color: !collapsed ? 'black' : 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
+            {_menu.icon}
             {_menu.title}
           </Link>
         </Menu.Item>
@@ -498,13 +523,10 @@ const UI = (props) => {
             store: ' ',
             branch: ' ',
             avatar: list,
-            first_name:
-              values && values.firstName ? values.firstName.toLowerCase() : '',
-            last_name:
-              values && values.lastName ? values.lastName.toLowerCase() : '',
+            first_name: values && values.firstName ? values.firstName : '',
+            last_name: values && values.lastName ? values.lastName : '',
             birthday: ' ',
-            address:
-              values && values.address ? values.address.toLowerCase() : '',
+            address: values && values.address ? values.address : '',
             ward: ' ',
             district: ' ',
             province: ' ',
@@ -524,10 +546,10 @@ const UI = (props) => {
             email: values.email,
             branch: ' ',
             avatar: list,
-            first_name: values.firstName.toLowerCase(),
-            last_name: values.lastName.toLowerCase(),
+            first_name: values.firstName,
+            last_name: values.lastName,
             birthday: ' ',
-            address: values.address.toLowerCase(),
+            address: values.address,
             ward: ' ',
             district: ' ',
             province: ' ',
@@ -549,13 +571,10 @@ const UI = (props) => {
             email: values.email,
             branch: ' ',
             avatar: user.avatar,
-            first_name:
-              values && values.firstName ? values.firstName.toLowerCase() : '',
-            last_name:
-              values && values.lastName ? values.lastName.toLowerCase() : '',
+            first_name: values && values.firstName ? values.firstName : '',
+            last_name: values && values.lastName ? values.lastName : '',
             birthday: ' ',
-            address:
-              values && values.address ? values.address.toLowerCase() : '',
+            address: values && values.address ? values.address : '',
             ward: ' ',
             district: ' ',
             province: ' ',
@@ -575,10 +594,10 @@ const UI = (props) => {
             email: values.email,
             branch: ' ',
             avatar: '',
-            first_name: values.firstName.toLowerCase(),
-            last_name: values.lastName.toLowerCase(),
+            first_name: values.firstName,
+            last_name: values.lastName,
             birthday: ' ',
-            address: values.address.toLowerCase(),
+            address: values.address,
             ward: ' ',
             district: ' ',
             province: ' ',
@@ -847,8 +866,8 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 275}
-        collapsedWidth={isMobile ? 0 : 80}
+        width={isMobile ? '100%' : 175}
+        collapsedWidth={0}
         style={{
           backgroundColor: '#FFFFFF',
           height: '100%',
@@ -870,14 +889,14 @@ const UI = (props) => {
           <img
             src={cart}
             className={collapsed ? styles['hidden'] : styles['show']}
-            style={{ width: '7.5rem', objectFit: 'contain', height: '5rem' }}
+            style={{ width: '6rem', objectFit: 'contain' }}
             alt=""
           />
           <div
             className={collapsed ? styles['hidden'] : styles['show']}
             style={{
               color: 'black',
-              fontSize: '1.25rem',
+              fontSize: '1rem',
               fontWeight: '600',
               margin: '0.5rem 0 1rem 0.5rem',
             }}
@@ -902,8 +921,18 @@ const UI = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item onClick={onClickSignout} key="9" icon={<LogoutOutlined />}>
-            <Link to={ROUTES.LOGIN} style={{ fontSize: '1rem' }}>
+          <Menu.Item onClick={onClickSignout} key="9">
+            <Link
+              to={ROUTES.LOGIN}
+              style={{
+                fontSize: '0.8rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LogoutOutlined />
               Logout
             </Link>
           </Menu.Item>
@@ -935,23 +964,25 @@ const UI = (props) => {
                     className={styles['header_navbar_left_icon']}
                   />
                 </div>
-                <Link
-                  to={ROUTES.STORE}
-                  style={{ marginRight: '1rem', cursor: 'pointer' }}
-                >
-                  <Button
-                    type="primary"
-                    size="large"
-                    style={{
-                      backgroundColor: '#FFAB2D',
-                      borderColor: '#FFAB2D',
-                      fontWeight: 600,
-                      marginLeft: 15,
-                    }}
+                <Permission permissions={[PERMISSIONS.them_cua_hang]}>
+                  <Link
+                    to={ROUTES.STORE}
+                    style={{ marginRight: '1rem', cursor: 'pointer' }}
                   >
-                    Thêm cửa hàng
-                  </Button>
-                </Link>
+                    <Button
+                      type="primary"
+                      size="large"
+                      style={{
+                        backgroundColor: '#FFAB2D',
+                        borderColor: '#FFAB2D',
+                        fontWeight: 600,
+                        marginLeft: 15,
+                      }}
+                    >
+                      Thêm cửa hàng
+                    </Button>
+                  </Link>
+                </Permission>
                 <Select
                   placeholder="Chọn chưa hàng"
                   style={{ width: isMobile ? '100%' : 250 }}

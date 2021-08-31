@@ -1,6 +1,6 @@
 import styles from './../store/store.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from 'consts'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import noimage from 'assets/img/noimage.jpg'
@@ -13,14 +13,11 @@ import {
   Input,
   Upload,
   Row,
-  Radio,
-  Drawer,
   DatePicker,
   Col,
   notification,
   Select,
   Table,
-  Form,
   Popover,
   Button,
 } from 'antd'
@@ -31,6 +28,7 @@ import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 //components
 import StoreInformationView from 'components/store/store-information-view'
 import StoreInformationAdd from 'components/store/store-information-add'
+import Permission from 'components/permission'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
@@ -727,7 +725,9 @@ export default function Store() {
             </div>
           </Link>
           <div className={styles['promotion_manager_button']}>
-            <StoreInformationAdd reloadData={getAllStoreData} />
+            <Permission permissions={[PERMISSIONS.them_cua_hang]}>
+              <StoreInformationAdd reloadData={getAllStoreData} />
+            </Permission>
           </div>
         </div>
 

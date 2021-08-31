@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, PERMISSIONS } from './../../consts/index'
 import moment from 'moment'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
@@ -30,6 +29,7 @@ import {
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
 import ShippingAdd from 'views/actions/shipping/add'
+import Permission from 'components/permission'
 
 export default function Shipping() {
   const { RangePicker } = DatePicker
@@ -727,14 +727,16 @@ export default function Shipping() {
           <div className={styles['shipping_manager_title']}>
             <div>Quản lý đối tác vận chuyển</div>
           </div>
-          <Button
-            icon={<PlusCircleOutlined />}
-            type="primary"
-            size="large"
-            onClick={() => setShowCreate(true)}
-          >
-            Thêm đối tác
-          </Button>
+          <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
+            <Button
+              icon={<PlusCircleOutlined />}
+              type="primary"
+              size="large"
+              onClick={() => setShowCreate(true)}
+            >
+              Thêm đối tác
+            </Button>
+          </Permission>
         </div>
         <Row className={styles['shipping_manager_search']}>
           <Col
@@ -904,26 +906,30 @@ export default function Shipping() {
               width: '100%',
             }}
           >
-            <Button
-              size="large"
-              type="primary"
-              onClick={showDrawer}
-              style={{
-                marginBottom: '1rem',
-                marginRight: '1rem',
-              }}
-            >
-              Cập nhật
-            </Button>
-            <Button
-              size="large"
-              type="primary"
-              danger
-              onClick={onChangeSwitch}
-              style={{ marginBottom: '1rem' }}
-            >
-              Xóa
-            </Button>
+            <Permission permissions={[PERMISSIONS.cap_nhat_doi_tac_van_chuyen]}>
+              <Button
+                size="large"
+                type="primary"
+                onClick={showDrawer}
+                style={{
+                  marginBottom: '1rem',
+                  marginRight: '1rem',
+                }}
+              >
+                Cập nhật
+              </Button>
+            </Permission>
+            <Permission permissions={[PERMISSIONS.xoa_doi_tac_van_chuyen]}>
+              <Button
+                size="large"
+                type="primary"
+                danger
+                onClick={onChangeSwitch}
+                style={{ marginBottom: '1rem' }}
+              >
+                Xóa
+              </Button>
+            </Permission>
           </div>
         ) : (
           ''

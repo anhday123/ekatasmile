@@ -8,58 +8,18 @@ import {
   DatePicker,
   Select,
   Table,
-  Modal,
-  Popover,
   Drawer,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
-import { ROUTES } from 'consts'
+import { ROUTES, PERMISSIONS } from 'consts'
 import ProductCheckAdd from 'views/actions/product-check/add'
+import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
 export default function ProductCheck() {
-  const { Search } = Input
   const [showCreate, setShowCreate] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
@@ -68,9 +28,7 @@ export default function ProductCheck() {
     {
       title: 'STT',
       width: 150,
-      render(data, record, index) {
-        return (pagination.page - 1) * pagination.page_size + index + 1
-      },
+      render: (data, record, index) => index,
     },
     {
       title: 'Tên sản phẩm',
@@ -116,11 +74,7 @@ export default function ProductCheck() {
     dataPromotion.push({
       key: i,
       stt: i,
-      ticketCode: (
-        <Link to={ROUTES.PRODUCT_CHECK_ADD} style={{ color: '#2400FF' }}>
-          GH {i}
-        </Link>
-      ),
+      ticketCode: 'GH',
       warehouseCheck: `Chi nhánh mặc định ${i}`,
       status: `Đang kiểm kho ${i}`,
       createdDate: `07:30, 2021/07/01 ${i}`,
@@ -160,14 +114,16 @@ export default function ProductCheck() {
             Danh sách phiếu kiểm hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-              onClick={() => setShowCreate(true)}
-              size="large"
-            >
-              Tạo phiếu kiểm
-            </Button>
+            <Permission permissions={[PERMISSIONS.them_phieu_kiem_hang]}>
+              <Button
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+                onClick={() => setShowCreate(true)}
+                size="large"
+              >
+                Tạo phiếu kiểm
+              </Button>
+            </Permission>
           </div>
         </div>
         <Row

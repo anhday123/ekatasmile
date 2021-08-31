@@ -14,14 +14,11 @@ import {
   notification,
 } from 'antd'
 import { Link } from 'react-router-dom'
-import {
-  FileExcelOutlined,
-  EditOutlined,
-  PlusCircleOutlined,
-} from '@ant-design/icons'
+import { FileExcelOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { apiAllWarranty, updateWarranty } from '../../apis/warranty'
-import { ROUTES } from 'consts'
+import { ROUTES, PERMISSIONS } from 'consts'
+import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -196,15 +193,17 @@ export default function Guarantee() {
             Quản lý bảo hành
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Link to={ROUTES.GUARANTEE_ADD}>
-              <Button
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                size="large"
-              >
-                Tạo phiếu bảo hành
-              </Button>
-            </Link>
+            <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
+              <Link to={ROUTES.GUARANTEE_ADD}>
+                <Button
+                  icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                  type="primary"
+                  size="large"
+                >
+                  Tạo phiếu bảo hành
+                </Button>
+              </Link>
+            </Permission>
           </div>
         </div>
         <Row

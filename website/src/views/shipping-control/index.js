@@ -1,14 +1,15 @@
 import styles from './../shipping-control/shipping-control.module.scss'
 import React, { useEffect, useState } from 'react'
 import { Button, Tabs } from 'antd'
-import { Link } from 'react-router-dom'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import { getCompare, getSession } from '../../apis/compare'
 import PenddingCompare from './components/penddingCompare'
 import Compared from './components/compared'
 import CompareHistory from './components/compareHistory'
 import CreateCompare from './components/createCompare'
+import Permission from 'components/permission'
 import { getAllBranch } from '../../apis/branch'
+import { PERMISSIONS } from 'consts'
 
 const { TabPane } = Tabs
 function removeNull(a) {
@@ -93,14 +94,18 @@ export default function ShippingControl() {
             Đối soát vận chuyển
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-              onClick={() => setShowCreate(true)}
+            <Permission
+              permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}
             >
-              Thêm phếu đối soát riêng lẻ
-            </Button>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+                onClick={() => setShowCreate(true)}
+              >
+                Thêm phếu đối soát riêng lẻ
+              </Button>
+            </Permission>
           </div>
         </div>
         <Tabs

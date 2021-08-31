@@ -12,8 +12,8 @@ import {
   Modal,
   Button,
 } from 'antd'
-import { apiAllUser } from '../../apis/user'
-import { apiDistrict, apiProvince } from '../../apis/information'
+import { apiAllUser } from 'apis/user'
+import { apiDistrict, apiProvince } from 'apis/information'
 const { Option } = Select
 const columns = [
   {
@@ -47,15 +47,7 @@ function removeFalse(a) {
     .filter((key) => a[key] !== '' && a[key] !== undefined)
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
-function confirm(e) {
-  console.log(e)
-  message.success('Click on Yes')
-}
 
-function cancel(e) {
-  console.log(e)
-  message.error('Click on No')
-}
 const data = []
 for (let i = 0; i < 46; i++) {
   data.push({
@@ -311,8 +303,6 @@ export default function Business() {
           >
             <Popconfirm
               title="Bạn chắc chắn muốn xóa?"
-              onConfirm={confirm}
-              onCancel={cancel}
               okText="Yes"
               cancelText="No"
             >

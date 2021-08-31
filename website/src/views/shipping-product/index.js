@@ -11,17 +11,23 @@ import {
   notification,
   Drawer,
 } from 'antd'
+
+import { PERMISSIONS } from 'consts'
+
 import { Link, useHistory } from 'react-router-dom'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { getDelivery, UpdateDelivery } from '../../apis/delivery'
+
+//components
 import ImportModal from '../../components/ExportCSV/importModal'
 import exportToCSV from '../../components/ExportCSV/export'
 import ChangeStatusModal from 'components/shipping-product/changeStatus'
+import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
+
 const { Option } = Select
 const { RangePicker } = DatePicker
-
 export default function ShippingProduct() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
@@ -349,14 +355,16 @@ export default function ShippingProduct() {
             Quản lý chuyển hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              size="large"
-              onClick={() => setShowCreate(true)}
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-            >
-              Tạo phiếu chuyển hàng
-            </Button>
+            <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+              <Button
+                size="large"
+                onClick={() => setShowCreate(true)}
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+              >
+                Tạo phiếu chuyển hàng
+              </Button>
+            </Permission>
           </div>
         </div>
         <Row
@@ -510,13 +518,17 @@ export default function ShippingProduct() {
         </Row>
         <Row style={{ width: '100%' }}>
           {selectedRowKeys.length ? (
-            <Button
-              size="large"
-              type="primary"
-              onClick={() => setShowMultiUpdate(true)}
+            <Permission
+              permissions={[PERMISSIONS.cap_nhat_trang_thai_phieu_chuyen_hang]}
             >
-              Cập nhật trạng thái
-            </Button>
+              <Button
+                size="large"
+                type="primary"
+                onClick={() => setShowMultiUpdate(true)}
+              >
+                Cập nhật trạng thái
+              </Button>
+            </Permission>
           ) : (
             ''
           )}

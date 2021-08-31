@@ -35,3 +35,18 @@
   border-radius: 15px !important;
 }
 /* custom input */
+
+.ant-popover {
+  z-index: 1500;
+}
+/* custom menu */
+.ant-menu-submenu-title {
+  height: max-content !important;
+}
+
+.ant-menu-item-only-child {
+  height: max-content !important;
+  padding-left: 0 !important;
+  padding-top: 10px !important;
+}
+/* custom menu */

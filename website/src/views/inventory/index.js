@@ -1,6 +1,6 @@
 import styles from './../inventory/inventory.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION } from 'consts/index'
+import { ACTION, PERMISSIONS } from 'consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 
@@ -31,6 +31,7 @@ import { apiFilterCity } from 'apis/branch'
 //components
 import InventoryAdd from 'views/actions/inventory/add'
 import InventoryView from 'views/actions/inventory/view'
+import Permission from 'components/permission'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -441,14 +442,16 @@ export default function Inventory() {
         >
           <div className={styles['promotion_manager_title']}>Quản lý kho</div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-              onClick={showDrawerUpdate}
-            >
-              Thêm kho
-            </Button>
+            <Permission permissions={[PERMISSIONS.them_kho]}>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+                onClick={showDrawerUpdate}
+              >
+                Thêm kho
+              </Button>
+            </Permission>
           </div>
         </div>
         <Row
@@ -610,9 +613,11 @@ export default function Inventory() {
               width: '100%',
             }}
           >
-            <Button size="large" type="primary" onClick={showDrawer}>
-              Cập nhật thông tin kho
-            </Button>
+            <Permission permissions={[PERMISSIONS.cap_nhat_kho]}>
+              <Button size="large" type="primary" onClick={showDrawer}>
+                Cập nhật thông tin kho
+              </Button>
+            </Permission>
           </div>
         ) : (
           ''

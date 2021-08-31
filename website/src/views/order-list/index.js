@@ -17,7 +17,8 @@ import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, StarOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { apiAllOrder } from './../../apis/order'
-import { ROUTES } from 'consts'
+import { ROUTES, PERMISSIONS } from 'consts'
+import Permissions from 'components/permission'
 
 const { RangePicker } = DatePicker
 const { TabPane } = Tabs
@@ -525,19 +526,25 @@ export default function OrderList() {
             cls={24}
             className={styles['promotion_manager_button']}
           >
-            <Link
-              to={ROUTES.ORDER_CREATE_SHIPPING}
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-                Tạo đơn hàng
-              </Button>
-            </Link>
+            <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
+              <Link
+                to={ROUTES.ORDER_CREATE_SHIPPING}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button
+                  size="large"
+                  type="primary"
+                  icon={<PlusCircleOutlined />}
+                >
+                  Tạo đơn hàng
+                </Button>
+              </Link>
+            </Permissions>
           </Col>
         </Row>
         <Radio.Group
@@ -1107,7 +1114,6 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
-                              scroll={{ y: 500, x: 1300 }}
                             />
                           </div>
                         </div>
@@ -1683,7 +1689,6 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
-                              scroll={{ y: 500, x: 1300 }}
                             />
                           </div>
                         </div>
@@ -1696,7 +1701,6 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   pagination={false}
                   dataSource={order}
-                  scroll={{ y: 500 }}
                 />
                 <Pagination
                   style={{
@@ -2259,7 +2263,6 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
-                              scroll={{ y: 500, x: 1300 }}
                             />
                           </div>
                         </div>
@@ -2272,7 +2275,6 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   pagination={false}
                   dataSource={order}
-                  scroll={{ y: 500 }}
                 />
                 <Pagination
                   style={{
@@ -2339,10 +2341,8 @@ export default function OrderList() {
               overflow: 'auto',
             }}
           >
-            {' '}
             <Table
               rowKey="_id"
-              scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}

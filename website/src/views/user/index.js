@@ -8,7 +8,7 @@ import {
   updateUser,
 } from './../../apis/user'
 import { apiAllUser } from '../../apis/user'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
 import { useDispatch } from 'react-redux'
 import {
   Switch,
@@ -29,6 +29,7 @@ import {
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { apiFilterRoleEmployee } from '../../apis/employee'
+import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -713,13 +714,15 @@ export default function User() {
           </Link>
           <div className={styles['promotion_manager_button']}>
             <div onClick={showDrawer}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Thêm người dùng
-              </Button>
+              <Permission permissions={[PERMISSIONS.them_nguoi_dung]}>
+                <Button
+                  size="large"
+                  icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                  type="primary"
+                >
+                  Thêm người dùng
+                </Button>
+              </Permission>
             </div>
           </div>
         </div>

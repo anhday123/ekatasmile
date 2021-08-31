@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -11,7 +11,6 @@ import {
   notification,
   Switch,
   Col,
-  Radio,
   Form,
   Input,
   Modal,
@@ -27,6 +26,7 @@ import { apiFilterCity, getAllBranch } from '../../apis/branch'
 import { apiDistrict, apiProvince } from '../../apis/information'
 import EmployeeAdd from '../actions/employee/add'
 import { getAllStore } from '../../apis/store'
+import Permission from 'components/permission'
 const { Option } = Select
 export default function Employee() {
   const dispatch = useDispatch()
@@ -530,14 +530,16 @@ export default function Employee() {
               Quản lý nhân sự
             </div>
           </Link>
-          <Button
-            size="large"
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={showDrawerUpdate}
-          >
-            Thêm nhân sự
-          </Button>
+          <Permission permissions={[PERMISSIONS.them_nhan_su]}>
+            <Button
+              size="large"
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              onClick={showDrawerUpdate}
+            >
+              Thêm nhân sự
+            </Button>
+          </Permission>
         </div>
         <div className={styles['employee_manager_search']}>
           <Row className={styles['employee_manager_search_row']}>
@@ -698,9 +700,11 @@ export default function Employee() {
                 width: '100%',
               }}
             >
-              <Button type="primary" onClick={showDrawer} size="large">
-                Thêm nhân sự
-              </Button>
+              <Permission permissions={[PERMISSIONS.cap_nhat_nhan_su]}>
+                <Button type="primary" onClick={showDrawer} size="large">
+                  Cập nhật nhân sự
+                </Button>
+              </Permission>
             </div>
           ) : (
             ''

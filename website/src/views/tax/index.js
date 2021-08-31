@@ -1,13 +1,12 @@
 import styles from './../tax/tax.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import {
   DatePicker,
   Switch,
-  Radio,
   InputNumber,
   Input,
   Button,
@@ -18,6 +17,7 @@ import {
   Col,
   Typography,
   Drawer,
+  Checkbox,
 } from 'antd'
 import {
   PlusCircleOutlined,
@@ -30,7 +30,7 @@ import {
   apiSearchTax,
   apiUpdateTax,
 } from '../../apis/tax'
-import Checkbox from 'antd/lib/checkbox/Checkbox'
+import Permission from 'components/permission'
 const { RangePicker } = DatePicker
 const { Text } = Typography
 export default function Tax() {
@@ -412,11 +412,13 @@ export default function Tax() {
               Quản lý thuế
             </div>
           </Link>
-          <div onClick={showDrawer}>
-            <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-              Thêm thuế
-            </Button>
-          </div>
+          <Permission permissions={[PERMISSIONS.them_thue]}>
+            <div onClick={showDrawer}>
+              <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
+                Thêm thuế
+              </Button>
+            </div>
+          </Permission>
         </div>
         <Row
           style={{

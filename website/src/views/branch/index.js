@@ -1,6 +1,6 @@
 import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from 'consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 import { Link } from 'react-router-dom'
@@ -28,16 +28,12 @@ import {
 //components
 import BranchAdd from 'components/branch/branch-add'
 import BranchView from 'views/actions/branch/view'
+import Permission from 'components/permission'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
 import { getAllStore } from 'apis/store'
-import {
-  apiFilterCity,
-  apiSearch,
-  apiUpdateBranch,
-  getAllBranch,
-} from 'apis/branch'
+import { apiUpdateBranch, getAllBranch } from 'apis/branch'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -152,7 +148,9 @@ export default function Branch() {
             defaultChecked={text}
             onChange={(e) => onChangeSwitch(e, record)}
           />
-          <ModalUpdateBranch record={record} />
+          <Permission permissions={[PERMISSIONS.cap_nhat_chi_nhanh]}>
+            <ModalUpdateBranch record={record} />
+          </Permission>
         </Space>
       ),
     },
@@ -537,7 +535,9 @@ export default function Branch() {
               Quản lý chi nhánh
             </div>
           </Link>
-          <BranchAdd reload={getAllBranchData} />
+          <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
+            <BranchAdd reload={getAllBranchData} />
+          </Permission>
         </div>
         <Row
           justify="space-between"

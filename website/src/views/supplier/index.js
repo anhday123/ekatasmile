@@ -5,11 +5,10 @@ import {
   apiSearch,
   apiUpdateSupplier,
 } from '../../apis/supplier'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, PERMISSIONS } from './../../consts/index'
 import moment from 'moment'
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
 import {
   Switch,
   DatePicker,
@@ -27,6 +26,8 @@ import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiFilterCity } from '../../apis/branch'
 import SupplierAdd from 'views/actions/supplier/add'
 import SupplierInformation from 'views/actions/supplier/information'
+import Permission from 'components/permission'
+
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Supplier() {
@@ -495,14 +496,16 @@ export default function Supplier() {
           <div className={styles['supplier_manager_title']}>
             Quản lý nhà cung cấp
           </div>
-          <Button
-            size="large"
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={showDrawerUpdate}
-          >
-            Thêm nhà cung cấp
-          </Button>
+          <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
+            <Button
+              size="large"
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              onClick={showDrawerUpdate}
+            >
+              Thêm nhà cung cấp
+            </Button>
+          </Permission>
         </div>
         <Row
           style={{
@@ -673,9 +676,11 @@ export default function Supplier() {
               width: '100%',
             }}
           >
-            <Button type="primary" onClick={showDrawer} size="large">
-              Cập nhật thông tin
-            </Button>
+            <Permission permissions={[PERMISSIONS.cap_nhat_nha_cung_cap]}>
+              <Button type="primary" onClick={showDrawer} size="large">
+                Cập nhật thông tin
+              </Button>
+            </Permission>
           </div>
         ) : (
           ''

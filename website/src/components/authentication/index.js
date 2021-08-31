@@ -15,6 +15,7 @@ const Authentication = ({ permissions, title, children, ...props }) => {
   const payload =
     localStorage.getItem('refreshToken') &&
     decodeToken(localStorage.getItem('refreshToken'))
+
   //modify title
   document.title = title
 
@@ -31,11 +32,16 @@ const Authentication = ({ permissions, title, children, ...props }) => {
     return <Redirect to={ROUTES.LOGIN} />
   }
 
+  const allPermission = [
+    ...payload.data.role.menu_list,
+    ...payload.data.role.permission_list,
+  ]
+
   // permissions.length = 0 -> screen public
   // permissions.length > 0 -> check user có quyền truy cập vào màn hình này
   if (
     permissions.length === 0 ||
-    permissions.filter((p) => payload.data.role.menu_list.includes(p)).length > 0
+    permissions.filter((p) => allPermission.includes(p)).length > 0
   ) {
     return cloneElement(children, props)
   }

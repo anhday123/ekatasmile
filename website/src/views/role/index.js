@@ -1,6 +1,6 @@
 import styles from './../role/role.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION } from './../../consts/index'
+import { ACTION, PERMISSIONS } from './../../consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -24,6 +24,8 @@ import {
   apiUpdateRole,
   apiUpdateRolePermission,
 } from '../../apis/role'
+
+import Permission from 'components/permission'
 
 const { Panel } = Collapse
 export default function Role() {
@@ -134,6 +136,7 @@ export default function Role() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllRolePermission()
+      console.log('role', res)
       if (res.status === 200) {
         setRolePermission(res.data.data)
       }
@@ -289,19 +292,21 @@ export default function Role() {
             lg={11}
             xl={11}
           >
-            <div
-              onClick={showDrawer}
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Button type="primary" size="large">
-                Tạo quyền
-              </Button>
-            </div>
+            <Permission permissions={[PERMISSIONS.tao_quyen]}>
+              <div
+                onClick={showDrawer}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Button type="primary" size="large">
+                  Tạo quyền
+                </Button>
+              </div>
+            </Permission>
           </Col>
         </Row>
         <div style={{ width: '100%' }}>
@@ -315,12 +320,14 @@ export default function Role() {
                 return (
                   <Panel
                     extra={
-                      <Switch
-                        defaultChecked={values.active}
-                        onChange={(e) =>
-                          onClickDeleteDisable(e, values.role_id, index)
-                        }
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Switch
+                          defaultChecked={values.active}
+                          onChange={(e) =>
+                            onClickDeleteDisable(e, values.role_id, index)
+                          }
+                        />
+                      </div>
                     }
                     header={`Permission ${values.name}`}
                     key={values.role_id}
@@ -405,10 +412,17 @@ export default function Role() {
       </div>
       <Drawer
         title="Thêm vai trò"
-        width={720}
+        width={950}
         onClose={onClose}
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
+        footer={
+          <Row justify="end" style={{ width: '100%' }} onClick={onClickAddRole}>
+            <Button type="primary" size="large">
+              Lưu
+            </Button>
+          </Row>
+        }
       >
         <div className={styles['role--add']}>
           <div>
@@ -436,7 +450,7 @@ export default function Role() {
             <div
               style={{ color: '#5B6BE8', fontSize: '1rem', fontWeight: '600' }}
             >
-              Quyền:{' '}
+              Chức năng hiện thị:{' '}
             </div>
             <Checkbox.Group
               style={{ width: '100%' }}
@@ -503,28 +517,6 @@ export default function Role() {
                 })}
               </Row>
             </Checkbox.Group>
-          </div>
-          <div
-            onClick={onClickAddRole}
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Button type="primary" size="large">
-                Lưu
-              </Button>
-            </div>
           </div>
         </div>
       </Drawer>

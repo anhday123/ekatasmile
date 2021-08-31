@@ -11,10 +11,15 @@ const Permission = ({ permissions, children, ...props }) => {
       return null
     }
 
+    const allPermission = [
+      ...context.data.role.menu_list,
+      ...context.data.role.permission_list,
+    ]
+
     if (
       !permissions ||
       permissions.length === 0 ||
-      permissions.filter((p) => context.data.role.menu_list.includes(p)).length
+      permissions.filter((p) => allPermission.includes(p)).length
     ) {
       return React.cloneElement(children, props)
     }

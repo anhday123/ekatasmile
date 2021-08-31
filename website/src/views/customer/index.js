@@ -10,17 +10,17 @@ import {
   Select,
   Table,
   notification,
-  Radio,
   Drawer,
 } from 'antd'
-import { Link } from 'react-router-dom'
-import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { getCustomer, updateCustomer } from '../../apis/customer'
 import CustomerInfo from './components/customerInfo'
 import CustomerUpdate from '../actions/customer/update'
-import { ROUTES } from 'consts'
+import { PERMISSIONS } from 'consts'
 import CustomerAdd from 'views/actions/customer/add'
+import Permission from 'components/permission'
+
 const { Option } = Select
 const { RangePicker } = DatePicker
 
@@ -244,14 +244,16 @@ export default function Customer() {
             Quản lý khách hàng
           </div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-              onClick={() => setShowCreate(true)}
-            >
-              Thêm khách hàng
-            </Button>
+            <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+                onClick={() => setShowCreate(true)}
+              >
+                Thêm khách hàng
+              </Button>
+            </Permission>
           </div>
         </div>
         <Row
@@ -333,9 +335,11 @@ export default function Customer() {
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}>
           {selectedRowKeys && selectedRowKeys.length > 0 && (
-            <Button size="large" type="primary" onClick={openUpdateDrawer}>
-              Cập nhật khách hàng
-            </Button>
+            <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+              <Button size="large" type="primary" onClick={openUpdateDrawer}>
+                Cập nhật khách hàng
+              </Button>
+            </Permission>
           )}
         </Row>
 

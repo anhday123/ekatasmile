@@ -21,16 +21,19 @@ import {
   DatePicker,
   Popover,
   Radio,
+  Space,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from 'consts'
-import ProductInfo from './components/productInfo'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 
+//components
+import ProductInfo from './components/productInfo'
+import Permission from 'components/permission'
+
 //icons
 import {
-  PlusOutlined,
   DeleteOutlined,
   PlusCircleOutlined,
   EyeOutlined,
@@ -53,7 +56,6 @@ import {
   apiUpdateProductStore,
   apiProductCategoryMerge,
 } from 'apis/product'
-import axios from 'axios'
 import { uploadFiles } from 'utils'
 
 const { RangePicker } = DatePicker
@@ -2679,6 +2681,7 @@ export default function Product() {
           style={{
             display: 'flex',
             paddingBottom: '1rem',
+            paddingTop: '1rem',
             borderBottom: '1px solid rgb(236, 228, 228)',
             justifyContent: 'space-between',
             width: '100%',
@@ -2715,42 +2718,30 @@ export default function Product() {
                 width: '100%',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  marginRight: '1rem',
-                  marginTop: '1rem',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-              >
-                <Button
-                  size="large"
-                  onClick={showDrawerGroup}
-                  type="primary"
-                  icon={<PlusCircleOutlined />}
-                >
-                  Nhóm sản phẩm
-                </Button>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  marginTop: '1rem',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-              >
-                <Link to={ROUTES.PRODUCT_ADD}>
+              <Space size="large">
+                <Permission permissions={[PERMISSIONS.nhom_san_pham]}>
                   <Button
                     size="large"
+                    onClick={showDrawerGroup}
                     type="primary"
                     icon={<PlusCircleOutlined />}
                   >
-                    Thêm sản phẩm
+                    Nhóm sản phẩm
                   </Button>
-                </Link>
-              </div>
+                </Permission>
+
+                <Permission permissions={[PERMISSIONS.them_san_pham]}>
+                  <Link to={ROUTES.PRODUCT_ADD}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusCircleOutlined />}
+                    >
+                      Thêm sản phẩm
+                    </Button>
+                  </Link>
+                </Permission>
+              </Space>
             </div>
           </Col>
         </Row>
@@ -3049,34 +3040,40 @@ export default function Product() {
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
           <Row style={{ width: '100%', marginBottom: 10 }}>
-            <Button
-              size="large"
-              onClick={() => {
-                history.push({
-                  pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                  state: arrayUpdate,
-                })
-              }}
-              type="primary"
-            >
-              Tạo phiếu chuyển hàng
-            </Button>
-            <Button
-              size="large"
-              style={{ marginLeft: '1rem' }}
-              onClick={() => modal5VisibleModal(true)}
-              type="primary"
-            >
-              Tạo nhóm sản phẩm
-            </Button>
-            <Button
-              size="large"
-              style={{ marginLeft: '1rem' }}
-              onClick={() => modal50VisibleModal(true)}
-              type="primary"
-            >
-              Cập nhật nhóm sản phẩm
-            </Button>
+            <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+              <Button
+                size="large"
+                onClick={() => {
+                  history.push({
+                    pathname: ROUTES.SHIPPING_PRODUCT_ADD,
+                    state: arrayUpdate,
+                  })
+                }}
+                type="primary"
+              >
+                Tạo phiếu chuyển hàng
+              </Button>
+            </Permission>
+            <Permission permission={[PERMISSIONS.tao_nhom_san_pham]}>
+              <Button
+                size="large"
+                style={{ marginLeft: '1rem' }}
+                onClick={() => modal5VisibleModal(true)}
+                type="primary"
+              >
+                Tạo nhóm sản phẩm
+              </Button>
+            </Permission>
+            <Permission permission={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
+              <Button
+                size="large"
+                style={{ marginLeft: '1rem' }}
+                onClick={() => modal50VisibleModal(true)}
+                type="primary"
+              >
+                Cập nhật nhóm sản phẩm
+              </Button>
+            </Permission>
           </Row>
         ) : (
           ''
@@ -3463,34 +3460,40 @@ export default function Product() {
                   width: '100%',
                 }}
               >
-                <Button
-                  size="large"
-                  onClick={() => modal6VisibleModal(true)}
-                  type="primary"
-                >
-                  Tạo nhóm sản phẩm
-                </Button>
+                <Permission permissions={[PERMISSIONS.tao_nhom_san_pham]}>
+                  <Button
+                    size="large"
+                    onClick={() => modal6VisibleModal(true)}
+                    type="primary"
+                  >
+                    Tạo nhóm sản phẩm
+                  </Button>
+                </Permission>
               </div>
             </Col>
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginTop: 20 }}>
-              <Button
-                size="large"
-                onClick={showDrawerCategoryGroupUpdate}
-                type="primary"
-                style={{ marginRight: '1rem' }}
-              >
-                Cập nhật nhóm sản phẩm
-              </Button>
-              <Button
-                size="large"
-                onClick={onChangeSwitchCategory}
-                danger
-                type="primary"
-              >
-                Xóa
-              </Button>
+              <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
+                <Button
+                  size="large"
+                  onClick={showDrawerCategoryGroupUpdate}
+                  type="primary"
+                  style={{ marginRight: '1rem' }}
+                >
+                  Cập nhật nhóm sản phẩm
+                </Button>
+              </Permission>
+              <Permission permissions={[PERMISSIONS.xoa_nhom_san_pham]}>
+                <Button
+                  size="large"
+                  onClick={onChangeSwitchCategory}
+                  danger
+                  type="primary"
+                >
+                  Xóa
+                </Button>
+              </Permission>
             </Row>
           ) : (
             ''

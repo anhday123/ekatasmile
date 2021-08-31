@@ -22,8 +22,9 @@ import moment from 'moment'
 import { getPromoton, updatePromotion } from '../../apis/promotion'
 import { getAllBranch } from '../../apis/branch'
 import { useDispatch } from 'react-redux'
-import { ROUTES } from 'consts'
+import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
+import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const columns = [
@@ -289,14 +290,16 @@ export default function Promotion() {
         >
           <div className={styles['promotion_manager_title']}>Khuyến mãi</div>
           <div className={styles['promotion_manager_button']}>
-            <Button
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              onClick={() => setShowCreate(true)}
-              type="primary"
-              size="large"
-            >
-              Tạo khuyến mãi
-            </Button>
+            <Permission permissions={[PERMISSIONS.them_khuyen_mai]}>
+              <Button
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                onClick={() => setShowCreate(true)}
+                type="primary"
+                size="large"
+              >
+                Tạo khuyến mãi
+              </Button>
+            </Permission>
           </div>
         </div>
         <Row
