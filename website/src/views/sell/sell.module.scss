@@ -18,7 +18,7 @@
 .sell_manager_title_row {
   display: flex;
   justify-content: space-between;
-  // align-items: center;
+  margin-top: 23px;
   width: 100%;
 }
 .sell_manager_title_row_fix {
@@ -32,18 +32,7 @@
   border-radius: 1.25rem;
   border: 0 solid transparent;
 }
-.sell_manager_title_row_col_orders {
-  display: flex;
 
-  // padding: 0.5rem 0.75rem;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-.sell_manager_title_row_col_orders > div {
-  color: white;
-  font-weight: 600;
-}
 .sell_manager_title_row_col_orders_acitve {
   display: flex;
   background-color: #336cfb;
@@ -92,17 +81,10 @@
   width: 100%;
 }
 .sell_manager_title_row_col_item_active {
-  width: 100%;
-  position: relative;
-  margin-bottom: 1rem;
   margin-right: 1rem;
   cursor: pointer;
-  background-color: white;
-  padding: 0.5rem 0.75rem;
 }
-.sell_manager_title_row_col_item_active
-  .sell_manager_title_row_col_orders
-  > div {
+.sell_manager_title_row_col_item_active > div {
   color: black;
   font-weight: 600;
 }

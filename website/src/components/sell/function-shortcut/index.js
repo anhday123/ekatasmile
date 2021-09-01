@@ -15,7 +15,7 @@ export default function Sell() {
         className="br-15__button"
         onClick={() => modal3VisibleModal(true)}
       >
-        Phím tắt hỗ trợ
+        Phím tắt chức năng
       </Button>
 
       <Modal

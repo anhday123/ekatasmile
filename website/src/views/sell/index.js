@@ -43,6 +43,7 @@ import {
   Col,
   Tabs,
   Popconfirm,
+  Badge,
 } from 'antd'
 
 //apis
@@ -479,10 +480,8 @@ export default function Sell() {
     })
   }
 
-  const [arrayRandom, setArrayRandom] = useState([2, 3, 4, 5])
-  const [billQuantity, setBillQuantity] = useState([
-    [{ values: 1, mark: [], customer: [] }],
-  ])
+  const [arrayRandom, setArrayRandom] = useState([1, 2, 3, 4, 5])
+  const [billQuantity, setBillQuantity] = useState([])
 
   const onClickCreateBill = () => {
     setConfirm(1)
@@ -659,7 +658,6 @@ export default function Sell() {
                     //  &&
                     if (moneyFinish > 0) {
                       if (count > 0) {
-                        // alert('123')
                         setConfirm(1)
                       } else {
                         setConfirm(0)
@@ -4268,175 +4266,6 @@ export default function Sell() {
             </Select>
             <FunctionShortcut />
           </Row>
-          <Row className={styles['sell_manager_title_row_fix']}>
-            {billQuantity &&
-              billQuantity.length > 0 &&
-              billQuantity.map((values, index) => {
-                return billQuantityStatus === values[0].values ? (
-                  <Col
-                    className={styles['sell_manager_title_row_col_item_active']}
-                    xs={24}
-                    sm={24}
-                    md={3}
-                    lg={3}
-                    xl={3}
-                  >
-                    <div
-                      className={styles['sell_manager_title_row_col_orders']}
-                    >
-                      <div
-                        onClick={() =>
-                          onClickBillIndex(
-                            index,
-                            values[0].values,
-                            parseInt(branchId) * 10000 + values[0].values
-                          )
-                        }
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        <div
-                          className={
-                            styles['sell_manager_title_row_col_orders_title']
-                          }
-                        >
-                          Hóa đơn
-                        </div>
-                        <div>
-                          {parseInt(branchId) * 10000 + values[0].values}
-                        </div>
-                      </div>
-                      <Popconfirm
-                        title="Bạn có muốn bỏ hoá đơn này?"
-                        okText="Ok"
-                        cancelText="No"
-                        onConfirm={() =>
-                          onClickDeleteBillQuantity(index, values[0].values)
-                        }
-                      >
-                        <div
-                          style={{ position: 'absolute', top: '0', right: '0' }}
-                        >
-                          <CloseOutlined
-                            style={{
-                              paddingRight: '0.25rem',
-                              fontSize: '1rem',
-                              color: 'red',
-                            }}
-                          />
-                        </div>
-                      </Popconfirm>
-                    </div>
-                  </Col>
-                ) : (
-                  <Col
-                    className={styles['sell_manager_title_row_col_item']}
-                    xs={24}
-                    sm={24}
-                    md={3}
-                    lg={3}
-                    xl={3}
-                  >
-                    <div
-                      className={styles['sell_manager_title_row_col_orders']}
-                    >
-                      <div
-                        onClick={() =>
-                          onClickBillIndex(
-                            index,
-                            values[0].values,
-                            parseInt(branchId) * 10000 + values[0].values
-                          )
-                        }
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        <div
-                          className={
-                            styles['sell_manager_title_row_col_orders_title']
-                          }
-                        >
-                          Hóa đơn
-                        </div>
-                        <div>
-                          {parseInt(branchId) * 10000 + values[0].values}
-                        </div>
-                      </div>
-                      <div
-                        onClick={() =>
-                          onClickDeleteBillQuantity(index, values[0].values)
-                        }
-                        style={{ position: 'absolute', top: '0', right: '0' }}
-                      >
-                        <CloseOutlined
-                          style={{
-                            paddingRight: '0.25rem',
-                            fontSize: '1rem',
-                            color: 'red',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </Col>
-                )
-              })}
-
-            <Col
-              className={styles['sell_manager_title_row_col_item_add']}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={5}
-              xl={5}
-            >
-              <div className={styles['sell_manager_title_row_col_orders_add']}>
-                <div
-                  onClick={onClickCreateBill}
-                  style={{ width: '2rem', marginTop: 15 }}
-                >
-                  <PlusCircleOutlined
-                    style={{
-                      fontSize: '1.75rem',
-                      color: 'white',
-                      fontWeight: '900',
-                    }}
-                    theme="outlined"
-                  />
-                </div>
-                {confirm === 0 ? (
-                  <div
-                    style={{
-                      color: 'red',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      marginLeft: '1rem',
-                    }}
-                  >
-                    Chưa chọn hóa đơn
-                  </div>
-                ) : confirm === 1 && billName !== '' ? (
-                  <div
-                    style={{
-                      color: '#50D648',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      marginLeft: '1rem',
-                    }}
-                  >{`Đang xử lý hóa đơn: ${billName}`}</div>
-                ) : (
-                  ''
-                )}
-              </div>
-            </Col>
-          </Row>
           <Row className={styles['sell_manager_title_row']}>
             <Col
               className={styles['sell_manager_title_row_col']}
@@ -4523,8 +4352,11 @@ export default function Sell() {
                   size="large"
                   onClick={showDrawerOrderList}
                   type="primary"
-                  danger
-                  style={{ width: 'max-content' }}
+                  style={{
+                    width: 'max-content',
+                    backgroundColor: 'green',
+                    borderColor: 'green',
+                  }}
                 >
                   Danh sách order
                 </Button>
@@ -4532,6 +4364,95 @@ export default function Sell() {
             </Col>
           </Row>
         </div>
+
+        <Row
+          wrap={false}
+          style={{ width: '100%', paddingLeft: 20, paddingRight: 20 }}
+        >
+          {billQuantity.map((values, index) => {
+            return (
+              <div
+                onClick={() =>
+                  onClickBillIndex(
+                    index,
+                    values[0].values,
+                    parseInt(branchId) * 10000 + values[0].values
+                  )
+                }
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: 'max-content',
+                  height: 50,
+                  borderTopLeftRadius: 10,
+                  borderTopRightRadius: 10,
+                  fontWeight: 500,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  marginRight: '1rem',
+                  backgroundColor:
+                    billQuantityStatus === values[0].values
+                      ? '#336CFB'
+                      : 'white',
+                  color:
+                    billQuantityStatus === values[0].values ? 'white' : 'black',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+              >
+                <Popconfirm
+                  title="Bạn có muốn bỏ hoá đơn này?"
+                  okText="Ok"
+                  cancelText="No"
+                  onConfirm={() =>
+                    onClickDeleteBillQuantity(index, values[0].values)
+                  }
+                >
+                  <CloseOutlined
+                    style={{
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      position: 'absolute',
+                      color:
+                        billQuantityStatus === values[0].values
+                          ? 'white'
+                          : 'red',
+                      top: 3,
+                      right: 3,
+                    }}
+                  />
+                </Popconfirm>
+                <div
+                  className={styles['sell_manager_title_row_col_orders_title']}
+                >
+                  Hóa đơn
+                </div>
+                <div>{parseInt(branchId) * 10000 + values[0].values}</div>
+              </div>
+            )
+          })}
+          <div
+            onClick={onClickCreateBill}
+            style={{
+              height: 50,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <PlusCircleOutlined
+              style={{
+                fontSize: '1.75rem',
+                color: 'black',
+                fontWeight: '900',
+                cursor: 'pointer',
+                marginLeft: 15,
+              }}
+              theme="outlined"
+            />
+          </div>
+        </Row>
 
         <Row style={{ width: '100%', marginBottom: 15 }}>
           <Col xs={24} sm={24} md={24} lg={15} xl={15}>
