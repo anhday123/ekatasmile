@@ -65,6 +65,7 @@ export default function BranchAdd({ reload }) {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await addBranch(object)
+      console.log(res)
       if (res.status === 200) {
         await reload()
 
@@ -72,9 +73,6 @@ export default function BranchAdd({ reload }) {
 
         modal2VisibleModal(false)
         form.resetFields()
-
-        if (location.state && !location.state.isHaveBranch)
-          history.push(ROUTES.OVERVIEW)
       } else {
         if (res.data.message === 'Branch name was exists!') {
           openNotificationError()
@@ -107,9 +105,10 @@ export default function BranchAdd({ reload }) {
         phone: values.phoneNumber,
         latitude: '',
         longtitude: '',
-        province: 'values.city',
+        province: values.city,
         store: values.store,
       }
+      console.log(body)
       dispatch({ type: ACTION.LOADING, data: false })
 
       addBranchData(body)
@@ -169,8 +168,6 @@ export default function BranchAdd({ reload }) {
   }
 
   useEffect(() => {
-    if (location.state && !location.state.isHaveBranch) modal2VisibleModal(true)
-
     apiProvinceData()
     getAllStoreData()
   }, [])
@@ -195,14 +192,7 @@ export default function BranchAdd({ reload }) {
         width={1000}
         footer={null}
         visible={modal2Visible}
-        onCancel={() => {
-          if (location.state && !location.state.isHaveBranch) {
-            dispatch({ type: 'SHOW_MODAL_NOTI_CREATE_BRANCH', data: true })
-            history.push(ROUTES.OVERVIEW)
-          }
-
-          modal2VisibleModal(false)
-        }}
+        onCancel={() => modal2VisibleModal(false)}
       >
         <Form
           className={styles['supplier_add_content']}

@@ -6,10 +6,13 @@ import user from 'assets/img/user.png'
 import { ACTION } from 'consts/index'
 import _ from 'lodash'
 import moment from 'moment'
-import FunctionShortcut from 'components/sell/function-shortcut/index'
 import 'react-multi-carousel/lib/styles.css'
 import { decodeToken } from 'react-jwt'
 import { useDispatch } from 'react-redux'
+
+//components
+import FunctionShortcut from 'components/sell/function-shortcut'
+import HistoryBill from 'components/sell/history-bill'
 
 import {
   PlusCircleOutlined,
@@ -44,6 +47,7 @@ import {
   Tabs,
   Popconfirm,
   Badge,
+  Space,
 } from 'antd'
 
 //apis
@@ -4275,15 +4279,8 @@ export default function Sell() {
               lg={14}
               xl={14}
             >
-              <div
-                style={{ width: '100%' }}
-                className={styles['sell_manager_title_row_col_parent']}
-              >
-                <Dropdown
-                  style={{ width: '100' }}
-                  trigger={['click']}
-                  overlay={content}
-                >
+              <Row justify="space-between" align="middle" wrap={false}>
+                <Dropdown trigger={['click']} overlay={content}>
                   <Input
                     style={{ width: '100%' }}
                     name="name"
@@ -4297,7 +4294,15 @@ export default function Sell() {
                     allowClear
                   />
                 </Dropdown>
-              </div>
+                <Select
+                  defaultValue="default"
+                  size="large"
+                  style={{ width: 230, marginLeft: 15 }}
+                >
+                  <Select.Option value="default">Mặc định</Select.Option>
+                  <Select.Option value="sku">SKU</Select.Option>
+                </Select>
+              </Row>
             </Col>
             <Col
               className={styles['sell_manager_title_row_col']}
@@ -4311,51 +4316,23 @@ export default function Sell() {
                 style={{
                   width: '100%',
                   display: 'flex',
+                  justifyContent: 'flex-end',
                   alignItems: !isMobile && 'center',
                   flexDirection: isMobile && 'column',
                 }}
               >
-                <Radio.Group
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: isMobile && 'space-between',
-                    alignItems: 'center',
-                    marginBottom: isMobile && 15,
-                  }}
-                  onChange={onChangeOrderStatus}
-                  value={orderStatus}
-                >
-                  <Radio
-                    style={{
-                      color: 'white',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                    }}
-                    value="order now"
-                  >
-                    Order now
-                  </Radio>
-                  <Radio
-                    style={{
-                      color: 'white',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                    }}
-                    value="pre-order"
-                  >
-                    Pre-order
-                  </Radio>
-                </Radio.Group>
+                <HistoryBill />
                 <Button
                   className="br-15__button"
                   size="large"
                   onClick={showDrawerOrderList}
                   type="primary"
                   style={{
-                    width: 'max-content',
-                    backgroundColor: 'green',
-                    borderColor: 'green',
+                    width: isMobile ? '100%' : 'max-content',
+                    backgroundColor: '#00D222',
+                    borderColor: '#00D222',
+                    marginLeft: !isMobile && 8,
+                    marginTop: isMobile && 10,
                   }}
                 >
                   Danh sách order

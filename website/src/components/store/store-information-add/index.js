@@ -24,6 +24,7 @@ import { apiFilterCity } from 'apis/branch'
 import { addStore, getAllStore } from 'apis/store'
 import { uploadImgs } from 'apis/upload'
 import { updateUser } from 'apis/user'
+import { uploadFile } from 'utils'
 
 const { Option } = Select
 const { Dragger } = Upload
@@ -41,7 +42,6 @@ export default function StoreInformationAdd({ reloadData }) {
   }
   const [imageStorePreview, setImageStorePreview] = useState('')
   const [imageStore, setImageStore] = useState('')
-  const [listStore, setListStore] = useState([])
 
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
@@ -77,6 +77,7 @@ export default function StoreInformationAdd({ reloadData }) {
   const addStoreData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
+      console.log(object)
       const res = await addStore(object)
       console.log(res)
       if (res.status === 200) {
@@ -88,21 +89,6 @@ export default function StoreInformationAdd({ reloadData }) {
         setImageStorePreview('')
         setImageStore('')
         form.resetFields()
-
-        //nếu lần đầu tạo store thì show modal welcome
-        if (location.state && !location.state.isHaveStore) {
-          await updateUser(
-            { is_new: false, user_id: dataUser.data.user_id },
-            dataUser.data.user_id
-          )
-          dispatch({ type: 'SHOW_MODAL_WELCOME', data: true })
-          dataUser.data.is_new = false
-          dispatch({
-            type: 'UPDATE_DATA_USER',
-            data: { ...dataUser },
-          })
-          history.goBack()
-        }
       } else {
         openNotificationForgetImageError()
       }
@@ -151,25 +137,22 @@ export default function StoreInformationAdd({ reloadData }) {
 
       let imgStore = ''
       if (imageStore) {
-        let formData = new FormData()
-        formData.append('files', imageStore)
-        const res = await uploadImgs(formData)
-        if (res.status === 200) imgStore = res.data.data[0]
+        imgStore = await uploadFile(imageStore)
       }
 
       const body = {
-        name: values.storeName.toLowerCase(),
+        name: values.storeName,
         logo: imgStore,
         phone: values.phoneNumber,
         email: '',
         fax: values.fax || '',
-        website: values.websiteLink ? values.websiteLink.toLowerCase() : '',
+        website: values.websiteLink ? values.websiteLink : '',
         latitude: '',
         longtitude: '',
-        address: values.address ? values.address.toLowerCase() : '',
+        address: values.address ? values.address : '',
         ward: '',
-        district: values.district.toLowerCase(),
-        province: values.city.toLowerCase(),
+        district: values.district,
+        province: values.city,
       }
       dispatch({ type: ACTION.LOADING, data: false })
 
@@ -223,8 +206,8 @@ export default function StoreInformationAdd({ reloadData }) {
   useEffect(() => {
     apiProvinceData()
 
-    //lần đầu tiên vào app thì show modal để tạo cửa h
-    if (location.state && !location.state.isHaveStore) modal3VisibleModal(true)
+    if (location.state && location.state === 'show-modal-create-store')
+      modal3VisibleModal(true)
   }, [])
 
   const dataValue = form.getFieldValue()
@@ -248,13 +231,7 @@ export default function StoreInformationAdd({ reloadData }) {
         width={1000}
         footer={null}
         visible={modal3Visible}
-        closable={location.state && location.state.isHaveStore}
-        onCancel={() => {
-          //trường hợp chưa tạo cửa hàng thì ko cho tắt modal
-          if (location.state && !location.state.isHaveStore) return
-
-          modal3VisibleModal(false)
-        }}
+        onCancel={() => modal3VisibleModal(false)}
       >
         <Form
           className={styles['supplier_add_content']}

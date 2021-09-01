@@ -461,9 +461,9 @@ export default function Branch() {
     setSelectedRowKeys([])
   }
   const [district, setDistrict] = useState([])
-  const apiDistrictData = async (params) => {
+  const apiDistrictData = async () => {
     try {
-      const res = await apiDistrict(params)
+      const res = await apiDistrict()
       if (res.status === 200) {
         setDistrict(res.data.data)
       }

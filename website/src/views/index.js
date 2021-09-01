@@ -9,8 +9,6 @@ import Authentication from 'components/authentication'
 
 //modal intro
 import ModalIntro from 'components/introduction'
-import ModalWelcome from 'components/welcome'
-import NotificationCreateBranch from 'components/notification-create-branch'
 
 //views
 import Login from './login/index'
@@ -613,8 +611,6 @@ export default function Views() {
   return (
     <BrowserRouter>
       <ModalIntro />
-      <ModalWelcome />
-      <NotificationCreateBranch />
 
       <Switch>
         {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (

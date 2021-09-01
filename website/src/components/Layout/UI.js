@@ -294,37 +294,56 @@ const UI = (props) => {
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
+                lineHeight: '25px',
+                marginLeft: '-5px',
               }}
             >
               {_menu.icon}
               {_menu.title}
             </div>
           }
+          icon={collapsed && _menu.icon}
         >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
-              <Menu.Item
-                key={e.path}
-                style={{
-                  fontSize: '0.8rem',
-                  color: 'black',
-                  backgroundColor: location.pathname === e.path && '#e7e9fb',
-                }}
-              >
-                <Link
-                  to={e.path}
+              {!collapsed ? (
+                <Menu.Item
+                  key={e.path}
                   style={{
-                    color: !collapsed ? 'black' : 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    fontSize: '0.8rem',
+                    backgroundColor: location.pathname === e.path && '#e7e9fb',
                   }}
+                  icon={collapsed && e.icon}
                 >
-                  {e.icon}
-                  {e.title}
+                  <Link
+                    to={e.path}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      lineHeight: '25px',
+                    }}
+                  >
+                    {!collapsed && e.icon}
+                    {e.title}
+                  </Link>
+                </Menu.Item>
+              ) : (
+                <Link to={e.path}>
+                  <Menu.Item
+                    key={e.path}
+                    style={{
+                      fontSize: '0.8rem',
+                      backgroundColor:
+                        location.pathname === e.path && '#e7e9fb',
+                    }}
+                    icon={collapsed && e.icon}
+                  >
+                    {e.title}
+                  </Menu.Item>
                 </Link>
-              </Menu.Item>
+              )}
             </Permission>
           ))}
         </Menu.SubMenu>
@@ -333,9 +352,9 @@ const UI = (props) => {
           key={_menu.path}
           style={{
             fontSize: '0.8rem',
-            color: 'black',
             backgroundColor: location.pathname === _menu.path && '#e7e9fb',
           }}
+          icon={collapsed && _menu.icon}
         >
           <Link
             to={_menu.path}
@@ -345,9 +364,10 @@ const UI = (props) => {
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
+              lineHeight: '25px',
             }}
           >
-            {_menu.icon}
+            {!collapsed && _menu.icon}
             {_menu.title}
           </Link>
         </Menu.Item>
@@ -867,7 +887,7 @@ const UI = (props) => {
         trigger={null}
         collapsible
         width={isMobile ? '100%' : 175}
-        collapsedWidth={0}
+        collapsedWidth={isMobile ? 0 : 60}
         style={{
           backgroundColor: '#FFFFFF',
           height: '100%',
@@ -921,7 +941,11 @@ const UI = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item onClick={onClickSignout} key="9">
+          <Menu.Item
+            onClick={onClickSignout}
+            key="9"
+            icon={collapsed && <LogoutOutlined />}
+          >
             <Link
               to={ROUTES.LOGIN}
               style={{
@@ -930,9 +954,11 @@ const UI = (props) => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                color: collapsed && 'white',
+                lineHeight: '25px',
               }}
             >
-              <LogoutOutlined />
+              {!collapsed && <LogoutOutlined />}
               Logout
             </Link>
           </Menu.Item>
@@ -966,7 +992,10 @@ const UI = (props) => {
                 </div>
                 <Permission permissions={[PERMISSIONS.them_cua_hang]}>
                   <Link
-                    to={ROUTES.STORE}
+                    to={{
+                      pathname: ROUTES.STORE,
+                      state: 'show-modal-create-store',
+                    }}
                     style={{ marginRight: '1rem', cursor: 'pointer' }}
                   >
                     <Button
@@ -976,7 +1005,7 @@ const UI = (props) => {
                         backgroundColor: '#FFAB2D',
                         borderColor: '#FFAB2D',
                         fontWeight: 600,
-                        marginLeft: 15,
+                        marginLeft: 10,
                       }}
                     >
                       Thêm cửa hàng
@@ -985,7 +1014,7 @@ const UI = (props) => {
                 </Permission>
                 <Select
                   placeholder="Chọn chưa hàng"
-                  style={{ width: isMobile ? '100%' : 250 }}
+                  style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   defaultValue={dataUser.data.store}
                 >

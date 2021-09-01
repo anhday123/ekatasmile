@@ -40,10 +40,9 @@
   z-index: 1500;
 }
 /* custom menu */
-.ant-menu-submenu-title {
-  height: max-content !important;
+.ant-menu-title-content {
+  color: black !important;
 }
-
 .ant-menu-item-only-child {
   height: max-content !important;
   padding-left: 0 !important;

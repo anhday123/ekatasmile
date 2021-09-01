@@ -75,49 +75,20 @@ export default function SingleProduct(props) {
           }
         }
       }
-      // if (status !== 'uploading') {
-      //     console.log(info.file, info.fileList);
-      // }
-      // if (status === 'done') {
-      //     message.success(`${info.file.name} file uploaded successfully.`);
-      // } else if (status === 'error') {
-      //     message.error(`${info.file.name} file upload failed.`);
-      // }
-    },
-    onDrop(e) {
-      //   console.log('Dropped files', e.dataTransfer.files);
     },
   }
   const onChangeCheckboxGuarantee = (e) => {
     console.log(`checked = ${e.target.checked}`)
     setGuarantee(e.target.checked)
   }
-  const onChangeSupplierSimpleQuantity = (e, index) => {
-    var arrayTemp = [...supplierSimple]
-    if (parseInt(e) > 0) {
-      arrayTemp[index].quantity = e
-    } else {
-      arrayTemp[index].quantity = 0
-    }
 
-    setSupplierSimple([...arrayTemp])
-  }
   const openNotificationNumber = (data) => {
     notification.error({
       message: 'Thất bại',
       description: `${data} phải là số.`,
     })
   }
-  const onChangeSupplierSimpleImport = (e, index) => {
-    var arrayTemp = [...supplierSimple]
-    if (parseInt(e) > 0) {
-      arrayTemp[index].import_price = e
-    } else {
-      arrayTemp[index].import_price = 0
-    }
 
-    setSupplierSimple([...arrayTemp])
-  }
   const [warehouse, setWarehouse] = useState(
     props.warehouse && props.warehouse.length > 0
       ? props.warehouse[0].warehouse_id
@@ -374,8 +345,7 @@ export default function SingleProduct(props) {
     console.log(`checked = ${e.target.checked}`)
     setCheckboxValue(e.target.checked)
   }
-  console.log()
-  console.log('__________________________456456')
+
   return (
     <div>
       <Form

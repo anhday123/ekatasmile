@@ -605,311 +605,224 @@ export default function Store() {
     apiFilterCityData(value)
   }
 
-  const [attentionAddStore, setAttentionAddStore] = useState(false)
-  const onClickTurnOffAttentAddStore = () => {
-    setAttentionAddStore(false)
-  }
   return (
-    <>
-      <Modal
-        width={700}
-        title="Hướng dẫn thêm thông tin cần thiết trước khi thao tác bán hàng"
-        centered
-        footer={null}
-        visible={attentionAddStore}
+    <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid rgb(236, 226, 226)',
+          paddingBottom: '0.75rem',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}
       >
-        <div
+        <Link
           style={{
             display: 'flex',
             justifyContent: 'flex-start',
             alignItems: 'center',
             width: '100%',
-            flexDirection: 'column',
           }}
+          to={ROUTES.CONFIGURATION_STORE}
         >
+          <ArrowLeftOutlined
+            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
+          />
           <div
             style={{
-              marginBottom: '1rem',
-              fontSize: '1.25rem',
-              fontWeight: '900',
               color: 'black',
-              display: 'flex',
-              justifyContent: 'flex-start',
-              width: '100%',
-            }}
-          >
-            Gồm 3 bước:
-          </div>
-          <div
-            style={{
-              marginBottom: '1rem',
-              fontSize: '1rem',
-              fontWeight: '900',
-              color: 'black',
-            }}
-          >
-            1. Chọn nút thêm cửa hàng ở góc trên cùng, phía bên phải để thêm một
-            cửa hàng mới.
-          </div>
-          <div
-            style={{
-              marginBottom: '1rem',
-              fontSize: '1rem',
               fontWeight: '600',
-            }}
-          >
-            2. Chọn nút thêm chi nhánh ở góc trên cùng, phía bên phải để thêm
-            một chi nhánh mới.
-          </div>
-          <div
-            style={{
-              marginBottom: '1rem',
               fontSize: '1rem',
-              fontWeight: '600',
+              marginLeft: '0.5rem',
             }}
           >
-            3. Tại giao diện danh sách nhân sự, thêm nhân sự vào chi nhánh kết
-            thúc quá trình thao tác.
+            Quản lý cửa hàng
           </div>
-          <div
-            style={{
-              display: 'flex',
-              marginTop: '1rem',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Button
-              onClick={onClickTurnOffAttentAddStore}
-              type="primary"
-              style={{ width: '7.5rem' }}
-            >
-              Đã hiểu
-            </Button>
-          </div>
+        </Link>
+        <div className={styles['promotion_manager_button']}>
+          <Permission permissions={[PERMISSIONS.them_cua_hang]}>
+            <StoreInformationAdd reloadData={getAllStoreData} />
+          </Permission>
         </div>
-      </Modal>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+      </div>
+
+      <Row
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}
+      >
+        <Col
+          style={{ width: '100%', marginTop: '1rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={7}
         >
-          <Link
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
-          >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
+          <div style={{ width: '100%' }}>
+            <Input
+              size="large"
+              style={{ width: '100%' }}
+              name="name"
+              value={valueSearch}
+              enterButton
+              onChange={onSearch}
+              className={styles['orders_manager_content_row_col_search']}
+              placeholder="Tìm kiếm theo mã, theo tên"
+              allowClear
             />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
+          </div>
+        </Col>
+
+        <Col
+          style={{ width: '100%', marginTop: '1rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={7}
+        >
+          <div style={{ width: '100%' }}>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a person"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={city ? city : 'default'}
+              onChange={(event) => {
+                handleChange(event)
+                handleChangeCity(event)
               }}
             >
-              Quản lý cửa hàng
-            </div>
-          </Link>
-          <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.them_cua_hang]}>
-              <StoreInformationAdd reloadData={getAllStoreData} />
-            </Permission>
+              <Option value="default">Tất cả tỉnh/thành phố</Option>
+              {provinceMain &&
+                provinceMain.length > 0 &&
+                provinceMain.map((values, index) => {
+                  return (
+                    <Option value={values.province_name}>
+                      {values.province_name}
+                    </Option>
+                  )
+                })}
+            </Select>
           </div>
-        </div>
-
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+        </Col>
+        <Col
+          style={{ width: '100%', marginTop: '1rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={7}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                style={{ width: '100%' }}
-                name="name"
-                value={valueSearch}
-                enterButton
-                onChange={onSearch}
-                className={styles['orders_manager_content_row_col_search']}
-                placeholder="Tìm kiếm theo mã, theo tên"
-                allowClear
-              />
-            </div>
-          </Col>
-
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Select a person"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                value={city ? city : 'default'}
-                onChange={(event) => {
-                  handleChange(event)
-                  handleChangeCity(event)
-                }}
-              >
-                <Option value="default">Tất cả tỉnh/thành phố</Option>
-                {provinceMain &&
-                  provinceMain.length > 0 &&
-                  provinceMain.map((values, index) => {
+          <div style={{ width: '100%' }}>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a person"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={districtSelect ? districtSelect : 'default'}
+              onChange={handleChangeDistrict}
+            >
+              <Option value="default">Tất cả quận/huyện</Option>
+              {districtMainAPI && districtMainAPI.length > 0
+                ? districtMainAPI &&
+                  districtMainAPI.length > 0 &&
+                  districtMainAPI.map((values, index) => {
                     return (
-                      <Option value={values.province_name}>
-                        {values.province_name}
+                      <Option value={values.district_name}>
+                        {values.district_name}
+                      </Option>
+                    )
+                  })
+                : districtMain &&
+                  districtMain.length > 0 &&
+                  districtMain.map((values, index) => {
+                    return (
+                      <Option value={values.district_name}>
+                        {values.district_name}
                       </Option>
                     )
                   })}
-              </Select>
-            </div>
-          </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Select a person"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                value={districtSelect ? districtSelect : 'default'}
-                onChange={handleChangeDistrict}
-              >
-                <Option value="default">Tất cả quận/huyện</Option>
-                {districtMainAPI && districtMainAPI.length > 0
-                  ? districtMainAPI &&
-                    districtMainAPI.length > 0 &&
-                    districtMainAPI.map((values, index) => {
-                      return (
-                        <Option value={values.district_name}>
-                          {values.district_name}
-                        </Option>
-                      )
-                    })
-                  : districtMain &&
-                    districtMain.length > 0 &&
-                    districtMain.map((values, index) => {
-                      return (
-                        <Option value={values.district_name}>
-                          {values.district_name}
-                        </Option>
-                      )
-                    })}
-              </Select>
-            </div>
-          </Col>
+            </Select>
+          </div>
+        </Col>
 
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                value={
-                  clear === 1
-                    ? []
-                    : start !== ''
-                    ? [moment(start, dateFormat), moment(end, dateFormat)]
-                    : []
-                }
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
-                }}
-                onChange={onChangeDate}
-              />
-            </div>
-          </Col>
-        </Row>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-            marginTop: '1rem',
-          }}
+        <Col
+          style={{ width: '100%', marginTop: '1rem' }}
+          xs={24}
+          sm={24}
+          md={11}
+          lg={11}
+          xl={7}
         >
-          <Button onClick={onClickClear} type="primary" size="large">
-            Xóa tất cả lọc
-          </Button>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
-          }}
-        >
-          <Table
-            rowKey="_id"
-            loading={loading}
-            bordered
-            columns={columns}
-            dataSource={store}
-            style={{
-              width: '100%',
-            }}
-          />
-        </div>
+          <div style={{ width: '100%' }}>
+            <RangePicker
+              size="large"
+              className="br-15__date-picker"
+              value={
+                clear === 1
+                  ? []
+                  : start !== ''
+                  ? [moment(start, dateFormat), moment(end, dateFormat)]
+                  : []
+              }
+              style={{ width: '100%' }}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [
+                  moment().startOf('month'),
+                  moment().endOf('month'),
+                ],
+              }}
+              onChange={onChangeDate}
+            />
+          </div>
+        </Col>
+      </Row>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          width: '100%',
+          marginTop: '1rem',
+        }}
+      >
+        <Button onClick={onClickClear} type="primary" size="large">
+          Xóa tất cả lọc
+        </Button>
       </div>
-    </>
+      <div
+        style={{
+          width: '100%',
+          marginTop: '1rem',
+          border: '1px solid rgb(243, 234, 234)',
+        }}
+      >
+        <Table
+          rowKey="_id"
+          loading={loading}
+          bordered
+          columns={columns}
+          dataSource={store}
+          style={{
+            width: '100%',
+          }}
+        />
+      </div>
+    </div>
   )
 }
