@@ -40,12 +40,15 @@
   z-index: 1500;
 }
 /* custom menu */
-.ant-menu-title-content {
+/* .ant-menu-title-content {
   color: black !important;
-}
+} */
 .ant-menu-item-only-child {
   height: max-content !important;
-  padding-left: 0 !important;
-  padding-top: 10px !important;
+  /* padding-left: 0 !important;
+  padding-top: 10px !important; */
+}
+.ant-menu-submenu-vertical > .ant-menu-submenu-title {
+  height: 60px !important;
 }
 /* custom menu */

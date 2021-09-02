@@ -43,6 +43,7 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
   EditOutlined,
+  DownOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -139,7 +140,7 @@ const UI = (props) => {
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
       permissions: [PERMISSIONS.tong_quan],
-      icon: <MenuFoldOutlined className={styles['icon_parent']} />,
+      icon: <MenuFoldOutlined />,
     },
     {
       path: ROUTES.SELL,
@@ -155,7 +156,7 @@ const UI = (props) => {
     },
     {
       path: ROUTES.BUSINESS,
-      title: 'Business Management',
+      title: 'Quản lý kinh doanh',
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
@@ -293,16 +294,15 @@ const UI = (props) => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                alignItems: 'center',
+                alignItems: collapsed && 'center',
                 lineHeight: '25px',
-                marginLeft: '-5px',
               }}
             >
-              {_menu.icon}
+              {collapsed && _menu.icon}
               {_menu.title}
             </div>
           }
-          icon={collapsed && _menu.icon}
+          icon={!collapsed && _menu.icon}
         >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
@@ -313,7 +313,7 @@ const UI = (props) => {
                     fontSize: '0.8rem',
                     backgroundColor: location.pathname === e.path && '#e7e9fb',
                   }}
-                  icon={collapsed && e.icon}
+                  icon={!collapsed && e.icon}
                 >
                   <Link
                     to={e.path}
@@ -321,11 +321,12 @@ const UI = (props) => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
-                      alignItems: 'center',
+                      alignItems: collapsed && 'center',
                       lineHeight: '25px',
                     }}
                   >
-                    {!collapsed && e.icon}
+                    {collapsed && e.icon}
+
                     {e.title}
                   </Link>
                 </Menu.Item>
@@ -337,6 +338,7 @@ const UI = (props) => {
                       fontSize: '0.8rem',
                       backgroundColor:
                         location.pathname === e.path && '#e7e9fb',
+                      color: 'black',
                     }}
                     icon={collapsed && e.icon}
                   >
@@ -353,21 +355,21 @@ const UI = (props) => {
           style={{
             fontSize: '0.8rem',
             backgroundColor: location.pathname === _menu.path && '#e7e9fb',
+            color: collapsed && 'white',
           }}
-          icon={collapsed && _menu.icon}
+          icon={!collapsed && _menu.icon}
         >
           <Link
             to={_menu.path}
             style={{
-              color: !collapsed ? 'black' : 'white',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              alignItems: 'center',
+              alignItems: collapsed && 'center',
               lineHeight: '25px',
             }}
           >
-            {!collapsed && _menu.icon}
+            {collapsed && _menu.icon}
             {_menu.title}
           </Link>
         </Menu.Item>
@@ -647,7 +649,7 @@ const UI = (props) => {
   }, [])
 
   return (
-    <Layout style={{ backgroundColor: '#FFFFFF', height: '100%' }}>
+    <Layout style={{ backgroundColor: 'white', height: '100%' }}>
       <BackTop style={{ right: '20px', bottom: '20px' }} />
       <Modal
         title="Chỉnh sửa thông tin cá nhân"
@@ -886,10 +888,10 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 175}
-        collapsedWidth={isMobile ? 0 : 60}
+        width={isMobile ? '100%' : 230}
+        collapsedWidth={isMobile ? 0 : 150}
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'white',
           height: '100%',
           zIndex: isMobile && 6000,
         }}
@@ -907,7 +909,7 @@ const UI = (props) => {
           className={collapsed ? styles['hidden'] : styles['show']}
         >
           <img
-            src={cart}
+            src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
             className={collapsed ? styles['hidden'] : styles['show']}
             style={{ width: '6rem', objectFit: 'contain' }}
             alt=""
@@ -944,7 +946,7 @@ const UI = (props) => {
           <Menu.Item
             onClick={onClickSignout}
             key="9"
-            icon={collapsed && <LogoutOutlined />}
+            icon={!collapsed && <LogoutOutlined />}
           >
             <Link
               to={ROUTES.LOGIN}
@@ -952,13 +954,12 @@ const UI = (props) => {
                 fontSize: '0.8rem',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
+                alignItems: collapsed && 'center',
                 justifyContent: 'center',
-                color: collapsed && 'white',
                 lineHeight: '25px',
               }}
             >
-              {!collapsed && <LogoutOutlined />}
+              {collapsed && <LogoutOutlined />}
               Logout
             </Link>
           </Menu.Item>
@@ -1013,7 +1014,7 @@ const UI = (props) => {
                   </Link>
                 </Permission>
                 <Select
-                  placeholder="Chọn chưa hàng"
+                  placeholder="Chọn cửa hàng"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   defaultValue={dataUser.data.store}

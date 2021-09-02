@@ -908,7 +908,7 @@ export default function Sell() {
   const [roleName, setRoleName] = useState('')
 
   useEffect(() => {
-    setRoleName(dataUser.data.role.name.toLowerCase() || '')
+    setRoleName(dataUser.data._role.name || '')
   }, [])
 
   //get width device
