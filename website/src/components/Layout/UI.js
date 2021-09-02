@@ -404,7 +404,7 @@ const UI = (props) => {
   }
 
   const onClickSignout = () => {
-    localStorage.clear()
+    dispatch({ type: ACTION.LOGOUT })
   }
 
   const [username, setUsername] = useState('')

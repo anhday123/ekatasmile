@@ -150,7 +150,6 @@ export default function StoreInformationAdd({ reloadData }) {
         latitude: '',
         longtitude: '',
         address: values.address ? values.address : '',
-        ward: '',
         district: values.district,
         province: values.city,
       }

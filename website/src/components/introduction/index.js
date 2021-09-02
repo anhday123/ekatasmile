@@ -102,7 +102,6 @@ function ModalIntro() {
         fax: '',
         website: '',
         latitude: '',
-        ward: '',
         longtitude: '',
         address: '',
       }
@@ -129,7 +128,13 @@ function ModalIntro() {
             { is_new: false },
             dataUser.data && dataUser.data.user_id
           )
-          console.log(resUser)
+          if (resUser.status === 200) {
+            if (resUser.data.accessToken && resUser.data.refreshToken) {
+              localStorage.setItem('accessToken', resUser.data.accessToken)
+              localStorage.setItem('refreshToken', resUser.data.refreshToken)
+            }
+          }
+          window.location.reload()
         }
       } else
         notification.error({
@@ -143,7 +148,9 @@ function ModalIntro() {
   }
 
   useEffect(() => {
-    if (Object.keys(dataUser).length && dataUser.data.is_new) setVisible(true)
+    if (Object.keys(dataUser).length)
+      if (dataUser.data.is_new) setVisible(true)
+      else setVisible(false)
   }, [dataUser])
 
   useEffect(() => {
@@ -213,6 +220,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
+                defaultValue="Hồ Chí Minh"
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -248,6 +256,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn quận/huyện"
+                defaultValue="Quận Gò Vấp"
               >
                 {districts.map((value, index) => (
                   <Select.Option value={value.district_name} key={index}>
@@ -326,6 +335,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
+                defaultValue="Hồ Chí Minh"
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -361,6 +371,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn quận/huyện"
+                defaultValue="Quận Gò Vấp"
               >
                 {districts.map((value, index) => (
                   <Select.Option value={value.district_name} key={index}>
