@@ -12,8 +12,8 @@ const Permission = ({ permissions, children, ...props }) => {
     }
 
     const allPermission = [
-      ...context.data.role.menu_list,
-      ...context.data.role.permission_list,
+      ...context.data._role.menu_list,
+      ...context.data._role.permission_list,
     ]
 
     if (

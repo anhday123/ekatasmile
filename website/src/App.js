@@ -5,6 +5,7 @@ import { getAllStore } from './apis/store'
 import { getStore } from './actions/store'
 
 import Loading from 'components/loading/Loading'
+import ModalIntro from 'components/introduction'
 
 //views
 import Views from 'views'
@@ -44,6 +45,7 @@ function App() {
   return (
     <>
       <Loading />
+      <ModalIntro />
       <Views />
     </>
   )

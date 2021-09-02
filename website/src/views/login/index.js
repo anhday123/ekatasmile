@@ -31,7 +31,6 @@ export default function Login() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await login(object)
-      console.log('data', res)
       if (res.status === 200) {
         openNotificationLoginSuccess()
 
@@ -52,7 +51,7 @@ export default function Login() {
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      console.log(error.response)
+      console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
@@ -160,7 +159,6 @@ export default function Login() {
     return str
   }
   const onFinishRegister = (values) => {
-    // form.resetFields();
     if (
       !validateEmail(values.emailRegister) ||
       !isNaN(values.cityRegister) ||
@@ -207,35 +205,26 @@ export default function Login() {
               ) {
                 if (isNaN(values.cityRegister)) {
                   const object = {
-                    username: nonAccentVietnamese(
-                      values.usernameRegister.toLowerCase().trim()
-                    ),
-                    password: values.passwordRegister.trim(),
+                    username: nonAccentVietnamese(values.usernameRegister),
+                    password: values.passwordRegister,
                     role: '',
                     store: '',
-                    phone: values.phoneNumberRegister.trim(),
-                    email: values.emailRegister.trim(),
+                    phone: values.phoneNumberRegister,
+                    email: values.emailRegister,
                     avatar: '',
                     first_name:
-                      values && values.firstname
-                        ? values.firstname.toLowerCase().trim()
-                        : '',
-                    last_name:
-                      values && values.lastname
-                        ? values.lastname.toLowerCase().trim()
-                        : '',
+                      values && values.firstname ? values.firstname : '',
+                    last_name: values && values.lastname ? values.lastname : '',
                     birthday: '',
                     address:
                       values && values.addressRegister
-                        ? values.addressRegister.toLowerCase().trim()
+                        ? values.addressRegister
                         : '',
                     ward: '',
                     district: '',
                     province: '',
                     company_name:
-                      values && values.cityRegister
-                        ? values.cityRegister.toUpperCase().trim()
-                        : '',
+                      values && values.cityRegister ? values.cityRegister : '',
                     company_website: '',
                     tax_code: '',
                     fax: '',

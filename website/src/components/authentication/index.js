@@ -33,8 +33,8 @@ const Authentication = ({ permissions, title, children, ...props }) => {
   }
 
   const allPermission = [
-    ...payload.data.role.menu_list,
-    ...payload.data.role.permission_list,
+    ...payload.data._role.menu_list,
+    ...payload.data._role.permission_list,
   ]
 
   // permissions.length = 0 -> screen public

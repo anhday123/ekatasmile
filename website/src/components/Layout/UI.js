@@ -79,7 +79,7 @@ const UI = (props) => {
   const dataUser = localStorage.getItem('accessToken')
     ? decodeToken(localStorage.getItem('accessToken'))
     : {}
-
+  console.log('datauser', dataUser)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])

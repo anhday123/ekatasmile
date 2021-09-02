@@ -12,18 +12,18 @@ var login = (state = initialState, action) => {
   switch (action.type) {
     case ACTION.LOGIN: {
       var data = decodeToken(action.data.accessToken)
-      console.log(data)
+      console.log('data user', data)
       if (data) {
         localStorage.setItem('accessToken', action.data.accessToken)
         localStorage.setItem('refreshToken', action.data.refreshToken)
         localStorage.setItem('username', data.data.username)
         localStorage.setItem(
           'permission_list',
-          JSON.stringify(data.data.role.permission_list || [])
+          JSON.stringify(data.data._role.permission_list || [])
         )
         localStorage.setItem(
           'menu_list',
-          JSON.stringify(data.data.role.menu_list || [])
+          JSON.stringify(data.data._role.menu_list || [])
         )
         return {
           ...state,

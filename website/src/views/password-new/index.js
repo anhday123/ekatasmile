@@ -48,12 +48,12 @@ export default function PasswordNew() {
   }
   const onFinishRegister = (values) => {
     if (
-      values.passwordRegister.trim() === values.RepasswordRegister.trim() &&
-      password_validate(values.passwordRegister.trim())
+      values.passwordRegister === values.RepasswordRegister &&
+      password_validate(values.passwordRegister)
     ) {
       const object1 = {
-        username: username.trim(),
-        password: values.passwordRegister.trim(),
+        username: username,
+        password: values.passwordRegister,
       }
       changePasswordData(object1)
     } else {

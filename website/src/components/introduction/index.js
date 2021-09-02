@@ -15,6 +15,7 @@ import {
 
 import { useSelector, useDispatch } from 'react-redux'
 import { ACTION } from 'consts'
+import { decodeToken } from 'react-jwt'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
@@ -22,6 +23,7 @@ import { addStore } from 'apis/store'
 import { addBranch } from 'apis/branch'
 import { uploadFile } from 'utils'
 import { updateUser } from 'apis/user'
+import { addLabel, getAllLabel } from 'apis/label'
 
 //icons
 import { PlusOutlined } from '@ant-design/icons'
@@ -30,11 +32,15 @@ function ModalIntro() {
   const [formBranch] = Form.useForm()
   const [formStore] = Form.useForm()
   const dispatch = useDispatch()
+  const regexPhone = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
   const [visible, setVisible] = useState(false)
   const [visibleCreate, setVisibleCreate] = useState(false)
   const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
+  const [districtsStore, setDistrictsStore] = useState([])
+  const [districtsBranch, setDistrictsBranch] = useState([])
+  const [labels, setLabels] = useState([])
+  const [inputLabel, setInputLabel] = useState('')
 
   const [imageBranch, setImageBranch] = useState('')
   const [fileImageBranch, setFileImageBranch] = useState(null)
@@ -43,11 +49,48 @@ function ModalIntro() {
   const [fileImageStore, setFileImageStore] = useState(null)
 
   const dataUser = useSelector((state) => state.login.dataUser)
-  console.log(dataUser)
   function getBase64(img, callback) {
     const reader = new FileReader()
     reader.addEventListener('load', () => callback(reader.result))
     reader.readAsDataURL(img)
+  }
+
+  const getLabelData = async () => {
+    try {
+      const res = await getAllLabel()
+      console.log(res)
+      if (res.status === 200) {
+        setLabels(res.data.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _addLabel = async () => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const body = {
+        name: inputLabel,
+        description: '',
+      }
+      const res = await addLabel(body)
+      if (res.status === 200) {
+        let arrayLabelNew = [...labels]
+        arrayLabelNew.push(res.data.data)
+        setLabels([...arrayLabelNew])
+        setInputLabel('')
+        notification.success({ message: 'Tạo thành công label!' })
+      }
+
+      if (res.status === 400) {
+        setInputLabel('')
+        notification.error({ message: 'Label đã tồn tại!' })
+      }
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
   }
 
   const getProvinceData = async () => {
@@ -61,11 +104,23 @@ function ModalIntro() {
     }
   }
 
-  const getDistrictData = async () => {
+  const getDistrictStore = async (params) => {
     try {
-      const res = await apiDistrict()
+      const res = await apiDistrict(params)
       if (res.status === 200) {
-        setDistricts(res.data.data)
+        setDistrictsStore(res.data.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const getDistrictBranch = async (params) => {
+    try {
+      const res = await apiDistrict(params)
+      console.log(res)
+      if (res.status === 200) {
+        setDistrictsBranch(res.data.data)
       }
     } catch (error) {
       console.log(error)
@@ -87,58 +142,73 @@ function ModalIntro() {
 
       const dataStore = formStore.getFieldValue()
       const dataBranch = formBranch.getFieldValue()
+
+      //validated phone
+      if (
+        !regexPhone.test(dataBranch.phone) ||
+        !regexPhone.test(dataStore.phone)
+      ) {
+        notification.error({ message: 'Số điện thoại liên hệ không hợp lệ!' })
+        return
+      }
+
       dispatch({ type: ACTION.LOADING, data: true })
+
       /* upload image */
-      // let urlImageBranch
+      let urlImageBranch
       let urlImageStore
-      // if (fileImageBranch) urlImageBranch = await uploadFile(fileImageBranch)
+      if (fileImageBranch) urlImageBranch = await uploadFile(fileImageBranch)
       if (fileImageStore) urlImageStore = await uploadFile(fileImageStore)
       /* upload image */
 
-      const bodyStore = {
-        ...dataStore,
-        logo: urlImageStore || '',
-        email: '',
-        fax: '',
-        website: '',
+      const bodyBranch = {
+        ...dataBranch,
+        logo: urlImageBranch || '',
         latitude: '',
         longtitude: '',
         address: '',
+        email: '',
+        fax: '',
+        website: '',
       }
-
-      const resStore = await addStore(bodyStore)
-      console.log(resStore)
-      if (resStore.status === 200) {
-        const bodyBranch = {
-          ...dataBranch,
+      const resBranch = await addBranch(bodyBranch)
+      console.log(resBranch)
+      if (resBranch.status === 200) {
+        const bodyStore = {
+          ...dataStore,
+          logo: urlImageStore || '',
+          email: '',
+          fax: '',
+          website: '',
           latitude: '',
           longtitude: '',
           address: '',
-          store: resStore.data.data.store_id,
+          branch_id: resBranch.data.data.branch_id,
+          label_id: dataStore.label_id || '',
         }
 
-        const resBranch = await addBranch(bodyBranch)
-        console.log(resBranch)
-        if (resBranch.status === 200) {
+        const resStore = await addStore(bodyStore)
+        console.log(resStore)
+        if (resStore.status === 200) {
           notification.success({
             message: 'Chúc mừng bạn đã tạo chi nhánh và cửa hàng thành công',
           })
-          setVisibleCreate(false)
           const resUser = await updateUser(
             { is_new: false },
             dataUser.data && dataUser.data.user_id
           )
+          console.log(resUser)
           if (resUser.status === 200) {
             if (resUser.data.accessToken && resUser.data.refreshToken) {
               localStorage.setItem('accessToken', resUser.data.accessToken)
               localStorage.setItem('refreshToken', resUser.data.refreshToken)
             }
           }
-          window.location.reload()
+          setTimeout(() => window.location.reload(), 300)
         }
       } else
         notification.error({
-          message: resStore.data.message || 'Tạo cửa hàng thất bại!',
+          message: resBranch.data.message || 'Tạo chi nhánh thất bại!',
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -148,14 +218,24 @@ function ModalIntro() {
   }
 
   useEffect(() => {
-    if (Object.keys(dataUser).length)
+    if (Object.keys(dataUser).length) {
       if (dataUser.data.is_new) setVisible(true)
       else setVisible(false)
+    }
   }, [dataUser])
 
   useEffect(() => {
     getProvinceData()
-    getDistrictData()
+    getDistrictStore({ keyword: 'Hồ Chí Minh' })
+    getDistrictBranch({ keyword: 'Hồ Chí Minh' })
+    getLabelData()
+  }, [])
+
+  useEffect(() => {
+    formBranch.setFieldsValue({ district: 'Quận Gò Vấp' })
+    formStore.setFieldsValue({ district: 'Quận Gò Vấp' })
+    formBranch.setFieldsValue({ province: 'Hồ Chí Minh' })
+    formStore.setFieldsValue({ province: 'Hồ Chí Minh' })
   }, [])
 
   return (
@@ -220,7 +300,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                defaultValue="Hồ Chí Minh"
+                onChange={(value) => getDistrictBranch({ keyword: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -256,9 +336,8 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn quận/huyện"
-                defaultValue="Quận Gò Vấp"
               >
-                {districts.map((value, index) => (
+                {districtsBranch.map((value, index) => (
                   <Select.Option value={value.district_name} key={index}>
                     {value.district_name}
                   </Select.Option>
@@ -266,20 +345,6 @@ function ModalIntro() {
               </Select>
             </Form.Item>
           </Row>
-          {/* <Row justify="space-between" align="middle">
-            <Form.Item
-              name="label"
-              label="Label"
-              rules={[{ required: true, message: 'Vui lòng nhập label!' }]}
-            >
-              <Select
-                mode="tags"
-                style={{ width: 250 }}
-                size="large"
-                placeholder="Chọn label"
-              ></Select>
-            </Form.Item>
-          </Row> */}
         </Form>
         <Divider />
         <Form form={formStore} layout="vertical">
@@ -335,7 +400,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                defaultValue="Hồ Chí Minh"
+                onChange={(value) => getDistrictStore({ keyword: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -371,11 +436,64 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn quận/huyện"
-                defaultValue="Quận Gò Vấp"
               >
-                {districts.map((value, index) => (
+                {districtsStore.map((value, index) => (
                   <Select.Option value={value.district_name} key={index}>
                     {value.district_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Row>
+          <Row justify="end">
+            <Form.Item name="label_id" label="Label">
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                style={{ width: 250 }}
+                size="large"
+                placeholder="Chọn label"
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    <Divider style={{ margin: '4px 0' }} />
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'nowrap',
+                        padding: 8,
+                      }}
+                    >
+                      <Input
+                        style={{ flex: 'auto' }}
+                        onChange={(e) => setInputLabel(e.target.value)}
+                        value={inputLabel}
+                      />
+                      <a
+                        style={{
+                          flex: 'none',
+                          padding: '8px',
+                          display: 'block',
+                          cursor: 'pointer',
+                        }}
+                        onClick={_addLabel}
+                      >
+                        <PlusOutlined /> Add label
+                      </a>
+                    </div>
+                  </div>
+                )}
+              >
+                {labels.map((l, index) => (
+                  <Select.Option
+                    value={l.label_id}
+                    key={index}
+                    style={{ display: !l.active && 'none' }}
+                  >
+                    {l.name}
                   </Select.Option>
                 ))}
               </Select>
