@@ -1,12 +1,23 @@
-import styles from "./../view/view.module.scss";
-import { Popconfirm, message, Select, Button, Input, Form, Popover, notification, Row, Col, Tree, Table, Modal } from "antd";
+import styles from './../view/view.module.scss'
 import {
-  Link,
-  useHistory,
-} from "react-router-dom";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
-const { Option } = Select;
+  Popconfirm,
+  message,
+  Select,
+  Button,
+  Input,
+  Form,
+  Popover,
+  notification,
+  Row,
+  Col,
+  Tree,
+  Table,
+  Modal,
+} from 'antd'
+import { Link, useHistory } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import React, { useState } from 'react'
+const { Option } = Select
 
 const treeData = [
   {
@@ -27,24 +38,24 @@ const treeData = [
       },
     ],
   },
-];
+]
 export default function GuaranteeView() {
-  let history = useHistory();
+  let history = useHistory()
   const [modal2Visible, setModal2Visible] = useState(false)
-  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll']);
-  const [checkedKeys, setCheckedKeys] = useState(['']);
-  const [form] = Form.useForm();
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [expandedKeys, setExpandedKeys] = useState(['productGroupAll'])
+  const [checkedKeys, setCheckedKeys] = useState([''])
+  const [form] = Form.useForm()
+  const [selectedKeys, setSelectedKeys] = useState([])
+  const [autoExpandParent, setAutoExpandParent] = useState(true)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  const onSelectChange = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
-  };
+  }
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
-  };
+  }
   const columns = [
     {
       title: 'STT',
@@ -76,10 +87,9 @@ export default function GuaranteeView() {
       dataIndex: 'payment',
       width: 150,
     },
+  ]
 
-  ];
-
-  const data = [];
+  const data = []
   for (let i = 0; i < 46; i++) {
     data.push({
       key: i,
@@ -89,8 +99,7 @@ export default function GuaranteeView() {
       guaranteeCode: `MH${i}`,
       quantity: i,
       payment: '2021/07/17, 15:15',
-
-    });
+    })
   }
 
   const modal2VisibleModal = (modal2Visible) => {
@@ -99,56 +108,54 @@ export default function GuaranteeView() {
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
-      description:
-        'Cập nhật thông tin phiếu bảo hành.',
-    });
-  };
+      description: 'Cập nhật thông tin phiếu bảo hành.',
+    })
+  }
   const onFinish = (values) => {
-    console.log('Success:', values);
+    console.log('Success:', values)
     openNotification()
     history.push('/guarantee/11')
-  };
+  }
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
-  const { Search } = Input;
+    console.log('Failed:', errorInfo)
+  }
+  const { Search } = Input
 
-
-  const onSearch = value => console.log(value);
+  const onSearch = (value) => console.log(value)
 
   const onExpand = (expandedKeysValue) => {
-    console.log('onExpand', expandedKeysValue);
+    console.log('onExpand', expandedKeysValue)
     // if not set autoExpandParent to false, if children expanded, parent can not collapse.
     // or, you can remove all expanded children keys.
-    setExpandedKeys(expandedKeysValue);
-    setAutoExpandParent(false);
-  };
+    setExpandedKeys(expandedKeysValue)
+    setAutoExpandParent(false)
+  }
 
   const onCheck = (checkedKeysValue) => {
-    console.log('onCheck', checkedKeysValue);
-    setCheckedKeys(checkedKeysValue);
-  };
+    console.log('onCheck', checkedKeysValue)
+    setCheckedKeys(checkedKeysValue)
+  }
 
   const onSelect = (selectedKeysValue, info) => {
-    console.log('onSelect', info);
-    setSelectedKeys(selectedKeysValue);
-  };
+    console.log('onSelect', info)
+    setSelectedKeys(selectedKeysValue)
+  }
 
   const content = (
     <div>
       <div>Gợi ý 1</div>
       <div>Gợi ý 2</div>
     </div>
-  );
+  )
   function confirm(e) {
-    console.log(e);
-    message.success('Click on Yes');
+    console.log(e)
+    message.success('Click on Yes')
   }
 
   function cancel(e) {
-    console.log(e);
-    message.error('Click on No');
+    console.log(e)
+    message.error('Click on No')
   }
   function random() {
     return Math.random().toString(16).slice(-4)
@@ -157,45 +164,189 @@ export default function GuaranteeView() {
   code.orderCode = `${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}-${random()}`
   return (
     <>
-      <Form onFinish={onFinish}
+      <Form
+        onFinish={onFinish}
         form={form}
-        onFinishFailed={onFinishFailed} className={styles['product_check_add']}>
-        <Row style={{ display: 'flex', borderBottom: '1px solid rgb(231, 219, 219)', paddingBottom: '1rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <Link to="/guarantee/11" style={{ display: 'flex', cursor: 'pointer', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-              <div><ArrowLeftOutlined style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }} /></div>
-              <div style={{ color: 'black', fontWeight: '600', fontSize: '1rem', marginLeft: '0.5rem' }}>Thông tin phiếu BGHY2365</div>
+        onFinishFailed={onFinishFailed}
+        className={styles['product_check_add']}
+      >
+        <Row
+          style={{
+            display: 'flex',
+            borderBottom: '1px solid rgb(231, 219, 219)',
+            paddingBottom: '1rem',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+          >
+            <Link
+              to="/guarantee/11"
+              style={{
+                display: 'flex',
+                cursor: 'pointer',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <div>
+                <ArrowLeftOutlined
+                  style={{
+                    color: 'black',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  color: 'black',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                  marginLeft: '0.5rem',
+                }}
+              >
+                Thông tin phiếu BGHY2365
+              </div>
             </Link>
           </Col>
-        
         </Row>
-      
-        <Row style={{ display: 'flex', marginTop: '1rem', justifyContent: 'space-between', width: '100%' }}>
-          <Col style={{ width: '100%', backgroundColor: 'white', }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin khách hàng</div>
 
-              <Row style={{ display: 'flex', marginBottom: '0.5rem', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+        <Row
+          style={{
+            display: 'flex',
+            marginTop: '1rem',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <Col
+            style={{ width: '100%', backgroundColor: 'white' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                }}
+              >
+                Thông tin khách hàng
+              </div>
+
+              <Row
+                style={{
+                  display: 'flex',
+                  marginBottom: '0.5rem',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Col
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Tên khách hàng: nguyễn văn tỷ</div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      Tên khách hàng: nguyễn văn tỷ
+                    </div>
                   </div>
                 </Col>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+                <Col
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Liên hệ: 0384943497</div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      Liên hệ: 0384943497
+                    </div>
                   </div>
                 </Col>
               </Row>
-
             </div>
           </Col>
-          <Col style={{ width: '100%', backgroundColor: 'white', }} xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin phiếu yêu cầu</div>
+          <Col
+            style={{ width: '100%', backgroundColor: 'white' }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+                flexDirection: 'column',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  color: 'black',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                }}
+              >
+                Thông tin phiếu yêu cầu
+              </div>
 
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+              <Row
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Col
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Chi nhánh</div>
                     <Form.Item
@@ -211,13 +362,19 @@ export default function GuaranteeView() {
                     </Form.Item>
                   </div>
                 </Col>
-                <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+                <Col
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Ghi chú</div>
                     <Form.Item
                       // label="Username"
                       name="note"
-
                     >
                       <Input defaultValue="không có" />
                     </Form.Item>
@@ -225,11 +382,26 @@ export default function GuaranteeView() {
                 </Col>
               </Row>
 
-              <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                <Col style={{ width: '100%', }} xs={24} sm={24} md={24} lg={11} xl={11}>
+              <Row
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Col
+                  style={{ width: '100%' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
-                    <div style={{ marginBottom: '0.5rem' }}>Nhân viên phụ trách</div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      Nhân viên phụ trách
+                    </div>
                     <Form.Item
                       // label="Username"
                       name="employeeName"
@@ -242,13 +414,19 @@ export default function GuaranteeView() {
                     </Form.Item>
                   </div>
                 </Col>
-                <Col style={{ width: '100%', }} xs={24} sm={24} md={24} lg={11} xl={11}>
+                <Col
+                  style={{ width: '100%' }}
+                  xs={24}
+                  sm={24}
+                  md={24}
+                  lg={11}
+                  xl={11}
+                >
                   <div>
                     <div style={{ marginBottom: '0.5rem' }}>Tag</div>
                     <Form.Item
                       // label="Username"
                       name="tag"
-
                     >
                       <Input defaultValue="aaa" />
                     </Form.Item>
@@ -259,38 +437,102 @@ export default function GuaranteeView() {
           </Col>
         </Row>
 
-
-        <div style={{ display: 'flex', backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontWeight: '600', fontSize: '1rem' }}>Thông tin sản phẩm</div>
-          <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', }}>
-            <Col style={{ width: '100%', margin: '1.5rem 0rem 1rem 0rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: 'white',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            width: '100%',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+            }}
+          >
+            Thông tin sản phẩm
+          </div>
+          <Row
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Col
+              style={{ width: '100%', margin: '1.5rem 0rem 1rem 0rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
               <Popover content={content} trigger="click" placement="bottomLeft">
-                <Search style={{ width: '100%' }} placeholder="Tìm kiếm theo tên sản phẩm, mã sku" onSearch={onSearch} enterButton />
+                <Search
+                  style={{ width: '100%' }}
+                  placeholder="Tìm kiếm theo tên sản phẩm, mã sku"
+                  onSearch={onSearch}
+                  enterButton
+                />
               </Popover>
             </Col>
-          
           </Row>
-          <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
-            <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
+          <div
+            style={{
+              border: '1px solid rgb(224, 208, 208)',
+              marginTop: '1rem',
+              width: '100%',
+            }}
+          >
+            <Table
+              size="small"
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={data}
+              scroll={{ y: 500 }}
+            />
           </div>
-          {
-            selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ paddingBottom: '1rem', marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              onConfirm={confirm}
-              onCancel={cancel}
-              okText="Yes"
-              cancelText="No"
-            ><Button type="primary" danger style={{ width: '7.5rem' }}>Xóa sản phẩm</Button></Popconfirm></div>) : ('')
-          }
+          {selectedRowKeys && selectedRowKeys.length > 0 ? (
+            <div
+              style={{
+                paddingBottom: '1rem',
+                marginTop: '1rem',
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Popconfirm
+                title="Bạn chắc chắn muốn xóa?"
+                onConfirm={confirm}
+                onCancel={cancel}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger style={{ width: '7.5rem' }}>
+                  Xóa sản phẩm
+                </Button>
+              </Popconfirm>
+            </div>
+          ) : (
+            ''
+          )}
         </div>
-
-
 
         <Modal
           title="Thêm nhanh sản phẩm"
           centered
           footer={null}
-
           visible={modal2Visible}
           onOk={() => modal2VisibleModal(false)}
           onCancel={() => modal2VisibleModal(false)}
@@ -307,13 +549,31 @@ export default function GuaranteeView() {
               selectedKeys={selectedKeys}
               treeData={treeData}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
-              <div onClick={() => modal2VisibleModal(false)}><Button type="primary" style={{ width: '5rem' }} danger>Hủy</Button></div>
-              <div><Button type="primary" style={{ width: '5rem', marginLeft: '1rem' }} >Thêm</Button></div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <div onClick={() => modal2VisibleModal(false)}>
+                <Button type="primary" style={{ width: '5rem' }} danger>
+                  Hủy
+                </Button>
+              </div>
+              <div>
+                <Button
+                  type="primary"
+                  style={{ width: '5rem', marginLeft: '1rem' }}
+                >
+                  Thêm
+                </Button>
+              </div>
             </div>
           </div>
         </Modal>
       </Form>
     </>
-  );
+  )
 }

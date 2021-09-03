@@ -493,6 +493,7 @@ export default function Tax() {
 
         <div style={{ width: '100%', border: '1px solid rgb(243, 234, 234)' }}>
           <Table
+            size="small"
             columns={columns}
             loading={loading}
             dataSource={tax}

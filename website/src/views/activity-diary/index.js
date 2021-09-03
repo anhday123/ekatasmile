@@ -502,6 +502,7 @@ export default function ActivityDiary() {
             rowKey="_id"
             loading={loading}
             bordered
+            size="small"
             columns={columnsPromotion}
             dataSource={activityDiary}
             scroll={{ y: 500 }}
@@ -553,6 +554,7 @@ export default function ActivityDiary() {
           >
             {' '}
             <Table
+              size="small"
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}

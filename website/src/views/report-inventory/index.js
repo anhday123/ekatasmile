@@ -295,6 +295,7 @@ export default function ReportInventory() {
           }}
         >
           <Table
+            size="small"
             rowSelection={rowSelection}
             columns={columns}
             summary={(pageData) => {

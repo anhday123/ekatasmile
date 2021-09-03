@@ -294,6 +294,7 @@ export default function ProductCheck() {
           }}
         >
           <Table
+            size="small"
             rowSelection={rowSelection}
             columns={columnsPromotion}
             dataSource={dataPromotion}

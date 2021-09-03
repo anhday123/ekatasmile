@@ -456,6 +456,7 @@ export default function InventoryView(props) {
               style={{ width: '100%', border: '1px solid rgb(233, 227, 227)' }}
             >
               <Table
+                size="small"
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={warehousePrroduct}

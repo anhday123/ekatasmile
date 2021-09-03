@@ -278,6 +278,7 @@ export default function PenddingCompare(props) {
         }}
       >
         <Table
+          size="small"
           rowSelection={rowSelection}
           columns={penddingCompareColumns}
           style={{ width: '100%' }}

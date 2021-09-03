@@ -940,6 +940,7 @@ export default function Shipping() {
           className={styles['shipping_manager_table']}
         >
           <Table
+            size="small"
             rowKey="_id"
             loading={loading}
             rowSelection={rowSelection}

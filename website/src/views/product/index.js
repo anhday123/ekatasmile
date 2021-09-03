@@ -3506,6 +3506,7 @@ export default function Product() {
             }}
           >
             <Table
+              size="small"
               rowKey="_id"
               loading={loading}
               rowSelection={rowSelection}

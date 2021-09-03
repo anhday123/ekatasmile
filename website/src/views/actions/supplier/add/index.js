@@ -48,7 +48,7 @@ export default function SupplierAdd(props) {
               values && values.supplierAddress
                 ? values.supplierAddress.toLowerCase()
                 : '',
-            ward: ' ',
+            // ward: ' ',
             district: values.district.toLowerCase(),
             province: values.city.toLowerCase(),
           }
@@ -70,6 +70,7 @@ export default function SupplierAdd(props) {
       console.log(res)
       if (res.status === 200) {
         openNotification()
+        props.reload()
         props.close()
       } else {
         openNotificationError()

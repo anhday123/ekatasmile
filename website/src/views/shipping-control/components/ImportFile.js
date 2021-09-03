@@ -214,6 +214,7 @@ export default function ImportFile(props) {
           </Upload>
         </Row>
         <Table
+          size="small"
           columns={columns}
           dataSource={importData}
           loading={importLoading}

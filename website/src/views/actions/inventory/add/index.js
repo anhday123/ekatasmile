@@ -104,7 +104,7 @@ export default function InventoryAdd({ close, reload }) {
             capacity: 1,
             monthly_cost: values.maintainCost,
             address: values && values.address ? values.address : '',
-            ward: ' ',
+            // ward: ' ',
             district: values.district,
             province: values.city,
           }
@@ -127,7 +127,7 @@ export default function InventoryAdd({ close, reload }) {
             capacity: 1,
             monthly_cost: 0,
             address: values && values.address ? values.address : '',
-            ward: ' ',
+            // ward: ' ',
             district: values.district,
             province: values.city,
           }

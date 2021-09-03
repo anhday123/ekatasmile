@@ -464,6 +464,7 @@ export default function PromotionAdd(props) {
             >
               {' '}
               <Table
+                size="small"
                 scroll={{ y: 500 }}
                 rowSelection={rowSelection}
                 columns={columns}

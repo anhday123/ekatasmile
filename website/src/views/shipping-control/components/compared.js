@@ -329,6 +329,7 @@ export default function Compared(props) {
           </Button>
         </Row>
         <Table
+          size="small"
           rowKey="_id"
           columns={displayColumns}
           scroll={{ x: 'max-content' }}

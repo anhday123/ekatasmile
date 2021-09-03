@@ -1025,6 +1025,7 @@ export default function BranchView(props) {
               <div className={styles['employee_manager_bottom_table']}>
                 <Table
                   rowKey="_id"
+                  size="small"
                   columns={columns}
                   rowSelection={rowSelection}
                   dataSource={employee}

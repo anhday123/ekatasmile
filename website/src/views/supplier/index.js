@@ -95,7 +95,6 @@ export default function Supplier() {
     try {
       setLoading(true)
       const res = await apiAllSupplier()
-      console.log(res)
       if (res.status === 200) {
         setSupplier(res.data.data)
       }
@@ -156,7 +155,6 @@ export default function Supplier() {
   }
 
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
     const array = []
     supplier &&
@@ -248,7 +246,7 @@ export default function Supplier() {
                     values && values.address
                       ? values.address.toLowerCase()
                       : '',
-                  ward: ' ',
+                  // ward: ' ',
                   district: values.district.toLowerCase(),
                   province: values.province.toLowerCase(),
                   active: true,
@@ -693,6 +691,7 @@ export default function Supplier() {
           }}
         >
           <Table
+            size="small"
             rowKey="_id"
             rowSelection={rowSelection}
             bordered
@@ -1023,7 +1022,7 @@ export default function Supplier() {
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <SupplierAdd close={onCloseUpdate} />
+        <SupplierAdd close={onCloseUpdate} reload={apiAllSupplierData} />
       </Drawer>
       <Drawer
         visible={viewSupplier}

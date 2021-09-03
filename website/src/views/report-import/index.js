@@ -381,6 +381,7 @@ export default function ReportImport() {
           }}
         >
           <Table
+            size="small"
             rowSelection={rowSelection}
             columns={columns}
             summary={(pageData) => {

@@ -429,6 +429,7 @@ export default function SaleDetailView() {
             }}
           >
             <Table
+              size="small"
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}

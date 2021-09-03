@@ -1,10 +1,8 @@
 import styles from './../inventory/inventory.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, PERMISSIONS } from 'consts/index'
+import { ACTION, ROUTES } from './../../consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
-
-//antd
 import {
   Switch,
   Drawer,
@@ -19,35 +17,32 @@ import {
   Select,
   Table,
 } from 'antd'
-
-//icons
+import { Link } from 'react-router-dom'
 import { PlusCircleOutlined } from '@ant-design/icons'
-
-//apis
-import { apiAllInventory, apiSearch, apiUpdateInventory } from 'apis/inventory'
-import { apiDistrict, apiProvince } from 'apis/information'
-import { apiFilterCity } from 'apis/branch'
-
-//components
+import {
+  apiAllInventory,
+  apiSearch,
+  apiUpdateInventory,
+} from '../../apis/inventory'
+import { apiDistrict, apiProvince } from '../../apis/information'
+import { apiFilterCity } from '../../apis/branch'
 import InventoryAdd from 'views/actions/inventory/add'
+import { divide } from 'lodash'
 import InventoryView from 'views/actions/inventory/view'
-import Permission from 'components/permission'
-
 const { Option } = Select
+
 const { RangePicker } = DatePicker
+
 export default function Inventory() {
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
+  const [modal2Visible, setModal2Visible] = useState(false)
   const [showView, setShowView] = useState(false)
   const [inventory, setInventory] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(false)
-
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [countInventory, setCountInventory] = useState(0)
-
   const openNotificationDelete = (data) => {
     notification.success({
       message: 'Thành công',
@@ -77,7 +72,7 @@ export default function Inventory() {
       const res = await apiUpdateInventory(object, id)
       console.log(res)
       if (res.status === 200) {
-        await apiAllInventoryData({ ...paramsFilter })
+        await apiAllInventoryData()
         setSelectedRowKeys([])
         openNotificationDelete(data)
       }
@@ -96,6 +91,30 @@ export default function Inventory() {
     apiUpdateInventoryData(object, record.warehouse_id, checked ? 1 : 2)
   }
 
+  const apiSearchDateData = async (start, end) => {
+    try {
+      setLoading(true)
+
+      const res = await apiSearch({ from_date: start, to_date: end })
+      console.log(res)
+      if (res.status === 200) setInventory(res.data.data)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+    }
+  }
+  const apiSearchData = async (value) => {
+    try {
+      setLoading(true)
+
+      const res = await apiSearch({ keyword: value })
+      console.log(res)
+      if (res.status === 200) setInventory(res.data.data)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+    }
+  }
   const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -105,11 +124,8 @@ export default function Inventory() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const { value } = e.target
-      if (value) paramsFilter.keyword = value
-      else delete paramsFilter.keyword
-
-      setParamsFilter({ page: 1, ...paramsFilter })
-    }, 750)
+      apiSearchData(value)
+    }, 300)
   }
   function formatCash(str) {
     if (isNaN(str) || str.length === 0) {
@@ -195,14 +211,18 @@ export default function Inventory() {
     },
   ]
 
-  const apiAllInventoryData = async (params) => {
+  const modal2VisibleModal = (modal2Visible) => {
+    setModal2Visible(modal2Visible)
+  }
+  const onSearchCustomerChoose = (value) => console.log(value)
+
+  const apiAllInventoryData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllInventory(params)
+      const res = await apiAllInventory()
       console.log(res)
       if (res.status === 200) {
         setInventory(res.data.data)
-        setCountInventory(res.data.count)
       }
       setLoading(false)
     } catch (error) {
@@ -210,18 +230,20 @@ export default function Inventory() {
     }
   }
 
-  const [valueSearchDate, setValueSearchDate] = useState(null)
+  useEffect(() => {
+    apiAllInventoryData()
+  }, [])
+  const [start, setStart] = useState('')
+  const [end, setEnd] = useState('')
+  const [clear, setClear] = useState(-1)
   function onChangeDate(dates, dateStrings) {
-    if (dates) {
-      setValueSearchDate(dates)
-      paramsFilter.from_date = dateStrings[0]
-      paramsFilter.to_date = dateStrings[1]
-    } else {
-      setValueSearchDate(null)
-      delete paramsFilter.from_date
-      delete paramsFilter.to_date
-    }
-    setParamsFilter({ page: 1, ...paramsFilter })
+    setClear(-1)
+    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
+    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
+    apiSearchDateData(
+      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
+      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
+    )
   }
   const showDrawer = () => {
     setVisible(true)
@@ -272,7 +294,7 @@ export default function Inventory() {
       const res = await apiUpdateInventory(object, id)
       console.log(res)
       if (res.status === 200) {
-        await apiAllInventoryData({ ...paramsFilter })
+        await apiAllInventoryData()
         setSelectedRowKeys([])
 
         onClose()
@@ -301,15 +323,16 @@ export default function Inventory() {
           } else {
             if (regex.test(values.phone)) {
               const object = {
-                name: values.name,
-                type: values.type,
+                name: values.name.toLowerCase(),
+                type: values.type.toLowerCase(),
                 phone: values.phone,
                 capacity: values.capacity,
                 monthly_cost:
                   values && values.monthly_cost ? values.monthly_cost : '',
-                address: values.address,
-                district: values.district,
-                province: values.province,
+                address: values.address.toLowerCase(),
+                ward: values.ward.toLowerCase(),
+                district: values.district.toLowerCase(),
+                province: values.province.toLowerCase(),
               }
               console.log(object)
               apiUpdateInventoryDataUpdate(object, values.warehouse_id)
@@ -330,17 +353,18 @@ export default function Inventory() {
           } else {
             if (regex.test(values.phone)) {
               const object = {
-                name: values.name,
-                type: arrayUpdate[0].type,
+                name: values.name.toLowerCase(),
+                type: arrayUpdate[0].type.toLowerCase(),
                 phone: values.phone,
                 capacity: arrayUpdate[0].capacity,
                 monthly_cost:
                   arrayUpdate[0] && arrayUpdate[0].monthly_cost
                     ? arrayUpdate[0].monthly_cost
                     : '',
-                address: arrayUpdate[0].address,
-                district: arrayUpdate[0].district,
-                province: arrayUpdate[0].province,
+                address: arrayUpdate[0].address.toLowerCase(),
+                ward: arrayUpdate[0].ward.toLowerCase(),
+                district: arrayUpdate[0].district.toLowerCase(),
+                province: arrayUpdate[0].province.toLowerCase(),
               }
               console.log(object)
               apiUpdateInventoryDataUpdate(object, values.warehouse_id)
@@ -352,11 +376,24 @@ export default function Inventory() {
     }
   }
 
+  const openNotificationClear = () => {
+    notification.success({
+      message: 'Thành công',
+      description: 'Dữ liệu đã được reset về ban đầu.',
+    })
+  }
+
   const onClickClear = async () => {
-    setParamsFilter({ page: 1, page_size: paramsFilter.page_size })
+    await apiAllInventoryData()
+    openNotificationClear()
+    setClear(1)
+    setCity('')
+    setDistrictSelect('')
     setValueSearch('')
-    setValueSearchDate()
+    setInventoryTypeValue('')
     setSelectedRowKeys([])
+    setStart([])
+    setEnd([])
   }
 
   const [district, setDistrict] = useState([])
@@ -389,13 +426,10 @@ export default function Inventory() {
   }
   useEffect(() => {
     apiDistrictData()
+  }, [])
+  useEffect(() => {
     apiProvinceData()
   }, [])
-
-  useEffect(() => {
-    apiAllInventoryData({ ...paramsFilter })
-  }, [paramsFilter])
-
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
     try {
@@ -414,22 +448,62 @@ export default function Inventory() {
     console.log(`selected ${value}`)
     apiFilterCityData(value)
   }
-
-  const handleChange = (value) => {
-    if (value) paramsFilter.province = value
-    else delete paramsFilter.province
-
-    setParamsFilter({ page: 1, ...paramsFilter })
+  const [inventoryTypeValue, setInventoryTypeValue] = useState('')
+  const onChangeInventoryTypeValue = (e) => {
+    console.log(e)
+    if (e === '' || e === ' ' || e === 'default') {
+      apiAllInventoryData()
+    } else {
+      apiSearchData(e)
+      setInventoryTypeValue(e)
+    }
   }
-  const handleChangeDistrict = async (value) => {
-    if (value) paramsFilter.district = value
-    else delete paramsFilter.district
+  const apiSearchProvinceData = async (value) => {
+    try {
+      setLoading(true)
+      const res = await apiSearch({ province: value })
 
-    setParamsFilter({ page: 1, ...paramsFilter })
+      if (res.status === 200) setInventory(res.data.data)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+    }
+  }
+  const apiSearchDistrictData = async (value) => {
+    try {
+      setLoading(true)
+
+      const res = await apiSearch({ district: value })
+
+      if (res.status === 200) setInventory(res.data.data)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+    }
+  }
+  const [city, setCity] = useState('')
+  const handleChange = async (value) => {
+    console.log(`selected ${value}`)
+    setCity(value)
+    if (value !== 'default') {
+      apiSearchProvinceData(value)
+    } else {
+      await apiAllInventoryData()
+    }
+  }
+  const [districtSelect, setDistrictSelect] = useState('')
+  const handleChangeDistrict = async (value) => {
+    console.log(`selected ${value}`)
+    setDistrictSelect(value)
+    if (value !== 'default') {
+      apiSearchDistrictData(value)
+    } else {
+      await apiAllInventoryData()
+    }
   }
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+      <div className={styles['promotion_manager']}>
         <div
           style={{
             display: 'flex',
@@ -442,22 +516,21 @@ export default function Inventory() {
         >
           <div className={styles['promotion_manager_title']}>Quản lý kho</div>
           <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.them_kho]}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                onClick={showDrawerUpdate}
-              >
-                Thêm kho
-              </Button>
-            </Permission>
+            <Button
+              size="large"
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={showDrawerUpdate}
+            >
+              Thêm kho
+            </Button>
           </div>
         </div>
         <Row
-          align="middle"
-          justify="space-between"
           style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
             width: '100%',
           }}
         >
@@ -484,7 +557,7 @@ export default function Inventory() {
             </div>
           </Col>
           <Col
-            style={{ width: '100%', marginTop: '1rem' }}
+            style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }}
             xs={24}
             sm={24}
             md={11}
@@ -495,7 +568,13 @@ export default function Inventory() {
               <RangePicker
                 size="large"
                 className="br-15__date-picker"
-                value={valueSearchDate}
+                value={
+                  clear === 1
+                    ? []
+                    : start !== ''
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
+                }
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
@@ -509,6 +588,29 @@ export default function Inventory() {
             </div>
           </Col>
           <Col
+            style={{ width: '100%', marginTop: '1rem', marginLeft: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
+            <div style={{ width: '100%' }}>
+              <Select
+                size="large"
+                style={{ width: '100%' }}
+                value={inventoryTypeValue ? inventoryTypeValue : 'default'}
+                placeholder="Chọn loại kho"
+                onChange={onChangeInventoryTypeValue}
+              >
+                <Option value="default">Chọn loại kho</Option>
+                <Option value="chung">Chung</Option>
+                <Option value="riêng">Riêng</Option>
+                <Option value="dịch vụ">Dịch vụ</Option>
+              </Select>
+            </div>
+          </Col>
+          <Col
             style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }}
             xs={24}
             sm={24}
@@ -518,29 +620,31 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Select
-                allowClear
                 size="large"
                 showSearch
                 style={{ width: '100%' }}
-                placeholder="Chọn thành phố"
+                placeholder="Select a person"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
                   0
                 }
-                value={paramsFilter.province}
+                value={city ? city : 'default'}
                 onChange={(event) => {
                   handleChange(event)
                   handleChangeCity(event)
                 }}
               >
-                {province.map((values, index) => {
-                  return (
-                    <Option value={values.province_name} key={index}>
-                      {values.province_name}
-                    </Option>
-                  )
-                })}
+                <Option value="default">Tất cả tỉnh/thành phố</Option>
+                {province &&
+                  province.length > 0 &&
+                  province.map((values, index) => {
+                    return (
+                      <Option value={values.province_name}>
+                        {values.province_name}
+                      </Option>
+                    )
+                  })}
               </Select>
             </div>
           </Col>
@@ -554,17 +658,16 @@ export default function Inventory() {
           >
             <div style={{ width: '100%' }}>
               <Select
-                allowClear
                 size="large"
                 showSearch
                 style={{ width: '100%' }}
-                placeholder="Chọn quận/huyện"
+                placeholder="Select a person"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
                   0
                 }
-                value={paramsFilter.district}
+                value={districtSelect ? districtSelect : 'default'}
                 onChange={handleChangeDistrict}
               >
                 <Option value="default">Tất cả quận/huyện</Option>
@@ -613,11 +716,9 @@ export default function Inventory() {
               width: '100%',
             }}
           >
-            <Permission permissions={[PERMISSIONS.cap_nhat_kho]}>
-              <Button size="large" type="primary" onClick={showDrawer}>
-                Cập nhật thông tin kho
-              </Button>
-            </Permission>
+            <Button size="large" type="primary" onClick={showDrawer}>
+              Cập nhật thông tin kho
+            </Button>
           </div>
         ) : (
           ''
@@ -630,26 +731,14 @@ export default function Inventory() {
           }}
         >
           <Table
+            size="small"
             rowKey="_id"
             loading={loading}
-            size="small"
+            bordered
             rowSelection={rowSelection}
             columns={columnsPromotion}
             dataSource={inventory}
-            pagination={{
-              position: ['bottomLeft'],
-              current: paramsFilter.page,
-              defaultPageSize: 20,
-              pageSizeOptions: [20, 30, 50, 100],
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setSelectedRowKeys([])
-                paramsFilter.page = page
-                paramsFilter.page_size = pageSize
-                setParamsFilter({ ...paramsFilter })
-              },
-              total: countInventory,
-            }}
+            scroll={{ y: 500 }}
           />
         </div>
       </div>
@@ -676,342 +765,344 @@ export default function Inventory() {
           </div>
         }
       >
-        {arrayUpdate.map((values, index) => {
-          const obj = Object.keys(values)
-          return (
-            <Form
-              style={{
-                borderBottom: '1px solid rgb(238, 224, 224)',
-                paddingBottom: '1.5rem',
-              }}
-              className={styles['supplier_add_content']}
-              layout="vertical"
-              initialValues={values}
-            >
-              <Row
+        {arrayUpdate &&
+          arrayUpdate.length > 0 &&
+          arrayUpdate.map((values, index) => {
+            const obj = Object.keys(values)
+            return (
+              <Form
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
+                  borderBottom: '1px solid rgb(238, 224, 224)',
+                  paddingBottom: '1.5rem',
                 }}
+                className={styles['supplier_add_content']}
+                layout="vertical"
+                initialValues={values}
               >
-                {obj.map((data) => {
-                  if (data === 'phone') {
-                    const InputName = () => (
-                      <Input
-                        size="large"
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          const value = event.target.value
-                          arrayUpdate[index][data] = value
-                        }}
-                      />
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Liên hệ
+                <Row
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  {obj.map((data) => {
+                    if (data === 'phone') {
+                      const InputName = () => (
+                        <Input
+                          size="large"
+                          defaultValue={values[data]}
+                          onChange={(event) => {
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Liên hệ
+                            </div>
+                            <InputName />
                           </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'name') {
-                    const InputName = () => (
-                      <Input
-                        size="large"
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          const value = event.target.value
-                          arrayUpdate[index][data] = value
-                        }}
-                      />
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Tên kho
+                        </Col>
+                      )
+                    }
+                    if (data === 'name') {
+                      const InputName = () => (
+                        <Input
+                          size="large"
+                          defaultValue={values[data]}
+                          onChange={(event) => {
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Tên kho
+                            </div>
+                            <InputName />
                           </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'address') {
-                    const InputName = () => (
-                      <Input
-                        size="large"
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          const value = event.target.value
-                          arrayUpdate[index][data] = value
-                        }}
-                      />
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Địa chỉ
+                        </Col>
+                      )
+                    }
+                    if (data === 'address') {
+                      const InputName = () => (
+                        <Input
+                          size="large"
+                          defaultValue={values[data]}
+                          onChange={(event) => {
+                            const value = event.target.value
+                            arrayUpdate[index][data] = value
+                          }}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Địa chỉ
+                            </div>
+                            <InputName />
                           </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'type') {
-                    const InputName = () => (
-                      <Select
-                        size="large"
-                        style={{ width: '100%' }}
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          arrayUpdate[index][data] = event
-                        }}
-                      >
-                        <Option value="chung">Chung</Option>
-                        <Option value="riêng">Riêng</Option>
-                        <Option value="dịch vụ">Dịch vụ</Option>
-                      </Select>
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Loại kho
+                        </Col>
+                      )
+                    }
+                    if (data === 'type') {
+                      const InputName = () => (
+                        <Select
+                          size="large"
+                          style={{ width: '100%' }}
+                          defaultValue={values[data]}
+                          onChange={(event) => {
+                            arrayUpdate[index][data] = event
+                          }}
+                        >
+                          <Option value="chung">Chung</Option>
+                          <Option value="riêng">Riêng</Option>
+                          <Option value="dịch vụ">Dịch vụ</Option>
+                        </Select>
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Loại kho
+                            </div>
+                            <InputName />
                           </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'province') {
-                    const InputName = () => (
-                      <Select
-                        size="large"
-                        defaultValue={values[data]}
-                        showSearch
-                        style={{ width: '100%' }}
-                        placeholder="Select a person"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .indexOf(input.toLowerCase()) >= 0
-                        }
-                        onChange={(event) => {
-                          arrayUpdate[index][data] = event
-                          handleChangeCity(event)
-                        }}
-                      >
-                        {province &&
-                          province.length > 0 &&
-                          province.map((values, index) => {
-                            return (
-                              <Option value={values.province_name}>
-                                {values.province_name}
-                              </Option>
-                            )
-                          })}
-                      </Select>
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Tỉnh/thành phố
-                          </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'district') {
-                    const InputName = () => (
-                      <Select
-                        size="large"
-                        defaultValue={values[data]}
-                        showSearch
-                        style={{ width: '100%' }}
-                        placeholder="Select a person"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .indexOf(input.toLowerCase()) >= 0
-                        }
-                      >
-                        {districtMainAPI && districtMainAPI.length > 0
-                          ? districtMainAPI &&
-                            districtMainAPI.length > 0 &&
-                            districtMainAPI.map((values, index) => {
+                        </Col>
+                      )
+                    }
+                    if (data === 'province') {
+                      const InputName = () => (
+                        <Select
+                          size="large"
+                          defaultValue={values[data]}
+                          showSearch
+                          style={{ width: '100%' }}
+                          placeholder="Select a person"
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
+                          }
+                          onChange={(event) => {
+                            arrayUpdate[index][data] = event
+                            handleChangeCity(event)
+                          }}
+                        >
+                          {province &&
+                            province.length > 0 &&
+                            province.map((values, index) => {
                               return (
-                                <Option value={values.district_name}>
-                                  {values.district_name}
-                                </Option>
-                              )
-                            })
-                          : district &&
-                            district.length > 0 &&
-                            district.map((values, index) => {
-                              return (
-                                <Option value={values.district_name}>
-                                  {values.district_name}
+                                <Option value={values.province_name}>
+                                  {values.province_name}
                                 </Option>
                               )
                             })}
-                      </Select>
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Quận/huyện
+                        </Select>
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Tỉnh/thành phố
+                            </div>
+                            <InputName />
                           </div>
+                        </Col>
+                      )
+                    }
+                    if (data === 'district') {
+                      const InputName = () => (
+                        <Select
+                          size="large"
+                          defaultValue={values[data]}
+                          showSearch
+                          style={{ width: '100%' }}
+                          placeholder="Select a person"
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
+                          }
+                        >
+                          {districtMainAPI && districtMainAPI.length > 0
+                            ? districtMainAPI &&
+                              districtMainAPI.length > 0 &&
+                              districtMainAPI.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>
+                                    {values.district_name}
+                                  </Option>
+                                )
+                              })
+                            : district &&
+                              district.length > 0 &&
+                              district.map((values, index) => {
+                                return (
+                                  <Option value={values.district_name}>
+                                    {values.district_name}
+                                  </Option>
+                                )
+                              })}
+                        </Select>
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Quận/huyện
+                            </div>
 
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                  if (data === 'monthly_cost') {
-                    const InputName = () => (
-                      <InputNumber
-                        size="large"
-                        className="br-15__input"
-                        style={{ width: '100%' }}
-                        defaultValue={values[data]}
-                        onChange={(event) => {
-                          arrayUpdate[index][data] = isNaN(event)
-                            ? 0
-                            : event === 0
-                            ? 0
-                            : event
-                        }}
-                        formatter={(value) =>
-                          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                        }
-                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      />
-                    )
-                    return (
-                      <Col
-                        style={{ width: '100%' }}
-                        xs={24}
-                        sm={24}
-                        md={11}
-                        lg={11}
-                        xl={11}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              color: 'black',
-                              fontWeight: '600',
-                              marginBottom: '0.5rem',
-                              marginTop: '1rem',
-                            }}
-                          >
-                            Phí duy trì tháng
+                            <InputName />
                           </div>
-                          <InputName />
-                        </div>
-                      </Col>
-                    )
-                  }
-                })}
-              </Row>
-            </Form>
-          )
-        })}
+                        </Col>
+                      )
+                    }
+                    if (data === 'monthly_cost') {
+                      const InputName = () => (
+                        <InputNumber
+                          size="large"
+                          className="br-15__input"
+                          style={{ width: '100%' }}
+                          defaultValue={values[data]}
+                          onChange={(event) => {
+                            arrayUpdate[index][data] = isNaN(event)
+                              ? 0
+                              : event === 0
+                              ? 0
+                              : event
+                          }}
+                          formatter={(value) =>
+                            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                          }
+                          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                        />
+                      )
+                      return (
+                        <Col
+                          style={{ width: '100%' }}
+                          xs={24}
+                          sm={24}
+                          md={11}
+                          lg={11}
+                          xl={11}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                color: 'black',
+                                fontWeight: '600',
+                                marginBottom: '0.5rem',
+                                marginTop: '1rem',
+                              }}
+                            >
+                              Phí duy trì tháng
+                            </div>
+                            <InputName />
+                          </div>
+                        </Col>
+                      )
+                    }
+                  })}
+                </Row>
+              </Form>
+            )
+          })}
       </Drawer>
 
       <Drawer
@@ -1021,10 +1112,7 @@ export default function Inventory() {
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <InventoryAdd
-          close={onCloseUpdate}
-          reload={() => apiAllInventoryData({ ...paramsFilter })}
-        />
+        <InventoryAdd close={onCloseUpdate} />
       </Drawer>
       <Drawer
         visible={showView}

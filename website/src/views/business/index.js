@@ -285,6 +285,7 @@ export default function Business() {
           <Table
             rowSelection={rowSelection}
             rowKey="_id"
+            size="small"
             pagination={{ onChange: changePagi }}
             columns={columnsPromotion}
             dataSource={businessList}
@@ -359,6 +360,7 @@ export default function Business() {
             }}
           >
             <Table
+              size="small"
               style={{ width: '100%' }}
               rowSelection={rowSelection}
               columns={columns}

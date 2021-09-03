@@ -542,6 +542,7 @@ export default function ShippingProduct() {
           }}
         >
           <Table
+            size="small"
             rowSelection={rowSelection}
             loading={loading}
             columns={columnsPromotion}

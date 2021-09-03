@@ -711,6 +711,7 @@ export default function Employee() {
           )}
           <div className={styles['employee_manager_bottom_table']}>
             <Table
+              size="small"
               rowKey="_id"
               columns={columns}
               rowSelection={rowSelection}

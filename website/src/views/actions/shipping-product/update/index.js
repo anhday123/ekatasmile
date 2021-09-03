@@ -179,6 +179,7 @@ export default function DeliveryUpdate() {
         </Row>
         <Row style={{ width: '100%' }}>
           <Table
+            size="small"
             style={{ width: '100%' }}
             columns={columns}
             dataSource={history.location.state.products}

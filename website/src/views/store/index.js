@@ -813,6 +813,7 @@ export default function Store() {
         }}
       >
         <Table
+          size="small"
           rowKey="_id"
           loading={loading}
           bordered

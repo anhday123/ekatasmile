@@ -284,7 +284,7 @@ export default function GuaranteeUpdate() {
          
           </Row>
           <div style={{ border: '1px solid rgb(224, 208, 208)', marginTop: '1rem', width: '100%' }}>
-            <Table rowSelection={rowSelection} columns={columns} dataSource={data} scroll={{ y: 500 }} />
+            <Table rowSelection={rowSelection} size="small" columns={columns} dataSource={data} scroll={{ y: 500 }} />
           </div>
           {
             selectedRowKeys && selectedRowKeys.length > 0 ? (<div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}><Popconfirm

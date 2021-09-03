@@ -363,6 +363,7 @@ export default function Guarantee() {
           }}
         >
           <Table
+            size="small"
             columns={columnsPromotion}
             pagination={{ onChange: changePagi }}
             dataSource={warrantyList}
@@ -415,6 +416,7 @@ export default function Guarantee() {
           >
             {' '}
             <Table
+              size="small"
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}

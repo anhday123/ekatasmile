@@ -231,7 +231,12 @@ export default function CompareHistory(props) {
       <Row justify="end" style={{ marginTop: 15, marginBottom: 15 }}>
         <ImportFile />
       </Row>
-      <Table columns={columns} rowKey="_id" dataSource={compareList} />
+      <Table
+        size="small"
+        columns={columns}
+        rowKey="_id"
+        dataSource={compareList}
+      />
       <SessionHistory
         data={sessionDetail}
         visible={showDetail}

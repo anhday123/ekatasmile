@@ -7256,6 +7256,7 @@ export default function Sell() {
             </Col>
           </Row>
           <Table
+            size="small"
             style={{ marginTop: '0.5rem', marginBottom: '1rem' }}
             pagination={false}
             bordered
@@ -7558,6 +7559,7 @@ export default function Sell() {
                 dataSource={orderToday}
                 scroll={{ y: 300 }}
                 rowKey="_id"
+                size="small"
                 pagination={false}
                 loading={loadingTable}
                 expandable={{
@@ -7570,6 +7572,7 @@ export default function Sell() {
                         }}
                       >
                         <Table
+                          size="small"
                           bordered
                           columns={columnsDetailOrder}
                           dataSource={

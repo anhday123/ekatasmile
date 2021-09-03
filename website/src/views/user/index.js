@@ -844,6 +844,7 @@ export default function User() {
           }}
         >
           <Table
+            size="small"
             rowKey="_id"
             loading={loading}
             columns={columnsPromotion}
@@ -898,6 +899,7 @@ export default function User() {
             }}
           >
             <Table
+              size="small"
               style={{
                 width: '100%',
               }}

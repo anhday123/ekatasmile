@@ -649,6 +649,7 @@ export default function Branch() {
         >
           <Table
             rowKey="_id"
+            size="small"
             loading={loading}
             columns={columnsBranch}
             dataSource={branchs}

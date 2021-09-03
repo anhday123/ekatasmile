@@ -310,6 +310,7 @@ export default function ProductCheckAdd(props) {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
+              size="small"
             />
           </div>
 

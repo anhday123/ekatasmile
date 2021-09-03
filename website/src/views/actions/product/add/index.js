@@ -192,6 +192,7 @@ export default function ProductAdd() {
               }}
             >
               <Table
+                size="small"
                 rowKey="_id"
                 bordered
                 rowSelection={rowSelection}

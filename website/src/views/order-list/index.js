@@ -654,6 +654,7 @@ export default function OrderList() {
                 }}
               >
                 <Table
+                  size="small"
                   rowKey="_id"
                   loading={loading}
                   bordered
@@ -1105,6 +1106,7 @@ export default function OrderList() {
                             }}
                           >
                             <Table
+                              size="small"
                               bordered
                               columns={columnsDetailOrder}
                               dataSource={
@@ -1229,6 +1231,7 @@ export default function OrderList() {
                 }}
               >
                 <Table
+                  size="small"
                   loading={loading}
                   bordered
                   rowKey="_id"
@@ -1680,6 +1683,7 @@ export default function OrderList() {
                             }}
                           >
                             <Table
+                              size="small"
                               bordered
                               columns={columnsDetailOrder}
                               dataSource={
@@ -1803,6 +1807,7 @@ export default function OrderList() {
                 }}
               >
                 <Table
+                  size="small"
                   loading={loading}
                   bordered
                   rowKey="_id"
@@ -2254,6 +2259,7 @@ export default function OrderList() {
                             }}
                           >
                             <Table
+                              size="small"
                               bordered
                               columns={columnsDetailOrder}
                               dataSource={
@@ -2342,6 +2348,7 @@ export default function OrderList() {
             }}
           >
             <Table
+              size="small"
               rowKey="_id"
               rowSelection={rowSelection}
               columns={columns}

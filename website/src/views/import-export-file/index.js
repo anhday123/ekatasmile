@@ -276,6 +276,7 @@ export default function ImportExportFile() {
           }}
         >
           <Table
+            size="small"
             rowSelection={rowSelection}
             columns={columnsPromotion}
             scroll={{ y: 500 }}
@@ -349,6 +350,7 @@ export default function ImportExportFile() {
             }}
           >
             <Table
+              size="small"
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}

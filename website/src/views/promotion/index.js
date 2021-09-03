@@ -399,6 +399,7 @@ export default function Promotion() {
           }}
         >
           <Table
+            size="small"
             rowKey="promotion_id"
             loading={loading}
             pagination={{ onChange: changePagi }}
@@ -770,6 +771,7 @@ export default function Promotion() {
             >
               {' '}
               <Table
+              size="small"
                 scroll={{ y: 500 }}
                 rowSelection={rowSelection}
                 columns={columns}
