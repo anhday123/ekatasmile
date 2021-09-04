@@ -634,6 +634,11 @@ const UI = (props) => {
     }
   }
 
+  const changeBranch = (value) => {
+    localStorage.store = value
+    updateUser({ store_id: value }, user.user_id)
+  }
+
   useEffect(() => {
     getInfoUser()
     getStoreByUser()
@@ -1017,7 +1022,8 @@ const UI = (props) => {
                   placeholder="Chọn cửa hàng"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
-                  defaultValue={dataUser.data.store}
+                  onChange={changeBranch}
+                  defaultValue={localStorage.store || dataUser.data.store_id}
                 >
                   {listStore.map((e, index) => (
                     <Option value={e.store_id} key={index}>
