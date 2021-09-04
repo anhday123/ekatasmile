@@ -338,11 +338,8 @@ export default function SingleProduct(props) {
       }
     }
   }
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo)
-  }
+
   function onChangeCheckbox(e) {
-    console.log(`checked = ${e.target.checked}`)
     setCheckboxValue(e.target.checked)
   }
 
@@ -352,7 +349,6 @@ export default function SingleProduct(props) {
         onFinish={onFinish}
         layout="vertical"
         form={form}
-        onFinishFailed={onFinishFailed}
         className={styles['product_manager_content']}
       >
         <Row

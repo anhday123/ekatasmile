@@ -16,7 +16,6 @@ import {
   Popover,
   Modal,
   Form,
-  Spin,
   BackTop,
 } from 'antd'
 import {
@@ -39,11 +38,9 @@ import {
   AccountBookOutlined,
   PartitionOutlined,
   FormOutlined,
-  RightOutlined,
   ShoppingCartOutlined,
   UserOutlined,
   EditOutlined,
-  DownOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -51,7 +48,6 @@ import styles from './../Layout/layout.module.scss'
 
 import GraphicEqIcon from '@material-ui/icons/GraphicEq'
 import ReplyAllIcon from '@material-ui/icons/ReplyAll'
-import cart from './../../assets/img/cart.png'
 
 //components
 import Permission from 'components/permission'
