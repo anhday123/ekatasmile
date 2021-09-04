@@ -24,8 +24,7 @@ export const uploadImgs = (formData) =>
 /* config upload S3 */
 const wasabiEndpoint = new AWS.Endpoint(process.env.REACT_APP_S3_URL)
 const _d = moment(new Date()).format('YYYY/MM/DD')
-const ENDPOINT_URL_IMAGE =
-  'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/'
+const ENDPOINT_URL_IMAGE = `${process.env.REACT_APP_S3_URL}/admin-order/`
 const upload = new S3({
   endpoint: wasabiEndpoint,
   region: process.env.REACT_APP_REGION,
