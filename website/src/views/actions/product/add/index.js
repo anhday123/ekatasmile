@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux'
 //antd
 import {
   Button,
-  Tabs,
   Table,
   Input,
   Form,
@@ -21,6 +20,9 @@ import {
   notification,
   Popconfirm,
   Tooltip,
+  Space,
+  Modal,
+  Affix,
 } from 'antd'
 
 //icons
@@ -31,28 +33,24 @@ import {
   PlusOutlined,
 } from '@ant-design/icons'
 
-//components
-import SingleProduct from './components/singleProduct'
-import GroupProduct from './components/groupProduct'
-
 //apis
 import { apiAllCategory } from 'apis/category'
-import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { apiAllInventory } from 'apis/inventory'
-import { uploadFiles } from 'apis/upload'
+import { uploadFiles, uploadFile } from 'apis/upload'
+import { apiAllWarranty } from 'apis/warranty'
+import { apiAddProduct } from 'apis/product'
 
-const { TabPane } = Tabs
 export default function ProductAdd() {
   const [supplier, setSupplier] = useState([])
   const dispatch = useDispatch()
   const history = useHistory()
   const [form] = Form.useForm()
-  const [warranty, setWarranty] = useState([])
+
+  const [idsWarranty, setIdsWarranty] = useState([])
+  const [isWarranty, setIsWarranty] = useState(false)
+  const [warrantys, setWarrantys] = useState([])
   const [warehouse, setWarehouse] = useState([])
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [imageUrlProduct, setImageUrlProduct] = useState('') //file preview
-  const [imagesUploadProduct, setImageUploadProduct] = useState([]) //files upload
   const [attributes, setAttributes] = useState([
     {
       option: '',
@@ -60,9 +58,11 @@ export default function ProductAdd() {
     },
   ])
   const [variants, setVariants] = useState([])
-  const [productList, setProductList] = useState([])
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
-  const [isProductVariants, setIsProductVariants] = useState(false) //check product is have variants ?
+  const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
+  const [helpTextImage, setHelpTextImage] = useState('')
+  const [imagesProduct, setImagesProduct] = useState([])
+  const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -90,7 +90,7 @@ export default function ProductAdd() {
           title: `${dataProductAdd.name || ''} ${value}`,
           sku: `${dataProductAdd.sku || ''}-${value}`,
           image: '',
-          supplier: dataProductAdd.suppliers || '',
+          imagePreview: '',
           options: [{ name: attributes[0].option, values: value }],
           quantity: 0,
           import_price: 0,
@@ -106,7 +106,7 @@ export default function ProductAdd() {
             title: `${dataProductAdd.name || ''} ${v0} ${v1}`,
             sku: `${dataProductAdd.sku || ''}-${v0}-${v1}`,
             image: '',
-            supplier: dataProductAdd.suppliers || '',
+            imagePreview: '',
             options: [
               { name: attributes[0].option, values: v0 },
               { name: attributes[1].option, values: v1 },
@@ -152,6 +152,97 @@ export default function ProductAdd() {
     }
   }
 
+  const addProduct = async () => {
+    //validated
+    let isValidated = true
+    try {
+      await form.validateFields()
+      isValidated = true
+    } catch (error) {
+      isValidated = false
+    }
+
+    if (!isValidated) return
+
+    //validated images product
+    if (imagesProduct.length === 0) {
+      setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
+      return
+    } else setHelpTextImage('')
+
+    //validated quantity, prices
+    for (let i = 0; i < variants.length; ++i) {
+      if (!variants[i].base_price) {
+        notification.error({
+          message: 'Vui lòng nhập giá cơ bản trong variant!',
+        })
+        return
+      }
+      if (!variants[i].import_price) {
+        notification.error({ message: 'Vui lòng nhập giá nhập trong variant!' })
+        return
+      }
+      if (!variants[i].sale_price) {
+        notification.error({ message: 'Vui lòng nhập giá bán trong variant!' })
+        return
+      }
+      if (!variants[i].quantity) {
+        notification.error({
+          message: 'Vui lòng nhập số lượng sản phẩm trong variant!',
+        })
+        return
+      }
+    }
+
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const formProduct = form.getFieldsValue()
+
+      const images = await uploadFiles(imagesProduct)
+
+      let body = {
+        ...formProduct,
+        length: formProduct.length || '',
+        width: formProduct.width || '',
+        height: formProduct.height || '',
+        weight: formProduct.weight || '',
+        unit: formProduct.unit || '',
+        warranty: idsWarranty,
+        barcode: '',
+        image: images || [],
+        has_variable: isProductHasVariants,
+      }
+
+      if (isProductHasVariants) {
+        body.attributes = attributes
+        const promiseUpload = variants.map(async (v) => {
+          const resUpload = await uploadFile(v.image)
+          delete v.imagePreview
+          return {
+            ...v,
+            supplier: formProduct.suppliers,
+            image: resUpload,
+          }
+        })
+
+        const variantsNew = await Promise.all(promiseUpload)
+
+        body.variants = variantsNew
+      }
+
+      console.log(JSON.stringify({ product_list: [body] }))
+      const res = await apiAddProduct({ product_list: [body] })
+      if (res.data.status === 200) {
+        notification.success({ message: 'Tạo sản phẩm thành công!' })
+        history.goBack()
+      } else notification.error({ message: 'Tạo sản phẩm thất bại!' })
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
   const [category, setCategory] = useState([])
   const apiAllCategoryData = async () => {
     try {
@@ -175,30 +266,27 @@ export default function ProductAdd() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const columns = [
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'productName',
-    },
-    {
-      title: 'Mã sản phẩm',
-      dataIndex: 'productCode',
-    },
-    {
-      title: 'Mã barcode',
-      dataIndex: 'barcode',
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-    },
-    {
-      title: 'Giá tiền',
-      dataIndex: 'moneyPrice',
-    },
-  ]
-  console.log(variants)
+
   /* list input variants */
+  const uploadImage = async (file, imagePreview, indexVariant) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      let variantsNew = [...variants]
+
+      //preview anh tren table
+      if (indexVariant !== -1 && file) {
+        variantsNew[indexVariant].imagePreview = imagePreview //lưu base64
+        variantsNew[indexVariant].image = file //lưu file upload
+      }
+
+      setVariants([...variantsNew])
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
   const UploadImageProduct = ({ variant }) => {
     return (
       <Upload
@@ -208,24 +296,16 @@ export default function ProductAdd() {
         showUploadList={false}
         action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
         data={(file) => {
-          let variantsNew = [...variants]
-
-          getBase64(file, (img) => {
-            //preview anh tren table
-            const indexAdd = variantsNew.findIndex(
+          getBase64(file, (url) => {
+            const indexVariant = variants.findIndex(
               (ob) => ob.title === variant.title
             )
-
-            if (indexAdd !== -1) {
-              variantsNew[indexAdd].image = img
-            }
+            uploadImage(file, url, indexVariant)
           })
-
-          setVariants([...variantsNew])
         }}
       >
-        {variant.image ? (
-          <img src={variant.image} alt="" style={{ width: '100%' }} />
+        {variant.imagePreview ? (
+          <img src={variant.imagePreview} alt="" style={{ width: '100%' }} />
         ) : (
           <div>
             <PlusOutlined />
@@ -234,13 +314,331 @@ export default function ProductAdd() {
       </Upload>
     )
   }
+
+  const InputQuantity = ({ value, variant }) => {
+    const [valueQuantity, setValueQuantity] = useState(value)
+
+    return (
+      <InputNumber
+        placeholder="Nhập số lượng"
+        className="br-15__input"
+        size="large"
+        defaultValue={value}
+        min={0}
+        onBlur={() => {
+          let variantsNew = [...variants]
+          const index = variantsNew.findIndex((e) => e.title === variant.title)
+          variantsNew[index].quantity = valueQuantity
+          setVariants([...variantsNew])
+        }}
+        onChange={(value) => setValueQuantity(value)}
+        style={{ width: '100%' }}
+      />
+    )
+  }
+
+  const InputImportPrice = ({ value, variant }) => {
+    const [valueImportPrice, setValueImportPrice] = useState(value)
+
+    return (
+      <>
+        Giá nhập
+        <InputNumber
+          placeholder="Nhập giá nhập"
+          className="br-15__input"
+          size="large"
+          defaultValue={value}
+          min={0}
+          formatter={(value) =>
+            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          onBlur={() => {
+            let variantsNew = [...variants]
+            const index = variantsNew.findIndex(
+              (e) => e.title === variant.title
+            )
+            variantsNew[index].import_price = valueImportPrice
+            setVariants([...variantsNew])
+          }}
+          onChange={(value) => setValueImportPrice(value)}
+          style={{ width: '100%' }}
+        />
+      </>
+    )
+  }
+
+  const InputBasePrice = ({ value, variant }) => {
+    const [valueBasePrice, setValueBasePrice] = useState(value)
+
+    return (
+      <>
+        Giá cơ bản
+        <InputNumber
+          placeholder="Nhập giá cơ bản"
+          className="br-15__input"
+          size="large"
+          defaultValue={value}
+          min={0}
+          formatter={(value) =>
+            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          onBlur={() => {
+            let variantsNew = [...variants]
+            const index = variantsNew.findIndex(
+              (e) => e.title === variant.title
+            )
+            variantsNew[index].base_price = valueBasePrice
+            setVariants([...variantsNew])
+          }}
+          onChange={(value) => setValueBasePrice(value)}
+          style={{ width: '100%' }}
+        />
+      </>
+    )
+  }
+
+  const InputSalePrice = ({ value, variant }) => {
+    const [valueSalePrice, setValueSalePrice] = useState(value)
+
+    return (
+      <>
+        Giá bán
+        <InputNumber
+          placeholder="Nhập giá bán"
+          className="br-15__input"
+          size="large"
+          defaultValue={value}
+          min={0}
+          formatter={(value) =>
+            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          onBlur={() => {
+            let variantsNew = [...variants]
+            const index = variantsNew.findIndex(
+              (e) => e.title === variant.title
+            )
+            variantsNew[index].sale_price = valueSalePrice
+            setVariants([...variantsNew])
+          }}
+          onChange={(value) => setValueSalePrice(value)}
+          style={{ width: '100%' }}
+        />
+      </>
+    )
+  }
+
+  const UploadAllVariant = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [urlImage, setUrlImage] = useState('')
+    const [file, setFile] = useState(null)
+
+    const upload = () => {
+      if (file) {
+        const variantsNew = [...variants]
+
+        selectRowKeyVariant.map((key) => {
+          const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
+          variantsNew[indexVariant].imagePreview = urlImage
+          variantsNew[indexVariant].image = file
+        })
+
+        setVariants([...variantsNew])
+      }
+
+      toggle()
+    }
+
+    //reset
+    useEffect(() => {
+      if (!visible) setUrlImage('')
+    }, [visible])
+    return (
+      <>
+        <Button size="large" onClick={toggle}>
+          Chọn ảnh
+        </Button>
+        <Modal
+          visible={visible}
+          title="Chọn ảnh"
+          onCancel={toggle}
+          onOk={upload}
+        >
+          <Upload
+            name="avatar"
+            listType="picture-card"
+            showUploadList={false}
+            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            data={(file) => {
+              setFile(file)
+              getBase64(file, (url) => setUrlImage(url))
+            }}
+          >
+            {urlImage ? (
+              <img src={urlImage} alt="" style={{ width: '100%' }} />
+            ) : (
+              <div>
+                <PlusOutlined />
+              </div>
+            )}
+          </Upload>
+        </Modal>
+      </>
+    )
+  }
+
+  const EditQuantity = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [valueQuantity, setValueQuantity] = useState('')
+
+    const edit = () => {
+      if (valueQuantity) {
+        let variantsNew = [...variants]
+
+        selectRowKeyVariant.map((key) => {
+          const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
+          variantsNew[indexVariant].quantity = valueQuantity
+        })
+
+        setVariants([...variantsNew])
+      }
+
+      toggle()
+    }
+
+    //reset
+    useEffect(() => {
+      if (!visible) setValueQuantity('')
+    }, [visible])
+
+    return (
+      <>
+        <Button size="large" onClick={toggle}>
+          Nhập số lượng sản phẩm
+        </Button>
+        <Modal
+          visible={visible}
+          onCancel={toggle}
+          onOk={edit}
+          title="Nhập số lượng sản phẩm"
+        >
+          <InputNumber
+            placeholder="Nhập số lượng"
+            className="br-15__input"
+            size="large"
+            defaultValue={valueQuantity}
+            min={0}
+            onChange={(value) => setValueQuantity(value)}
+            style={{ width: '100%' }}
+          />
+        </Modal>
+      </>
+    )
+  }
+
+  const EditPrice = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const [valueSalePrice, setValueSalePrice] = useState('')
+    const [valueBasePrice, setValueBasePrice] = useState('')
+    const [valueImportPrice, setValueImportPrice] = useState('')
+
+    const edit = () => {
+      let variantsNew = [...variants]
+
+      selectRowKeyVariant.map((key) => {
+        const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
+
+        variantsNew[indexVariant].import_price = valueImportPrice
+        variantsNew[indexVariant].sale_price = valueSalePrice
+        variantsNew[indexVariant].base_price = valueBasePrice
+      })
+
+      setVariants([...variantsNew])
+
+      toggle()
+    }
+
+    //reset
+    useEffect(() => {
+      if (!visible) {
+        setValueSalePrice('')
+        setValueImportPrice('')
+        setValueBasePrice('')
+      }
+    }, [visible])
+
+    return (
+      <>
+        <Button size="large" onClick={toggle}>
+          Nhập giá
+        </Button>
+        <Modal visible={visible} onCancel={toggle} onOk={edit} title="Nhập giá">
+          <Space size="middle" direction="vertical">
+            <div>
+              <span style={{ marginBottom: 0 }}>Giá bán</span>
+              <InputNumber
+                placeholder="Nhập giá bán"
+                className="br-15__input"
+                size="large"
+                min={0}
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                onChange={(value) => setValueSalePrice(value)}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <span style={{ marginBottom: 0 }}>Giá cơ bản</span>
+              <InputNumber
+                placeholder="Nhập giá cơ bản"
+                className="br-15__input"
+                size="large"
+                min={0}
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                onChange={(value) => setValueBasePrice(value)}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <span style={{ marginBottom: 0 }}>Giá nhập</span>
+              <InputNumber
+                placeholder="Nhập giá nhập"
+                className="br-15__input"
+                size="large"
+                min={0}
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                onChange={(value) => setValueImportPrice(value)}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </Space>
+        </Modal>
+      </>
+    )
+  }
   /* list input variants */
 
   const columnsVariant = [
     {
       width: 120,
       title: 'Hình ảnh',
-      key: 'image',
+      render: (text, record) => <UploadImageProduct variant={record} />,
     },
     {
       title: 'Variant',
@@ -252,45 +650,23 @@ export default function ProductAdd() {
     },
     {
       title: 'Số lượng',
+      width: 300,
+      render: (text, record) => (
+        <InputQuantity value={record.quantity} variant={record} />
+      ),
     },
     {
       title: 'Giá',
+      width: 300,
+      render: (text, record) => (
+        <Space size="middle" direction="vertical" style={{ width: '100%' }}>
+          <InputSalePrice value={record.sale_price} variant={record} />
+          <InputBasePrice value={record.base_price} variant={record} />
+          <InputImportPrice value={record.import_price} variant={record} />
+        </Space>
+      ),
     },
   ]
-  const dataTable = []
-  for (let i = 0; i < 46; i++) {
-    dataTable.push({
-      key: i,
-      productName: `Quần áo ${i}`,
-      productCode: `QA-${i}`,
-      barcode: `${i}`,
-      quantity: <Input defaultValue={i} />,
-      moneyPrice: `${i}00.000 VNĐ`,
-    })
-  }
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-
-  const apiAllWarrantyData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllWarranty()
-      console.log(res)
-      if (res.status === 200) {
-        setWarranty(res.data.data)
-      }
-
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
 
   const getWarehouse = async () => {
     try {
@@ -311,6 +687,21 @@ export default function ProductAdd() {
     }
   }
 
+  const apiAllWarrantyData = async () => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiAllWarranty()
+      console.log(res)
+      if (res.status === 200) {
+        setWarrantys(res.data.data)
+      }
+
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
   useEffect(() => {
     getWarehouse()
     apiAllSupplierData()
@@ -324,16 +715,33 @@ export default function ProductAdd() {
 
   return (
     <div className={styles['product_manager']}>
-      <a
-        onClick={() => history.goBack()}
-        className={styles['product_manager_title']}
-      >
-        <ArrowLeftOutlined style={{ color: 'black' }} />
-        <div className={styles['product_manager_title_product']}>
-          Thêm mới sản phẩm
-        </div>
-      </a>
-
+      <Affix offsetTop={10} style={{ width: '100%' }}>
+        <Row
+          align="middle"
+          justify="space-between"
+          style={{
+            width: '100%',
+            paddingBottom: 10,
+            paddingTop: 10,
+            borderBottom: '1px solid rgb(235, 226, 226)',
+            backgroundColor: 'white',
+            zIndex: 8888,
+          }}
+        >
+          <a
+            onClick={() => history.goBack()}
+            className={styles['product_manager_title']}
+          >
+            <ArrowLeftOutlined style={{ color: 'black' }} />
+            <div className={styles['product_manager_title_product']}>
+              Thêm mới sản phẩm
+            </div>
+          </a>
+          <Button type="primary" onClick={addProduct}>
+            Thêm
+          </Button>
+        </Row>
+      </Affix>
       <Form
         form={form}
         layout="vertical"
@@ -344,7 +752,9 @@ export default function ProductAdd() {
             <Form.Item
               label="Tên sản phẩm"
               name="name"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
+              ]}
             >
               <Input size="large" placeholder="Nhập tên sản phẩm" />
             </Form.Item>
@@ -353,7 +763,9 @@ export default function ProductAdd() {
             <Form.Item
               label="Mã sản phẩm/SKU"
               name="sku"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[
+                { required: true, message: 'Vui lòng nhập mã sản phẩm/sku!' },
+              ]}
             >
               <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
             </Form.Item>
@@ -362,7 +774,9 @@ export default function ProductAdd() {
             <Form.Item
               label="Số lượng sản phẩm"
               name="quantity"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[
+                { required: true, message: 'Vui lòng nhập số lượng sản phẩm!' },
+              ]}
             >
               <InputNumber
                 size="large"
@@ -377,9 +791,13 @@ export default function ProductAdd() {
             <Form.Item
               label="Giá bán"
               name="sale_price"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập giá bán!' }]}
             >
               <InputNumber
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá bán"
@@ -392,9 +810,13 @@ export default function ProductAdd() {
             <Form.Item
               label="Giá cơ bản"
               name="base_price"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập giá cơ bản!' }]}
             >
               <InputNumber
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá cơ bản"
@@ -407,9 +829,13 @@ export default function ProductAdd() {
             <Form.Item
               label="Giá nhập"
               name="import_price"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập giá nhập!' }]}
             >
               <InputNumber
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá nhập"
@@ -422,7 +848,9 @@ export default function ProductAdd() {
             <Form.Item
               label="Nhà cung cấp"
               name="suppliers"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[
+                { required: true, message: 'Vui lòng chọn nhà cung cấp!' },
+              ]}
             >
               <Select
                 showSearch
@@ -448,7 +876,7 @@ export default function ProductAdd() {
             <Form.Item
               label="Loại kho"
               name="warehouse"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[{ required: true, message: 'Vui lòng chọn kho!' }]}
             >
               <Select
                 showSearch
@@ -474,7 +902,9 @@ export default function ProductAdd() {
             <Form.Item
               label="Loại sản phẩm"
               name="category"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              rules={[
+                { required: true, message: 'Vui lòng chọn loại sản phẩm!' },
+              ]}
             >
               <Select
                 showSearch
@@ -496,6 +926,49 @@ export default function ProductAdd() {
               </Select>
             </Form.Item>
           </Col>
+          <div style={{ marginBottom: 10 }}>
+            <Checkbox
+              checked={isInputInfoProduct}
+              onChange={(e) => setIsInputInfoProduct(e.target.checked)}
+            >
+              Thông số sản phẩm (không bắt buộc)
+            </Checkbox>
+          </div>
+          <Row
+            justify="space-between"
+            align="middle"
+            style={{
+              width: '100%',
+              marginBottom: 15,
+              display: !isInputInfoProduct && 'none',
+            }}
+          >
+            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+              <Form.Item name="length">
+                <Input size="large" placeholder="Chiều dài (cm)" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+              <Form.Item name="width">
+                <Input size="large" placeholder="Chiều rộng (cm)" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+              <Form.Item name="height">
+                <Input size="large" placeholder="Chiều cao (cm)" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+              <Form.Item name="weight">
+                <Input size="large" placeholder="Cân nặng (kg)" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+              <Form.Item name="unit">
+                <Input size="large" placeholder="Đơn vị" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
             <span style={{ color: 'red' }}>* </span>
             Hình ảnh
@@ -505,8 +978,10 @@ export default function ProductAdd() {
               multiple
               action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
               onChange={(info) => {
-                const { status } = info.file
-                if (status !== 'done') info.file.status = 'done'
+                if (info.file.status !== 'done') info.file.status = 'done'
+                let imagesProductNew = [...imagesProduct]
+                imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                setImagesProduct([...imagesProductNew])
               }}
               // defaultFileList={d.mockup.map((e, index) => {
               //   let nameFile = ['image']
@@ -520,9 +995,16 @@ export default function ProductAdd() {
               //     thumbUrl: e,
               //   }
               // })}
-              data={async (file) => {
-                imagesUploadProduct.push(file)
-              }}
+              // data={(file) => {
+              //   let imagesProductNew = [...imagesProduct]
+              //   imagesProductNew.push(file)
+              //   setImagesProduct([...imagesProductNew])
+              // }}
+              // onRemove={(file) => {
+              //   let imagesProductNew = [...imagesProduct]
+              //   console.log(file)
+              //   console.log(imagesProductNew)
+              // }}
             >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
@@ -534,6 +1016,7 @@ export default function ProductAdd() {
                 Support for a .PNG, .JPG, .TIFF, .EPS image.
               </p>
             </Upload.Dragger>
+            <span style={{ color: 'red' }}>{helpTextImage}</span>
           </Col>
           <Row
             justify="space-between"
@@ -541,8 +1024,8 @@ export default function ProductAdd() {
           >
             <div style={{ fontWeight: 700, fontSize: 15 }}>Thuộc tính</div>
             <Checkbox
-              checked={isProductVariants}
-              onChange={(e) => setIsProductVariants(e.target.checked)}
+              checked={isProductHasVariants}
+              onChange={(e) => setIsProductHasVariants(e.target.checked)}
             >
               Sản phẩm có nhiều variant
             </Checkbox>
@@ -552,7 +1035,7 @@ export default function ProductAdd() {
 
       <div
         style={{
-          display: isProductVariants ? '' : 'none',
+          display: isProductHasVariants ? '' : 'none',
           width: '100%',
         }}
       >
@@ -684,19 +1167,23 @@ export default function ProductAdd() {
               <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
             </div>
           </div>
+          <div
+            style={{
+              marginLeft: 10,
+              marginTop: 10,
+              marginBottom: 20,
+              display: !selectRowKeyVariant.length && 'none',
+            }}
+          >
+            <Space wrap>
+              <UploadAllVariant />
+              <EditQuantity />
+              <EditPrice />
+            </Space>
+          </div>
           <Table
             rowKey="title"
-            columns={columnsVariant.map((e) => {
-              if (e.key === 'image') {
-                return {
-                  ...e,
-                  render: (text, record) => (
-                    <UploadImageProduct variant={record} />
-                  ),
-                }
-              }
-              return e
-            })}
+            columns={columnsVariant}
             dataSource={variants}
             pagination={false}
             rowSelection={{
@@ -707,60 +1194,46 @@ export default function ProductAdd() {
             }}
             size="small"
             style={{ width: '100%' }}
+            scroll={{ x: 'max-content' }}
           />
         </div>
       </div>
 
-      <Tabs style={{ width: '100%' }} defaultActiveKey="1">
-        <TabPane tab="Sản phẩm đơn" key="1">
-          <SingleProduct
-            category={category}
-            supplier={supplier}
-            warranty={warranty}
-            warehouse={warehouse}
-          />
-        </TabPane>
-        <TabPane tab="Sản phẩm đa nhóm" key="2">
-          <GroupProduct
-            category={category}
-            supplier={supplier}
-            warranty={warranty}
-            warehouse={warehouse}
-          />
-        </TabPane>
-        <TabPane tab="Quét để nhập" key="3">
-          <div
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-              border: '1px solid rgb(243, 234, 234)',
+      <Row
+        style={{
+          width: '100%',
+          marginTop: 20,
+        }}
+      >
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+          <Checkbox
+            style={{ marginBottom: 4 }}
+            checked={isWarranty}
+            onChange={(e) => {
+              const checked = e.target.checked
+              if (!checked) setIdsWarranty([])
+
+              setIsWarranty(checked)
             }}
           >
-            <Table
-              size="small"
-              rowKey="_id"
-              bordered
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={dataTable}
-              scroll={{ y: 500 }}
-            />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              marginTop: '1rem',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
+            Thêm chính sách bảo hành (không bắt buộc)
+          </Checkbox>
+          <Select
+            size="large"
+            mode="multiple"
+            style={{ width: '100%', display: !isWarranty && 'none' }}
+            placeholder="Chọn chính sách bảo hành"
+            onChange={(value) => setIdsWarranty(value)}
+            value={idsWarranty}
           >
-            <Button size="large" htmlType="submit" type="primary">
-              Thêm
-            </Button>
-          </div>
-        </TabPane>
-      </Tabs>
+            {warrantys.map((values, index) => (
+              <Select.Option value={values.warranty_id} key={index}>
+                {values.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
     </div>
   )
 }
