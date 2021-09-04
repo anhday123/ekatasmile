@@ -16,8 +16,9 @@ import {
   DatePicker,
   Select,
   Table,
+  Typography,
 } from 'antd'
-import { Link } from 'react-router-dom'
+
 import { PlusCircleOutlined } from '@ant-design/icons'
 import {
   apiAllInventory,
@@ -27,10 +28,10 @@ import {
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
 import InventoryAdd from 'views/actions/inventory/add'
-import { divide } from 'lodash'
+
 import InventoryView from 'views/actions/inventory/view'
 const { Option } = Select
-
+const { Text } = Typography
 const { RangePicker } = DatePicker
 
 export default function Inventory() {
@@ -132,6 +133,7 @@ export default function Inventory() {
       return 0
     } else {
       return str
+        .toString()
         .split('')
         .reverse()
         .reduce((prev, next, index) => {
@@ -736,6 +738,52 @@ export default function Inventory() {
             columns={columnsPromotion}
             dataSource={inventory}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>
+                        {formatCash(
+                          pageData.reduce((a, b) => a + b.monthly_cost, 0)
+                        )}{' '}
+                        VND
+                      </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

@@ -6,7 +6,6 @@ import { apiDistrict, apiProvince } from '../../../../apis/information'
 import styles from './../view/view.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES } from './../../../../consts/index'
-import { apiAllProduct } from '../../../../apis/product'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import {
@@ -20,11 +19,11 @@ import {
   Col,
   Popover,
   Drawer,
-  Collapse,
   Table,
   notification,
   DatePicker,
   Modal,
+  Typography,
 } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -32,6 +31,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 import { logoutAction } from '../../../../actions/login'
+const { Text } = Typography
 export default function BranchView(props) {
   const location = useLocation()
   const history = useHistory()
@@ -1031,6 +1031,38 @@ export default function BranchView(props) {
                   columns={columns}
                   rowSelection={rowSelection}
                   dataSource={employee}
+                  summary={(pageData) => {
+                    return (
+                      <Table.Summary fixed>
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>Tổng cộng:</Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>{`${pageData.length}`}</Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      </Table.Summary>
+                    )
+                  }}
                 />
               </div>
             </div>

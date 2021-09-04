@@ -23,6 +23,7 @@ import {
   Button,
   Space,
   Modal,
+  Typography,
 } from 'antd'
 
 //components
@@ -37,6 +38,7 @@ import { apiUpdateBranch, getAllBranch } from 'apis/branch'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
+const { Text } = Typography
 export default function Branch() {
   const dispatch = useDispatch()
   const [visible, setVisible] = useState(false)
@@ -667,6 +669,41 @@ export default function Branch() {
                 getAllBranchData({ page, page_size: pageSize, ...paramsFilter })
               },
               total: countBranch,
+            }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
             }}
             size="small"
           />

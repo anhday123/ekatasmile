@@ -3,7 +3,6 @@ import styles from './../view/view.module.scss'
 import {
   Popconfirm,
   Button,
-  Input,
   Form,
   Row,
   Col,
@@ -14,7 +13,7 @@ import {
   notification,
 } from 'antd'
 import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 
 const { Text } = Typography
