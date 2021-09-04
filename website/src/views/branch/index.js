@@ -113,6 +113,7 @@ export default function Branch() {
       dataIndex: 'create_date',
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Cửa hàng',

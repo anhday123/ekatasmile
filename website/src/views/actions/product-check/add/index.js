@@ -44,6 +44,7 @@ const columns = [
     title: 'Tồn chi nhánh',
     dataIndex: 'branchInventory',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng thực tế',
@@ -51,6 +52,7 @@ const columns = [
     render() {
       return <InputNumber />
     },
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng hệ thống',
@@ -58,6 +60,7 @@ const columns = [
     render() {
       return 10
     },
+    sorter: (a, b) => a - b,
   },
 ]
 const data = []

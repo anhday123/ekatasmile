@@ -168,6 +168,7 @@ export default function Inventory() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Loại kho',
@@ -189,6 +190,7 @@ export default function Inventory() {
       dataIndex: 'monthly_cost',
       width: 150,
       render: (text, record) => <div>{`${formatCash(String(text))} VNĐ`}</div>,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Quận/huyện',
@@ -210,11 +212,6 @@ export default function Inventory() {
       ),
     },
   ]
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
 
   const apiAllInventoryData = async () => {
     try {
@@ -1112,7 +1109,7 @@ export default function Inventory() {
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <InventoryAdd close={onCloseUpdate} />
+        <InventoryAdd close={onCloseUpdate} reload={apiAllInventoryData} />
       </Drawer>
       <Drawer
         visible={showView}
@@ -1120,7 +1117,11 @@ export default function Inventory() {
         onClose={() => setShowView(false)}
         title="Thông tin chi tiết kho"
       >
-        <InventoryView data={data} />
+        <InventoryView
+          data={data}
+          close={() => setShowView(false)}
+          reload={apiAllInventoryData}
+        />
       </Drawer>
     </>
   )

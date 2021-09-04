@@ -239,6 +239,7 @@ export default function BranchView(props) {
     {
       title: 'Mã nhân sự',
       dataIndex: 'user_id',
+      sorter: (a, b) => a - b,
       render: (text, record) => <div>{text}</div>,
     },
     {
@@ -266,6 +267,7 @@ export default function BranchView(props) {
       title: 'Ngày gia nhập',
       dataIndex: 'create_date',
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Email',

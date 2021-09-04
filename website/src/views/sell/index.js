@@ -3426,26 +3426,31 @@ export default function Sell() {
       title: 'Số lượng',
       dataIndex: 'quantity',
       render: (text, record) => `${formatCash(String(text))}`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Đơn giá',
       dataIndex: 'sale_price',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'total_cost',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Chiết khấu',
       dataIndex: 'discount',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
@@ -4028,6 +4033,7 @@ export default function Sell() {
       dataIndex: 'create_date',
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Khách hàng',
@@ -4061,6 +4067,7 @@ export default function Sell() {
         ) : (
           0
         ),
+      sorter: (a, b) => a - b,
     },
   ]
   const columnsDetailOrder = [
@@ -4069,6 +4076,7 @@ export default function Sell() {
       dataIndex: 'sale_price',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tên sản phẩm',
@@ -4159,6 +4167,7 @@ export default function Sell() {
       dataIndex: 'quantity',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))}`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
 
     {
@@ -4166,6 +4175,7 @@ export default function Sell() {
       dataIndex: 'total_cost',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
@@ -4176,6 +4186,7 @@ export default function Sell() {
       dataIndex: 'discount',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Thành tiền',
@@ -4188,6 +4199,7 @@ export default function Sell() {
         ) : (
           0
         ),
+      sorter: (a, b) => a - b,
     },
   ]
   const apiAllOrderDataTable = async (page, page_size) => {

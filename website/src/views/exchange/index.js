@@ -21,6 +21,7 @@ const columns = [
     title: 'Ngày trả',
     dataIndex: 'date',
     width: 150,
+    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
   },
   {
     title: 'Trạng thái',

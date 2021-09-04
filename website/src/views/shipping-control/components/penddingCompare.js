@@ -54,16 +54,19 @@ export default function PenddingCompare(props) {
       title: 'Ngày tạo',
       dataIndex: 'revice_date',
       width: 150,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Tiền CoD',
       dataIndex: 'cod_cost',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tiền chuyển khoản',
       dataIndex: 'transfer_cost',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Ghi chú đơn',

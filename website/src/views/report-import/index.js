@@ -48,6 +48,7 @@ export default function ReportImport() {
       title: 'Số lượng',
       dataIndex: 'productQuantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mã lô hàng',
@@ -68,6 +69,7 @@ export default function ReportImport() {
       title: 'Ngày nhập',
       dataIndex: 'importDate',
       width: 150,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
   ]
   const data = []
@@ -81,7 +83,7 @@ export default function ReportImport() {
       goodsCode: `BS5426${i}`,
       code: `8546${i}`,
       supplier: `Hưng Thịnh`,
-      importDate: '2021/07/02',
+      importDate: '2021-07-02',
     })
   }
   const content = (

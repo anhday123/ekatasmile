@@ -204,11 +204,13 @@ export default function ShippingProduct() {
       render(data) {
         return moment(data).format('DD-MM-YYYY hh:mm')
       },
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'dateReceive',
       width: 150,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Nhân viên tạo',

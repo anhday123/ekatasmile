@@ -61,6 +61,7 @@ export default function GuaranteeView() {
       title: 'STT',
       dataIndex: 'stt',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mã hàng',
@@ -81,6 +82,7 @@ export default function GuaranteeView() {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Hẹn trả khách',

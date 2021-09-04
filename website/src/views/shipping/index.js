@@ -176,6 +176,7 @@ export default function Shipping() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Quận/huyện',

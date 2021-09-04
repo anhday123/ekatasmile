@@ -44,16 +44,19 @@ const columns = [
     title: 'Tồn chi nhánh',
     dataIndex: 'branchInventory',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Tồn thực tế',
     dataIndex: 'realityInventory',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng lệch',
     dataIndex: 'deviationAmount',
     width: 150,
+    sorter: (a, b) => a - b,
   },
 ]
 

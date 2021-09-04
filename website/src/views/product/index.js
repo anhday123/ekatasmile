@@ -147,6 +147,7 @@ export default function Product() {
       dataIndex: 'create_date',
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
   ]
   const openNotificationSuccessCategoryMain = (data) => {
@@ -1535,6 +1536,7 @@ export default function Product() {
             )}
           </>
         ),
+      sorter: (a, b) => a - b,
     },
 
     {
@@ -2017,6 +2019,7 @@ export default function Product() {
             </div>
           </>
         ),
+      sorter: (a, b) => a - b,
     },
 
     {
@@ -2026,6 +2029,7 @@ export default function Product() {
       render(data) {
         return moment(data).format('DD-MM-YYYY')
       },
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Nhà cung cấp',

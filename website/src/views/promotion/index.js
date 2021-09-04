@@ -142,6 +142,7 @@ export default function Promotion() {
       render(data) {
         return data.amount
       },
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mô tả',
@@ -771,7 +772,7 @@ export default function Promotion() {
             >
               {' '}
               <Table
-              size="small"
+                size="small"
                 scroll={{ y: 500 }}
                 rowSelection={rowSelection}
                 columns={columns}

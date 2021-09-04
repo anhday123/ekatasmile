@@ -1,7 +1,7 @@
 import { Table, Drawer } from 'antd'
 import { useEffect, useState } from 'react'
 import { getCompare } from '../../../apis/compare'
-
+import moment from 'moment'
 export default function SessionHistory(props) {
   const { visible, onClose, data } = props
   const [compareList, setCompareList] = useState([])
@@ -30,38 +30,47 @@ export default function SessionHistory(props) {
     {
       title: 'Ngày tạo đơn',
       dataIndex: 'revice_date',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Tiền COD',
       dataIndex: 'cod_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'tiền chuyển khoản',
       dataIndex: 'transfer_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí vận chuyển',
       dataIndex: 'delivery_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tiền COD thực nhận',
       dataIndex: 'real_cod_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí bảo hiểm',
       dataIndex: 'insurance_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí giao hàng',
       dataIndex: 'shipping_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí chuyển hoàn',
       dataIndex: 'warehouse_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí lưu kho',
       dataIndex: 'warehouse_cost',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Khối lượng',
@@ -69,15 +78,18 @@ export default function SessionHistory(props) {
       render(data) {
         return data + 'kg'
       },
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'revice_date',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
 
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Ghi chú đơn',

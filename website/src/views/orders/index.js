@@ -23,6 +23,7 @@ const columns = [
     title: 'Ngày tạo đơn',
     dataIndex: 'date',
     width: 150,
+    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
   },
   {
     title: 'Tên khách hàng',
@@ -38,6 +39,7 @@ const columns = [
     title: 'Phải trả',
     dataIndex: 'payment',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Tên nhân viên tạo đơn',

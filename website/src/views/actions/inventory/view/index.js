@@ -59,6 +59,7 @@ export default function InventoryView(props) {
       title: 'Giá (VNĐ)',
       dataIndex: 'sale_price',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Loại',
@@ -72,6 +73,7 @@ export default function InventoryView(props) {
       render(data, record) {
         return record.shipping_quantity + data
       },
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Nhà cung cấp',

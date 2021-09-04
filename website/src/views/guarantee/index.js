@@ -122,6 +122,7 @@ export default function Guarantee() {
       render(data) {
         return data + ' tháng'
       },
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mô tả',

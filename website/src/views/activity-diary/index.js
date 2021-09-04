@@ -160,6 +160,7 @@ export default function ActivityDiary() {
       width: 150,
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : '',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Tài khoản',
