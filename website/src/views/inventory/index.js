@@ -323,16 +323,16 @@ export default function Inventory() {
           } else {
             if (regex.test(values.phone)) {
               const object = {
-                name: values.name.toLowerCase(),
-                type: values.type.toLowerCase(),
+                name: values.name,
+                type: values.type,
                 phone: values.phone,
                 capacity: values.capacity,
                 monthly_cost:
                   values && values.monthly_cost ? values.monthly_cost : '',
-                address: values.address.toLowerCase(),
-                ward: values.ward.toLowerCase(),
-                district: values.district.toLowerCase(),
-                province: values.province.toLowerCase(),
+                address: values.address,
+                ward: values.ward,
+                district: values.district,
+                province: values.province,
               }
               console.log(object)
               apiUpdateInventoryDataUpdate(object, values.warehouse_id)
@@ -353,18 +353,18 @@ export default function Inventory() {
           } else {
             if (regex.test(values.phone)) {
               const object = {
-                name: values.name.toLowerCase(),
-                type: arrayUpdate[0].type.toLowerCase(),
+                name: values.name,
+                type: arrayUpdate[0].type,
                 phone: values.phone,
                 capacity: arrayUpdate[0].capacity,
                 monthly_cost:
                   arrayUpdate[0] && arrayUpdate[0].monthly_cost
                     ? arrayUpdate[0].monthly_cost
                     : '',
-                address: arrayUpdate[0].address.toLowerCase(),
-                ward: arrayUpdate[0].ward.toLowerCase(),
-                district: arrayUpdate[0].district.toLowerCase(),
-                province: arrayUpdate[0].province.toLowerCase(),
+                address: arrayUpdate[0].address,
+                ward: arrayUpdate[0].ward,
+                district: arrayUpdate[0].district,
+                province: arrayUpdate[0].province,
               }
               console.log(object)
               apiUpdateInventoryDataUpdate(object, values.warehouse_id)
@@ -514,7 +514,7 @@ export default function Inventory() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>Quản lý kho</div>
+          <div className={styles['promotion_manager_title']}>Quản lý chi nhánh & kho</div>
           <div className={styles['promotion_manager_button']}>
             <Button
               size="large"

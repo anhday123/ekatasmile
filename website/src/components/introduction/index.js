@@ -14,14 +14,13 @@ import {
 } from 'antd'
 
 import { useSelector, useDispatch } from 'react-redux'
-import { ACTION } from 'consts'
-import { decodeToken } from 'react-jwt'
+import { ACTION, regexPhone } from 'consts'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
 import { addStore } from 'apis/store'
 import { addBranch } from 'apis/branch'
-import { uploadFile } from 'utils'
+import { uploadFile } from 'apis/upload'
 import { updateUser } from 'apis/user'
 import { addLabel, getAllLabel } from 'apis/label'
 
@@ -32,7 +31,6 @@ function ModalIntro() {
   const [formBranch] = Form.useForm()
   const [formStore] = Form.useForm()
   const dispatch = useDispatch()
-  const regexPhone = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
   const [visible, setVisible] = useState(false)
   const [visibleCreate, setVisibleCreate] = useState(false)
@@ -49,6 +47,7 @@ function ModalIntro() {
   const [fileImageStore, setFileImageStore] = useState(null)
 
   const dataUser = useSelector((state) => state.login.dataUser)
+
   function getBase64(img, callback) {
     const reader = new FileReader()
     reader.addEventListener('load', () => callback(reader.result))
@@ -194,7 +193,11 @@ function ModalIntro() {
             message: 'Chúc mừng bạn đã tạo chi nhánh và cửa hàng thành công',
           })
           const resUser = await updateUser(
-            { is_new: false },
+            {
+              is_new: false,
+              branch_id: resBranch.data.data.branch_id,
+              store_id: resStore.data.data.store_id,
+            },
             dataUser.data && dataUser.data.user_id
           )
           console.log(resUser)

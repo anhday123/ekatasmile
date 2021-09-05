@@ -49,7 +49,7 @@ export const uploadFile = async (file) => {
       })
       .promise()
 
-    return ENDPOINT_URL_IMAGE + fileNameUpload
+    return 'https://' + ENDPOINT_URL_IMAGE + fileNameUpload
   } catch (error) {
     console.log(error)
     return ''
@@ -79,7 +79,9 @@ export const uploadFiles = async (files) => {
       return res
     })
     await Promise.all(promises)
-    let listUrl = arrayFileName.map((name) => ENDPOINT_URL_IMAGE + name)
+    let listUrl = arrayFileName.map(
+      (name) => 'https://' + ENDPOINT_URL_IMAGE + name
+    )
     return listUrl || []
   } catch (error) {
     console.log(error)

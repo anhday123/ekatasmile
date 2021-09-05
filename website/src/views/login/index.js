@@ -31,6 +31,7 @@ export default function Login() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await login(object)
+      console.log(res)
       if (res.status === 200) {
         openNotificationLoginSuccess()
 

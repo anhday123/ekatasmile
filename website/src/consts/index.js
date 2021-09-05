@@ -160,3 +160,5 @@ export const PERMISSIONS = {
   nhat_ki_hoat_dong: 'nhat_ki_hoat_dong',
   tao_quyen: 'tao_quyen',
 }
+
+export const regexPhone = /((09|03|07|08|05)+([0-9]{8})\b)/g

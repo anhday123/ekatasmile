@@ -794,10 +794,6 @@ export default function ProductAdd() {
               rules={[{ required: true, message: 'Vui lòng nhập giá bán!' }]}
             >
               <InputNumber
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá bán"
@@ -813,10 +809,6 @@ export default function ProductAdd() {
               rules={[{ required: true, message: 'Vui lòng nhập giá cơ bản!' }]}
             >
               <InputNumber
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá cơ bản"
@@ -832,10 +824,6 @@ export default function ProductAdd() {
               rules={[{ required: true, message: 'Vui lòng nhập giá nhập!' }]}
             >
               <InputNumber
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 placeholder="Nhập giá nhập"

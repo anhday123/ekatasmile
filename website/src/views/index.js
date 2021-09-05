@@ -195,7 +195,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.BRANCH,
     Component: () => <Branch />,
-    title: 'Quản lý chi nhánh',
+    title: 'Quản lý chi nhánh và kho',
     permissions: [],
     exact: true,
   },
@@ -248,13 +248,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.INVENTORY,
-    Component: () => <Inventory />,
-    title: 'Quản lý kho',
-    permissions: [],
-    exact: true,
-  },
+  // {
+  //   path: ROUTES.INVENTORY,
+  //   Component: () => <Inventory />,
+  //   title: 'Quản lý kho',
+  //   permissions: [],
+  //   exact: true,
+  // },
   {
     path: ROUTES.PRODUCT,
     Component: () => <Product />,

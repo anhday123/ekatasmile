@@ -6,7 +6,11 @@ import moment from 'moment'
 import { Link } from 'react-router-dom'
 
 //icons
-import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
 
 //antd
 import {
@@ -23,6 +27,7 @@ import {
   Button,
   Space,
   Modal,
+  Upload,
 } from 'antd'
 
 //components
@@ -34,13 +39,14 @@ import Permission from 'components/permission'
 import { apiDistrict, apiProvince } from 'apis/information'
 import { getAllStore } from 'apis/store'
 import { apiUpdateBranch, getAllBranch } from 'apis/branch'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Branch() {
+  const typingTimeoutRef = useRef(null)
+
   const dispatch = useDispatch()
-  const [visible, setVisible] = useState(false)
-  const [visibleUpdate, setVisibleUpdate] = useState(true)
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState({})
   const [viewBranch, setViewBranch] = useState(false)
@@ -53,7 +59,11 @@ export default function Branch() {
   const [paramsFilter, setParamsFilter] = useState({})
   const [formUpdateBranch] = Form.useForm()
 
-  const typingTimeoutRef = useRef(null)
+  function getBase64(img, callback) {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => callback(reader.result))
+    reader.readAsDataURL(img)
+  }
 
   const [valueDate, setValueDate] = useState(null)
   function onChangeDate(date, dateStrings) {
@@ -106,19 +116,12 @@ export default function Branch() {
     {
       title: 'Tên chi nhánh',
       dataIndex: 'name',
-      render: (text, record) => <div>{text}</div>,
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      render: (text, record) =>
+      render: (text) =>
         text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
-    },
-    {
-      title: 'Cửa hàng',
-      dataIndex: 'store',
-      render: (text, record) =>
-        record && record.store && record.store.name ? record.store.name : '',
     },
     {
       title: 'Liên hệ',
@@ -135,9 +138,8 @@ export default function Branch() {
     },
     {
       title: 'Thành phố',
-      dataIndex: 'ward',
+      dataIndex: 'province',
     },
-
     {
       title: 'Hành động',
       dataIndex: 'active',
@@ -158,17 +160,25 @@ export default function Branch() {
 
   const ModalUpdateBranch = ({ record }) => {
     const [visibleUpdateBranch, setVisibleUpdateBranch] = useState(false)
+    const [imageBranch, setImageBranch] = useState('')
+    const [fileImageBranch, setFileImageBranch] = useState(null)
+
     const toggleUpdateBranch = () =>
       setVisibleUpdateBranch(!visibleUpdateBranch)
+
     useEffect(() => {
-      if (!visibleUpdateBranch) formUpdateBranch.resetFields()
-      else {
+      if (!visibleUpdateBranch) {
+        formUpdateBranch.resetFields()
+        setImageBranch('')
+        setFileImageBranch(null)
+      } else {
+        setImageBranch(record.logo)
         formUpdateBranch.setFieldsValue({
           name: record.name,
           address: record.address,
           phone: record.phone,
           province: record.province,
-          store: record.store.store_id,
+          store: record.store_id,
           district: record.district,
         })
       }
@@ -186,20 +196,51 @@ export default function Branch() {
           visible={visibleUpdateBranch}
           onCancel={toggleUpdateBranch}
           onOk={async () => {
-            const body = formUpdateBranch.getFieldValue()
-            apiUpdateInfoBranch(
-              {
-                name: body.name,
-                address: body.address,
-                phone: body.phone,
-                province: body.province,
-                store: body.store,
-                district: body.district,
-              },
-              record.branch_id
-            )
+            const formData = formUpdateBranch.getFieldValue()
+
+            let urlImageBranch
+            if (fileImageBranch) {
+              dispatch({ type: ACTION.LOADING, data: true })
+              urlImageBranch = await uploadFile(fileImageBranch)
+              dispatch({ type: ACTION.LOADING, data: false })
+            }
+
+            let body = {
+              name: formData.name,
+              address: formData.address,
+              phone: formData.phone,
+              province: formData.province,
+              district: formData.district,
+            }
+
+            if (urlImageBranch) body.logo = urlImageBranch || ''
+
+            apiUpdateInfoBranch(body, record.branch_id)
           }}
         >
+          Hình ảnh
+          <Upload
+            showUploadList={false}
+            name="avatar"
+            listType="picture-card"
+            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            onChange={(info) => {
+              if (info.file.status === 'done') info.file.status = 'done'
+              setFileImageBranch(info.file.originFileObj)
+              getBase64(info.file.originFileObj, (imageUrl) =>
+                setImageBranch(imageUrl)
+              )
+            }}
+          >
+            {imageBranch ? (
+              <img src={imageBranch} alt="" style={{ width: '100%' }} />
+            ) : (
+              <div>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
+            )}
+          </Upload>
           <Form form={formUpdateBranch} layout="vertical">
             <Row justify="space-between" align="middle">
               <Col xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -264,35 +305,6 @@ export default function Branch() {
             <Row justify="space-between" align="middle">
               <Col xs={24} sm={24} md={11} lg={11} xl={11}>
                 <Form.Item
-                  name="store"
-                  label="Cửa hàng"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập cửa hàng' },
-                  ]}
-                >
-                  <Select
-                    allowClear
-                    size="large"
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                    }
-                    placeholder="Chọn cửa hàng"
-                  >
-                    {stores.map((values, index) => {
-                      return (
-                        <Option value={values.store_id} key={index}>
-                          {values.name}
-                        </Option>
-                      )
-                    })}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
                   name="district"
                   label="Quận/huyện"
                   rules={[
@@ -327,17 +339,6 @@ export default function Branch() {
     )
   }
 
-  const [arrayUpdate, setArrayUpdate] = useState([])
-  const openNotification = (check) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description:
-        check === 2
-          ? 'Vô hiệu hóa chi nhánh thành công.'
-          : 'Kích hoạt chi nhánh thành công',
-    })
-  }
   const openNotificationUpdateMulti = (data) => {
     notification.success({
       message: 'Thành công',
@@ -405,40 +406,6 @@ export default function Branch() {
       setLoading(false)
     } catch (error) {
       setLoading(false)
-    }
-  }
-
-  const onClose = () => {
-    setVisible(false)
-  }
-
-  const openNotificationErrorFormatPhone = (data) => {
-    notification.error({
-      message: 'Lỗi',
-      description: `${data} chưa đúng định dạng`,
-    })
-  }
-  const onCloseUpdate = () => {
-    setVisibleUpdate(false)
-  }
-  const apiUpdateBranchDataUpdateMulti = async (object, id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateBranch(object, id)
-      console.log(res)
-      if (res.status === 200) {
-        await getAllBranchData()
-        openNotificationUpdateMulti(object.name)
-        setSelectedRowKeys([])
-        onClose()
-        onCloseUpdate()
-      } else {
-        openNotificationError()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
 
@@ -510,31 +477,17 @@ export default function Branch() {
             width: '100%',
           }}
         >
-          <Link
-            className={styles['supplier_add_back_parent']}
+          <div
             style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
+              color: 'black',
+              fontWeight: '600',
+              fontSize: '1rem',
+              marginLeft: '0.5rem',
             }}
-            to={ROUTES.CONFIGURATION_STORE}
+            className={styles['supplier_add_back']}
           >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-            />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
-              }}
-              className={styles['supplier_add_back']}
-            >
-              Quản lý chi nhánh
-            </div>
-          </Link>
+            Quản lý chi nhánh & kho
+          </div>
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
             <BranchAdd reload={getAllBranchData} />
           </Permission>

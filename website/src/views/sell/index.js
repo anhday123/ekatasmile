@@ -25,6 +25,7 @@ import {
   CloseCircleOutlined,
   DeleteOutlined,
   EditOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons'
 
 import {
@@ -46,8 +47,6 @@ import {
   Col,
   Tabs,
   Popconfirm,
-  Badge,
-  Space,
 } from 'antd'
 
 //apis
@@ -57,7 +56,8 @@ import { apiAllOrder, apiOrderVoucher } from 'apis/order'
 import { apiAllUser } from 'apis/user'
 import { addCustomer, getCustomer } from 'apis/customer'
 import { apiProductCategoryMerge, apiProductSeller } from 'apis/product'
-import { apiFilterCity, getAllBranch } from 'apis/branch'
+import { apiFilterCity } from 'apis/branch'
+import { getAllStore } from 'apis/store'
 import { apiAllTax } from 'apis/tax'
 import { apiAllShipping } from 'apis/shipping'
 import { apiCheckPromotion, getAllPromotion, getPromoton } from 'apis/promotion'
@@ -114,14 +114,15 @@ export default function Sell() {
   const [voucherSave, setVoucherSave] = useState('')
   const [voucherSaveCheck, setVoucherSaveCheck] = useState(-1)
   const [tax, setTax] = useState([])
-  const [branchId, setBranchId] = useState(
-    dataUser.data.branch ? dataUser.data.branch.branch_id : undefined
+  const [storeId, setStoreId] = useState(
+    dataUser.data._store ? dataUser.data._store.store_id : undefined
   )
+
   const dispatch = useDispatch()
   const [promotion, setPromotion] = useState([])
   const [value, setValue] = useState('18')
   const [valueSex, setValueSex] = useState('Nam')
-  const [branch, setBranch] = useState([])
+  const [stores, setStores] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
   const [note, setNote] = useState('')
   const [districtMain, setDistrictMain] = useState([])
@@ -171,7 +172,7 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiProductCategoryMerge({ branch: branchId })
+      const res = await apiProductCategoryMerge({ store: storeId })
       console.log('category', res)
       if (res.status === 200) {
         setCategory(res.data.data)
@@ -929,34 +930,18 @@ export default function Sell() {
     apiProvinceData()
     apiAllUserData()
     getAllPaymentData()
-    getAllBranchData()
-    apiProductSellerData()
+    getAllStoreData()
+    apiProductSellerData({ store: storeId })
   }, [])
 
   const [productSelect, setProductSelect] = useState([])
-  const apiProductSellerData = async (e) => {
+  const apiProductSellerData = async (params) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiProductSeller({
-        branch: branchId,
-        page: 1,
-        page_size: 50,
-      })
-      if (res.status === 200) {
-        setProductSelect(res.data.data)
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-  const apiProductSellerDataMain = async (e) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiProductSeller({ branch: e })
-      if (res.status === 200) {
-        setProductSelect(res.data.data)
-      }
+      const res = await apiProductSeller(params)
+      console.log(res)
+      if (res.status === 200) setProductSelect(res.data.data)
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -964,21 +949,40 @@ export default function Sell() {
   }
 
   const handleChange = (e) => {
-    setBranchId(e)
-    apiProductSellerDataMain(e)
+    if (dataUser && dataUser.data._store.store_id !== e) {
+      const store = stores.find((store) => store.store_id === e)
+      const myStore = stores.find(
+        (store) =>
+          store.store_id === (dataUser && dataUser.data._store.store_id)
+      )
+      Modal.confirm({
+        width: 550,
+        title: `Cửa hàng hiện tại của bạn là cửa hàng ${
+          myStore && myStore.name
+        }, bạn có muốn tiếp tục với cửa hàng ${store && store.name} không?`,
+        icon: <ExclamationCircleOutlined />,
+        onOk() {
+          setStoreId(e)
+          apiProductSellerData({ store: e })
+        },
+      })
+    } else {
+      setStoreId(e)
+      apiProductSellerData({ store: e })
+    }
   }
   const [city, setCity] = useState('')
-  const [branchDetail, setBranchDetail] = useState({})
-  const getAllBranchData = async () => {
+  const [storeDetail, setStoreDetail] = useState({})
+  const getAllStoreData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await getAllBranch()
+      const res = await getAllStore()
       if (res.status === 200) {
-        const branch = res.data.data.find((e) => e.branch_id === branchId)
+        const store = res.data.data.find((e) => e.store_id === storeId)
 
-        if (branch) setBranchDetail(branch)
+        if (store) setStoreDetail(store)
 
-        setBranch(res.data.data)
+        setStores(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -1655,7 +1659,7 @@ export default function Sell() {
 
       const res = await apiProductSeller({
         keyword: value,
-        branch: branchId,
+        store: storeId,
       })
       if (res.status === 200) {
         setProductSearch(res.data.data)
@@ -2981,9 +2985,9 @@ export default function Sell() {
           } else {
             if (
               (taxDefault && taxDefault.length === 0) ||
-              (branchId && branchId === '') ||
-              (branchId && branchId === ' ') ||
-              (branchId && branchId === 'default') ||
+              (storeId && storeId === '') ||
+              (storeId && storeId === ' ') ||
+              (storeId && storeId === 'default') ||
               (customerOnClick[0].customer_id &&
                 customerOnClick[0].customer_id === '') ||
               (customerOnClick[0].customer_id &&
@@ -2992,9 +2996,9 @@ export default function Sell() {
                 customerOnClick[0].customer_id === 'default')
             ) {
               if (
-                (branchId && branchId === '') ||
-                (branchId && branchId === ' ') ||
-                (branchId && branchId === 'default')
+                (storeId && storeId === '') ||
+                (storeId && storeId === ' ') ||
+                (storeId && storeId === 'default')
               ) {
                 openNotificationErrorBranchId()
               }
@@ -3063,7 +3067,7 @@ export default function Sell() {
                 })
               if (voucherSaveCheck === 1) {
                 const object = {
-                  branch: branchId,
+                  store: storeId,
                   customer: customerOnClick[0].customer_id,
                   order_details:
                     arrayFinishMain && arrayFinishMain.length > 0
@@ -3109,7 +3113,7 @@ export default function Sell() {
                 setOrderDetail(object.order_details)
               } else {
                 const object = {
-                  branch: branchId,
+                  store: storeId,
                   customer: customerOnClick[0].customer_id,
                   order_details:
                     arrayFinishMain && arrayFinishMain.length > 0
@@ -3186,9 +3190,9 @@ export default function Sell() {
           } else {
             if (
               (taxDefault && taxDefault.length === 0) ||
-              (branchId && branchId === '') ||
-              (branchId && branchId === ' ') ||
-              (branchId && branchId === 'default') ||
+              (storeId && storeId === '') ||
+              (storeId && storeId === ' ') ||
+              (storeId && storeId === 'default') ||
               (customerOnClick[0].customer_id &&
                 customerOnClick[0].customer_id === '') ||
               (customerOnClick[0].customer_id &&
@@ -3197,9 +3201,9 @@ export default function Sell() {
                 customerOnClick[0].customer_id === 'default')
             ) {
               if (
-                (branchId && branchId === '') ||
-                (branchId && branchId === ' ') ||
-                (branchId && branchId === 'default')
+                (storeId && storeId === '') ||
+                (storeId && storeId === ' ') ||
+                (storeId && storeId === 'default')
               ) {
                 openNotificationErrorBranchId()
               }
@@ -3288,7 +3292,7 @@ export default function Sell() {
                 })
               if (voucherSaveCheck === 1) {
                 const object = {
-                  branch: branchId,
+                  store: storeId,
                   customer: customerOnClick[0].customer_id,
                   order_details:
                     arrayFinishMain && arrayFinishMain.length > 0
@@ -3354,7 +3358,7 @@ export default function Sell() {
                     }
                   })
                 const object = {
-                  branch: branchId,
+                  store: storeId,
                   customer: customerOnClick[0].customer_id,
                   order_details:
                     arrayFinishMain && arrayFinishMain.length > 0
@@ -4254,18 +4258,21 @@ export default function Sell() {
             <Select
               size="large"
               style={{ width: isMobile ? 180 : 300 }}
-              placeholder="Chọn chi nhánh"
+              placeholder="Chọn cửa hàng"
               optionFilterProp="children"
               showSearch
-              disabled={roleName === 'employee' ? true : false}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={branchId}
+              value={storeId}
               onChange={handleChange}
             >
-              {branch.map((values, index) => {
-                return <Option value={values.branch_id}>{values.name}</Option>
+              {stores.map((values, index) => {
+                return (
+                  <Option value={values.store_id} key={index}>
+                    {values.name}
+                  </Option>
+                )
               })}
             </Select>
             <FunctionShortcut />
@@ -4353,7 +4360,7 @@ export default function Sell() {
                   onClickBillIndex(
                     index,
                     values[0].values,
-                    parseInt(branchId) * 10000 + values[0].values
+                    parseInt(storeId) * 10000 + values[0].values
                   )
                 }
                 style={{
@@ -4405,7 +4412,7 @@ export default function Sell() {
                 >
                   Hóa đơn
                 </div>
-                <div>{parseInt(branchId) * 10000 + values[0].values}</div>
+                <div>{parseInt(storeId) * 10000 + values[0].values}</div>
               </div>
             )
           })}
@@ -6439,7 +6446,7 @@ export default function Sell() {
       >
         <Form
           layout="vertical"
-          initialValues={branchDetail}
+          initialValues={storeDetail}
           form={form}
           onFinish={onFinishAddCustomer}
           style={{

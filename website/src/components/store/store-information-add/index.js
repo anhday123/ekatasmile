@@ -204,9 +204,6 @@ export default function StoreInformationAdd({ reloadData }) {
 
   useEffect(() => {
     apiProvinceData()
-
-    if (location.state && location.state === 'show-modal-create-store')
-      modal3VisibleModal(true)
   }, [])
 
   const dataValue = form.getFieldValue()

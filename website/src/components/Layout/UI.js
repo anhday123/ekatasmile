@@ -60,6 +60,7 @@ import { PERMISSIONS } from 'consts'
 //apis
 import { apiAllRole, updateUser, apiSearch } from 'apis/user'
 import { getAllStore } from 'apis/store'
+import { getAllBranch } from 'apis/branch'
 
 import { decodeToken } from 'react-jwt'
 const { Sider } = Layout
@@ -70,7 +71,7 @@ const UI = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
 
-  const [listStore, setListStore] = useState([])
+  const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
   const login = useSelector((state) => state.login)
   const dataUser = localStorage.getItem('accessToken')
@@ -82,22 +83,10 @@ const UI = (props) => {
   const [role, setRole] = useState([])
   const [modal1Visible, setModal1Visible] = useState(false)
   const dispatch = useDispatch()
-  const [count, setCount] = useState(0)
   const [collapsed, setCollapsed] = useState(
     location.pathname === ROUTES.SELL ? true : false
   ) //nếu nhấn vào menu bán hàng thì thu gọn menu
-  const [loadingStore, setLoadingStore] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
-  var toggle = (data) => {
-    if (count === 0) {
-      dispatch({ type: types.authConstants.TOGGLE, temp: data })
-      setCount(1)
-    } else {
-      dispatch({ type: types.authConstants.TOGGLE, temp: 0 })
-      setCount(0)
-    }
-  }
 
   const getInfoUser = async () => {
     try {
@@ -110,15 +99,13 @@ const UI = (props) => {
     }
   }
 
-  const getStoreByUser = async () => {
+  const getAllBranchData = async () => {
     try {
-      setLoadingStore(true)
-      const res = await getAllStore()
-
-      if (res.status === 200) setListStore(res.data.data)
-      setLoadingStore(false)
+      const res = await getAllBranch()
+      if (res.status === 200) {
+        setListBranch(res.data.data)
+      }
     } catch (error) {
-      setLoadingStore(false)
       console.log(error)
     }
   }
@@ -152,7 +139,7 @@ const UI = (props) => {
     },
     {
       path: ROUTES.BUSINESS,
-      title: 'Quản lý kinh doanh',
+      title: 'Quản lý các doanh nghiệp',
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
@@ -168,11 +155,17 @@ const UI = (props) => {
           title: 'Quản lý sản phẩm',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
+        // {
+        //   icon: <BankOutlined />,
+        //   path: ROUTES.INVENTORY,
+        //   title: 'Quản lý kho',
+        //   permissions: [PERMISSIONS.quan_li_kho],
+        // },
         {
           icon: <BankOutlined />,
-          path: ROUTES.INVENTORY,
-          title: 'Quản lý kho',
-          permissions: [PERMISSIONS.quan_li_kho],
+          path: ROUTES.BRANCH,
+          title: 'Quản lý chi nhánh & kho',
+          permissions: [PERMISSIONS.quan_li_chi_nhanh],
         },
         {
           icon: <RotateLeftOutlined />,
@@ -200,12 +193,12 @@ const UI = (props) => {
       permissions: [PERMISSIONS.khuyen_mai],
       icon: <TagsOutlined />,
     },
-    {
-      path: ROUTES.PRODUCT_CHECK,
-      title: 'Kiểm hàng cuối ngày',
-      permissions: [PERMISSIONS.kiem_hang_cuoi_ngay],
-      icon: <AlertOutlined />,
-    },
+    // {
+    //   path: ROUTES.PRODUCT_CHECK,
+    //   title: 'Kiểm hàng cuối ngày',
+    //   permissions: [PERMISSIONS.kiem_hang_cuoi_ngay],
+    //   icon: <AlertOutlined />,
+    // },
     {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
@@ -483,11 +476,6 @@ const UI = (props) => {
     }
   }
 
-  function handleChange(value) {
-    const actions = getStoreSelectValue(value)
-    dispatch(actions)
-  }
-
   const [list, setList] = useState('')
   const propsMain = {
     name: 'file',
@@ -630,15 +618,10 @@ const UI = (props) => {
     }
   }
 
-  const changeBranch = (value) => {
-    localStorage.store = value
-    updateUser({ store_id: value }, user.user_id)
-  }
-
   useEffect(() => {
     getInfoUser()
-    getStoreByUser()
     apiAllRoleData()
+    getAllBranchData()
   }, [])
 
   //get width device
@@ -889,7 +872,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 230}
+        width={isMobile ? '100%' : 240}
         collapsedWidth={isMobile ? 0 : 150}
         style={{
           backgroundColor: 'white',
@@ -995,8 +978,8 @@ const UI = (props) => {
                 <Permission permissions={[PERMISSIONS.them_cua_hang]}>
                   <Link
                     to={{
-                      pathname: ROUTES.STORE,
-                      state: 'show-modal-create-store',
+                      pathname: ROUTES.BRANCH,
+                      state: 'show-modal-create-branch',
                     }}
                     style={{ marginRight: '1rem', cursor: 'pointer' }}
                   >
@@ -1008,21 +991,22 @@ const UI = (props) => {
                         borderColor: '#FFAB2D',
                         fontWeight: 600,
                         marginLeft: 10,
+                        display: login.role === 'EMPLOYEE' && 'none',
                       }}
                     >
-                      Thêm cửa hàng
+                      Thêm chi nhánh & kho
                     </Button>
                   </Link>
                 </Permission>
                 <Select
-                  placeholder="Chọn cửa hàng"
+                  disabled={login.role === 'EMPLOYEE' ? true : false}
+                  placeholder="Chọn chi nhánh & kho"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
-                  onChange={changeBranch}
-                  defaultValue={localStorage.store || dataUser.data.store_id}
+                  defaultValue={dataUser && dataUser.data.branch_id}
                 >
-                  {listStore.map((e, index) => (
-                    <Option value={e.store_id} key={index}>
+                  {listBranch.map((e, index) => (
+                    <Option value={e.branch_id} key={index}>
                       {e.name}
                     </Option>
                   ))}

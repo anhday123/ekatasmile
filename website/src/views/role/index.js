@@ -14,6 +14,7 @@ import {
   Button,
   Switch,
   Input,
+  Tree,
 } from 'antd'
 
 import {
@@ -35,6 +36,117 @@ export default function Role() {
   const [visible, setVisible] = useState(false)
   const [permission, setPermission] = useState([])
 
+  const PERMISSIONS_APP = [
+    {
+      pParent: 'tong_quan',
+    },
+    {
+      pParent: 'ban_hang',
+    },
+    {
+      pParent: 'danh_sach_don_hang',
+      pChildren: ['tao_don_hang'],
+    },
+    {
+      pParent: 'business_management',
+    },
+    {
+      pParent: 'san_pham',
+    },
+    {
+      pParent: 'quan_li_san_pham',
+      pChildren: [
+        'nhom_san_pham',
+        'them_san_pham',
+        'tao_nhom_san_pham',
+        'xoa_nhom_san_pham',
+        'cap_nhat_nhom_san_pham',
+      ],
+    },
+    {
+      pParent: 'quan_li_kho',
+      pChildren: ['them_kho', 'cap_nhat_kho'],
+    },
+    {
+      pParent: 'quan_li_chuyen_hang',
+      pChildren: [
+        'tao_phieu_chuyen_hang',
+        'cap_nhat_trang_thai_phieu_chuyen_hang',
+      ],
+    },
+    {
+      pParent: 'quan_li_nha_cung_cap',
+      pChildren: ['them_nha_cung_cap', 'cap_nhat_nha_cung_cap'],
+    },
+    {
+      pParent: 'quan_li_bao_hanh',
+      pChildren: ['them_phieu_bao_hanh'],
+    },
+    {
+      pParent: 'khuyen_mai',
+      pChildren: ['them_khuyen_mai'],
+    },
+    {
+      pParent: 'kiem_hang_cuoi_ngay',
+      pChildren: ['them_phieu_kiem_hang'],
+    },
+    {
+      pParent: 'quan_li_khach_hang',
+      pChildren: ['them_khach_hang', 'cap_nhat_khach_hang'],
+    },
+    {
+      pParent: 'bao_cao_don_hang',
+    },
+    {
+      pParent: 'bao_cao_cuoi_ngay',
+    },
+    {
+      pParent: 'bao_cao_nhap_hang',
+    },
+    {
+      pParent: 'bao_cao_ton_kho',
+    },
+    {
+      pParent: 'bao_cao_tai_chinh',
+    },
+    {
+      pParent: 'van_chuyen',
+    },
+    {
+      pParent: 'doi_soat_van_chuyen',
+      pChildren: ['them_phieu_doi_soat_van_chuyen'],
+    },
+    {
+      pParent: 'quan_li_doi_tac_van_chuyen',
+      pChildren: [
+        'them_doi_tac_van_chuyen',
+        'cap_nhat_doi_tac_van_chuyen',
+        'xoa_doi_tac_van_chuyen',
+      ],
+    },
+    {
+      pParent: 'cau_hinh_thong_tin',
+      pChildren: [
+        { parent: 'quan_li_nguoi_dung', children: ['them_nguoi_dung'] },
+        {
+          parent: 'quan_li_nhan_su',
+          children: ['them_nhan_su', 'cap_nhat_nhan_su'],
+        },
+        { parent: 'quan_li_thue', children: ['them_thue'] },
+        {
+          parent: 'quan_li_thanh_toan',
+          children: ['them_hinh_thuc_thanh_toan'],
+        },
+        { parent: 'nhap_xuat_file' },
+        { parent: 'nhat_ki_hoat_dong' },
+      ],
+    },
+    {
+      pParent: 'quan_li_phan_quyen',
+      pChildren: ['tao_quyen'],
+    },
+  ]
+
   const showDrawer = () => {
     setVisible(true)
   }
@@ -54,10 +166,12 @@ export default function Role() {
       description: 'Cập nhật quyền thành công',
     })
   }
-  const apiUpdateRolePermissionData = async (object) => {
+  const apiUpdateRolePermissionData = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateRolePermission(object, key)
+      console.log(body)
+      const res = await apiUpdateRolePermission(body, key)
+      console.log(res)
       if (res.status === 200) {
         await apiAllRolePermissionData()
         openNotificationUpdateRole()
@@ -68,30 +182,45 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  function onChange(checkedValues) {
-    rolePermission.forEach((values, index) => {
-      if (values.role_id === key) {
-        const object = {
-          permission_list: checkedValues,
-          menu_list: [...values.menu_list],
-          active: true,
-        }
-        apiUpdateRolePermissionData(object)
+
+  const addPermission = (permissionAdd, typePermission) => {
+    const role = rolePermission.find((e) => e.role_id === key)
+    if (role) {
+      let body = { active: true }
+      if (typePermission === 'permission_list') {
+        console.log(permissionAdd)
+        role.permission_list.push(permissionAdd)
+        body.permission_list = role.permission_list
       }
-    })
+      if (typePermission === 'menu_list') {
+        role.menu_list.push(permissionAdd)
+        body.menu_list = role.menu_list
+      }
+
+      apiUpdateRolePermissionData(body)
+    }
   }
 
-  function onChangeMenu(checkedValues) {
-    rolePermission.forEach((values, index) => {
-      if (values.role_id === key) {
-        const object = {
-          permission_list: [...values.permission_list],
-          menu_list: checkedValues,
-          active: true,
-        }
-        apiUpdateRolePermissionData(object)
+  const removePermission = (permissionAdd, typePermission) => {
+    const role = rolePermission.find((e) => e.role_id === key)
+    if (role) {
+      let body = { active: true }
+      if (typePermission === 'permission_list') {
+        const itemIndex = role.permission_list.findIndex(
+          (e) => e === permissionAdd
+        )
+        if (itemIndex !== -1) role.permission_list.splice(itemIndex, 1)
+
+        body.permission_list = role.permission_list
       }
-    })
+      if (typePermission === 'menu_list') {
+        const itemIndex = role.menu_list.findIndex((e) => e === permissionAdd)
+        if (itemIndex !== -1) role.menu_list.splice(itemIndex, 1)
+        body.menu_list = role.menu_list
+      }
+
+      apiUpdateRolePermissionData(body)
+    }
   }
 
   const [permissionAdd, setPermissionAdd] = useState([])
@@ -138,7 +267,7 @@ export default function Role() {
       const res = await apiAllRolePermission()
       console.log('role', res)
       if (res.status === 200) {
-        setRolePermission(res.data.data)
+        setRolePermission([...res.data.data])
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -313,99 +442,131 @@ export default function Role() {
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
               if (
-                values.name !== 'ADMIN' ||
-                (dataUser.data.role.name !== 'BUSINESS' &&
-                  values.name === 'BUSINESS')
+                values.name === 'ADMIN' ||
+                (values.name === 'BUSINESS' &&
+                  dataUser.data._role.name === 'BUSINESS')
               )
-                return (
-                  <Panel
-                    extra={
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Switch
-                          defaultChecked={values.active}
-                          onChange={(e) =>
-                            onClickDeleteDisable(e, values.role_id, index)
-                          }
-                        />
-                      </div>
-                    }
-                    header={`Permission ${values.name}`}
-                    key={values.role_id}
-                  >
-                    <Tabs defaultActiveKey="1">
-                      <TabPane tab="Quyền" key="1">
-                        <Checkbox.Group
-                          style={{ width: '100%' }}
-                          defaultValue={values.permission_list}
-                          onChange={onChange}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              paddingTop: '1rem',
-                              alignItems: 'center',
-                              width: '100%',
+                return ''
+
+              return (
+                <Panel
+                  extra={
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Switch
+                        defaultChecked={values.active}
+                        onChange={(e) =>
+                          onClickDeleteDisable(e, values.role_id, index)
+                        }
+                      />
+                    </div>
+                  }
+                  header={`Permission ${values.name}`}
+                  key={values.role_id}
+                >
+                  <Tree
+                    showIcon={false}
+                    defaultExpandAll={true}
+                    defaultExpandParent={true}
+                    treeData={PERMISSIONS_APP.map((p) => {
+                      return {
+                        title: (
+                          <Checkbox
+                            defaultChecked={[
+                              ...values.permission_list,
+                              ...values.menu_list,
+                            ].includes(p.pParent)}
+                            onClick={(e) => {
+                              if (e.target.checked)
+                                addPermission(p.pParent, 'menu_list')
+                              else removePermission(p.pParent, 'menu_list')
+                              e.stopPropagation()
                             }}
                           >
-                            {permission.map((values1, index1) => {
-                              return (
-                                <Col
-                                  style={{
-                                    width: '100%',
-                                    marginBottom: '1rem',
+                            {p.pParent}
+                          </Checkbox>
+                        ),
+                        key: p.pParent,
+                        children:
+                          p.pChildren &&
+                          p.pChildren.map((c) => {
+                            if (typeof c === 'string')
+                              return {
+                                title: (
+                                  <Checkbox
+                                    defaultChecked={[
+                                      ...values.permission_list,
+                                      ...values.menu_list,
+                                    ].includes(c)}
+                                    onClick={(e) => {
+                                      if (e.target.checked)
+                                        addPermission(c, 'permission_list')
+                                      else
+                                        removePermission(c, 'permission_list')
+                                      e.stopPropagation()
+                                    }}
+                                  >
+                                    {c}
+                                  </Checkbox>
+                                ),
+                                key: c,
+                              }
+
+                            return {
+                              title: (
+                                <Checkbox
+                                  defaultChecked={[
+                                    ...values.permission_list,
+                                    ...values.menu_list,
+                                  ].includes(c.parent)}
+                                  onClick={(e) => {
+                                    if (e.target.checked)
+                                      addPermission(c.parent, 'permission_list')
+                                    else
+                                      removePermission(
+                                        c.parent,
+                                        'permission_list'
+                                      )
+                                    e.stopPropagation()
                                   }}
-                                  xs={24}
-                                  sm={11}
-                                  md={7}
-                                  lg={7}
-                                  xl={5}
                                 >
-                                  <Checkbox value={values1}>{values1}</Checkbox>
-                                </Col>
-                              )
-                            })}
-                          </Row>
-                        </Checkbox.Group>
-                      </TabPane>
-                      <TabPane tab="Menu hiển thị" key="2">
-                        <Checkbox.Group
-                          style={{ width: '100%' }}
-                          defaultValue={values.menu_list}
-                          onChange={onChangeMenu}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              paddingTop: '1rem',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            {menu.map((values1, index1) => {
-                              return (
-                                <Col
-                                  style={{
-                                    width: '100%',
-                                    marginBottom: '1rem',
-                                  }}
-                                  xs={24}
-                                  sm={11}
-                                  md={7}
-                                  lg={7}
-                                  xl={5}
-                                >
-                                  <Checkbox value={values1}>{values1}</Checkbox>
-                                </Col>
-                              )
-                            })}
-                          </Row>
-                        </Checkbox.Group>
-                      </TabPane>
-                    </Tabs>
-                  </Panel>
-                )
+                                  {c.parent}
+                                </Checkbox>
+                              ),
+                              key: c.parent,
+                              children:
+                                c.children &&
+                                c.children.map((e) => {
+                                  return {
+                                    title: (
+                                      <Checkbox
+                                        defaultChecked={[
+                                          ...values.permission_list,
+                                          ...values.menu_list,
+                                        ].includes(e)}
+                                        onClick={(event) => {
+                                          if (event.target.checked)
+                                            addPermission(e, 'permission_list')
+                                          else
+                                            removePermission(
+                                              e,
+                                              'permission_list'
+                                            )
+                                          event.stopPropagation()
+                                        }}
+                                      >
+                                        {e}
+                                      </Checkbox>
+                                    ),
+                                    key: e,
+                                  }
+                                }),
+                            }
+                          }),
+                      }
+                    })}
+                  />
+                </Panel>
+              )
             })}
           </Collapse>
         </div>

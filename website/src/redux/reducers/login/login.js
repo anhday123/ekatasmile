@@ -1,4 +1,4 @@
-import { ACTION } from './../../../consts/index'
+import { ACTION } from 'consts'
 import { decodeToken } from 'react-jwt'
 // nhận data từ server
 const initialState = {
@@ -7,6 +7,7 @@ const initialState = {
   username: '',
   objectUsername: {},
   branchName: '',
+  role: '',
 }
 var login = (state = initialState, action) => {
   switch (action.type) {
@@ -30,6 +31,7 @@ var login = (state = initialState, action) => {
           dataUser: data,
           username: data.data.username,
           objectUsername: data.data,
+          role: data.data._role.name,
         }
       }
 
