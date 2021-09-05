@@ -68,6 +68,7 @@ export default function SaleDetailView() {
       title: 'Số lượng',
       dataIndex: 'productQuantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mã lô hàng',
@@ -83,6 +84,7 @@ export default function SaleDetailView() {
       title: 'Chi phí',
       dataIndex: 'cost',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     // {
     //   title: "Action",

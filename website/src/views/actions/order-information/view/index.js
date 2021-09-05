@@ -32,6 +32,7 @@ export default function OrderInformationView() {
       title: 'Giá (VNĐ)',
       dataIndex: 'productprice',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Thuế',

@@ -181,6 +181,7 @@ export default function User() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => <div>{moment(text).format('YYYY-MM-DD')}</div>,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Tên hiển thị',

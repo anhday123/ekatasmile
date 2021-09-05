@@ -16,8 +16,9 @@ import {
   DatePicker,
   Select,
   Table,
+  Typography,
 } from 'antd'
-import { Link } from 'react-router-dom'
+
 import { PlusCircleOutlined } from '@ant-design/icons'
 import {
   apiAllInventory,
@@ -27,10 +28,10 @@ import {
 import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
 import InventoryAdd from 'views/actions/inventory/add'
-import { divide } from 'lodash'
+
 import InventoryView from 'views/actions/inventory/view'
 const { Option } = Select
-
+const { Text } = Typography
 const { RangePicker } = DatePicker
 
 export default function Inventory() {
@@ -132,6 +133,7 @@ export default function Inventory() {
       return 0
     } else {
       return str
+        .toString()
         .split('')
         .reverse()
         .reduce((prev, next, index) => {
@@ -168,6 +170,7 @@ export default function Inventory() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Loại kho',
@@ -189,6 +192,7 @@ export default function Inventory() {
       dataIndex: 'monthly_cost',
       width: 150,
       render: (text, record) => <div>{`${formatCash(String(text))} VNĐ`}</div>,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Quận/huyện',
@@ -210,11 +214,6 @@ export default function Inventory() {
       ),
     },
   ]
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
 
   const apiAllInventoryData = async () => {
     try {
@@ -739,6 +738,52 @@ export default function Inventory() {
             columns={columnsPromotion}
             dataSource={inventory}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>
+                        {formatCash(
+                          pageData.reduce((a, b) => a + b.monthly_cost, 0)
+                        )}{' '}
+                        VND
+                      </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>
@@ -1112,7 +1157,7 @@ export default function Inventory() {
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <InventoryAdd close={onCloseUpdate} />
+        <InventoryAdd close={onCloseUpdate} reload={apiAllInventoryData} />
       </Drawer>
       <Drawer
         visible={showView}
@@ -1120,7 +1165,11 @@ export default function Inventory() {
         onClose={() => setShowView(false)}
         title="Thông tin chi tiết kho"
       >
-        <InventoryView data={data} />
+        <InventoryView
+          data={data}
+          close={() => setShowView(false)}
+          reload={apiAllInventoryData}
+        />
       </Drawer>
     </>
   )

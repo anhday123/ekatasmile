@@ -58,6 +58,7 @@ export default function ReportInventory() {
       title: 'Số lượng tồn',
       dataIndex: 'productQuantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mã lô hàng',

@@ -2,7 +2,6 @@ import styles from './../business/business.module.scss'
 import React, { useEffect, useState } from 'react'
 import {
   Popconfirm,
-  message,
   Input,
   Row,
   Col,
@@ -11,10 +10,13 @@ import {
   Table,
   Modal,
   Button,
+  Typography,
 } from 'antd'
 import { apiAllUser } from 'apis/user'
 import { apiDistrict, apiProvince } from 'apis/information'
+import moment from 'moment'
 const { Option } = Select
+const { Text } = Typography
 const columns = [
   {
     title: 'STT',
@@ -80,18 +82,18 @@ export default function Business() {
     setFilter({ ...filter, province: value })
   }
   const columnsPromotion = [
-    {
-      title: 'Mã business',
-      dataIndex: 'businessCode',
-      width: 150,
-    },
+    // {
+    //   title: 'Mã business',
+    //   dataIndex: 'businessCode',
+    //   width: 150,
+    // },
     {
       title: 'Tên business',
-      dataIndex: 'businessName',
+      dataIndex: 'company_name',
     },
     {
       title: 'Liên hệ',
-      dataIndex: 'phoneNumber',
+      dataIndex: 'phone',
     },
     {
       title: 'Quận/huyện',
@@ -103,6 +105,10 @@ export default function Business() {
     },
     {
       title: 'Thời gian đăng kí',
+      dataIndex: 'create_date',
+      render(data) {
+        return moment(data).format('DD/MM/YYYY')
+      },
     },
     {
       title: 'Lĩnh vực kinh doanh',
@@ -290,6 +296,35 @@ export default function Business() {
             columns={columnsPromotion}
             dataSource={businessList}
             style={{ width: '100%' }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (

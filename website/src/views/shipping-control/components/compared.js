@@ -60,6 +60,7 @@ export default function Compared(props) {
       title: 'Ngày tạo đơn',
       dataIndex: 'revice_date',
       key: 5,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Tiền COD',
@@ -70,36 +71,43 @@ export default function Compared(props) {
       title: 'tiền chuyển khoản',
       dataIndex: 'transfer_cost',
       key: 7,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí vận chuyển',
       dataIndex: 'delivery_cost',
       key: 8,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tiền COD thực nhận',
       dataIndex: 'real_cod_cost',
       key: 9,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí bảo hiểm',
       dataIndex: 'insurance_cost',
       key: 10,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí giao hàng',
       dataIndex: 'shipping_cost',
       key: 11,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí chuyển hoàn',
       dataIndex: 'warehouse_cost',
       key: 12,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Phí lưu kho',
       dataIndex: 'warehouse_cost',
       key: 13,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Khối lượng',
@@ -108,15 +116,18 @@ export default function Compared(props) {
         return data + 'kg'
       },
       key: 14,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'revice_date',
       key: 15,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
       key: 16,
     },
     {

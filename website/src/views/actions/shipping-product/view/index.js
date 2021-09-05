@@ -67,11 +67,13 @@ export default function ShippingProduct() {
       title: 'Tồn kho',
       dataIndex: 'inventory',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     // {
     //   title: 'Action',
@@ -108,11 +110,13 @@ export default function ShippingProduct() {
       title: 'Tồn kho',
       dataIndex: 'inventory',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Action',

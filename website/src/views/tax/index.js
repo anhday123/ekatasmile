@@ -358,6 +358,7 @@ export default function Tax() {
       title: 'Giá trị',
       dataIndex: 'value',
       render: (text, record) => text && `${text}%`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Mô tả',

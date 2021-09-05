@@ -144,6 +144,7 @@ export default function Customer() {
       render(data) {
         return data && moment(data).format('L')
       },
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Liên hệ',

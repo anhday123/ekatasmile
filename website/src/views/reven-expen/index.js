@@ -19,6 +19,7 @@ const columns = [
     title: 'Ngày',
     dataIndex: 'date',
     width: 150,
+    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
   },
   {
     title: 'Diễn giải',
@@ -51,7 +52,7 @@ const data = []
 for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
-    date: `2021/04/30 ${i}`,
+    date: `2021-04-30`,
     explain: `Trả tiền văn phòng ${i}`,
     money: `${i} VNĐ`,
     reven: `Doanh thu bán hàng ${i}`,

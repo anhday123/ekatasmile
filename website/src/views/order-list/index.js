@@ -132,6 +132,7 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Nhân viên',
@@ -159,12 +160,14 @@ export default function OrderList() {
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Khách đã trả',
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
   ]
   const columnsPromotionWebsite = [
@@ -179,6 +182,7 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Khách hàng',
@@ -243,6 +247,7 @@ export default function OrderList() {
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
+      sorter: (a, b) => a - b,
     },
   ]
 
@@ -252,6 +257,7 @@ export default function OrderList() {
       dataIndex: 'sale_price',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tên sản phẩm',
@@ -346,6 +352,7 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))}`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
 
     {
@@ -353,6 +360,7 @@ export default function OrderList() {
       dataIndex: 'total_cost',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Voucher',
@@ -367,6 +375,7 @@ export default function OrderList() {
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
+      sorter: (a, b) => a - b,
       render: (text, record) =>
         text ? (
           <div

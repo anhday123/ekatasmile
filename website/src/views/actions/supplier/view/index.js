@@ -52,11 +52,13 @@ const columns = [
     title: 'Loại',
     dataIndex: 'producttype',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng',
     dataIndex: 'productquantity',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Nhà cung cấp',

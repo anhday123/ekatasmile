@@ -42,11 +42,13 @@ export default function OrderListView() {
       title: 'Giá (VNĐ)',
       dataIndex: 'productprice',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Thuế',
       dataIndex: 'tax',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Chiết khấu',
@@ -57,11 +59,13 @@ export default function OrderListView() {
       title: 'Số lượng',
       dataIndex: 'productquantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'moneyTotal',
       width: 150,
+      sorter: (a, b) => a - b,
     },
   ]
   const [selectedRowKeys, setSelectedRowKeys] = useState([])

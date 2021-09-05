@@ -10,6 +10,7 @@ import {
   Table,
   notification,
   Drawer,
+  Typography,
 } from 'antd'
 
 import { PERMISSIONS } from 'consts'
@@ -26,6 +27,7 @@ import ChangeStatusModal from 'components/shipping-product/changeStatus'
 import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
 
+const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function ShippingProduct() {
@@ -204,11 +206,13 @@ export default function ShippingProduct() {
       render(data) {
         return moment(data).format('DD-MM-YYYY hh:mm')
       },
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'dateReceive',
       width: 150,
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Nhân viên tạo',
@@ -550,6 +554,47 @@ export default function ShippingProduct() {
             pagination={{ onChange: changePage, total: totalRecord }}
             dataSource={deliveryList}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

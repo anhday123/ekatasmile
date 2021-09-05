@@ -3,7 +3,6 @@ import styles from './../view/view.module.scss'
 import {
   Popconfirm,
   Button,
-  Input,
   Form,
   Row,
   Col,
@@ -14,7 +13,7 @@ import {
   notification,
 } from 'antd'
 import { Link } from 'react-router-dom'
-import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 
 const { Text } = Typography
@@ -44,16 +43,19 @@ const columns = [
     title: 'Tồn chi nhánh',
     dataIndex: 'branchInventory',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Tồn thực tế',
     dataIndex: 'realityInventory',
     width: 150,
+    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng lệch',
     dataIndex: 'deviationAmount',
     width: 150,
+    sorter: (a, b) => a - b,
   },
 ]
 

@@ -106,6 +106,7 @@ export default function EmployeeDelete() {
     {
       title: 'STT',
       dataIndex: 'stt',
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Tên',

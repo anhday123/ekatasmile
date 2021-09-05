@@ -28,6 +28,7 @@ import {
   Space,
   Modal,
   Upload,
+  Typography,
 } from 'antd'
 
 //components
@@ -43,6 +44,7 @@ import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
+const { Text } = Typography
 export default function Branch() {
   const typingTimeoutRef = useRef(null)
 
@@ -122,6 +124,7 @@ export default function Branch() {
       dataIndex: 'create_date',
       render: (text) =>
         text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
+      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
     },
     {
       title: 'Liên hệ',
@@ -619,6 +622,41 @@ export default function Branch() {
                 getAllBranchData({ page, page_size: pageSize, ...paramsFilter })
               },
               total: countBranch,
+            }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
             }}
             size="small"
           />

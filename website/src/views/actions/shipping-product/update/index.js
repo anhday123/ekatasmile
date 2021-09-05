@@ -42,11 +42,13 @@ export default function DeliveryUpdate() {
       title: 'Tồn kho',
       dataIndex: 'available_stock_quantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
+      sorter: (a, b) => a - b,
     },
     // {
     //   title: 'Action',
