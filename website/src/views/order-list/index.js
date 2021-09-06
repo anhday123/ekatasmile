@@ -20,7 +20,7 @@ import moment from 'moment'
 import { apiAllOrder } from './../../apis/order'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permissions from 'components/permission'
-import { compare, compareCustom } from 'utils'
+import { compare, compareCustom, tableSum } from 'utils'
 
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -1197,6 +1197,40 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   pagination={false}
                   dataSource={order}
+                  summary={(pageData) => {
+                    return (
+                      <Table.Summary fixed>
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
+                              VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      </Table.Summary>
+                    )
+                  }}
                 />
                 <Pagination
                   style={{
@@ -1808,6 +1842,40 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   pagination={false}
                   dataSource={order}
+                  summary={(pageData) => {
+                    return (
+                      <Table.Summary fixed>
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
+                              VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      </Table.Summary>
+                    )
+                  }}
                 />
                 <Pagination
                   style={{
@@ -2418,6 +2486,40 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   pagination={false}
                   dataSource={order}
+                  summary={(pageData) => {
+                    return (
+                      <Table.Summary fixed>
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text>
+                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
+                              VND
+                            </Text>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Text></Text>
+                          </Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      </Table.Summary>
+                    )
+                  }}
                 />
                 <Pagination
                   style={{

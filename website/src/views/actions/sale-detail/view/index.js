@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+import { tableSum } from 'utils'
 const { Option } = Select
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -113,7 +114,6 @@ export default function SaleDetailView() {
       dataIndex: 'cost',
       width: 150,
       sorter: (a, b) => a.cost - b.cost,
-      sortDirections: ['descend', 'ascend'],
     },
     // {
     //   title: "Action",
@@ -361,11 +361,10 @@ export default function SaleDetailView() {
                 <Table.Summary fixed>
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
-                      {' '}
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng:</Text>
+                      <Text>Tổng cộng: {pageData.length}</Text>
                       {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
@@ -375,7 +374,9 @@ export default function SaleDetailView() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>{`${totalPrice}`}</Text>
+                      <Text>
+                        Tổng số lượng:{tableSum(pageData, 'productQuantity')}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

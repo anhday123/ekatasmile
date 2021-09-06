@@ -256,10 +256,10 @@ export default function CompareHistory(props) {
             <Table.Summary fixed>
               <Table.Summary.Row>
                 <Table.Summary.Cell>
-                  <Text></Text>
+                  <Text>Tổng cộng:{`${pageData.length}`}</Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                  <Text></Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Text></Text>

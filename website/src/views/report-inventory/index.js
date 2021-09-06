@@ -307,7 +307,6 @@ export default function ReportInventory() {
             summary={(pageData) => {
               let totalPrice = 0
 
-              console.log(pageData)
               pageData.forEach((values, index) => {
                 totalPrice += parseInt(values.productQuantity)
               })
@@ -316,20 +315,19 @@ export default function ReportInventory() {
                 <Table.Summary fixed>
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
-                      {' '}
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng:</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
+                      <Text>Tổng cộng:{pageData.length}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>{`${totalPrice}`}</Text>
+                      <Text>Số lượng tồn: {totalPrice}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

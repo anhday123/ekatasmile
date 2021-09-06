@@ -763,7 +763,11 @@ export default function ShippingProductAdd(props) {
                         <Text></Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
                         <Text>
+                          {' '}
                           Tổng cộng:
                           {`${pageData.reduce(
                             (a, b) =>
@@ -771,9 +775,6 @@ export default function ShippingProductAdd(props) {
                             0
                           )}`}
                         </Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
                         <Text></Text>

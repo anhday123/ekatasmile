@@ -25,7 +25,7 @@ import { useDispatch } from 'react-redux'
 import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
-import { compare } from 'utils'
+import { compare, tableSum } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -70,6 +70,7 @@ for (let i = 0; i < 46; i++) {
 }
 function formatCash(str) {
   return str
+    .toString()
     .split('')
     .reverse()
     .reduce((prev, next, index) => {
@@ -427,7 +428,10 @@ export default function Promotion() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text></Text>
+                      <Text>
+                        Tổng số lượng khuyến mãi:{' '}
+                        {formatCash(tableSum(pageData, 'limit.amount'))}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

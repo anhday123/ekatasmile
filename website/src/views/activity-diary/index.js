@@ -23,7 +23,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { TramOutlined } from '@material-ui/icons'
 import { ROUTES } from 'consts'
-import { compare } from 'utils'
+import { compare, compareCustom } from 'utils'
 const { Option } = Select
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -150,6 +150,11 @@ export default function ActivityDiary() {
         record.performer.last_name
           ? `${record.performer.first_name} ${record.performer.last_name}`
           : '',
+      sorter: (a, b) =>
+        compareCustom(
+          a.performer && `${a.performer.first_name} ${a.performer.last_name}`,
+          b.performer && `${b.performer.first_name} ${b.performer.last_name}`
+        ),
     },
     {
       title: 'Tên chức năng',

@@ -13,7 +13,7 @@ import ImportFile from './ImportFile'
 import moment from 'moment'
 import { useState, useEffect } from 'react'
 import Modal from 'antd/lib/modal/Modal'
-import { compare } from 'utils'
+import { compare, tableSum, formatCash } from 'utils'
 const { Text } = Typography
 export default function Compared(props) {
   const { compareList } = props
@@ -381,28 +381,54 @@ export default function Compared(props) {
               <Table.Summary fixed>
                 <Table.Summary.Row>
                   <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
                     <Text>Tổng cộng:{`${pageData.length}`}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Tiền CoD thực nhận:
+                      {formatCash(tableSum(pageData, 'cod_real_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Tiền chuyển khoản:
+                      {formatCash(tableSum(pageData, 'transfer_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Phí vận chuyển:{' '}
+                      {formatCash(tableSum(pageData, 'delivery_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Phí bảo hiểm:{' '}
+                      {formatCash(tableSum(pageData, 'insurance_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Phí chuyển hoàn:{' '}
+                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Phí giao hàng:{' '}
+                      {formatCash(tableSum(pageData, 'shipping_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Phí lưu kho:{' '}
+                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
+                    </Text>
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
               </Table.Summary>

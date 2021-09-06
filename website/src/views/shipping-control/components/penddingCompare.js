@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Input, Row, Col, DatePicker, Select, Table, Typography } from 'antd'
 import moment from 'moment'
 import ImportFile from './ImportFile'
-import { compare } from 'utils'
+import { compare, tableSum } from 'utils'
 const { Option } = Select
 const { RangePicker } = DatePicker
 const { Text } = Typography
@@ -316,13 +316,15 @@ export default function PenddingCompare(props) {
                     <Text></Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>Tiền CoD: {tableSum(pageData, 'cod_cost')}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
                     <Text></Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text></Text>
+                    <Text>
+                      Tiền chuyển khoản: {tableSum(pageData, 'transfer_cost')}
+                    </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
                     <Text></Text>
