@@ -239,22 +239,31 @@ export default function BranchView(props) {
     {
       title: 'Mã nhân sự',
       dataIndex: 'user_id',
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.user_id - b.user_id,
       render: (text, record) => <div>{text}</div>,
     },
     {
       title: 'Tên đăng nhập',
       dataIndex: 'username',
+      sorter: (a, b) => {
+        return a.username > b.username ? 1 : a.username === b.username ? 0 : -1
+      },
     },
 
     {
       title: 'Chi nhánh',
       dataIndex: 'branch',
       render: (text, record) => <div>{text.name}</div>,
+      sorter: (a, b) => {
+        return a.branch > b.branch ? 1 : a.branch === b.branch ? 0 : -1
+      },
     },
     {
       title: 'Chức vụ',
       dataIndex: '_role',
+      sorter: (a, b) => {
+        return a._role > b._role ? 1 : a._role === b._role ? 0 : -1
+      },
     },
     {
       title: 'Tên nhân sự',
@@ -262,29 +271,51 @@ export default function BranchView(props) {
       render: (text, record) => (
         <div>{`${record.first_name} ${record.last_name}`}</div>
       ),
+      sorter: (a, b) => {
+        return `${a.first_name} ${a.last_name}` >
+          `${b.first_name} ${b.last_name}`
+          ? 1
+          : `${a.first_name} ${a.last_name}` ===
+            `${b.first_name} ${b.last_name}`
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Ngày gia nhập',
       dataIndex: 'create_date',
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Email',
       dataIndex: 'email',
+      sorter: (a, b) => {
+        return a.email > b.email ? 1 : a.email === b.email ? 0 : -1
+      },
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
+      sorter: (a, b) => {
+        return a.address > b.address ? 1 : a.address === b.address ? 0 : -1
+      },
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
+      sorter: (a, b) => {
+        return a.district > b.district ? 1 : a.district === b.district ? 0 : -1
+      },
     },
 
     {
       title: 'Tỉnh/thành phố',
       dataIndex: 'province',
+      sorter: (a, b) => {
+        return a.province > b.province ? 1 : a.province === b.province ? 0 : -1
+      },
     },
     {
       title: 'Trạng thái',
@@ -757,17 +788,6 @@ export default function BranchView(props) {
         style={{ paddingBottom: '1rem' }}
         className={styles['supplier_information']}
       >
-        <Link
-          className={styles['supplier_information_title']}
-          to={ROUTES.BRANCH}
-        >
-          <ArrowLeftOutlined
-            style={{ color: 'black', fontWeight: '600', fontSize: '1rem' }}
-          />
-          <div className={styles['supplier_information_title_right']}>
-            Chi nhánh {props.data.name}
-          </div>
-        </Link>
         <div
           style={{
             display: 'flex',

@@ -10,47 +10,69 @@ import {
   notification,
   Row,
   Col,
-  Steps,
   Tree,
   Table,
   Modal,
+  Typography,
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import React, { useState } from 'react'
 const { Option } = Select
+const { Text } = Typography
 const columns = [
   {
     title: 'STT',
     dataIndex: 'stt',
     width: 150,
-    sorter: (a, b) => a - b,
   },
   {
     title: 'Mã hàng',
     dataIndex: 'productCode',
     width: 150,
+    sorter: (a, b) => {
+      return a.productCode > b.productCode
+        ? 1
+        : a.productCode === b.productCode
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Tên sản phẩm',
     dataIndex: 'productName',
     width: 150,
+    sorter: (a, b) => {
+      return a.productName > b.productName
+        ? 1
+        : a.productName === b.productName
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Mã bảo hành',
     dataIndex: 'guaranteeCode',
     width: 150,
+    sorter: (a, b) => {
+      return a.guaranteeCode > b.guaranteeCode
+        ? 1
+        : a.guaranteeCode === b.guaranteeCode
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Số lượng',
     dataIndex: 'quantity',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => a.quantity - b.quantity,
   },
   {
     title: 'Hẹn trả khách',
     dataIndex: 'payment',
     width: 150,
+    sorter: (a, b) => moment(a.payment).unix() - moment(b.payment).unix(),
   },
 ]
 
@@ -63,7 +85,7 @@ for (let i = 0; i < 46; i++) {
     productName: `Ly thủy tinh`,
     guaranteeCode: `MH${i}`,
     quantity: i,
-    payment: '2021/07/17, 15:15',
+    payment: '2021-07-17T15:15:00+07:00',
   })
 }
 const treeData = [
@@ -510,6 +532,38 @@ export default function GuaranteeUpdate() {
               columns={columns}
               dataSource={data}
               scroll={{ y: 500 }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (

@@ -20,6 +20,7 @@ import moment from 'moment'
 import { apiAllWarranty, updateWarranty } from '../../apis/warranty'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permission from 'components/permission'
+import { compare } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -106,16 +107,19 @@ export default function Guarantee() {
       title: 'Mã phiếu',
       dataIndex: 'code',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên bảo hành',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Loại bảo hành',
       dataIndex: 'type',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Thời hạn bảo hành',
@@ -124,12 +128,13 @@ export default function Guarantee() {
       render(data) {
         return data + ' tháng'
       },
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.time - b.time,
     },
     {
       title: 'Mô tả',
       dataIndex: 'description',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'description'),
     },
     {
       title: 'Trạng thái',

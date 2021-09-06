@@ -28,6 +28,7 @@ import { apiFilterCity } from '../../apis/branch'
 import SupplierAdd from 'views/actions/supplier/add'
 import SupplierInformation from 'views/actions/supplier/information'
 import Permission from 'components/permission'
+import { compare } from 'utils'
 
 const { Text } = Typography
 const { Option } = Select
@@ -367,44 +368,52 @@ export default function Supplier() {
           {text}
         </span>
       ),
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên nhà cung cấp',
       dataIndex: 'name',
       width: 150,
       render: (text, record) => <div>{text}</div>,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Tỉnh/thành phố',
       dataIndex: 'province',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Email',
       dataIndex: 'email',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'email'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
 
     {

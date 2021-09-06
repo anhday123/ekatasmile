@@ -47,6 +47,7 @@ import {
   Col,
   Tabs,
   Popconfirm,
+  Typography,
 } from 'antd'
 
 //apis
@@ -61,10 +62,12 @@ import { getAllStore } from 'apis/store'
 import { apiAllTax } from 'apis/tax'
 import { apiAllShipping } from 'apis/shipping'
 import { apiCheckPromotion, getAllPromotion, getPromoton } from 'apis/promotion'
+import { compare } from 'utils'
 
 const ButtonGroup = Button.Group
 const { TabPane } = Tabs
 const { Option } = Select
+const { Text } = Typography
 export default function Sell() {
   const [form] = Form.useForm()
   const dataUser = localStorage.getItem('accessToken')
@@ -3421,40 +3424,42 @@ export default function Sell() {
     {
       title: 'Mã SKU',
       dataIndex: 'sku',
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
+      sorter: (a, b) => compare(a, b, 'title'),
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       render: (text, record) => `${formatCash(String(text))}`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
     {
       title: 'Đơn giá',
       dataIndex: 'sale_price',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'sale_price'),
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'total_cost',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'total_cost'),
     },
     {
       title: 'Chiết khấu',
       dataIndex: 'discount',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'discount'),
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
@@ -4037,7 +4042,8 @@ export default function Sell() {
       dataIndex: 'create_date',
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Khách hàng',
@@ -4052,12 +4058,14 @@ export default function Sell() {
         ) : (
           ''
         ),
+      sorter: (a, b) => compare(a, b, 'customer'),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       render: (text, record) =>
         text ? <div style={{ color: '#50D648' }}>{record.status}</div> : '',
+      sorter: (a, b) => compare(a, b, 'status'),
     },
 
     {
@@ -4071,7 +4079,7 @@ export default function Sell() {
         ) : (
           0
         ),
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
   ]
   const columnsDetailOrder = [
@@ -4080,20 +4088,23 @@ export default function Sell() {
       dataIndex: 'sale_price',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'sale_price'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
+      sorter: (a, b) => compare(a, b, 'title'),
     },
     {
       title: 'SKU',
       dataIndex: 'sku',
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
 
     {
       title: 'Nhà cung cấp',
       dataIndex: 'supplier',
+      sorter: (a, b) => compare(a, b, 'suppler'),
     },
     {
       title: 'Thuộc tính',
@@ -4171,7 +4182,7 @@ export default function Sell() {
       dataIndex: 'quantity',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))}`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
 
     {
@@ -4179,7 +4190,7 @@ export default function Sell() {
       dataIndex: 'total_cost',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'total_cost'),
     },
     {
       title: voucherSaveCheck === 1 ? 'Voucher' : 'Promotion',
@@ -4190,7 +4201,7 @@ export default function Sell() {
       dataIndex: 'discount',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'discount'),
     },
     {
       title: 'Thành tiền',
@@ -4203,7 +4214,7 @@ export default function Sell() {
         ) : (
           0
         ),
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
   ]
   const apiAllOrderDataTable = async (page, page_size) => {
@@ -7282,6 +7293,38 @@ export default function Sell() {
             columns={columnsTable}
             dataSource={orderDetail}
             scroll={{ y: 250 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
 
           <Row
@@ -7608,6 +7651,38 @@ export default function Sell() {
                   },
                   expandedRowKeys: selectedRowKeysOrderList,
                   expandIconColumnIndex: -1,
+                }}
+                summary={(pageData) => {
+                  return (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )
                 }}
               />
             </div>

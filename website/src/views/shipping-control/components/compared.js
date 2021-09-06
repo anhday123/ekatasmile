@@ -7,11 +7,14 @@ import {
   Button,
   Table,
   Checkbox,
+  Typography,
 } from 'antd'
 import ImportFile from './ImportFile'
 import moment from 'moment'
 import { useState, useEffect } from 'react'
 import Modal from 'antd/lib/modal/Modal'
+import { compare } from 'utils'
+const { Text } = Typography
 export default function Compared(props) {
   const { compareList } = props
   const { Option } = Select
@@ -35,79 +38,87 @@ export default function Compared(props) {
       title: 'Mã đơn hàng',
       dataIndex: 'order',
       key: 0,
+      sorter: (a, b) => compare(a, b, 'order'),
     },
     {
       title: 'Mã vận đơn',
       dataIndex: 'code',
       key: 1,
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'DVVC',
       dataIndex: 'shipping_company',
       key: 2,
+      sorter: (a, b) => compare(a, b, 'shipping_company'),
     },
     {
       title: 'Tên khách hàng',
       dataIndex: '',
       key: 3,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Mã số khách',
       dataIndex: '',
       key: 4,
+      sorter: (a, b) => compare(a, b, 'customer_id'),
     },
     {
       title: 'Ngày tạo đơn',
       dataIndex: 'revice_date',
       key: 5,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Tiền COD',
       dataIndex: 'cod_cost',
       key: 6,
+      sorter: (a, b) => compare(a, b, 'cod_cost'),
     },
     {
       title: 'tiền chuyển khoản',
       dataIndex: 'transfer_cost',
       key: 7,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'transfer_cost'),
     },
     {
       title: 'Phí vận chuyển',
       dataIndex: 'delivery_cost',
       key: 8,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'delivery_cost'),
     },
     {
       title: 'Tiền COD thực nhận',
       dataIndex: 'real_cod_cost',
       key: 9,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'real_cod_cost'),
     },
     {
       title: 'Phí bảo hiểm',
       dataIndex: 'insurance_cost',
       key: 10,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'insurance_cost'),
     },
     {
       title: 'Phí giao hàng',
       dataIndex: 'shipping_cost',
       key: 11,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'shipping_cost'),
     },
     {
       title: 'Phí chuyển hoàn',
       dataIndex: 'warehouse_cost',
       key: 12,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'warehouse_cost'),
     },
     {
       title: 'Phí lưu kho',
       dataIndex: 'warehouse_cost',
       key: 13,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'warehouse_cost'),
     },
     {
       title: 'Khối lượng',
@@ -116,18 +127,20 @@ export default function Compared(props) {
         return data + 'kg'
       },
       key: 14,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'weight'),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'revice_date',
       key: 15,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.complete_date).unix() - moment(b.complete_date).unix(),
       key: 16,
     },
     {
@@ -135,11 +148,27 @@ export default function Compared(props) {
       dataIndex: 'note',
       width: 200,
       key: 17,
+      sorter: (a, b) => compare(a, b, 'note'),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 18,
+      render: (data) => (
+        <span
+          style={
+            data.toLowerCase() == 'processing'
+              ? { color: 'orange' }
+              : data.toLowerCase() == 'complete'
+              ? { color: 'green' }
+              : { color: 'red' }
+          }
+        >
+          {data}
+        </span>
+      ),
+
+      sorter: (a, b) => compare(a, b, 'status'),
     },
   ]
   const changeRange = (date, dateString) => {
@@ -347,6 +376,38 @@ export default function Compared(props) {
           dataSource={compareList.filter((e) =>
             e.status ? e.status.toLowerCase() == 'complete' : ''
           )}
+          summary={(pageData) => {
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
         />
       </div>
       <Modal

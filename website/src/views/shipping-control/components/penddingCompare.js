@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Popconfirm,
-  message,
-  Input,
-  Button,
-  Row,
-  Col,
-  DatePicker,
-  Select,
-  Table,
-} from 'antd'
+import { Input, Row, Col, DatePicker, Select, Table, Typography } from 'antd'
 import moment from 'moment'
 import ImportFile from './ImportFile'
+import { compare } from 'utils'
 const { Option } = Select
 const { RangePicker } = DatePicker
-
+const { Text } = Typography
 export default function PenddingCompare(props) {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [isOpenSelect, setIsOpenSelect] = useState(false)
@@ -31,52 +22,73 @@ export default function PenddingCompare(props) {
       title: 'Mã đơn hàng',
       dataIndex: 'order',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'order'),
     },
     {
       title: 'Mã vận đơn',
       dataIndex: 'code',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Đơn vị vận chuyển',
       dataIndex: 'shipping_company',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'shipping_company'),
     },
     {
       title: 'Tên khách hàng',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Mã số khách',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'customer_id'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'revice_date',
       width: 150,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Tiền CoD',
       dataIndex: 'cod_cost',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'cod_cost'),
     },
     {
       title: 'Tiền chuyển khoản',
       dataIndex: 'transfer_cost',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'transfer_cost'),
     },
     {
       title: 'Ghi chú đơn',
       dataIndex: 'note',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'note'),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       width: 150,
+      render: (data) => (
+        <span
+          style={
+            data.toLowerCase() == 'processing'
+              ? { color: 'orange' }
+              : data.toLowerCase() == 'complete'
+              ? { color: 'green' }
+              : { color: 'red' }
+          }
+        >
+          {data}
+        </span>
+      ),
+      sorter: (a, b) => compare(a, b, 'status'),
     },
   ]
   const onSelectChange = (selectedRowKeys) => {
@@ -290,6 +302,38 @@ export default function PenddingCompare(props) {
           )}
           scroll={{ y: 500 }}
           rowKey="_id"
+          summary={(pageData) => {
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
         />
       </div>
     </div>

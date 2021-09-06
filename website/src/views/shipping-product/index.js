@@ -26,6 +26,7 @@ import exportToCSV from '../../components/ExportCSV/export'
 import ChangeStatusModal from 'components/shipping-product/changeStatus'
 import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
+import { compare, compareCustom } from 'utils'
 
 const { Text } = Typography
 const { Option } = Select
@@ -107,6 +108,7 @@ export default function ShippingProduct() {
       title: 'Mã phiếu',
       dataIndex: 'code',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Nơi chuyển',
@@ -115,6 +117,7 @@ export default function ShippingProduct() {
       render(data) {
         return data.name
       },
+      sorter: (a, b) => compareCustom(a.name, b.name),
     },
     {
       title: 'Trạng thái',
@@ -190,6 +193,7 @@ export default function ShippingProduct() {
           }
         }
       },
+      sorter: (a, b) => compare(a, b, 'status'),
     },
     {
       title: 'Nơi nhận',
@@ -198,6 +202,7 @@ export default function ShippingProduct() {
       render(data) {
         return data.name
       },
+      sorter: (a, b) => compareCustom(a.name, b.name),
     },
     {
       title: 'Ngày chuyển',
@@ -206,18 +211,21 @@ export default function ShippingProduct() {
       render(data) {
         return moment(data).format('DD-MM-YYYY hh:mm')
       },
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'dateReceive',
       width: 150,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.dateReceive).unix() - moment(b.dateReceive).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
       width: 150,
+      sorter: (a, b) => compare(a, b, '_creator'),
     },
   ]
   const onClickStatus = (data) => {

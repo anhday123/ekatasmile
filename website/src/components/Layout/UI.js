@@ -77,7 +77,7 @@ const UI = (props) => {
   const dataUser = localStorage.getItem('accessToken')
     ? decodeToken(localStorage.getItem('accessToken'))
     : {}
-  console.log('datauser', dataUser)
+  // console.log('datauser', dataUser)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
@@ -618,6 +618,14 @@ const UI = (props) => {
     }
   }
 
+  const changeBranch = async (value) => {
+    try {
+      const res = await updateUser({ branch_id: value }, dataUser.user_id)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   useEffect(() => {
     getInfoUser()
     apiAllRoleData()
@@ -1003,6 +1011,7 @@ const UI = (props) => {
                   placeholder="Chọn chi nhánh & kho"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
+                  onChange={changeBranch}
                   defaultValue={dataUser && dataUser.data.branch_id}
                 >
                   {listBranch.map((e, index) => (

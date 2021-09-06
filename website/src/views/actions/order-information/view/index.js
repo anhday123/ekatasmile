@@ -22,43 +22,70 @@ export default function OrderInformationView() {
       title: 'Mã sản phẩm',
       dataIndex: 'productcode',
       width: 150,
+      sorter: (a, b) => {
+        return a.productcode > b.productcode
+          ? 1
+          : a.productcode === b.productcode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productname',
       width: 150,
+      sorter: (a, b) => {
+        return a.productname > b.productname
+          ? 1
+          : a.productname === b.productname
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Giá (VNĐ)',
       dataIndex: 'productprice',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.productprice - b.productprice,
     },
     {
       title: 'Thuế',
       dataIndex: 'tax',
       width: 150,
+      sorter: (a, b) => {
+        return a.tax > b.tax ? 1 : a.tax === b.tax ? 0 : -1
+      },
     },
     {
       title: 'Chiết khấu',
       dataIndex: 'discount',
       width: 150,
+      sorter: (a, b) => {
+        return a.discount > b.discount ? 1 : a.discount === b.discount ? 0 : -1
+      },
     },
     {
       title: 'Số lượng',
       dataIndex: 'productquantity',
       width: 150,
+      sorter: (a, b) => a.productquantity - b.productquantity,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'moneyTotal',
       width: 150,
+      sorter: (a, b) => {
+        return a.moneyTotal > b.moneyTotal
+          ? 1
+          : a.moneyTotal === b.moneyTotal
+          ? 0
+          : -1
+      },
     },
   ]
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
   }
   const rowSelection = {
@@ -81,10 +108,10 @@ export default function OrderInformationView() {
       productname: `tên sản phẩm ${i}`,
       productpicture: <FileImageOutlined />,
       productprice: `${i}`,
-      tax: `100.00${i}`,
-      discount: `200.00${i}`,
+      tax: `100.000`,
+      discount: `200.000`,
       productquantity: i,
-      moneyTotal: `300,00${i}`,
+      moneyTotal: `300,000`,
     })
   }
   return (

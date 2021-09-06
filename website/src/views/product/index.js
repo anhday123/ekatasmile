@@ -5,7 +5,6 @@ import {
   Switch,
   Drawer,
   Slider,
-  InputNumber,
   Upload,
   Select,
   Form,
@@ -22,6 +21,7 @@ import {
   Popover,
   Radio,
   Space,
+  Typography,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
@@ -57,7 +57,8 @@ import {
   apiProductCategoryMerge,
 } from 'apis/product'
 import { uploadFiles } from 'apis/upload'
-
+import { compare } from 'utils'
+const { Text } = Typography
 const { RangePicker } = DatePicker
 export default function Product() {
   const dispatch = useDispatch()
@@ -129,25 +130,30 @@ export default function Product() {
     {
       title: 'Mã nhóm',
       dataIndex: 'category_id',
+      sorter: (a, b) => compare(a, b, 'category_id'),
     },
     {
       title: 'Tên nhóm',
       dataIndex: 'name',
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Số lượng sản phẩm',
       dataIndex: 'address',
+      sorter: (a, b) => compare(a, b, 'address'),
     },
     {
       title: 'Người tạo',
       dataIndex: '_creator',
+      sorter: (a, b) => compare(a, b, '_creator'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
   ]
   const openNotificationSuccessCategoryMain = (data) => {
@@ -1536,7 +1542,7 @@ export default function Product() {
             )}
           </>
         ),
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'quantityMain'),
     },
 
     {
@@ -1551,6 +1557,7 @@ export default function Product() {
           {text ? text.toUpperCase() : ''}
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
     {
       title: 'Tên sản phẩm',
@@ -1647,6 +1654,7 @@ export default function Product() {
           )}
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Nhóm sản phẩm',
@@ -2019,7 +2027,7 @@ export default function Product() {
             </div>
           </>
         ),
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'sale_price'),
     },
 
     {
@@ -2029,7 +2037,8 @@ export default function Product() {
       render(data) {
         return moment(data).format('DD-MM-YYYY')
       },
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhà cung cấp',
@@ -3217,6 +3226,38 @@ export default function Product() {
               },
               total: count,
             }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>
@@ -3518,6 +3559,38 @@ export default function Product() {
               columns={columnsCategory}
               dataSource={category}
               scroll={{ x: 'max-content' }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
         </div>

@@ -41,6 +41,7 @@ import { apiDistrict, apiProvince } from 'apis/information'
 import { getAllStore } from 'apis/store'
 import { apiUpdateBranch, getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
+import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -114,34 +115,41 @@ export default function Branch() {
           {text}
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên chi nhánh',
       dataIndex: 'name',
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       render: (text) =>
         text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
+      sorter: (a, b) => compare(a, b, 'address'),
     },
 
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thành phố',
       dataIndex: 'province',
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Hành động',

@@ -1,4 +1,5 @@
-import { Modal, Table, Row } from 'antd'
+import { Modal, Table, Row, Typography } from 'antd'
+const { Text } = Typography
 export default function ImportModal(props) {
   const {
     visible,
@@ -26,6 +27,38 @@ export default function ImportModal(props) {
         size="small"
         loading={importLoading}
         dataSource={dataSource}
+        summary={(pageData) => {
+          return (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          )
+        }}
       />
     </Modal>
   )

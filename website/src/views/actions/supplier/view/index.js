@@ -11,16 +11,16 @@ import {
   Row,
   Col,
   DatePicker,
+  Typography,
 } from 'antd'
 import React, { useState } from 'react'
 import {
   ArrowLeftOutlined,
-  AudioOutlined,
   FileExcelOutlined,
   FileImageOutlined,
 } from '@ant-design/icons'
 import moment from 'moment'
-
+const { Text } = Typography
 const { RangePicker } = DatePicker
 const columns = [
   {
@@ -32,11 +32,25 @@ const columns = [
     title: 'Mã sản phẩm',
     dataIndex: 'productcode',
     width: 150,
+    sorter: (a, b) => {
+      return a.productcode > b.productcode
+        ? 1
+        : a.productcode === b.productcode
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Tên sản phẩm',
     dataIndex: 'productname',
     width: 150,
+    sorter: (a, b) => {
+      return a.productname > b.productname
+        ? 1
+        : a.productname === b.productname
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Hình ảnh',
@@ -47,12 +61,25 @@ const columns = [
     title: 'Giá (VNĐ)',
     dataIndex: 'productprice',
     width: 150,
+    sorter: (a, b) => {
+      return a.productprice > b.productprice
+        ? 1
+        : a.productprice === b.productprice
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Loại',
     dataIndex: 'producttype',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => {
+      return a.producttype > b.producttype
+        ? 1
+        : a.producttype === b.producttype
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Số lượng',
@@ -64,6 +91,9 @@ const columns = [
     title: 'Nhà cung cấp',
     dataIndex: 'supplier',
     width: 150,
+    sorter: (a, b) => {
+      return a.supplier > b.supplier ? 1 : a.supplier === b.supplier ? 0 : -1
+    },
   },
   // {
   //   title: "Action",
@@ -349,6 +379,38 @@ export default function SupplierView() {
             size="small"
             dataSource={data}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (

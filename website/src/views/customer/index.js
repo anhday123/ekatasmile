@@ -11,6 +11,7 @@ import {
   Table,
   notification,
   Drawer,
+  Typography,
 } from 'antd'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
@@ -20,7 +21,9 @@ import CustomerUpdate from '../actions/customer/update'
 import { PERMISSIONS } from 'consts'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
+import { compare } from 'utils'
 
+const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
 
@@ -124,6 +127,7 @@ export default function Customer() {
           </span>
         )
       },
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên khách hàng',
@@ -131,11 +135,13 @@ export default function Customer() {
       render(data) {
         return data.first_name + ' ' + data.last_name
       },
+      // sorter: (a,b)=>compare(a,b, )
     },
     {
       title: 'Loại khách hàng',
       dataIndex: 'type',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Ngày sinh',
@@ -144,27 +150,31 @@ export default function Customer() {
       render(data) {
         return data && moment(data).format('L')
       },
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thành phố',
       dataIndex: 'province',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Trạng thái',
@@ -371,6 +381,38 @@ export default function Customer() {
                 getAllCustomer({ page, page_size: pageSize, ...paramsFilter })
               },
               total: countCustomer,
+            }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
             }}
           />
         </div>

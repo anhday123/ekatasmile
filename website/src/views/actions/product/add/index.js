@@ -23,6 +23,7 @@ import {
   Space,
   Modal,
   Affix,
+  Typography,
 } from 'antd'
 
 //icons
@@ -40,6 +41,8 @@ import { apiAllInventory } from 'apis/inventory'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAddProduct } from 'apis/product'
+
+const { Text } = Typography
 
 export default function ProductAdd() {
   const [supplier, setSupplier] = useState([])
@@ -1183,6 +1186,38 @@ export default function ProductAdd() {
             size="small"
             style={{ width: '100%' }}
             scroll={{ x: 'max-content' }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

@@ -10,56 +10,65 @@ import {
   Row,
   Col,
   DatePicker,
+  Typography,
 } from 'antd'
-import {} from '@ant-design/icons'
+import { compare } from 'utils'
 const { Option } = Select
+const { Text } = Typography
 const columns = [
   {
     title: 'Mã đơn hàng',
     dataIndex: 'ordercode',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'ordercode'),
   },
   {
     title: 'Ngày tạo đơn',
     dataIndex: 'date',
     width: 150,
-    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+    sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
   },
   {
     title: 'Tên khách hàng',
     dataIndex: 'namecustomer',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'namecustomer'),
   },
   {
     title: 'Liên hệ',
     dataIndex: 'phonenumber',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'phonenumber'),
   },
   {
     title: 'Phải trả',
     dataIndex: 'payment',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => compare(a, b, 'payment'),
   },
   {
     title: 'Tên nhân viên tạo đơn',
     dataIndex: 'nameemployee',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'nameemployee'),
   },
   {
     title: 'Trạng thái đơn hàng',
     dataIndex: 'status',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'status'),
   },
   {
     title: 'Nhà vận chuyển',
     dataIndex: 'supplier',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'supplier'),
   },
   {
     title: 'Ghi chú',
     dataIndex: 'note',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'note'),
   },
 ]
 const data = []
@@ -201,6 +210,38 @@ export default function Orders() {
             columns={columns}
             dataSource={data}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

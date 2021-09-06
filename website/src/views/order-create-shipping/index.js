@@ -11,6 +11,7 @@ import {
   notification,
   Drawer,
   Select,
+  Typography,
 } from 'antd'
 import { useHistory } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
@@ -30,6 +31,7 @@ import { apiAllTax } from 'apis/tax'
 import { apiCheckPromotion, getPromoton } from 'apis/promotion'
 import { apiOrderVoucher } from 'apis/order'
 import { ROUTES } from 'consts'
+const { Text } = Typography
 function formatCash(str) {
   return str
     .toString()
@@ -382,7 +384,43 @@ export default function OrderCreateShipping() {
                 placeholder="Tìm kiếm sản phẩm"
               />
 
-              <Table columns={columns} size="small" dataSource={productData} />
+              <Table
+                columns={columns}
+                size="small"
+                dataSource={productData}
+                summary={(pageData) => {
+                  return (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )
+                }}
+              />
             </div>
             <div className={styles['block']} style={{ marginTop: 30 }}>
               <div className={styles['title']}>Thanh toán</div>

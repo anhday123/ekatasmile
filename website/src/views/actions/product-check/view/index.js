@@ -28,34 +28,47 @@ const columns = [
     title: 'Mã SKU',
     dataIndex: 'skuCode',
     width: 150,
+    sorter: (a, b) => {
+      return a.skuCode > b.skuCode ? 1 : a.skuCode === b.skuCode ? 0 : -1
+    },
   },
   {
     title: 'Tên sản phẩm',
     dataIndex: 'productName',
     width: 150,
+    sorter: (a, b) => {
+      return a.productName > b.productName
+        ? 1
+        : a.productName === b.productName
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Đơn vị',
     dataIndex: 'unit',
     width: 150,
+    sorter: (a, b) => {
+      return a.unit > b.unit ? 1 : a.unit === b.unit ? 0 : -1
+    },
   },
   {
     title: 'Tồn chi nhánh',
     dataIndex: 'branchInventory',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => a.branchInventory - b.branchInventory,
   },
   {
     title: 'Tồn thực tế',
     dataIndex: 'realityInventory',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => a.realityInventory - b.realityInventory,
   },
   {
     title: 'Số lượng lệch',
     dataIndex: 'deviationAmount',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => a.deviationAmount - b.deviationAmount,
   },
 ]
 

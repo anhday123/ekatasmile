@@ -12,6 +12,7 @@ import {
   DatePicker,
   Table,
   Modal,
+  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, StarOutlined } from '@ant-design/icons'
@@ -19,7 +20,9 @@ import moment from 'moment'
 import { apiAllOrder } from './../../apis/order'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permissions from 'components/permission'
+import { compare, compareCustom } from 'utils'
 
+const { Text } = Typography
 const { RangePicker } = DatePicker
 const { TabPane } = Tabs
 const columns = [
@@ -125,6 +128,7 @@ export default function OrderList() {
       title: 'Mã hóa đơn',
       dataIndex: 'order_id',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'order_id'),
     },
     {
       title: 'Ngày tạo',
@@ -132,7 +136,8 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên',
@@ -154,20 +159,25 @@ export default function OrderList() {
         record && record.customer && record.customer.first_name
           ? `${record.customer.first_name} ${record.customer.last_name}`
           : '',
+      sorter: (a, b) =>
+        compareCustom(
+          `${a.customer.first_name} ${a.customer.last_name}`,
+          `${b.customer.first_name} ${b.customer.last_name}`
+        ),
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
     {
       title: 'Khách đã trả',
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
   ]
   const columnsPromotionWebsite = [
@@ -175,6 +185,7 @@ export default function OrderList() {
       title: 'Mã hóa đơn',
       dataIndex: 'order_id',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'order_id'),
     },
     {
       title: 'Ngày tạo',
@@ -182,7 +193,8 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Khách hàng',
@@ -192,6 +204,11 @@ export default function OrderList() {
         record && record.customer && record.customer.first_name
           ? `${record.customer.first_name} ${record.customer.last_name}`
           : '',
+      sorter: (a, b) =>
+        compareCustom(
+          `${a.customer.first_name} ${a.customer.last_name}`,
+          `${b.customer.first_name} ${b.customer.last_name}`
+        ),
     },
     {
       title: 'Giao hàng',
@@ -220,6 +237,7 @@ export default function OrderList() {
       render: (text, record) => (
         <div style={{ color: 'black' }}>Giao nhanh</div>
       ),
+      sorter: (a, b) => compare(a, b, 'customerMain'),
     },
     {
       title: 'Đánh giá',
@@ -241,13 +259,14 @@ export default function OrderList() {
           <StarOutlined style={{ color: '#575755' }} />
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'customerMain'),
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
       width: 150,
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
     },
   ]
 
@@ -257,23 +276,26 @@ export default function OrderList() {
       dataIndex: 'sale_price',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'sale_price'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'title'),
     },
     {
       title: 'SKU',
       dataIndex: 'sku',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
 
     {
       title: 'Nhà cung cấp',
       dataIndex: 'supplier',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'supplier'),
     },
     {
       title: 'Thuộc tính',
@@ -345,6 +367,8 @@ export default function OrderList() {
         ) : (
           ''
         ),
+      // sorter: (a, b) =>
+      // compare(a,b, "customerMain"),
     },
     {
       title: 'Số lượng',
@@ -352,7 +376,7 @@ export default function OrderList() {
       width: 150,
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))}`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
 
     {
@@ -360,7 +384,7 @@ export default function OrderList() {
       dataIndex: 'total_cost',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'total_cost'),
     },
     {
       title: 'Voucher',
@@ -371,11 +395,13 @@ export default function OrderList() {
       dataIndex: 'discount',
       render: (text, record) =>
         text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
+      sorter: (a, b) => compare(a, b, 'discount'),
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'final_cost'),
+
       render: (text, record) =>
         text ? (
           <div
@@ -1125,6 +1151,40 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
+                              summary={(pageData) => {
+                                return (
+                                  <Table.Summary fixed>
+                                    <Table.Summary.Row>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text>
+                                          Tổng cộng:{`${pageData.length}`}
+                                        </Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                    </Table.Summary.Row>
+                                  </Table.Summary>
+                                )
+                              }}
                             />
                           </div>
                         </div>
@@ -1702,6 +1762,40 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
+                              summary={(pageData) => {
+                                return (
+                                  <Table.Summary fixed>
+                                    <Table.Summary.Row>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text>
+                                          Tổng cộng:{`${pageData.length}`}
+                                        </Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                    </Table.Summary.Row>
+                                  </Table.Summary>
+                                )
+                              }}
                             />
                           </div>
                         </div>
@@ -2278,6 +2372,40 @@ export default function OrderList() {
                                   ? record.order_details
                                   : []
                               }
+                              summary={(pageData) => {
+                                return (
+                                  <Table.Summary fixed>
+                                    <Table.Summary.Row>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text>
+                                          Tổng cộng:{`${pageData.length}`}
+                                        </Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                      <Table.Summary.Cell>
+                                        <Text></Text>
+                                      </Table.Summary.Cell>
+                                    </Table.Summary.Row>
+                                  </Table.Summary>
+                                )
+                              }}
                             />
                           </div>
                         </div>
@@ -2362,6 +2490,38 @@ export default function OrderList() {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
         </div>

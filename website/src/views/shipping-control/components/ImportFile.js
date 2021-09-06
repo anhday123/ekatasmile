@@ -5,15 +5,16 @@ import {
   Select,
   Upload,
   Button,
-  message,
   Table,
   notification,
+  Typography,
 } from 'antd'
 import { useEffect, useState } from 'react'
 import { apiAllShipping } from '../../../apis/shipping'
 import XLSX from 'xlsx'
 import { uploadImg } from '../../../apis/upload'
 import { addCompare } from '../../../apis/compare'
+const { Text } = Typography
 export default function ImportFile(props) {
   const [visible, setVisible] = useState(false)
   const [transport, setTransport] = useState([])
@@ -219,6 +220,38 @@ export default function ImportFile(props) {
           dataSource={importData}
           loading={importLoading}
           scroll={{ x: 'max-content' }}
+          summary={(pageData) => {
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
         />
         <Row
           justify="end"

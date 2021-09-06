@@ -1,8 +1,19 @@
-import { Col, Row, Input, DatePicker, Select, Button, Table } from 'antd'
+import {
+  Col,
+  Row,
+  Input,
+  DatePicker,
+  Select,
+  Button,
+  Table,
+  Typography,
+} from 'antd'
 import { useState, useEffect } from 'react'
 import SessionHistory from './sessionHistory'
 import moment from 'moment'
 import ImportFile from './ImportFile'
+import { compare } from 'utils'
+const { Text } = Typography
 export default function CompareHistory(props) {
   const { compareList } = props
   const { Option } = Select
@@ -34,6 +45,7 @@ export default function CompareHistory(props) {
           </span>
         )
       },
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Thời gian đối soát',
@@ -41,11 +53,13 @@ export default function CompareHistory(props) {
       render(data) {
         return moment(data).format('DD-MM-YYYY hh:mm')
       },
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Hình thức đối soát',
       dataIndex: 'type',
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'File đính kèm',
@@ -237,6 +251,38 @@ export default function CompareHistory(props) {
         columns={columns}
         rowKey="_id"
         dataSource={compareList}
+        summary={(pageData) => {
+          return (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Text></Text>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          )
+        }}
       />
       <SessionHistory
         data={sessionDetail}

@@ -12,13 +12,12 @@ import {
   Table,
   Modal,
   InputNumber,
+  Typography,
 } from 'antd'
-import { Link, useHistory } from 'react-router-dom'
-import { ArrowLeftOutlined, AudioOutlined } from '@ant-design/icons'
+import { useHistory } from 'react-router-dom'
 import React, { useState } from 'react'
-import { ROUTES } from 'consts'
 const { Option } = Select
-
+const { Text } = Typography
 const columns = [
   {
     title: 'STT',
@@ -29,22 +28,41 @@ const columns = [
     title: 'Mã SKU',
     dataIndex: 'skuCode',
     width: 150,
+    sorter: (a, b) => {
+      return a.skuCode > b.skuCode ? 1 : a.skuCode === b.skuCode ? 0 : -1
+    },
   },
   {
     title: 'Tên sản phẩm',
     dataIndex: 'productName',
     width: 150,
+    sorter: (a, b) => {
+      return a.productName > b.productName
+        ? 1
+        : a.productName === b.productName
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Đơn vị',
     dataIndex: 'unit',
     width: 150,
+    sorter: (a, b) => {
+      return a.unit > b.unit ? 1 : a.unit === b.unit ? 0 : -1
+    },
   },
   {
     title: 'Tồn chi nhánh',
     dataIndex: 'branchInventory',
     width: 150,
-    sorter: (a, b) => a - b,
+    sorter: (a, b) => {
+      return a.branchInventory > b.branchInventory
+        ? 1
+        : a.branchInventory === b.branchInventory
+        ? 0
+        : -1
+    },
   },
   {
     title: 'Số lượng thực tế',
@@ -52,7 +70,6 @@ const columns = [
     render() {
       return <InputNumber />
     },
-    sorter: (a, b) => a - b,
   },
   {
     title: 'Số lượng hệ thống',
@@ -314,6 +331,38 @@ export default function ProductCheckAdd(props) {
               columns={columns}
               dataSource={data}
               size="small"
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
 

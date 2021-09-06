@@ -106,15 +106,22 @@ export default function EmployeeDelete() {
     {
       title: 'STT',
       dataIndex: 'stt',
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.stt - b.stt,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Tên',
       dataIndex: 'name',
+      sorter: (a, b) => {
+        return a.name > b.name ? 1 : a.name === b.name ? 0 : -1
+      },
     },
     {
       title: 'Chức vụ',
       dataIndex: 'option',
+      sorter: (a, b) => {
+        return a.option > b.option ? 1 : a.option === b.option ? 0 : -1
+      },
     },
     // {
     //   title: "Số ngày trong công việc",
@@ -123,10 +130,20 @@ export default function EmployeeDelete() {
     {
       title: 'Liên hệ',
       dataIndex: 'contact',
+      sorter: (a, b) => {
+        return a.contact > b.contact ? 1 : a.contact === b.contact ? 0 : -1
+      },
     },
     {
       title: 'Hiệu suất',
       dataIndex: 'effective',
+      sorter: (a, b) => {
+        return a.effective > b.effective
+          ? 1
+          : a.effective === b.effective
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Trạng thái',

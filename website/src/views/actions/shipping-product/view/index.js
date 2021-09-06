@@ -10,37 +10,26 @@ import {
   Row,
   Col,
   Popover,
-  DatePicker,
   Table,
   Modal,
   notification,
+  Typography,
 } from 'antd'
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  Redirect,
-  useHistory,
-  useLocation,
-} from 'react-router-dom'
-import {
   ArrowLeftOutlined,
-  AudioOutlined,
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons'
-const { Option } = Select
+import { Link } from 'react-router-dom'
 const { Search } = Input
+const { Text } = Typography
 export default function ShippingProduct() {
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [loading, setLoading] = useState(false)
   const onFinish = (values) => {
     console.log('Success:', values)
   }
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
   }
   const rowSelection = {
@@ -57,23 +46,37 @@ export default function ShippingProduct() {
       title: 'Mã hàng',
       dataIndex: 'productCode',
       width: 150,
+      sorter: (a, b) => {
+        return a.productCode > b.productCode
+          ? 1
+          : a.productCode === b.productCode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productName',
       width: 150,
+      sorter: (a, b) => {
+        return a.productName > b.productName
+          ? 1
+          : a.productName === b.productName
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Tồn kho',
       dataIndex: 'inventory',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.inventory - b.inventory,
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.quantity - b.quantity,
     },
     // {
     //   title: 'Action',
@@ -111,12 +114,14 @@ export default function ShippingProduct() {
       dataIndex: 'inventory',
       width: 150,
       sorter: (a, b) => a - b,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
       sorter: (a, b) => a - b,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Action',
@@ -182,22 +187,10 @@ export default function ShippingProduct() {
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo)
   }
-  function onChange(date, dateString) {
-    console.log(date, dateString)
-  }
-  const suffix = (
-    <AudioOutlined
-      style={{
-        fontSize: 16,
-        color: '#1890ff',
-      }}
-    />
-  )
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
 
-  const onSearch = (value) => console.log(value)
   const onSearchAddProduct = (value) => console.log(value)
   const openNotificationConfirm = () => {
     notification.success({
@@ -422,6 +415,38 @@ export default function ShippingProduct() {
               columns={columns}
               dataSource={data}
               scroll={{ y: 500 }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
@@ -528,6 +553,38 @@ export default function ShippingProduct() {
                 columns={columnsAddProduct}
                 dataSource={dataAddProuct}
                 scroll={{ y: 500 }}
+                summary={(pageData) => {
+                  return (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )
+                }}
               />
             </div>
           </div>

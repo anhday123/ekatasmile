@@ -15,6 +15,7 @@ import {
   Tree,
   Table,
   Modal,
+  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import user from './../../../../assets/img/user.png'
@@ -26,6 +27,7 @@ import {
 import React, { useState } from 'react'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+const { Text } = Typography
 const { Option } = Select
 const { Step } = Steps
 const dateFormat = 'YYYY/MM/DD'
@@ -718,6 +720,38 @@ export default function OrderCreateShippingAdd() {
               columns={columns}
               dataSource={data}
               scroll={{ y: 500 }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
