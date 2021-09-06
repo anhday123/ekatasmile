@@ -54,6 +54,10 @@ export default function Role() {
       pParent: 'san_pham',
     },
     {
+      pParent: 'quan_li_chi_nhanh',
+      pChildren: ['them_chi_nhanh', 'cap_nhat_chi_nhanh'],
+    },
+    {
       pParent: 'quan_li_san_pham',
       pChildren: [
         'nhom_san_pham',

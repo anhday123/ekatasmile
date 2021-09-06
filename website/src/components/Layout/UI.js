@@ -162,12 +162,6 @@ const UI = (props) => {
         //   permissions: [PERMISSIONS.quan_li_kho],
         // },
         {
-          icon: <BankOutlined />,
-          path: ROUTES.BRANCH,
-          title: 'Quản lý chi nhánh & kho',
-          permissions: [PERMISSIONS.quan_li_chi_nhanh],
-        },
-        {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
           title: 'Quản lý chuyển hàng',
@@ -186,6 +180,12 @@ const UI = (props) => {
           permissions: [PERMISSIONS.quan_li_bao_hanh],
         },
       ],
+    },
+    {
+      icon: <BankOutlined />,
+      path: ROUTES.BRANCH,
+      title: 'Quản lý chi nhánh & kho',
+      permissions: [PERMISSIONS.quan_li_chi_nhanh],
     },
     {
       path: ROUTES.PROMOTION,

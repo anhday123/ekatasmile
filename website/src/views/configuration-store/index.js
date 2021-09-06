@@ -11,6 +11,7 @@ import {
   CreditCardOutlined,
   ApartmentOutlined,
   BranchesOutlined,
+  HomeOutlined,
 } from '@ant-design/icons'
 import { ROUTES } from 'consts'
 
@@ -63,9 +64,9 @@ export default function ConfigurationStore() {
                 <div
                   className={styles['hover_item']}
                   style={{
-                    backgroundColor: '#FCE5E1',
+                    backgroundColor: '#e8fce1',
                     marginRight: '1rem',
-                    border: '1px solid #F07D6B',
+                    border: '1px solid green',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -74,8 +75,8 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <ApartmentOutlined
-                    style={{ color: '#F07D6B', fontSize: '1.5rem' }}
+                  <HomeOutlined
+                    style={{ color: 'green', fontSize: '1.5rem' }}
                   />
                 </div>
                 <div
@@ -97,7 +98,7 @@ export default function ConfigurationStore() {
                       color: '#0015CD',
                     }}
                   >
-                    Quản lý người dùng
+                    Quản lý cửa hàng
                   </div>
                   <div
                     style={{
@@ -109,7 +110,7 @@ export default function ConfigurationStore() {
                       fontSize: '0.75rem',
                     }}
                   >
-                    Tạo, quản lý các vai trò người dùng
+                    Tạo, quản lý các cửa hàng
                   </div>
                 </div>
               </Link>

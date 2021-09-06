@@ -4351,7 +4351,7 @@ export default function Sell() {
                   flexDirection: isMobile && 'column',
                 }}
               >
-                <HistoryBill />
+                {/* <HistoryBill /> */}
                 <Button
                   className="br-15__button"
                   size="large"

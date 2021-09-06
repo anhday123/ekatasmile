@@ -21,7 +21,9 @@ import { useDispatch, useSelector } from 'react-redux'
 //apis
 import { apiProvince } from 'apis/information'
 import { apiFilterCity } from 'apis/branch'
-import { addStore } from 'apis/store'
+import { addStore, getAllStore } from 'apis/store'
+import { uploadImgs } from 'apis/upload'
+import { updateUser } from 'apis/user'
 import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
