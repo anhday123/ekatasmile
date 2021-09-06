@@ -24,7 +24,7 @@ import { apiFilterCity } from 'apis/branch'
 import { addStore, getAllStore } from 'apis/store'
 import { uploadImgs } from 'apis/upload'
 import { updateUser } from 'apis/user'
-import { uploadFile } from 'utils'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { Dragger } = Upload

@@ -24,7 +24,7 @@ import { PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { getAllStore } from 'apis/store'
 import { apiProvince } from 'apis/information'
 import { addBranch, apiFilterCity } from 'apis/branch'
-import { uploadFile } from 'utils'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 export default function BranchAdd({ reload }) {
