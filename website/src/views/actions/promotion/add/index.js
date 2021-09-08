@@ -12,6 +12,7 @@ import {
   Table,
   Form,
   InputNumber,
+  Typography,
 } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
@@ -20,18 +21,8 @@ import { getAllBranch } from '../../../../apis/branch'
 import { addPromotion } from '../../../../apis/promotion'
 import { ROUTES } from 'consts'
 
+const { Text } = Typography
 const { Option } = Select
-const provinceData = ['Zhejiang', 'Jiangsu']
-const cityData = {
-  Zhejiang: ['Chương trình khuyến mãi (CTKM)', 'Ningbo', 'Wenzhou'],
-  Jiangsu: ['Nanjing', 'Suzhou', 'Zhenjiang'],
-}
-
-const provinceDataPercent = ['Zhejiang', 'Jiangsu']
-const cityDataPercent = {
-  Zhejiang: ['Theo phần trăm', 'Ningbo', 'Wenzhou'],
-  Jiangsu: ['Nanjing', 'Suzhou', 'Zhenjiang'],
-}
 
 const { Search } = Input
 const columns = [
@@ -469,6 +460,38 @@ export default function PromotionAdd(props) {
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={data}
+                summary={(pageData) => {
+                  return (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )
+                }}
               />
             </div>
             <div

@@ -19,6 +19,7 @@ import {
   Select,
   DatePicker,
   Popover,
+  Typography,
 } from 'antd'
 import { PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import {
@@ -30,6 +31,9 @@ import { apiDistrict, apiProvince } from '../../apis/information'
 import { apiFilterCity } from '../../apis/branch'
 import ShippingAdd from 'views/actions/shipping/add'
 import Permission from 'components/permission'
+import { compare } from 'utils'
+
+const { Text } = Typography
 
 export default function Shipping() {
   const { RangePicker } = DatePicker
@@ -165,43 +169,51 @@ export default function Shipping() {
           {text}
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên đối tác',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Tỉnh/thành phố',
       dataIndex: 'province',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Zip code',
       dataIndex: 'zipcode',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'zipcode'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
 
     {
@@ -949,6 +961,38 @@ export default function Shipping() {
             columns={columns}
             dataSource={shipping}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

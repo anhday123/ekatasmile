@@ -8,18 +8,20 @@ import {
   Table,
   Select,
   DatePicker,
+  Typography,
 } from 'antd'
 import moment from 'moment'
 import React, { useState } from 'react'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import styles from './../reven-expen/reven-expen.module.scss'
 const { Option } = Select
+const { Text } = Typography
 const columns = [
   {
     title: 'Ngày',
     dataIndex: 'date',
     width: 150,
-    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+    sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
   },
   {
     title: 'Diễn giải',
@@ -230,6 +232,38 @@ export default function RevenExpend() {
             columns={columns}
             dataSource={data}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
         <div className={styles['reven_manager_button']}>

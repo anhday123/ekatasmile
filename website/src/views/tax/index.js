@@ -31,6 +31,7 @@ import {
   apiUpdateTax,
 } from '../../apis/tax'
 import Permission from 'components/permission'
+import { compare } from 'utils'
 const { RangePicker } = DatePicker
 const { Text } = Typography
 export default function Tax() {
@@ -352,17 +353,19 @@ export default function Tax() {
     {
       title: 'Tên thuế',
       dataIndex: 'name',
+      sorter: (a, b) => compare(a, b, 'name'),
     },
 
     {
       title: 'Giá trị',
       dataIndex: 'value',
       render: (text, record) => text && `${text}%`,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'value'),
     },
     {
       title: 'Mô tả',
       dataIndex: 'description',
+      sorter: (a, b) => compare(a, b, 'description'),
     },
     {
       title: 'Trạng thái',

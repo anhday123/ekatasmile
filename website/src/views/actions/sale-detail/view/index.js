@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+import { tableSum } from 'utils'
 const { Option } = Select
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -58,33 +59,61 @@ export default function SaleDetailView() {
       title: 'Mã sản phẩm',
       dataIndex: 'productCode',
       width: 150,
+      sorter: (a, b) => {
+        return a.productCode > b.productCode
+          ? 1
+          : a.productCode === b.productCode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productName',
       width: 150,
+      sorter: (a, b) => {
+        return a.productName > b.productName
+          ? 1
+          : a.productName === b.productName
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Số lượng',
       dataIndex: 'productQuantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.productQuantity - b.productQuantity,
     },
     {
       title: 'Mã lô hàng',
       dataIndex: 'goodsCode',
       width: 150,
+      sorter: (a, b) => {
+        return a.goodsCode > b.goodsCode
+          ? 1
+          : a.goodsCode === b.goodsCode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Mô tả',
       dataIndex: 'description',
       width: 150,
+      sorter: (a, b) => {
+        return a.description > b.description
+          ? 1
+          : a.description === b.description
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Chi phí',
       dataIndex: 'cost',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.cost - b.cost,
     },
     // {
     //   title: "Action",
@@ -332,11 +361,10 @@ export default function SaleDetailView() {
                 <Table.Summary fixed>
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
-                      {' '}
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng:</Text>
+                      <Text>Tổng cộng: {pageData.length}</Text>
                       {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
@@ -346,7 +374,9 @@ export default function SaleDetailView() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>{`${totalPrice}`}</Text>
+                      <Text>
+                        Tổng số lượng:{tableSum(pageData, 'productQuantity')}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

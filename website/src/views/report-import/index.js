@@ -14,6 +14,7 @@ import {
 
 import { FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
+import { compare } from 'utils'
 const { Text } = Typography
 const { RangePicker } = DatePicker
 
@@ -38,38 +39,44 @@ export default function ReportImport() {
       title: 'Mã sản phẩm',
       dataIndex: 'productCode',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'productCode'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productName',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'productName'),
     },
     {
       title: 'Số lượng',
       dataIndex: 'productQuantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'productQuantity'),
     },
     {
       title: 'Mã lô hàng',
       dataIndex: 'goodsCode',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'goodsCode'),
     },
     {
       title: 'Mã hàng',
       dataIndex: 'code',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Nhà cung cấp',
       dataIndex: 'supplier',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'suppier'),
     },
     {
       title: 'Ngày nhập',
       dataIndex: 'importDate',
       width: 150,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.importDate).unix() - moment(b.importDate).unix(),
     },
   ]
   const data = []

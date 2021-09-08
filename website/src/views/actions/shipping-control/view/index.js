@@ -70,38 +70,70 @@ export default function ShippingControlView() {
       title: 'Mã vận đơn',
       dataIndex: 'shippingCode',
       width: 150,
+      sorter: (a, b) => {
+        return a.shippingCode > b.shippingCode
+          ? 1
+          : a.shippingCode === b.shippingCode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Mã đơn hàng',
       dataIndex: 'orderCode',
       width: 150,
+      sorter: (a, b) => {
+        return a.orderCode > b.orderCode
+          ? 1
+          : a.orderCode === b.orderCode
+          ? 0
+          : -1
+      },
     },
+
     {
       title: 'COD (hệ thống)',
       dataIndex: 'systemCOD',
       width: 150,
+      sorter: (a, b) => {
+        return a.systemCOD > b.systemCOD
+          ? 1
+          : a.systemCOD === b.systemCOD
+          ? 0
+          : -1
+      },
     },
     {
       title: 'COD (đối tác)',
       dataIndex: 'partnerCOD',
       width: 150,
+      sorter: (a, b) => {
+        return a.partnerCOD > b.partnerCOD
+          ? 1
+          : a.partnerCOD === b.partnerCOD
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Phí (hệ thống)',
       dataIndex: 'systemFee',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.systemFee - b.systemFee,
     },
     {
       title: 'Phí (đối tác)',
       dataIndex: 'partnerFee',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.partnerFee - b.partnerFee,
     },
     {
       title: 'Người trả phí',
       dataIndex: 'feePaid',
       width: 150,
+      sorter: (a, b) => {
+        return a.feePaid > b.feePaid ? 1 : a.feePaid === b.feePaid ? 0 : -1
+      },
     },
   ]
   function confirm(e) {

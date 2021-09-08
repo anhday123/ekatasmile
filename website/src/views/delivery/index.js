@@ -14,9 +14,11 @@ import {
   Cascader,
   Table,
   Button,
+  Typography,
 } from 'antd'
+import { compare } from 'utils'
 const { Option } = Select
-
+const { Text } = Typography
 const { TabPane } = Tabs
 
 const columns = [
@@ -24,42 +26,49 @@ const columns = [
     title: 'Mã giao hàng',
     dataIndex: 'shippingcode',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'shippingcode'),
   },
   {
     title: 'Đơn hàng',
     dataIndex: 'order',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'order'),
   },
   {
     title: 'Khách hàng',
     dataIndex: 'customer',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'customer'),
   },
   {
     title: 'Ngày đặt',
     dataIndex: 'date',
     width: 150,
-    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+    sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
   },
   {
     title: 'Nhà vận chuyển',
     dataIndex: 'home',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'home'),
   },
   {
     title: 'Giao hàng',
     dataIndex: 'shipping',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'shipping'),
   },
   {
     title: 'COD',
     dataIndex: 'cod',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'cod'),
   },
   {
     title: 'Tổng tiền',
     dataIndex: 'total',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'total'),
   },
 ]
 
@@ -587,6 +596,38 @@ export default function Delivery() {
                     dataSource={data}
                     size="small"
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -640,6 +681,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -692,6 +765,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -744,6 +849,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -796,6 +933,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -848,6 +1017,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>
@@ -901,6 +1102,38 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
+                    summary={(pageData) => {
+                      return (
+                        <Table.Summary fixed>
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                              <Text></Text>
+                            </Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        </Table.Summary>
+                      )
+                    }}
                   />
                 </div>
               </div>

@@ -17,6 +17,7 @@ import {
   Button,
   Drawer,
   Table,
+  Typography,
 } from 'antd'
 import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
@@ -27,7 +28,9 @@ import { apiDistrict, apiProvince } from '../../apis/information'
 import EmployeeAdd from '../actions/employee/add'
 import { getAllStore } from '../../apis/store'
 import Permission from 'components/permission'
+import { compare } from 'utils'
 const { Option } = Select
+const { Text } = Typography
 export default function Employee() {
   const dispatch = useDispatch()
   const username = localStorage.getItem('username')
@@ -140,11 +143,13 @@ export default function Employee() {
           {text}
         </div>
       ),
+      sorter: (a, b) => compare(a, b, 'user_id'),
     },
     {
       title: 'Tên đăng nhập',
       dataIndex: 'username',
       width: 200,
+      sorter: (a, b) => compare(a, b, 'user_name'),
     },
     {
       title: 'Tên nhân sự',
@@ -153,56 +158,66 @@ export default function Employee() {
       render: (text, record) => (
         <div>{`${record.first_name} ${record.last_name}`}</div>
       ),
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Chức vụ',
       dataIndex: '_role',
       width: 150,
+      sorter: (a, b) => compare(a, b, '_role'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Ngày gia nhập',
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Cửa hàng',
       dataIndex: 'store',
       width: 150,
       render: (text, record) => <div>{text.name}</div>,
+      sorter: (a, b) => compare(a, b, 'store'),
     },
     {
       title: 'Chi nhánh',
       dataIndex: 'branch',
       width: 150,
       render: (text, record) => <div>{text.name}</div>,
+      sorter: (a, b) => compare(a, b, 'branch'),
     },
     {
       title: 'Email',
       dataIndex: 'email',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'email'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'district'),
     },
 
     {
       title: 'Tỉnh/thành phố',
       dataIndex: 'province',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Trạng thái',
@@ -720,6 +735,38 @@ export default function Employee() {
               dataSource={employee}
               scroll={{ y: 500 }}
               pagination={{ onChange: changePagi }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>{' '}
         </div>

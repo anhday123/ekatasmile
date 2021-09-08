@@ -2,10 +2,9 @@ import { Link, useHistory, useLocation } from 'react-router-dom'
 import moment from 'moment'
 import styles from './../view/view.module.scss'
 import React, { useEffect, useState } from 'react'
-import { Table, Input, Row, Col, Modal } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { Table, Input, Row, Col, Modal, Typography } from 'antd'
 import { apiSearchProduct } from '../../../../apis/product'
-import { ROUTES } from 'consts'
+const { Text } = Typography
 export default function InventoryView(props) {
   const location = useLocation()
   const history = useHistory()
@@ -38,11 +37,17 @@ export default function InventoryView(props) {
       title: 'Mã sản phẩm',
       dataIndex: 'sku',
       width: 150,
+      sorter: (a, b) => {
+        return a.sku > b.sku ? 1 : a.sku === b.sku ? 0 : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => {
+        return a.name > b.name ? 1 : a.name === b.name ? 0 : -1
+      },
       render(data, record) {
         return record.title || record.name
       },
@@ -59,12 +64,19 @@ export default function InventoryView(props) {
       title: 'Giá (VNĐ)',
       dataIndex: 'sale_price',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.sale_price - b.sale_price,
     },
     {
       title: 'Loại',
       dataIndex: '_category',
       width: 150,
+      sorter: (a, b) => {
+        return a._category > b._category
+          ? 1
+          : a._category === b._category
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Số lượng',
@@ -73,12 +85,15 @@ export default function InventoryView(props) {
       render(data, record) {
         return record.shipping_quantity + data
       },
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.available_stock_quantity - b.available_stock_quantity,
     },
     {
       title: 'Nhà cung cấp',
       dataIndex: '_supplier',
       width: 150,
+      sorter: (a, b) => {
+        return a._suplier > b._suplier ? 1 : a._suplier === b._suplier ? 0 : -1
+      },
     },
     // {
     //   title: "Action",
@@ -463,6 +478,38 @@ export default function InventoryView(props) {
                 columns={columns}
                 dataSource={warehousePrroduct}
                 scroll={{ y: 500 }}
+                summary={(pageData) => {
+                  return (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell>
+                          <Text></Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )
+                }}
               />
             </div>
           </div>

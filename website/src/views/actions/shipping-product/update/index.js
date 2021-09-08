@@ -6,14 +6,14 @@ import {
   Row,
   Col,
   Radio,
-  Space,
   notification,
+  Typography,
 } from 'antd'
 import { useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { UpdateDelivery } from '../../../../apis/delivery'
-const { Option } = Select
+const { Text } = Typography
 export default function DeliveryUpdate() {
   const history = useHistory()
   const [status, setStatus] = useState(history.location.state.status)
@@ -29,6 +29,9 @@ export default function DeliveryUpdate() {
       title: 'Mã hàng',
       dataIndex: 'sku',
       width: 150,
+      sorter: (a, b) => {
+        return a.sku > b.sku ? 1 : a.sku === b.sku ? 0 : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
@@ -37,18 +40,21 @@ export default function DeliveryUpdate() {
       render(data, record) {
         return record.title || data
       },
+      sorter: (a, b) => {
+        return a.name > b.name ? 1 : a.name === b.name ? 0 : -1
+      },
     },
     {
       title: 'Tồn kho',
       dataIndex: 'available_stock_quantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.available_stock_quantity - b.available_stock_quantity,
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.quantity - b.quantity,
     },
     // {
     //   title: 'Action',
@@ -185,6 +191,38 @@ export default function DeliveryUpdate() {
             style={{ width: '100%' }}
             columns={columns}
             dataSource={history.location.state.products}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </Row>
         <Row justify="end" style={{ width: '100%', marginTop: 20 }}>

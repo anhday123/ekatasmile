@@ -30,6 +30,7 @@ import { apiFilterCity } from '../../apis/branch'
 import InventoryAdd from 'views/actions/inventory/add'
 
 import InventoryView from 'views/actions/inventory/view'
+import { compare } from 'utils'
 const { Option } = Select
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -159,50 +160,58 @@ export default function Inventory() {
           {text}
         </span>
       ),
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Tên kho',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Loại kho',
       dataIndex: 'type',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
     {
       title: 'Phí duy trì tháng',
       dataIndex: 'monthly_cost',
       width: 150,
       render: (text, record) => <div>{`${formatCash(String(text))} VNĐ`}</div>,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.monthly_cost - b.monthly_cost,
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thành phố',
       dataIndex: 'province',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'province'),
     },
     {
       title: 'Trạng thái',
@@ -513,7 +522,9 @@ export default function Inventory() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>Quản lý chi nhánh & kho</div>
+          <div className={styles['promotion_manager_title']}>
+            Quản lý chi nhánh & kho
+          </div>
           <div className={styles['promotion_manager_button']}>
             <Button
               size="large"

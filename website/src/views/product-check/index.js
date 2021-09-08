@@ -9,6 +9,7 @@ import {
   Select,
   Table,
   Drawer,
+  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
@@ -18,11 +19,10 @@ import ProductCheckAdd from 'views/actions/product-check/add'
 import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
-
+const { Text } = Typography
 export default function ProductCheck() {
   const [showCreate, setShowCreate] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
 
   const columnsPromotion = [
     {
@@ -300,6 +300,38 @@ export default function ProductCheck() {
             dataSource={dataPromotion}
             style={{
               width: '100%',
+            }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
             }}
           />
         </div>

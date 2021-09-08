@@ -5,15 +5,18 @@ import {
   Select,
   Upload,
   Button,
-  message,
   Table,
   notification,
+  Typography,
 } from 'antd'
 import { useEffect, useState } from 'react'
 import { apiAllShipping } from '../../../apis/shipping'
 import XLSX from 'xlsx'
 import { uploadImg } from '../../../apis/upload'
 import { addCompare } from '../../../apis/compare'
+import { compare, tableSum, formatCash } from 'utils'
+import moment from 'moment'
+const { Text } = Typography
 export default function ImportFile(props) {
   const [visible, setVisible] = useState(false)
   const [transport, setTransport] = useState([])
@@ -85,26 +88,33 @@ export default function ImportFile(props) {
     {
       title: 'Mã vận đơn',
       dataIndex: 'order',
+      sorter: (a, b) => compare(a, b, 'order'),
     },
     {
       title: 'Ngày nhận đơn',
       dataIndex: 'revice_date',
+      sorter: (a, b) =>
+        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Tiền COD',
       dataIndex: 'cod_cost',
+      sorter: (a, b) => compare(a, b, 'cod_cost'),
     },
     {
       title: 'Phí bảo hiểm',
       dataIndex: 'insurance_cost',
+      sorter: (a, b) => compare(a, b, 'insurance_cost'),
     },
     {
       title: 'Phí giao hàng',
       dataIndex: 'shipping_cost',
+      sorter: (a, b) => compare(a, b, 'shipping_cost'),
     },
     {
       title: 'Phí lưu kho',
       dataIndex: 'warehouse_cost',
+      sorter: (a, b) => compare(a, b, 'warehouse_cost'),
     },
     {
       title: 'Khối lượng',
@@ -112,10 +122,13 @@ export default function ImportFile(props) {
       render(data) {
         return data + 'kg'
       },
+      sorter: (a, b) => compare(a, b, 'weight'),
     },
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
+      sorter: (a, b) =>
+        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
   ]
   const getTransport = async () => {
@@ -219,6 +232,49 @@ export default function ImportFile(props) {
           dataSource={importData}
           loading={importLoading}
           scroll={{ x: 'max-content' }}
+          summary={(pageData) => {
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>
+                    <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Phí bảo hiểm{' '}
+                      {formatCash(tableSum(pageData, 'insurance_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Phí giao hàng:{' '}
+                      {formatCash(tableSum(pageData, 'shipping_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      Phí lưu kho:{' '}
+                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
         />
         <Row
           justify="end"

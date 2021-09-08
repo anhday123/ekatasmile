@@ -1,8 +1,11 @@
 import styles from './../exchange/exchange.module.scss'
-import { Input, Row, Col, DatePicker, Popover, Table } from 'antd'
+import { Input, Row, Col, DatePicker, Popover, Table, Typography } from 'antd'
 import {} from '@ant-design/icons'
 import moment from 'moment'
 import React from 'react'
+import { compare } from 'utils'
+
+const { Text } = Typography
 
 const dateFormatList = ['YYYY/MM/DD', 'DD/MM/YY']
 
@@ -11,37 +14,44 @@ const columns = [
     title: 'Mã đơn hàng',
     dataIndex: 'ordercode',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'ordercode'),
   },
   {
     title: 'Tên khách hàng',
     dataIndex: 'customername',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'customername'),
   },
   {
     title: 'Ngày trả',
     dataIndex: 'date',
     width: 150,
-    sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+    sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
   },
   {
     title: 'Trạng thái',
     dataIndex: 'status',
     width: 150,
+    render: (data) => <span style={{ color: 'blue' }}>{data}</span>,
+    sorter: (a, b) => compare(a, b, 'status'),
   },
   {
     title: 'Hoàn tiền',
     dataIndex: 'moneypay',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'moneypay'),
   },
   {
     title: 'Tổng tiền',
     dataIndex: 'moneytotal',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'moneytotal'),
   },
   {
     title: 'Lý do',
     dataIndex: 'reason',
     width: 150,
+    sorter: (a, b) => compare(a, b, 'reason'),
   },
 ]
 
@@ -117,6 +127,38 @@ export default function Exchange() {
             dataSource={data}
             size="small"
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>

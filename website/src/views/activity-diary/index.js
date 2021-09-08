@@ -17,13 +17,15 @@ import {
   Modal,
   Popover,
   Button,
+  Typography,
 } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { TramOutlined } from '@material-ui/icons'
 import { ROUTES } from 'consts'
+import { compare, compareCustom } from 'utils'
 const { Option } = Select
-
+const { Text } = Typography
 const { RangePicker } = DatePicker
 const columns = [
   {
@@ -148,11 +150,17 @@ export default function ActivityDiary() {
         record.performer.last_name
           ? `${record.performer.first_name} ${record.performer.last_name}`
           : '',
+      sorter: (a, b) =>
+        compareCustom(
+          a.performer && `${a.performer.first_name} ${a.performer.last_name}`,
+          b.performer && `${b.performer.first_name} ${b.performer.last_name}`
+        ),
     },
     {
       title: 'Tên chức năng',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Thời gian thao tác',
@@ -160,7 +168,7 @@ export default function ActivityDiary() {
       width: 150,
       render: (text, record) =>
         text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : '',
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
     {
       title: 'Tài khoản',
@@ -170,6 +178,7 @@ export default function ActivityDiary() {
         record.bussiness_id && record.bussiness_id.username
           ? record.bussiness_id.username
           : '',
+      sorter: (a, b) => compare(a, b, 'username'),
     },
     {
       title: 'Tên công ty',
@@ -177,6 +186,7 @@ export default function ActivityDiary() {
       width: 150,
       render: (text, record) =>
         record.data && record.data.company_name ? record.data.company_name : '',
+      sorter: (a, b) => compare(a, b, 'city'),
     },
     {
       title: 'Quận/huyện',
@@ -184,18 +194,21 @@ export default function ActivityDiary() {
       width: 150,
       render: (text, record) =>
         record.data && record.data.district ? record.data.district : '',
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thao tác',
       dataIndex: 'type',
       fixed: 'right',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Giao diện',
       dataIndex: 'properties',
       fixed: 'right',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'properties'),
     },
   ]
   function confirm(e) {
@@ -507,6 +520,38 @@ export default function ActivityDiary() {
             columns={columnsPromotion}
             dataSource={activityDiary}
             scroll={{ y: 500 }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>
@@ -560,6 +605,38 @@ export default function ActivityDiary() {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
         </div>

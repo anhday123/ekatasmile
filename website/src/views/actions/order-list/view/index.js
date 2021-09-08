@@ -32,40 +32,55 @@ export default function OrderListView() {
       title: 'Mã sản phẩm',
       dataIndex: 'productcode',
       width: 150,
+      sorter: (a, b) => {
+        return a.productcode > b.productcode
+          ? 1
+          : a.productcode === b.productcode
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productname',
       width: 150,
+      sorter: (a, b) => {
+        return a.productname > b.productname
+          ? 1
+          : a.productname === b.productname
+          ? 0
+          : -1
+      },
     },
     {
       title: 'Giá (VNĐ)',
       dataIndex: 'productprice',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.productprice - b.productprice,
     },
     {
       title: 'Thuế',
       dataIndex: 'tax',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.tax - b.tax,
     },
     {
       title: 'Chiết khấu',
       dataIndex: 'discount',
       width: 150,
+      sorter: (a, b) => a.discount - b.discount,
     },
     {
       title: 'Số lượng',
       dataIndex: 'productquantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.productquantity - b.productquantity,
     },
     {
       title: 'Thành tiền',
       dataIndex: 'moneyTotal',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => a.moneyTotal - b.moneyTotal,
     },
   ]
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -102,11 +117,11 @@ export default function OrderListView() {
       ),
       productname: `tên sản phẩm ${i}`,
       productpicture: <FileImageOutlined />,
-      productprice: `${i}`,
-      tax: `100.00${i}`,
-      discount: `200.00${i}`,
+      productprice: i,
+      tax: 100000,
+      discount: 200000,
       productquantity: i,
-      moneyTotal: `300,00${i}`,
+      moneyTotal: 300000,
     })
   }
   return (

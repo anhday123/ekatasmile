@@ -25,13 +25,16 @@ import {
   Table,
   Modal,
   Popover,
+  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { apiFilterRoleEmployee } from '../../apis/employee'
 import Permission from 'components/permission'
+import { compare, compareCustom } from 'utils'
 const { Option } = Select
 const { RangePicker } = DatePicker
+const { Text } = Typography
 const columns = [
   {
     title: 'STT',
@@ -168,12 +171,14 @@ export default function User() {
       title: 'Tên đăng nhập',
       dataIndex: 'username',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'username'),
     },
 
     {
       title: 'Email',
       dataIndex: 'email',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'email'),
     },
 
     {
@@ -181,18 +186,25 @@ export default function User() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => <div>{moment(text).format('YYYY-MM-DD')}</div>,
-      sorter: (a, b) => moment(a).unix() - moment(b).unix(),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Tên hiển thị',
       dataIndex: 'name',
       width: 150,
       render: (text, record) => `${record.first_name} ${record.last_name}`,
+      sorter: (a, b) =>
+        compareCustom(
+          `${a.first_name} ${a.last_name}`,
+          `${b.first_name} ${b.last_name}`
+        ),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Vai trò',
@@ -201,11 +213,14 @@ export default function User() {
       render: (text, record) => (
         <div>{record && record.role ? record.role.name : ''}</div>
       ),
+      sorter: (a, b) =>
+        compareCustom(a.role ? a.role.name : '', b.role ? b.role.name : ''),
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'address',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'address'),
     },
 
     {
@@ -853,6 +868,38 @@ export default function User() {
             style={{
               width: '100%',
             }}
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
           />
         </div>
       </div>
@@ -907,6 +954,38 @@ export default function User() {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
         </div>

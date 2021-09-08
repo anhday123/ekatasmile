@@ -17,6 +17,7 @@ import {
 
 import { FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
+import { compare } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -48,27 +49,31 @@ export default function ReportInventory() {
       title: 'Mã sản phẩm',
       dataIndex: 'productCode',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'productCode'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productName',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'productname'),
     },
     {
       title: 'Số lượng tồn',
       dataIndex: 'productQuantity',
       width: 150,
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'productQuantity'),
     },
     {
       title: 'Mã lô hàng',
       dataIndex: 'goodsCode',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'goodsCode'),
     },
     {
       title: 'Tên kho',
       dataIndex: 'inventoryName',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'inventoryName'),
     },
   ]
   const data = []
@@ -302,7 +307,6 @@ export default function ReportInventory() {
             summary={(pageData) => {
               let totalPrice = 0
 
-              console.log(pageData)
               pageData.forEach((values, index) => {
                 totalPrice += parseInt(values.productQuantity)
               })
@@ -311,20 +315,19 @@ export default function ReportInventory() {
                 <Table.Summary fixed>
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
-                      {' '}
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng:</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
+                      <Text>Tổng cộng:{pageData.length}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>{`${totalPrice}`}</Text>
+                      <Text>Số lượng tồn: {totalPrice}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

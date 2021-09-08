@@ -16,9 +16,10 @@ import {
   DatePicker,
   Table,
   Space,
+  Typography,
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
-import { ArrowLeftOutlined, FileExcelOutlined } from '@ant-design/icons'
+import { FileExcelOutlined } from '@ant-design/icons'
 import { getAllBranch } from '../../../../apis/branch'
 import { apiProductSeller, apiAllProduct } from '../../../../apis/product'
 import { addDelivery } from '../../../../apis/delivery'
@@ -27,9 +28,8 @@ import { apiAllInventory } from '../../../../apis/inventory'
 import XLSX from 'xlsx'
 import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
-import { ROUTES } from 'consts'
 const { Option } = Select
-const { Search } = Input
+const { Text } = Typography
 export default function ShippingProductAdd(props) {
   const [modal3Visible, setModal3Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -755,6 +755,46 @@ export default function ShippingProductAdd(props) {
               })}
               dataSource={productDelivery}
               scroll={{ y: 500 }}
+              summary={(pageData) => {
+                return (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text>
+                          {' '}
+                          Tổng cộng:
+                          {`${pageData.reduce(
+                            (a, b) =>
+                              b.has_variable ? a + b.variants.length : a + 1,
+                            0
+                          )}`}
+                        </Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Text></Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )
+              }}
             />
           </div>
 

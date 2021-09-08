@@ -25,6 +25,7 @@ import { useDispatch } from 'react-redux'
 import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
+import { compare, tableSum } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -69,6 +70,7 @@ for (let i = 0; i < 46; i++) {
 }
 function formatCash(str) {
   return str
+    .toString()
     .split('')
     .reverse()
     .reduce((prev, next, index) => {
@@ -119,6 +121,7 @@ export default function Promotion() {
       title: 'Tên chương trình khuyến mãi',
       dataIndex: 'name',
       width: 200,
+      sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Loại khuyến mãi',
@@ -127,6 +130,7 @@ export default function Promotion() {
       render(data) {
         return data == 'percent' ? 'Phần trăm' : 'VND'
       },
+      sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Giá trị khuyến mãi',
@@ -135,6 +139,7 @@ export default function Promotion() {
       render(data) {
         return formatCash(data.toString())
       },
+      sorter: (a, b) => compare(a, b, 'value'),
     },
     {
       title: 'Số lượng khuyến mãi',
@@ -143,12 +148,13 @@ export default function Promotion() {
       render(data) {
         return data.amount
       },
-      sorter: (a, b) => a - b,
+      sorter: (a, b) => compare(a, b, 'limit'),
     },
     {
       title: 'Mô tả',
       dataIndex: 'description',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'description'),
     },
     {
       title: 'Trạng thái',
@@ -422,7 +428,10 @@ export default function Promotion() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text></Text>
+                      <Text>
+                        Tổng số lượng khuyến mãi:{' '}
+                        {formatCash(tableSum(pageData, 'limit.amount'))}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
