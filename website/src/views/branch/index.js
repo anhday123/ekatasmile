@@ -623,42 +623,6 @@ export default function Branch() {
               },
               total: countBranch,
             }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
-            size="small"
           />
         </div>
       </div>
