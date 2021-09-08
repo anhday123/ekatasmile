@@ -631,7 +631,6 @@ export default function Branch() {
               },
               total: countBranch,
             }}
-            size="small"
           />
         </div>
       </div>

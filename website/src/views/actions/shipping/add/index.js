@@ -21,6 +21,7 @@ import { apiProvince } from 'apis/information'
 import { apiFilterCity } from 'apis/branch'
 import { apiCreateShipping } from 'apis/shipping'
 import axios from 'axios'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { Dragger } = Upload
@@ -48,6 +49,7 @@ export default function ShippingAdd(props) {
       if (res.status === 200) {
         openNotification()
         props.close()
+        props.reload()
       } else {
         openNotificationError()
       }
@@ -107,50 +109,26 @@ export default function ShippingAdd(props) {
     multiple: true,
     showUploadList: false,
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    maxCount: 1,
     async onChange(info) {
       var { status } = info.file
       if (status !== 'done') {
         status = 'done'
         if (status === 'done') {
-          console.log(info.file, info.fileList)
           if (info.fileList && info.fileList.length > 0) {
-            const image = info.fileList[info.fileList.length - 1].originFileObj
-            let formData = new FormData() //formdata object
-            formData.append('files', image) //append the values with key, value pair
-            if (formData) {
-              dispatch({ type: ACTION.LOADING, data: true })
-              let a = axios
-                .post(
-                  'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                  formData,
-                  {
-                    headers: {
-                      'Content-Type': 'multipart/form-data',
-                    },
-                  }
-                )
-                .then((resp) => resp)
-              let resultsMockup = await Promise.all([a])
-              console.log(resultsMockup[0].data.data[0])
-              dispatch({ type: ACTION.LOADING, data: false })
+            const image = info.file.originFileObj
+            // let formData = new FormData() //formdata object
+            // formData.append('files', image) //append the values with key, value pair
+            dispatch({ type: ACTION.LOADING, data: true })
+            let a = await uploadFile(image)
+            dispatch({ type: ACTION.LOADING, data: false })
 
-              setList(resultsMockup[0].data.data[0])
-            }
+            setList(a)
           }
         }
       }
-      // if (status !== 'uploading') {
-      //     console.log(info.file, info.fileList);
-      // }
-      // if (status === 'done') {
-      //     message.success(`${info.file.name} file uploaded successfully.`);
-      // } else if (status === 'error') {
-      //     message.error(`${info.file.name} file upload failed.`);
-      // }
     },
-    onDrop(e) {
-      //   console.log('Dropped files', e.dataTransfer.files);
-    },
+    onDrop(e) {},
   }
   const onFinish = async (values) => {
     if (list !== '') {
@@ -222,7 +200,6 @@ export default function ShippingAdd(props) {
     }
   }
   function handleChangeCity(value) {
-    console.log(`selected ${value}`)
     apiFilterCityData(value)
   }
   const dataValue = form.getFieldValue()

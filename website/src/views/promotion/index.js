@@ -89,7 +89,7 @@ export default function Promotion() {
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [searchFilter, setSearchFilter] = useState({
-    keyword: '',
+    search: '',
     date: [],
     type: undefined,
   })
@@ -275,7 +275,7 @@ export default function Promotion() {
     }
   }
   const resetFilter = () => {
-    setSearchFilter({ keyword: '', date: [], type: undefined })
+    setSearchFilter({ search: '', date: [], type: undefined })
   }
   useEffect(() => {
     getBranch()
@@ -331,11 +331,11 @@ export default function Promotion() {
                 size="large"
                 placeholder="Tìm kiếm khuyến mãi"
                 onChange={(e) => {
-                  setSearchFilter({ ...searchFilter, keyword: e.target.value })
-                  getPromotions({ keyword: e.target.value })
+                  setSearchFilter({ ...searchFilter, search: e.target.value })
+                  getPromotions({ search: e.target.value })
                 }}
                 allowClear
-                value={searchFilter.keyword}
+                value={searchFilter.search}
               />
             </div>
           </Col>
@@ -855,7 +855,10 @@ export default function Promotion() {
         title="Thêm khuyến mãi"
         width="75%"
       >
-        <PromotionAdd close={() => setShowCreate(false)} />
+        <PromotionAdd
+          close={() => setShowCreate(false)}
+          reload={getPromotions}
+        />
       </Drawer>
     </>
   )

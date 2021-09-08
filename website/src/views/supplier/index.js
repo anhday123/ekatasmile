@@ -46,7 +46,7 @@ export default function Supplier() {
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
-      const res = await apiSearch({ keyword: value })
+      const res = await apiSearch({ search: value })
 
       if (res.status === 200) setSupplier(res.data.data)
       setLoading(false)

@@ -25,11 +25,13 @@ export const tableSum = (arr, key) => {
 }
 
 export function formatCash(str) {
-  return str
-    .toString()
-    .split('')
-    .reverse()
-    .reduce((prev, next, index) => {
-      return (index % 3 ? next : next + ',') + prev
-    })
+  if (str)
+    return str
+      .toString()
+      .split('')
+      .reverse()
+      .reduce((prev, next, index) => {
+        return (index % 3 ? next : next + ',') + prev
+      })
+  else return 0
 }
