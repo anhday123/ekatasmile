@@ -422,7 +422,7 @@ export default function Promotion() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
+                      <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
@@ -828,47 +828,6 @@ export default function Promotion() {
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={data}
-                summary={(pageData) => {
-                  return (
-                    <Table.Summary fixed>
-                      <Table.Summary.Row>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                      </Table.Summary.Row>
-                    </Table.Summary>
-                  )
-                }}
               />
             </div>
             <div

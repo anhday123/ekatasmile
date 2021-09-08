@@ -755,46 +755,6 @@ export default function ShippingProductAdd(props) {
               })}
               dataSource={productDelivery}
               scroll={{ y: 500 }}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>
-                          {' '}
-                          Tổng cộng:
-                          {`${pageData.reduce(
-                            (a, b) =>
-                              b.has_variable ? a + b.variants.length : a + 1,
-                            0
-                          )}`}
-                        </Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
             />
           </div>
 

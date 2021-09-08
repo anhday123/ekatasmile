@@ -331,38 +331,6 @@ export default function ProductCheckAdd(props) {
               columns={columns}
               dataSource={data}
               size="small"
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
             />
           </div>
 

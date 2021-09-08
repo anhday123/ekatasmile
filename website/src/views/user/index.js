@@ -868,38 +868,6 @@ export default function User() {
             style={{
               width: '100%',
             }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
           />
         </div>
       </div>
@@ -954,38 +922,6 @@ export default function User() {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
             />
           </div>
         </div>
