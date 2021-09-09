@@ -63,56 +63,6 @@ const Overview = () => {
 
   return (
     <div className={styles['dashboard_manager']}>
-      <div className={styles['dashboard_manager_date']}>
-        <Row className={styles['dashboard_manager_date_row']}>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-            <div style={{ width: '100%' }}>
-              <Row gutter={20}>
-                <Col
-                  className={styles['dashboard_manager_date_row_col']}
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={7}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <Select
-                      size="large"
-                      style={{ width: '100%' }}
-                      className={
-                        styles['dashboard_manager_date_row_col_select']
-                      }
-                      defaultValue="default"
-                    >
-                      <Option value="default">Tất cả chi nhánh</Option>
-                      <Option value="branch1">Chi nhánh 1</Option>
-                      <Option value="branch2">Chi nhánh 2</Option>
-                    </Select>
-                  </div>
-                </Col>
-                <Col
-                  className={styles['dashboard_manager_date_row_col']}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={7}
-                  xl={7}
-                >
-                  <div>
-                    <RangePicker
-                      size="large"
-                      className="br-15__date-picker"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          </Col>
-        </Row>
-      </div>
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (

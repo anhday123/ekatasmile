@@ -607,14 +607,6 @@ export default function Views() {
   return (
     <BrowserRouter>
       <Switch>
-        {/* {ACCOUNT_ROUTER.map(({ Component, ...rest }, index) => (
-          <Route {...rest} key={index}>
-            <Authentication {...rest}>
-              <Component />
-            </Authentication>
-          </Route>
-        ))} */}
-
         <Route path="/" exact={true}>
           <Redirect to={ROUTES.OVERVIEW} />
         </Route>

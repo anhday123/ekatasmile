@@ -13,6 +13,13 @@ export const authConstants = {
   KEY: 'KEY',
 }
 
+//co 6 role mac dinh
+export const ROLE_DEFAULT = {
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+  BUSINESS: 'BUSINESS',
+}
+
 export const ROUTES = {
   LOGIN: '/login',
   REPORT_IMPORT: '/report-import',
@@ -161,4 +168,4 @@ export const PERMISSIONS = {
   tao_quyen: 'tao_quyen',
 }
 
-export const regexPhone = /((09|03|07|08|05)+([0-9]{8})\b)/g
+export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/

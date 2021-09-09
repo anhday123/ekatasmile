@@ -74,6 +74,7 @@ function ModalIntro() {
         description: '',
       }
       const res = await addLabel(body)
+      console.log(res)
       if (res.status === 200) {
         let arrayLabelNew = [...labels]
         arrayLabelNew.push(res.data.data)
@@ -170,8 +171,8 @@ function ModalIntro() {
         fax: '',
         website: '',
       }
+
       const resBranch = await addBranch(bodyBranch)
-      console.log(resBranch)
       if (resBranch.status === 200) {
         const bodyStore = {
           ...dataStore,
@@ -208,11 +209,21 @@ function ModalIntro() {
             }
           }
           setTimeout(() => window.location.reload(), 300)
+        } else {
+          formStore.setFieldsValue({ name: undefined })
+          formBranch.setFieldsValue({ name: undefined })
+          notification.error({
+            message: resStore.data.message || 'Tạo cửa hàng thất bại!',
+          })
         }
-      } else
+      } else {
+        formStore.setFieldsValue({ name: undefined })
+        formBranch.setFieldsValue({ name: undefined })
         notification.error({
           message: resBranch.data.message || 'Tạo chi nhánh thất bại!',
         })
+      }
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })

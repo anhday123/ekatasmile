@@ -395,7 +395,9 @@ export default function Branch() {
   const getAllBranchData = async (params) => {
     try {
       setLoading(true)
+      console.log(params)
       const res = await getAllBranch(params)
+      console.log(res)
       if (res.status === 200) {
         setBranchs(res.data.data)
         setCountBranch(res.data.count)

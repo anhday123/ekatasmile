@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ACTION } from './consts/index'
-import { getAllStore } from './apis/store'
-import { getStore } from './actions/store'
+import { decodeToken } from 'react-jwt'
 
 import Loading from 'components/loading/Loading'
 import ModalIntro from 'components/introduction'
@@ -25,21 +24,14 @@ function App() {
           refreshToken: localStorage.getItem('refreshToken'),
         },
       })
+
+      const dataUser = decodeToken(localStorage.getItem('accessToken'))
+      if (dataUser)
+        dispatch({
+          type: 'SET_BRANCH_ID',
+          data: dataUser.data.branch_id,
+        })
     }
-  }, [])
-
-  const getAllStoreData = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200) {
-        const action = getStore(res.data.data)
-        dispatch(action)
-      }
-    } catch (error) {}
-  }
-
-  useEffect(() => {
-    getAllStoreData()
   }, [])
 
   return (
