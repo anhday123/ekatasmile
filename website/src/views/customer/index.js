@@ -18,12 +18,12 @@ import moment from 'moment'
 import { getCustomer, updateCustomer } from '../../apis/customer'
 import CustomerInfo from './components/customerInfo'
 import CustomerUpdate from '../actions/customer/update'
-import { PERMISSIONS } from 'consts'
+import { PERMISSIONS, ROUTES } from 'consts'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
-import { compare } from 'utils'
+import { compare, compareCustom, tableSum } from 'utils'
+import { Link } from 'react-router-dom'
 
-const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
 
@@ -135,7 +135,11 @@ export default function Customer() {
       render(data) {
         return data.first_name + ' ' + data.last_name
       },
-      // sorter: (a,b)=>compare(a,b, )
+      sorter: (a, b) =>
+        compareCustom(
+          `${a.first_name} ${a.last_name}`,
+          `${b.first_name} ${b.last_name}`
+        ),
     },
     {
       title: 'Loại khách hàng',
@@ -144,51 +148,46 @@ export default function Customer() {
       sorter: (a, b) => compare(a, b, 'type'),
     },
     {
-      title: 'Ngày sinh',
-      dataIndex: 'birthday',
-      width: 150,
-      render(data) {
-        return data && moment(data).format('L')
-      },
-      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
-    },
-    {
       title: 'Liên hệ',
       dataIndex: 'phone',
       width: 150,
       sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
-      title: 'Địa chỉ',
-      dataIndex: 'address',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'address'),
+      title: 'Tổng số đơn hàng',
+      dataIndex: '',
+      render: (data) => (
+        <Link to={ROUTES.CUSTOMER_ORDER_LIST} style={{ fontWeight: 500 }}>
+          5
+        </Link>
+      ),
+      sorter: (a, b) => compare(a, b, ''),
     },
     {
-      title: 'Quận/huyện',
-      dataIndex: 'district',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'district'),
+      title: 'điểm tích lũy',
+      dataIndex: '',
+      render: (data) => 5,
+      sorter: (a, b) => compare(a, b, ''),
     },
     {
-      title: 'Thành phố',
-      dataIndex: 'province',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'province'),
+      title: 'Số điểm đã dùng',
+      dataIndex: '',
+      render: (data) => 5,
+      sorter: (a, b) => compare(a, b, ''),
     },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'active',
-      width: 120,
-      render(data, record) {
-        return (
-          <Switch
-            defaultChecked={data}
-            onChange={(e) => changeActiveCustomer(record.customer_id, e)}
-          />
-        )
-      },
-    },
+    // {
+    //   title: 'Trạng thái',
+    //   dataIndex: 'active',
+    //   width: 120,
+    //   render(data, record) {
+    //     return (
+    //       <Switch
+    //         defaultChecked={data}
+    //         onChange={(e) => changeActiveCustomer(record.customer_id, e)}
+    //       />
+    //     )
+    //   },
+    // },
   ]
 
   const modal2VisibleModal = (modal2Visible) => {
@@ -343,13 +342,31 @@ export default function Customer() {
           <Button onClick={clearFilter} type="primary" size="large">
             Xóa bộ lọc
           </Button>
+          <Button
+            onClick={clearFilter}
+            style={{ marginLeft: 15 }}
+            type="primary"
+            size="large"
+          >
+            Điều chỉnh cột
+          </Button>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}>
           {selectedRowKeys && selectedRowKeys.length > 0 && (
             <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-              <Button size="large" type="primary" onClick={openUpdateDrawer}>
-                Cập nhật khách hàng
-              </Button>
+              <>
+                <Button size="large" type="primary" onClick={openUpdateDrawer}>
+                  Cập nhật
+                </Button>
+                <Button
+                  size="large"
+                  type="primary"
+                  style={{ background: 'red', border: 'none', marginLeft: 15 }}
+                  onClick={openUpdateDrawer}
+                >
+                  Xóa
+                </Button>
+              </>
             </Permission>
           )}
         </Row>
@@ -382,38 +399,26 @@ export default function Customer() {
               },
               total: countCustomer,
             }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
+            summary={(pageData) => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <b>Tổng:</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <b>{tableSum(pageData, '')}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <b>{tableSum(pageData, '')}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <b>{tableSum(pageData, '')}</b>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </div>
       </div>

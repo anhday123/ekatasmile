@@ -71,7 +71,7 @@ export default function PromotionAdd(props) {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [value, setValue] = useState(1)
   const [branchList, setBranchList] = useState([])
-
+  const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -82,17 +82,27 @@ export default function PromotionAdd(props) {
     try {
       const obj = {
         name: values.name,
-        type: values.type ? value.type : 'percent',
+        type: values.type ? values.type : 'percent',
         value: values.value,
         limit: {
           amount: parseInt(values.amount),
           branchs: values.branch ? values.branch : ['1'],
         },
+        description: values.description || ' ',
       }
       const res = await addPromotion(obj)
       if (res.status === 200) {
         openNotification()
+        props.reload()
         props.close()
+        form.setFieldsValue({
+          name: '',
+          type: '',
+          value: '',
+          amount: '',
+          branchs: [],
+          description: '',
+        })
       } else throw res
     } catch (e) {
       console.log(e)
@@ -141,6 +151,7 @@ export default function PromotionAdd(props) {
         <Form
           className={styles['promotion_add_form_parent']}
           onFinish={onFinish}
+          form={form}
         >
           <Row className={styles['promotion_add_name']}>
             <Col
@@ -392,11 +403,13 @@ export default function PromotionAdd(props) {
                 style={{ width: '100%', height: '100%' }}
                 className={styles['promotion_add_form_right_content']}
               >
-                <Input.TextArea
-                  style={{ width: '100%', height: '100%' }}
-                  rows={4}
-                  placeholder="Nhập mô tả"
-                />
+                <Form.Item name="description" style={{ width: '100%' }}>
+                  <Input.TextArea
+                    style={{ width: '100%', height: '100%' }}
+                    rows={4}
+                    placeholder="Nhập mô tả"
+                  />
+                </Form.Item>
               </div>
             </Col>
           </Row>
@@ -460,38 +473,6 @@ export default function PromotionAdd(props) {
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={data}
-                summary={(pageData) => {
-                  return (
-                    <Table.Summary fixed>
-                      <Table.Summary.Row>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                      </Table.Summary.Row>
-                    </Table.Summary>
-                  )
-                }}
               />
             </div>
             <div

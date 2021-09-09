@@ -282,38 +282,6 @@ export default function ImportExportFile() {
             rowSelection={rowSelection}
             columns={columnsPromotion}
             scroll={{ y: 500 }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
           />
         </div>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
@@ -389,38 +357,6 @@ export default function ImportExportFile() {
               rowSelection={rowSelection}
               columns={columns}
               dataSource={data}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
             />
           </div>
         </div>

@@ -596,38 +596,6 @@ export default function Delivery() {
                     dataSource={data}
                     size="small"
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -681,38 +649,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -765,38 +701,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -849,38 +753,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -933,38 +805,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -1017,38 +857,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>
@@ -1102,38 +910,6 @@ export default function Delivery() {
                     columns={columns}
                     dataSource={data}
                     scroll={{ y: 500 }}
-                    summary={(pageData) => {
-                      return (
-                        <Table.Summary fixed>
-                          <Table.Summary.Row>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell>
-                              <Text></Text>
-                            </Table.Summary.Cell>
-                          </Table.Summary.Row>
-                        </Table.Summary>
-                      )
-                    }}
                   />
                 </div>
               </div>

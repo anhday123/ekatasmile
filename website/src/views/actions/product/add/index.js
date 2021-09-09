@@ -1242,6 +1242,172 @@ export default function ProductAdd() {
         </Row>
       </Form>
 
+      <div
+        style={{
+          display: isProductHasVariants ? '' : 'none',
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            marginBottom: 16,
+            border: '1px solid #f0f0f0',
+            padding: 16,
+            width: '100%',
+          }}
+        >
+          {attributes.map((e, index) => {
+            const RenderInput = () => (
+              <Input
+                size="large"
+                placeholder="Nhập tên thuộc tính"
+                defaultValue={e.option}
+                onBlur={(e) => {
+                  attributes[index].option = e.target.value
+                }}
+                style={{ width: '100%' }}
+              />
+            )
+            return (
+              <Row
+                style={{ width: '100%', marginBottom: 15 }}
+                justify="space-between"
+                align="middle"
+              >
+                <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                  <span style={{ marginBottom: 0 }}>Tên thuộc tính</span>
+                  <RenderInput />
+                </Col>
+                <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                  <span style={{ marginBottom: 0 }}>Giá trị</span>
+                  <Select
+                    mode="tags"
+                    size="large"
+                    style={{ width: '100%' }}
+                    placeholder="Nhập giá trị"
+                    value={e.values.map((v) => v)}
+                    onDeselect={(v) => {
+                      //remove tag
+                      let items = [...attributes]
+                      const indexRemove = e.values.findIndex((f) => f === v)
+                      if (indexRemove !== -1) {
+                        items[index].values.splice(indexRemove, 1)
+                        setAttributes([...items])
+                      }
+                    }}
+                    onSelect={(e) => {
+                      //add tag
+                      let items = [...attributes]
+
+                      //check value add này đã tồn tại chưa
+                      for (let i = 0; i < items.length; ++i) {
+                        for (let j = 0; j < items[i].values.length; ++j) {
+                          if (items[i].values[j] === e) {
+                            notification.error({
+                              message: 'Giá trị đã có!',
+                            })
+                            return
+                          }
+                        }
+                      }
+
+                      //trường hợp nhập nhiều variant bởi dấu phẩy
+                      //ví dụ: color, size, quantity
+                      const splitValue = e.split(',')
+
+                      splitValue.map((v) => {
+                        if (v) items[index].values.push(v.trim())
+                      })
+                      setAttributes([...items])
+                    }}
+                    optionLabelProp="label"
+                  ></Select>
+                </Col>
+                <Popconfirm
+                  title="Bạn có muốn xoá thuộc tính này?"
+                  onConfirm={() => removeAttribute(index)}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <CloseOutlined
+                    style={{
+                      cursor: 'pointer',
+                      color: 'red',
+                      fontSize: 18,
+                      marginTop: 22,
+                      marginLeft: 5,
+                      display: attributes.length === 1 && 'none',
+                    }}
+                  />
+                </Popconfirm>
+                <Col xs={24} sm={24} md={5} lg={5} xl={5}>
+                  <Tooltip title="Tối đa tạo 2 thuộc tính">
+                    <Button
+                      size="large"
+                      style={{
+                        marginTop: 17,
+                        display: attributes.length === 2 && 'none',
+                      }}
+                      onClick={addAttribute}
+                    >
+                      Thêm thuộc tính khác
+                    </Button>
+                  </Tooltip>
+                </Col>
+              </Row>
+            )
+          })}
+        </div>
+
+        <div
+          style={{
+            marginBottom: 16,
+            border: '1px solid #f0f0f0',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              borderBottom: '1px solid #f0f0f0',
+              width: '100%',
+            }}
+          >
+            <div style={{ width: '100%', padding: 16 }}>
+              <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
+            </div>
+          </div>
+          <div
+            style={{
+              marginLeft: 10,
+              marginTop: 10,
+              marginBottom: 20,
+              display: !selectRowKeyVariant.length && 'none',
+            }}
+          >
+            <Space wrap>
+              <UploadAllVariant />
+              <EditQuantity />
+              <EditPrice />
+            </Space>
+          </div>
+          <Table
+            rowKey="title"
+            columns={columnsVariant}
+            dataSource={variants}
+            pagination={false}
+            rowSelection={{
+              selectedRowKeys: selectRowKeyVariant,
+              onChange: (selectedRowKeys, selectedRows) => {
+                setSelectRowKeyVariant(selectedRowKeys)
+              },
+            }}
+            size="small"
+            style={{ width: '100%' }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
+      </div>
+
       <Row
         style={{
           width: '100%',

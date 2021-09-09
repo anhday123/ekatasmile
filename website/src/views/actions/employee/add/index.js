@@ -50,6 +50,7 @@ export default function EmployeeAdd(props) {
       if (res.status === 200) {
         openNotification()
         props.close()
+        props.reload()
       } else {
         openNotificationError()
       }
@@ -158,17 +159,16 @@ export default function EmployeeAdd(props) {
                     ? `${user.company_name.toLowerCase()}_${value.username}`
                     : value.username,
                 password: value.password, //
-                role: value.role, //
+                role_id: value.role, //
                 phone: value.phoneNumber,
                 email: value.email, //
                 avatar: ' ',
-                store: value.store,
+                store_id: value.store,
                 first_name: value && value.name ? value.name : ' ',
                 last_name: value && value.surname ? value.surname : ' ',
-                branch: value && value.branch ? value.branch : ' ', //
+                branch_id: value && value.branch ? value.branch : ' ', //
                 birthday: '',
                 address: value && value.address ? value.address : ' ',
-                ward: ' ',
                 district: value && value.district ? value.district : ' ',
                 province: value && value.city ? value.city : ' ',
                 company_name: ' ',

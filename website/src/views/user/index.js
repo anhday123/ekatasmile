@@ -8,8 +8,7 @@ import {
   updateUser,
 } from './../../apis/user'
 import { apiAllUser } from '../../apis/user'
-import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
-import { useDispatch } from 'react-redux'
+import { ROUTES, PERMISSIONS } from './../../consts/index'
 import {
   Switch,
   Input,
@@ -23,9 +22,6 @@ import {
   Drawer,
   Form,
   Table,
-  Modal,
-  Popover,
-  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
@@ -34,66 +30,18 @@ import Permission from 'components/permission'
 import { compare, compareCustom } from 'utils'
 const { Option } = Select
 const { RangePicker } = DatePicker
-const { Text } = Typography
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
 export default function User() {
-  const dispatch = useDispatch()
-  const { Search } = Input
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
   const [formAdd] = Form.useForm()
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [birthDay, setBirthDay] = useState('')
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [user, setUser] = useState([])
   const [visibleUpdate, setVisibleUpdate] = useState(false)
-  const showDrawerUpdate = () => {
-    setVisibleUpdate(true)
-  }
-  const dateFormat = 'YYYY/MM/DD'
-  const [record, setRecord] = useState({})
 
-  const onCloseUpdate = () => {
-    setVisibleUpdate(false)
-  }
+  const dateFormat = 'YYYY/MM/DD'
+
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -110,7 +58,7 @@ export default function User() {
     try {
       setLoading(true)
 
-      const res = await apiSearch({ keyword: value })
+      const res = await apiSearch({ search: value })
 
       if (res.status === 200) setUser(res.data.data)
       setLoading(false)
@@ -208,13 +156,14 @@ export default function User() {
     },
     {
       title: 'Vai trò',
-      dataIndex: 'role',
+      dataIndex: '_role',
       width: 150,
-      render: (text, record) => (
-        <div>{record && record.role ? record.role.name : ''}</div>
-      ),
+      render: (data) => <>{data ? data.name : 'EMPLOYEE'}</>,
       sorter: (a, b) =>
-        compareCustom(a.role ? a.role.name : '', b.role ? b.role.name : ''),
+        compareCustom(
+          a._role ? a._role.name : 'EMPLOYEE',
+          b._role ? b._role.name : 'EMPLOYEE'
+        ),
     },
     {
       title: 'Địa chỉ',
@@ -236,12 +185,6 @@ export default function User() {
         ),
     },
   ]
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  )
 
   function onChangeSwitch(checked, record) {
     updateUserData(
@@ -251,20 +194,6 @@ export default function User() {
     )
   }
 
-  const openNotificationRegisterFailMailRegexUpdate = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: `${data} phải là số và có độ dài là 10`,
-    })
-  }
-  const openNotificationRegisterFailMailUpdate = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Gmail phải ở dạng @gmail.com.',
-    })
-  }
   const openNotificationUpdate = (data) => {
     notification.success({
       message: 'Thành công',
@@ -274,27 +203,11 @@ export default function User() {
           : 'Kích hoạt người dùng thành công.',
     })
   }
-  const openNotificationUpdateMain = (data, data2) => {
-    notification.success({
-      message: 'Thành công',
-      description: (
-        <div>
-          Cập nhật thông tin người dùng <b>{`${data} ${data2}`}</b> thành công
-        </div>
-      ),
-    })
-  }
 
   const openNotificationErrorUpdate = () => {
     notification.error({
       message: 'Thất bại',
       description: 'Lỗi cập nhật thông tin khách hàng.',
-    })
-  }
-  const openNotificationErrorUpdateMain = () => {
-    notification.error({
-      message: 'Thất bại',
-      description: 'Tên người dùng đã tồn tại.',
     })
   }
   const updateUserData = async (object, id, data) => {
@@ -316,30 +229,6 @@ export default function User() {
       setLoading(false)
     }
   }
-  const updateUserDataUpdate = async (object, id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await updateUser(object, id)
-      console.log(res)
-      if (res.status === 200) {
-        await apiAllUserData()
-        openNotificationUpdateMain(object.first_name, object.last_name)
-        setSelectedRowKeys([])
-        setVisibleUpdate(false)
-      } else {
-        openNotificationErrorUpdateMain()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
   const apiAllUserData = async () => {
     try {
       setLoading(true)
@@ -472,10 +361,10 @@ export default function User() {
                 values.username.toLowerCase().trim()
               ),
               password: values.password,
-              store: ' ',
-              role: values.roleAdd,
+              store_id: ' ',
+              role_id: values.roleAdd,
               phone: values.phoneNumber,
-              branch: ' ',
+              branch_id: ' ',
               email: values.emailAdd,
               avatar: ' ',
               first_name:
@@ -487,7 +376,6 @@ export default function User() {
                 values && values.addressAdd
                   ? values.addressAdd.toLowerCase()
                   : '',
-              ward: ' ',
               district: ' ',
               province: ' ',
               company_name: ' ',
@@ -495,8 +383,6 @@ export default function User() {
               tax_code: ' ',
               fax: ' ',
             }
-            console.log(object)
-            console.log('|||789789')
             apiCreateUserMenuData(object)
           } else {
             openNotificationRegisterFailMailRegex('Liên hệ')
@@ -518,137 +404,7 @@ export default function User() {
       /^[a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-z0-9]@[a-z0-9][-\.]{0,1}([a-z][-\.]{0,1})*[a-z0-9]\.[a-z0-9]{1,}([\.\-]{0,1}[a-z]){0,}[a-z0-9]{0,}$/
     return re.test(String(email).toLowerCase())
   }
-  const regexCheck = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-  const onCloseUpdateFunc = (data) => {
-    arrayUpdate &&
-      arrayUpdate.length > 0 &&
-      arrayUpdate.forEach((values, index) => {
-        console.log(values)
-        console.log('00000')
-        if (
-          values.phone === 'default' ||
-          values.phone === '' ||
-          values.phone === ' ' ||
-          typeof values.phone === 'undefined'
-        ) {
-          if (validateEmail(values.email)) {
-            if (
-              values.phone === 'default' ||
-              values.phone === '' ||
-              values.phone === ' ' ||
-              typeof values.phone === 'undefined'
-            ) {
-              openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-            } else {
-              if (regexCheck.test(values.phone)) {
-                updateUserDataUpdate(
-                  {
-                    ...values,
-                    role:
-                      values &&
-                      values.role &&
-                      values.role.target &&
-                      values.role.target.value
-                        ? values.role.target.value
-                        : values && values.role && values.role.role_id
-                        ? values.role.role_id
-                        : '1',
-                    phone: '',
-                    email: values.email,
-                    avatar: ' ',
-                    branch: ' ',
-                    first_name: values.first_name.toLowerCase(),
-                    last_name: values.last_name.toLowerCase(),
-                    birthday: ' ',
-                    address: values.address.toLowerCase(),
-                    ward: ' ',
-                    district: ' ',
-                    province: ' ',
-                    company_name: ' ',
-                    company_website: ' ',
-                    tax_code: ' ',
-                    fax: ' ',
-                  },
-                  values.user_id
-                )
-              }
-            }
-          } else {
-            openNotificationRegisterFailMailUpdate()
-          }
-        } else {
-          if (validateEmail(values.email)) {
-            // if (password_validate(values.passwordRegister)) {
-            if (isNaN(values.phone) && values.phone === '') {
-              openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-            } else {
-              if (regexCheck.test(values.phone)) {
-                console.log('00000')
-                const object = {}
-                console.log(object)
 
-                updateUserDataUpdate(
-                  {
-                    ...values,
-                    role:
-                      values &&
-                      values.role &&
-                      values.role.target &&
-                      values.role.target.value
-                        ? values.role.target.value
-                        : values && values.role && values.role.role_id
-                        ? values.role.role_id
-                        : '1',
-                    phone: values.phone,
-                    email: values.email,
-                    avatar: ' ',
-                    branch_id: ' ',
-                    first_name: values.first_name.toLowerCase(),
-                    last_name: values.last_name.toLowerCase(),
-                    birthday: ' ',
-                    address: values.address.toLowerCase(),
-                    ward: ' ',
-                    district: ' ',
-                    province: ' ',
-                    company_name: ' ',
-                    company_website: ' ',
-                    tax_code: ' ',
-                    fax: ' ',
-                  },
-                  values.user_id
-                )
-              } else {
-                openNotificationRegisterFailMailRegexUpdate('Liên hệ')
-              }
-            }
-          } else {
-            openNotificationRegisterFailMailUpdate()
-          }
-        }
-      })
-  }
-
-  const [arrayUpdate, setArrayUpdate] = useState([])
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
-    setSelectedRowKeys(selectedRowKeys)
-    const array = []
-    user &&
-      user.length > 0 &&
-      user.forEach((values, index) => {
-        selectedRowKeys.forEach((values1, index1) => {
-          if (values._id === values1) {
-            array.push(values)
-          }
-        })
-      })
-
-    setArrayUpdate([...array])
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
   const openNotificationClear = () => {
     notification.success({
       message: 'Thành công',
@@ -670,12 +426,9 @@ export default function User() {
     try {
       setLoading(true)
       const res = await apiFilterRoleEmployee({ _role: data })
-      console.log(res)
-      console.log('-----------')
       if (res.status === 200) {
         setUser(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -767,7 +520,7 @@ export default function User() {
                 enterButton
                 onChange={onSearch}
                 className={styles['orders_manager_content_row_col_search']}
-                placeholder="Tìm kiếm theo mã, theo tên"
+                placeholder="Tìm kiếm theo tên"
                 allowClear
               />
             </div>
@@ -868,128 +621,10 @@ export default function User() {
             style={{
               width: '100%',
             }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
           />
         </div>
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Popover content={content} trigger="click" placement="bottomLeft">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                placeholder="Tìm kiếm khách hàng"
-                onSearch={onSearchCustomerChoose}
-                enterButton
-              />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
-            }}
-          >
-            <Table
-              size="small"
-              style={{
-                width: '100%',
-              }}
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
-            />
-          </div>
-        </div>
-      </Modal>
+
       <Drawer
         title="Thêm người dùng mới"
         width={720}

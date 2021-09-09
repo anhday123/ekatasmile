@@ -7293,38 +7293,7 @@ export default function Sell() {
             columns={columnsTable}
             dataSource={orderDetail}
             scroll={{ y: 250 }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
+           
           />
 
           <Row
@@ -7652,38 +7621,7 @@ export default function Sell() {
                   expandedRowKeys: selectedRowKeysOrderList,
                   expandIconColumnIndex: -1,
                 }}
-                summary={(pageData) => {
-                  return (
-                    <Table.Summary fixed>
-                      <Table.Summary.Row>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                      </Table.Summary.Row>
-                    </Table.Summary>
-                  )
-                }}
+                
               />
             </div>
 

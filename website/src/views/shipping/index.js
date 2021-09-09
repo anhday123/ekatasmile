@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, PERMISSIONS } from './../../consts/index'
 import moment from 'moment'
-import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import styles from './../shipping/shipping.module.scss'
 
@@ -19,7 +18,6 @@ import {
   Select,
   DatePicker,
   Popover,
-  Typography,
 } from 'antd'
 import { PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import {
@@ -32,8 +30,7 @@ import { apiFilterCity } from '../../apis/branch'
 import ShippingAdd from 'views/actions/shipping/add'
 import Permission from 'components/permission'
 import { compare } from 'utils'
-
-const { Text } = Typography
+import { uploadFile } from 'apis/upload'
 
 export default function Shipping() {
   const { RangePicker } = DatePicker
@@ -115,7 +112,7 @@ export default function Shipping() {
     try {
       setLoading(true)
 
-      const res = await apiSearchShipping({ keyword: value })
+      const res = await apiSearchShipping({ search: value })
 
       if (res.status === 200) {
         var array = []
@@ -347,7 +344,7 @@ export default function Shipping() {
         const object = {
           active: false,
         }
-        apiUpdateShippingData(object, values.transport_id, values.name)
+        apiUpdateShippingData(object, values.shipping_company_id, values.name)
       })
   }
 
@@ -382,7 +379,7 @@ export default function Shipping() {
               const object = {
                 active: true,
               }
-              apiUpdateShippingData(object, values.transport_id, 2)
+              apiUpdateShippingData(object, values.shipping_company_id, 2)
             }
           }
         })
@@ -410,44 +407,28 @@ export default function Shipping() {
   const UploadImg = ({ imageUrl, indexUpdate }) => {
     const [imgUrl, setImgUrl] = useState(imageUrl)
     const [imgFile, setImgFile] = useState(null)
-    function getBase64(img, callback) {
-      const reader = new FileReader()
-      reader.addEventListener('load', () => callback(reader.result))
-      reader.readAsDataURL(img)
-    }
+    // function getBase64(img, callback) {
+    //   const reader = new FileReader()
+    //   reader.addEventListener('load', () => callback(reader.result))
+    //   reader.readAsDataURL(img)
+    // }
     const handleChange = (info) => {
       if (info.file.originFileObj) setImgFile(info.file.originFileObj)
 
-      getBase64(info.file.originFileObj, (imageUrl) => {
-        setImgUrl(imageUrl)
-      })
+      // getBase64(info.file.originFileObj, (imageUrl) => {
+      //   setImgUrl(imageUrl)
+      // })
     }
 
     useEffect(() => {
       const _uploadImg = async () => {
         try {
-          const formData = new FormData()
-          formData.append('files', imgFile)
-
-          if (formData) {
-            dispatch({ type: ACTION.LOADING, data: true })
-            let a = axios
-              .post(
-                'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                formData,
-                {
-                  headers: {
-                    'Content-Type': 'multipart/form-data',
-                  },
-                }
-              )
-              .then((resp) => resp)
-            let resultsMockup = await Promise.all([a])
-            console.log(resultsMockup[0].data.data[0])
-            dispatch({ type: ACTION.LOADING, data: false })
-            //   const array = [...store];
-            arrayUpdate[indexUpdate].image = resultsMockup[0].data.data[0]
-          }
+          dispatch({ type: ACTION.LOADING, data: true })
+          let a = await uploadFile(imgFile)
+          dispatch({ type: ACTION.LOADING, data: false })
+          //   const array = [...store];
+          setImgUrl(a)
+          arrayUpdate[indexUpdate].image = a
         } catch (error) {}
       }
 
@@ -489,7 +470,6 @@ export default function Shipping() {
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -500,7 +480,6 @@ export default function Shipping() {
     try {
       setLoading(true)
       const res = await apiProvince()
-      console.log(res)
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
@@ -519,8 +498,7 @@ export default function Shipping() {
   const apiFilterCityData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiFilterCity({ keyword: object })
-      console.log(res)
+      const res = await apiFilterCity({ search: object })
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
@@ -530,7 +508,6 @@ export default function Shipping() {
     }
   }
   function handleChangeCity(value) {
-    console.log(`selected ${value}`)
     apiFilterCityData(value)
   }
   const onCloseUpdateFunc = (data) => {
@@ -559,8 +536,10 @@ export default function Shipping() {
                     district: values.district,
                     province: values.province,
                   }
-                  alert('123')
-                  apiUpdateShippingDataUpdate(object, values.transport_id)
+                  apiUpdateShippingDataUpdate(
+                    object,
+                    values.shipping_company_id
+                  )
                 } else {
                   openNotificationRegisterFailMailPhone()
                 }
@@ -583,7 +562,10 @@ export default function Shipping() {
                     province: values.province,
                   }
                   alert('456')
-                  apiUpdateShippingDataUpdate(object, values.transport_id)
+                  apiUpdateShippingDataUpdate(
+                    object,
+                    values.shipping_company_id
+                  )
                 } else {
                   openNotificationRegisterFailMailPhone()
                 }
@@ -610,7 +592,10 @@ export default function Shipping() {
                     district: values.district,
                     province: values.province,
                   }
-                  apiUpdateShippingDataUpdate(object, values.transport_id)
+                  apiUpdateShippingDataUpdate(
+                    object,
+                    values.shipping_company_id
+                  )
                 } else {
                   openNotificationRegisterFailMailPhone()
                 }
@@ -632,7 +617,10 @@ export default function Shipping() {
                     district: values.district,
                     province: values.province,
                   }
-                  apiUpdateShippingDataUpdate(object, values.transport_id)
+                  apiUpdateShippingDataUpdate(
+                    object,
+                    values.shipping_company_id
+                  )
                 } else {
                   openNotificationRegisterFailMailPhone()
                 }
@@ -656,7 +644,7 @@ export default function Shipping() {
           district: arrayUpdate[0].district,
           province: arrayUpdate[0].province,
         }
-        apiUpdateShippingDataUpdate(object, values.transport_id)
+        apiUpdateShippingDataUpdate(object, values.shipping_company_id)
       })
     }
   }
@@ -961,38 +949,6 @@ export default function Shipping() {
             columns={columns}
             dataSource={shipping}
             scroll={{ y: 500 }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
           />
         </div>
       </div>
@@ -1974,7 +1930,10 @@ export default function Shipping() {
         width="75%"
         title="Thêm đối tác"
       >
-        <ShippingAdd close={() => setShowCreate(false)} />
+        <ShippingAdd
+          close={() => setShowCreate(false)}
+          reload={apiAllShippingData}
+        />
       </Drawer>
     </>
   )

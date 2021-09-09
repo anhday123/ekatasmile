@@ -98,6 +98,7 @@ export const ROUTES = {
   PROMOTION_ADD: '/actions/promotion/add',
   ROLE_ADD: '/actions/role/add',
   GUARANTEE_ADD: '/actions/guarantee/add',
+  CUSTOMER_ORDER_LIST: '/customer/order-list',
 }
 
 export const PERMISSIONS = {

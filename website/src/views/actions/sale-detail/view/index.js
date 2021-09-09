@@ -364,7 +364,7 @@ export default function SaleDetailView() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>Tổng cộng: {pageData.length}</Text>
+                      <Text></Text>
                       {/* <Text type="danger">456</Text> */}
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>

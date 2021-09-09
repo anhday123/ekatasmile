@@ -251,38 +251,6 @@ export default function CompareHistory(props) {
         columns={columns}
         rowKey="_id"
         dataSource={compareList}
-        summary={(pageData) => {
-          return (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell>
-                  <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text></Text>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )
-        }}
       />
       <SessionHistory
         data={sessionDetail}

@@ -30,10 +30,8 @@ import { getAllStore } from '../../apis/store'
 import Permission from 'components/permission'
 import { compare } from 'utils'
 const { Option } = Select
-const { Text } = Typography
 export default function Employee() {
   const dispatch = useDispatch()
-  const username = localStorage.getItem('username')
   const [employee, setEmployee] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -64,10 +62,12 @@ export default function Employee() {
     try {
       setLoading(true)
 
-      const res = await apiSearch({ keyword: value })
+      const res = await apiSearch({ search: value })
 
       if (res.status === 200) {
-        setEmployee(res.data.data)
+        setEmployee(
+          res.data.data.filter((e) => e._role && e._role.name == 'EMPLOYEE'    )
+        )
       }
       setLoading(false)
     } catch (error) {
@@ -99,32 +99,27 @@ export default function Employee() {
         page: pagination.page,
         page_size: pagination.page_size,
       })
-      console.log(res)
-      if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
-          res.data.data.forEach((values, index) => {
-            if (values.bussiness.username === username) {
-              if (values._role === 'EMPLOYEE') {
-                array.push(values)
-
-                let now = moment()
-                let days = now.diff(values.create_date, 'days')
-                if (days > 180) {
-                  temp++
-                }
-              }
+      if (res.status === 200 && res.data.success) {
+        let array = []
+        res.data.data.forEach((values) => {
+          if (values._role && values._role.name === 'EMPLOYEE') {
+            array.push(values)
+            let now = moment()
+            let days = now.diff(values.create_date, 'days')
+            if (days > 180) {
+              temp++
             }
-          })
+          }
+        })
         setMonthSix(temp)
         setEmployeeTemp(res.data.data)
-        setEmployee(res.data.data)
-        setEmployeeCount(res.data.data)
+        setEmployee(array)
+        setEmployeeCount(array)
       }
       setLoading(false)
     } catch (error) {
       setLoading(false)
+      console.log(error)
     }
   }
   useEffect(() => {
@@ -180,20 +175,20 @@ export default function Employee() {
       sorter: (a, b) =>
         moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
-    {
-      title: 'Cửa hàng',
-      dataIndex: 'store',
-      width: 150,
-      render: (text, record) => <div>{text.name}</div>,
-      sorter: (a, b) => compare(a, b, 'store'),
-    },
-    {
-      title: 'Chi nhánh',
-      dataIndex: 'branch',
-      width: 150,
-      render: (text, record) => <div>{text.name}</div>,
-      sorter: (a, b) => compare(a, b, 'branch'),
-    },
+    // {
+    //   title: 'Cửa hàng',
+    //   dataIndex: 'store',
+    //   width: 150,
+    //   render: (text, record) => <div>{text.name}</div>,
+    //   sorter: (a, b) => compare(a, b, 'store'),
+    // },
+    // {
+    //   title: 'Chi nhánh',
+    //   dataIndex: 'branch',
+    //   width: 150,
+    //   render: (text, record) => <div>{text.name}</div>,
+    //   sorter: (a, b) => compare(a, b, 'branch'),
+    // },
     {
       title: 'Email',
       dataIndex: 'email',
@@ -366,7 +361,6 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await getAllStore()
-      console.log(res)
       if (res.status === 200) {
         setStore(res.data.data)
       }
@@ -423,7 +417,6 @@ export default function Employee() {
     try {
       setLoading(true)
       const res = await getAllBranch()
-      console.log(res)
       if (res.status === 200) {
         setBranch(res.data.data)
       }
@@ -504,12 +497,7 @@ export default function Employee() {
   function handleChangeCity(value) {
     apiFilterCityData(value)
   }
-  var employeeName = []
-  employeeTemp &&
-    employeeTemp.length > 0 &&
-    employeeTemp.forEach((values, index) => {
-      employeeName.push(values.role.name)
-    })
+
   return (
     <>
       <div className={`${styles['employee_manager']} ${styles['card']}`}>
@@ -735,38 +723,6 @@ export default function Employee() {
               dataSource={employee}
               scroll={{ y: 500 }}
               pagination={{ onChange: changePagi }}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
             />
           </div>{' '}
         </div>
@@ -1632,7 +1588,7 @@ export default function Employee() {
         visible={visibleUpdate}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <EmployeeAdd close={onCloseUpdate} />
+        <EmployeeAdd close={onCloseUpdate} reload={apiAllEmployeeData} />
       </Drawer>
     </>
   )

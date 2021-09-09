@@ -7,12 +7,8 @@ import {
   Row,
   Col,
   DatePicker,
-  Select,
   Table,
-  Modal,
-  Popover,
   notification,
-  Typography,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { FileExcelOutlined, PlusCircleOutlined } from '@ant-design/icons'
@@ -21,56 +17,22 @@ import { apiAllWarranty, updateWarranty } from '../../apis/warranty'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permission from 'components/permission'
 import { compare } from 'utils'
-const { Text } = Typography
-const { Option } = Select
 const { RangePicker } = DatePicker
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
-
-const data = []
 function removeFalse(a) {
   return Object.keys(a)
     .filter((key) => a[key] !== '' && a[key] !== undefined)
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 export default function Guarantee() {
-  const { Search } = Input
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [warrantyList, setWarrantyList] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [filter, setFilter] = useState({
-    keyword: '',
+    search: '',
     from_date: undefined,
     to_date: undefined,
   })
   const onSearch = (value) =>
-    setFilter({ ...filter, keyword: value.target.value })
+    setFilter({ ...filter, search: value.target.value })
   function onChange(dates, dateStrings) {
     setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
   }
@@ -151,25 +113,6 @@ export default function Guarantee() {
     },
   ]
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  )
-
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getWarranty = async (params) => {
     try {
@@ -180,6 +123,17 @@ export default function Guarantee() {
     } catch (e) {
       console.log(e)
     }
+  }
+  const onResetFilter = () => {
+    setFilter({
+      search: '',
+      from_date: undefined,
+      to_date: undefined,
+    })
+    notification.success({
+      message: 'Thành công',
+      description: 'Dữ liệu đã được reset về ban đầu',
+    })
   }
   useEffect(() => {
     getWarranty({ ...removeFalse(filter) })
@@ -215,9 +169,10 @@ export default function Guarantee() {
           </div>
         </div>
         <Row
+          gutter={20}
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
+            // justifyContent: 'space-between',
             alignItems: 'center',
             width: '100%',
           }}
@@ -233,9 +188,11 @@ export default function Guarantee() {
             <div style={{ width: '100%' }}>
               <Input
                 placeholder="Tìm kiếm theo mã, theo tên"
+                value={filter.search}
                 onChange={onSearch}
                 enterButton
                 size="large"
+                allowClear
               />
             </div>
           </Col>
@@ -259,30 +216,20 @@ export default function Guarantee() {
                     moment().endOf('month'),
                   ],
                 }}
+                value={
+                  filter.from_date
+                    ? [moment(filter.from_date), moment(filter.to_date)]
+                    : []
+                }
                 onChange={onChange}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Lọc phiếu bảo hành"
-              >
-                <Option value="ticket1">Phiếu bảo hành 1</Option>
-                <Option value="ticket2">Phiếu bảo hành 2</Option>
-                <Option value="ticket3">Phiếu bảo hành 3</Option>
-              </Select>
-            </div>
-          </Col>
+        </Row>
+        <Row justify="end" style={{ width: '100%' }}>
+          <Button size="large" type="primary" onClick={onResetFilter}>
+            Xóa bộ lọc
+          </Button>
         </Row>
         <Row
           style={{
@@ -376,145 +323,9 @@ export default function Guarantee() {
             pagination={{ onChange: changePagi }}
             dataSource={warrantyList}
             style={{ width: '100%' }}
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
           />
         </div>
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                placeholder="Tìm kiếm khách hàng"
-                onSearch={onSearchCustomerChoose}
-                enterButton
-              />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
-            }}
-          >
-            {' '}
-            <Table
-              size="small"
-              scroll={{ y: 500 }}
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-              summary={(pageData) => {
-                return (
-                  <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text>Tổng cộng:{`${pageData.length}`}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>
-                        <Text></Text>
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </Table.Summary>
-                )
-              }}
-            />
-          </div>
-        </div>
-      </Modal>
     </>
   )
 }
