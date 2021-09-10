@@ -1,76 +1,22 @@
-import { Link, useHistory } from 'react-router-dom'
 import {
   Select,
   Row,
   Col,
   notification,
   Button,
-  Popover,
-  Modal,
   Input,
-  DatePicker,
-  Table,
   Form,
   InputNumber,
-  Typography,
 } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import styles from './../add/add.module.scss'
 import { getAllBranch } from '../../../../apis/branch'
 import { addPromotion } from '../../../../apis/promotion'
-import { ROUTES } from 'consts'
-
-const { Text } = Typography
+import { getAllStore } from 'apis/store'
 const { Option } = Select
 
-const { Search } = Input
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
-
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
-
 export default function PromotionAdd(props) {
-  let history = useHistory()
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [value, setValue] = useState(1)
-  const [branchList, setBranchList] = useState([])
+  const [storeList, setStoreList] = useState([])
   const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
@@ -86,7 +32,7 @@ export default function PromotionAdd(props) {
         value: values.value,
         limit: {
           amount: parseInt(values.amount),
-          branchs: values.branch ? values.branch : ['1'],
+          stores: values.store ? values.store : ['1'],
         },
         description: values.description || ' ',
       }
@@ -100,7 +46,7 @@ export default function PromotionAdd(props) {
           type: '',
           value: '',
           amount: '',
-          branchs: [],
+          store: [],
           description: '',
         })
       } else throw res
@@ -113,36 +59,19 @@ export default function PromotionAdd(props) {
     }
   }
 
-  const content = (
-    <div>
-      <p>Gợi ý 1</p>
-      <p>Gợi ý 2</p>
-    </div>
-  )
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-  const getBranch = async (params) => {
-    try {
-      const res = await getAllBranch(params)
-      if (res.status === 200) {
-        setBranchList(res.data.data.filter((e) => e.active))
-      } else {
-        throw res
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  }
   useEffect(() => {
+    const getBranch = async (params) => {
+      try {
+        const res = await getAllStore(params)
+        if (res.status === 200) {
+          setStoreList(res.data.data.filter((e) => e.active))
+        } else {
+          throw res
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
     getBranch()
   }, [])
   return (
@@ -356,7 +285,7 @@ export default function PromotionAdd(props) {
                         }
                         style={{ marginBottom: '0.5rem' }}
                       >
-                        Chi nhánh
+                        Cửa hàng
                       </div>
                       <div
                         className={
@@ -364,7 +293,7 @@ export default function PromotionAdd(props) {
                         }
                       >
                         <Form.Item
-                          name="branch"
+                          name="store"
                           noStyle
                           rules={[{ required: true, message: 'Giá trị rỗng' }]}
                         >
@@ -374,10 +303,10 @@ export default function PromotionAdd(props) {
                             className={
                               styles['promotion_add_form_left_select_child']
                             }
-                            placeholder="Chọn chi nhánh"
+                            placeholder="Chọn cửa hàng"
                           >
-                            {branchList.map((e) => (
-                              <Option value={e.branch_id}>{e.name}</Option>
+                            {storeList.map((e) => (
+                              <Option value={e.store_id}>{e.name}</Option>
                             ))}
                           </Select>
                         </Form.Item>
@@ -422,76 +351,6 @@ export default function PromotionAdd(props) {
             </Form.Item>
           </div>
         </Form>
-
-        <Modal
-          title="Danh sách khách hàng"
-          centered
-          footer={null}
-          width={1000}
-          visible={modal2Visible}
-          onOk={() => modal2VisibleModal(false)}
-          onCancel={() => modal2VisibleModal(false)}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'column',
-            }}
-          >
-            <Popover placement="bottomLeft" trigger="click" content={content}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Search
-                  placeholder="Tìm kiếm khách hàng"
-                  onSearch={onSearchCustomerChoose}
-                  enterButton
-                />
-              </div>
-            </Popover>
-            <div
-              style={{
-                marginTop: '1rem',
-                border: '1px solid rgb(209, 191, 191)',
-                width: '100%',
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              {' '}
-              <Table
-                size="small"
-                scroll={{ y: 500 }}
-                rowSelection={rowSelection}
-                columns={columns}
-                dataSource={data}
-              />
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                marginTop: '1rem',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <div onClick={() => modal2VisibleModal(false)}>
-                <Button type="primary" style={{ width: '7.5rem' }}>
-                  Xác nhận
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Modal>
       </div>
     </>
   )

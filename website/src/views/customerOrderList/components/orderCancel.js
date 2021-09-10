@@ -73,7 +73,7 @@ export default function OrderCancel(props) {
   ]
   return (
     <>
-      <Row gutter={30} style={{ marginBottom: 20 }}>
+      <Row gutter={[30, 20]} style={{ marginBottom: 20 }}>
         <Col xs={24} lg={8}>
           <Input
             size="large"
@@ -84,13 +84,14 @@ export default function OrderCancel(props) {
         <Col xs={24} lg={8}>
           <DatePicker.RangePicker
             size="large"
-            style={{ borderRadius: '1em' }}
+            style={{ borderRadius: '1em', width: '100%' }}
           />
         </Col>
       </Row>
       <Table
         columns={columns}
         dataSource={orderPaidData}
+        scroll={{ x: 'max-content' }}
         summary={(pageData) => (
           <Table.Summary.Row style={{ fontWeight: 500 }}>
             <Table.Summary.Cell>Tổng</Table.Summary.Cell>

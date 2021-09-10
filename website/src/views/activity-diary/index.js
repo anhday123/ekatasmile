@@ -77,7 +77,7 @@ export default function ActivityDiary() {
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
-      const res = await apiSearchActivityDiary({ keyword: value })
+      const res = await apiSearchActivityDiary({ search: value })
 
       if (res.status === 200) setActivityDiary(res.data.data)
       setLoading(false)

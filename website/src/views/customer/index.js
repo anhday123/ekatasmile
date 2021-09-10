@@ -21,7 +21,7 @@ import CustomerUpdate from '../actions/customer/update'
 import { PERMISSIONS, ROUTES } from 'consts'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
-import { compare, compareCustom, tableSum } from 'utils'
+import { compare, compareCustom, formatCash, tableSum } from 'utils'
 import { Link } from 'react-router-dom'
 
 const { Option } = Select
@@ -167,8 +167,15 @@ export default function Customer() {
       sorter: (a, b) => compare(a, b, ''),
     },
     {
-      title: 'Ngày tạo',
+      title: 'Tổng chi tiêu tại cửa hàng',
+      dataIndex: '',
       key: 7,
+      render: (data) => formatCash(1000000),
+      sorter: (a, b) => compare(a, b, ''),
+    },
+    {
+      title: 'Ngày tạo',
+      key: 8,
       dataIndex: 'create_date',
       render: (data) => moment(data).format('DD/MM/YYYY'),
       sorter: (a, b) =>
@@ -176,14 +183,14 @@ export default function Customer() {
     },
     {
       title: 'Ngày sinh',
-      key: 8,
+      key: 9,
       dataIndex: 'birthday',
       render: (data) => moment(data).format('DD/MM/YYYY'),
       sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
     },
     {
       title: 'Địa chỉ',
-      key: 9,
+      key: 10,
       dataIndex: 'address',
       sorter: (a, b) => compare(a, b, 'address'),
     },
@@ -374,10 +381,14 @@ export default function Customer() {
             </div>
           </Col>
         </Row>
-        <Row style={{ width: '100%', marginTop: 20 }} justify="space-between">
+        <Row
+          style={{ width: '100%', marginTop: 20 }}
+          gutter={[10, 20]}
+          justify="space-between"
+        >
           {(selectedRowKeys && selectedRowKeys.length > 0 && (
             <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-              <div>
+              <Col>
                 <Button size="large" type="primary" onClick={openUpdateDrawer}>
                   Cập nhật
                 </Button>
@@ -394,10 +405,10 @@ export default function Customer() {
                 >
                   Xóa
                 </Button>
-              </div>
+              </Col>
             </Permission>
-          )) || <div></div>}
-          <div>
+          )) || <Col></Col>}
+          <Col>
             <Button onClick={clearFilter} type="primary" size="large">
               Xóa bộ lọc
             </Button>
@@ -409,7 +420,7 @@ export default function Customer() {
             >
               Điều chỉnh cột
             </Button>
-          </div>
+          </Col>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }}></Row>
 

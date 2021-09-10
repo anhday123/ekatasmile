@@ -35,3 +35,13 @@
   border: 0 solid transparent;
   overflow: hidden;
 }
+
+@media screen and (max-width: 768px) {
+  .promotion_manager {
+    margin: 0;
+    padding: 15px;
+  }
+  .card{
+    border-radius: 0;
+  }
+}

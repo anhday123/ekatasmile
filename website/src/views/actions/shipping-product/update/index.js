@@ -129,7 +129,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi chuyển: {history.location.state.from.name}
+            Nơi chuyển: {history.location.state._from.name}
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -149,7 +149,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi nhận: {history.location.state.to.name}
+            Nơi nhận: {history.location.state._to.name}
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -171,7 +171,7 @@ export default function DeliveryUpdate() {
             <Radio value="PROCESSING">Chờ chuyển</Radio>
             <Radio value="SHIPPING">Đang chuyển</Radio>
             {/* <Radio value="CANCEL">Đang hủy</Radio> */}
-            <Radio value="CANCEL_FINISH">Đã Hủy</Radio>
+            <Radio value="CANCEL">Đã Hủy</Radio>
             <Radio value="COMPLETE">Hoàn thành</Radio>
           </Radio.Group>
         </Row>

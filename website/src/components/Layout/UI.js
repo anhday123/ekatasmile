@@ -194,12 +194,12 @@ const UI = (props) => {
       permissions: [PERMISSIONS.khuyen_mai],
       icon: <TagsOutlined />,
     },
-    // {
-    //   path: ROUTES.PRODUCT_CHECK,
-    //   title: 'Kiểm hàng cuối ngày',
-    //   permissions: [PERMISSIONS.kiem_hang_cuoi_ngay],
-    //   icon: <AlertOutlined />,
-    // },
+    {
+      path: ROUTES.POINT,
+      title: 'Tích điểm',
+      permissions: [],
+      icon: <AlertOutlined />,
+    },
     {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',

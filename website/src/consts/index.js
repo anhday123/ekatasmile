@@ -100,6 +100,7 @@ export const ROUTES = {
   GUARANTEE_ADD: '/actions/guarantee/add',
   CUSTOMER_ORDER_LIST: '/customer/order-list',
   CUSTOMER_ORDER_DETAIL: '/customer/order/detail',
+  POINT: '/point',
 }
 
 export const PERMISSIONS = {
