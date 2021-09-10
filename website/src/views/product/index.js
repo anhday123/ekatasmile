@@ -822,152 +822,6 @@ export default function Product() {
           })}
     </div>
   )
-  const funcHoverImageSimple = (record) => {
-    return (
-      <Row
-        style={{
-          display: 'flex',
-          padding: '0 1rem 1rem 1rem',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        <div
-          style={{
-            color: 'black',
-            margin: '1rem 0 0 0',
-            fontWeight: '600',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          {record.name}
-        </div>
-        <Col
-          style={{ width: '100%', marginTop: '1.25rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={11}
-        >
-          <Upload
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            listType="picture-card"
-            multiple
-            fileList={[]}
-            showUploadList={false}
-            onChange={(e) => onChangeImageSimple(e, record)}
-          >
-            + Upload
-          </Upload>
-        </Col>
-
-        {record.image &&
-          record.image.length > 0 &&
-          record.image.map((values1, index1) => {
-            return (
-              <Popover placement="right" content={() => Content(values1)}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={11}
-                  className={styles['hover_Image']}
-                  style={{
-                    border: '1px solid white',
-                    padding: '1rem',
-                    width: '6.5rem',
-                    height: '6.5rem',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginTop: '1rem',
-                  }}
-                >
-                  <img
-                    src={values1}
-                    style={{
-                      width: '5rem',
-                      height: '5rem',
-                      objectFit: 'contain',
-                    }}
-                    alt=""
-                  />
-                  <div className={styles['icon_hover']}>
-                    <a href={values1} target="_blank">
-                      <EyeOutlined
-                        style={{
-                          color: 'white',
-                          marginTop: '0.25rem',
-                          fontSize: '1.25rem',
-                          fontWeight: '600',
-                          marginRight: '0.5rem',
-                        }}
-                      />
-                    </a>
-                    <DeleteOutlined
-                      onClick={() => onClickDeleteImageSimple(index1, record)}
-                      style={{
-                        color: 'white',
-                        fontSize: '1.25rem',
-                        fontWeight: '600',
-                      }}
-                    />
-                  </div>
-
-                  <Checkbox
-                    onChange={(e) =>
-                      onChangeCheckboxImageSimple(e, values1, record)
-                    }
-                    style={{
-                      zIndex: '99',
-                      top: '0',
-                      right: '0',
-                      position: 'absolute',
-                    }}
-                  ></Checkbox>
-                </Col>
-              </Popover>
-            )
-          })}
-        {idSelectSimple === record._id ? (
-          indexCheckboxSimple && indexCheckboxSimple.length > 0 ? (
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={24}
-              xl={24}
-            >
-              <div
-                onClick={() => onClickDeleteAllImageSimple(record)}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Button style={{ width: '12.5rem' }} type="primary" danger>
-                  Xóa tất cả ảnh đã chọn
-                </Button>
-              </div>
-            </Col>
-          ) : (
-            ''
-          )
-        ) : (
-          ''
-        )}
-      </Row>
-    )
-  }
 
   const [valueSearchProductGroup, setValueSearchProductGroup] = useState('')
   const onSearchProductGroup = (e) => {
@@ -991,151 +845,6 @@ export default function Product() {
       apiAllCategorySearchData(e)
     }, 750)
     //
-  }
-  const funcHoverImage = (list, index, record, sku) => {
-    return (
-      <Row
-        style={{
-          display: 'flex',
-          margin: '0 1rem 1rem 1rem',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        <Col
-          style={{ width: '100%', marginBottom: '0.25rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={11}
-        >
-          <Upload
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            listType="picture-card"
-            multiple
-            showUploadList={false}
-            fileList={[]}
-            onChange={(e) => onChangeImage(e, index, record)}
-          >
-            + Upload
-          </Upload>
-        </Col>
-
-        {list &&
-          list.length > 0 &&
-          list.map((values1, index1) => {
-            return (
-              <Popover placement="right" content={() => Content(values1)}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={11}
-                  className={styles['hover_Image']}
-                  style={{
-                    border: '1px solid white',
-                    padding: '1rem',
-                    width: '6.5rem',
-                    height: '6.5rem',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <img
-                    src={values1}
-                    style={{
-                      width: '5rem',
-                      height: '5rem',
-                      objectFit: 'contain',
-                    }}
-                    alt=""
-                  />
-
-                  <div className={styles['icon_hover']}>
-                    <a href={values1} target="_blank">
-                      <EyeOutlined
-                        style={{
-                          color: 'white',
-                          marginTop: '0.25rem',
-                          fontSize: '1.25rem',
-                          fontWeight: '600',
-                          marginRight: '0.5rem',
-                        }}
-                      />
-                    </a>
-                    <DeleteOutlined
-                      onClick={() =>
-                        onClickDeleteImage(index1, index, record, list)
-                      }
-                      style={{
-                        color: 'white',
-                        fontSize: '1.25rem',
-                        fontWeight: '600',
-                      }}
-                    />
-                  </div>
-
-                  <Checkbox
-                    onChange={(e) =>
-                      onChangeCheckboxImage(
-                        e,
-                        values1,
-                        record._id,
-                        index,
-                        sku,
-                        index1,
-                        list
-                      )
-                    }
-                    style={{
-                      zIndex: '99',
-                      top: '0',
-                      right: '0',
-                      position: 'absolute',
-                    }}
-                  ></Checkbox>
-                </Col>
-              </Popover>
-            )
-          })}
-
-        {skuSelect === sku ? (
-          indexCheckbox && indexCheckbox.length > 0 ? (
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={24}
-              xl={24}
-            >
-              <div
-                onClick={() => onClickDeleteAllImage(index, record)}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Button style={{ width: '12.5rem' }} type="primary" danger>
-                  Xóa tất cả ảnh đã chọn
-                </Button>
-              </div>
-            </Col>
-          ) : (
-            ''
-          )
-        ) : (
-          ''
-        )}
-      </Row>
-    )
   }
 
   /*image product */
@@ -1214,7 +923,13 @@ export default function Product() {
         data={(file) => uploadImageProductVariable(file, record)}
       >
         {record.image ? (
-          <img src={record.image} alt="avatar" style={{ width: '100%' }} />
+          <Popover
+            style={{ top: 300 }}
+            placement="top"
+            content={ContentZoomImage(record.image)}
+          >
+            <img src={record.image} alt="avatar" style={{ width: '100%' }} />
+          </Popover>
         ) : (
           <div>
             <PlusOutlined />
@@ -2417,18 +2132,18 @@ export default function Product() {
                     ),
                 }
 
-              if (column.key === 'sku')
-                return {
-                  ...column,
-                  sorter: (a, b) => compare(a, b, 'sku'),
-                }
-
               if (column.key === 'name-product')
                 return {
                   ...column,
                   dataIndex: paramsFilter.has_variable ? 'title' : 'name',
                   sorter: (a, b) =>
                     compare(a, b, paramsFilter.has_variable ? 'title' : 'name'),
+                }
+
+              if (column.key === 'sku')
+                return {
+                  ...column,
+                  sorter: (a, b) => compare(a, b, 'sku'),
                 }
 
               if (column.key === 'category')

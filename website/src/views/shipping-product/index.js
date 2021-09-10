@@ -61,6 +61,7 @@ export default function ShippingProduct() {
         page: pagination.page,
         page_size: pagination.page_size,
       })
+      console.log(res)
       if (res.status == 200) {
         setDelivery(res.data.data)
         setTotalRecord(res.data.count)
@@ -112,7 +113,7 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi chuyển',
-      dataIndex: 'from',
+      dataIndex: '_from',
       width: 150,
       render(data) {
         return data.name
@@ -197,7 +198,7 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi nhận',
-      dataIndex: 'to',
+      dataIndex: '_to',
       width: 150,
       render(data) {
         return data.name
@@ -205,27 +206,20 @@ export default function ShippingProduct() {
       sorter: (a, b) => compareCustom(a.name, b.name),
     },
     {
-      title: 'Ngày chuyển',
+      title: 'Ngày nhận',
       dataIndex: 'create_date',
-      width: 150,
-      render(data) {
-        return moment(data).format('DD-MM-YYYY hh:mm')
-      },
+      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
       sorter: (a, b) =>
         moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
-      title: 'Ngày nhận',
-      dataIndex: 'dateReceive',
-      width: 150,
-      sorter: (a, b) =>
-        moment(a.dateReceive).unix() - moment(b.dateReceive).unix(),
+      title: 'Ngày chuyển',
+      dataIndex: 'ship_time',
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
-      width: 150,
-      sorter: (a, b) => compare(a, b, '_creator'),
+      render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
   const onClickStatus = (data) => {

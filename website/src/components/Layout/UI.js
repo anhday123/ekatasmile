@@ -998,13 +998,13 @@ const UI = (props) => {
                         display: login.role === 'EMPLOYEE' && 'none',
                       }}
                     >
-                      Thêm chi nhánh & kho
+                      Thêm chi nhánh
                     </Button>
                   </Link>
                 </Permission>
                 <Select
                   disabled={login.role === 'EMPLOYEE' ? true : false}
-                  placeholder="Chọn chi nhánh & kho"
+                  placeholder="Chọn chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   onChange={changeBranch}

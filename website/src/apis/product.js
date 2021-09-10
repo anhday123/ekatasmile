@@ -1,6 +1,7 @@
 import { get, patch, post } from './httpClient'
 
-export const apiAddProduct = (object) => post('/product/addproduct', object)
+export const apiAddProduct = (object) =>
+  post('/branch-product/addproduct', object)
 export const apiAllProduct = (params) =>
   get('/product/getproduct', { ...params })
 export const apiUpdateProduct = (object, id) =>

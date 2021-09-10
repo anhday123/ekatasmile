@@ -276,7 +276,23 @@ export default function Business() {
             </div>
           </Col>
         </Row>
-        <Row style={{ width: '100%', marginTop: 15 }} justify="end">
+        <Row style={{ width: '100%', marginTop: 15 }} justify="space-between">
+          <div
+            style={{
+              visibility: !selectedRowKeys.length && 'hidden',
+            }}
+          >
+            <Popconfirm
+              title="Bạn chắc chắn muốn xóa?"
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button size="large" type="primary" danger>
+                Xóa Business
+              </Button>
+            </Popconfirm>
+          </div>
+
           <Button size="large" onClick={resetFilter} type="primary">
             Xóa bộ lọc
           </Button>
@@ -298,29 +314,6 @@ export default function Business() {
             style={{ width: '100%' }}
           />
         </div>
-        {selectedRowKeys && selectedRowKeys.length > 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              marginTop: '1rem',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button type="primary" style={{ width: '7.5rem' }} danger>
-                Xóa Business
-              </Button>
-            </Popconfirm>
-          </div>
-        ) : (
-          ''
-        )}
       </div>
       <Modal
         title="Danh sách khách hàng dùng khuyến mãi"
