@@ -31,7 +31,11 @@ let addStoreC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_store`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addStore)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _branch, _label, _store] = await Promise.all([
             client.db(DB).collection(`Stores`).countDocuments(),
