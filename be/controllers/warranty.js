@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/warranty`);
 const warrantyService = require(`../services/warranty`);
 
 let createSub = (str) => {
@@ -31,7 +29,11 @@ let addWarrantyC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_warranty`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addWarranty)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name', 'type'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _warranty] = await Promise.all([
             client.db(DB).collection(`Warranties`).countDocuments(),
@@ -57,8 +59,8 @@ let addWarrantyC = async (req, res, next) => {
             sub_name: createSub(req.body.name),
             type: req.body.type,
             sub_type: createSub(req.body.type),
-            time: req.body.time,
-            description: req.body.description,
+            time: req.body.time || 0,
+            description: req.body.description || ``,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

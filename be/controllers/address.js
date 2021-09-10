@@ -3,13 +3,8 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/address`);
-const filter = require(`../utils/filter`);
-
 let getWardC = async (req, res, next) => {
     try {
-        if (!valid.relative(req.query, form.getWard)) throw new Error(`400 ~ Validate data wrong!`);
         let mongoQuery = {};
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
@@ -79,7 +74,6 @@ let getWardC = async (req, res, next) => {
 
 let getDistrictC = async (req, res, next) => {
     try {
-        if (!valid.relative(req.query, form.getDistrict)) throw new Error(`400 ~ Validate data wrong!`);
         let mongoQuery = {};
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
@@ -162,7 +156,6 @@ let getDistrictC = async (req, res, next) => {
 
 let getProvinceC = async (req, res, next) => {
     try {
-        if (!valid.relative(req.query, form.getProvince)) throw new Error(`400 ~ Validate data wrong!`);
         let mongoQuery = {};
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)

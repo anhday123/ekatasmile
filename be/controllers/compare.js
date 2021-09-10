@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-// const valid = require(`../middleware/validate/validate`);
-// const form = require(`../middleware/validate/branch`);
 const compareServices = require(`../services/compare`);
 
 let getSessionC = async (req, res, next) => {
@@ -12,8 +10,6 @@ let getSessionC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_branch`))
         //     throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getBranch))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         await compareServices.getSessionS(req, res, next);
     } catch (err) {
         next(err);
@@ -25,8 +21,6 @@ let getCompareC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_branch`))
         //     throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getBranch))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         await compareServices.getCompareS(req, res, next);
     } catch (err) {
         next(err);
@@ -38,8 +32,11 @@ let addCompareC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_branch`))
         //     throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addBranch))
-        //     throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         let [_counts, _session_counts, _bussiness, _creator, __orders, __customers] = await Promise.all([
             client.db(DB).collection(`Compares`).countDocuments(),
             client.db(DB).collection(`CompareSessions`).countDocuments(),
@@ -62,8 +59,8 @@ let addCompareC = async (req, res, next) => {
             session_id: req.body.session_id,
             bussiness: token.bussiness.user_id,
             code: req.body.code,
-            type: req.body.type,
-            file: req.body.file,
+            type: req.body.type || 'Đơn lẻ',
+            file: req.body.file || '',
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator: token.user_id,
         };

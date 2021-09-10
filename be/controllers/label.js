@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/category`);
 const labelService = require(`../services/label`);
 
 let createSub = (str) => {
@@ -32,7 +30,11 @@ let addLabelC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_label`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!req.body.name) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _label] = await Promise.all([
             client.db(DB).collection(`Labels`).countDocuments(),

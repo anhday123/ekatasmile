@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/branch`);
 const branchService = require(`../services/branch`);
 
 let createSub = (str) => {
@@ -30,7 +28,11 @@ let addBranchC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_branch`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addBranch)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _branch] = await Promise.all([
             client.db(DB).collection(`Branchs`).countDocuments(),
@@ -62,13 +64,13 @@ let addBranchC = async (req, res, next) => {
             latitude: req.body.latitude || ``,
             longtitude: req.body.longtitude || ``,
             warehouse_type: req.body.warehouse_type || `Sở hữu`,
-            sub_warehouse_type: createSub(req.body.warehouse_type),
+            sub_warehouse_type: createSub(req.body.warehouse_type || `Sở hữu`),
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address),
+            sub_address: createSub(req.body.address || ``),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district),
+            sub_district: createSub(req.body.district || ``),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province),
+            sub_province: createSub(req.body.province || ``),
             use_point: req.body.use_point || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,

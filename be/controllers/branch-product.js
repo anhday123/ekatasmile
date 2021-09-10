@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/product`);
 const productService = require(`../services/branch-product`);
 
 let createSub = (str) => {
@@ -21,7 +19,6 @@ let getProductC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_product`))
         //     throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getProduct)) throw new Error(`400 ~ Validate data wrong!`);
         await productService.getProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -33,9 +30,11 @@ let addProductC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_product`))
         //     throw new Error(`400 ~ Forbidden!`);
-        if (!req.body.products) {
-            throw new Error(`400 ~ Validate data wrong!`);
-        }
+        ['products'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         // lấy các thông tin để xác định input hợp lệ
         let [_counts, __users, __branchs, __warranties, __suppliers, __categories, __products] =
             await Promise.all([
@@ -76,6 +75,11 @@ let addProductC = async (req, res, next) => {
         // Duyệt danh sách các sản phẩm gửi lên
         let index = 0;
         req.body.products.map((product) => {
+            ['sku', 'name'].map((property) => {
+                if (product[property] == undefined) {
+                    throw new Error(`400 ~ ${property} is not null!`);
+                }
+            });
             //uppercase tên + sku của sản phẩm
             product[`name`] = String(product.name).trim().toUpperCase();
             product[`slug`] = product.name
@@ -162,23 +166,39 @@ let addProductC = async (req, res, next) => {
                 delete product.quantity;
             } else {
                 product.attributes = product.attributes.map((attribute) => {
-                    attribute.option = attribute.option.trim().toUpperCase();
+                    ['option', 'values'].map((property) => {
+                        if (req.body[property] == undefined) {
+                            throw new Error(`400 ~ Attributes - ${property} is not null!`);
+                        }
+                    });
+                    attribute.option = String(attribute.option).trim().toUpperCase();
                     attribute.values = attribute.values.map((value) => {
-                        value = value.trim().toUpperCase();
+                        value = String(value).trim().toUpperCase();
                         return value;
                     });
                     return attribute;
                 });
                 product.variants = product.variants.map((variant) => {
+                    ['title', 'sku'].map((property) => {
+                        if (req.body[property] == undefined) {
+                            throw new Error(`400 ~ Variants - ${property} is not null!`);
+                        }
+                    });
                     variant[`title`] = variant[`title`].trim().toUpperCase();
                     variant[`sku`] = variant[`sku`].trim().toUpperCase();
                     variant.options = variant.options.map((option) => {
-                        option.name = option.name.trim().toUpperCase();
-                        option.value = option.value.trim().toUpperCase();
+                        ['name', 'value'].map((property) => {
+                            if (req.body[property] == undefined) {
+                                throw new Error(`400 ~ Variant - options - ${property} is not null!`);
+                            }
+                        });
+                        option.name = String(option.name).trim().toUpperCase();
+                        option.value = String(option.value).trim().toUpperCase();
                         return option;
                     });
+                    variant[`quantity`] = variant.quantity || 0;
                     if (variant.quantity >= 0) {
-                        variant[`available_stock_quantity`] = variant.quantity || 0;
+                        variant[`available_stock_quantity`] = variant.quantity;
                         variant[`low_stock_quantity`] = 0;
                         variant[`out_stock_quantity`] = 0;
                     } else {

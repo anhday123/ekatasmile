@@ -9,7 +9,11 @@ const DB = process.env.DATABASE;
 
 let loginC = async (req, res, next) => {
     try {
-        if (!req.body.username || !req.body.password) throw new Error(`400 ~ Validate data wrong!`);
+        ['username', 'password'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body.username = req.body.username.toLowerCase();
         let _user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
         if (!_user) {

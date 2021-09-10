@@ -4,8 +4,6 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
 const supplierService = require(`../services/supplier`);
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/supplier`);
 
 let createSub = (str) => {
     return str
@@ -20,7 +18,6 @@ let getSupplierC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_supplier`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getSupplier)) throw new Error(`400 ~ Validate data wrong!`);
         await supplierService.getSupplierS(req, res, next);
     } catch (err) {
         next(err);
@@ -58,11 +55,11 @@ let addSupplierC = async (req, res, next) => {
             phone: req.body.phone || ``,
             email: req.body.email || ``,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address),
+            sub_address: createSub(req.body.address || ``),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district),
+            sub_district: createSub(req.body.district || ``),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province),
+            sub_province: createSub(req.body.province || ``),
             default: req.body.default || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,

@@ -43,23 +43,20 @@ let clearVertifyLink = async () => {
             .find({ vertify_timelife: { $lte: moment.tz(`Asia/Ho_Chi_Minh`).format() } })
             .toArray();
         await Promise.all(
-            _links.map(async (item) => {
-                let _link = item;
-                await Promise.all([
-                    client.db(DB).collection(`VertifyLinks`).findOneAndDelete({ UID: _link.UID }),
-                    client
-                        .db(DB)
-                        .collection(`Users`)
-                        .findOneAndUpdate(
-                            { user_id: _link.user_id, active: false },
-                            {
-                                $set: {
-                                    username: `viesoftware`,
-                                    email: `viesoftware`,
-                                },
-                            }
-                        ),
-                ]);
+            _links.map((_link) => {
+                client.db(DB).collection(`VertifyLinks`).findOneAndDelete({ UID: _link.UID });
+                client
+                    .db(DB)
+                    .collection(`Users`)
+                    .findOneAndUpdate(
+                        { user_id: _link.user_id, active: false },
+                        {
+                            $set: {
+                                username: `viesoftware`,
+                                email: `viesoftware`,
+                            },
+                        }
+                    );
             })
         );
     } catch (err) {

@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/transport`);
 const shippingCompanyService = require(`../services/shipping-company`);
 
 let createSub = (str) => {
@@ -31,7 +29,11 @@ let addShippingCompanyC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_transport`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addTransport)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _shippingCompany] = await Promise.all([
             client.db(DB).collection(`ShippingCompanies`).countDocuments(),
@@ -49,14 +51,6 @@ let addShippingCompanyC = async (req, res, next) => {
         req.body[`shipping_company_id`] = String(_counts + 1);
         req.body[`code`] = String(1000000 + _counts + 1);
         req.body[`business_id`] = _business.user_id;
-        let createSub = (str) => {
-            return str
-                .normalize(`NFD`)
-                .replace(/[\u0300-\u036f]|\s/g, ``)
-                .replace(/đ/g, 'd')
-                .replace(/Đ/g, 'D')
-                .toLocaleLowerCase();
-        };
         _shippingCompany = {
             shipping_company_id: req.body.shipping_company_id,
             business_id: req.body.business_id,
@@ -67,11 +61,11 @@ let addShippingCompanyC = async (req, res, next) => {
             phone: req.body.phone || ``,
             zipcode: req.body.zipcode || ``,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address),
+            sub_address: createSub(req.body.address || ``),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district),
+            sub_district: createSub(req.body.district || ``),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province),
+            sub_province: createSub(req.body.province || ``),
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

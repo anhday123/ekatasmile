@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/store`);
 const storeService = require(`../services/store`);
 
 let createSub = (str) => {
@@ -20,7 +18,6 @@ let getStoreC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_store`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getStore)) throw new Error(`400 ~ Validate data wrong!`);
         await storeService.getStoreS(req, res, next);
     } catch (err) {
         next(err);
@@ -69,17 +66,17 @@ let addStoreC = async (req, res, next) => {
             code: req.body.code,
             name: req.body.name,
             sub_name: createSub(req.body.name),
-            logo: req.body.logo,
+            logo: req.body.logo || ``,
             label_id: req.body.label_id || ``,
             phone: req.body.phone || ``,
             latitude: req.body.latitude || ``,
             longtitude: req.body.longtitude || ``,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address),
+            sub_address: createSub(req.body.address || ''),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district),
+            sub_district: createSub(req.body.district || ''),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province),
+            sub_province: createSub(req.body.province || ''),
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

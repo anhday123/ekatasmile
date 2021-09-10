@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/customer`);
 const customerService = require(`../services/customer`);
 
 let createSub = (str) => {
@@ -20,7 +18,6 @@ let getCustomerC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_customer`)) throw new Error(`400 ~ Forbidden!`);
-        if (!valid.relative(req.query, form.getCustomer)) throw new Error(`400 ~ Validate data wrong!`);
         await customerService.getCustomerS(req, res, next);
     } catch (err) {
         next(err);
@@ -31,7 +28,11 @@ let addCustomerC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_customer`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addCustomer)) throw new Error(`400 ~ Validate data wrong!`);
+        ['phone'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         let [_counts, _business, _customer] = await Promise.all([
             client.db(DB).collection(`Customers`).countDocuments(),
             client.db(DB).collection(`Users`).findOne({
@@ -66,20 +67,20 @@ let addCustomerC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             phone: req.body.phone,
-            type: req.body.type,
-            sub_type: createSub(req.body.type),
+            type: req.body.type || 'Tiềm năng',
+            sub_type: createSub(req.body.type || 'Tiềm năng'),
             first_name: req.body.first_name || ``,
             last_name: req.body.last_name || ``,
             sub_name: createSub(String(req.body.first_name) + String(req.body.last_name)),
             gender: req.body.gender || `NAM`,
-            sub_gender: createSub(req.body.gender),
+            sub_gender: createSub(req.body.gender || 'Nam'),
             birthday: req.body.birthday || `2000-01-01`,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address),
+            sub_address: createSub(req.body.address || ``),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district),
+            sub_district: createSub(req.body.district || ``),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province),
+            sub_province: createSub(req.body.province || ``),
             balance: req.body.balance || [],
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),

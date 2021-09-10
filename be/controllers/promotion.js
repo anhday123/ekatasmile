@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/promotion`);
 const promotionService = require(`../services/promotion`);
 
 let createSub = (str) => {
@@ -31,7 +29,11 @@ let addPromotionC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_promotion`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.addPromotion)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _promotion] = await Promise.all([
             client.db(DB).collection(`Promotions`).countDocuments(),
@@ -65,9 +67,9 @@ let addPromotionC = async (req, res, next) => {
             code: req.body.code,
             name: req.body.name,
             sub_name: createSub(req.body.name),
-            type: req.body.type,
-            sub_type: createSub(req.body.type),
-            value: req.body.value,
+            type: req.body.type || 'Percent',
+            sub_type: createSub(req.body.type || 'Percent'),
+            value: req.body.value || 0,
             limit: req.body.limit,
             vouchers: req.body.vouchers,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),

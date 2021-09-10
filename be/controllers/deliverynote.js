@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/store`);
 const deliverySerice = require(`../services/deliverynote`);
 
 let getDeliveryC = async (req, res, next) => {
@@ -23,8 +21,11 @@ let addDeliveryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_delivery`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addStore))
-        //     throw new Error(`400 ~ Validate data wrong!`);
+        ['type', 'from_id', 'to_id'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         let [_counts, _business] = await Promise.all([
             client.db(DB).collection(`DeliveryNotes`).countDocuments(),
             client.db(DB).collection(`Users`).findOne({
@@ -43,12 +44,12 @@ let addDeliveryC = async (req, res, next) => {
             code: req.body.code,
             type: req.body.type,
             user_ship_id: req.body.user_ship_id || token.user_id,
-            user_receive_id: req.body.user_receive_id,
+            user_receive_id: req.body.user_receive_id || '',
             from_id: req.body.from_id,
             to_id: req.body.to_id,
-            products: req.body.products,
-            note: req.body.note,
-            tag: req.body.tag,
+            products: req.body.products || [],
+            note: req.body.note || '',
+            tag: req.body.tag || '',
             ship_time: req.body.ship_time || moment.tz(`Asia/Ho_Chi_Minh`).format(),
             // PROGRESSING - SHIPPING - CANCEL - COMPLETE
             status: req.body.status || `PROCESSING`,

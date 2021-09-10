@@ -11,8 +11,6 @@ let getStatisC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_statis`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getStatis))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         await statisService.getStatisS(req, res, next);
     } catch (err) {
         next(err);

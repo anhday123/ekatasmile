@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/user`);
 const userService = require(`../services/user`);
 const bcrypt = require(`../libs/bcrypt`);
 const mail = require(`../libs/nodemailer`);
@@ -31,15 +29,17 @@ let getUserC = async (req, res, next) => {
 
 let registerC = async (req, res, next) => {
     try {
-        // if (!valid.absolute(req.body, form.addUser)) {
-        //     throw new Error(`400 ~ Validate data wrong!`);
-        // }
+        ['username', 'password', 'email'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body.username = req.body.username.toLowerCase();
         req.body.email = req.body.email.toLowerCase();
         req.body.company_name = req.body.company_name.toUpperCase();
         let [_counts, _user] = await Promise.all([
-            await client.db(DB).collection(`Users`).countDocuments(),
-            await client
+            client.db(DB).collection(`Users`).countDocuments(),
+            client
                 .db(DB)
                 .collection(`Users`)
                 .findOne({
@@ -85,28 +85,28 @@ let registerC = async (req, res, next) => {
             otp_timelife: moment.tz(`Asia/Ho_Chi_Minh`).add(process.env.OTP_TIMELIFE, `minutes`).format(),
             role_id: `2`,
             email: req.body.email,
-            phone: req.body.phone,
-            avatar: req.body.avatar,
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
+            phone: req.body.phone || ``,
+            avatar: req.body.avatar || ``,
+            first_name: req.body.first_name || ``,
+            last_name: req.body.last_name || ``,
             sub_name: createSub(`${req.body.first_name}${req.body.last_name}`),
-            birthday: req.body.birthday,
-            address: req.body.address,
-            sub_address: createSub(req.body.address),
-            district: req.body.district,
-            sub_district: createSub(req.body.district),
-            province: req.body.province,
-            sub_province: createSub(req.body.province),
-            company_name: req.body.company_name,
-            company_website: req.body.company_website,
+            birthday: req.body.birthday || `2000-01-01`,
+            address: req.body.address || ``,
+            sub_address: createSub(req.body.address || ``),
+            district: req.body.district || ``,
+            sub_district: createSub(req.body.district || ``),
+            province: req.body.province || ``,
+            sub_province: createSub(req.body.province || ``),
+            company_name: req.body.company_name || ``,
+            company_website: req.body.company_website || ``,
             business_areas: req.body.business_areas || '',
-            tax_code: req.body.tax_code,
-            fax: req.body.fax,
-            branch_id: req.body.branch_id,
-            store_id: req.body.store_id,
+            tax_code: req.body.tax_code || ``,
+            fax: req.body.fax || ``,
+            branch_id: req.body.branch_id || ``,
+            store_id: req.body.store_id || ``,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: ` `,
+            creator_id: ``,
             exp: moment.tz(`Asia/Ho_Chi_Minh`).add(10, 'days').format(),
             is_new: true,
             active: false,
@@ -122,14 +122,16 @@ let addUserC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_user`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addUser)) {
-        //     throw new Error(`400 ~ Validate data wrong!`);
-        // }
+        ['username', 'password', 'email'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body.username = req.body.username.toLowerCase();
         req.body.email = req.body.email.toLowerCase();
         let [_counts, _user] = await Promise.all([
-            await client.db(DB).collection(`Users`).countDocuments(),
-            await client
+            client.db(DB).collection(`Users`).countDocuments(),
+            client
                 .db(DB)
                 .collection(`Users`)
                 .findOne({
@@ -145,27 +147,27 @@ let addUserC = async (req, res, next) => {
             password: bcrypt.hash(req.body.password),
             email_OTP: false,
             timelife_OTP: false,
-            role_id: req.body.role_id,
-            phone: req.body.phone,
+            role_id: req.body.role_id || ``,
+            phone: req.body.phone || ``,
             email: req.body.email,
-            avatar: req.body.avatar,
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
+            avatar: req.body.avatar || ``,
+            first_name: req.body.first_name || ``,
+            last_name: req.body.last_name || ``,
             sub_name: createSub(`${req.body.first_name}${req.body.last_name}`),
-            birthday: req.body.birthday,
-            address: req.body.address,
-            sub_address: createSub(req.body.address),
-            district: req.body.district,
-            sub_district: createSub(req.body.district),
-            province: req.body.province,
-            sub_province: createSub(req.body.province),
-            company_name: token.company_name,
-            company_website: token.company_website,
+            birthday: req.body.birthday || `2000-01-01`,
+            address: req.body.address || ``,
+            sub_address: createSub(req.body.address || ``),
+            district: req.body.district || ``,
+            sub_district: createSub(req.body.district || ``),
+            province: req.body.province || ``,
+            sub_province: createSub(req.body.province || ``),
+            company_name: token.company_name || ``,
+            company_website: token.company_website || ``,
             business_areas: token.business_areas || '',
-            tax_code: token.tax_code,
-            fax: token.fax,
-            branch_id: req.body.branch_id,
-            store_id: req.body.store_id,
+            tax_code: token.tax_code || ``,
+            fax: token.fax || ``,
+            branch_id: req.body.branch_id || ``,
+            store_id: req.body.store_id || ``,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
