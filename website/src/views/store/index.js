@@ -54,7 +54,7 @@ export default function Store() {
     try {
       setLoading(true)
 
-      const res = await apiSearch({ keyword: value })
+      const res = await apiSearch({ search: value })
 
       if (res.status === 200) setStore(res.data.data)
       setLoading(false)
@@ -602,7 +602,7 @@ export default function Store() {
   const apiFilterCityData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiFilterCity({ keyword: object })
+      const res = await apiFilterCity({ search: object })
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
       }
