@@ -1,7 +1,7 @@
 const express = require(`express`);
 
 const router = express.Router();
-const product = require(`../controllers/product`);
+const product = require(`../controllers/branch-product`);
 const { auth } = require(`../middleware/jwt/jwt`);
 
 router.route(`/getproduct`).get(auth, product.getProductC);

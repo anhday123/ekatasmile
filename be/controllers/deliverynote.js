@@ -1,4 +1,4 @@
-const moment = require(`moment`);
+const moment = require(`moment-timezone`);
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -9,6 +9,8 @@ const deliverySerice = require(`../services/deliverynote`);
 
 let getDeliveryC = async (req, res, next) => {
     try {
+        let token = req.tokenData.data;
+        // if (!token.role.permission_list.includes(`view_delivery`)) throw new Error(`400 ~ Forbidden!`);
         // if (!valid.relative(req.query, form.getStore))
         //     throw new Error(`400 ~ Validate data wrong!`);
         await deliverySerice.getDeliveryS(req, res, next);
@@ -20,64 +22,67 @@ let getDeliveryC = async (req, res, next) => {
 let addDeliveryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
+        // if (!token.role.permission_list.includes(`add_delivery`)) throw new Error(`400 ~ Forbidden!`);
         // if (!valid.absolute(req.body, form.addStore))
         //     throw new Error(`400 ~ Validate data wrong!`);
-        req.body[`type`] = String(req.body.type).trim().toUpperCase();
-        let [_counts, _count, _bussiness] = await Promise.all([
+        let [_counts, _business] = await Promise.all([
             client.db(DB).collection(`DeliveryNotes`).countDocuments(),
-            client
-                .db(DB)
-                .collection(`DeliveryNotes`)
-                .find({ bussiness: token.bussiness.user_id })
-                .count(),
             client.db(DB).collection(`Users`).findOne({
-                user_id: token.bussiness.user_id,
+                user_id: token.business_id,
                 active: true,
             }),
         ]);
-        if (!_bussiness)
-            throw new Error(`400 ~ Bussiness is not exists or inactive!`);
+        if (!_business) throw new Error(`400 ~ Business is not exists or inactive!`);
         req.body[`delivery_id`] = String(_counts + 1);
-        req.body[`code`] = `${String(_bussiness.company_name)
-            .normalize(`NFD`)
-            .replace(/[\u0300-\u036f]|\s/g, ``)
-            .replace(/đ/g, 'd')
-            .replace(/Đ/g, 'D')
-            .toUpperCase()}_${String(_count + 1)}`;
-        req.body[`bussiness`] = _bussiness.user_id;
+        req.body[`type`] = String(req.body.type).trim().toUpperCase();
+        req.body[`code`] = String(1000000 + _counts + 1);
+        req.body[`business_id`] = _business.user_id;
         let _delivery = {
             delivery_id: req.body.delivery_id,
-            bussiness: req.body.bussiness,
+            business_id: req.body.business_id,
             code: req.body.code,
             type: req.body.type,
-            user_ship: req.body.user_ship,
-            user_receive: req.body.user_receive,
-            from: req.body.from,
-            to: req.body.to,
+            user_ship_id: req.body.user_ship_id || token.user_id,
+            user_receive_id: req.body.user_receive_id,
+            from_id: req.body.from_id,
+            to_id: req.body.to_id,
             products: req.body.products,
             note: req.body.note,
             tag: req.body.tag,
-            status: `PROGRESSING`,
-            create_date: moment().format(),
-            creator: token.user_id,
+            ship_time: req.body.ship_time || moment.tz(`Asia/Ho_Chi_Minh`).format(),
+            // PROGRESSING - SHIPPING - CANCEL - COMPLETE
+            status: req.body.status || `PROCESSING`,
+            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
+            creator_id: token.user_id,
             active: true,
         };
-        req[`_delivery`] = _delivery;
+        req[`_insert`] = _delivery;
         await deliverySerice.addDeliveryS(req, res, next);
     } catch (err) {
         console.log(err);
         next(err);
     }
 };
+
 let updateDeliveryC = async (req, res, next) => {
     try {
-        let token = req.tokenData?.data;
-        let _delivery = await client
-            .db(DB)
-            .collection(`DeliveryNotes`)
-            .findOne(req.params);
+        let token = req.tokenData.data;
+        // if (!token.role.permission_list.includes(`update_delivery`)) throw new Error(`400 ~ Forbidden!`);
+        let _delivery = await client.db(DB).collection(`DeliveryNotes`).findOne(req.params);
         if (!_delivery) throw new Error(`400 ~ Delivery note is not exists!`);
-        req.body = { status: req.body.status };
+        delete req.body._id;
+        delete req.body.delivery_id;
+        delete req.body.business_id;
+        delete req.body.code;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        delete req.body._business;
+        delete req.body._user_ship;
+        delete req.body._user_receive;
+        delete req.body._creator;
+        delete req.body._from;
+        delete req.body._to;
+        req['_update'] = { ..._delivery, ...req.body };
         await deliverySerice.updateDeliveryS(req, res, next);
     } catch (err) {
         next(err);

@@ -1,4 +1,2 @@
-let a = 'ád';
-let b = `ad`;
-console.log(a.normalize(`NFD`).length);
-console.log(b.length);
+let a = `false`;
+console.log(Boolean(a));
