@@ -12,15 +12,15 @@ let getSessionS = async (req, res, next) => {
         if (token) mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
         if (req.query.bussiness) mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
         if (req.query.creator) mongoQuery = { ...mongoQuery, creator: req.query.creator };
-        if (req.query.today == `true`) {
+        if (req.query.today != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.yesterday == `true`) {
+        if (req.query.yesterday != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.this_week == `true`) {
+        if (req.query.this_week != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(7).format(`YYYY-MM-DD`);
         }
@@ -119,11 +119,15 @@ let getSessionS = async (req, res, next) => {
             // Tạo properties đặc trưng của khóa định danh để lọc với độ chính xác tương đối
             _session[`_bussiness`] = ``;
             if (_session.bussiness) {
-                _session[`_bussiness`] = `${_session.bussiness.first_name || ``} ${_session.bussiness.last_name || ``}`;
+                _session[`_bussiness`] = `${_session.bussiness.first_name || ``} ${
+                    _session.bussiness.last_name || ``
+                }`;
             }
             _session[`_creator`] = ``;
             if (_session.creator) {
-                _session[`_creator`] = `${_session.creator.first_name || ``} ${_session.creator.last_name || ``}`;
+                _session[`_creator`] = `${_session.creator.first_name || ``} ${
+                    _session.creator.last_name || ``
+                }`;
             }
             return _session;
         });
@@ -238,11 +242,15 @@ let getCompareS = async (req, res, next) => {
             // Tạo properties đặc trưng của khóa định danh để lọc với độ chính xác tương đối
             _compare[`_bussiness`] = ``;
             if (_compare.bussiness) {
-                _compare[`_bussiness`] = `${_compare.bussiness.first_name || ``} ${_compare.bussiness.last_name || ``}`;
+                _compare[`_bussiness`] = `${_compare.bussiness.first_name || ``} ${
+                    _compare.bussiness.last_name || ``
+                }`;
             }
             _compare[`_creator`] = ``;
             if (_compare.creator) {
-                _compare[`_creator`] = `${_compare.creator.first_name || ``} ${_compare.creator.last_name || ``}`;
+                _compare[`_creator`] = `${_compare.creator.first_name || ``} ${
+                    _compare.creator.last_name || ``
+                }`;
             }
             return _compare;
         });

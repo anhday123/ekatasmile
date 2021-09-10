@@ -13,15 +13,15 @@ let getOrderS = async (req, res, next) => {
         if (req.query.employee) mongoQuery = { ...mongoQuery, employee: req.query.employee };
         if (req.query.customer) mongoQuery = { ...mongoQuery, customer: req.query.customer };
         if (req.query.creator) mongoQuery = { ...mongoQuery, creator: req.query.creator };
-        if (req.query.today == `true`) {
+        if (req.query.today != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.yesterday == `true`) {
+        if (req.query.yesterday != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.this_week == `true`) {
+        if (req.query.this_week != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(7).format(`YYYY-MM-DD`);
         }
@@ -107,15 +107,16 @@ let getOrderS = async (req, res, next) => {
         let _orders = await client.db(DB).collection(`Orders`).find(mongoQuery).toArray();
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh
         _orders.reverse();
-        let [__users, __branchs, __taxes, __promotions, __customers, __payments, __transports] = await Promise.all([
-            client.db(DB).collection(`Users`).find({}).toArray(),
-            client.db(DB).collection(`Branchs`).find({}).toArray(),
-            client.db(DB).collection(`Taxes`).find({}).toArray(),
-            client.db(DB).collection(`Promotions`).find({}).toArray(),
-            client.db(DB).collection(`Customers`).find({}).toArray(),
-            client.db(DB).collection(`Payments`).find({}).toArray(),
-            client.db(DB).collection(`Transports`).find({}).toArray(),
-        ]);
+        let [__users, __branchs, __taxes, __promotions, __customers, __payments, __transports] =
+            await Promise.all([
+                client.db(DB).collection(`Users`).find({}).toArray(),
+                client.db(DB).collection(`Branchs`).find({}).toArray(),
+                client.db(DB).collection(`Taxes`).find({}).toArray(),
+                client.db(DB).collection(`Promotions`).find({}).toArray(),
+                client.db(DB).collection(`Customers`).find({}).toArray(),
+                client.db(DB).collection(`Payments`).find({}).toArray(),
+                client.db(DB).collection(`Transports`).find({}).toArray(),
+            ]);
         let _bussiness = {};
         let _employee = {};
         let _creator = {};
@@ -166,7 +167,9 @@ let getOrderS = async (req, res, next) => {
             _order.customer = { ..._customer[_order.customer] };
             _order[`_bussiness`] = ``;
             if (_order.bussiness) {
-                _order[`_bussiness`] = `${_order.bussiness.first_name || ``} ${_order.bussiness.last_name || ``}`;
+                _order[`_bussiness`] = `${_order.bussiness.first_name || ``} ${
+                    _order.bussiness.last_name || ``
+                }`;
             }
             _order[`_creator`] = ``;
             if (_order.creator) {
@@ -174,7 +177,9 @@ let getOrderS = async (req, res, next) => {
             }
             _order[`_customer`] = ``;
             if (_order.customer) {
-                _order[`_customer`] = `${_order.customer.first_name || ``} ${_order.customer.last_name || ``}`;
+                _order[`_customer`] = `${_order.customer.first_name || ``} ${
+                    _order.customer.last_name || ``
+                }`;
             }
             return _order;
         });
@@ -231,7 +236,10 @@ let getOrderS = async (req, res, next) => {
         let _counts = _orders.length;
         // phân trang
         if (page && page_size)
-            _orders = _orders.slice(Number((page - 1) * page_size), Number((page - 1) * page_size) + Number(page_size));
+            _orders = _orders.slice(
+                Number((page - 1) * page_size),
+                Number((page - 1) * page_size) + Number(page_size)
+            );
         res.send({
             success: true,
             data: _orders,

@@ -9,15 +9,15 @@ let getStatisS = async (req, res, next) => {
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (token) mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
         if (req.query.bussiness) mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
-        if (req.query.today == `true`) {
+        if (req.query.today != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.yesterday == `true`) {
+        if (req.query.yesterday != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
-        if (req.query.this_week == `true`) {
+        if (req.query.this_week != undefined) {
             req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
             req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(7).format(`YYYY-MM-DD`);
         }
@@ -120,7 +120,10 @@ let getStatisS = async (req, res, next) => {
             if (moment(_orders[i].create_date).format(`YYYY-MM-DD`) == moment().format(`YYYY-MM-DD`)) {
                 _today.push(_orders[i]);
             }
-            if (moment(_orders[i].create_date).format(`YYYY-MM-DD`) == moment().add(-1, `days`).format(`YYYY-MM-DD`)) {
+            if (
+                moment(_orders[i].create_date).format(`YYYY-MM-DD`) ==
+                moment().add(-1, `days`).format(`YYYY-MM-DD`)
+            ) {
                 _yesterday.push(_orders[i]);
             }
             for (let j in _orders[i].order_details) {
@@ -134,8 +137,10 @@ let getStatisS = async (req, res, next) => {
                     _ranks[sku][`quantity`] += 1;
                     _ranks[sku][`cost`] += _orders[i].order_details[j].total_cost;
                 }
-                total_base_cost += (_orders[i].order_details[j].base_price || 0) * _orders[i].order_details[j].quantity;
-                total_sale_cost += (_orders[i].order_details[j].sale_price || 0) * _orders[i].order_details[j].quantity;
+                total_base_cost +=
+                    (_orders[i].order_details[j].base_price || 0) * _orders[i].order_details[j].quantity;
+                total_sale_cost +=
+                    (_orders[i].order_details[j].sale_price || 0) * _orders[i].order_details[j].quantity;
                 total_discount += _orders[i].order_details[j].discount || 0;
             }
             total_sale += _orders[i].total_cost;

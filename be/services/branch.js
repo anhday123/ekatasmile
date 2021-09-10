@@ -32,7 +32,7 @@ let getBranchS = async (req, res, next) => {
         }
         if (req.query.yesterday != undefined) {
             req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
         if (req.query.this_week != undefined) {
             req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
@@ -109,6 +109,11 @@ let getBranchS = async (req, res, next) => {
         }
         if (req.query.name) {
             mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
+        }
+        if (req.query.warehouse_type) {
+            mongoQuery['sub_warehouse_type'] = new RegExp(
+                removeUnicode(req.query.warehouse_type).toLowerCase()
+            );
         }
         if (req.query.address) {
             mongoQuery['sub_address'] = new RegExp(removeUnicode(req.query.address).toLowerCase());
