@@ -53,7 +53,7 @@ export default function ConfigurationStore() {
               xl={7}
             >
               <Link
-                to={ROUTES.USER}
+                to={ROUTES.STORE}
                 style={{
                   display: 'flex',
                   justifyContent: 'flex-start',

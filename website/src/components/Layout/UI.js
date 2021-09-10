@@ -998,7 +998,7 @@ const UI = (props) => {
                         display: login.role === 'EMPLOYEE' && 'none',
                       }}
                     >
-                      Thêm chi nhánh & kho
+                      Thêm chi nhánh
                     </Button>
                   </Link>
                 </Permission>
