@@ -3,15 +3,23 @@ import { Col, Row, Input, DatePicker, Table } from 'antd'
 import { compare, formatCash, tableSum } from 'utils'
 import moment from 'moment'
 import { useState } from 'react'
-
+import { ROUTES } from 'consts'
+import { Link } from 'react-router-dom'
 export default function OrderPaid(props) {
   const [orderPaidData, setOrderPaidData] = useState([1, 2, 3])
   const columns = [
     {
       title: 'Mã đơn hàng',
       dataIndex: '',
-      render: (data) => (
-        <span style={{ color: '#0037F9', cursor: 'pointer' }}>SON00019</span>
+      render: (data, record) => (
+        <Link
+          to={{
+            pathname: ROUTES.CUSTOMER_ORDER_DETAIL,
+            state: { code: 'SON00019' },
+          }}
+        >
+          SON00019
+        </Link>
       ),
       sorter: (a, b) => compare(a, b, 'code'),
     },

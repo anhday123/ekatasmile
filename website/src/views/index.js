@@ -87,6 +87,7 @@ import PromotionAdd from './actions/promotion/add'
 import RoleAdd from './actions/role/add'
 import DeliveryUpdate from './actions/shipping-product/update'
 import CustomerOrderList from './customerOrderList'
+import CustoemrOrderDetail from './customerOrderList/components/orderDetail'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -232,6 +233,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.STORE,
     Component: () => <Store />,
     title: 'Quản lý cửa hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.CUSTOMER_ORDER_DETAIL,
+    Component: () => <CustoemrOrderDetail />,
+    title: 'Chi tiết hóa đơn',
     permissions: [],
     exact: true,
   },
