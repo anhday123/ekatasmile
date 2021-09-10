@@ -6,8 +6,6 @@ const { auth } = require(`../middleware/jwt/jwt`);
 
 router.route(`/getdelivery`).get(auth, delivery.getDeliveryC);
 router.route(`/adddelivery`).post(auth, delivery.addDeliveryC);
-router
-    .route(`/updatedelivery/:delivery_id`)
-    .patch(auth, delivery.updateDeliveryC);
+router.route(`/updatedelivery/:delivery_id`).patch(auth, delivery.updateDeliveryC);
 
 module.exports = router;

@@ -16,9 +16,7 @@ let createOtp = async (email) => {
     return {
         email: email,
         otp_code: otpCode,
-        otp_timelife: moment()
-            .add(process.env.OTP_TIMELIFE, `minutes`)
-            .format(),
+        otp_timelife: moment().tz(`Asia/Ho_Chi_Minh`).add(process.env.OTP_TIMELIFE, `minutes`).format(),
     };
 };
 

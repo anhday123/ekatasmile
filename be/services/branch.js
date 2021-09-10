@@ -1,152 +1,156 @@
-const moment = require(`moment`);
+const moment = require(`moment-timezone`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
+
+let removeUnicode = (str) => {
+    return str
+        .normalize(`NFD`)
+        .replace(/[\u0300-\u036f]|\s/g, ``)
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+};
 
 let getBranchS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let mongoQuery = {};
-        let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        if (req.query.branch_id)
-            mongoQuery = { ...mongoQuery, branch_id: req.query.branch_id };
-        if (req.query.bussiness)
-            mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
-        if (token)
-            mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
-        if (req.query.store)
-            mongoQuery = { ...mongoQuery, store: req.query.store };
-        if (req.query.creator)
-            mongoQuery = { ...mongoQuery, creator: req.query.creator };
-        if (req.query.from_date)
+        if (req.query.branch_id) {
+            mongoQuery['branch_id'] = req.query.branch_id;
+        }
+        if (token) {
+            mongoQuery['business_id'] = token.business_id;
+        }
+        if (req.query.business_id) {
+            mongoQuery['business_id'] = req.query.business_id;
+        }
+        if (req.query.creator_id) {
+            mongoQuery['creator_id'] = req.query.creator_id;
+        }
+        if (req.query.today != undefined) {
+            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
+        }
+        if (req.query.yesterday != undefined) {
+            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
+        }
+        if (req.query.this_week != undefined) {
+            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
+        }
+        if (req.query.last_week != undefined) {
+            req.query[`from_date`] = moment
+                .tz(`Asia/Ho_Chi_Minh`)
+                .isoWeekday(1 - 7)
+                .format(`YYYY-MM-DD`);
+            req.query[`to_date`] = moment
+                .tz(`Asia/Ho_Chi_Minh`)
+                .isoWeekday(7 - 7)
+                .format(`YYYY-MM-DD`);
+        }
+        if (req.query.this_month != undefined) {
+            req.query[`from_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
+                `-` +
+                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
+                `-` +
+                String(`01`);
+        }
+        if (req.query.last_month != undefined) {
+            req.query[`from_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
+                `-` +
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
+                `-` +
+                String(`01`);
+            req.query[`to_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
+                `-` +
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
+                `-` +
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
+        }
+        if (req.query.this_year != undefined) {
+            req.query[`from_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
+                `-` +
+                String(`01`) +
+                `-` +
+                String(`01`);
+        }
+        if (req.query.last_year != undefined) {
+            req.query[`from_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
+                `-` +
+                String(`01`) +
+                `-` +
+                String(`01`);
+            req.query[`to_date`] =
+                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
+                `-` +
+                String(`12`) +
+                `-` +
+                String(`31`);
+        }
+        if (req.query.from_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
                 $gte: req.query.from_date,
             };
-        if (req.query.to_date)
+        }
+        if (req.query.to_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
                 $lte: moment(req.query.to_date).add(1, `days`).format(),
             };
+        }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code)
-            filterQuery = { ...filterQuery, code: req.query.code };
-        if (req.query.name)
-            filterQuery = { ...filterQuery, name: req.query.name };
-        if (req.query.ward)
-            filterQuery = { ...filterQuery, ward: req.query.ward };
-        if (req.query.district)
-            filterQuery = { ...filterQuery, district: req.query.district };
-        if (req.query.province)
-            filterQuery = { ...filterQuery, province: req.query.province };
-        if (req.query._bussiness)
-            filterQuery = { ...filterQuery, _bussiness: req.query._bussiness };
-        if (req.query._store)
-            filterQuery = { ...filterQuery, _store: req.query._store };
-        if (req.query._creator)
-            filterQuery = { ...filterQuery, _creator: req.query._creator };
+        if (req.query.code) {
+            mongoQuery['code'] = new RegExp(removeUnicode(req.query.code).toUpperCase());
+        }
+        if (req.query.name) {
+            mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
+        }
+        if (req.query.address) {
+            mongoQuery['sub_address'] = new RegExp(removeUnicode(req.query.address).toLowerCase());
+        }
+        if (req.query.district) {
+            mongoQuery['sub_district'] = new RegExp(removeUnicode(req.query.district).toLowerCase());
+        }
+        if (req.query.province) {
+            mongoQuery['sub_province'] = new RegExp(removeUnicode(req.query.province).toLowerCase());
+        }
+        if (req.query.search) {
+            mongoQuery['$or'] = [
+                { code: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
+                { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
+            ];
+        }
         // lấy các thuộc tính tùy chọn khác
-        let [page, page_size] = [
-            req.query.page || 1,
-            req.query.page_size || 50,
-        ];
+        let page = Number(req.query.page) || 1;
+        let page_size = Number(req.query.page_size) || 50;
         // lấy data từ database
-        let _branchs = await client
-            .db(DB)
-            .collection(`Branchs`)
-            .find(mongoQuery)
-            .toArray();
+        let _branchs = await client.db(DB).collection(`Branchs`).find(mongoQuery).toArray();
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh
         _branchs.reverse();
-        let [__users, __stores] = await Promise.all([
-            client.db(DB).collection(`Users`).find({}).toArray(),
-            client.db(DB).collection(`Stores`).find({}).toArray(),
-        ]);
-        let _bussiness = {};
-        let _creator = {};
-        let _eployees = {};
-        __users.map((item) => {
-            delete item.password;
-            _bussiness[item.user_id] = item;
-            _creator[item.user_id] = item;
-            if (!_eployees[item.branch]) _eployees[item.branch] = [];
-            if (_eployees[item.branch]) _eployees[item.branch].push(item);
-        });
-        let _store = {};
-        __stores.map((item) => {
-            _store[item.store_id] = item;
-        });
-        _branchs.map((item) => {
-            let _branch = item;
-            _branch.bussiness = { ..._bussiness[_branch.bussiness] };
-            _branch.creator = { ..._creator[_branch.creator] };
-            _branch.store = { ..._store[_branch.store] };
-            _branch[`_eployees`] = _eployees[_branch.branch_id];
-            // Tạo properties đặc trưng của khóa định danh để lọc với độ chính xác tương đối
-            _branch[
-                `_bussiness`
-            ] = `${_branch.bussiness?.first_name} ${_branch.bussiness?.last_name}`;
-            _branch[
-                `_creator`
-            ] = `${_branch.creator?.first_name} ${_branch.creator?.last_name}`;
-            _branch[`_store`] = _branch.store?.name;
-            return _branch;
-        });
-        // lọc theo keyword
-        if (req.query.keyword) {
-            _branchs = _branchs.filter((_branch) => {
-                let check = false;
-                [`code`, `name`, `phone`].map((key) => {
-                    {
-                        let value = new String(_branch[key])
-                            .normalize(`NFD`)
-                            .replace(/[\u0300-\u036f]|\s/g, ``)
-                            .replace(/đ/g, 'd')
-                            .replace(/Đ/g, 'D')
-                            .toLocaleLowerCase();
-                        let compare = new String(req.query.keyword)
-                            .normalize(`NFD`)
-                            .replace(/[\u0300-\u036f]|\s/g, ``)
-                            .replace(/đ/g, 'd')
-                            .replace(/Đ/g, 'D')
-                            .toLocaleLowerCase();
-                        if (value.includes(compare)) {
-                            check = true;
-                        }
-                    }
-                });
-                return check;
-            });
-        }
-        // lọc theo query
-        if (filterQuery) {
-            filterQuery = Object.entries(filterQuery);
-            filterQuery.forEach(([filterKey, filterValue]) => {
-                _branchs = _branchs.filter((_branch) => {
-                    let value = new String(_branch[filterKey])
-                        .normalize(`NFD`)
-                        .replace(/[\u0300-\u036f]|\s/g, ``)
-                        .replace(/đ/g, 'd')
-                        .replace(/Đ/g, 'D')
-                        .toLocaleLowerCase();
-                    let compare = new String(filterValue)
-                        .normalize(`NFD`)
-                        .replace(/[\u0300-\u036f]|\s/g, ``)
-                        .replace(/đ/g, 'd')
-                        .replace(/Đ/g, 'D')
-                        .toLocaleLowerCase();
-                    return value.includes(compare);
-                });
-            });
-        }
         // đếm số phần tử
         let _counts = _branchs.length;
         // phân trang
-        if (page && page_size)
-            _branchs = _branchs.slice(
-                Number((page - 1) * page_size),
-                Number((page - 1) * page_size) + Number(page_size)
-            );
+        if (page && page_size) {
+            _branchs = _branchs.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
+        }
+        let [__users] = await Promise.all([client.db(DB).collection(`Users`).find({}).toArray()]);
+        let _business = {};
+        let _creator = {};
+        __users.map((__user) => {
+            delete __user.password;
+            _business[__user.user_id] = __user;
+            _creator[__user.user_id] = __user;
+        });
+        _branchs.map((_branch) => {
+            _branch[`_business`] = _business[_branch.business_id];
+            _branch[`_creator`] = _creator[_branch.creator_id];
+            return _branch;
+        });
         res.send({
             success: true,
             data: _branchs,
@@ -159,20 +163,20 @@ let getBranchS = async (req, res, next) => {
 
 let addBranchS = async (req, res, next) => {
     try {
-        let token = req.tokenData?.data;
-        let _branch = await client
-            .db(DB)
-            .collection(`Branchs`)
-            .insertOne(req._branch);
+        let token = req.tokenData.data;
+        let _branch = await client.db(DB).collection(`Branchs`).insertOne(req._insert);
         if (!_branch.ops) throw new Error(`500 ~ Create branch fail!`);
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
-                bussiness: token.bussiness.user_id,
+                business_id: token.business_id,
                 type: `Add`,
+                sub_type: `add`,
                 properties: `Branch`,
+                sub_properties: `branch`,
                 name: `Thêm chi nhánh mới`,
+                sub_name: `themchinhanhmoi`,
                 data: _branch.ops[0],
-                performer: token.user_id,
+                performer_id: token.user_id,
                 date: moment().format(),
             });
         res.send({ success: true, data: _branch.ops[0] });
@@ -183,22 +187,22 @@ let addBranchS = async (req, res, next) => {
 
 let updateBranchS = async (req, res, next) => {
     try {
-        let token = req.tokenData?.data;
-        await client
-            .db(DB)
-            .collection(`Branchs`)
-            .findOneAndUpdate(req.params, { $set: req.body });
+        let token = req.tokenData.data;
+        await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
-                bussiness: token.bussiness.user_id,
+                business_id: token.business_id,
                 type: `Update`,
+                sub_type: `update`,
                 properties: `Branch`,
+                sub_properties: `chinhanh`,
                 name: `Cập nhật thông tin chi nhánh`,
-                data: req.body,
-                performer: token.user_id,
+                sub_name: `capnhatthongtinchinhanh`,
+                data: req._update,
+                performer_id: token.user_id,
                 date: moment().format(),
             });
-        res.send({ success: true, data: req.body });
+        res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);
     }

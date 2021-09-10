@@ -6,8 +6,6 @@ const { auth } = require(`../middleware/jwt/jwt`);
 
 router.route(`/getcustomer`).get(auth, customer.getCustomerC);
 router.route(`/addcustomer`).post(auth, customer.addCustomerC);
-router
-    .route(`/updatecustomer/:customer_id`)
-    .patch(auth, customer.updateCustomerC);
+router.route(`/updatecustomer/:customer_id`).patch(auth, customer.updateCustomerC);
 
 module.exports = router;

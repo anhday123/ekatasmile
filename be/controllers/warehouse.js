@@ -1,4 +1,4 @@
-const moment = require(`moment`);
+const moment = require(`moment-timezone`);
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -9,8 +9,9 @@ const warehouseService = require(`../services/warehouse`);
 
 let getWarehouseC = async (req, res, next) => {
     try {
-        if (!valid.relative(req.query, form.getWarehouse))
-            throw new Error(`400 ~ Validate data wrong!`);
+        let token = req.tokenData.data;
+        // if (!token.role.permission_list.includes(`view_warehouse`)) throw new Error(`400 ~ Forbidden!`);
+        // if (!valid.relative(req.query, form.getWarehouse)) throw new Error(`400 ~ Validate data wrong!`);
         await warehouseService.getWarehouseS(req, res, next);
     } catch (err) {
         next(err);
@@ -20,51 +21,52 @@ let getWarehouseC = async (req, res, next) => {
 let addWarehouseC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        if (!valid.absolute(req.body, form.addWarehouse))
-            throw new Error(`400 ~ Validate data wrong!`);
+        // if (!token.role.permission_list.includes(`add_warehouse`)) throw new Error(`400 ~ Forbidden!`);
+        if (!valid.absolute(req.body, form.addWarehouse)) throw new Error(`400 ~ Validate data wrong!`);
         req.body[`name`] = String(req.body.name).toUpperCase();
-        let [_counts, _count, _bussiness, _warehouse] = await Promise.all([
+        let [_counts, _business, _warehouse] = await Promise.all([
             client.db(DB).collection(`Warehouses`).countDocuments(),
-            client
-                .db(DB)
-                .collection(`Warehouses`)
-                .find({ bussiness: token.bussiness.user_id })
-                .count(),
             client.db(DB).collection(`Users`).findOne({
-                user_id: token.bussiness.user_id,
+                user_id: token.business_id,
                 active: true,
             }),
             client.db(DB).collection(`Warehouses`).findOne({
                 name: req.body.name,
-                bussiness: token.bussiness.user_id,
+                business_id: token.business_id,
             }),
         ]);
         if (_warehouse) throw new Error(`400 ~ Warehouse name was exists!`);
-        if (!_bussiness)
-            throw new Error(`400 ~ Bussiness is not exists or inactive!`);
+        if (!_business) throw new Error(`400 ~ Bussiness is not exists or inactive!`);
         req.body[`warehouse_id`] = String(_counts + 1);
-        req.body[`code`] = `${String(_bussiness.company_name)
-            .normalize(`NFD`)
-            .replace(/[\u0300-\u036f]|\s/g, ``)
-            .replace(/đ/g, 'd')
-            .replace(/Đ/g, 'D')
-            .toUpperCase()}_${String(_count + 1)}`;
-        req.body[`bussiness`] = _bussiness.user_id;
+        req.body[`code`] = String(1000000 + _counts + 1);
+        req.body[`business_id`] = _business.user_id;
+        let createSub = (str) => {
+            return str
+                .normalize(`NFD`)
+                .replace(/[\u0300-\u036f]|\s/g, ``)
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLocaleLowerCase();
+        };
         _warehouse = {
             warehouse_id: req.body.warehouse_id,
-            bussiness: req.body.bussiness,
+            business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            type: req.body.type,
+            sub_name: createSub(req.body.name),
+            type: req.body.type || `RIÊNG`,
+            sub_type: createSub(req.body.type),
             phone: req.body.phone,
-            capacity: req.body.capacity,
-            monthly_cost: req.body.monthly_cost,
-            address: req.body.address,
-            ward: req.body.ward,
-            district: req.body.district,
-            province: req.body.province,
-            create_date: moment().format(),
-            creator: token.user_id,
+            capacity: req.body.capacity || 0,
+            monthly_cost: req.body.monthly_cost || 0,
+            address: req.body.address || ``,
+            sub_address: createSub(req.body.address),
+            district: req.body.district || ``,
+            sub_district: createSub(req.body.district),
+            province: req.body.province || ``,
+            sub_province: createSub(req.body.province),
+            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
+            creator_id: token.user_id,
             active: true,
         };
         req[`_warehouse`] = _warehouse;
@@ -76,10 +78,8 @@ let addWarehouseC = async (req, res, next) => {
 let updateWarehouseC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let _warehouse = await client
-            .db(DB)
-            .collection(`Warehouses`)
-            .findOne(req.params);
+        // if (!token.role.permission_list.includes(`update_warehouse`)) throw new Error(`400 ~ Forbidden!`);
+        let _warehouse = await client.db(DB).collection(`Warehouses`).findOne(req.params);
         if (!_warehouse) throw new Error(`400 ~ Warehouse is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).trim().toUpperCase();
