@@ -156,12 +156,12 @@ const UI = (props) => {
           title: 'Quản lý sản phẩm',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
-        // {
-        //   icon: <BankOutlined />,
-        //   path: ROUTES.INVENTORY,
-        //   title: 'Quản lý kho',
-        //   permissions: [PERMISSIONS.quan_li_kho],
-        // },
+        {
+          icon: <BankOutlined />,
+          path: ROUTES.INVENTORY,
+          title: 'Quản lý kho',
+          permissions: [PERMISSIONS.quan_li_kho],
+        },
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
@@ -619,8 +619,10 @@ const UI = (props) => {
     }
   }
 
-  const changeBranch = async (value) =>
+  const changeBranch = async (value) => {
     dispatch({ type: 'SET_BRANCH_ID', data: value })
+    updateUser({ branch_id: value }, user.user_id)
+  }
 
   useEffect(() => {
     getInfoUser()
@@ -1004,11 +1006,11 @@ const UI = (props) => {
                 </Permission>
                 <Select
                   disabled={login.role === 'EMPLOYEE' ? true : false}
-                  placeholder="Chọn chi nhánh & kho"
+                  placeholder="Chọn chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   onChange={changeBranch}
-                  value={branchId}
+                  value={branchId || user.branch_id}
                 >
                   {listBranch.map((e, index) => (
                     <Option value={e.branch_id} key={index}>

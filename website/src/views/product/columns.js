@@ -4,13 +4,13 @@ const columnsProduct = [
     key: 'image',
   },
   {
+    title: 'Tên sản phẩm',
+    key: 'name-product',
+  },
+  {
     title: 'SKU',
     dataIndex: 'sku',
     key: 'sku',
-  },
-  {
-    title: 'Tên sản phẩm',
-    key: 'name-product',
   },
   {
     title: 'Danh mục',

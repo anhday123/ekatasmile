@@ -132,7 +132,7 @@ export default function Role() {
     {
       pParent: 'cau_hinh_thong_tin',
       pChildren: [
-        { parent: 'quan_li_nguoi_dung', children: ['them_nguoi_dung'] },
+        { parent: 'quan_li_cua_hang', children: ['them_cua_hang'] },
         {
           parent: 'quan_li_nhan_su',
           children: ['them_nhan_su', 'cap_nhat_nhan_su'],
