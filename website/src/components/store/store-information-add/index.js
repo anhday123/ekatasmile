@@ -13,35 +13,31 @@ import {
   Upload,
 } from 'antd'
 
-import { useLocation, useHistory } from 'react-router-dom'
 import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import { ACTION } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 //apis
 import { apiProvince } from 'apis/information'
-import { apiFilterCity } from 'apis/branch'
+import { apiFilterCity, getAllBranch } from 'apis/branch'
 import { addStore, getAllStore } from 'apis/store'
-import { uploadImgs } from 'apis/upload'
-import { updateUser } from 'apis/user'
 import { uploadFile } from 'apis/upload'
+import { getAllLabel } from 'apis/label'
 
 const { Option } = Select
 const { Dragger } = Upload
 export default function StoreInformationAdd({ reloadData }) {
-  const location = useLocation()
-  const history = useHistory()
   const dispatch = useDispatch()
   const [form] = Form.useForm()
-  const dataUser = useSelector((state) => state.login.dataUser)
-  console.log('data user', dataUser)
+  const [branchList, setBranchList] = useState([])
+  const [labelList, setLabelList] = useState([])
+  const [imageStorePreview, setImageStorePreview] = useState('')
+  const [imageStore, setImageStore] = useState('')
 
   const [modal3Visible, setModal3Visible] = useState(false)
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
   }
-  const [imageStorePreview, setImageStorePreview] = useState('')
-  const [imageStore, setImageStore] = useState('')
 
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
@@ -79,7 +75,6 @@ export default function StoreInformationAdd({ reloadData }) {
       dispatch({ type: ACTION.LOADING, data: true })
       console.log(object)
       const res = await addStore(object)
-      console.log(res)
       if (res.status === 200) {
         await reloadData() //reload data khi tao store thanh cong
 
@@ -127,12 +122,6 @@ export default function StoreInformationAdd({ reloadData }) {
         return
       }
 
-      //check validated website
-      if (values.websiteLink && !isValidURL(values.websiteLink)) {
-        notification.error({ message: 'Link website không đúng định dạng' })
-        return
-      }
-
       dispatch({ type: ACTION.LOADING, data: true })
 
       let imgStore = ''
@@ -144,14 +133,13 @@ export default function StoreInformationAdd({ reloadData }) {
         name: values.storeName,
         logo: imgStore,
         phone: values.phoneNumber,
-        email: '',
-        fax: values.fax || '',
-        website: values.websiteLink ? values.websiteLink : '',
         latitude: '',
         longtitude: '',
         address: values.address ? values.address : '',
         district: values.district,
         province: values.city,
+        branch_id: values.branch,
+        label_id: values.label,
       }
       dispatch({ type: ACTION.LOADING, data: false })
 
@@ -179,7 +167,7 @@ export default function StoreInformationAdd({ reloadData }) {
   const apiFilterCityData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiFilterCity({ keyword: object })
+      const res = await apiFilterCity({ search: object })
       console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
@@ -211,6 +199,33 @@ export default function StoreInformationAdd({ reloadData }) {
     districtMain && districtMain.length > 0
       ? districtMain[districtMain.length - 2].district_name
       : ''
+
+  useEffect(() => {
+    const getBranch = async () => {
+      try {
+        const res = await getAllBranch()
+        if (res.data.success) {
+          setBranchList(res.data.data.filter((e) => e.active))
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getBranch()
+  }, [])
+  useEffect(() => {
+    const getLabel = async () => {
+      try {
+        const res = await getAllLabel()
+        if (res.data.success) {
+          setLabelList(res.data.data.filter((e) => e.active))
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getLabel()
+  }, [])
   return (
     <>
       <Button
@@ -416,32 +431,6 @@ export default function StoreInformationAdd({ reloadData }) {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    color: 'black',
-                    fontWeight: '600',
-                  }}
-                >
-                  Số fax
-                </div>
-                <Form.Item
-                  className={styles['supplier_add_content_supplier_code_input']}
-                  name="fax"
-                >
-                  <Input placeholder="Nhập số fax" size="large" />
-                </Form.Item>
-              </div>
-            </Col>
             {districtMain && districtMain.length > 0 ? (
               <Col
                 style={{ width: '100%' }}
@@ -506,13 +495,49 @@ export default function StoreInformationAdd({ reloadData }) {
                     fontWeight: '600',
                   }}
                 >
-                  Link website
+                  Chi nhánh
                 </div>
                 <Form.Item
                   className={styles['supplier_add_content_supplier_code_input']}
-                  name="websiteLink"
+                  name="branch"
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input size="large" placeholder="Nhập link website" />
+                  <Select placeholder="Chọn chi nhánh">
+                    {branchList.map((e) => (
+                      <Option value={e.branch_id}>{e.name}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <div>
+                <div
+                  style={{
+                    marginBottom: '0.5rem',
+                    color: 'black',
+                    fontWeight: '600',
+                  }}
+                >
+                  Label
+                </div>
+                <Form.Item
+                  className={styles['supplier_add_content_supplier_code_input']}
+                  name="label"
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                >
+                  <Select placeholder="Chọn chi nhánh">
+                    {labelList.map((e) => (
+                      <Option value={e.label_id}>{e.name}</Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
