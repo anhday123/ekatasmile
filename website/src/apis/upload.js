@@ -2,6 +2,7 @@ import axios from 'axios'
 import moment from 'moment'
 import S3 from 'aws-sdk/clients/s3'
 import AWS from 'aws-sdk'
+import { v4 as uuidv4 } from 'uuid'
 
 export const uploadImg = (formData) =>
   axios.post('https://ecom-fulfill.com/api/fileupload/single', formData, {
@@ -23,7 +24,6 @@ export const uploadImgs = (formData) =>
 
 /* config upload S3 */
 const wasabiEndpoint = new AWS.Endpoint(process.env.REACT_APP_S3_URL)
-const _d = moment(new Date()).format('YYYY/MM/DD')
 const ENDPOINT_URL_IMAGE = `${process.env.REACT_APP_S3_URL}/admin-order/`
 const upload = new S3({
   endpoint: wasabiEndpoint,
@@ -35,6 +35,8 @@ const upload = new S3({
 
 export const uploadFile = async (file) => {
   try {
+    const _d = moment(new Date()).format('YYYY/MM/DD') + '/' + uuidv4()
+
     if (!file) return ''
 
     let fileName = file.name.split('.')
@@ -58,7 +60,9 @@ export const uploadFile = async (file) => {
 
 export const uploadFiles = async (files) => {
   try {
-    if (!files) return []
+    const _d = moment(new Date()).format('YYYY/MM/DD') + '/' + uuidv4()
+
+    if (!files) return false
 
     let arrayFileName = []
     const promises = files.map(async (file) => {
@@ -82,9 +86,9 @@ export const uploadFiles = async (files) => {
     let listUrl = arrayFileName.map(
       (name) => 'https://' + ENDPOINT_URL_IMAGE + name
     )
-    return listUrl || []
+    return listUrl || false
   } catch (error) {
     console.log(error)
-    return []
+    return false
   }
 }

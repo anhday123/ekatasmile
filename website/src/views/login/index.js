@@ -18,6 +18,7 @@ import { login } from 'apis/login'
 import { loginAccessToken } from '../../actions/login'
 import { getAllStore } from '../../apis/store'
 import { getStore } from '../../actions/store'
+import { decodeToken } from 'react-jwt'
 
 export default function Login() {
   const dispatch = useDispatch()
@@ -37,6 +38,13 @@ export default function Login() {
 
         const actions = loginAccessToken(res.data.data)
         dispatch(actions)
+
+        //luu branch id len redux
+        const dataUser = decodeToken(res.data.data.accessToken)
+        dispatch({
+          type: 'SET_BRANCH_ID',
+          data: dataUser.data.branch_id,
+        })
 
         history.push(ROUTES.OVERVIEW)
       } else {

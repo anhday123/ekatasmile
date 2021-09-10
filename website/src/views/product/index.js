@@ -21,28 +21,33 @@ import {
   Popover,
   Radio,
   Space,
-  Typography,
+  Popconfirm,
+  Tabs,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 
 //components
 import ProductInfo from './components/productInfo'
 import Permission from 'components/permission'
+import SettingColumns from 'components/setting-column'
+import columnsProduct from 'views/product/columns'
 
 //icons
 import {
   DeleteOutlined,
   PlusCircleOutlined,
   EyeOutlined,
+  PlusOutlined,
 } from '@ant-design/icons'
 
 //apis
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllBranchMain } from 'apis/branch'
+import { getAllStore } from 'apis/store'
 import {
   apiAddCategory,
   apiAllCategorySearch,
@@ -55,22 +60,38 @@ import {
   apiAllProduct,
   apiUpdateProductStore,
   apiProductCategoryMerge,
+  getProductsBranch,
+  updateProductBranch,
+  updateProductStore,
+  getProductsStore,
 } from 'apis/product'
-import { uploadFiles } from 'apis/upload'
+import { uploadFiles, uploadFile } from 'apis/upload'
 import { compare } from 'utils'
-const { Text } = Typography
+
 const { RangePicker } = DatePicker
 export default function Product() {
   const dispatch = useDispatch()
+  const history = useHistory()
+  const [form] = Form.useForm()
+  const branchId = useSelector((state) => state.branch.branchId)
+  const STATUS_PRODUCT = {
+    all: 'all',
+    shipping_stock: 'shipping_stock',
+    available_stock: 'available_stock',
+    low_stock: 'low_stock',
+    out_stock: 'out_stock',
+  }
+
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const [page, setPage] = useState(1)
-  const [page_size, setPageSize] = useState(20)
   const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+    has_variable: false,
     this_week: true,
-    merge: false,
   })
+
   const [supplier, setSupplier] = useState([])
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
@@ -80,7 +101,6 @@ export default function Product() {
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
   const [category, setCategory] = useState([])
-  const [viewMode, setViewMode] = useState(0) //0 kho, 1 product seller
   const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
     useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -88,10 +108,13 @@ export default function Product() {
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
     this_week: true,
   })
-  const [warehouseList, setWarehouseList] = useState([])
-  const [branchList, setBranchList] = useState([])
-  const history = useHistory()
-  const [form] = Form.useForm()
+  const [stores, setStores] = useState([]) //list store in filter
+  const [storeId, setStoreId] = useState() //filter product by store
+  const [columns, setColumns] = useState(
+    localStorage.getItem('columnsProduct')
+      ? JSON.parse(localStorage.getItem('columnsProduct'))
+      : [...columnsProduct]
+  )
 
   const showDrawerCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(true)
@@ -103,7 +126,7 @@ export default function Product() {
   const modal6VisibleModal = (modal6Visible) => {
     setModal6Visible(modal6Visible)
   }
-  // tạo nhóm sản phẩm
+  // tạo Danh mục
   const onFinishCategory = (values) => {
     const object = {
       name: values.categoryName,
@@ -162,7 +185,7 @@ export default function Product() {
       duration: 3,
       description: (
         <div>
-          Xóa nhóm sản phẩm <b>{data}</b> thành công
+          Xóa danh mục <b>{data}</b> thành công
         </div>
       ),
     })
@@ -171,7 +194,7 @@ export default function Product() {
     notification.success({
       message: 'Thành công',
       duration: 3,
-      description: 'Thêm nhóm sản phẩm thành công.',
+      description: 'Thêm danh mục thành công.',
     })
   }
   const openNotificationSuccessCategoryMainError = (data) => {
@@ -180,7 +203,7 @@ export default function Product() {
       duration: 3,
       description: (
         <div>
-          Nhóm sản phẩm <b>{data}</b> đã tồn tại
+          danh mục <b>{data}</b> đã tồn tại
         </div>
       ),
     })
@@ -225,7 +248,7 @@ export default function Product() {
       duration: 3,
       description: (
         <div>
-          Cập nhật thông tin nhóm sản phẩm <b>{data}</b> thành công
+          Cập nhật thông tin danh mục <b>{data}</b> thành công
         </div>
       ),
     })
@@ -355,15 +378,10 @@ export default function Product() {
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
 
-      setPage(1)
+      if (value) paramsFilter[optionSearchName] = value
+      else delete paramsFilter[optionSearchName]
 
-      if (value) {
-        paramsFilter[optionSearchName] = value
-      } else {
-        delete paramsFilter[optionSearchName]
-      }
-
-      getAllProduct({ page: 1, page_size, ...paramsFilter })
+      paramsFilter.page = 1
       setParamsFilter({ ...paramsFilter })
     }, 750)
   }
@@ -434,11 +452,29 @@ export default function Product() {
 
     try {
       let res
-      if (viewMode === 1) res = await apiProductSeller(params)
-      else res = await apiAllProduct(params)
+      //Nếu có filter cửa hàng thì gọi api product store
+      if (params.store_id) res = await getProductsStore({ ...params })
+      else res = await getProductsBranch({ ...params, branch_id: branchId })
+
       console.log(res)
       if (res.status === 200) {
-        setProducts([...res.data.data])
+        if (paramsFilter.has_variable) {
+          let dataNew = []
+
+          res.data.data.map((e) =>
+            e.variants.map((v) =>
+              dataNew.push({
+                ...v,
+                product_id: e.product_id,
+                category: e._category.name || '',
+                create_date: e.create_date || '',
+              })
+            )
+          )
+
+          setProducts([...dataNew])
+        } else setProducts([...res.data.data])
+
         setCount(res.data.count)
       }
 
@@ -455,8 +491,7 @@ export default function Product() {
       await apiProductCategoryMergeData()
       await apiAllCategoryData()
       await apiAllWarrantyData()
-      await getwarehouse()
-      await getBranch()
+      await getStores()
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -464,12 +499,19 @@ export default function Product() {
   }
 
   useEffect(() => {
-    setPage(1)
-    getAllProduct({ page: 1, page_size, ...paramsFilter })
-  }, [viewMode])
+    delete paramsFilter.store_id
+    if (branchId) getAllProduct({ ...paramsFilter })
+  }, [branchId])
+
+  useEffect(() => {
+    getAllProduct({ ...paramsFilter })
+  }, [paramsFilter])
 
   useEffect(() => {
     loadingAll()
+
+    if (!localStorage.getItem('columnsProduct'))
+      localStorage.setItem('columnsProduct', JSON.stringify(columnsProduct))
   }, [])
   function formatCash(str) {
     return str
@@ -496,7 +538,6 @@ export default function Product() {
   }
   const [productGroupSelect, setProductGroupSelect] = useState()
   const onChangeCategory = async (e) => {
-    setPage(1)
     setProductGroupSelect(e)
 
     if (e) {
@@ -505,13 +546,13 @@ export default function Product() {
       delete paramsFilter.category
     }
 
-    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
   }
   const openNotificationProductGroupSelectError = () => {
     notification.error({
       message: 'Thất bại',
-      description: 'Bạn chưa chọn nhóm sản phẩm.',
+      description: 'Bạn chưa chọn danh mục.',
     })
   }
 
@@ -638,17 +679,7 @@ export default function Product() {
   const [indexCheckbox, setIndexCheckbox] = useState([])
   const [skuSelect, setSkuSelect] = useState('')
   const [skuSelectArray, setSkuSelectArray] = useState([])
-  const onChangeTypeViewProduct = async (e) => {
-    setViewMode(e.target.value)
-    setValueSearch('')
-    setCategoryValue()
-    setStatusName('')
-    setAllSelect()
-    setSelectedRowKeys([])
-    setValueDateSearch({})
-    setValueTime()
-    setParamsFilter({ merge: paramsFilter.merge })
-  }
+
   const [arrayCheck, setArrayCheck] = useState([])
   const onChangeCheckboxImage = (
     e,
@@ -1106,974 +1137,293 @@ export default function Product() {
       </Row>
     )
   }
-  const columns = [
-    {
-      title: 'Hình ảnh',
-      align: 'center',
-      dataIndex: 'image',
-      width: 275,
-      render: (text, record) => (
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
+
+  /*image product */
+  const ContentZoomImage = (data) => {
+    const [valueBox, setValueBox] = useState(300)
+    return (
+      <div onClick={(e) => e.stopPropagation()}>
+        <img
+          src={data}
+          style={{ width: valueBox, height: valueBox, objectFit: 'contain' }}
+          alt=""
+          onClick={(e) => e.stopPropagation()}
+        />
+        <Slider
+          defaultValue={300}
+          min={100}
+          max={1000}
+          onChange={(value) => setValueBox(value)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )
+  }
+
+  const uploadImageProductVariable = async (file, record) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const image = await uploadFile(file)
+
+      const indexVariant = products.findIndex((p) => p.title === record.title)
+      let productId = ''
+      if (indexVariant !== -1) {
+        products[indexVariant].image = image || record.image
+        productId = products[0].product_id
+        const productsNew = products.map((e) => {
+          delete e.product_id
+          delete e.category
+          delete e.create_date
+          return e
+        })
+
+        const body = { variants: productsNew }
+
+        let res
+        if (paramsFilter.store_id)
+          res = await updateProductStore(body, productId)
+        else res = await updateProductBranch(body, productId)
+
+        if (res.status === 200) {
+          notification.success({ message: 'Upload ảnh thành công' })
+          getAllProduct({ ...paramsFilter })
+        } else
+          notification.success({
+            message: 'Upload ảnh thất bại, vui lòng thử lại',
+          })
+      }
+
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const ImageProductVariable = ({ record }) => {
+    return (
+      <Upload
+        name="avatar"
+        listType="picture-card"
+        className="avatar-uploader"
+        showUploadList={false}
+        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+        onChange={(info) => {
+          if (info.file.status !== 'done') info.file.status = 'done'
+        }}
+        data={(file) => uploadImageProductVariable(file, record)}
+      >
+        {record.image ? (
+          <img src={record.image} alt="avatar" style={{ width: '100%' }} />
+        ) : (
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        )}
+      </Upload>
+    )
+  }
+
+  const removeImagesProductNotVariable = async (images, record) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      console.log(images)
+      const body = { image: images }
+
+      let res
+      if (paramsFilter.store_id)
+        res = await updateProductStore(body, record.product_id)
+      else res = await updateProductBranch(body, record.product_id)
+
+      if (res.status === 200) {
+        notification.success({ message: 'Xoá ảnh thành công' })
+        getAllProduct({ ...paramsFilter })
+      } else
+        notification.success({ message: 'Xoá ảnh thất bại, vui lòng thử lại' })
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const uploadImagesProductNotVariable = async (files, record) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const images = await uploadFiles(files)
+      const body = {
+        image: images ? [...record.image, ...images] : record.image,
+      }
+
+      let res
+      if (paramsFilter.store_id)
+        res = await updateProductStore(body, record.product_id)
+      else res = await updateProductBranch(body, record.product_id)
+
+      if (res.status === 200) {
+        notification.success({ message: 'Upload ảnh thành công' })
+        getAllProduct({ ...paramsFilter })
+      } else
+        notification.success({
+          message: 'Upload ảnh thất bại, vui lòng thử lại',
+        })
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const ImageProductNotVariable = ({ record }) => {
+    const [listImageRemove, setListImageRemove] = useState([]) // list checkbox xoa anh hang loat
+    const [classUploadImageProduct, setClassUploadImageProduct] = useState('')
+
+    const [data, setData] = useState([])
+
+    useEffect(() => {
+      setData(
+        record.image && typeof record.image === 'object'
+          ? [
+              ...record.image.map((url, index) => {
+                return {
+                  uid: index,
+                  name: 'image',
+                  status: 'done',
+                  url: url,
+                }
+              }),
+            ]
+          : []
+      )
+    }, [])
+
+    return (
+      <>
+        <Upload
+          listType="picture-card"
+          multiple
+          fileList={data}
+          onChange={({ fileList }) => {
+            if (typingTimeoutRef.current) {
+              clearTimeout(typingTimeoutRef.current)
+            }
+            typingTimeoutRef.current = setTimeout(async () => {
+              const files = fileList
+                .filter((e) => e.originFileObj)
+                .map((file) => file.originFileObj)
+              uploadImagesProductNotVariable(files, record)
+            }, 350)
+          }}
+          className={classUploadImageProduct}
+          showUploadList={{
+            showRemoveIcon: true,
+            removeIcon: (file) => (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '-1px',
+                  right: '-1px',
+                  top: '-1px',
+                  bottom: '-1px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Checkbox
+                  defaultChecked={listImageRemove.includes(file.url)}
+                  onClick={(e) => {
+                    const listImageRemoveNew = [...listImageRemove]
+                    const indexLink = listImageRemoveNew.findIndex(
+                      (e) => e === file.url
+                    )
+
+                    if (indexLink !== -1)
+                      listImageRemoveNew.splice(indexLink, 1)
+                    else listImageRemoveNew.push(file.url)
+
+                    if (listImageRemoveNew.length)
+                      setClassUploadImageProduct('image-product')
+                    else setClassUploadImageProduct('')
+
+                    setListImageRemove([...listImageRemoveNew])
+
+                    e.stopPropagation()
+                  }}
+                ></Checkbox>
+              </div>
+            ),
+            showDownloadIcon: true,
+            downloadIcon: (file) => {
+              return (
+                <Popover
+                  style={{ top: 300 }}
+                  placement="top"
+                  content={ContentZoomImage(file.url)}
+                >
+                  <div
+                    style={{
+                      width: 100,
+                      height: 100,
+                      position: 'absolute',
+                      left: '-38px',
+                      top: '-38px',
+                    }}
+                  ></div>
+                </Popover>
+              )
+            },
           }}
         >
-          {record && record.variants && record.variants.length > 0 ? (
-            record.variants.map((values, index) => {
-              if (values.status === 'shipping_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#2F9BFF',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        </Upload>
 
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {funcHoverImage(values.image, index, record, values.sku)}
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'available_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#24A700',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
+        <Popconfirm
+          title="Bạn có muốn xoá các ảnh này ?"
+          onConfirm={() => {
+            const listImagesRemoveNew = data.filter(
+              (e) => !listImageRemove.includes(e.url)
+            )
 
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {funcHoverImage(values.image, index, record, values.sku)}
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'low_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#A06000',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {funcHoverImage(values.image, index, record, values.sku)}
-                    </Row>
-                  </Col>
-                )
-              }
-              if (values.status === 'out_stock') {
-                return (
-                  <Col
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                    style={{
-                      backgroundColor: '#FE9292',
-                      width: '100%',
-                      cursor: 'pointer',
-                      marginBottom: '1rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        marginBottom: '1rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        marginTop: '1rem',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {values.title}:
-                    </div>
-                    <Row
-                      style={{
-                        display: 'flex',
-
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {funcHoverImage(values.image, index, record, values.sku)}
-                    </Row>
-                  </Col>
-                )
-              }
-            })
-          ) : record.status === 'shipping_stock' ? (
-            <div style={{ backgroundColor: '#2F9BFF' }}>
-              {funcHoverImageSimple(record)}
-            </div>
-          ) : record.status === 'available_stock' ? (
-            <div style={{ backgroundColor: '#24A700' }}>
-              {funcHoverImageSimple(record)}
-            </div>
-          ) : record.status === 'low_stock' ? (
-            <div style={{ backgroundColor: '#A06000' }}>
-              {funcHoverImageSimple(record)}
-            </div>
-          ) : (
-            <div style={{ backgroundColor: '#FE9292' }}>
-              {funcHoverImageSimple(record)}
-            </div>
-          )}
-        </Row>
-      ),
-    },
-
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantityMain',
-      width: 200,
-      render: (text, record) =>
-        record.variants && record.variants.length > 0 ? (
-          record.variants.map((e) => (
-            <>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '0.5rem',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {e.title}
-              </div>
-              {(e.quantity && e.quantity > 0) ||
-              (e.available_stock_quantity && e.available_stock_quantity > 0) ? (
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {(e.quantity && e.quantity <= 0) ||
-                  e.available_stock_quantity <= 0 ? (
-                    ''
-                  ) : (
-                    <div
-                      style={{
-                        marginRight: '0.25rem',
-                        color: 'black',
-                        fontWeight: '600',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      Số lượng:
-                    </div>
-                  )}
-
-                  <div>
-                    {e.quantity && e.quantity > 0
-                      ? e.quantity &&
-                        e.quantity &&
-                        `${formatCash(String(e.quantity))}.`
-                      : e.available_stock_quantity > 0
-                      ? e.available_stock_quantity &&
-                        e.available_stock_quantity &&
-                        `${formatCash(String(e.available_stock_quantity))}.`
-                      : ''}
-                  </div>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {e.low_stock_quantity <= 0 ? (
-                    ''
-                  ) : (
-                    <div
-                      style={{
-                        marginRight: '0.25rem',
-                        color: 'black',
-                        fontWeight: '600',
-                        fontSize: '1rem',
-                      }}
-                    >
-                      Số lượng:
-                    </div>
-                  )}
-
-                  <div>
-                    {e.low_stock_quantity > 0
-                      ? e.low_stock_quantity &&
-                        `${formatCash(String(e.low_stock_quantity))}.`
-                      : ''}
-                  </div>
-                </div>
-              )}
-            </>
-          ))
-        ) : (
-          <>
-            {(record.quantity && record.quantity > 0) ||
-            (record.available_stock_quantity &&
-              record.available_stock_quantity > 0) ? (
-              <div
-                style={{
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  flexDirection: 'column',
-                }}
-              >
-                <div
-                  style={{
-                    marginRight: '0.25rem',
-                    color: 'black',
-                    fontWeight: '600',
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {record.name}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {record.available_stock_quantity <= 0 ? (
-                    ''
-                  ) : (
-                    <div
-                      style={{
-                        marginRight: '0.25rem',
-                        color: 'black',
-                        fontWeight: '600',
-                        fontSize: '1rem',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
-                      Số lượng:
-                    </div>
-                  )}
-
-                  <div>
-                    {record.available_stock_quantity > 0
-                      ? record.available_stock_quantity &&
-                        `${formatCash(
-                          String(record.available_stock_quantity)
-                        )}.`
-                      : ''}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                style={{
-                  marginBottom: '0.5rem',
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  flexDirection: 'column',
-                }}
-              >
-                <div
-                  style={{
-                    marginRight: '0.25rem',
-                    color: 'black',
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {statusName !== ''
-                    ? record && record.variants && record.variants.length === 0
-                      ? record.title
-                      : record.name
-                    : record.name}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {record.low_stock_quantity <= 0 ? (
-                    ''
-                  ) : (
-                    <div
-                      style={{
-                        marginRight: '0.25rem',
-                        color: 'black',
-                        fontWeight: '600',
-                        fontSize: '1rem',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
-                      Số lượng:
-                    </div>
-                  )}
-
-                  <div>
-                    {record.low_stock_quantity > 0
-                      ? record.low_stock_quantity &&
-                        `${formatCash(String(record.low_stock_quantity))}.`
-                      : ''}
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        ),
-      sorter: (a, b) => compare(a, b, 'quantityMain'),
-    },
-
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      width: 100,
-      render: (text, record) => (
-        <div
-          onClick={() => modal2VisibleModalMain(true, record)}
-          style={{ color: '#0036F3', cursor: 'pointer' }}
-        >
-          {text ? text.toUpperCase() : ''}
-        </div>
-      ),
-      sorter: (a, b) => compare(a, b, 'sku'),
-    },
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'name',
-      width: 250,
-      render: (text, record) => (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
+            removeImagesProductNotVariable(
+              listImagesRemoveNew.map((e) => e.url),
+              record
+            )
           }}
+          okText="Yes"
+          cancelText="No"
         >
-          {record && record.variants && record.variants.length > 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '0.5rem',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {record.name}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '0.5rem',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                Phiên bản:
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '0.5rem',
-                  alignItems: 'center',
-                  width: '100%',
-                  flexDirection: 'column',
-                }}
-              >
-                {record && record.variants && record.variants.length > 0
-                  ? record &&
-                    record.variants.map((values, index) => {
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            marginBottom: '0.5rem',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            width: '100%',
-                          }}
-                        >{`${values.title}.`}</div>
-                      )
-                    })
-                  : ''}
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                marginBottom: '0.5rem',
-                alignItems: 'center',
-                width: '100%',
-                color: 'black',
-                fontWeight: '600',
-              }}
-            >
-              {record.name}
-            </div>
-          )}
-        </div>
-      ),
-      sorter: (a, b) => compare(a, b, 'name'),
-    },
-    {
-      title: 'Nhóm sản phẩm',
-      dataIndex: 'category',
-      width: 125,
-      render: (text, record) => text.name,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'statusMain',
-      width: 250,
-      render: (text, record) => (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          {record && record.variants && record.variants.length > 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '0.5rem',
-                  alignItems: 'center',
-                  width: '100%',
-                  flexDirection: 'column',
-                }}
-              >
-                {record && record.variants && record.variants.length > 0
-                  ? record &&
-                    record.variants.map((values, index) => {
-                      if (values.status === 'available_stock') {
-                        return (
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                              flexDirection: 'column',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                color: 'black',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.title}.`}</div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                textTransform: 'capitalize',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.status}`}</div>
-                          </div>
-                        )
-                      } else if (values.status === 'low_stock') {
-                        return (
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                              flexDirection: 'column',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                color: 'black',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.title}.`}</div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                textTransform: 'capitalize',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.status}`}</div>
-                          </div>
-                        )
-                      } else if (values.status === 'out_stock') {
-                        return (
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                              flexDirection: 'column',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                color: 'black',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.title}.`}</div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                textTransform: 'capitalize',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.status}`}</div>
-                          </div>
-                        )
-                      } else {
-                        return (
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                              flexDirection: 'column',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                color: 'black',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.title}.`}</div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                marginBottom: '0.5rem',
-                                justifyContent: 'flex-start',
-                                alignItems: 'center',
-                                width: '100%',
-                                textTransform: 'capitalize',
-                                fontWeight: '600',
-                              }}
-                            >{`${values.status}`}</div>
-                          </div>
-                        )
-                      }
-                    })
-                  : ''}
-              </div>
-            </div>
-          ) : record.status === 'available_stock' ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {record.name}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  textTransform: 'capitalize',
-                  fontWeight: '600',
-                }}
-              >{`${record.status}`}</div>
-            </div>
-          ) : record.status === 'low_stock' ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {record.name}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  textTransform: 'capitalize',
-                  fontWeight: '600',
-                }}
-              >{`${record.status}`}</div>
-            </div>
-          ) : record.status === 'out_stock' ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {record.name}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  textTransform: 'capitalize',
-                  fontWeight: '600',
-                }}
-              >{`${record.status}`}</div>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  color: 'black',
-                  fontWeight: '600',
-                }}
-              >
-                {record.name}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  marginBottom: '0.5rem',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  textTransform: 'capitalize',
-                  fontWeight: '600',
-                }}
-              >{`${record.status}`}</div>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'Giá sản phẩm',
-      dataIndex: 'sale_price',
-      width: 250,
-      render: (text, record) =>
-        record.variants && record.variants.length > 0 ? (
-          record.variants.map((e) => (
-            <>
-              <div
-                style={{
-                  color: 'black',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                {e.title}
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                {e.sale_price &&
-                  `${formatCash(String(e.sale_price))} VNĐ (giá bán),`}
-              </div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                {e.base_price &&
-                  `${formatCash(String(e.base_price))} VNĐ (giá cơ bản).`}
-              </div>
-            </>
-          ))
-        ) : (
-          <>
-            <div style={{ marginBottom: '0.5rem' }}>
-              {record.sale_price &&
-                `${formatCash(String(record.sale_price))} VNĐ (giá bán),`}
-            </div>
-            <div style={{ marginBottom: '0.5rem' }}>
-              {record.base_price &&
-                `${formatCash(String(record.base_price))} VNĐ (giá cơ bản).`}
-            </div>
-          </>
-        ),
-      sorter: (a, b) => compare(a, b, 'sale_price'),
-    },
-
-    {
-      title: 'Ngày nhập',
-      dataIndex: 'create_date',
-      width: 150,
-      render(data) {
-        return moment(data).format('DD-MM-YYYY')
-      },
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
-      title: 'Nhà cung cấp',
-      dataIndex: 'suppliers',
-      width: 200,
-      render: (text, record) => <div>{text.name}</div>,
-    },
-    {
-      title: 'Kho',
-      dataIndex: 'warehouse',
-      width: 200,
-      render: (text, record) => <div>{text ? text.name : ''}</div>,
-    },
-    {
-      title: 'Mở bán',
-      // fixed: 'right',
-      dataIndex: 'active',
-      width: 100,
-      render: (text, record) =>
-        text ? (
-          <Switch defaultChecked onChange={(e) => onChangeSwitch(e, record)} />
-        ) : (
-          <Switch onChange={(e) => onChangeSwitch(e, record)} />
-        ),
-    },
-  ]
+          <Button
+            type="dashed"
+            danger
+            style={{ display: !listImageRemove.length && 'none' }}
+          >
+            Remove list image
+          </Button>
+        </Popconfirm>
+      </>
+    )
+  }
+  /*image product */
 
   const onClickClear = async () => {
-    await getAllProduct({ page: 1, page_size })
+    Object.keys(paramsFilter).map((key) => {
+      delete paramsFilter[key]
+    })
+    paramsFilter.has_variable = false
+    paramsFilter.page = 1
+    paramsFilter.page_size = 20
+    await getAllProduct({ ...paramsFilter })
+    setParamsFilter({ ...paramsFilter })
     setValueSearch('')
-    setStatusName('')
-    setCategoryValue()
-    setAllSelect()
+    setStoreId()
     setSelectedRowKeys([])
-    setParamsFilter({})
+    setValueTime()
   }
 
   const openNotificationSuccessStoreDelete = (data) => {
@@ -2124,26 +1474,24 @@ export default function Product() {
   const apiUpdateProductMultiMainDeleteStore = async (object, id) => {
     try {
       setLoading(true)
-      if (viewMode === 1) {
-        const res = await apiUpdateProductStore(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          setIndexCheckbox([])
+      // const res = await apiUpdateProductStore(object, id)
+      // console.log(res)
+      // if (res.status === 200) {
+      //   setIndexCheckbox([])
 
-          setSkuSelectArray([])
-          setIndexCheckboxSimple([])
-          openNotificationSuccessUpdateProductMainDelete(object.name)
-        }
-      } else {
-        const res = await apiUpdateProduct(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          setIndexCheckbox([])
+      //   setSkuSelectArray([])
+      //   setIndexCheckboxSimple([])
+      //   openNotificationSuccessUpdateProductMainDelete(object.name)
+      // }
 
-          setIndexCheckboxSimple([])
-          openNotificationSuccessUpdateProductMainDelete(object.name)
-        }
-      }
+      // const res = await apiUpdateProduct(object, id)
+      // console.log(res)
+      // if (res.status === 200) {
+      //   setIndexCheckbox([])
+
+      //   setIndexCheckboxSimple([])
+      //   openNotificationSuccessUpdateProductMainDelete(object.name)
+      // }
 
       setLoading(false)
     } catch (error) {
@@ -2154,53 +1502,53 @@ export default function Product() {
   const apiUpdateProductMultiMainDelete = async (object, id) => {
     try {
       setLoading(true)
-      if (viewMode === 1) {
-        const res = await apiUpdateProductStore(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          if (
-            statusName !== '' ||
-            statusName !== ' ' ||
-            statusName !== 'default'
-          ) {
-            await getAllProduct({
-              status: statusName,
-              page,
-              page_size,
-              ...paramsFilter,
-            })
-          } else {
-          }
+      // if (viewMode === 1) {
+      //   const res = await apiUpdateProductStore(object, id)
+      //   console.log(res)
+      //   if (res.status === 200) {
+      //     if (
+      //       statusName !== '' ||
+      //       statusName !== ' ' ||
+      //       statusName !== 'default'
+      //     ) {
+      //       await getAllProduct({
+      //         status: statusName,
+      //         page,
+      //         page_size,
+      //         ...paramsFilter,
+      //       })
+      //     } else {
+      //     }
 
-          setIndexCheckbox([])
+      //     setIndexCheckbox([])
 
-          setSkuSelectArray([])
-          setIndexCheckboxSimple([])
-          openNotificationSuccessUpdateProductMainDelete(object.name)
-        }
-      } else {
-        const res = await apiUpdateProduct(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          if (
-            statusName !== '' ||
-            statusName !== ' ' ||
-            statusName !== 'default'
-          ) {
-            await getAllProduct({
-              status: statusName,
-              page,
-              page_size,
-              ...paramsFilter,
-            })
-          } else {
-          }
-          setIndexCheckbox([])
+      //     setSkuSelectArray([])
+      //     setIndexCheckboxSimple([])
+      //     openNotificationSuccessUpdateProductMainDelete(object.name)
+      //   }
+      // } else {
+      //   const res = await apiUpdateProduct(object, id)
+      //   console.log(res)
+      //   if (res.status === 200) {
+      //     if (
+      //       statusName !== '' ||
+      //       statusName !== ' ' ||
+      //       statusName !== 'default'
+      //     ) {
+      //       await getAllProduct({
+      //         status: statusName,
+      //         page,
+      //         page_size,
+      //         ...paramsFilter,
+      //       })
+      //     } else {
+      //     }
+      //     setIndexCheckbox([])
 
-          setIndexCheckboxSimple([])
-          openNotificationSuccessUpdateProductMainDelete(object.name)
-        }
-      }
+      //     setIndexCheckboxSimple([])
+      //     openNotificationSuccessUpdateProductMainDelete(object.name)
+      //   }
+      // }
 
       setLoading(false)
     } catch (error) {
@@ -2213,43 +1561,43 @@ export default function Product() {
     try {
       setLoading(true)
 
-      if (viewMode === 1) {
-        const res = await apiUpdateProductStore(object, id)
+      // if (viewMode === 1) {
+      //   const res = await apiUpdateProductStore(object, id)
 
-        if (res.status === 200) {
-          if (
-            statusName !== '' ||
-            statusName !== ' ' ||
-            statusName !== 'default' ||
-            typeof statusName !== 'undefined'
-          ) {
-            await getAllProduct({
-              status: statusName,
-              page,
-              page_size,
-              ...paramsFilter,
-            })
-          } else {
-          }
-        }
-      } else {
-        const res = await apiUpdateProduct(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          if (
-            statusName !== '' ||
-            statusName !== ' ' ||
-            statusName !== 'default'
-          ) {
-            await getAllProduct({
-              status: statusName,
-              page,
-              page_size,
-              ...paramsFilter,
-            })
-          }
-        }
-      }
+      //   if (res.status === 200) {
+      //     if (
+      //       statusName !== '' ||
+      //       statusName !== ' ' ||
+      //       statusName !== 'default' ||
+      //       typeof statusName !== 'undefined'
+      //     ) {
+      //       await getAllProduct({
+      //         status: statusName,
+      //         page,
+      //         page_size,
+      //         ...paramsFilter,
+      //       })
+      //     } else {
+      //     }
+      //   }
+      // } else {
+      //   const res = await apiUpdateProduct(object, id)
+      //   console.log(res)
+      //   if (res.status === 200) {
+      //     if (
+      //       statusName !== '' ||
+      //       statusName !== ' ' ||
+      //       statusName !== 'default'
+      //     ) {
+      //       await getAllProduct({
+      //         status: statusName,
+      //         page,
+      //         page_size,
+      //         ...paramsFilter,
+      //       })
+      //     }
+      //   }
+      // }
 
       setLoading(false)
     } catch (error) {
@@ -2261,27 +1609,27 @@ export default function Product() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       // console.log(value);
-      if (viewMode === 1) {
-        const res = await apiUpdateProductStore(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          setSelectedRowKeys([])
-          setModal50Visible(false)
-          openNotificationSuccessUpdateProduct(object.name)
-        } else {
-          openNotificationSuccessUpdateProductError()
-        }
-      } else {
-        const res = await apiUpdateProduct(object, id)
-        console.log(res)
-        if (res.status === 200) {
-          setSelectedRowKeys([])
-          openNotificationSuccessUpdateProduct(object.name)
-          setModal50Visible(false)
-        } else {
-          openNotificationSuccessUpdateProductError()
-        }
-      }
+      // if (viewMode === 1) {
+      //   const res = await apiUpdateProductStore(object, id)
+      //   console.log(res)
+      //   if (res.status === 200) {
+      //     setSelectedRowKeys([])
+      //     setModal50Visible(false)
+      //     openNotificationSuccessUpdateProduct(object.name)
+      //   } else {
+      //     openNotificationSuccessUpdateProductError()
+      //   }
+      // } else {
+      //   const res = await apiUpdateProduct(object, id)
+      //   console.log(res)
+      //   if (res.status === 200) {
+      //     setSelectedRowKeys([])
+      //     openNotificationSuccessUpdateProduct(object.name)
+      //     setModal50Visible(false)
+      //   } else {
+      //     openNotificationSuccessUpdateProductError()
+      //   }
+      // }
 
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -2324,7 +1672,7 @@ export default function Product() {
   const openNotificationErrorCategory = (data) => {
     notification.error({
       message: 'Thất bại',
-      description: `Bạn chưa nhập ${data} nhóm sản phẩm.`,
+      description: `Bạn chưa nhập ${data} danh mục.`,
     })
   }
   const onCloseUpdateFunc = (data) => {
@@ -2601,49 +1949,22 @@ export default function Product() {
     }
   }
 
-  const [statusName, setStatusName] = useState('')
+  const getStores = async () => {
+    try {
+      const res = await getAllStore()
+      if (res.status === 200) setStores(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const [optionSearchName, setOptionSearchName] = useState('name')
 
-  const getwarehouse = async () => {
-    try {
-      const res = await apiAllInventory()
-      if (res.status == 200) {
-        setWarehouseList(res.data.data)
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  }
+  const onChangeStore = async (storeId) => {
+    if (storeId) paramsFilter.store_id = storeId
+    else delete paramsFilter.store_id
 
-  const getBranch = async () => {
-    try {
-      const res = await getAllBranchMain()
-      if (res.status == 200) {
-        setBranchList(res.data.data)
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  const [allSelect, setAllSelect] = useState()
-  const onChangeAllSelect = async (e) => {
-    setAllSelect(e)
-    setPage(1)
-
-    if (e) {
-      if (viewMode) {
-        paramsFilter.branch = e
-      } else {
-        paramsFilter.warehouse = e
-      }
-    } else {
-      delete paramsFilter.branch
-      delete paramsFilter.warehouse
-    }
-
-    getAllProduct({ page: 1, page_size, ...paramsFilter })
+    paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
   }
 
@@ -2665,26 +1986,20 @@ export default function Product() {
     }
   }
 
-  const filterProductByStatus = (data) => {
-    if (data) paramsFilter.status = data
-    else {
-      delete paramsFilter.status
-    }
-    setStatusName(data)
-    getAllProduct({ page: 1, page_size, ...paramsFilter })
+  const filterProductByStatus = (status) => {
+    if (status !== STATUS_PRODUCT.all) paramsFilter.status = status
+    else delete paramsFilter.status
+
+    paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
   }
-  const [categoryValue, setCategoryValue] = useState()
-  const onChangeCategoryValue = async (id) => {
-    if (id) {
-      paramsFilter.category = id
-    } else {
-      delete paramsFilter.category
-    }
 
-    getAllProduct({ page: 1, page_size, ...paramsFilter })
+  const onChangeCategoryValue = async (id) => {
+    if (id) paramsFilter.category_id = id
+    else delete paramsFilter.category_id
+
+    paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
-    setCategoryValue(id)
   }
 
   return (
@@ -2709,11 +2024,7 @@ export default function Product() {
             lg={12}
             xl={12}
           >
-            <div className={styles['view_product_back']}>
-              <div className={styles['view_product_back_title']}>
-                Danh sách sản phẩm
-              </div>
-            </div>
+            <h3 style={{ marginBottom: 0 }}>Danh sách sản phẩm</h3>
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -2739,7 +2050,7 @@ export default function Product() {
                     type="primary"
                     icon={<PlusCircleOutlined />}
                   >
-                    Nhóm sản phẩm
+                    Tạo danh mục
                   </Button>
                 </Permission>
 
@@ -2757,17 +2068,6 @@ export default function Product() {
               </Space>
             </div>
           </Col>
-        </Row>
-        <Row style={{ width: '100%', marginTop: 20 }}>
-          <Radio.Group
-            defaultValue={viewMode}
-            onChange={(e) => onChangeTypeViewProduct(e)}
-          >
-            <Radio style={{ marginBottom: '0.5rem' }} value={0}>
-              Xem theo Kho
-            </Radio>
-            <Radio value={1}>Xem theo chi nhánh</Radio>
-          </Radio.Group>
         </Row>
 
         <Row
@@ -2791,24 +2091,22 @@ export default function Product() {
           >
             <Select
               size="large"
-              value={allSelect}
+              value={paramsFilter.store_id}
               showSearch
               allowClear
               style={{ width: '100%' }}
-              placeholder={!viewMode ? `Chọn kho` : 'Chọn chi nhánh'}
+              placeholder="Tìm kiếm theo cửa hàng"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              onChange={onChangeAllSelect}
+              onChange={onChangeStore}
             >
-              {!viewMode
-                ? warehouseList.map((e) => (
-                    <Option value={e.warehouse_id}>{e.name}</Option>
-                  ))
-                : branchList.map((e) => (
-                    <Option value={e.branch_id}>{e.name}</Option>
-                  ))}
+              {stores.map((store, index) => (
+                <Option value={store.store_id} key={index}>
+                  {store.name}
+                </Option>
+              ))}
             </Select>
           </Col>
           <Col
@@ -2826,13 +2124,13 @@ export default function Product() {
               size="large"
               showSearch
               style={{ width: '100%' }}
-              placeholder="Chọn nhóm sản phẩm"
+              placeholder="Tìm kiếm theo danh mục"
               allowClear
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={categoryValue}
+              value={paramsFilter.category_id}
               onChange={onChangeCategoryValue}
             >
               {category.map((values, index) => {
@@ -2913,7 +2211,7 @@ export default function Product() {
                 allowClear
                 showSearch
                 style={{ width: '100%' }}
-                placeholder="Lọc theo thời gian"
+                placeholder="Tìm kiếm theo thời gian"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
@@ -2923,8 +2221,7 @@ export default function Product() {
                 onChange={async (value) => {
                   setValueTime(value)
 
-                  //khi search hoac filter thi reset page ve 1
-                  setPage(1)
+                  paramsFilter.page = 1
 
                   //xoa params search date hien tai
                   const p = Object.keys(valueDateTimeSearch)
@@ -2938,16 +2235,10 @@ export default function Product() {
 
                   if (value) {
                     const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-                    getAllProduct({
-                      page: 1,
-                      page_size,
-                      ...paramsFilter,
-                      ...searchDate,
-                    })
+
                     setParamsFilter({ ...paramsFilter, ...searchDate })
                     setValueDateTimeSearch({ ...searchDate })
                   } else {
-                    getAllProduct({ page: 1, page_size, ...paramsFilter })
                     setParamsFilter({ ...paramsFilter })
                     setValueDateTimeSearch({})
                   }
@@ -2964,7 +2255,7 @@ export default function Product() {
                       value={valueDateSearch}
                       onChange={(dates, dateStrings) => {
                         //khi search hoac filter thi reset page ve 1
-                        setPage(1)
+                        paramsFilter.page = 1
 
                         if (isOpenSelect) toggleOpenSelect()
 
@@ -3000,11 +2291,6 @@ export default function Product() {
                           paramsFilter.to_date = dateLast
                         }
 
-                        getAllProduct({
-                          page: 1,
-                          page_size,
-                          ...paramsFilter,
-                        })
                         setParamsFilter({ ...paramsFilter })
                       }}
                       style={{ width: '100%' }}
@@ -3036,20 +2322,22 @@ export default function Product() {
         >
           <Radio.Group
             onChange={(e) => {
-              setPage(1)
-              const checked = e.target.value
-              paramsFilter.merge = checked
+              paramsFilter.page = 1
+              paramsFilter.has_variable = e.target.value
               setParamsFilter({ ...paramsFilter })
-              getAllProduct({ page: 1, page_size, ...paramsFilter })
             }}
-            value={paramsFilter.merge}
+            value={paramsFilter.has_variable}
           >
-            <Radio value={false}>Hiện thị đơn</Radio>
-            <Radio value={true}>Hiện thị gộp</Radio>
+            <Radio value={false}>Hiện thị đơn lẻ</Radio>
+            <Radio value={true}>Hiện thị theo nhóm</Radio>
           </Radio.Group>
-          <Button size="large" onClick={onClickClear} type="primary">
-            Xóa tất cả lọc
-          </Button>
+
+          <Space>
+            <Button size="large" onClick={onClickClear} type="primary">
+              Xóa tất cả lọc
+            </Button>
+            <SettingColumns columns={columns} setColumns={setColumns} />
+          </Space>
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
           <Row style={{ width: '100%', marginBottom: 10 }}>
@@ -3074,7 +2362,7 @@ export default function Product() {
                 onClick={() => modal5VisibleModal(true)}
                 type="primary"
               >
-                Tạo nhóm sản phẩm
+                Tạo danh mục
               </Button>
             </Permission>
             <Permission permission={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
@@ -3084,145 +2372,112 @@ export default function Product() {
                 onClick={() => modal50VisibleModal(true)}
                 type="primary"
               >
-                Cập nhật nhóm sản phẩm
+                Cập nhật danh mục
               </Button>
             </Permission>
           </Row>
         ) : (
           ''
         )}
-        <Row
-          style={{
-            width: '100%',
-            backgroundColor: 'rgb(235, 224, 224)',
-            marginTop: '0.25rem',
-            padding: '0.5rem 1rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <div
-            onClick={() => filterProductByStatus('')}
-            style={{
-              cursor: 'pointer',
-              marginRight: 30,
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: !statusName && 'orange',
-            }}
-          >
-            All &nbsp;
-          </div>
 
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              background: 'rgba(47, 155, 255, 1)',
-              marginRight: 5,
-              marginTop: '0.45rem',
-            }}
-          ></span>
-          <div
-            style={{
-              cursor: 'pointer',
-              color: statusName === 'shipping_stock' && 'rgba(47, 155, 255, 1)',
-              marginRight: 30,
-              fontSize: '1rem',
-              fontWeight: '600',
-            }}
-            onClick={() => filterProductByStatus('shipping_stock')}
+        <Row style={{ width: '100%' }}>
+          <Tabs
+            defaultActiveKey="all"
+            style={{ width: '100%' }}
+            onChange={filterProductByStatus}
           >
-            Shipping stock
-          </div>
-
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              background: '#24A700',
-              marginRight: 5,
-              marginTop: '0.45rem',
-            }}
-          ></span>
-          <div
-            style={{
-              cursor: 'pointer',
-              color: statusName === 'available_stock' && '#24A700',
-              marginRight: 30,
-              fontSize: '1rem',
-              fontWeight: '600',
-            }}
-            onClick={() => filterProductByStatus('available_stock')}
-          >
-            Available stock
-          </div>
-
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              background: '#A06000',
-              marginRight: 5,
-              marginTop: '0.45rem',
-            }}
-          ></span>
-          <div
-            style={{
-              cursor: 'pointer',
-              marginRight: 30,
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: statusName === 'low_stock' && '#A06000',
-            }}
-            onClick={() => filterProductByStatus('low_stock')}
-          >
-            Low stock
-          </div>
-
-          <span
-            style={{
-              width: 12,
-              height: 12,
-              background: 'rgba(254, 146, 146, 1)',
-              marginRight: 5,
-              marginTop: '0.45rem',
-            }}
-          ></span>
-          <div
-            style={{
-              cursor: 'pointer',
-              marginRight: 30,
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: statusName === 'out_stock' && 'rgba(254, 146, 146, 1)',
-            }}
-            onClick={() => filterProductByStatus('out_stock')}
-          >
-            Out stock
-          </div>
+            <Tabs.TabPane tab="Tất Cả" key={STATUS_PRODUCT.all} />
+            <Tabs.TabPane
+              tab="Hàng Vận Chuyển"
+              key={STATUS_PRODUCT.shipping_stock}
+            />
+            <Tabs.TabPane
+              tab="Hàng Khả Dụng"
+              key={STATUS_PRODUCT.available_stock}
+            />
+            <Tabs.TabPane tab="Hàng SL Thấp" key={STATUS_PRODUCT.low_stock} />
+            <Tabs.TabPane tab="Hàng Hết" key={STATUS_PRODUCT.out_stock} />
+          </Tabs>
         </Row>
-
         <div className={styles['view_product_table']}>
           <Table
-            rowSelection={rowSelection}
-            bordered
+            style={{ width: '100%' }}
+            // rowSelection={rowSelection}
             rowKey="_id"
-            columns={columns}
+            columns={columns.map((column) => {
+              if (column.key === 'image')
+                return {
+                  ...column,
+                  width: !paramsFilter.has_variable && 390,
+                  render: (text, record) =>
+                    paramsFilter.has_variable ? (
+                      <ImageProductVariable record={record} />
+                    ) : (
+                      <ImageProductNotVariable record={record} />
+                    ),
+                }
+
+              if (column.key === 'sku')
+                return {
+                  ...column,
+                  sorter: (a, b) => compare(a, b, 'sku'),
+                }
+
+              if (column.key === 'name-product')
+                return {
+                  ...column,
+                  dataIndex: paramsFilter.has_variable ? 'title' : 'name',
+                  sorter: (a, b) =>
+                    compare(a, b, paramsFilter.has_variable ? 'title' : 'name'),
+                }
+
+              if (column.key === 'category')
+                return {
+                  ...column,
+                  render: (text, record) =>
+                    (record._category && record._category.name) ||
+                    record.category,
+                }
+
+              if (column.key === 'sale-price')
+                return {
+                  ...column,
+                  sorter: (a, b) => compare(a, b, 'sale_price'),
+                }
+
+              if (column.key === 'create-date')
+                return {
+                  ...column,
+                  render: (text) => moment(text).format('DD-MM-YYYY HH:mm:ss'),
+                  sorter: (a, b) =>
+                    new Date(a.create_date).getTime() -
+                    new Date(b.create_date).getTime(),
+                }
+
+              if (column.key === 'supplier')
+                return {
+                  ...column,
+                  render: (text, record) =>
+                    (record._supplier && record._supplier.name) ||
+                    record.supplier,
+                }
+
+              return column
+            })}
             loading={loading}
             dataSource={products}
-            scroll={{ x: 'max-content' }}
             size="small"
             pagination={{
               position: ['bottomLeft'],
-              current: page,
+              current: paramsFilter.page,
               defaultPageSize: 20,
               pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
               showQuickJumper: true,
               onChange: (page, pageSize) => {
                 setSelectedRowKeys([])
-                setPage(page)
-                setPageSize(pageSize)
-                getAllProduct({ page, page_size: pageSize, ...paramsFilter })
+                paramsFilter.page = page
+                paramsFilter.page_size = pageSize
+                getAllProduct({ ...paramsFilter })
               },
               total: count,
             }}
@@ -3230,7 +2485,7 @@ export default function Product() {
         </div>
       </div>
       <Modal
-        title="Tạo nhóm sản phẩm"
+        title="Tạo danh mục"
         centered
         width={700}
         footer={null}
@@ -3264,36 +2519,34 @@ export default function Product() {
                 width: 'max-content',
               }}
             >
-              Nhóm sản phẩm:
+              Danh mục:
             </div>
             <div style={{ marginLeft: '1rem', width: '100%' }}>
               <Input
                 size="large"
                 style={{ width: '100%' }}
                 onChange={onChangeGroupProduct}
-                placeholder="Nhập tên nhóm sản phẩm"
+                placeholder="Nhập tên danh mục"
               />
             </div>
           </div>
-          {arrayUpdate &&
-            arrayUpdate.length > 0 &&
-            arrayUpdate.map((values, index) => {
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginBottom: '1rem',
-                    borderBottom: '1px solid rgb(235, 226, 226)',
-                    paddingBottom: '1rem',
-                  }}
-                >
-                  {values.name}
-                </div>
-              )
-            })}
+          {arrayUpdate.map((values, index) => {
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginBottom: '1rem',
+                  borderBottom: '1px solid rgb(235, 226, 226)',
+                  paddingBottom: '1rem',
+                }}
+              >
+                {values.name}
+              </div>
+            )
+          })}
         </div>
         <div
           style={{
@@ -3310,7 +2563,7 @@ export default function Product() {
       </Modal>
 
       <Modal
-        title="Cập nhật nhóm sản phẩm"
+        title="Cập nhật danh mục"
         centered
         width={700}
         footer={null}
@@ -3342,7 +2595,7 @@ export default function Product() {
                 size="large"
                 showSearch
                 style={{ width: '100%' }}
-                placeholder="Chọn nhóm sản phẩm"
+                placeholder="Chọn danh mục"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
@@ -3359,25 +2612,23 @@ export default function Product() {
               </Select>
             </div>
           </div>
-          {arrayUpdate &&
-            arrayUpdate.length > 0 &&
-            arrayUpdate.map((values, index) => {
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginBottom: '1rem',
-                    borderBottom: '1px solid rgb(235, 226, 226)',
-                    paddingBottom: '1rem',
-                  }}
-                >
-                  {values.name}
-                </div>
-              )
-            })}
+          {arrayUpdate.map((values, index) => {
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginBottom: '1rem',
+                  borderBottom: '1px solid rgb(235, 226, 226)',
+                  paddingBottom: '1rem',
+                }}
+              >
+                {values.name}
+              </div>
+            )
+          })}
         </div>
         <div
           style={{
@@ -3397,15 +2648,8 @@ export default function Product() {
         </div>
       </Modal>
 
-      <ProductInfo
-        record={record}
-        modal2Visible={modal2Visible}
-        modal2VisibleModal={modal2VisibleModal}
-        warranty={warranty}
-      />
-
       <Drawer
-        title="Nhóm sản phẩm"
+        title="Danh mục"
         width={1000}
         onClose={onCloseGroup}
         visible={visibleDrawer}
@@ -3479,7 +2723,7 @@ export default function Product() {
                     onClick={() => modal6VisibleModal(true)}
                     type="primary"
                   >
-                    Tạo nhóm sản phẩm
+                    Tạo danh mục
                   </Button>
                 </Permission>
               </div>
@@ -3494,7 +2738,7 @@ export default function Product() {
                   type="primary"
                   style={{ marginRight: '1rem' }}
                 >
-                  Cập nhật nhóm sản phẩm
+                  Cập nhật danh mục
                 </Button>
               </Permission>
               <Permission permissions={[PERMISSIONS.xoa_nhom_san_pham]}>
@@ -3523,7 +2767,6 @@ export default function Product() {
               rowKey="_id"
               loading={loading}
               rowSelection={rowSelection}
-              bordered
               columns={columnsCategory}
               dataSource={category}
               scroll={{ x: 'max-content' }}
@@ -3533,7 +2776,7 @@ export default function Product() {
       </Drawer>
 
       <Modal
-        title="Tạo nhóm sản phẩm"
+        title="Tạo danh mục"
         centered
         width={500}
         footer={null}
@@ -3567,14 +2810,14 @@ export default function Product() {
                 <Form.Item
                   label={
                     <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tên nhóm sản phẩm:
+                      Tên danh mục:
                     </div>
                   }
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="categoryName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input size="large" placeholder="Nhập tên nhóm sản phẩm" />
+                  <Input size="large" placeholder="Nhập tên danh mục" />
                 </Form.Item>
               </div>
             </Col>
@@ -3604,7 +2847,7 @@ export default function Product() {
             >
               <Form.Item>
                 <Button size="large" type="primary" htmlType="submit">
-                  Tạo nhóm
+                  Tạo danh mục
                 </Button>
               </Form.Item>
             </Col>
@@ -3613,7 +2856,7 @@ export default function Product() {
       </Modal>
 
       <Drawer
-        title="Cập nhật nhóm sản phẩm"
+        title="Cập nhật danh mục"
         width={500}
         onClose={onCloseCategoryGroupUpdate}
         visible={visibleCategoryGroupUpdate}
@@ -3669,7 +2912,7 @@ export default function Product() {
                             marginBottom: '0.5rem',
                           }}
                         >
-                          <b style={{ color: 'red' }}>*</b>Tên nhóm sản phẩm:
+                          <b style={{ color: 'red' }}>*</b>Tên danh mục:
                         </div>
                         <InputName />
                       </div>

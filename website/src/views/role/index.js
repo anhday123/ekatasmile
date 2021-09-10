@@ -1,6 +1,6 @@
 import styles from './../role/role.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION, PERMISSIONS } from './../../consts/index'
+import { ACTION, PERMISSIONS, ROLE_DEFAULT } from 'consts'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -33,6 +33,7 @@ export default function Role() {
   const { TabPane } = Tabs
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
+  console.log(dataUser)
   const [visible, setVisible] = useState(false)
   const [permission, setPermission] = useState([])
 
@@ -455,7 +456,15 @@ export default function Role() {
               return (
                 <Panel
                   extra={
-                    <div onClick={(e) => e.stopPropagation()}>
+                    <div
+                      style={{
+                        display:
+                          Object.keys(ROLE_DEFAULT).includes(
+                            dataUser.data && dataUser.data._role.name
+                          ) && 'none',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Switch
                         defaultChecked={values.active}
                         onChange={(e) =>
@@ -486,7 +495,7 @@ export default function Role() {
                               e.stopPropagation()
                             }}
                           >
-                            {p.pParent}
+                            view_{p.pParent}
                           </Checkbox>
                         ),
                         key: p.pParent,

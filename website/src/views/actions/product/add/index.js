@@ -4,6 +4,8 @@ import styles from './../add/add.module.scss'
 import { ACTION } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { CKEditor } from 'ckeditor4-react'
+import parse from 'html-react-parser'
 
 //antd
 import {
@@ -23,7 +25,7 @@ import {
   Space,
   Modal,
   Affix,
-  Typography,
+  Switch,
 } from 'antd'
 
 //icons
@@ -32,6 +34,9 @@ import {
   InboxOutlined,
   CloseOutlined,
   PlusOutlined,
+  EditOutlined,
+  FileImageOutlined,
+  DollarOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -41,8 +46,6 @@ import { apiAllInventory } from 'apis/inventory'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAddProduct } from 'apis/product'
-
-const { Text } = Typography
 
 export default function ProductAdd() {
   const [supplier, setSupplier] = useState([])
@@ -66,6 +69,10 @@ export default function ProductAdd() {
   const [helpTextImage, setHelpTextImage] = useState('')
   const [imagesProduct, setImagesProduct] = useState([])
   const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [description, setDescription] = useState('')
+  const [productIsHaveDescription, setProductIsHaveDescription] =
+    useState(false)
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -167,6 +174,11 @@ export default function ProductAdd() {
 
     if (!isValidated) return
 
+    if (isProductHasVariants && !variants.length) {
+      notification.error({ message: 'Vui lòng nhập ít nhất một phiên bản' })
+      return
+    }
+
     //validated images product
     if (imagesProduct.length === 0) {
       setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
@@ -205,15 +217,20 @@ export default function ProductAdd() {
 
       let body = {
         ...formProduct,
-        length: formProduct.length || '',
-        width: formProduct.width || '',
-        height: formProduct.height || '',
-        weight: formProduct.weight || '',
-        unit: formProduct.unit || '',
+        sale_price: isProductHasVariants ? formProduct.sale_price : '',
+        base_price: isProductHasVariants ? formProduct.base_price : '',
+        import_price: isProductHasVariants ? formProduct.import_price : '',
+        quantity: isProductHasVariants ? formProduct.quantity : '',
+        length: isInputInfoProduct ? formProduct.length || '' : '',
+        width: isInputInfoProduct ? formProduct.width || '' : '',
+        height: isInputInfoProduct ? formProduct.height || '' : '',
+        weight: isInputInfoProduct ? formProduct.weight || '' : '',
+        unit: isInputInfoProduct ? formProduct.unit || '' : '',
         warranty: idsWarranty,
         barcode: '',
         image: images || [],
         has_variable: isProductHasVariants,
+        description: productIsHaveDescription ? description || '' : '',
       }
 
       if (isProductHasVariants) {
@@ -352,10 +369,6 @@ export default function ProductAdd() {
           size="large"
           defaultValue={value}
           min={0}
-          formatter={(value) =>
-            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          }
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           onBlur={() => {
             let variantsNew = [...variants]
             const index = variantsNew.findIndex(
@@ -383,10 +396,6 @@ export default function ProductAdd() {
           size="large"
           defaultValue={value}
           min={0}
-          formatter={(value) =>
-            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          }
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           onBlur={() => {
             let variantsNew = [...variants]
             const index = variantsNew.findIndex(
@@ -414,10 +423,6 @@ export default function ProductAdd() {
           size="large"
           defaultValue={value}
           min={0}
-          formatter={(value) =>
-            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          }
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           onBlur={() => {
             let variantsNew = [...variants]
             const index = variantsNew.findIndex(
@@ -461,8 +466,8 @@ export default function ProductAdd() {
     }, [visible])
     return (
       <>
-        <Button size="large" onClick={toggle}>
-          Chọn ảnh
+        <Button size="large" onClick={toggle} icon={<FileImageOutlined />}>
+          Chỉnh sửa ảnh
         </Button>
         <Modal
           visible={visible}
@@ -520,7 +525,7 @@ export default function ProductAdd() {
 
     return (
       <>
-        <Button size="large" onClick={toggle}>
+        <Button size="large" onClick={toggle} icon={<EditOutlined />}>
           Nhập số lượng sản phẩm
         </Button>
         <Modal
@@ -578,7 +583,7 @@ export default function ProductAdd() {
 
     return (
       <>
-        <Button size="large" onClick={toggle}>
+        <Button size="large" onClick={toggle} icon={<DollarOutlined />}>
           Nhập giá
         </Button>
         <Modal visible={visible} onCancel={toggle} onOk={edit} title="Nhập giá">
@@ -590,10 +595,6 @@ export default function ProductAdd() {
                 className="br-15__input"
                 size="large"
                 min={0}
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 onChange={(value) => setValueSalePrice(value)}
                 style={{ width: '100%' }}
               />
@@ -606,10 +607,6 @@ export default function ProductAdd() {
                 className="br-15__input"
                 size="large"
                 min={0}
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 onChange={(value) => setValueBasePrice(value)}
                 style={{ width: '100%' }}
               />
@@ -622,10 +619,6 @@ export default function ProductAdd() {
                 className="br-15__input"
                 size="large"
                 min={0}
-                formatter={(value) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 onChange={(value) => setValueImportPrice(value)}
                 style={{ width: '100%' }}
               />
@@ -712,11 +705,17 @@ export default function ProductAdd() {
     apiAllCategoryData()
   }, [])
 
+  //get width device
+  useEffect(() => {
+    if (window.innerWidth < 768) setIsMobile(true)
+    else setIsMobile(false)
+  }, [])
+
   useEffect(() => {
     addValueVariant()
   }, [attributes])
 
-  return (
+  return !isMobile ? (
     <div className={styles['product_manager']}>
       <Affix offsetTop={10} style={{ width: '100%' }}>
         <Row
@@ -773,66 +772,31 @@ export default function ProductAdd() {
               <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
             </Form.Item>
           </Col>
+
           <Col xs={24} sm={24} md={7} lg={7} xl={7}>
             <Form.Item
-              label="Số lượng sản phẩm"
-              name="quantity"
-              rules={[
-                { required: true, message: 'Vui lòng nhập số lượng sản phẩm!' },
-              ]}
+              label="Danh mục"
+              name="category"
+              rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
             >
-              <InputNumber
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
                 size="large"
-                min={1}
-                placeholder="Nhập số lượng sản phẩm"
                 style={{ width: '100%' }}
-                className="br-15__input"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Giá bán"
-              name="sale_price"
-              rules={[{ required: true, message: 'Vui lòng nhập giá bán!' }]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá bán"
-                style={{ width: '100%' }}
-                className="br-15__input"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Giá cơ bản"
-              name="base_price"
-              rules={[{ required: true, message: 'Vui lòng nhập giá cơ bản!' }]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá cơ bản"
-                style={{ width: '100%' }}
-                className="br-15__input"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Giá nhập"
-              name="import_price"
-              rules={[{ required: true, message: 'Vui lòng nhập giá nhập!' }]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá nhập"
-                style={{ width: '100%' }}
-                className="br-15__input"
-              />
+                placeholder="Chọn danh mục"
+              >
+                {category.map((values, index) => {
+                  return (
+                    <Select.Option value={values.category_id} key={index}>
+                      {values.name}
+                    </Select.Option>
+                  )
+                })}
+              </Select>
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={7} lg={7} xl={7}>
@@ -863,68 +827,334 @@ export default function ProductAdd() {
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Loại kho"
-              name="warehouse"
-              rules={[{ required: true, message: 'Vui lòng chọn kho!' }]}
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+            style={{ marginTop: 2, marginBottom: 15 }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
             >
-              <Select
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Chọn loại kho"
-              >
-                {warehouse.map((values, index) => {
-                  return (
-                    <Select.Option value={values.warehouse_id} key={index}>
-                      {values.name}
-                    </Select.Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
+              <Switch
+                checked={productIsHaveDescription}
+                onChange={(checked) => setProductIsHaveDescription(checked)}
+                style={{ marginRight: 5 }}
+              />
+              Sản phẩm có mô tả
+            </div>
+            {productIsHaveDescription && (
+              <CKEditor
+                // initData={location.state && parse(location.state.description)}
+                onChange={(e) => setDescription(e.editor.getData())}
+              />
+            )}
           </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+          <Row
+            align="middle"
+            style={{ width: '100%', marginTop: 15, marginBottom: 15 }}
+          >
+            <Switch
+              style={{ marginRight: 5 }}
+              checked={isProductHasVariants}
+              onChange={(checked) => setIsProductHasVariants(checked)}
+            />
+            Sản phẩm có nhiều phiên bản
+          </Row>
+          <div
+            style={{
+              display: isProductHasVariants ? '' : 'none',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                marginBottom: 16,
+                border: '1px solid #f0f0f0',
+                padding: 16,
+                width: '100%',
+              }}
+            >
+              {attributes.map((e, index) => {
+                const RenderInput = () => (
+                  <Input
+                    size="large"
+                    placeholder="Nhập tên thuộc tính"
+                    defaultValue={e.option}
+                    onBlur={(e) => {
+                      attributes[index].option = e.target.value
+                    }}
+                    style={{ width: '100%' }}
+                  />
+                )
+                return (
+                  <Row
+                    style={{ width: '100%', marginBottom: 15 }}
+                    justify="space-between"
+                    align="middle"
+                  >
+                    <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                      <span style={{ marginBottom: 0 }}>Tên thuộc tính</span>
+                      <RenderInput />
+                    </Col>
+                    <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                      <span style={{ marginBottom: 0 }}>Giá trị</span>
+                      <Select
+                        mode="tags"
+                        size="large"
+                        style={{ width: '100%' }}
+                        placeholder="Nhập giá trị"
+                        value={e.values.map((v) => v)}
+                        onDeselect={(v) => {
+                          //remove tag
+                          let items = [...attributes]
+                          const indexRemove = e.values.findIndex((f) => f === v)
+                          if (indexRemove !== -1) {
+                            items[index].values.splice(indexRemove, 1)
+                            setAttributes([...items])
+                          }
+                        }}
+                        onSelect={(e) => {
+                          //add tag
+                          let items = [...attributes]
+
+                          //check value add này đã tồn tại chưa
+                          for (let i = 0; i < items.length; ++i) {
+                            for (let j = 0; j < items[i].values.length; ++j) {
+                              if (items[i].values[j] === e) {
+                                notification.error({
+                                  message: 'Giá trị đã có!',
+                                })
+                                return
+                              }
+                            }
+                          }
+
+                          //trường hợp nhập nhiều variant bởi dấu phẩy
+                          //ví dụ: color, size, quantity
+                          const splitValue = e.split(',')
+
+                          splitValue.map((v) => {
+                            if (v) items[index].values.push(v.trim())
+                          })
+                          setAttributes([...items])
+                        }}
+                        optionLabelProp="label"
+                      ></Select>
+                    </Col>
+                    <Popconfirm
+                      title="Bạn có muốn xoá thuộc tính này?"
+                      onConfirm={() => removeAttribute(index)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <CloseOutlined
+                        style={{
+                          cursor: 'pointer',
+                          color: 'red',
+                          fontSize: 18,
+                          marginTop: 22,
+                          marginLeft: 5,
+                          display: attributes.length === 1 && 'none',
+                        }}
+                      />
+                    </Popconfirm>
+                    <Col xs={24} sm={24} md={5} lg={5} xl={5}>
+                      <Tooltip title="Tối đa tạo 2 thuộc tính">
+                        <Button
+                          size="large"
+                          style={{
+                            marginTop: 17,
+                            display: attributes.length === 2 && 'none',
+                          }}
+                          onClick={addAttribute}
+                        >
+                          Thêm thuộc tính khác
+                        </Button>
+                      </Tooltip>
+                    </Col>
+                  </Row>
+                )
+              })}
+            </div>
+
+            <div
+              style={{
+                marginBottom: 16,
+                border: '1px solid #f0f0f0',
+                width: '100%',
+              }}
+            >
+              <div
+                style={{
+                  borderBottom: '1px solid #f0f0f0',
+                  width: '100%',
+                }}
+              >
+                <div style={{ width: '100%', padding: 16 }}>
+                  <h3 style={{ marginBottom: 0, fontWeight: 700 }}>
+                    Phiên bản
+                  </h3>
+                </div>
+              </div>
+              <div
+                style={{
+                  marginLeft: 10,
+                  marginTop: 10,
+                  marginBottom: 20,
+                  display: !selectRowKeyVariant.length && 'none',
+                }}
+              >
+                <Space wrap>
+                  <UploadAllVariant />
+                  <EditQuantity />
+                  <EditPrice />
+                </Space>
+              </div>
+              <Table
+                rowKey="title"
+                columns={columnsVariant}
+                dataSource={variants}
+                pagination={false}
+                rowSelection={{
+                  selectedRowKeys: selectRowKeyVariant,
+                  onChange: (selectedRowKeys, selectedRows) => {
+                    setSelectRowKeyVariant(selectedRowKeys)
+                  },
+                }}
+                size="small"
+                style={{ width: '100%' }}
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
+          </div>
+
+          <Col
+            xs={24}
+            sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{ display: isProductHasVariants && 'none' }}
+          >
             <Form.Item
-              label="Loại sản phẩm"
-              name="category"
+              label="Giá bán"
+              name="sale_price"
               rules={[
-                { required: true, message: 'Vui lòng chọn loại sản phẩm!' },
+                {
+                  required: !isProductHasVariants && true,
+                  message: 'Vui lòng nhập giá bán!',
+                },
               ]}
             >
-              <Select
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
+              <InputNumber
                 size="large"
+                min={0}
+                placeholder="Nhập giá bán"
                 style={{ width: '100%' }}
-                placeholder="Chọn loại sản phẩm"
-              >
-                {category.map((values, index) => {
-                  return (
-                    <Select.Option value={values.category_id} key={index}>
-                      {values.name}
-                    </Select.Option>
-                  )
-                })}
-              </Select>
+                className="br-15__input"
+              />
             </Form.Item>
           </Col>
-          <div style={{ marginBottom: 10 }}>
-            <Checkbox
-              checked={isInputInfoProduct}
-              onChange={(e) => setIsInputInfoProduct(e.target.checked)}
+          <Col
+            xs={24}
+            sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{ display: isProductHasVariants && 'none' }}
+          >
+            <Form.Item
+              label="Giá cơ bản"
+              name="base_price"
+              rules={[
+                {
+                  required: !isProductHasVariants && true,
+                  message: 'Vui lòng nhập giá cơ bản!',
+                },
+              ]}
             >
-              Thông số sản phẩm (không bắt buộc)
-            </Checkbox>
-          </div>
+              <InputNumber
+                size="large"
+                min={0}
+                placeholder="Nhập giá cơ bản"
+                style={{ width: '100%' }}
+                className="br-15__input"
+              />
+            </Form.Item>
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{ display: isProductHasVariants && 'none' }}
+          >
+            <Form.Item
+              label="Giá nhập"
+              name="import_price"
+              rules={[
+                {
+                  required: !isProductHasVariants && true,
+                  message: 'Vui lòng nhập giá nhập!',
+                },
+              ]}
+            >
+              <InputNumber
+                size="large"
+                min={0}
+                placeholder="Nhập giá nhập"
+                style={{ width: '100%' }}
+                className="br-15__input"
+              />
+            </Form.Item>
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{ display: isProductHasVariants && 'none' }}
+          >
+            <Form.Item
+              label="Số lượng sản phẩm"
+              name="quantity"
+              rules={[
+                {
+                  required: !isProductHasVariants && true,
+                  message: 'Vui lòng nhập số lượng sản phẩm!',
+                },
+              ]}
+            >
+              <InputNumber
+                size="large"
+                min={1}
+                placeholder="Nhập số lượng sản phẩm"
+                style={{ width: '100%' }}
+                className="br-15__input"
+              />
+            </Form.Item>
+          </Col>
+
+          <Row
+            align="middle"
+            style={{ marginBottom: 5, marginTop: 10, width: '100%' }}
+          >
+            <Switch
+              checked={isInputInfoProduct}
+              onChange={(checked) => setIsInputInfoProduct(checked)}
+              style={{ marginRight: 5 }}
+            />
+            Thông số sản phẩm
+          </Row>
           <Row
             justify="space-between"
             align="middle"
@@ -1001,26 +1231,14 @@ export default function ProductAdd() {
                 <InboxOutlined />
               </p>
               <p className="ant-upload-text">
-                Click or drag file to this area to upload
+                Nhấp hoặc kéo tệp vào khu vực này để tải lên
               </p>
               <p className="ant-upload-hint">
-                Support for a .PNG, .JPG, .TIFF, .EPS image.
+                Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
               </p>
             </Upload.Dragger>
             <span style={{ color: 'red' }}>{helpTextImage}</span>
           </Col>
-          <Row
-            justify="space-between"
-            style={{ width: '100%', marginTop: 15, marginBottom: 15 }}
-          >
-            <div style={{ fontWeight: 700, fontSize: 15 }}>Thuộc tính</div>
-            <Checkbox
-              checked={isProductHasVariants}
-              onChange={(e) => setIsProductHasVariants(e.target.checked)}
-            >
-              Sản phẩm có nhiều variant
-            </Checkbox>
-          </Row>
         </Row>
       </Form>
 
@@ -1225,6 +1443,38 @@ export default function ProductAdd() {
           </Select>
         </Col>
       </Row>
+    </div>
+  ) : (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 0,
+        backgroundColor: '#5D6FE5',
+        zIndex: 99999,
+      }}
+    >
+      <h2 style={{ textAlign: 'center', color: 'white' }}>
+        Chức năng này không hỗ trợ thao tác trên điện thoại
+      </h2>
+      <Button
+        type="primary"
+        style={{
+          backgroundColor: 'black',
+          color: 'white',
+          borderColor: 'black',
+        }}
+        onClick={() => history.goBack()}
+        size="large"
+      >
+        Quay lại
+      </Button>
     </div>
   )
 }

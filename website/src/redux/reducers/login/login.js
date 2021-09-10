@@ -9,7 +9,7 @@ const initialState = {
   branchName: '',
   role: '',
 }
-var login = (state = initialState, action) => {
+let login = (state = initialState, action) => {
   switch (action.type) {
     case ACTION.LOGIN: {
       var data = decodeToken(action.data.accessToken)

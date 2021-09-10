@@ -74,10 +74,11 @@ const UI = (props) => {
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
   const login = useSelector((state) => state.login)
+  const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
     ? decodeToken(localStorage.getItem('accessToken'))
     : {}
-  // console.log('datauser', dataUser)
+
   const [modal2Visible, setModal2Visible] = useState(false)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
@@ -618,13 +619,8 @@ const UI = (props) => {
     }
   }
 
-  const changeBranch = async (value) => {
-    try {
-      const res = await updateUser({ branch_id: value }, dataUser.user_id)
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  const changeBranch = async (value) =>
+    dispatch({ type: 'SET_BRANCH_ID', data: value })
 
   useEffect(() => {
     getInfoUser()
@@ -881,7 +877,7 @@ const UI = (props) => {
         trigger={null}
         collapsible
         width={isMobile ? '100%' : 240}
-        collapsedWidth={isMobile ? 0 : 150}
+        collapsedWidth={isMobile ? 0 : 160}
         style={{
           backgroundColor: 'white',
           height: '100%',
@@ -1012,7 +1008,7 @@ const UI = (props) => {
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   onChange={changeBranch}
-                  defaultValue={dataUser && dataUser.data.branch_id}
+                  value={branchId}
                 >
                   {listBranch.map((e, index) => (
                     <Option value={e.branch_id} key={index}>
