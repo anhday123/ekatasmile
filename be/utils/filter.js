@@ -51,8 +51,7 @@ let dates = (startDate, endDate, filterArray, dateField) => {
     // nằm trong khoảng thời gian từ startDate đến endDate
     filterArray = filterArray.filter((item) => {
         return (
-            new Date(item[dateField]) - new Date(startDate) >= 0 &&
-            new Date(item[dateField]) - new Date(endDate) <= 0
+            new Date(item[dateField]) - new Date(startDate) >= 0 && new Date(item[dateField]) - new Date(endDate) <= 0
         );
     });
     return filterArray;

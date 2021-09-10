@@ -29,45 +29,7 @@ import { compare, tableSum } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 50,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
 function formatCash(str) {
   return str
     .toString()
@@ -78,7 +40,6 @@ function formatCash(str) {
     })
 }
 export default function Promotion() {
-  const { Search } = Input
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [visible, setVisible] = useState(false)
@@ -170,39 +131,6 @@ export default function Promotion() {
       },
     },
   ]
-
-  const dataPromotion = []
-  for (let i = 0; i < 46; i++) {
-    dataPromotion.push({
-      key: i,
-      stt: i,
-      promotionProgram: `Khuyến mãi ${i}`,
-      promotionType: `KM ${i}`,
-      promotionValue: `Giá trị ${i}`,
-      promotionQuantity: `${i}`,
-      description: `Mô tả ${i}`,
-      action: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div onClick={showDrawer} style={{ marginRight: '0.5rem' }}>
-            <EditOutlined
-              style={{
-                fontSize: '1.25rem',
-                cursor: 'pointer',
-                color: '#0500E8',
-              }}
-            />
-          </div>
-        </div>
-      ),
-    })
-  }
 
   const openNotification = (e) => {
     notification.success({
@@ -419,17 +347,31 @@ export default function Promotion() {
                 <Table.Summary fixed>
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
+                      <Text>Tổng:</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>
-                        Tổng số lượng khuyến mãi:{' '}
+                        Phần trăm:{' '}
+                        {pageData.reduce(
+                          (a, b) => (a += b.type == 'percent' ? b.value : 0),
+                          0
+                        )}
+                        %
+                        <br />
+                        Giá trị:{' '}
+                        {pageData.reduce(
+                          (a, b) => (a += b.type !== 'percent' ? b.value : 0),
+                          0
+                        )}{' '}
+                        VND
+                      </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>
+                        Số lượng khuyến mãi:{' '}
                         {formatCash(tableSum(pageData, 'limit.amount'))}
                       </Text>
                     </Table.Summary.Cell>
@@ -783,71 +725,6 @@ export default function Promotion() {
             </Form.Item>
           </div>
         </Form>
-
-        <Modal
-          title="Danh sách khách hàng"
-          centered
-          footer={null}
-          width={1000}
-          visible={modal2Visible}
-          onOk={() => modal2VisibleModal(false)}
-          onCancel={() => modal2VisibleModal(false)}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'column',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search placeholder="Tìm kiếm khách hàng" enterButton />
-            </div>
-            <div
-              style={{
-                marginTop: '1rem',
-                border: '1px solid rgb(209, 191, 191)',
-                width: '100%',
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              {' '}
-              <Table
-                size="small"
-                scroll={{ y: 500 }}
-                rowSelection={rowSelection}
-                columns={columns}
-                dataSource={data}
-              />
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                marginTop: '1rem',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              {/* <div onClick={() => modal2VisibleModal(false)} style={{ marginRight: '1rem' }}><Button style={{ width: '7.5rem' }} type="primary" danger>Hủy</Button></div> */}
-              <div onClick={() => modal2VisibleModal(false)}>
-                <Button type="primary" style={{ width: '7.5rem' }}>
-                  Xác nhận
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Modal>
       </Drawer>
       <Drawer
         visible={showCreate}

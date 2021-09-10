@@ -11,8 +11,7 @@ let otp = async (req, res, next) => {
             let _user = await client.db(DB).collection(`Users`).findOne({
                 username: _username,
             });
-            if (!_user || _user.otp_code != true)
-                throw new Error(`400 ~ Unauthorized!`);
+            if (!_user || _user.otp_code != true) throw new Error(`400 ~ Unauthorized!`);
             req[`otpData`] = _user;
             next();
         } else {

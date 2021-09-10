@@ -1,0 +1,13 @@
+.order-detail{
+    margin: 1em;
+    padding: 1em;
+    border-radius: 1.25em;
+    background-color: #fff;
+}
+@media screen and (max-width: 768px) {
+    .order-detail{
+        margin: 0;
+        padding: 15px;
+        border-radius: 0;
+    }
+}

@@ -3,15 +3,23 @@ import { Col, Row, Input, DatePicker, Table } from 'antd'
 import { compare, formatCash, tableSum } from 'utils'
 import moment from 'moment'
 import { useState } from 'react'
-
+import { ROUTES } from 'consts'
+import { Link } from 'react-router-dom'
 export default function OrderReturn(props) {
   const [orderPaidData, setOrderPaidData] = useState([1, 2, 3])
   const columns = [
     {
       title: 'Mã đơn hàng',
       dataIndex: '',
-      render: (data) => (
-        <span style={{ color: '#0037F9', cursor: 'pointer' }}>SON00019</span>
+      render: (data, record) => (
+        <Link
+          to={{
+            pathname: ROUTES.CUSTOMER_ORDER_DETAIL,
+            state: { code: 'SON00019' },
+          }}
+        >
+          SON00019
+        </Link>
       ),
       sorter: (a, b) => compare(a, b, 'code'),
     },
@@ -64,7 +72,7 @@ export default function OrderReturn(props) {
   ]
   return (
     <>
-      <Row gutter={30} style={{ marginBottom: 20 }}>
+      <Row gutter={[30, 20]} style={{ marginBottom: 20 }}>
         <Col xs={24} lg={8}>
           <Input
             size="large"
@@ -75,13 +83,14 @@ export default function OrderReturn(props) {
         <Col xs={24} lg={8}>
           <DatePicker.RangePicker
             size="large"
-            style={{ borderRadius: '1em' }}
+            style={{ borderRadius: '1em', width: '100%' }}
           />
         </Col>
       </Row>
       <Table
         columns={columns}
         dataSource={orderPaidData}
+        scroll={{ x: 'max-content' }}
         summary={(pageData) => (
           <Table.Summary.Row style={{ fontWeight: 500 }}>
             <Table.Summary.Cell>Tổng</Table.Summary.Cell>

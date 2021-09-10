@@ -118,7 +118,7 @@ export default function ShippingProduct() {
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a.name, b.name),
+      sorter: (a, b) => compareCustom(a._from.name, b._from.name),
     },
     {
       title: 'Trạng thái',
@@ -164,7 +164,7 @@ export default function ShippingProduct() {
                   cursor: 'pointer',
                 }}
               >
-                Đang hủy
+                Đã hủy
               </div>
             )
           }
@@ -203,7 +203,7 @@ export default function ShippingProduct() {
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a.name, b.name),
+      sorter: (a, b) => compareCustom(a._to.name, b._to.name),
     },
     {
       title: 'Ngày nhận',

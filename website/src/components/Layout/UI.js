@@ -156,12 +156,12 @@ const UI = (props) => {
           title: 'Quản lý sản phẩm',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
-        // {
-        //   icon: <BankOutlined />,
-        //   path: ROUTES.INVENTORY,
-        //   title: 'Quản lý kho',
-        //   permissions: [PERMISSIONS.quan_li_kho],
-        // },
+        {
+          icon: <BankOutlined />,
+          path: ROUTES.INVENTORY,
+          title: 'Quản lý kho',
+          permissions: [PERMISSIONS.quan_li_kho],
+        },
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
@@ -194,12 +194,12 @@ const UI = (props) => {
       permissions: [PERMISSIONS.khuyen_mai],
       icon: <TagsOutlined />,
     },
-    // {
-    //   path: ROUTES.PRODUCT_CHECK,
-    //   title: 'Kiểm hàng cuối ngày',
-    //   permissions: [PERMISSIONS.kiem_hang_cuoi_ngay],
-    //   icon: <AlertOutlined />,
-    // },
+    {
+      path: ROUTES.POINT,
+      title: 'Tích điểm',
+      permissions: [],
+      icon: <AlertOutlined />,
+    },
     {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
@@ -619,8 +619,10 @@ const UI = (props) => {
     }
   }
 
-  const changeBranch = async (value) =>
+  const changeBranch = async (value) => {
     dispatch({ type: 'SET_BRANCH_ID', data: value })
+    updateUser({ branch_id: value }, user.user_id)
+  }
 
   useEffect(() => {
     getInfoUser()
@@ -1008,7 +1010,7 @@ const UI = (props) => {
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   onChange={changeBranch}
-                  value={branchId}
+                  value={branchId || user.branch_id}
                 >
                   {listBranch.map((e, index) => (
                     <Option value={e.branch_id} key={index}>

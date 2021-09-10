@@ -1,7 +1,6 @@
 import styles from './../customer/customer.module.scss'
 import React, { useEffect, useState, useRef } from 'react'
 import {
-  Switch,
   Input,
   Button,
   Row,
@@ -11,7 +10,8 @@ import {
   Table,
   notification,
   Drawer,
-  Typography,
+  Modal,
+  Checkbox,
 } from 'antd'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
@@ -21,7 +21,7 @@ import CustomerUpdate from '../actions/customer/update'
 import { PERMISSIONS, ROUTES } from 'consts'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
-import { compare, compareCustom, tableSum } from 'utils'
+import { compare, compareCustom, formatCash, tableSum } from 'utils'
 import { Link } from 'react-router-dom'
 
 const { Option } = Select
@@ -29,7 +29,9 @@ const { RangePicker } = DatePicker
 
 export default function Customer() {
   const typingTimeoutRef = useRef(null)
-
+  const [showCustomColums, setShowCustomColumns] = useState(false)
+  const [defaultColumns, setDefaultColumns] = useState([0, 1, 2, 3, 4, 5, 6])
+  const [displayColumns, setDisplayColumns] = useState([])
   const [page, setPage] = useState(1)
   const [page_size, setPage_size] = useState(20)
   const [countCustomer, setCountCustomer] = useState(0)
@@ -91,28 +93,11 @@ export default function Customer() {
     setParamsFilter({ ...paramsFilter })
   }
 
-  const changeActiveCustomer = async (id, status) => {
-    try {
-      setTableLoading(true)
-      const res = await updateCustomer(id, { active: status })
-      if (res.status === 200) {
-        if (status) {
-          notification.success({ message: 'Kích hoạt khách hàng thành công' })
-        } else {
-          notification.success({ message: 'Vô hiệu hóa khách hàng thành công' })
-        }
-      }
-      setTableLoading(false)
-    } catch (e) {
-      console.log(e)
-      setTableLoading(false)
-    }
-  }
-
   const columnsPromotion = [
     {
       title: 'Mã khách hàng',
       dataIndex: 'code',
+      key: 0,
       width: 150,
       render(data, record) {
         return (
@@ -132,6 +117,7 @@ export default function Customer() {
     {
       title: 'Tên khách hàng',
       width: 150,
+      key: 1,
       render(data) {
         return data.first_name + ' ' + data.last_name
       },
@@ -144,18 +130,21 @@ export default function Customer() {
     {
       title: 'Loại khách hàng',
       dataIndex: 'type',
+      key: 2,
       width: 150,
       sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
+      key: 3,
       width: 150,
       sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Tổng số đơn hàng',
       dataIndex: '',
+      key: 4,
       render: (data) => (
         <Link to={ROUTES.CUSTOMER_ORDER_LIST} style={{ fontWeight: 500 }}>
           5
@@ -166,29 +155,80 @@ export default function Customer() {
     {
       title: 'điểm tích lũy',
       dataIndex: '',
+      key: 5,
       render: (data) => 5,
       sorter: (a, b) => compare(a, b, ''),
     },
     {
       title: 'Số điểm đã dùng',
       dataIndex: '',
+      key: 6,
       render: (data) => 5,
       sorter: (a, b) => compare(a, b, ''),
     },
-    // {
-    //   title: 'Trạng thái',
-    //   dataIndex: 'active',
-    //   width: 120,
-    //   render(data, record) {
-    //     return (
-    //       <Switch
-    //         defaultChecked={data}
-    //         onChange={(e) => changeActiveCustomer(record.customer_id, e)}
-    //       />
-    //     )
-    //   },
-    // },
+    {
+      title: 'Tổng chi tiêu tại cửa hàng',
+      dataIndex: '',
+      key: 7,
+      render: (data) => formatCash(1000000),
+      sorter: (a, b) => compare(a, b, ''),
+    },
+    {
+      title: 'Ngày tạo',
+      key: 8,
+      dataIndex: 'create_date',
+      render: (data) => moment(data).format('DD/MM/YYYY'),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
+    },
+    {
+      title: 'Ngày sinh',
+      key: 9,
+      dataIndex: 'birthday',
+      render: (data) => moment(data).format('DD/MM/YYYY'),
+      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
+    },
+    {
+      title: 'Địa chỉ',
+      key: 10,
+      dataIndex: 'address',
+      sorter: (a, b) => compare(a, b, 'address'),
+    },
   ]
+
+  const handleChangeColumns = () => {
+    let tmp = []
+    defaultColumns.sort(compareCustom).forEach((e) => {
+      tmp.push(columnsPromotion[e])
+    })
+    setDisplayColumns(tmp)
+  }
+
+  const deleteMultiCustomer = async () => {
+    try {
+      setTableLoading(true)
+      const res = await Promise.all(
+        selectedRowKeys.map((e) => {
+          return updateCustomer(e, { active: false })
+        })
+      )
+      if (res.reduce((a, b) => a && b, true)) {
+        notification.success({
+          message: 'Thành công',
+          description: 'Xóa khách hàng thành công',
+        })
+        getAllCustomer()
+      }
+      setTableLoading(false)
+    } catch (e) {
+      notification.error({
+        message: 'Thất bại',
+        description: 'Xóa khách hàng thất bại',
+      })
+      setTableLoading(false)
+      console.log(e)
+    }
+  }
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -206,7 +246,7 @@ export default function Customer() {
       const res = await getCustomer(params)
 
       if (res.status === 200 && res.data.success) {
-        setCustomerList(res.data.data)
+        setCustomerList(res.data.data.filter((e) => e.active))
         setCountCustomer(res.data.count)
       }
       setTableLoading(false)
@@ -236,6 +276,9 @@ export default function Customer() {
   }
   useEffect(() => {
     getAllCustomer({ page, page_size, ...paramsFilter })
+  }, [])
+  useEffect(() => {
+    handleChangeColumns()
   }, [])
   return (
     <>
@@ -338,38 +381,48 @@ export default function Customer() {
             </div>
           </Col>
         </Row>
-        <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button onClick={clearFilter} type="primary" size="large">
-            Xóa bộ lọc
-          </Button>
-          <Button
-            onClick={clearFilter}
-            style={{ marginLeft: 15 }}
-            type="primary"
-            size="large"
-          >
-            Điều chỉnh cột
-          </Button>
-        </Row>
-        <Row style={{ width: '100%', marginTop: 20 }}>
-          {selectedRowKeys && selectedRowKeys.length > 0 && (
+        <Row
+          style={{ width: '100%', marginTop: 20 }}
+          gutter={[10, 20]}
+          justify="space-between"
+        >
+          {(selectedRowKeys && selectedRowKeys.length > 0 && (
             <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-              <>
+              <Col>
                 <Button size="large" type="primary" onClick={openUpdateDrawer}>
                   Cập nhật
                 </Button>
                 <Button
                   size="large"
                   type="primary"
-                  style={{ background: 'red', border: 'none', marginLeft: 15 }}
-                  onClick={openUpdateDrawer}
+                  style={{
+                    background: 'red',
+                    border: 'none',
+                    marginLeft: 15,
+                    width: 95,
+                  }}
+                  onClick={deleteMultiCustomer}
                 >
                   Xóa
                 </Button>
-              </>
+              </Col>
             </Permission>
-          )}
+          )) || <Col></Col>}
+          <Col>
+            <Button onClick={clearFilter} type="primary" size="large">
+              Xóa bộ lọc
+            </Button>
+            <Button
+              onClick={() => setShowCustomColumns(true)}
+              style={{ marginLeft: 15 }}
+              type="primary"
+              size="large"
+            >
+              Điều chỉnh cột
+            </Button>
+          </Col>
         </Row>
+        <Row style={{ width: '100%', marginTop: 20 }}></Row>
 
         <div
           style={{
@@ -380,11 +433,12 @@ export default function Customer() {
         >
           <Table
             rowSelection={rowSelection}
-            rowKey="_id"
+            rowKey="customer_id"
             loading={tableLoading}
-            columns={columnsPromotion}
+            columns={displayColumns}
             dataSource={customerList}
             size="small"
+            scroll={{ x: 'max-content' }}
             pagination={{
               position: ['bottomLeft'],
               current: page,
@@ -445,6 +499,28 @@ export default function Customer() {
           close={() => setShowCreate(false)}
         />
       </Drawer>
+      <Modal
+        visible={showCustomColums}
+        onCancel={() => setShowCustomColumns(false)}
+        title="Điều chỉnh cột hiển  thị trên danh sách"
+        onOk={() => {
+          handleChangeColumns()
+          setShowCustomColumns(false)
+        }}
+      >
+        <Checkbox.Group
+          value={defaultColumns}
+          onChange={(e) => setDefaultColumns(e)}
+        >
+          <Row>
+            {columnsPromotion.map((e, index) => (
+              <Col span={12}>
+                <Checkbox value={index}>{e.title}</Checkbox>
+              </Col>
+            ))}
+          </Row>
+        </Checkbox.Group>
+      </Modal>
     </>
   )
 }
