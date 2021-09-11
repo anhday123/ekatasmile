@@ -621,7 +621,7 @@ const UI = (props) => {
 
   const changeBranch = async (value) => {
     dispatch({ type: 'SET_BRANCH_ID', data: value })
-    // updateUser({ branch_id: value }, user.user_id)
+    updateUser({ branch_id: value }, user.user_id)
   }
 
   useEffect(() => {
