@@ -35,3 +35,9 @@ export function formatCash(str) {
       })
   else return 0
 }
+
+export function removeNull(a) {
+  return Object.keys(a)
+    .filter((key) => a[key] !== '' && a[key] !== undefined)
+    .reduce((res, key) => ((res[key] = a[key]), res), {})
+}
