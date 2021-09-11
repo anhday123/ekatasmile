@@ -10,8 +10,6 @@ let getSaleProductC = async (req, res, next) => {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_saleproduct`))
         //     throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getProduct))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         await saleProductService.getSaleProductS(req, res, next);
     } catch (err) {
         next(err);

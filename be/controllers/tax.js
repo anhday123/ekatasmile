@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/tax`);
 const taxService = require(`../services/tax`);
 
 let createSub = (str) => {
@@ -20,7 +18,6 @@ let getTaxC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_tax`)) throw new Error(`400 ~ Forbidden!`);
-        if (!valid.relative(req.query, form.getTax)) throw new Error(`400 ~ Validate data wrong!`);
         await taxService.getTaxS(req, res, next);
     } catch (err) {
         next(err);
@@ -31,7 +28,11 @@ let addTaxC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_tax`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(tax, form.addTax)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _tax] = await Promise.all([
             client.db(DB).collection(`Taxes`).countDocuments(),
@@ -55,8 +56,8 @@ let addTaxC = async (req, res, next) => {
             code: req.body.code,
             name: req.body.name,
             sub_name: createSub(req.body.name),
-            value: req.body.value,
-            description: req.body.description,
+            value: req.body.value || 0,
+            description: req.body.description || '',
             default: req.body.default || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,

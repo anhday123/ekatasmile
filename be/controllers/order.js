@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/category`);
 const orderService = require(`../services/order`);
 
 let getOrderC = async (req, res, next) => {
@@ -23,8 +21,6 @@ let addOrderC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_order`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addCategory))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         let [_counts, _count, __users, __products] = await Promise.all([
             client.db(DB).collection(`Orders`).countDocuments(),
             client.db(DB).collection(`Orders`).find({ bussiness: token.bussiness.user_id }).count(),
@@ -47,7 +43,8 @@ let addOrderC = async (req, res, next) => {
             if (_products[req.body.order_details[i].product_id].has_variable) {
                 for (let j in _products[req.body.order_details[i].product_id].variants) {
                     if (
-                        req.body.order_details[i].sku == _products[req.body.order_details[i].product_id].variants[j].sku
+                        req.body.order_details[i].sku ==
+                        _products[req.body.order_details[i].product_id].variants[j].sku
                     ) {
                         req.body.order_details[i][`import_price`] =
                             _products[req.body.order_details[i].product_id].variants[j][`import_price`];
@@ -56,29 +53,43 @@ let addOrderC = async (req, res, next) => {
                         req.body.order_details[i][`sale_price`] =
                             _products[req.body.order_details[i].product_id].variants[j][`sale_price`];
                         let quantity =
-                            _products[req.body.order_details[i].product_id].variants[j][`available_stock_quantity`] +
+                            _products[req.body.order_details[i].product_id].variants[j][
+                                `available_stock_quantity`
+                            ] +
                             _products[req.body.order_details[i].product_id].variants[j][`low_stock_quantity`];
 
                         quantity -= req.body.order_details[i].quantity;
                         if (
-                            quantity > _products[req.body.order_details[i].product_id].variants[j][`status_check_value`]
+                            quantity >
+                            _products[req.body.order_details[i].product_id].variants[j][`status_check_value`]
                         ) {
-                            _products[req.body.order_details[i].product_id].variants[j][`available_stock_quantity`] =
-                                quantity;
-                            _products[req.body.order_details[i].product_id].variants[j][`low_stock_quantity`] = 0;
-                            _products[req.body.order_details[i].product_id].variants[j][`status`] = `available_stock`;
+                            _products[req.body.order_details[i].product_id].variants[j][
+                                `available_stock_quantity`
+                            ] = quantity;
+                            _products[req.body.order_details[i].product_id].variants[j][
+                                `low_stock_quantity`
+                            ] = 0;
+                            _products[req.body.order_details[i].product_id].variants[j][
+                                `status`
+                            ] = `available_stock`;
                         } else {
                             if (quantity < 0) {
-                                _products[req.body.order_details[i].product_id].variants[j][`out_stock_quantity`] +=
-                                    req.body.order_details[i].quantity;
-                                _products[req.body.order_details[i].product_id].variants[j][`status`] = `out_stock`;
+                                _products[req.body.order_details[i].product_id].variants[j][
+                                    `out_stock_quantity`
+                                ] += req.body.order_details[i].quantity;
+                                _products[req.body.order_details[i].product_id].variants[j][
+                                    `status`
+                                ] = `out_stock`;
                             } else {
                                 _products[req.body.order_details[i].product_id].variants[j][
                                     `available_stock_quantity`
                                 ] = 0;
-                                _products[req.body.order_details[i].product_id].variants[j][`low_stock_quantity`] =
-                                    quantity;
-                                _products[req.body.order_details[i].product_id].variants[j][`status`] = `low_stock`;
+                                _products[req.body.order_details[i].product_id].variants[j][
+                                    `low_stock_quantity`
+                                ] = quantity;
+                                _products[req.body.order_details[i].product_id].variants[j][
+                                    `status`
+                                ] = `low_stock`;
                             }
                         }
                     }
@@ -86,8 +97,10 @@ let addOrderC = async (req, res, next) => {
             } else {
                 req.body.order_details[i][`import_price`] =
                     _products[req.body.order_details[i].product_id][`import_price`];
-                req.body.order_details[i][`base_price`] = _products[req.body.order_details[i].product_id][`base_price`];
-                req.body.order_details[i][`sale_price`] = _products[req.body.order_details[i].product_id][`sale_price`];
+                req.body.order_details[i][`base_price`] =
+                    _products[req.body.order_details[i].product_id][`base_price`];
+                req.body.order_details[i][`sale_price`] =
+                    _products[req.body.order_details[i].product_id][`sale_price`];
                 let quantity =
                     _products[req.body.order_details[i].product_id][`available_stock_quantity`] +
                     _products[req.body.order_details[i].product_id][`low_stock_quantity`];
@@ -132,7 +145,10 @@ let addOrderC = async (req, res, next) => {
             let _check = false;
             req.body[`promotion`] = _promotion.promotion_id;
             for (let i in _promotion.vouchers) {
-                if (_promotion.vouchers[i].voucher == req.body.voucher && _promotion.vouchers[i].active == true) {
+                if (
+                    _promotion.vouchers[i].voucher == req.body.voucher &&
+                    _promotion.vouchers[i].active == true
+                ) {
                     _promotion.vouchers[i].active = false;
                     await client
                         .db(DB)

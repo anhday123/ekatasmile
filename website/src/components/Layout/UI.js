@@ -1006,7 +1006,7 @@ const UI = (props) => {
                 </Permission>
                 <Select
                   disabled={login.role === 'EMPLOYEE' ? true : false}
-                  placeholder="Chọn chi nhánh & kho"
+                  placeholder="Chọn chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   size="large"
                   onChange={changeBranch}

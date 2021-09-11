@@ -1,6 +1,6 @@
 import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES, PERMISSIONS } from 'consts/index'
+import { ACTION, PERMISSIONS } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 import { Link } from 'react-router-dom'
@@ -10,6 +10,7 @@ import {
   ArrowLeftOutlined,
   EditOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from '@ant-design/icons'
 
 //antd
@@ -61,6 +62,7 @@ export default function Branch() {
   const [page_size, setPage_size] = useState(20)
   const [paramsFilter, setParamsFilter] = useState({})
   const [formUpdateBranch] = Form.useForm()
+  const [districtsDefault, setDistrictsDefault] = useState([])
 
   function getBase64(img, callback) {
     const reader = new FileReader()
@@ -93,8 +95,8 @@ export default function Branch() {
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
       setPage(1)
-      if (value) paramsFilter.keyword = value
-      else delete paramsFilter.keyword
+      if (value) paramsFilter.search = value
+      else delete paramsFilter.search
 
       getAllBranchData({ page: 1, page_size, ...paramsFilter })
       setParamsFilter({ ...paramsFilter })
@@ -157,10 +159,10 @@ export default function Branch() {
       fixed: 'right',
       render: (text, record) => (
         <Space size="large">
-          <Switch
+          {/* <Switch
             defaultChecked={text}
             onChange={(e) => onChangeSwitch(e, record)}
-          />
+          /> */}
           <Permission permissions={[PERMISSIONS.cap_nhat_chi_nhanh]}>
             <ModalUpdateBranch record={record} />
           </Permission>
@@ -302,7 +304,7 @@ export default function Branch() {
                         .indexOf(input.toLowerCase()) >= 0
                     }
                   >
-                    {province.map((values, index) => {
+                    {provinces.map((values, index) => {
                       return (
                         <Option value={values.province_name} key={index}>
                           {values.province_name}
@@ -333,7 +335,7 @@ export default function Branch() {
                     }
                     placeholder="Chọn quận/huyện"
                   >
-                    {district.map((values, index) => {
+                    {districts.map((values, index) => {
                       return (
                         <Option value={values.district_name} key={index}>
                           {values.district_name}
@@ -422,41 +424,32 @@ export default function Branch() {
     }
   }
 
-  const [storeSelect, setStoreSelect] = useState()
-  const handleChange = async (value) => {
-    setStoreSelect(value)
-    setPage(1)
-    if (value) paramsFilter.store = value
-    else delete paramsFilter.store
-
-    getAllBranchData({ page: 1, page_size, ...paramsFilter })
-    setParamsFilter({ ...paramsFilter })
-  }
   const onClickClear = async () => {
     await getAllBranchData({ page: 1, page_size })
+    setParamsFilter({})
     setValueSearch('')
     setPage(1)
     setValueDate(null)
-    setStoreSelect()
     setSelectedRowKeys([])
   }
-  const [district, setDistrict] = useState([])
+  const [districts, setDistricts] = useState([])
   const apiDistrictData = async () => {
     try {
       const res = await apiDistrict()
       if (res.status === 200) {
-        setDistrict(res.data.data)
+        setDistricts(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
     } catch (error) {
       console.log(error)
     }
   }
-  const [province, setProvince] = useState([])
+  const [provinces, setProvinces] = useState([])
   const apiProvinceData = async () => {
     try {
       const res = await apiProvince()
       if (res.status === 200) {
-        setProvince(res.data.data)
+        setProvinces(res.data.data)
       }
     } catch (error) {
       console.log(error)
@@ -531,6 +524,7 @@ export default function Branch() {
                 className={styles['orders_manager_content_row_col_search']}
                 placeholder="Tìm kiếm theo mã, theo tên"
                 allowClear
+                prefix={<SearchOutlined />}
               />
             </div>
           </Col>
@@ -570,26 +564,111 @@ export default function Branch() {
             lg={11}
             xl={7}
           >
-            <div style={{ width: '100%' }}>
-              <Select
-                allowClear
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Tìm kiếm theo cửa hàng"
-                optionFilterProp="children"
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+            <Select
+              allowClear
+              size="large"
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo kho"
+              optionFilterProp="children"
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.warehouse_type}
+              onChange={(value) => {
+                setPage(1)
+                if (value) paramsFilter.warehouse_type = value
+                else delete paramsFilter.warehouse_type
+
+                getAllBranchData({ page: 1, page_size, ...paramsFilter })
+                setParamsFilter({ ...paramsFilter })
+              }}
+            >
+              <Option value="so huu">Kho sở hữu</Option>
+              <Option value="dich vu">Kho thuê dịch vụ</Option>
+            </Select>
+          </Col>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
+            <Select
+              allowClear
+              size="large"
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo tỉnh/thành phố"
+              optionFilterProp="children"
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.province}
+              onChange={(value) => {
+                setPage(1)
+                if (value) {
+                  paramsFilter.province = value
+                  const districtsByProvince = districtsDefault.filter(
+                    (e) => e.province_name === value
+                  )
+                  setDistricts([...districtsByProvince])
+                } else {
+                  delete paramsFilter.province
+                  setDistricts([...districtsDefault])
                 }
-                value={storeSelect}
-                onChange={handleChange}
-              >
-                {stores.map((values, index) => {
-                  return <Option value={values.store_id}>{values.name}</Option>
-                })}
-              </Select>
-            </div>
+
+                getAllBranchData({ page: 1, page_size, ...paramsFilter })
+                setParamsFilter({ ...paramsFilter })
+              }}
+            >
+              {provinces.map((values, index) => {
+                return (
+                  <Option value={values.province_name}>
+                    {values.province_name}
+                  </Option>
+                )
+              })}
+            </Select>
+          </Col>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          >
+            <Select
+              allowClear
+              size="large"
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo quận/huyện"
+              optionFilterProp="children"
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.district}
+              onChange={(value) => {
+                setPage(1)
+                if (value) paramsFilter.district = value
+                else delete paramsFilter.district
+
+                getAllBranchData({ page: 1, page_size, ...paramsFilter })
+                setParamsFilter({ ...paramsFilter })
+              }}
+            >
+              {districts.map((values, index) => {
+                return (
+                  <Option value={values.district_name} key={index}>
+                    {values.district_name}
+                  </Option>
+                )
+              })}
+            </Select>
           </Col>
         </Row>
         <div

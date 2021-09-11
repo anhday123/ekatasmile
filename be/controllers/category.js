@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/category`);
 const categoryService = require(`../services/category`);
 
 let createSub = (str) => {
@@ -19,9 +17,7 @@ let createSub = (str) => {
 let getCategoryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // console.log(req);
         // if (!token.role.permission_list.includes(`view_category`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getCategory)) throw new Error(`400 ~ Validate data wrong!`);
         await categoryService.getCategoryS(req, res, next);
     } catch (err) {
         next(err);
@@ -32,7 +28,11 @@ let addCategoryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_category`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!category.name) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         let [_counts, _business, _category] = await Promise.all([
             client.db(DB).collection(`Categories`).countDocuments(),

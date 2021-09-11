@@ -3,8 +3,6 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
-const valid = require(`../middleware/validate/validate`);
-const form = require(`../middleware/validate/role`);
 const roleService = require(`../services/role`);
 
 let createSub = (str) => {
@@ -30,7 +28,11 @@ let addRoleC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`add_role`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addRole)) throw new Error(`400 ~ Validate data wrong!`);
+        ['name'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
         if (createSub(req.body.name) == `admin` || createSub(req.body.name) == `business`) {
             throw new Error(`400 ~ Forbidden!`);
@@ -56,8 +58,8 @@ let addRoleC = async (req, res, next) => {
             business_id: req.body.business_id,
             name: req.body.name,
             sub_name: createSub(req.body.name),
-            permission_list: req.body.permission_list,
-            menu_list: req.body.menu_list,
+            permission_list: req.body.permission_list || [],
+            menu_list: req.body.menu_list || [],
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import styles from './../add/add.module.scss'
 
-import { ACTION } from 'consts'
+import { ACTION, WAREHOUSE_TYPE } from 'consts'
 import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
+import NotSupportMobile from 'components/not-support-mobile'
 
 //antd
 import {
@@ -48,10 +49,10 @@ import { apiAllWarranty } from 'apis/warranty'
 import { apiAddProduct } from 'apis/product'
 
 export default function ProductAdd() {
-  const [supplier, setSupplier] = useState([])
   const dispatch = useDispatch()
   const history = useHistory()
   const [form] = Form.useForm()
+  const branchId = useSelector((state) => state.branch.branchId)
 
   const [idsWarranty, setIdsWarranty] = useState([])
   const [isWarranty, setIsWarranty] = useState(false)
@@ -73,6 +74,8 @@ export default function ProductAdd() {
   const [description, setDescription] = useState('')
   const [productIsHaveDescription, setProductIsHaveDescription] =
     useState(false)
+  const [suppliers, setSuppliers] = useState([])
+  const [supplier, setSupplier] = useState('') // dung o variant
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -97,11 +100,11 @@ export default function ProductAdd() {
     if (attributes.length === 1) {
       attributes[0].values.map((value) => {
         variantsNew.push({
-          title: `${dataProductAdd.name || ''} ${value}`,
-          sku: `${dataProductAdd.sku || ''}-${value}`,
+          title: `${attributes[0].option} ${value}`,
+          sku: `${attributes[0].option}-${value}`,
           image: '',
           imagePreview: '',
-          options: [{ name: attributes[0].option, values: value }],
+          options: [{ name: attributes[0].option, value: value }],
           quantity: 0,
           import_price: 0,
           base_price: 0,
@@ -113,13 +116,13 @@ export default function ProductAdd() {
       attributes[0].values.map((v0) => {
         attributes[1].values.map((v1) => {
           variantsNew.push({
-            title: `${dataProductAdd.name || ''} ${v0} ${v1}`,
-            sku: `${dataProductAdd.sku || ''}-${v0}-${v1}`,
+            title: `${attributes[0].option} ${attributes[1].option} ${v0} ${v1}`,
+            sku: `${attributes[0].option}-${attributes[1].option}-${v0}-${v1}`,
             image: '',
             imagePreview: '',
             options: [
-              { name: attributes[0].option, values: v0 },
-              { name: attributes[1].option, values: v1 },
+              { name: attributes[0].option, value: v0 },
+              { name: attributes[1].option, value: v1 },
             ],
             quantity: 0,
             import_price: 0,
@@ -145,15 +148,28 @@ export default function ProductAdd() {
       const res = await apiAllSupplier()
       console.log(res)
       if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
+        let dataNew = []
+
+        if (res.data.data && res.data.data.length) {
+          let supplierDefault = res.data.data.find(
+            (supplier) => supplier.active && supplier.default
+          )
+
           res.data.data.forEach((values, index) => {
             if (values.active) {
-              array.push(values)
+              dataNew.push(values)
             }
           })
-        setSupplier([...array])
+
+          if (supplierDefault) {
+            form.setFieldsValue({
+              supplier_id: supplierDefault.supplier_id,
+            })
+            setSupplier(supplierDefault.name)
+          }
+
+          setSuppliers([...dataNew])
+        }
       }
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -180,7 +196,7 @@ export default function ProductAdd() {
     }
 
     //validated images product
-    if (imagesProduct.length === 0) {
+    if (!isProductHasVariants && !imagesProduct.length) {
       setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
       return
     } else setHelpTextImage('')
@@ -189,21 +205,25 @@ export default function ProductAdd() {
     for (let i = 0; i < variants.length; ++i) {
       if (!variants[i].base_price) {
         notification.error({
-          message: 'Vui lòng nhập giá cơ bản trong variant!',
+          message: 'Vui lòng nhập giá cơ bản trong phiên bản!',
         })
         return
       }
       if (!variants[i].import_price) {
-        notification.error({ message: 'Vui lòng nhập giá nhập trong variant!' })
+        notification.error({
+          message: 'Vui lòng nhập giá nhập trong phiên bản!',
+        })
         return
       }
       if (!variants[i].sale_price) {
-        notification.error({ message: 'Vui lòng nhập giá bán trong variant!' })
+        notification.error({
+          message: 'Vui lòng nhập giá bán trong phiên bản!',
+        })
         return
       }
       if (!variants[i].quantity) {
         notification.error({
-          message: 'Vui lòng nhập số lượng sản phẩm trong variant!',
+          message: 'Vui lòng nhập số lượng sản phẩm trong phiên bản!',
         })
         return
       }
@@ -217,20 +237,21 @@ export default function ProductAdd() {
 
       let body = {
         ...formProduct,
-        sale_price: isProductHasVariants ? formProduct.sale_price : '',
-        base_price: isProductHasVariants ? formProduct.base_price : '',
-        import_price: isProductHasVariants ? formProduct.import_price : '',
-        quantity: isProductHasVariants ? formProduct.quantity : '',
+        sale_price: !isProductHasVariants ? formProduct.sale_price : '',
+        base_price: !isProductHasVariants ? formProduct.base_price : '',
+        import_price: !isProductHasVariants ? formProduct.import_price : '',
+        quantity: !isProductHasVariants ? formProduct.quantity : '',
+        sku: !isProductHasVariants ? formProduct.sku : '',
         length: isInputInfoProduct ? formProduct.length || '' : '',
         width: isInputInfoProduct ? formProduct.width || '' : '',
         height: isInputInfoProduct ? formProduct.height || '' : '',
         weight: isInputInfoProduct ? formProduct.weight || '' : '',
         unit: isInputInfoProduct ? formProduct.unit || '' : '',
-        warranty: idsWarranty,
-        barcode: '',
+        warranties: idsWarranty,
         image: images || [],
         has_variable: isProductHasVariants,
         description: productIsHaveDescription ? description || '' : '',
+        branch_id: branchId,
       }
 
       if (isProductHasVariants) {
@@ -240,7 +261,7 @@ export default function ProductAdd() {
           delete v.imagePreview
           return {
             ...v,
-            supplier: formProduct.suppliers,
+            supplier: supplier || '',
             image: resUpload,
           }
         })
@@ -250,12 +271,16 @@ export default function ProductAdd() {
         body.variants = variantsNew
       }
 
-      console.log(JSON.stringify({ product_list: [body] }))
-      const res = await apiAddProduct({ product_list: [body] })
-      if (res.data.status === 200) {
+      console.log(JSON.stringify({ products: [body] }))
+      const res = await apiAddProduct({ products: [body] })
+      console.log(res)
+      if (res.status === 200) {
         notification.success({ message: 'Tạo sản phẩm thành công!' })
         history.goBack()
-      } else notification.error({ message: 'Tạo sản phẩm thất bại!' })
+      } else
+        notification.error({
+          message: res.data.message || 'Tạo sản phẩm thất bại!',
+        })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
@@ -263,22 +288,29 @@ export default function ProductAdd() {
     }
   }
 
-  const [category, setCategory] = useState([])
+  const [categories, setCategories] = useState([])
   const apiAllCategoryData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllCategory()
 
       if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
+        var dataNew = []
+        if (res.data.data && res.data.data.length) {
+          const category = res.data.data.find(
+            (category) => category.active && category.default
+          )
           res.data.data.forEach((values, index) => {
-            if (values.active) {
-              array.push(values)
-            }
+            if (values.active) dataNew.push(values)
           })
-        setCategory([...array])
+
+          if (category)
+            form.setFieldsValue({
+              category_id: category.category_id,
+            })
+
+          setCategories([...dataNew])
+        }
       }
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -335,6 +367,26 @@ export default function ProductAdd() {
     )
   }
 
+  const InputSku = ({ value, variant }) => {
+    const [valueSku, setValueSku] = useState(value)
+
+    return (
+      <Input
+        placeholder="Nhập sku"
+        size="large"
+        defaultValue={value}
+        onBlur={() => {
+          let variantsNew = [...variants]
+          const index = variantsNew.findIndex((e) => e.title === variant.title)
+          variantsNew[index].sku = valueSku
+          setVariants([...variantsNew])
+        }}
+        onChange={(e) => setValueSku(e.target.value)}
+        style={{ width: '100%' }}
+      />
+    )
+  }
+
   const InputQuantity = ({ value, variant }) => {
     const [valueQuantity, setValueQuantity] = useState(value)
 
@@ -366,6 +418,10 @@ export default function ProductAdd() {
         <InputNumber
           placeholder="Nhập giá nhập"
           className="br-15__input"
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           size="large"
           defaultValue={value}
           min={0}
@@ -393,6 +449,10 @@ export default function ProductAdd() {
         <InputNumber
           placeholder="Nhập giá cơ bản"
           className="br-15__input"
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           size="large"
           defaultValue={value}
           min={0}
@@ -420,6 +480,10 @@ export default function ProductAdd() {
         <InputNumber
           placeholder="Nhập giá bán"
           className="br-15__input"
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
           size="large"
           defaultValue={value}
           min={0}
@@ -526,7 +590,7 @@ export default function ProductAdd() {
     return (
       <>
         <Button size="large" onClick={toggle} icon={<EditOutlined />}>
-          Nhập số lượng sản phẩm
+          Chỉnh sửa lượng sản phẩm
         </Button>
         <Modal
           visible={visible}
@@ -537,10 +601,57 @@ export default function ProductAdd() {
           <InputNumber
             placeholder="Nhập số lượng"
             className="br-15__input"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
             size="large"
             defaultValue={valueQuantity}
             min={0}
             onChange={(value) => setValueQuantity(value)}
+            style={{ width: '100%' }}
+          />
+        </Modal>
+      </>
+    )
+  }
+
+  const EditSku = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [valueSku, setValueSku] = useState('')
+
+    const edit = () => {
+      if (valueSku) {
+        let variantsNew = [...variants]
+
+        selectRowKeyVariant.map((key) => {
+          const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
+          variantsNew[indexVariant].sku = valueSku
+        })
+
+        setVariants([...variantsNew])
+      }
+
+      toggle()
+    }
+
+    //reset
+    useEffect(() => {
+      if (!visible) setValueSku('')
+    }, [visible])
+
+    return (
+      <>
+        <Button size="large" onClick={toggle} icon={<EditOutlined />}>
+          Chỉnh sửa sku
+        </Button>
+        <Modal visible={visible} onCancel={toggle} onOk={edit} title="Nhập sku">
+          <Input
+            placeholder="Nhập sku"
+            size="large"
+            defaultValue={valueSku}
+            onChange={(e) => setValueSku(e.target.value)}
             style={{ width: '100%' }}
           />
         </Modal>
@@ -584,7 +695,7 @@ export default function ProductAdd() {
     return (
       <>
         <Button size="large" onClick={toggle} icon={<DollarOutlined />}>
-          Nhập giá
+          Chỉnh sửa giá
         </Button>
         <Modal visible={visible} onCancel={toggle} onOk={edit} title="Nhập giá">
           <Space size="middle" direction="vertical">
@@ -593,6 +704,10 @@ export default function ProductAdd() {
               <InputNumber
                 placeholder="Nhập giá bán"
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 onChange={(value) => setValueSalePrice(value)}
@@ -605,6 +720,10 @@ export default function ProductAdd() {
               <InputNumber
                 placeholder="Nhập giá cơ bản"
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 onChange={(value) => setValueBasePrice(value)}
@@ -617,6 +736,10 @@ export default function ProductAdd() {
               <InputNumber
                 placeholder="Nhập giá nhập"
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 size="large"
                 min={0}
                 onChange={(value) => setValueImportPrice(value)}
@@ -637,23 +760,26 @@ export default function ProductAdd() {
       render: (text, record) => <UploadImageProduct variant={record} />,
     },
     {
-      title: 'Variant',
+      title: 'Phiên bản',
       dataIndex: 'title',
     },
     {
       title: 'SKU',
-      dataIndex: 'sku',
+      width: 250,
+      render: (text, record) => (
+        <InputSku value={record.sku} variant={record} />
+      ),
     },
     {
       title: 'Số lượng',
-      width: 300,
+      width: 250,
       render: (text, record) => (
         <InputQuantity value={record.quantity} variant={record} />
       ),
     },
     {
       title: 'Giá',
-      width: 300,
+      width: 250,
       render: (text, record) => (
         <Space size="middle" direction="vertical" style={{ width: '100%' }}>
           <InputSalePrice value={record.sale_price} variant={record} />
@@ -763,46 +889,8 @@ export default function ProductAdd() {
           </Col>
           <Col xs={24} sm={24} md={7} lg={7} xl={7}>
             <Form.Item
-              label="Mã sản phẩm/SKU"
-              name="sku"
-              rules={[
-                { required: true, message: 'Vui lòng nhập mã sản phẩm/sku!' },
-              ]}
-            >
-              <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Danh mục"
-              name="category"
-              rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-            >
-              <Select
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Chọn danh mục"
-              >
-                {category.map((values, index) => {
-                  return (
-                    <Select.Option value={values.category_id} key={index}>
-                      {values.name}
-                    </Select.Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
               label="Nhà cung cấp"
-              name="suppliers"
+              name="supplier_id"
               rules={[
                 { required: true, message: 'Vui lòng chọn nhà cung cấp!' },
               ]}
@@ -816,8 +904,14 @@ export default function ProductAdd() {
                 size="large"
                 style={{ width: '100%' }}
                 placeholder="Chọn nhà cung cấp"
+                onChange={(value) => {
+                  const supplier = suppliers.find(
+                    (s) => s.supplier_id === value
+                  )
+                  supplier && setSupplier(supplier.name)
+                }}
               >
-                {supplier.map((values, index) => {
+                {suppliers.map((values, index) => {
                   return (
                     <Select.Option value={values.supplier_id} key={index}>
                       {values.name}
@@ -825,6 +919,52 @@ export default function ProductAdd() {
                   )
                 })}
               </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+            <Form.Item
+              label="Danh mục"
+              name="category_id"
+              rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
+            >
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                size="large"
+                style={{ width: '100%' }}
+                placeholder="Chọn danh mục"
+              >
+                {categories.map((values, index) => {
+                  return (
+                    <Select.Option value={values.category_id} key={index}>
+                      {values.name}
+                    </Select.Option>
+                  )
+                })}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{
+              display: isProductHasVariants && 'none',
+            }}
+          >
+            <Form.Item
+              label="Mã sản phẩm/SKU"
+              name="sku"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mã sản phẩm/sku!' },
+              ]}
+            >
+              <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
             </Form.Item>
           </Col>
           <Col
@@ -1014,6 +1154,7 @@ export default function ProductAdd() {
                 <Space wrap>
                   <UploadAllVariant />
                   <EditQuantity />
+                  <EditSku />
                   <EditPrice />
                 </Space>
               </div>
@@ -1059,6 +1200,10 @@ export default function ProductAdd() {
                 placeholder="Nhập giá bán"
                 style={{ width: '100%' }}
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
               />
             </Form.Item>
           </Col>
@@ -1086,6 +1231,10 @@ export default function ProductAdd() {
                 placeholder="Nhập giá cơ bản"
                 style={{ width: '100%' }}
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
               />
             </Form.Item>
           </Col>
@@ -1113,6 +1262,10 @@ export default function ProductAdd() {
                 placeholder="Nhập giá nhập"
                 style={{ width: '100%' }}
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
               />
             </Form.Item>
           </Col>
@@ -1140,6 +1293,10 @@ export default function ProductAdd() {
                 placeholder="Nhập số lượng sản phẩm"
                 style={{ width: '100%' }}
                 className="br-15__input"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
               />
             </Form.Item>
           </Col>
@@ -1190,7 +1347,16 @@ export default function ProductAdd() {
               </Form.Item>
             </Col>
           </Row>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+            style={{
+              display: isProductHasVariants && 'none',
+            }}
+          >
             <span style={{ color: 'red' }}>* </span>
             Hình ảnh
             <Upload.Dragger
@@ -1203,6 +1369,7 @@ export default function ProductAdd() {
                 let imagesProductNew = [...imagesProduct]
                 imagesProductNew = info.fileList.map((e) => e.originFileObj)
                 setImagesProduct([...imagesProductNew])
+                setHelpTextImage('')
               }}
               // defaultFileList={d.mockup.map((e, index) => {
               //   let nameFile = ['image']
@@ -1242,172 +1409,6 @@ export default function ProductAdd() {
         </Row>
       </Form>
 
-      <div
-        style={{
-          display: isProductHasVariants ? '' : 'none',
-          width: '100%',
-        }}
-      >
-        <div
-          style={{
-            marginBottom: 16,
-            border: '1px solid #f0f0f0',
-            padding: 16,
-            width: '100%',
-          }}
-        >
-          {attributes.map((e, index) => {
-            const RenderInput = () => (
-              <Input
-                size="large"
-                placeholder="Nhập tên thuộc tính"
-                defaultValue={e.option}
-                onBlur={(e) => {
-                  attributes[index].option = e.target.value
-                }}
-                style={{ width: '100%' }}
-              />
-            )
-            return (
-              <Row
-                style={{ width: '100%', marginBottom: 15 }}
-                justify="space-between"
-                align="middle"
-              >
-                <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-                  <span style={{ marginBottom: 0 }}>Tên thuộc tính</span>
-                  <RenderInput />
-                </Col>
-                <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-                  <span style={{ marginBottom: 0 }}>Giá trị</span>
-                  <Select
-                    mode="tags"
-                    size="large"
-                    style={{ width: '100%' }}
-                    placeholder="Nhập giá trị"
-                    value={e.values.map((v) => v)}
-                    onDeselect={(v) => {
-                      //remove tag
-                      let items = [...attributes]
-                      const indexRemove = e.values.findIndex((f) => f === v)
-                      if (indexRemove !== -1) {
-                        items[index].values.splice(indexRemove, 1)
-                        setAttributes([...items])
-                      }
-                    }}
-                    onSelect={(e) => {
-                      //add tag
-                      let items = [...attributes]
-
-                      //check value add này đã tồn tại chưa
-                      for (let i = 0; i < items.length; ++i) {
-                        for (let j = 0; j < items[i].values.length; ++j) {
-                          if (items[i].values[j] === e) {
-                            notification.error({
-                              message: 'Giá trị đã có!',
-                            })
-                            return
-                          }
-                        }
-                      }
-
-                      //trường hợp nhập nhiều variant bởi dấu phẩy
-                      //ví dụ: color, size, quantity
-                      const splitValue = e.split(',')
-
-                      splitValue.map((v) => {
-                        if (v) items[index].values.push(v.trim())
-                      })
-                      setAttributes([...items])
-                    }}
-                    optionLabelProp="label"
-                  ></Select>
-                </Col>
-                <Popconfirm
-                  title="Bạn có muốn xoá thuộc tính này?"
-                  onConfirm={() => removeAttribute(index)}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <CloseOutlined
-                    style={{
-                      cursor: 'pointer',
-                      color: 'red',
-                      fontSize: 18,
-                      marginTop: 22,
-                      marginLeft: 5,
-                      display: attributes.length === 1 && 'none',
-                    }}
-                  />
-                </Popconfirm>
-                <Col xs={24} sm={24} md={5} lg={5} xl={5}>
-                  <Tooltip title="Tối đa tạo 2 thuộc tính">
-                    <Button
-                      size="large"
-                      style={{
-                        marginTop: 17,
-                        display: attributes.length === 2 && 'none',
-                      }}
-                      onClick={addAttribute}
-                    >
-                      Thêm thuộc tính khác
-                    </Button>
-                  </Tooltip>
-                </Col>
-              </Row>
-            )
-          })}
-        </div>
-
-        <div
-          style={{
-            marginBottom: 16,
-            border: '1px solid #f0f0f0',
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              borderBottom: '1px solid #f0f0f0',
-              width: '100%',
-            }}
-          >
-            <div style={{ width: '100%', padding: 16 }}>
-              <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
-            </div>
-          </div>
-          <div
-            style={{
-              marginLeft: 10,
-              marginTop: 10,
-              marginBottom: 20,
-              display: !selectRowKeyVariant.length && 'none',
-            }}
-          >
-            <Space wrap>
-              <UploadAllVariant />
-              <EditQuantity />
-              <EditPrice />
-            </Space>
-          </div>
-          <Table
-            rowKey="title"
-            columns={columnsVariant}
-            dataSource={variants}
-            pagination={false}
-            rowSelection={{
-              selectedRowKeys: selectRowKeyVariant,
-              onChange: (selectedRowKeys, selectedRows) => {
-                setSelectRowKeyVariant(selectedRowKeys)
-              },
-            }}
-            size="small"
-            style={{ width: '100%' }}
-            scroll={{ x: 'max-content' }}
-          />
-        </div>
-      </div>
-
       <Row
         style={{
           width: '100%',
@@ -1445,36 +1446,6 @@ export default function ProductAdd() {
       </Row>
     </div>
   ) : (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        right: 0,
-        left: 0,
-        backgroundColor: '#5D6FE5',
-        zIndex: 99999,
-      }}
-    >
-      <h2 style={{ textAlign: 'center', color: 'white' }}>
-        Chức năng này không hỗ trợ thao tác trên điện thoại
-      </h2>
-      <Button
-        type="primary"
-        style={{
-          backgroundColor: 'black',
-          color: 'white',
-          borderColor: 'black',
-        }}
-        onClick={() => history.goBack()}
-        size="large"
-      >
-        Quay lại
-      </Button>
-    </div>
+    <NotSupportMobile />
   )
 }

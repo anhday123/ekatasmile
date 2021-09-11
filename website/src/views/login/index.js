@@ -4,7 +4,16 @@ import { useDispatch } from 'react-redux'
 import store from './../../assets/img/store.png'
 import { Link, useHistory } from 'react-router-dom'
 import { ACTION, ROUTES } from './../../consts/index'
-import { Row, Col, Form, Input, Button, notification, Checkbox } from 'antd'
+import {
+  Row,
+  Col,
+  Form,
+  Input,
+  Button,
+  notification,
+  Checkbox,
+  Select,
+} from 'antd'
 import {
   UserOutlined,
   LockOutlined,
@@ -12,6 +21,7 @@ import {
   PhoneOutlined,
   HomeOutlined,
   EnvironmentOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons'
 import { register } from '../../apis/register'
 import { login } from 'apis/login'
@@ -34,8 +44,6 @@ export default function Login() {
       const res = await login(object)
       console.log(res)
       if (res.status === 200) {
-        openNotificationLoginSuccess()
-
         const actions = loginAccessToken(res.data.data)
         dispatch(actions)
 
@@ -76,7 +84,7 @@ export default function Login() {
       message: 'Thất bại',
       duration: 5,
       description:
-        'Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.',
+        'Mật khẩu và nhập lại mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.',
     })
   }
   const openNotificationRegisterFailMail = () => {
@@ -167,97 +175,70 @@ export default function Login() {
     str = str.replace(/\u02C6|\u0306|\u031B/g, '') // Â, Ê, Ă, Ơ, Ư
     return str
   }
-  const onFinishRegister = (values) => {
+  const onFinishRegister = async (values) => {
+    /*check validated form*/
+    let isValidated = true
+    try {
+      await form.validateFields()
+      isValidated = true
+    } catch (error) {
+      isValidated = false
+    }
+
+    if (!isValidated) return
+
+    if (!validateEmail(values.emailRegister)) {
+      openNotificationRegisterFailMail()
+      return
+    }
+
+    if (!validateEmail(values.emailRegister)) {
+      openNotificationRegisterFailMail()
+      return
+    }
+
     if (
-      !validateEmail(values.emailRegister) ||
-      !isNaN(values.cityRegister) ||
-      !isValid(values.usernameRegister) ||
-      !regex.test(values.phoneNumberRegister) ||
-      isNaN(values.phoneNumberRegister) ||
       values.passwordRegister !== values.RepasswordRegister ||
       !password_validate(values.passwordRegister)
     ) {
-      if (!validateEmail(values.emailRegister)) {
-        openNotificationRegisterFailMail()
-      }
-      if (
-        values.passwordRegister !== values.RepasswordRegister ||
-        !password_validate(values.passwordRegister)
-      ) {
-        openNotificationRegisterFail()
-      }
-      if (isNaN(values.phoneNumberRegister)) {
-        openNotificationRegisterFailMailPhone()
-      }
-      if (!regex.test(values.phoneNumberRegister)) {
-        openNotificationRegisterFailMailPhone()
-      }
-      if (!isValid(values.usernameRegister)) {
-        openNotificationRegisterFailUserPass()
-      }
-      if (!isNaN(values.cityRegister)) {
-        openNotificationRegisterFailUserPassCity()
-      }
-    } else {
-      if (validateEmail(values.emailRegister)) {
-        if (
-          values.passwordRegister === values.RepasswordRegister &&
-          password_validate(values.passwordRegister)
-        ) {
-          if (isNaN(values.phoneNumberRegister)) {
-            openNotificationRegisterFailMailPhone()
-          } else {
-            if (regex.test(values.phoneNumberRegister)) {
-              if (
-                values.passwordRegister.length > 5 &&
-                values.usernameRegister.length > 5
-              ) {
-                if (isNaN(values.cityRegister)) {
-                  const object = {
-                    username: nonAccentVietnamese(values.usernameRegister),
-                    password: values.passwordRegister,
-                    role: '',
-                    store: '',
-                    phone: values.phoneNumberRegister,
-                    email: values.emailRegister,
-                    avatar: '',
-                    first_name:
-                      values && values.firstname ? values.firstname : '',
-                    last_name: values && values.lastname ? values.lastname : '',
-                    birthday: '',
-                    address:
-                      values && values.addressRegister
-                        ? values.addressRegister
-                        : '',
-                    ward: '',
-                    district: '',
-                    province: '',
-                    company_name:
-                      values && values.cityRegister ? values.cityRegister : '',
-                    company_website: '',
-                    tax_code: '',
-                    fax: '',
-                    branch: '',
-                  }
-
-                  apiRegister(object)
-                } else {
-                  openNotificationRegisterFailUserPassCity()
-                }
-              } else {
-                openNotificationRegisterFailUserPass()
-              }
-            } else {
-              openNotificationRegisterFailMailPhone()
-            }
-          }
-        } else {
-          openNotificationRegisterFail()
-        }
-      } else {
-        openNotificationRegisterFailMail()
-      }
+      openNotificationRegisterFail()
+      return
     }
+    if (!regex.test(values.phoneNumberRegister)) {
+      openNotificationRegisterFailMailPhone()
+      return
+    }
+
+    if (!isValid(values.usernameRegister)) {
+      openNotificationRegisterFailUserPass()
+      return
+    }
+    /*check validated form*/
+
+    const object = {
+      username: nonAccentVietnamese(values.usernameRegister),
+      password: values.passwordRegister,
+      role: '',
+      store: '',
+      phone: values.phoneNumberRegister,
+      email: values.emailRegister,
+      avatar: '',
+      first_name: values && values.firstname ? values.firstname : '',
+      last_name: values && values.lastname ? values.lastname : '',
+      birthday: '',
+      address: values && values.addressRegister ? values.addressRegister : '',
+      ward: '',
+      district: '',
+      province: '',
+      company_name: values && values.cityRegister ? values.cityRegister : '',
+      company_website: '',
+      tax_code: '',
+      fax: '',
+      branch: '',
+      business_areas: values.business_areas || '',
+    }
+    console.log(object)
+    // apiRegister(object)
   }
   const openNotificationLoginSuccess = () => {
     notification.success({
@@ -394,7 +375,7 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<UserOutlined className="site-form-item-icon" />}
+                prefix={<UserOutlined />}
                 placeholder="*Tài khoản"
               />
             </Form.Item>
@@ -406,7 +387,7 @@ export default function Login() {
               <Input.Password
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<LockOutlined className="site-form-item-icon" />}
+                prefix={<LockOutlined />}
                 type="password"
                 placeholder="*Mật khẩu"
               />
@@ -461,7 +442,7 @@ export default function Login() {
               <Input
                 style={{ borderRadius: '2rem' }}
                 size="large"
-                prefix={<UserOutlined className="site-form-item-icon" />}
+                prefix={<UserOutlined />}
                 placeholder="*Tài khoản"
               />
             </Form.Item>
@@ -473,7 +454,7 @@ export default function Login() {
               <Input.Password
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<LockOutlined className="site-form-item-icon" />}
+                prefix={<LockOutlined />}
                 type="password"
                 placeholder="*Mật khẩu"
               />
@@ -486,7 +467,7 @@ export default function Login() {
               <Input.Password
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<LockOutlined className="site-form-item-icon" />}
+                prefix={<LockOutlined />}
                 type="password"
                 placeholder="*Nhập lại mật khẩu"
               />
@@ -498,7 +479,7 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<UserOutlined className="site-form-item-icon" />}
+                prefix={<UserOutlined />}
                 placeholder="Tên"
               />
             </Form.Item>
@@ -506,9 +487,26 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<UserOutlined className="site-form-item-icon" />}
+                prefix={<UserOutlined />}
                 placeholder="Họ"
               />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="addressRegister"
+            >
+              <Input
+                size="large"
+                style={{ borderRadius: '2rem' }}
+                prefix={<HomeOutlined />}
+                placeholder="Địa chỉ"
+              />
+            </Form.Item>
+            <Form.Item
+              className={styles['login_bottom_email']}
+              name="business_areas"
+            >
+              <Select size="large" placeholder="Lĩnh vực kinh doanh"></Select>
             </Form.Item>
             <Form.Item
               className={styles['login_bottom_email']}
@@ -518,7 +516,7 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<MailOutlined className="site-form-item-icon" />}
+                prefix={<MailOutlined />}
                 placeholder="*Email"
               />
             </Form.Item>
@@ -530,19 +528,8 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<PhoneOutlined className="site-form-item-icon" />}
+                prefix={<PhoneOutlined />}
                 placeholder="*Liên hệ"
-              />
-            </Form.Item>
-            <Form.Item
-              className={styles['login_bottom_email']}
-              name="addressRegister"
-            >
-              <Input
-                size="large"
-                style={{ borderRadius: '2rem' }}
-                prefix={<HomeOutlined className="site-form-item-icon" />}
-                placeholder="Địa chỉ"
               />
             </Form.Item>
             <Form.Item
@@ -553,7 +540,28 @@ export default function Login() {
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
-                prefix={<EnvironmentOutlined className="site-form-item-icon" />}
+                prefix={
+                  <svg
+                    style={{
+                      width: 18,
+                      height: 18,
+                    }}
+                    aria-hidden="true"
+                    focusable="false"
+                    data-prefix="far"
+                    data-icon="address-card"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 576 512"
+                    class="svg-inline--fa fa-address-card fa-w-18 fa-3x"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M528 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48zm0 400H48V80h480v352zM208 256c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm-89.6 128h179.2c12.4 0 22.4-8.6 22.4-19.2v-19.2c0-31.8-30.1-57.6-67.2-57.6-10.8 0-18.7 8-44.8 8-26.9 0-33.4-8-44.8-8-37.1 0-67.2 25.8-67.2 57.6v19.2c0 10.6 10 19.2 22.4 19.2zM360 320h112c4.4 0 8-3.6 8-8v-16c0-4.4-3.6-8-8-8H360c-4.4 0-8 3.6-8 8v16c0 4.4 3.6 8 8 8zm0-64h112c4.4 0 8-3.6 8-8v-16c0-4.4-3.6-8-8-8H360c-4.4 0-8 3.6-8 8v16c0 4.4 3.6 8 8 8zm0-64h112c4.4 0 8-3.6 8-8v-16c0-4.4-3.6-8-8-8H360c-4.4 0-8 3.6-8 8v16c0 4.4 3.6 8 8 8z"
+                      class=""
+                    ></path>
+                  </svg>
+                }
                 placeholder="*Tên doanh nghiệp"
               />
             </Form.Item>
