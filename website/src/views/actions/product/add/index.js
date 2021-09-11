@@ -100,8 +100,8 @@ export default function ProductAdd() {
     if (attributes.length === 1) {
       attributes[0].values.map((value) => {
         variantsNew.push({
-          title: `${attributes[0].option} ${value}`,
-          sku: `${attributes[0].option}-${value}`,
+          title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
+          sku: `${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
           image: '',
           imagePreview: '',
           options: [{ name: attributes[0].option, value: value }],
@@ -116,8 +116,8 @@ export default function ProductAdd() {
       attributes[0].values.map((v0) => {
         attributes[1].values.map((v1) => {
           variantsNew.push({
-            title: `${attributes[0].option} ${attributes[1].option} ${v0} ${v1}`,
-            sku: `${attributes[0].option}-${attributes[1].option}-${v0}-${v1}`,
+            title: `${attributes[0].option.toUpperCase()} ${attributes[1].option.toUpperCase()} ${v0} ${v1}`,
+            sku: `${attributes[0].option.toUpperCase()}-${attributes[1].option.toUpperCase()}-${v0}-${v1}`,
             image: '',
             imagePreview: '',
             options: [
@@ -961,7 +961,10 @@ export default function ProductAdd() {
               label="Mã sản phẩm/SKU"
               name="sku"
               rules={[
-                { required: true, message: 'Vui lòng nhập mã sản phẩm/sku!' },
+                {
+                  required: !isProductHasVariants && true,
+                  message: 'Vui lòng nhập mã sản phẩm/sku!',
+                },
               ]}
             >
               <Input size="large" placeholder="Nhập mã sản phẩm/sku" />

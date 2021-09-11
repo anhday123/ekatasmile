@@ -59,7 +59,7 @@ function ModalIntro() {
       const res = await getAllLabel()
       console.log(res)
       if (res.status === 200) {
-        setLabels(res.data.data)
+        setLabels(res.data.data.filter((e) => e.active))
       }
     } catch (error) {
       console.log(error)
