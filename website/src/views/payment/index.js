@@ -7,8 +7,8 @@ import {
   Switch,
   Button,
   Modal,
-  Radio,
-  Space,
+  Input,
+  Form,
 } from 'antd'
 import vietcombank from './../../assets/img/vietcombank.png'
 import sub from './../../assets/img/sub.png'
@@ -749,15 +749,14 @@ export default function Payment() {
         onCancel={() => setPaymentTypeModal(false)}
         onOk={() => setPaymentTypeModal(false)}
       >
-        <Radio.Group defaultValue="1">
-          <Space direction="vertical">
-            <Radio value="1">
-              Thanh toán bằng smartphone (qua Mobile banking hoặc Mã QR)
-            </Radio>
-            <Radio value="2">Thanh toán bằng cổng thanh toán</Radio>
-            <Radio value="3">Thanh toán bằng ví điện tử</Radio>
-          </Space>
-        </Radio.Group>
+        <Form layout="vertical">
+          <Form.Item label="Hình thức thanh toán">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ghi chú">
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   )
