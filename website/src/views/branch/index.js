@@ -142,16 +142,19 @@ export default function Branch() {
       dataIndex: 'address',
       sorter: (a, b) => compare(a, b, 'address'),
     },
-
     {
-      title: 'Quận/huyện',
-      dataIndex: 'district',
-      sorter: (a, b) => compare(a, b, 'district'),
+      title: 'Loại kho',
+      dataIndex: 'warehouse_type',
     },
     {
-      title: 'Thành phố',
-      dataIndex: 'province',
-      sorter: (a, b) => compare(a, b, 'province'),
+      title: 'Dùng điểm',
+      dataIndex: 'use_point',
+      render: (text) => (text ? 'Có' : 'Không'),
+    },
+    {
+      title: 'Tích điểm',
+      dataIndex: 'accumulate_point',
+      render: (text) => (text ? 'Có' : 'Không'),
     },
     {
       title: 'Hành động',
@@ -193,6 +196,7 @@ export default function Branch() {
           province: record.province,
           store: record.store_id,
           district: record.district,
+          warehouse_type: record.warehouse_type,
         })
       }
     }, [visibleUpdateBranch])
@@ -224,6 +228,7 @@ export default function Branch() {
               phone: formData.phone,
               province: formData.province,
               district: formData.district,
+              warehouse_type: formData.warehouse_type,
             }
 
             if (urlImageBranch) body.logo = urlImageBranch || ''
@@ -316,6 +321,39 @@ export default function Branch() {
               </Col>
             </Row>
             <Row justify="space-between" align="middle">
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={11}
+                lg={11}
+                xl={11}
+              >
+                <Form.Item
+                  name="warehouse_type"
+                  label={
+                    <div style={{ color: 'black', fontWeight: '600' }}>
+                      Loại kho
+                    </div>
+                  }
+                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                >
+                  <Select
+                    size="large"
+                    showSearch
+                    style={{ width: '100%' }}
+                    placeholder="Chọn quận huyện"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    <Option value="sở hữu">Kho sở hữu</Option>
+                    <Option value="dịch vụ">Kho thuê dịch vụ</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
               <Col xs={24} sm={24} md={11} lg={11} xl={11}>
                 <Form.Item
                   name="district"

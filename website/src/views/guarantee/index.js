@@ -170,11 +170,11 @@ export default function Guarantee() {
         getWarranty({ ...removeFalse(filter) })
         notification.success({ message: 'Import thành công' })
       } else {
-        res.forEach((e) => {
+        res.forEach((e, index) => {
           if (!e.data.success) {
             notification.error({
               message: 'Thất bại',
-              description: e.data.message,
+              description: `Dòng ${index+1}: ${e.data.message} ` ,
             })
           }
         })

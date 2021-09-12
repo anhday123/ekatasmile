@@ -9,9 +9,7 @@ import { Link } from 'react-router-dom'
 //antd
 import {
   Switch,
-  Modal,
   Input,
-  Upload,
   Row,
   DatePicker,
   Col,
@@ -20,11 +18,10 @@ import {
   Table,
   Popover,
   Button,
-  Typography,
 } from 'antd'
 
 //icons
-import { PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 //components
 import StoreInformationView from 'components/store/store-information-view'
@@ -35,79 +32,40 @@ import Permission from 'components/permission'
 import { apiDistrict, apiProvince } from 'apis/information'
 import { apiFilterCity } from 'apis/branch'
 import { apiSearch, getAllStore, updateStore } from 'apis/store'
-import axios from 'axios'
 import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
-const { Text } = Typography
 export default function Store() {
   const dispatch = useDispatch()
+  const typingTimeoutRef = useRef(null)
+
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [store, setStore] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const typingTimeoutRef = useRef(null)
-  const apiSearchData = async (value) => {
-    try {
-      setLoading(true)
+  const [countStore, setCountStore] = useState(0)
+  const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+  })
 
-      const res = await apiSearch({ search: value })
-
-      if (res.status === 200) setStore(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const apiSearchProvinceData = async (value) => {
-    try {
-      setLoading(true)
-      const res = await apiSearch({ province: value })
-
-      if (res.status === 200) setStore(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const apiSearchDistrictData = async (value) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearch({ district: value })
-
-      if (res.status === 200) setStore(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearch({ from_date: start, to_date: end })
-
-      if (res.status === 200) setStore(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
-  const [clear, setClear] = useState(-1)
+  const [valueDateFilter, setValueDateFilter] = useState(null)
   function onChangeDate(dates, dateStrings) {
-    setClear(-1)
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    apiSearchDateData(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
+    if (dates) {
+      setValueDateFilter(dates)
+      paramsFilter.from_date = dateStrings[0]
+      paramsFilter.to_date = dateStrings[1]
+    } else {
+      setValueDateFilter(null)
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
+    }
+
+    paramsFilter.page = 1
+    setParamsFilter({ ...paramsFilter })
   }
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -117,9 +75,12 @@ export default function Store() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-      apiSearchData(value)
-    }, 300)
-    //
+      if (value) paramsFilter.search = value
+      else delete paramsFilter.search
+
+      paramsFilter.page = 1
+      setParamsFilter({ ...paramsFilter })
+    }, 750)
   }
 
   const openNotificationSuccessStoreDelete = (data) => {
@@ -139,7 +100,7 @@ export default function Store() {
       const res = await updateStore(object, id)
       console.log(res)
       if (res.status === 200) {
-        await getAllStoreData()
+        await _getStores()
         setSelectedRowKeys([])
         openNotificationSuccessStoreDelete(data)
       }
@@ -159,24 +120,15 @@ export default function Store() {
     )
   }
 
-  const getAllStoreData = async () => {
+  const _getStores = async (params) => {
     try {
       setLoading(true)
-      const res = await getAllStore()
+      const res = await getAllStore(params)
       console.log(res)
       if (res.status === 200) {
         setStore(res.data.data)
-
-        var arrayDistrict = []
-        var arrayProvince = []
-        res.data.data &&
-          res.data.data.length > 0 &&
-          res.data.data.forEach((values, index) => {
-            arrayDistrict.push(values.district)
-            arrayProvince.push(values.province)
-          })
+        setCountStore(res.data.count)
       }
-      // if (res.status === 200) setUsers(res.data);
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -196,29 +148,12 @@ export default function Store() {
     {
       title: 'Mã cửa hàng',
       dataIndex: 'code',
-      width: 150,
       render: (text, record) => <StoreInformationView recordData={record} />,
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
-      title: 'Tên cửa hàng',
-      dataIndex: 'name',
-      width: 150,
-      render: (text, record) => <div>{text}</div>,
-      sorter: (a, b) => compare(a, b, 'name'),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      width: 150,
-      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
       title: 'Ảnh',
       dataIndex: 'logo',
-      width: 150,
       render: (text, record) =>
         text ? (
           <Popover content={() => contentImage(text)}>
@@ -244,28 +179,33 @@ export default function Store() {
         ),
     },
     {
+      title: 'Tên cửa hàng',
+      dataIndex: 'name',
+      render: (text, record) => <div>{text}</div>,
+      sorter: (a, b) => compare(a, b, 'name'),
+    },
+
+    {
       title: 'Liên hệ',
       dataIndex: 'phone',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thành phố',
       dataIndex: 'province',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'province'),
     },
     {
-      title: 'Số fax',
-      dataIndex: 'fax',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'fax'),
+      title: 'Ngày tạo',
+      dataIndex: 'create_date',
+      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Trạng thái',
@@ -281,19 +221,13 @@ export default function Store() {
     },
   ]
 
-  const showDrawer = () => {
-    setVisible(true)
-  }
-
   const onClose = () => {
     setVisible(false)
   }
   const onCloseUpdate = () => {
     setVisibleUpdate(false)
   }
-  const showDrawerUpdate = () => {
-    setVisibleUpdate(true)
-  }
+
   const onSelectChange = (selectedRowKeys) => {
     console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
@@ -352,7 +286,7 @@ export default function Store() {
       const res = await updateStore(object, id)
       console.log(res)
       if (res.status === 200) {
-        await getAllStoreData()
+        await _getStores()
         setSelectedRowKeys([])
         openNotificationSuccessStoreUpdate(object.name)
         onClose()
@@ -408,160 +342,58 @@ export default function Store() {
           }
         })
     } else {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          if (isNaN(values.phone) || isNaN(values.fax)) {
-            if (isNaN(values.phone)) {
-              openNotificationErrorStoreRegexPhone('Liên hệ')
-            }
-            if (isNaN(values.fax)) {
-              openNotificationErrorStoreRegex('Số fax')
-            }
-          } else {
-            if (regex.test(values.phone)) {
-              updateStoreDataUpdate(
-                {
-                  ...values,
-                  name: values.name.toLowerCase(),
-                  phone: values.phone,
-                  email: values.email,
-                  fax: arrayUpdate[0].fax,
-                  website:
-                    arrayUpdate[0] && arrayUpdate[0].website
-                      ? arrayUpdate[0].website
-                      : '',
-                  latitude: ' ',
-                  longtitude: ' ',
-                  address:
-                    arrayUpdate[0] && arrayUpdate[0].address
-                      ? arrayUpdate[0].address.toLowerCase()
-                      : '',
-                  ward: '',
-                  district: arrayUpdate[0].district,
-                  province: arrayUpdate[0].province,
-                  logo: arrayUpdate[0].logo,
-                },
-                values.store_id
-              )
-            } else {
-              openNotificationErrorStoreRegexPhone('Liên hệ')
-            }
+      arrayUpdate.forEach((values, index) => {
+        if (isNaN(values.phone) || isNaN(values.fax)) {
+          if (isNaN(values.phone)) {
+            openNotificationErrorStoreRegexPhone('Liên hệ')
           }
-        })
-    }
-  }
-  const UploadImg = ({ imageUrl, indexUpdate }) => {
-    const [imgUrl, setImgUrl] = useState(imageUrl)
-    const [imgFile, setImgFile] = useState(null)
-    function getBase64(img, callback) {
-      const reader = new FileReader()
-      reader.addEventListener('load', () => callback(reader.result))
-      reader.readAsDataURL(img)
-    }
-    const handleChange = (info) => {
-      if (info.file.originFileObj) setImgFile(info.file.originFileObj)
-
-      getBase64(info.file.originFileObj, (imageUrl) => {
-        setImgUrl(imageUrl)
+          if (isNaN(values.fax)) {
+            openNotificationErrorStoreRegex('Số fax')
+          }
+        } else {
+          if (regex.test(values.phone)) {
+            updateStoreDataUpdate(
+              {
+                ...values,
+                name: values.name.toLowerCase(),
+                phone: values.phone,
+                email: values.email,
+                fax: arrayUpdate[0].fax,
+                website:
+                  arrayUpdate[0] && arrayUpdate[0].website
+                    ? arrayUpdate[0].website
+                    : '',
+                latitude: ' ',
+                longtitude: ' ',
+                address:
+                  arrayUpdate[0] && arrayUpdate[0].address
+                    ? arrayUpdate[0].address.toLowerCase()
+                    : '',
+                ward: '',
+                district: arrayUpdate[0].district,
+                province: arrayUpdate[0].province,
+                logo: arrayUpdate[0].logo,
+              },
+              values.store_id
+            )
+          } else {
+            openNotificationErrorStoreRegexPhone('Liên hệ')
+          }
+        }
       })
     }
-
-    useEffect(() => {
-      const _uploadImg = async () => {
-        try {
-          const formData = new FormData()
-          formData.append('files', imgFile)
-          if (formData) {
-            dispatch({ type: ACTION.LOADING, data: true })
-            let a = axios
-              .post(
-                'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                formData,
-                {
-                  headers: {
-                    'Content-Type': 'multipart/form-data',
-                  },
-                }
-              )
-              .then((resp) => resp)
-            let resultsMockup = await Promise.all([a])
-            console.log(resultsMockup[0].data.data[0])
-            dispatch({ type: ACTION.LOADING, data: false })
-            //   const array = [...store];
-            arrayUpdate[indexUpdate].logo = resultsMockup[0].data.data[0]
-          }
-        } catch (error) {}
-      }
-
-      if (imgFile) {
-        _uploadImg()
-      }
-    }, [imgFile])
-
-    return (
-      <Upload
-        name="avatar"
-        listType="picture-card"
-        className="avatar-uploader"
-        showUploadList={false}
-        onChange={handleChange}
-      >
-        {imgUrl ? (
-          <img
-            src={imgUrl}
-            alt="avatar"
-            style={{ width: '5rem', height: '5rem', objectFit: 'contain' }}
-          />
-        ) : (
-          <p className="ant-upload-drag-icon">
-            <PlusOutlined />
-
-            <div>Thêm ảnh</div>
-          </p>
-        )}
-      </Upload>
-    )
-  }
-  const openNotificationClear = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Dữ liệu đã được reset về ban đầu.',
-    })
   }
 
-  const [districtSelect, setDistrictSelect] = useState('')
-  const dateFormat = 'YYYY/MM/DD'
   const onClickClear = async () => {
-    await getAllStoreData()
-    openNotificationClear()
+    Object.keys(paramsFilter).map((e) => delete paramsFilter[e])
+    paramsFilter.page = 1
+    paramsFilter.page_size = 20
+    setParamsFilter({ ...paramsFilter })
     setValueSearch('')
-    setClear(1)
+    setValueDateFilter(null)
     setSelectedRowKeys([])
-    setStart([])
-    setEnd([])
-    setCity('default')
-    setDistrictSelect('default')
   }
-  const [city, setCity] = useState('')
-  const handleChange = async (value) => {
-    console.log(`selected ${value}`)
-    setCity(value)
-    if (value !== 'default') {
-      apiSearchProvinceData(value)
-    } else {
-      await getAllStoreData()
-    }
-  }
-  const handleChangeDistrict = async (value) => {
-    console.log(`selected ${value}`)
-    setDistrictSelect(value)
-    if (value !== 'default') {
-      apiSearchDistrictData(value)
-    } else {
-      await getAllStoreData()
-    }
-  }
+
   const [districtMain, setDistrictMain] = useState([])
   const apiDistrictData = async () => {
     try {
@@ -594,27 +426,10 @@ export default function Store() {
   }
   useEffect(() => {
     apiDistrictData()
-    getAllStoreData()
     apiProvinceData()
   }, [])
 
-  const [districtMainAPI, setDistrictMainAPI] = useState([])
-  const apiFilterCityData = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiFilterCity({ search: object })
-      if (res.status === 200) {
-        setDistrictMainAPI(res.data.data)
-      }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
-  }
+  useEffect(() => _getStores({ ...paramsFilter }), [paramsFilter])
 
   return (
     <div className={`${styles['promotion_manager']} ${styles['card']}`}>
@@ -653,7 +468,7 @@ export default function Store() {
         </Link>
         <div className={styles['promotion_manager_button']}>
           <Permission permissions={[PERMISSIONS.them_cua_hang]}>
-            <StoreInformationAdd reloadData={getAllStoreData} />
+            <StoreInformationAdd reloadData={_getStores} />
           </Permission>
         </div>
       </div>
@@ -701,28 +516,26 @@ export default function Store() {
             <Select
               size="large"
               showSearch
+              allowClear
               style={{ width: '100%' }}
-              placeholder="Select a person"
+              placeholder="Chọn tỉnh/thành phố"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={city ? city : 'default'}
-              onChange={(event) => {
-                handleChange(event)
-                handleChangeCity(event)
+              onChange={(value) => {
+                if (value) paramsFilter.province = value
+                else delete paramsFilter.province
+                paramsFilter.page = 1
+                setParamsFilter({ ...paramsFilter })
               }}
+              value={paramsFilter.province}
             >
-              <Option value="default">Tất cả tỉnh/thành phố</Option>
-              {provinceMain &&
-                provinceMain.length > 0 &&
-                provinceMain.map((values, index) => {
-                  return (
-                    <Option value={values.province_name}>
-                      {values.province_name}
-                    </Option>
-                  )
-                })}
+              {provinceMain.map((values, index) => (
+                <Option value={values.province_name} key={index}>
+                  {values.province_name}
+                </Option>
+              ))}
             </Select>
           </div>
         </Col>
@@ -738,35 +551,27 @@ export default function Store() {
             <Select
               size="large"
               showSearch
+              allowClear
               style={{ width: '100%' }}
-              placeholder="Select a person"
+              placeholder="Chọn quận/huyện"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={districtSelect ? districtSelect : 'default'}
-              onChange={handleChangeDistrict}
+              value={paramsFilter.district}
+              onChange={(value) => {
+                if (value) paramsFilter.district = value
+                else delete paramsFilter.district
+
+                paramsFilter.page = 1
+                setParamsFilter({ ...paramsFilter })
+              }}
             >
-              <Option value="default">Tất cả quận/huyện</Option>
-              {districtMainAPI && districtMainAPI.length > 0
-                ? districtMainAPI &&
-                  districtMainAPI.length > 0 &&
-                  districtMainAPI.map((values, index) => {
-                    return (
-                      <Option value={values.district_name}>
-                        {values.district_name}
-                      </Option>
-                    )
-                  })
-                : districtMain &&
-                  districtMain.length > 0 &&
-                  districtMain.map((values, index) => {
-                    return (
-                      <Option value={values.district_name}>
-                        {values.district_name}
-                      </Option>
-                    )
-                  })}
+              {districtMain.map((values, index) => (
+                <Option value={values.district_name} key={index}>
+                  {values.district_name}
+                </Option>
+              ))}
             </Select>
           </div>
         </Col>
@@ -783,13 +588,7 @@ export default function Store() {
             <RangePicker
               size="large"
               className="br-15__date-picker"
-              value={
-                clear === 1
-                  ? []
-                  : start !== ''
-                  ? [moment(start, dateFormat), moment(end, dateFormat)]
-                  : []
-              }
+              value={valueDateFilter}
               style={{ width: '100%' }}
               ranges={{
                 Today: [moment(), moment()],
@@ -827,11 +626,22 @@ export default function Store() {
           size="small"
           rowKey="_id"
           loading={loading}
-          bordered
           columns={columns}
           dataSource={store}
-          style={{
-            width: '100%',
+          style={{ width: '100%' }}
+          pagination={{
+            position: ['bottomLeft'],
+            current: paramsFilter.page,
+            defaultPageSize: 20,
+            pageSizeOptions: [20, 30, 50, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              setSelectedRowKeys([])
+              paramsFilter.page = page
+              paramsFilter.page_size = pageSize
+              _getStores({ ...paramsFilter })
+            },
+            total: countStore,
           }}
         />
       </div>

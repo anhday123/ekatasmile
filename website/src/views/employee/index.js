@@ -17,7 +17,6 @@ import {
   Button,
   Drawer,
   Table,
-  Typography,
 } from 'antd'
 import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
@@ -28,10 +27,10 @@ import { apiDistrict, apiProvince } from '../../apis/information'
 import EmployeeAdd from '../actions/employee/add'
 import { getAllStore } from '../../apis/store'
 import Permission from 'components/permission'
-import { compare } from 'utils'
+import { compare, removeNull } from 'utils'
 const { Option } = Select
+
 export default function Employee() {
-  const dispatch = useDispatch()
   const [employee, setEmployee] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -39,16 +38,31 @@ export default function Employee() {
   const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [loading, setLoading] = useState(false)
-
+  const [province, setProvince] = useState([])
+  const [record, setRecord] = useState({})
+  const [monthSix, setMonthSix] = useState(0)
+  const [employeeCount, setEmployeeCount] = useState([])
+  const [arrayUpdate, setArrayUpdate] = useState([])
+  const [permission, setPermission] = useState([])
+  const [district, setDistrict] = useState([])
+  const [branch, setBranch] = useState([])
+  const [store, setStore] = useState([])
+  const [filter, setFilter] = useState({
+    search: '',
+    from_date: undefined,
+    to_date: undefined,
+    role_id: '',
+  })
+  const { RangePicker } = DatePicker
+  var temp = 0
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const [record, setRecord] = useState({})
+
   const modal2VisibleModalMain = (modal2Visible, record) => {
     setModal2Visible(modal2Visible)
     setRecord(record)
   }
-  const { RangePicker } = DatePicker
 
   function onChangeSwitch(checked, record) {
     updateUserData(
@@ -58,63 +72,28 @@ export default function Employee() {
     )
   }
 
-  const apiSearchData = async (value) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearch({ search: value })
-
-      if (res.status === 200) {
-        setEmployee(
-          res.data.data.filter((e) => e._role && e._role.name == 'EMPLOYEE'    )
-        )
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const typingTimeoutRef = useRef(null)
-  const [valueSearch, setValueSearch] = useState('')
-  const onSearch = (e) => {
-    setValueSearch(e.target.value)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value
-      apiSearchData(value)
-    }, 300)
-  }
   const changePagi = (page, page_size) => setPagination({ page, page_size })
 
-  const [monthSix, setMonthSix] = useState(0)
-  var temp = 0
-  const [employeeTemp, setEmployeeTemp] = useState([])
-  const [employeeCount, setEmployeeCount] = useState([])
-  const apiAllEmployeeData = async () => {
+  const apiAllEmployeeData = async (params) => {
     try {
       setLoading(true)
       const res = await apiSearch({
         page: pagination.page,
         page_size: pagination.page_size,
+        ...params,
       })
       if (res.status === 200 && res.data.success) {
-        let array = []
         res.data.data.forEach((values) => {
-          if (values._role && values._role.name === 'EMPLOYEE') {
-            array.push(values)
-            let now = moment()
-            let days = now.diff(values.create_date, 'days')
-            if (days > 180) {
-              temp++
-            }
+          let now = moment()
+          let days = now.diff(values.create_date, 'days')
+          if (days > 180) {
+            temp++
           }
         })
         setMonthSix(temp)
-        setEmployeeTemp(res.data.data)
-        setEmployee(array)
-        setEmployeeCount(array)
+        // setEmployeeTemp(res.data.data)
+        setEmployee(res.data.data)
+        setEmployeeCount(res.data.data)
       }
       setLoading(false)
     } catch (error) {
@@ -122,9 +101,7 @@ export default function Employee() {
       console.log(error)
     }
   }
-  useEffect(() => {
-    apiAllEmployeeData()
-  }, [])
+
   const columns = [
     {
       title: 'Mã nhân sự',
@@ -159,6 +136,7 @@ export default function Employee() {
       title: 'Chức vụ',
       dataIndex: '_role',
       width: 150,
+      render: (data) => (data ? data.name : ''),
       sorter: (a, b) => compare(a, b, '_role'),
     },
     {
@@ -246,19 +224,7 @@ export default function Employee() {
       setLoading(false)
     }
   }
-  const dateFormat = 'YYYY/MM/DD'
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
-  const [clear, setClear] = useState(-1)
-  function onChange(dates, dateStrings) {
-    setClear(-1)
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    apiSearchDateData(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
-  }
+
   const openNotificationClear = () => {
     notification.success({
       message: 'Thành công',
@@ -275,25 +241,14 @@ export default function Employee() {
     })
   }
 
-  const openNotificationUpdateData = (data, data2) => {
-    notification.success({
-      message: 'Thành công',
-      description: (
-        <div>
-          Cập nhật thông tin nhân sự <b>{`${data} ${data2}`}</b> thành công
-        </div>
-      ),
-    })
-  }
   const onClickClear = async () => {
-    await apiAllEmployeeData()
+    setFilter({
+      search: '',
+      from_date: undefined,
+      to_date: undefined,
+      role_id: '',
+    })
     openNotificationClear()
-    setValueSearch('')
-    setClear(1)
-    setSelectedRowKeys([])
-    setStart([])
-    setEnd([])
-    setRoleSelect('default')
   }
   const openNotificationErrorUpdate = () => {
     notification.error({
@@ -302,28 +257,6 @@ export default function Employee() {
     })
   }
 
-  const updateUserUpdateData = async (object, id, data) => {
-    console.log(object)
-    console.log('___333')
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await updateUser(object, id)
-      console.log(res)
-      if (res.status === 200) {
-        await apiAllEmployeeData()
-        openNotificationUpdateData(object.first_name, object.last_name)
-        setSelectedRowKeys([])
-        onClose()
-        onCloseUpdate()
-      } else {
-        openNotificationErrorUpdate()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
   const updateUserData = async (object, id, data) => {
     try {
       setLoading(true)
@@ -356,7 +289,6 @@ export default function Employee() {
     setVisibleUpdate(true)
   }
 
-  const [store, setStore] = useState([])
   const getAllStoreData = async () => {
     try {
       setLoading(true)
@@ -370,11 +302,6 @@ export default function Employee() {
     }
   }
 
-  useEffect(() => {
-    getAllStoreData()
-  }, [])
-
-  const [arrayUpdate, setArrayUpdate] = useState([])
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
@@ -394,7 +321,7 @@ export default function Employee() {
     selectedRowKeys,
     onChange: onSelectChange,
   }
-  const [permission, setPermission] = useState([])
+
   const apiAllRoleData = async () => {
     try {
       setLoading(true)
@@ -409,10 +336,7 @@ export default function Employee() {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    apiAllRoleData()
-  }, [])
-  const [branch, setBranch] = useState([])
+
   const getAllBranchData = async () => {
     try {
       setLoading(true)
@@ -425,10 +349,7 @@ export default function Employee() {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    getAllBranchData()
-  }, [])
-  const [district, setDistrict] = useState([])
+
   const apiDistrictData = async () => {
     try {
       setLoading(true)
@@ -441,7 +362,7 @@ export default function Employee() {
       setLoading(false)
     }
   }
-  const [province, setProvince] = useState([])
+
   const apiProvinceData = async () => {
     try {
       setLoading(true)
@@ -454,33 +375,7 @@ export default function Employee() {
       setLoading(false)
     }
   }
-  const apiFilterRoleEmployeeData = async (data) => {
-    try {
-      setLoading(true)
-      const res = await apiFilterRoleEmployee({ _role: data })
-      if (res.status === 200) {
-        setEmployee(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const [roleSelect, setRoleSelect] = useState('')
-  const onChangeFilter = async (e) => {
-    if (e === 'default') {
-      await apiAllEmployeeData()
-    } else {
-      apiFilterRoleEmployeeData(e)
-    }
-    setRoleSelect(e)
-  }
-  useEffect(() => {
-    apiDistrictData()
-  }, [])
-  useEffect(() => {
-    apiProvinceData()
-  }, [])
+
   const [districtMainAPI, setDistrictMainAPI] = useState([])
   const apiFilterCityData = async (object) => {
     try {
@@ -497,6 +392,24 @@ export default function Employee() {
   function handleChangeCity(value) {
     apiFilterCityData(value)
   }
+  useEffect(() => {
+    getAllStoreData()
+  }, [])
+  useEffect(() => {
+    apiAllRoleData()
+  }, [])
+  useEffect(() => {
+    getAllBranchData()
+  }, [])
+  useEffect(() => {
+    apiAllEmployeeData(removeNull(filter))
+  }, [filter])
+  useEffect(() => {
+    apiDistrictData()
+  }, [])
+  useEffect(() => {
+    apiProvinceData()
+  }, [])
 
   return (
     <>
@@ -561,9 +474,11 @@ export default function Employee() {
                   size="large"
                   style={{ width: '100%' }}
                   name="name"
-                  value={valueSearch}
+                  value={filter.search}
                   enterButton
-                  onChange={onSearch}
+                  onChange={(e) =>
+                    setFilter({ ...filter, search: e.target.value })
+                  }
                   className={styles['orders_manager_content_row_col_search']}
                   placeholder="Tìm kiếm theo mã, tên đăng nhập"
                   allowClear
@@ -585,10 +500,8 @@ export default function Employee() {
                   className="br-15__date-picker"
                   // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
                   value={
-                    clear === 1
-                      ? []
-                      : start !== ''
-                      ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    filter.from_date
+                      ? [moment(filter.from_date), moment(filter.to_date)]
                       : []
                   }
                   style={{ width: '100%' }}
@@ -599,7 +512,13 @@ export default function Employee() {
                       moment().endOf('month'),
                     ],
                   }}
-                  onChange={onChange}
+                  onChange={(date, dateString) =>
+                    setFilter({
+                      ...filter,
+                      from_date: dateString[0],
+                      to_date: dateString[1],
+                    })
+                  }
                 />
               </div>
             </Col>
@@ -624,17 +543,19 @@ export default function Employee() {
                       .toLowerCase()
                       .indexOf(input.toLowerCase()) >= 0
                   }
-                  value={roleSelect ? roleSelect : 'default'}
+                  value={filter.role_id}
                   onChange={(event) => {
-                    onChangeFilter(event)
+                    setFilter({ ...filter, role_id: event })
                   }}
                 >
-                  <Option value="default">Tất cả chức vụ</Option>
+                  <Option value="">Tất cả chức vụ</Option>
 
                   {permission &&
                     permission.length > 0 &&
                     permission.map((values, index) => {
-                      return <Option value={values.name}>{values.name}</Option>
+                      return (
+                        <Option value={values.role_id}>{values.name}</Option>
+                      )
                     })}
                 </Select>
               </div>

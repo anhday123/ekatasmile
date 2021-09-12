@@ -1,18 +1,28 @@
-import styles from './../add/add.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION, ROUTES } from './../../../../consts/index'
-import { apiDistrict, apiProvince } from '../../../../apis/information'
+import styles from './../add/add.module.scss'
+import { ACTION } from 'consts'
 import { useDispatch } from 'react-redux'
-import { apiAddSupplier } from '../../../../apis/supplier'
-import { Select, Button, Input, Form, Row, Col, notification } from 'antd'
-import { Link, useHistory } from 'react-router-dom'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import { apiFilterCity } from '../../../../apis/branch'
+
+//antd
+import {
+  Select,
+  Button,
+  Input,
+  Form,
+  Row,
+  Col,
+  notification,
+  Checkbox,
+} from 'antd'
+
+//apis
+import { apiAddSupplier } from 'apis/supplier'
+import { apiDistrict, apiProvince } from 'apis/information'
+
 const { Option } = Select
 export default function SupplierAdd(props) {
   const [form] = Form.useForm()
   const dispatch = useDispatch()
-  let history = useHistory()
   const openNotificationRegisterFailMail = () => {
     notification.error({
       message: 'Thất bại',
@@ -39,8 +49,8 @@ export default function SupplierAdd(props) {
         openNotificationRegisterFailMailRegex('Liên hệ')
       } else {
         if (regex.test(values.phoneNumber)) {
-          const object = {
-            // code: values.supplierCode.toLowerCase(),
+          const body = {
+            default: values.default || false,
             name: values.supplierName.toLowerCase(),
             phone: values.phoneNumber,
             email: values.email,
@@ -48,12 +58,11 @@ export default function SupplierAdd(props) {
               values && values.supplierAddress
                 ? values.supplierAddress.toLowerCase()
                 : '',
-            // ward: ' ',
             district: values.district.toLowerCase(),
             province: values.city.toLowerCase(),
           }
-          console.log(object)
-          apiAddSupplierData(object)
+          console.log(body)
+          apiAddSupplierData(body)
         } else {
           openNotificationRegisterFailMailRegex('Liên hệ')
         }
@@ -72,6 +81,7 @@ export default function SupplierAdd(props) {
         openNotification()
         props.reload()
         props.close()
+        form.resetFields()
       } else {
         openNotificationError()
       }
@@ -93,47 +103,38 @@ export default function SupplierAdd(props) {
       description: 'Tên nhà cung cấp đã tồn tại.',
     })
   }
-  const data = form.getFieldValue()
 
   const [province, setProvince] = useState([])
   const apiProvinceData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiProvince()
-      console.log(res)
       if (res.status === 200) {
         setProvince(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
     }
   }
 
   useEffect(() => {
     apiProvinceData()
+    apiGetDistricts()
   }, [])
+
   const [districtMain, setDistrictMain] = useState([])
-  const apiFilterCityData = async (object) => {
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const apiGetDistricts = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiFilterCity({ keyword: object })
-      console.log(res)
+      const res = await apiDistrict()
       if (res.status === 200) {
         setDistrictMain(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
     }
   }
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
-  }
-  data.district =
-    districtMain && districtMain.length > 0
-      ? districtMain[districtMain.length - 2].district_name
-      : ''
+
   return (
     <>
       <div className={styles['supplier_add']}>
@@ -191,10 +192,7 @@ export default function SupplierAdd(props) {
                 >
                   Địa chỉ
                 </div>
-                <Form.Item
-                  name="supplierAddress"
-                  // rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
+                <Form.Item name="supplierAddress">
                   <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>
@@ -241,42 +239,44 @@ export default function SupplierAdd(props) {
               lg={11}
               xl={11}
             >
-              <div>
-                <Form.Item
-                  name="city"
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tỉnh/thành phố
-                    </div>
+              <Form.Item
+                name="city"
+                label={
+                  <div style={{ color: 'black', fontWeight: '600' }}>
+                    Tỉnh/thành phố
+                  </div>
+                }
+                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn tỉnh/thành phố"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                   }
-                  hasFeedback
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+                  onChange={(value) => {
+                    if (value) {
+                      const districtsNew = districtsDefault.filter(
+                        (e) => e.province_name === value
+                      )
+                      if (districtsNew) setDistrictMain([...districtsNew])
+                    } else setDistrictMain([...districtsDefault])
+                  }}
                 >
-                  <Select
-                    size="large"
-                    onChange={handleChangeCity}
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn tỉnh/thành phố"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {province &&
-                      province.length > 0 &&
-                      province.map((values, index) => {
-                        return (
-                          <Option value={values.province_name}>
-                            {values.province_name}
-                          </Option>
-                        )
-                      })}
-                  </Select>
-                </Form.Item>
-              </div>
+                  {province.map((values, index) => {
+                    return (
+                      <Option value={values.province_name}>
+                        {values.province_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
             </Col>
           </Row>
 
@@ -296,93 +296,67 @@ export default function SupplierAdd(props) {
               lg={11}
               xl={11}
             >
-              <div>
-                <Form.Item
-                  // label="Mã nhà cung cấp"
-
-                  name="email"
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Email
-                    </div>
-                  }
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input placeholder="Nhập email" size="large" />
-                </Form.Item>
-              </div>
-            </Col>
-            {districtMain && districtMain.length > 0 ? (
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={11}
-                lg={11}
-                xl={11}
+              <Form.Item
+                name="email"
+                label={
+                  <div style={{ color: 'black', fontWeight: '600' }}>Email</div>
+                }
+                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
               >
-                <div>
-                  <Form.Item
-                    name="district"
-                    label={
-                      <div style={{ color: 'black', fontWeight: '600' }}>
-                        Quận/huyện
-                      </div>
-                    }
-                    hasFeedback
-                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                  >
-                    <Select
-                      size="large"
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Select a person"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      {districtMain &&
-                        districtMain.length > 0 &&
-                        districtMain.map((values, index) => {
-                          return (
-                            <Option value={values.district_name}>
-                              {values.district_name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
-            ) : (
-              ''
-            )}
-          </Row>
-
-          <Row className={styles['supplier_add_content_supplier_button']}>
-            <Col
-              style={{
-                width: '100%',
-                marginLeft: '1.5rem',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={4}
-              xl={3}
-            >
-              <Form.Item>
-                <Button size="large" type="primary" htmlType="submit">
-                  Lưu
-                </Button>
+                <Input placeholder="Nhập email" size="large" />
               </Form.Item>
             </Col>
+
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <Form.Item
+                name="district"
+                label={
+                  <div style={{ color: 'black', fontWeight: '600' }}>
+                    Quận/huyện
+                  </div>
+                }
+                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Select a person"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {districtMain.map((values, index) => {
+                    return (
+                      <Option value={values.district_name}>
+                        {values.district_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="space-between" align="middle" style={{ width: '100%' }}>
+            <Form.Item name="default" valuePropName="checked">
+              <Checkbox>Chọn làm mặc định</Checkbox>
+            </Form.Item>
+            <Form.Item>
+              <Button size="large" type="primary" htmlType="submit">
+                Lưu
+              </Button>
+            </Form.Item>
           </Row>
         </Form>
       </div>

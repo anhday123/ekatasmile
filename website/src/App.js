@@ -26,11 +26,11 @@ function App() {
       })
 
       const dataUser = decodeToken(localStorage.getItem('accessToken'))
-      if (dataUser)
-        dispatch({
-          type: 'SET_BRANCH_ID',
-          data: dataUser.data.branch_id,
-        })
+      // if (dataUser)
+      //   dispatch({
+      //     type: 'SET_BRANCH_ID',
+      //     data: dataUser.data.branch_id,
+      //   })
     }
   }, [])
 

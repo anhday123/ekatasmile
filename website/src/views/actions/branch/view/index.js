@@ -1,13 +1,11 @@
-import { Link, useParams, useHistory, useLocation } from 'react-router-dom'
-import { apiFilterRoleEmployee } from '../../../../apis/employee'
-import { apiAllRole, apiSearch, updateUser } from '../../../../apis/user'
-import { apiFilterCity, getAllBranch } from '../../../../apis/branch'
-import { apiDistrict, apiProvince } from '../../../../apis/information'
-import styles from './../view/view.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES } from './../../../../consts/index'
+import { useParams, useHistory } from 'react-router-dom'
+import styles from './../view/view.module.scss'
+import { ACTION, ROUTES } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
+
+//antd
 import {
   Switch,
   Select,
@@ -23,17 +21,19 @@ import {
   notification,
   DatePicker,
   Modal,
-  Typography,
 } from 'antd'
-import {
-  ArrowLeftOutlined,
-  FileImageOutlined,
-  WarningOutlined,
-} from '@ant-design/icons'
-import { logoutAction } from '../../../../actions/login'
-const { Text } = Typography
+
+//icons
+import { FileImageOutlined, WarningOutlined } from '@ant-design/icons'
+
+//apis
+import { logoutAction } from 'actions/login'
+import { apiDistrict, apiProvince } from 'apis/information'
+import { apiFilterCity, getAllBranch } from 'apis/branch'
+import { apiAllRole, apiSearch, updateUser } from 'apis/user'
+import { apiFilterRoleEmployee } from 'apis/employee'
+
 export default function BranchView(props) {
-  const location = useLocation()
   const history = useHistory()
 
   const [modal2Visible, setModal2Visible] = useState(false)

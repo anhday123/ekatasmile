@@ -11,10 +11,11 @@ import {
   Modal,
   Form,
   Upload,
+  Divider,
 } from 'antd'
 
 import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
-import { ACTION } from 'consts/index'
+import { ACTION, regexPhone } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 //apis
@@ -22,36 +23,30 @@ import { apiProvince } from 'apis/information'
 import { apiFilterCity, getAllBranch } from 'apis/branch'
 import { addStore, getAllStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
-import { getAllLabel } from 'apis/label'
+import { getAllLabel, addLabel } from 'apis/label'
 
 const { Option } = Select
 const { Dragger } = Upload
 export default function StoreInformationAdd({ reloadData }) {
   const dispatch = useDispatch()
   const [form] = Form.useForm()
+  const branchId = useSelector((state) => state.branch.branchId)
+
   const [branchList, setBranchList] = useState([])
-  const [labelList, setLabelList] = useState([])
-  const [imageStorePreview, setImageStorePreview] = useState('')
   const [imageStore, setImageStore] = useState('')
+  const [fileImageStore, setFileImageStore] = useState(null)
+  const [inputLabel, setInputLabel] = useState('')
+  const [labels, setLabels] = useState([])
 
   const [modal3Visible, setModal3Visible] = useState(false)
   const modal3VisibleModal = (modal3Visible) => {
     setModal3Visible(modal3Visible)
   }
 
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-
   function getBase64(img, callback) {
     const reader = new FileReader()
     reader.addEventListener('load', () => callback(reader.result))
     reader.readAsDataURL(img)
-  }
-
-  function isValidURL(string) {
-    var res = string.match(
-      /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
-    )
-    return res !== null
   }
 
   const openNotificationSuccessStore = () => {
@@ -70,18 +65,17 @@ export default function StoreInformationAdd({ reloadData }) {
     })
   }
 
-  const addStoreData = async (object) => {
+  const addStoreData = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      console.log(object)
-      const res = await addStore(object)
+      console.log(body)
+      const res = await addStore(body)
       if (res.status === 200) {
         await reloadData() //reload data khi tao store thanh cong
 
         openNotificationSuccessStore()
         modal3VisibleModal(false)
 
-        setImageStorePreview('')
         setImageStore('')
         form.resetFields()
       } else {
@@ -94,30 +88,23 @@ export default function StoreInformationAdd({ reloadData }) {
     }
   }
 
-  const propsMain = {
-    name: 'file',
-    multiple: true,
-    showUploadList: false,
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    async onChange(info) {
-      var { status } = info.file
-      setImageStore(info.file.originFileObj)
-      getBase64(info.file.originFileObj, (imageUrl) =>
-        setImageStorePreview(imageUrl)
-      )
-
-      if (status !== 'done') {
-        status = 'done'
-      }
-    },
-  }
-
-  const onFinish = async (values) => {
+  const onFinish = async () => {
+    //validated form
+    let isValidated = true
     try {
-      const regexp = new RegExp(regex)
+      await form.validateFields()
+      isValidated = true
+    } catch (error) {
+      isValidated = false
+    }
+
+    if (!isValidated) return
+
+    try {
+      const formData = form.getFieldsValue()
 
       //check validated phone
-      if (!regexp.test(values.phoneNumber)) {
+      if (!regexPhone.test(formData.phone)) {
         notification.error({ message: 'Số điện thoại không đúng định dạng' })
         return
       }
@@ -125,21 +112,15 @@ export default function StoreInformationAdd({ reloadData }) {
       dispatch({ type: ACTION.LOADING, data: true })
 
       let imgStore = ''
-      if (imageStore) {
-        imgStore = await uploadFile(imageStore)
-      }
+      if (fileImageStore) imgStore = await uploadFile(fileImageStore)
 
       const body = {
-        name: values.storeName,
+        ...formData,
         logo: imgStore,
-        phone: values.phoneNumber,
         latitude: '',
         longtitude: '',
-        address: values.address ? values.address : '',
-        district: values.district,
-        province: values.city,
-        branch_id: values.branch,
-        label_id: values.label,
+        address: formData.address || '',
+        label_id: formData.label || '',
       }
       dispatch({ type: ACTION.LOADING, data: false })
 
@@ -150,13 +131,40 @@ export default function StoreInformationAdd({ reloadData }) {
     }
   }
 
-  const [province, setProvince] = useState([])
+  const _addLabel = async () => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const body = {
+        name: inputLabel,
+        description: '',
+      }
+      const res = await addLabel(body)
+      console.log(res)
+      if (res.status === 200) {
+        let arrayLabelNew = [...labels]
+        arrayLabelNew.push(res.data.data)
+        setLabels([...arrayLabelNew])
+        setInputLabel('')
+        notification.success({ message: 'Tạo thành công label!' })
+      }
+
+      if (res.status === 400) {
+        setInputLabel('')
+        notification.error({ message: 'Label đã tồn tại!' })
+      }
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const [provinces, setProvinces] = useState([])
   const apiProvinceData = async () => {
     try {
       const res = await apiProvince()
       console.log(res)
       if (res.status === 200) {
-        setProvince(res.data.data)
+        setProvinces(res.data.data)
       }
     } catch (error) {
       console.log(error)
@@ -164,13 +172,15 @@ export default function StoreInformationAdd({ reloadData }) {
   }
 
   const [districtMain, setDistrictMain] = useState([])
-  const apiFilterCityData = async (object) => {
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const apiFilterCityData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiFilterCity({ search: object })
+      const res = await apiFilterCity()
       console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -178,54 +188,49 @@ export default function StoreInformationAdd({ reloadData }) {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
+
+  const getLabel = async () => {
+    try {
+      const res = await getAllLabel()
+      if (res.data.success) {
+        setLabels(res.data.data.filter((e) => e.active))
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const getBranch = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.data.success) {
+        setBranchList(res.data.data.filter((e) => e.active))
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   useEffect(() => {
     if (!modal3Visible) {
       form.resetFields()
-      setImageStorePreview('')
       setImageStore('')
+      setFileImageStore(null)
+    } else {
+      form.setFieldsValue({ branch_id: branchId })
     }
   }, [modal3Visible])
 
   useEffect(() => {
     apiProvinceData()
+    apiFilterCityData()
   }, [])
 
-  const dataValue = form.getFieldValue()
-  dataValue.district =
-    districtMain && districtMain.length > 0
-      ? districtMain[districtMain.length - 2].district_name
-      : ''
-
   useEffect(() => {
-    const getBranch = async () => {
-      try {
-        const res = await getAllBranch()
-        if (res.data.success) {
-          setBranchList(res.data.data.filter((e) => e.active))
-        }
-      } catch (e) {
-        console.log(e)
-      }
-    }
     getBranch()
-  }, [])
-  useEffect(() => {
-    const getLabel = async () => {
-      try {
-        const res = await getAllLabel()
-        if (res.data.success) {
-          setLabelList(res.data.data.filter((e) => e.active))
-        }
-      } catch (e) {
-        console.log(e)
-      }
-    }
     getLabel()
   }, [])
+
   return (
     <>
       <Button
@@ -239,339 +244,216 @@ export default function StoreInformationAdd({ reloadData }) {
       <Modal
         title="Thêm cửa hàng"
         centered
-        width={1000}
+        width={850}
         footer={null}
         visible={modal3Visible}
         onCancel={() => modal3VisibleModal(false)}
       >
-        <Form
-          className={styles['supplier_add_content']}
-          onFinish={onFinish}
-          form={form}
-          layout="vertical"
-        >
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
+        <Form form={form} layout="vertical">
+          <Upload
+            name="avatar"
+            listType="picture-card"
+            showUploadList={false}
+            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            onChange={(info) => {
+              if (info.file.status === 'done') info.file.status = 'done'
+              setFileImageStore(info.file.originFileObj)
+              getBase64(info.file.originFileObj, (imageUrl) =>
+                setImageStore(imageUrl)
+              )
             }}
           >
-            <Col
-              style={{ width: '100%', marginBottom: '1rem' }}
-              xs={24}
-              sm={5}
-              md={5}
-              lg={5}
-              xl={5}
-            >
-              <Dragger {...propsMain}>
-                {imageStorePreview ? (
-                  <p
-                    style={{ marginTop: '1.25rem' }}
-                    className="ant-upload-drag-icon"
-                  >
-                    <img
-                      src={imageStorePreview}
-                      style={{
-                        width: '7.5rem',
-                        height: '5rem',
-                        objectFit: 'contain',
-                      }}
-                      alt=""
-                    />
-                  </p>
-                ) : (
-                  <p
-                    style={{ marginTop: '1.25rem' }}
-                    className="ant-upload-drag-icon"
-                  >
-                    <PlusOutlined />
-
-                    <div>Thêm ảnh</div>
-                  </p>
-                )}
-              </Dragger>
-            </Col>
-          </Row>
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <Form.Item
-                label={
-                  <div style={{ color: 'black', fontWeight: '600' }}>
-                    Tên cửa hàng
-                  </div>
-                }
-                name="storeName"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
-                <Input size="large" placeholder="Nhập tên cửa hàng" />
-              </Form.Item>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <div
-                  style={{
-                    color: 'black',
-                    fontWeight: '600',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Địa chỉ
-                </div>
-                <Form.Item name="address">
-                  <Input placeholder="Nhập địa chỉ" size="large" />
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Liên hệ
-                    </div>
-                  }
-                  name="phoneNumber"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input placeholder="Nhập liên hệ" size="large" />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div>
-                <Form.Item
-                  name="city"
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tỉnh/thành phố
-                    </div>
-                  }
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select
-                    size="large"
-                    onChange={handleChangeCity}
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn tỉnh/thành phố"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {province &&
-                      province.length > 0 &&
-                      province.map((values, index) => {
-                        return (
-                          <Option value={values.province_name}>
-                            {values.province_name}
-                          </Option>
-                        )
-                      })}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            {districtMain && districtMain.length > 0 ? (
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={11}
-                lg={11}
-                xl={11}
-              >
-                <div>
-                  <Form.Item
-                    name="district"
-                    label={
-                      <div style={{ color: 'black', fontWeight: '600' }}>
-                        Quận/huyện
-                      </div>
-                    }
-                    rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                  >
-                    <Select
-                      size="large"
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Select a person"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      {districtMain &&
-                        districtMain.length > 0 &&
-                        districtMain.map((values, index) => {
-                          return (
-                            <Option value={values.district_name}>
-                              {values.district_name}
-                            </Option>
-                          )
-                        })}
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
+            {imageStore ? (
+              <img src={imageStore} alt="avatar" style={{ width: '100%' }} />
             ) : (
-              ''
+              <div>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
             )}
-
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
+          </Upload>
+          <Row justify="space-between" align="middle">
+            <Form.Item
+              name="name"
+              label="Tên cửa hàng"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên cửa hàng!' },
+              ]}
             >
-              <div>
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    color: 'black',
-                    fontWeight: '600',
-                  }}
-                >
-                  Chi nhánh
-                </div>
-                <Form.Item
-                  className={styles['supplier_add_content_supplier_code_input']}
-                  name="branch"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="Chọn chi nhánh">
-                    {branchList.map((e) => (
-                      <Option value={e.branch_id}>{e.name}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
+              <Input
+                size="large"
+                style={{ width: 350 }}
+                placeholder="Nhập tên cửa hàng"
+              />
+            </Form.Item>
+            <Form.Item
+              name="province"
+              label="Tỉnh/Thành phố"
+              rules={[
+                { required: true, message: 'Vui lòng chọn tỉnh/thành phố!' },
+              ]}
             >
-              <div>
-                <div
-                  style={{
-                    marginBottom: '0.5rem',
-                    color: 'black',
-                    fontWeight: '600',
-                  }}
-                >
-                  Label
-                </div>
-                <Form.Item
-                  className={styles['supplier_add_content_supplier_code_input']}
-                  name="label"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select placeholder="Chọn chi nhánh">
-                    {labelList.map((e) => (
-                      <Option value={e.label_id}>{e.name}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
+              <Select
+                style={{ width: 350 }}
+                size="large"
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                placeholder="Chọn tỉnh/thành phố"
+                onChange={(value) => {
+                  if (value) {
+                    const districtsNew = districtsDefault.filter(
+                      (e) => e.province_name === value
+                    )
+                    setDistrictMain([...districtsNew])
+                  } else setDistrictMain([...districtsDefault])
+                }}
+              >
+                {provinces.map((value, index) => (
+                  <Select.Option value={value.province_name} key={index}>
+                    {value.province_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
           </Row>
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{
-                width: '100%',
-                marginLeft: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={4}
-              xl={3}
+          <Row justify="space-between" align="middle">
+            <Form.Item
+              name="phone"
+              label="Liên hệ"
+              rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
             >
-              <Form.Item>
-                <Button size="large" type="primary" htmlType="submit">
-                  Thêm
-                </Button>
-              </Form.Item>
-            </Col>
+              <Input
+                size="large"
+                style={{ width: 350 }}
+                placeholder="Nhập liên hệ"
+              />
+            </Form.Item>
+            <Form.Item
+              name="district"
+              label="Quận/huyện"
+              rules={[{ required: true, message: 'Vui lòng chon quận/huyện!' }]}
+            >
+              <Select
+                style={{ width: 350 }}
+                size="large"
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                placeholder="Chọn quận/huyện"
+              >
+                {districtMain.map((value, index) => (
+                  <Select.Option value={value.district_name} key={index}>
+                    {value.district_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Row>
+          <Row justify="space-between">
+            <Form.Item
+              name="branch_id"
+              label="Chi nhánh & kho"
+              rules={[
+                { required: true, message: 'Vui chọn chon chi nhánh & kho!' },
+              ]}
+            >
+              <Select
+                style={{ width: 350 }}
+                size="large"
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                placeholder="Chọn chi nhánh & kho"
+              >
+                {branchList.map((value, index) => (
+                  <Select.Option value={value.branch_id} key={index}>
+                    {value.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="label_id" label="Label">
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                style={{ width: 350 }}
+                size="large"
+                placeholder="Chọn label"
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    <Divider style={{ margin: '4px 0' }} />
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'nowrap',
+                        padding: 8,
+                      }}
+                    >
+                      <Input
+                        style={{ flex: 'auto' }}
+                        onChange={(e) => setInputLabel(e.target.value)}
+                        value={inputLabel}
+                      />
+                      <a
+                        style={{
+                          flex: 'none',
+                          padding: '8px',
+                          display: 'block',
+                          cursor: 'pointer',
+                        }}
+                        onClick={_addLabel}
+                      >
+                        <PlusOutlined /> Add label
+                      </a>
+                    </div>
+                  </div>
+                )}
+              >
+                {labels.map((l, index) => (
+                  <Select.Option
+                    value={l.label_id}
+                    key={index}
+                    style={{ display: !l.active && 'none' }}
+                  >
+                    {l.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Row>
+          <Row>
+            <Form.Item name="address" label="Địa chỉ">
+              <Input
+                size="large"
+                style={{ width: 350 }}
+                placeholder="Nhập địa chỉ"
+              />
+            </Form.Item>
           </Row>
         </Form>
+        <Row
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Button size="large" type="primary" onClick={onFinish}>
+            Thêm
+          </Button>
+        </Row>
       </Modal>
     </>
   )

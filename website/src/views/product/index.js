@@ -129,9 +129,9 @@ export default function Product() {
   // tạo Danh mục
   const onFinishCategory = (values) => {
     const object = {
-      name: values.categoryName,
-      type: '',
-      description: values.categoryDescription ? values.categoryDescription : '',
+      name: values.name,
+      default: values.default,
+      description: values.description || '',
     }
     apiAddCategoryDataMain(object)
   }
@@ -2499,12 +2499,36 @@ export default function Product() {
         onOk={() => modal6VisibleModal(false)}
         onCancel={() => modal6VisibleModal(false)}
       >
-        <Form
-          className={styles['supplier_add_content']}
-          onFinish={onFinishCategory}
-          layout="vertical"
-          form={form}
-        >
+        <Form onFinish={onFinishCategory} layout="vertical" form={form}>
+          <Form.Item
+            label={
+              <div style={{ color: 'black', fontWeight: '600' }}>
+                Tên danh mục:
+              </div>
+            }
+            name="name"
+            rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+          >
+            <Input
+              size="large"
+              placeholder="Nhập tên danh mục"
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <div style={{ color: 'black', fontWeight: '600' }}>Mô tả:</div>
+            }
+            name="description"
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Nhập mô tả"
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+
           <Row
             style={{
               display: 'flex',
@@ -2513,59 +2537,14 @@ export default function Product() {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={24}
-              xl={24}
-            >
-              <div>
-                <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tên danh mục:
-                    </div>
-                  }
-                  className={styles['supplier_add_content_supplier_code_input']}
-                  name="categoryName"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input size="large" placeholder="Nhập tên danh mục" />
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            className={styles['supplier_add_content_supplier_button']}
-          >
-            <Col
-              style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-              xs={24}
-              sm={24}
-              md={5}
-              lg={4}
-              xl={3}
-            >
-              <Form.Item>
-                <Button size="large" type="primary" htmlType="submit">
-                  Tạo danh mục
-                </Button>
-              </Form.Item>
-            </Col>
+            <Form.Item name="default" valuePropName="checked">
+              <Checkbox>Chọn làm mặc định</Checkbox>
+            </Form.Item>
+            <Form.Item>
+              <Button size="large" type="primary" htmlType="submit">
+                Tạo danh mục
+              </Button>
+            </Form.Item>
           </Row>
         </Form>
       </Modal>

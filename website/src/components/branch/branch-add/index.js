@@ -35,7 +35,7 @@ export default function BranchAdd({ reload }) {
   const [modal2Visible, setModal2Visible] = useState(false)
   const [store, setStore] = useState([])
   const [loadingStore, setLoadingStore] = useState(false)
-  const [province, setProvince] = useState([])
+  const [provinces, setProvinces] = useState([])
 
   const [imageBranch, setImageBranch] = useState('')
   const [fileImageBranch, setFileImageBranch] = useState(null)
@@ -118,6 +118,8 @@ export default function BranchAdd({ reload }) {
         website: '',
         fax: '',
         email: '',
+        accumulate_point: true,
+        use_point: true,
       }
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -129,30 +131,12 @@ export default function BranchAdd({ reload }) {
     }
   }
 
-  const getAllStoreData = async () => {
-    try {
-      setLoadingStore(true)
-      const res = await getAllStore()
-
-      if (res.status === 200) {
-        setStore(res.data.data)
-        if (res.data.data.length)
-          form.setFieldsValue({
-            store: res.data.data[0].store_id,
-          })
-      }
-      setLoadingStore(false)
-    } catch (error) {
-      setLoadingStore(false)
-    }
-  }
-
   const apiProvinceData = async () => {
     try {
       const res = await apiProvince()
 
       if (res.status === 200) {
-        setProvince(res.data.data)
+        setProvinces(res.data.data)
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -160,28 +144,22 @@ export default function BranchAdd({ reload }) {
     }
   }
   const [districtMain, setDistrictMain] = useState([])
-  const apiFilterCityData = async (object) => {
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const apiDistrictData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiFilterCity({ keyword: object })
-
+      const res = await apiFilterCity()
       if (res.status === 200) {
         setDistrictMain(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
     }
-  }
-
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
   }
 
   useEffect(() => {
     apiProvinceData()
-    getAllStoreData()
-    apiFilterCityData()
+    apiDistrictData()
 
     if (location.state && location.state === 'show-modal-create-branch')
       modal2VisibleModal(true)
@@ -207,7 +185,7 @@ export default function BranchAdd({ reload }) {
         Thêm chi nhánh & kho
       </Button>
       <Modal
-        title="Thêm chi nhánh"
+        title="Thêm chi nhánh & kho"
         centered
         width={1000}
         footer={null}
@@ -349,7 +327,14 @@ export default function BranchAdd({ reload }) {
                 >
                   <Select
                     size="large"
-                    onChange={handleChangeCity}
+                    onChange={(value) => {
+                      if (value) {
+                        const districtsNew = districtsDefault.filter(
+                          (e) => e.province_name === value
+                        )
+                        setDistrictMain([...districtsNew])
+                      } else setDistrictMain([...districtsDefault])
+                    }}
                     showSearch
                     style={{ width: '100%' }}
                     placeholder="Chọn tỉnh/thành phố"
@@ -360,15 +345,13 @@ export default function BranchAdd({ reload }) {
                         .indexOf(input.toLowerCase()) >= 0
                     }
                   >
-                    {province &&
-                      province.length > 0 &&
-                      province.map((values, index) => {
-                        return (
-                          <Option value={values.province_name}>
-                            {values.province_name}
-                          </Option>
-                        )
-                      })}
+                    {provinces.map((values, index) => {
+                      return (
+                        <Option value={values.province_name} key={index}>
+                          {values.province_name}
+                        </Option>
+                      )
+                    })}
                   </Select>
                 </Form.Item>
               </div>
@@ -390,37 +373,68 @@ export default function BranchAdd({ reload }) {
               lg={11}
               xl={11}
             >
-              <div>
-                <Form.Item
-                  name="district"
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Quận/huyện
-                    </div>
+              <Form.Item
+                name="warehouse_type"
+                label={
+                  <div style={{ color: 'black', fontWeight: '600' }}>
+                    Loại kho
+                  </div>
+                }
+                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận huyện"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                   }
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Select
-                    size="large"
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn quận huyện"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {districtMain.map((values, index) => {
-                      return (
-                        <Option value={values.district_name} key={index}>
-                          {values.district_name}
-                        </Option>
-                      )
-                    })}
-                  </Select>
-                </Form.Item>
-              </div>
+                  <Option value="sở hữu">Kho sở hữu</Option>
+                  <Option value="dịch vụ">Kho thuê dịch vụ</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col
+              style={{ width: '100%' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={11}
+              xl={11}
+            >
+              <Form.Item
+                name="district"
+                label={
+                  <div style={{ color: 'black', fontWeight: '600' }}>
+                    Quận/huyện
+                  </div>
+                }
+                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận huyện"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {districtMain.map((values, index) => {
+                    return (
+                      <Option value={values.district_name} key={index}>
+                        {values.district_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
             </Col>
           </Row>
 
