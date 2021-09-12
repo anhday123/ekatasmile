@@ -60,6 +60,7 @@ let addRoleC = async (req, res, next) => {
             sub_name: createSub(req.body.name),
             permission_list: req.body.permission_list || [],
             menu_list: req.body.menu_list || [],
+            default: false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

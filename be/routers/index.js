@@ -10,6 +10,7 @@ router.use(`/permission`, require(`./permission`));
 router.use(`/action`, require(`./action`));
 router.use(`/customer`, require(`./customer`));
 router.use(`/branch`, require(`./branch`));
+router.use(`/point-setting`, require(`./point-setting`));
 router.use(`/store`, require(`./store`));
 router.use(`/label`, require(`./label`));
 router.use(`/warehouse`, require(`./warehouse`));

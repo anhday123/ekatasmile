@@ -27,6 +27,12 @@ let getRoleS = async (req, res, next) => {
         if (req.query.creator_id) {
             mongoQuery['creator_id'] = req.query.creator_id;
         }
+        if (req.query.default == 'true') {
+            mongoQuery['default'] = true;
+        }
+        if (req.query.default == 'false') {
+            mongoQuery['default'] = false;
+        }
         if (req.query.today != undefined) {
             req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }

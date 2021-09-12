@@ -124,6 +124,7 @@ let updateStoreC = async (req, res, next) => {
         delete req.body._business;
         delete req.body._creator;
         delete req.body._branch;
+        delete req.body._employees;
         req['_update'] = { ..._store, ...req.body };
         await storeService.updateStoreS(req, res, next);
     } catch (err) {

@@ -1,9 +1,18 @@
 let relative = (filterObject, filterArray) => {
     // Trả về mảng các phần tử trong filterArray có key trùng với filterObject
     // trong đó value của filterArray chứa value của filterObject
+    if (filterObject == undefined || filterArray == undefined) {
+        throw new Error('Input is undefined!');
+    }
+    if (typeof filterObject != 'object' || typeof filterArray != 'object') {
+        throw new Error('Typeof input must be object!');
+    }
     let filter = Object.entries(filterObject);
     filter.forEach(([filterKey, filterValue]) => {
         filterArray = filterArray.filter((item) => {
+            if (item[filterKey] == undefined) {
+                throw new Error(filterKey + ' is not exists in filter array!');
+            }
             let value = new String(item[filterKey])
                 .normalize(`NFD`)
                 .replace(/[\u0300-\u036f]|\s/g, ``)
@@ -51,7 +60,8 @@ let dates = (startDate, endDate, filterArray, dateField) => {
     // nằm trong khoảng thời gian từ startDate đến endDate
     filterArray = filterArray.filter((item) => {
         return (
-            new Date(item[dateField]) - new Date(startDate) >= 0 && new Date(item[dateField]) - new Date(endDate) <= 0
+            new Date(item[dateField]) - new Date(startDate) >= 0 &&
+            new Date(item[dateField]) - new Date(endDate) <= 0
         );
     });
     return filterArray;

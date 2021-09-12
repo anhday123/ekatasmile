@@ -212,11 +212,71 @@ let getProductS = async (req, res, next) => {
         if (filterQuery) {
             filterQuery = Object.entries(filterQuery);
             filterQuery.forEach(([filterKey, filterValue]) => {
-                _products = _products.filter((_product) => {
-                    let value = removeUnicode(String(_product[filterKey])).toLocaleLowerCase();
-                    let compare = removeUnicode(String(filterValue)).toLocaleLowerCase();
-                    return value.includes(compare);
-                });
+                if (removeUnicode(filterKey) == 'status') {
+                    _products = _products.filter((_product) => {
+                        if (_product.has_variable == true) {
+                            check = false;
+                            _product.variants.map((variant) => {
+                                if (
+                                    'available_stock'.includes(removeUnicode(filterValue)) &&
+                                    'available_stock'.includes(variant.status)
+                                ) {
+                                    check = true;
+                                }
+                                if (
+                                    'low_stock'.includes(removeUnicode(filterValue)) &&
+                                    'low_stock'.includes(variant.status)
+                                ) {
+                                    check = true;
+                                }
+                                if (
+                                    'out_stock'.includes(removeUnicode(filterValue)) &&
+                                    'out_stock'.includes(variant.status)
+                                ) {
+                                    check = true;
+                                }
+                                if (
+                                    'shipping'.includes(removeUnicode(filterValue)) &&
+                                    variant.shipping_quantity > 0
+                                ) {
+                                    check = true;
+                                }
+                            });
+                            return check;
+                        } else {
+                            if (
+                                'available_stock'.includes(removeUnicode(filterValue)) &&
+                                'available_stock'.includes(_product.status)
+                            ) {
+                                return true;
+                            }
+                            if (
+                                'low_stock'.includes(removeUnicode(filterValue)) &&
+                                'low_stock'.includes(_product.status)
+                            ) {
+                                return true;
+                            }
+                            if (
+                                'out_stock'.includes(removeUnicode(filterValue)) &&
+                                'out_stock'.includes(_product.status)
+                            ) {
+                                return true;
+                            }
+                            if (
+                                'shipping'.includes(removeUnicode(filterValue)) &&
+                                _product.shipping_quantity > 0
+                            ) {
+                                return true;
+                            }
+                        }
+                    });
+                } else {
+                    _products = _products.filter((_product) => {
+                        let value = removeUnicode(String(_product[filterKey])).toLocaleLowerCase();
+                        let compare = removeUnicode(String(filterValue)).toLocaleLowerCase();
+                        return value.includes(compare);
+                    });
+                }
             });
         }
         // đếm số phần tử
@@ -225,10 +285,37 @@ let getProductS = async (req, res, next) => {
         if (page && page_size) {
             _products = _products.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
         }
+        let available_quantity = 0;
+        let low_quantity = 0;
+        let out_quantity = 0;
+        let shipping_quantity = 0;
+        let return_quantity = 0;
+        _products.map((_product) => {
+            if (_product.has_variable == true) {
+                _product.variants.map((variant) => {
+                    available_quantity += variant['available_stock_quantity'] || 0;
+                    low_quantity += variant['low_stock_quantity'] || 0;
+                    out_quantity += variant['out_stock_quantity'] || 0;
+                    shipping_quantity += variant['shipping_quantity'] || 0;
+                    return_quantity += variant['return_warehouse_quantity'] || 0;
+                });
+            } else {
+                available_quantity += _product['available_stock_quantity'] || 0;
+                low_quantity += _product['low_stock_quantity'] || 0;
+                out_quantity += _product['out_stock_quantity'] || 0;
+                shipping_quantity += _product['shipping_quantity'] || 0;
+                return_quantity += _product['return_warehouse_quantity'] || 0;
+            }
+        });
         res.send({
             success: true,
             data: _products,
             count: _counts,
+            available_quantity,
+            low_quantity,
+            out_quantity,
+            shipping_quantity,
+            return_quantity,
         });
     } catch (err) {
         next(err);
@@ -240,17 +327,13 @@ let addProductS = async (req, res, next) => {
         let token = req.tokenData.data;
         if (req._insert.length != 0) {
             let _product = await client.db(DB).collection(`Products`).insertMany(req._insert);
-            if (!_product.insertedIds) throw new Error(`500 ~ Create product fail!`);
-        }
-        if (req._update.length != 0) {
-            await Promise.all(
-                req._update.map((item) => {
-                    client
-                        .db(DB)
-                        .collection(`Products`)
-                        .findOneAndUpdate({ product_id: item.product_id }, { $set: item });
-                })
-            );
+            if (!_product.insertedIds) {
+                throw new Error(`500 ~ Create product fail!`);
+            }
+            await client
+                .db(DB)
+                .collection(`SKUProducts`)
+                .findOneAndUpdate({ business_id: token.business_id }, { $set: req._sku });
         }
         if (token) {
             if (req._insert.length != 0)
@@ -266,26 +349,10 @@ let addProductS = async (req, res, next) => {
                     performer_id: token.user_id,
                     date: moment().format(),
                 });
-            if (req._update.length != 0)
-                await client.db(DB).collection(`Actions`).insertOne({
-                    business_id: token.business_id,
-                    type: `Update`,
-                    sub_type: `update`,
-                    properties: `Product`,
-                    sub_properties: `product`,
-                    name: `Cập nhật thông tin sản phẩm`,
-                    sub_name: `capnhatthongtinsanpham`,
-                    data: req._update,
-                    performer_id: token.user_id,
-                    date: moment().format(),
-                });
         }
         res.send({
             success: true,
-            data: [
-                { name: `insert_product`, product: req._insert },
-                { name: `update_product`, product: req._update },
-            ],
+            data: req._insert,
         });
     } catch (err) {
         next(err);
