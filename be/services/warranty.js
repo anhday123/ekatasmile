@@ -110,7 +110,7 @@ let getWarrantyS = async (req, res, next) => {
         if (req.query.code) {
             mongoQuery['code'] = new RegExp(removeUnicode(req.query.code).toUpperCase());
         }
-        if (req.query.name) {
+        if (req.query.code) {
             mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
         }
         if (req.query.type) {

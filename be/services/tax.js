@@ -117,7 +117,8 @@ let getTaxS = async (req, res, next) => {
             ];
         }
         // lấy các thuộc tính tùy chọn khác
-        let [page, page_size] = [req.query.page || 1, req.query.page_size || 50];
+        let page = Number(req.query.page) || 1;
+        let page_size = Number(req.query.page_size) || 50;
         // lấy data từ database
         var _taxes = await client.db(DB).collection(`Taxes`).find(mongoQuery).toArray();
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh

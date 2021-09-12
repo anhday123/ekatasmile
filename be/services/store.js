@@ -27,6 +27,9 @@ let getStoreS = async (req, res, next) => {
         if (req.query.creator_id) {
             mongoQuery['creator_id'] = req.query.creator_id;
         }
+        if (req.query.label_id) {
+            mongoQuery['label_id'] = req.query.label_id;
+        }
         if (req.query.today != undefined) {
             req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
         }
@@ -144,10 +147,15 @@ let getStoreS = async (req, res, next) => {
         ]);
         let _business = {};
         let _creator = {};
+        let _employees = {};
         __users.map((__user) => {
             delete __user.password;
             _business[__user.user_id] = __user;
             _creator[__user.user_id] = __user;
+            if (!_employees[__user.store_id]) {
+                _employees[__user.store_id] = [];
+            }
+            _employees[__user.store_id].push(__user);
         });
         let _branch = {};
         __branchs.map((__branch) => {
@@ -157,6 +165,7 @@ let getStoreS = async (req, res, next) => {
             _store[`_business`] = _business[_store.business_id];
             _store[`_creator`] = _creator[_store.creator_id];
             _store[`_branch`] = _creator[_store.branch_id];
+            _store[`_employees`] = _employees[_store.store_id];
             return _store;
         });
         res.send({

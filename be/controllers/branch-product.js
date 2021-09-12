@@ -36,22 +36,34 @@ let addProductC = async (req, res, next) => {
             }
         });
         // lấy các thông tin để xác định input hợp lệ
-        let [_counts, __users, __branchs, __warranties, __suppliers, __categories, __products] =
+        let [_counts, _business, __branchs, __warranties, __suppliers, __categories, __products, _sku] =
             await Promise.all([
                 client.db(DB).collection(`Products`).countDocuments(),
-                client.db(DB).collection(`Users`).find({ active: true }).toArray(),
+                client.db(DB).collection(`Users`).findOne({
+                    user_id: token.business_id,
+                    active: true,
+                }),
                 client.db(DB).collection(`Branchs`).find({ active: true }).toArray(),
                 client.db(DB).collection(`Warranties`).find({ active: true }).toArray(),
                 client.db(DB).collection(`Suppliers`).find({ active: true }).toArray(),
                 client.db(DB).collection(`Categories`).find({ active: true }).toArray(),
                 client.db(DB).collection(`Products`).find({ active: true }).toArray(),
+                client.db(DB).collection(`SKUProducts`).findOne({ business_id: token.business_id }),
             ]);
-        let _business = {};
-        let _creator = {};
-        __users.map((item) => {
-            _business[item.user_id] = item;
-            _creator[item.user_id] = item;
-        });
+        if (!_business) {
+            throw new Error(`400 ~ Bussiness is not exists or inactive!`);
+        }
+        if (!_sku) {
+            _sku = {
+                business_id: token.business_id,
+                sku_count: 0,
+            };
+            let _insert = await client.db(DB).collection(`SKUProducts`).insertOne(_sku);
+            if (!_insert.insertedId) {
+                throw new Error(`500 ~ Create SKU fail!`);
+            }
+        }
+        _sku.sku_count = Number(_sku.sku_count);
         let _branchs = {};
         __branchs.map((item) => {
             _branchs[item.branch_id] = item;
@@ -70,8 +82,6 @@ let addProductC = async (req, res, next) => {
         });
         // req[`_insert`]: sản phẩm mới chưa có trong database
         req[`_insert`] = [];
-        // req[`_update`]: sản phẩm đã có trong database
-        req[`_update`] = [];
         // Duyệt danh sách các sản phẩm gửi lên
         let index = 0;
         req.body.products.map((product) => {
@@ -90,12 +100,11 @@ let addProductC = async (req, res, next) => {
                 .replace(/Đ/g, 'D')
                 .replace(/\s/g, '-')
                 .toLowerCase();
-            product[`sku`] = String(product.sku).trim().toUpperCase();
-            // kiểm tra bussiness có tồn tại hay không
-            if (!_business[token.business_id]) {
-                throw new Error(`400 ~ Business ${token.business_id} is not exists or inactive!`);
-            }
-            // Kiểm tra kho có tồn tại không
+            _sku.sku_count++;
+            product[`sku`] = String(product.sku + '-' + String(_sku.sku_count))
+                .trim()
+                .toUpperCase();
+            // Kiểm tra chi nhánh có tồn tại không
             if (!_branchs[product.branch_id]) {
                 throw new Error(`400 ~ Branch ${product.branch_id} is not exists or inactive!`);
             }
@@ -167,7 +176,7 @@ let addProductC = async (req, res, next) => {
             } else {
                 product.attributes = product.attributes.map((attribute) => {
                     ['option', 'values'].map((property) => {
-                        if (req.body[property] == undefined) {
+                        if (attribute[property] == undefined) {
                             throw new Error(`400 ~ Attributes - ${property} is not null!`);
                         }
                     });
@@ -180,15 +189,18 @@ let addProductC = async (req, res, next) => {
                 });
                 product.variants = product.variants.map((variant) => {
                     ['title', 'sku'].map((property) => {
-                        if (req.body[property] == undefined) {
+                        if (variant[property] == undefined) {
                             throw new Error(`400 ~ Variants - ${property} is not null!`);
                         }
                     });
-                    variant[`title`] = variant[`title`].trim().toUpperCase();
-                    variant[`sku`] = variant[`sku`].trim().toUpperCase();
+                    variant[`title`] = String(variant[`title`]).trim().toUpperCase();
+                    _sku.sku_count++;
+                    variant[`sku`] = String(variant[`sku`] + '-' + _sku.sku_count)
+                        .trim()
+                        .toUpperCase();
                     variant.options = variant.options.map((option) => {
                         ['name', 'value'].map((property) => {
-                            if (req.body[property] == undefined) {
+                            if (option[property] == undefined) {
                                 throw new Error(`400 ~ Variant - options - ${property} is not null!`);
                             }
                         });
@@ -283,8 +295,10 @@ let addProductC = async (req, res, next) => {
             };
             req[`_insert`].push(_product);
         });
+        req[`_sku`] = _sku;
         await productService.addProductS(req, res, next);
     } catch (err) {
+        console.log(err);
         next(err);
     }
 };

@@ -37,8 +37,8 @@ let getUserS = async (req, res, next) => {
         }
         if (req.query.role_id) {
             mongoQuery['role_id'] = req.query.role_id;
-            if (role_id == `2`) {
-                delete mongoQuery.business_id;
+            if (req.query.role_id == `2`) {
+                delete mongoQuery['business_id'];
             }
         }
         if (req.query.today != undefined) {
@@ -118,9 +118,6 @@ let getUserS = async (req, res, next) => {
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.user_id) {
-            mongoQuery['user_id'] = new RegExp(removeUnicode(req.query.user_id).toUpperCase());
-        }
         if (req.query.name) {
             mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
         }
@@ -136,6 +133,7 @@ let getUserS = async (req, res, next) => {
         if (req.query.search) {
             mongoQuery['$or'] = [
                 { user_id: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
+                { username: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
                 { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
             ];
         }
