@@ -31,13 +31,12 @@ import Permission from 'components/permission'
 
 const { Panel } = Collapse
 export default function Role() {
-  const { TabPane } = Tabs
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
-  console.log(dataUser)
+
   const [visible, setVisible] = useState(false)
   const [permission, setPermission] = useState([])
-
+  const [treeAddData, setTreeAddData] = useState([])
   const PERMISSIONS_APP = [
     {
       pParent: 'tong_quan',
@@ -212,6 +211,9 @@ export default function Role() {
       apiUpdateRolePermissionData(body)
     }
   }
+  const onCheck = (checkedKeys) => {
+    setTreeAddData(checkedKeys.checked)
+  }
 
   const removePermission = (permissionAdd, typePermission) => {
     const role = rolePermission.find((e) => e.role_id === key)
@@ -233,15 +235,6 @@ export default function Role() {
 
       apiUpdateRolePermissionData(body)
     }
-  }
-
-  const [permissionAdd, setPermissionAdd] = useState([])
-  function onChangeChildMenuDrawerPermission(checkedValues) {
-    setPermissionAdd(checkedValues)
-  }
-  const [menuAdd, setMenuAdd] = useState([])
-  function onChangeChildMenuDrawerMenu(checkedValues) {
-    setMenuAdd(checkedValues)
   }
 
   const apiAllRoleData = async () => {
@@ -355,6 +348,13 @@ export default function Role() {
   }
   const onClickAddRole = () => {
     if (name) {
+      let permissionAdd = []
+      let menuAdd = []
+      treeAddData.forEach((e) => {
+        let tmp = e.split('.')
+        if (tmp[0] === 'menu') menuAdd.push(tmp[1])
+        else permissionAdd.push(tmp[1])
+      })
       const object = {
         name: name.toLowerCase(),
         permission_list: permissionAdd,
@@ -404,7 +404,7 @@ export default function Role() {
         return {
           title: getTitle(
             p,
-            typePermission === 1 ? 'menu_list' : 'permission_list',
+            typePermission ? 'menu_list' : 'permission_list',
             roleProps,
             '#1772FA'
           ),
@@ -414,11 +414,34 @@ export default function Role() {
       return {
         title: getTitle(
           p.pParent,
-          typePermission === 1 ? 'menu_list' : 'permission_list',
+          typePermission ? 'menu_list' : 'permission_list',
           roleProps
         ),
         key: p.pParent,
-        children: p.pChildren && generateTreeData(p.pChildren, roleProps, 2),
+        children:
+          p.pChildren &&
+          generateTreeData(
+            p.pChildren,
+            roleProps,
+            typeof p.pChildren[0] === 'string' ? 0 : 1
+          ),
+      }
+    })
+  }
+  const generateCreateTreeData = (data) => {
+    return data.map((p) => {
+      if (typeof p === 'string') {
+        return {
+          title: <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>,
+          key: `permission.${p}`,
+        }
+      }
+      return {
+        title: (
+          <span style={{ color: '#EC7100' }}>{rolesTranslate(p.pParent)}</span>
+        ),
+        key: `menu.${p.pParent}`,
+        children: p.pChildren && generateCreateTreeData(p.pChildren),
       }
     })
   }
@@ -530,6 +553,34 @@ export default function Role() {
                   header={`Permission ${values.name}`}
                   key={values.role_id}
                 >
+                  <Row gutter={10}>
+                    <Col>
+                      <Row align="middle">
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: '#EC7100',
+                          }}
+                        ></div>{' '}
+                        Menu
+                      </Row>
+                    </Col>
+                    <Col>
+                      <Row align="middle">
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: '#1772FA',
+                          }}
+                        ></div>{' '}
+                        Quyền thao tác
+                      </Row>
+                    </Col>
+                  </Row>
                   <Tree
                     showIcon={false}
                     defaultExpandAll={true}
@@ -578,77 +629,42 @@ export default function Role() {
               />
             </div>
           </div>
+          <Row gutter={10}>
+            <Col>
+              <Row align="middle">
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: '#EC7100',
+                  }}
+                ></div>{' '}
+                Menu
+              </Row>
+            </Col>
+            <Col>
+              <Row align="middle">
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: '#1772FA',
+                  }}
+                ></div>{' '}
+                Quyền thao tác
+              </Row>
+            </Col>
+          </Row>
           <div style={{ marginTop: '1rem' }}>
-            <div
-              style={{ color: '#5B6BE8', fontSize: '1rem', fontWeight: '600' }}
-            >
-              Chức năng hiện thị:{' '}
-            </div>
-            <Checkbox.Group
-              style={{ width: '100%' }}
-              onChange={onChangeChildMenuDrawerPermission}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  paddingTop: '1rem',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                {permission.map((values1, index1) => {
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={11}
-                      md={7}
-                      lg={7}
-                      xl={7}
-                    >
-                      <Checkbox value={values1}>{values1}</Checkbox>
-                    </Col>
-                  )
-                })}
-              </Row>
-            </Checkbox.Group>
-          </div>
-          <div>
-            <div
-              style={{ color: '#5B6BE8', fontSize: '1rem', fontWeight: '600' }}
-            >
-              Menu hiện thị:{' '}
-            </div>
-            <Checkbox.Group
-              style={{ width: '100%' }}
-              onChange={onChangeChildMenuDrawerMenu}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  paddingTop: '1rem',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                {menu.map((values1, index1) => {
-                  return (
-                    <Col
-                      style={{ width: '100%', marginBottom: '1rem' }}
-                      xs={24}
-                      sm={11}
-                      md={7}
-                      lg={7}
-                      xl={7}
-                    >
-                      <Checkbox value={values1}>{values1}</Checkbox>
-                    </Col>
-                  )
-                })}
-              </Row>
-            </Checkbox.Group>
+            <Tree
+              checkable
+              defaultExpandAll
+              checkStrictly
+              onCheck={onCheck}
+              treeData={[...generateCreateTreeData(PERMISSIONS_APP)]}
+            />
           </div>
         </div>
       </Drawer>
