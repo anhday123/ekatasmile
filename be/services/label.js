@@ -111,13 +111,10 @@ let getLabelS = async (req, res, next) => {
             mongoQuery = { ...mongoQuery, sub_name: new RegExp(removeUnicode(req.query.name).toLowerCase()) };
         }
         if (req.query.search) {
-            mongoQuery = {
-                ...mongoQuery,
-                $or: [
-                    { code: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
-                    { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
-                ],
-            };
+            mongoQuery['$or'] = [
+                { code: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
+                { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
+            ];
         }
         // lấy các thuộc tính tùy chọn khác
         let page = Number(req.query.page) || 1;

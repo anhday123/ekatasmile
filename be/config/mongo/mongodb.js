@@ -38,7 +38,7 @@ new Promise(async (resolve, reject) => {
         console.log(message);
         // await client
         //     .db(process.env.DATABASE)
-        //     .collection(`DeliveryNotes`)
+        //     .collection(`Branchs`)
         //     .deleteMany({})
         //     .then((data) => {
         //         console.log(data);

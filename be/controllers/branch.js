@@ -71,6 +71,7 @@ let addBranchC = async (req, res, next) => {
             sub_district: createSub(req.body.district || ``),
             province: req.body.province || ``,
             sub_province: createSub(req.body.province || ``),
+            accumulate_point: req.body.accumulate_point || false,
             use_point: req.body.use_point || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
