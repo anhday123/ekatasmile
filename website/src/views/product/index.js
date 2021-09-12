@@ -23,42 +23,39 @@ import {
   Space,
   Popconfirm,
   Tabs,
+  Badge,
 } from 'antd'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES, PERMISSIONS } from 'consts'
+import {
+  ACTION,
+  ROUTES,
+  PERMISSIONS,
+  STATUS_PRODUCT,
+  IMAGE_DEFAULT,
+} from 'consts'
+import { formatCash } from 'utils'
 import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 
 //components
-import ProductInfo from './components/productInfo'
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-column'
 import columnsProduct from 'views/product/columns'
 
 //icons
-import {
-  DeleteOutlined,
-  PlusCircleOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
-import { getAllBranchMain } from 'apis/branch'
 import { getAllStore } from 'apis/store'
 import {
   apiAddCategory,
   apiAllCategorySearch,
   apiUpdateCategory,
 } from 'apis/category'
-import { apiAllInventory } from 'apis/inventory'
 import {
   apiUpdateProduct,
-  apiProductSeller,
-  apiAllProduct,
-  apiUpdateProductStore,
   apiProductCategoryMerge,
   getProductsBranch,
   updateProductBranch,
@@ -74,13 +71,6 @@ export default function Product() {
   const history = useHistory()
   const [form] = Form.useForm()
   const branchId = useSelector((state) => state.branch.branchId)
-  const STATUS_PRODUCT = {
-    all: 'all',
-    shipping_stock: 'shipping_stock',
-    available_stock: 'available_stock',
-    low_stock: 'low_stock',
-    out_stock: 'out_stock',
-  }
 
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
@@ -88,7 +78,6 @@ export default function Product() {
   const [paramsFilter, setParamsFilter] = useState({
     page: 1,
     page_size: 20,
-    has_variable: false,
     this_week: true,
   })
 
@@ -100,7 +89,7 @@ export default function Product() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
-  const [category, setCategory] = useState([])
+  const [categories, setCategories] = useState([])
   const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
     useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -115,6 +104,22 @@ export default function Product() {
       ? JSON.parse(localStorage.getItem('columnsProduct'))
       : [...columnsProduct]
   )
+  const [countProductByStatus, setCountProductByStatus] = useState({
+    all_count: 0,
+    available_count: 0,
+    low_count: 0,
+    out_count: 0,
+    shipping_count: 0,
+  })
+  const [countProduct, setCountProduct] = useState(0)
+
+  const COLOR_STATUS = {
+    colorAll: '#ffcc01',
+    colorShipping: '#2badea',
+    colorAvailable: '#15a904',
+    colorLow: '#886464',
+    colorOut: 'red',
+  }
 
   const showDrawerCategoryGroupUpdate = () => {
     setVisibleCategoryGroupUpdate(true)
@@ -272,23 +277,11 @@ export default function Product() {
   }
   const apiAllCategoryData = async () => {
     try {
-      setLoading(true)
-
-      const res = await apiAllCategorySearch({ page: 1, page_size: 10 })
-      if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
-          res.data.data.forEach((values, index) => {
-            if (values.active) {
-              array.push(values)
-            }
-          })
-        setCategory([...array])
-      }
-      setLoading(false)
+      const res = await apiAllCategorySearch()
+      if (res.status === 200)
+        setCategories(res.data.data.filter((e) => e.active))
     } catch (error) {
-      setLoading(false)
+      console.log(error)
     }
   }
   const [modal5Visible, setModal5Visible] = useState(false)
@@ -299,6 +292,40 @@ export default function Product() {
   const modal50VisibleModal = (modal50Visible) => {
     setModal50Visible(modal50Visible)
   }
+
+  const columnsVariant = [
+    {
+      title: 'Hình ảnh',
+      render: (text, record) => <ImageProductVariable record={record} />,
+    },
+    {
+      title: 'Phiên bản',
+      dataIndex: 'title',
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+    },
+    {
+      title: 'Danh mục',
+      key: 'category',
+    },
+    {
+      title: 'Số lượng',
+      render: (text, record) =>
+        +record.available_stock_quantity + +record.low_stock_quantity,
+    },
+    {
+      title: 'Giá nhập',
+      dataIndex: 'import_price',
+      render: (text) => text && formatCash(text),
+    },
+    {
+      title: 'Giá bán',
+      dataIndex: 'sale_price',
+      render: (text) => text && formatCash(text),
+    },
+  ]
 
   const apiAllSupplierData = async () => {
     try {
@@ -331,7 +358,7 @@ export default function Product() {
 
     const array1 = []
 
-    category.forEach((values, index) => {
+    categories.forEach((values, index) => {
       selectedRowKeys.forEach((values1, index1) => {
         if (values._id === values1) {
           array1.push(values)
@@ -359,7 +386,7 @@ export default function Product() {
             }
           })
         setCategoryProductGroup([...array])
-        setCategory([...array])
+        setCategories([...array])
       }
       setLoading(false)
     } catch (error) {
@@ -394,14 +421,8 @@ export default function Product() {
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
 
   const { Option } = Select
-
-  const [count, setCount] = useState(0)
 
   const openNotificationSuccessGroup = () => {
     notification.success({
@@ -455,27 +476,30 @@ export default function Product() {
       //Nếu có filter cửa hàng thì gọi api product store
       if (params.store_id) res = await getProductsStore({ ...params })
       else res = await getProductsBranch({ ...params, branch_id: branchId })
-
       console.log(res)
       if (res.status === 200) {
-        if (paramsFilter.has_variable) {
-          let dataNew = []
-
-          res.data.data.map((e) =>
-            e.variants.map((v) =>
-              dataNew.push({
-                ...v,
-                product_id: e.product_id,
-                category: e._category.name || '',
-                create_date: e.create_date || '',
-              })
+        //tính tổng số lượng nếu có variant
+        const dataNew = res.data.data.map((e) => {
+          let sumCount = 0
+          if (e.has_variable)
+            e.variants.map(
+              (v) =>
+                (sumCount += v.available_stock_quantity + v.low_stock_quantity)
             )
-          )
+          else sumCount = -1
 
-          setProducts([...dataNew])
-        } else setProducts([...res.data.data])
+          return { ...e, sumCountVariant: sumCount }
+        })
 
-        setCount(res.data.count)
+        setProducts([...dataNew])
+        setCountProduct(res.data.count)
+        setCountProductByStatus({
+          all_count: res.data.all_count,
+          available_count: res.data.available_count,
+          low_count: res.data.low_count,
+          out_count: res.data.out_count,
+          shipping_count: res.data.shipping_count,
+        })
       }
 
       setLoading(false)
@@ -513,14 +537,7 @@ export default function Product() {
     if (!localStorage.getItem('columnsProduct'))
       localStorage.setItem('columnsProduct', JSON.stringify(columnsProduct))
   }, [])
-  function formatCash(str) {
-    return str
-      .split('')
-      .reverse()
-      .reduce((prev, next, index) => {
-        return (index % 3 ? next : next + ',') + prev
-      })
-  }
+
   const onClickGroupProduct = () => {
     // productGroupName
     var array = []
@@ -537,18 +554,7 @@ export default function Product() {
     apiAddCategoryData(object)
   }
   const [productGroupSelect, setProductGroupSelect] = useState()
-  const onChangeCategory = async (e) => {
-    setProductGroupSelect(e)
 
-    if (e) {
-      paramsFilter.category = e
-    } else {
-      delete paramsFilter.category
-    }
-
-    paramsFilter.page = 1
-    setParamsFilter({ ...paramsFilter })
-  }
   const openNotificationProductGroupSelectError = () => {
     notification.error({
       message: 'Thất bại',
@@ -576,233 +582,6 @@ export default function Product() {
     }
   }
 
-  const onChangeImage = async (info, index3, record) => {
-    if (info.fileList && info.fileList.length > 0) {
-      setLoading(true)
-
-      let resultsMockup = await uploadFiles(
-        info.fileList.map((e) => e.originFileObj)
-      )
-      console.log('resutl', resultsMockup)
-      setLoading(false)
-
-      var objectFinish = {}
-
-      products.forEach((values, index) => {
-        if (values._id === record._id) {
-          var array = []
-          array = [...products[index].variants[index3].image]
-
-          var result = array.concat(resultsMockup)
-          var objectResult = {
-            ...products[index].variants[index3],
-            image: result.reverse(),
-          }
-          var arrayFinish = [...values.variants]
-          arrayFinish[index3] = objectResult
-
-          objectFinish = { ...values, variants: arrayFinish }
-          apiUpdateProductMultiMain(objectFinish, objectFinish.product_id)
-        }
-      })
-    }
-  }
-  const onChangeImageSimple = async (info, record) => {
-    try {
-      if (info.fileList && info.fileList.length > 0) {
-        setLoading(true)
-
-        let resultsMockup = await uploadFiles(
-          info.fileList.map((e) => e.originFileObj)
-        )
-        console.log('resutl', resultsMockup)
-
-        setLoading(false)
-
-        const product = products.find((e) => e._id === record._id)
-        if (product) {
-          const listImage = [...product.image]
-          apiUpdateProductMultiMain(
-            { ...product, image: [...resultsMockup, ...listImage] },
-            product.product_id
-          )
-        }
-      }
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
-
-  const Content = (url) => {
-    const [valueImage, setValueImage] = useState(20)
-
-    return (
-      <div style={{ zIndex: '999999999' }}>
-        <img
-          style={{
-            zIndex: '999999999',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: `${valueImage}rem`,
-            height: `${valueImage - 10}rem`,
-            objectFit: 'contain',
-          }}
-          src={url}
-          alt=""
-        />
-        <div
-          style={{
-            display: 'flex',
-            marginTop: '1rem',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
-            color: 'black',
-            fontSize: '1rem',
-            fontWeight: '600',
-          }}
-        >
-          Thay đổi kích thước ảnh
-        </div>
-
-        <Slider
-          value={valueImage}
-          min={20}
-          max={70}
-          onChange={(e) => setValueImage(e)}
-        />
-      </div>
-    )
-  }
-  const [indexCheckbox, setIndexCheckbox] = useState([])
-  const [skuSelect, setSkuSelect] = useState('')
-  const [skuSelectArray, setSkuSelectArray] = useState([])
-
-  const [arrayCheck, setArrayCheck] = useState([])
-  const onChangeCheckboxImage = (
-    e,
-    index,
-    id,
-    index3,
-    sku,
-    indexFinish,
-    list
-  ) => {
-    setSkuSelect(sku)
-    if (e.target.checked) {
-      var array = [...indexCheckbox]
-      array.push(index)
-      setIndexCheckbox([...array])
-
-      setArrayCheck([...list])
-
-      var array1 = [...skuSelectArray]
-      if (skuSelectArray && skuSelectArray.length > 0) {
-        var result = skuSelectArray.findIndex((x) => x.sku === sku)
-        if (result === -1) {
-          array1.push({ status: e.target.checked, sku: sku })
-          setSkuSelectArray([...array1])([...array1])
-        }
-      } else {
-        array1.push({ status: e.target.checked, sku: sku })
-        setSkuSelectArray([...array1])([...array1])
-      }
-    } else {
-      var array = [...indexCheckbox]
-      indexCheckbox &&
-        indexCheckbox.length > 0 &&
-        indexCheckbox.forEach((values1, index1) => {
-          if (values1 === index) {
-            array.splice(index1, 1)
-            setIndexCheckbox([...array])
-          }
-        })
-
-      var array1 = [...skuSelectArray]
-      skuSelectArray &&
-        skuSelectArray.length > 0 &&
-        skuSelectArray.forEach((values1, index1) => {
-          if (values1.sku === sku) {
-            array1.splice(index1, 1)
-            setSkuSelectArray([...array])([...array])
-          }
-        })
-    }
-  }
-  const [indexCheckboxSimple, setIndexCheckboxSimple] = useState([])
-  const [idSelectSimple, setIdSelectSimple] = useState('')
-  const onChangeCheckboxImageSimple = (e, index, record) => {
-    setIdSelectSimple(record._id)
-    if (e.target.checked) {
-      var array = [...indexCheckboxSimple]
-      array.push(index)
-      setIndexCheckboxSimple([...array])
-    } else {
-      var array = [...indexCheckboxSimple]
-      indexCheckboxSimple &&
-        indexCheckboxSimple.length > 0 &&
-        indexCheckboxSimple.forEach((values1, index1) => {
-          if (values1 === index) {
-            array.splice(index1, 1)
-            setIndexCheckboxSimple([...array])
-          }
-        })
-    }
-  }
-  const onClickDeleteImageSimple = (index1, record) => {
-    var listImage = [...record.image]
-    listImage.splice(index1, 1)
-    apiUpdateProductMultiMainDelete(
-      { ...record, image: listImage },
-      record.product_id
-    )
-  }
-  const onClickDeleteImage = (index1, index2, record, list) => {
-    var arrayVariant = [...record.variants]
-    arrayVariant[index2].image.splice(index1, 1)
-    record.variants = arrayVariant
-    apiUpdateProductMultiMainDeleteStore(record, record.product_id)
-  }
-  const onClickDeleteAllImage = (index2, record) => {
-    var array = [...arrayCheck]
-    indexCheckbox &&
-      indexCheckbox.length > 0 &&
-      indexCheckbox.forEach((values, index) => {
-        var arrayVariant = [...record.variants]
-        arrayVariant[index2].image &&
-          arrayVariant[index2].image.length > 0 &&
-          arrayVariant[index2].image.forEach((values20, index20) => {
-            if (values20 === values) {
-              arrayVariant[index2].image.splice(index20, 1)
-              array.splice(index20, 1)
-              record.variants = arrayVariant
-            }
-          })
-      })
-    setArrayCheck([...array])
-    apiUpdateProductMultiMainDeleteStore(record, record.product_id)
-  }
-  const onClickDeleteAllImageSimple = (record) => {
-    var listImage = [...record.image]
-    indexCheckboxSimple &&
-      indexCheckboxSimple.length > 0 &&
-      indexCheckboxSimple.forEach((values, index) => {
-        listImage &&
-          listImage.length > 0 &&
-          listImage.forEach((values5, index5) => {
-            if (values5 === values) {
-              listImage.splice(index5, 1)
-            }
-          })
-      })
-    apiUpdateProductMultiMainDelete(
-      { ...record, image: [...listImage] },
-      record.product_id
-    )
-  }
-
   const contentProductGroup = (
     <div className={styles['product__group-select']}>
       {categoryProductGroup && categoryProductGroup.length > 0
@@ -813,7 +592,7 @@ export default function Product() {
               </div>
             )
           })
-        : category.map((values, index) => {
+        : categories.map((values, index) => {
             return (
               <div onClick={() => onSearchProductGroupMain(values.name)}>
                 {values.name}
@@ -822,6 +601,99 @@ export default function Product() {
           })}
     </div>
   )
+
+  const UpdateCategoryProducts = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [categoryId, setCategoryId] = useState()
+    const [categoryName, setCategoryName] = useState('')
+
+    useEffect(() => {
+      if (!visible) setCategoryId()
+    }, [visible])
+
+    return (
+      <>
+        <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
+          <Button size="large" onClick={toggle} type="primary">
+            Cập nhật danh mục
+          </Button>
+        </Permission>
+        <Modal
+          title="Cập nhật danh mục"
+          centered
+          width={500}
+          footer={null}
+          visible={visible}
+          onCancel={toggle}
+        >
+          <Select
+            size="large"
+            showSearch
+            style={{ width: '100%', marginBottom: 30 }}
+            placeholder="Chọn danh mục"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            onChange={(value) => {
+              setCategoryId(value)
+
+              const category = categories.find((e) => e.category_id === value)
+              if (category) setCategoryName(category.name)
+            }}
+            value={categoryId}
+          >
+            {categories.map((values, index) => {
+              return (
+                <Option value={values.category_id} key={index}>
+                  {values.name}
+                </Option>
+              )
+            })}
+          </Select>
+          <Row justify="end">
+            <Button
+              onClick={async () => {
+                try {
+                  setLoading(true)
+                  const productsSelect = products.filter((product) =>
+                    selectedRowKeys.includes(product.product_id)
+                  )
+
+                  const listPromise = productsSelect.map(async (e) => {
+                    let res
+                    const body = { category_id: categoryId }
+                    if (paramsFilter.store_id)
+                      res = await updateProductStore(body, e.product_id)
+                    else res = await updateProductBranch(body, e.product_id)
+
+                    return res
+                  })
+
+                  await Promise.all(listPromise)
+                  setLoading(false)
+                  toggle()
+                  await getAllProduct({ ...paramsFilter })
+                  notification.success({
+                    message: `Cập nhật thành công ${selectedRowKeys.length} sản phẩm vào danh mục ${categoryName}`,
+                  })
+                } catch (error) {
+                  setLoading(false)
+                  toggle()
+                  console.log(error)
+                }
+              }}
+              type="primary"
+              size="large"
+            >
+              Cập nhật
+            </Button>
+          </Row>
+        </Modal>
+      </>
+    )
+  }
 
   const [valueSearchProductGroup, setValueSearchProductGroup] = useState('')
   const onSearchProductGroup = (e) => {
@@ -921,6 +793,7 @@ export default function Product() {
           if (info.file.status !== 'done') info.file.status = 'done'
         }}
         data={(file) => uploadImageProductVariable(file, record)}
+        disabled
       >
         {record.image ? (
           <Popover
@@ -931,10 +804,7 @@ export default function Product() {
             <img src={record.image} alt="avatar" style={{ width: '100%' }} />
           </Popover>
         ) : (
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </div>
+          <img src={IMAGE_DEFAULT} alt="avatar" style={{ width: '100%' }} />
         )}
       </Upload>
     )
@@ -998,7 +868,7 @@ export default function Product() {
 
     useEffect(() => {
       setData(
-        record.image && typeof record.image === 'object'
+        record.image
           ? [
               ...record.image.map((url, index) => {
                 return {
@@ -1032,7 +902,7 @@ export default function Product() {
           }}
           className={classUploadImageProduct}
           showUploadList={{
-            showRemoveIcon: true,
+            showRemoveIcon: false,
             removeIcon: (file) => (
               <div
                 style={{
@@ -1092,13 +962,13 @@ export default function Product() {
             },
           }}
         >
-          <div>
+          {/* <div >
             <PlusOutlined />
             <div style={{ marginTop: 8 }}>Upload</div>
-          </div>
+          </div> */}
         </Upload>
 
-        <Popconfirm
+        {/* <Popconfirm
           title="Bạn có muốn xoá các ảnh này ?"
           onConfirm={() => {
             const listImagesRemoveNew = data.filter(
@@ -1120,7 +990,7 @@ export default function Product() {
           >
             Remove list image
           </Button>
-        </Popconfirm>
+        </Popconfirm> */}
       </>
     )
   }
@@ -1130,7 +1000,6 @@ export default function Product() {
     Object.keys(paramsFilter).map((key) => {
       delete paramsFilter[key]
     })
-    paramsFilter.has_variable = false
     paramsFilter.page = 1
     paramsFilter.page_size = 20
     await getAllProduct({ ...paramsFilter })
@@ -1141,185 +1010,6 @@ export default function Product() {
     setValueTime()
   }
 
-  const openNotificationSuccessStoreDelete = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description:
-        data === 2 ? 'Sản phẩm đã ngừng bán.' : 'Sản phẩm đã bán lại',
-    })
-  }
-  const openNotificationSuccessStoreDeleteError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Cập nhật trạng thái thất bại.',
-    })
-  }
-  const openNotificationSuccessUpdateProduct = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Cập nhật thông tin sản phẩm <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
-  const openNotificationSuccessUpdateProductError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tên sản phẩm hoặc sku đã tồn tại.',
-    })
-  }
-
-  const openNotificationSuccessUpdateProductMainDelete = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Xóa ảnh sản phẩm <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
-  const apiUpdateProductMultiMainDeleteStore = async (object, id) => {
-    try {
-      setLoading(true)
-      // const res = await apiUpdateProductStore(object, id)
-      // console.log(res)
-      // if (res.status === 200) {
-      //   setIndexCheckbox([])
-
-      //   setSkuSelectArray([])
-      //   setIndexCheckboxSimple([])
-      //   openNotificationSuccessUpdateProductMainDelete(object.name)
-      // }
-
-      // const res = await apiUpdateProduct(object, id)
-      // console.log(res)
-      // if (res.status === 200) {
-      //   setIndexCheckbox([])
-
-      //   setIndexCheckboxSimple([])
-      //   openNotificationSuccessUpdateProductMainDelete(object.name)
-      // }
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
-  const apiUpdateProductMultiMainDelete = async (object, id) => {
-    try {
-      setLoading(true)
-      // if (viewMode === 1) {
-      //   const res = await apiUpdateProductStore(object, id)
-      //   console.log(res)
-      //   if (res.status === 200) {
-      //     if (
-      //       statusName !== '' ||
-      //       statusName !== ' ' ||
-      //       statusName !== 'default'
-      //     ) {
-      //       await getAllProduct({
-      //         status: statusName,
-      //         page,
-      //         page_size,
-      //         ...paramsFilter,
-      //       })
-      //     } else {
-      //     }
-
-      //     setIndexCheckbox([])
-
-      //     setSkuSelectArray([])
-      //     setIndexCheckboxSimple([])
-      //     openNotificationSuccessUpdateProductMainDelete(object.name)
-      //   }
-      // } else {
-      //   const res = await apiUpdateProduct(object, id)
-      //   console.log(res)
-      //   if (res.status === 200) {
-      //     if (
-      //       statusName !== '' ||
-      //       statusName !== ' ' ||
-      //       statusName !== 'default'
-      //     ) {
-      //       await getAllProduct({
-      //         status: statusName,
-      //         page,
-      //         page_size,
-      //         ...paramsFilter,
-      //       })
-      //     } else {
-      //     }
-      //     setIndexCheckbox([])
-
-      //     setIndexCheckboxSimple([])
-      //     openNotificationSuccessUpdateProductMainDelete(object.name)
-      //   }
-      // }
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
-
-  const apiUpdateProductMultiMain = async (object, id) => {
-    try {
-      setLoading(true)
-
-      // if (viewMode === 1) {
-      //   const res = await apiUpdateProductStore(object, id)
-
-      //   if (res.status === 200) {
-      //     if (
-      //       statusName !== '' ||
-      //       statusName !== ' ' ||
-      //       statusName !== 'default' ||
-      //       typeof statusName !== 'undefined'
-      //     ) {
-      //       await getAllProduct({
-      //         status: statusName,
-      //         page,
-      //         page_size,
-      //         ...paramsFilter,
-      //       })
-      //     } else {
-      //     }
-      //   }
-      // } else {
-      //   const res = await apiUpdateProduct(object, id)
-      //   console.log(res)
-      //   if (res.status === 200) {
-      //     if (
-      //       statusName !== '' ||
-      //       statusName !== ' ' ||
-      //       statusName !== 'default'
-      //     ) {
-      //       await getAllProduct({
-      //         status: statusName,
-      //         page,
-      //         page_size,
-      //         ...paramsFilter,
-      //       })
-      //     }
-      //   }
-      // }
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
   const apiUpdateProductMulti = async (object, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -1352,17 +1042,22 @@ export default function Product() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const apiUpdateProductData = async (object, id, data) => {
+  const updateActiveProduct = async (body, product_id) => {
     try {
       setLoading(true)
-      const res = await apiUpdateProduct(object, id)
-      console.log(res)
+      let res
+      if (paramsFilter.store_id)
+        res = await updateProductStore(body, product_id)
+      else res = await updateProductBranch(body, product_id)
+
       if (res.status === 200) {
-        setSelectedRowKeys([])
-        openNotificationSuccessStoreDelete(data)
+        await getAllProduct({ ...paramsFilter })
+        notification.success({ message: 'Cập nhật thành công!' })
       } else {
-        openNotificationSuccessStoreDeleteError()
+        await getAllProduct({ ...paramsFilter })
+        notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
       }
+
       setLoading(false)
     } catch (error) {
       console.log(error)
@@ -1370,260 +1065,13 @@ export default function Product() {
     }
   }
 
-  function onChangeSwitch(checked, record) {
-    apiUpdateProductData(
-      { ...record, active: checked },
-      record.product_id,
-      checked ? 1 : 2
-    )
-  }
-
-  const openNotificationNumber = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      description: `${data} phải là số.`,
-    })
-  }
   const openNotificationErrorCategory = (data) => {
     notification.error({
       message: 'Thất bại',
       description: `Bạn chưa nhập ${data} danh mục.`,
     })
   }
-  const onCloseUpdateFunc = (data) => {
-    if (data === 1) {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          apiUpdateProductMulti({ ...values }, values.product_id)
-        })
-    } else {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          console.log(values)
-          if (values && values.attributes && values.attributes.length > 0) {
-            if (
-              values.length === '' &&
-              values.width === '' &&
-              values.height === '' &&
-              values.weight === '' &&
-              values.unit === ''
-            ) {
-              if (
-                isNaN(values.regular_price) ||
-                isNaN(values.sale_price) ||
-                isNaN(values.import_price) ||
-                isNaN(values.quantity)
-              ) {
-                if (isNaN(values.provideQuantity)) {
-                  openNotificationNumber('Số lượng cung cấp')
-                }
-              } else {
-                var array = []
-                values &&
-                  values.suppliers &&
-                  values.suppliers.length > 0 &&
-                  values.suppliers.forEach((values10, index10) => {
-                    array.push(values10.supplier_id)
-                  })
-                const object = {
-                  sku: values.sku,
-                  name: values.name,
-                  barcode: '',
-                  category:
-                    typeof arrayUpdate[0].category === 'object'
-                      ? arrayUpdate[0].category.category_id
-                      : arrayUpdate[0].category,
-                  image: [],
-                  length: 0,
-                  width: 0,
-                  height: 0,
-                  weight: 0,
-                  warranty: [],
-                  quantity: 0,
-                  unit: '',
-                  has_variable: true,
-                  suppliers:
-                    arrayUpdate[0] && arrayUpdate[0].suppliers ? array : [],
-                  variants: arrayUpdate[0].variants,
-                  attributes: arrayUpdate[0].attributes,
-                }
-                apiUpdateProductMulti(object, values.product_id)
-              }
-            } else {
-              if (
-                (values.length && isNaN(values.length)) ||
-                (values.width && isNaN(values.width)) ||
-                (values.height && isNaN(values.height)) ||
-                (values.weight && isNaN(values.weight)) ||
-                isNaN(values.quantity)
-              ) {
-                if (values.length && isNaN(values.length)) {
-                  openNotificationNumber('Chiều dài')
-                }
-                if (values.width && isNaN(values.width)) {
-                  openNotificationNumber('Chiều rộng')
-                }
-                if (values.height && isNaN(values.height)) {
-                  openNotificationNumber('Chiều cao')
-                }
-                if (values.weight && isNaN(values.weight)) {
-                  openNotificationNumber('Cân nặng')
-                }
-                if (isNaN(values.quantity)) {
-                  openNotificationNumber('Số lượng cung cấp')
-                }
-              } else {
-                var array = []
-                arrayUpdate[0] &&
-                  arrayUpdate[0].suppliers &&
-                  arrayUpdate[0].suppliers.length > 0 &&
-                  arrayUpdate[0].suppliers.forEach((values10, index10) => {
-                    array.push(values10.supplier_id)
-                  })
-                const object = {
-                  sku: values.sku,
-                  name: values.name,
-                  barcode: '',
-                  category:
-                    typeof arrayUpdate[0].category === 'object'
-                      ? arrayUpdate[0].category.category_id
-                      : arrayUpdate[0].category,
-                  image: [],
-                  length: arrayUpdate[0].length,
-                  width: arrayUpdate[0].width,
-                  height: arrayUpdate[0].height,
-                  weight: arrayUpdate[0].weight,
-                  warranty: [],
-                  quantity: 0,
-                  unit: '',
-                  has_variable: true,
-                  suppliers:
-                    arrayUpdate[0] && arrayUpdate[0].suppliers ? array : [],
-                  variants: arrayUpdate[0].variants,
-                  attributes: arrayUpdate[0].attributes,
-                }
-                console.log(object)
-                console.log('|||000111')
-                apiUpdateProductMulti(object, values.product_id)
-              }
-            }
-          } else {
-            if (
-              values.length === '' &&
-              values.width === '' &&
-              values.height === '' &&
-              values.weight === '' &&
-              values.unit === ''
-            ) {
-              if (
-                isNaN(values.regular_price) ||
-                isNaN(values.sale_price) ||
-                isNaN(values.import_price) ||
-                isNaN(values.quantity)
-              ) {
-                if (isNaN(values.provideQuantity)) {
-                  openNotificationNumber('Số lượng cung cấp')
-                }
-              } else {
-                const object = {
-                  sku: values.sku,
-                  name: values.name,
-                  barcode: arrayUpdate[0].barcode,
-                  category:
-                    typeof arrayUpdate[0].category === 'object'
-                      ? arrayUpdate[0].category.category_id
-                      : arrayUpdate[0].category,
-                  image: arrayUpdate[0].image,
-                  length: 0,
-                  width: 0,
-                  height: 0,
-                  weight: 0,
-                  warranty:
-                    arrayUpdate[0] && arrayUpdate[0].warranty
-                      ? arrayUpdate[0].warranty[-1]
-                      : arrayUpdate[0].warranty,
-                  quantity: arrayUpdate[0].quantity,
-                  unit: arrayUpdate[0].unit,
-                  has_variable: false,
-                  suppliers:
-                    arrayUpdate[0] && arrayUpdate[0].suppliers
-                      ? arrayUpdate[0].suppliers[-1]
-                      : arrayUpdate[0].suppliers,
-                  regular_price: arrayUpdate[0].regular_price,
-                  sale_price: arrayUpdate[0].sale_price,
-                }
-                console.log(object)
-                console.log('|||000111')
-                apiUpdateProductMulti(object, values.product_id)
-              }
-            } else {
-              if (
-                (values.length && isNaN(values.length)) ||
-                (values.width && isNaN(values.width)) ||
-                (values.height && isNaN(values.height)) ||
-                (values.weight && isNaN(values.weight)) ||
-                isNaN(values.quantity)
-              ) {
-                if (values.length && isNaN(values.length)) {
-                  openNotificationNumber('Chiều dài')
-                }
-                if (values.width && isNaN(values.width)) {
-                  openNotificationNumber('Chiều rộng')
-                }
-                if (values.height && isNaN(values.height)) {
-                  openNotificationNumber('Chiều cao')
-                }
-                if (values.weight && isNaN(values.weight)) {
-                  openNotificationNumber('Cân nặng')
-                }
-                if (isNaN(values.quantity)) {
-                  openNotificationNumber('Số lượng cung cấp')
-                }
-              } else {
-                const object = {
-                  sku: values.sku,
-                  name: values.name,
-                  barcode: arrayUpdate[0].barcode,
-                  image: arrayUpdate[0].image,
-                  length: arrayUpdate[0].length,
-                  width: arrayUpdate[0].width,
-                  height: arrayUpdate[0].height,
-                  weight: arrayUpdate[0].weight,
-                  regular_price: arrayUpdate[0].regular_price,
-                  sale_price: arrayUpdate[0].sale_price,
-                  warranty:
-                    arrayUpdate[0] && arrayUpdate[0].warranty
-                      ? arrayUpdate[0].warranty[-1]
-                      : arrayUpdate[0].warranty,
-                  quantity: arrayUpdate[0].quantity,
-                  unit:
-                    arrayUpdate[0] && arrayUpdate[0].unit
-                      ? arrayUpdate[0].unit
-                      : '',
 
-                  category:
-                    typeof arrayUpdate[0].category === 'object'
-                      ? arrayUpdate[0].category.category_id
-                      : arrayUpdate[0].category,
-                  suppliers:
-                    arrayUpdate[0] &&
-                    arrayUpdate[0].suppliers &&
-                    arrayUpdate[0].suppliers
-                      ? arrayUpdate[0].suppliers[-1]
-                      : arrayUpdate[0].suppliers,
-                  has_variable: false,
-                }
-                console.log(object)
-                console.log('|||000111')
-                apiUpdateProductMulti(object, values.product_id)
-              }
-            }
-          }
-        })
-    }
-  }
   const onCloseUpdateFuncCategory = () => {
     arrayUpdateCategory &&
       arrayUpdateCategory.length > 0 &&
@@ -1848,7 +1296,7 @@ export default function Product() {
               value={paramsFilter.category_id}
               onChange={onChangeCategoryValue}
             >
-              {category.map((values, index) => {
+              {categories.map((values, index) => {
                 return <Option value={values.category_id}>{values.name}</Option>
               })}
             </Select>
@@ -2028,25 +1476,13 @@ export default function Product() {
         </Row>
 
         <Row
-          justify="space-between"
+          justify="end"
           style={{
             marginTop: '30px',
             width: '100%',
             marginBottom: '1rem',
           }}
         >
-          <Radio.Group
-            onChange={(e) => {
-              paramsFilter.page = 1
-              paramsFilter.has_variable = e.target.value
-              setParamsFilter({ ...paramsFilter })
-            }}
-            value={paramsFilter.has_variable}
-          >
-            <Radio value={false}>Hiện thị đơn lẻ</Radio>
-            <Radio value={true}>Hiện thị theo nhóm</Radio>
-          </Radio.Group>
-
           <Space>
             <Button size="large" onClick={onClickClear} type="primary">
               Xóa tất cả lọc
@@ -2056,78 +1492,155 @@ export default function Product() {
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
           <Row style={{ width: '100%', marginBottom: 10 }}>
-            <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
-              <Button
-                size="large"
-                onClick={() => {
-                  history.push({
-                    pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                    state: arrayUpdate,
-                  })
-                }}
-                type="primary"
-              >
-                Tạo phiếu chuyển hàng
-              </Button>
-            </Permission>
-            <Permission permission={[PERMISSIONS.tao_nhom_san_pham]}>
-              <Button
-                size="large"
-                style={{ marginLeft: '1rem' }}
-                onClick={() => modal5VisibleModal(true)}
-                type="primary"
-              >
-                Tạo danh mục
-              </Button>
-            </Permission>
-            <Permission permission={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
-              <Button
-                size="large"
-                style={{ marginLeft: '1rem' }}
-                onClick={() => modal50VisibleModal(true)}
-                type="primary"
-              >
-                Cập nhật danh mục
-              </Button>
-            </Permission>
+            <Space size="middle">
+              {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+                <Button
+                  size="large"
+                  onClick={() => {
+                    history.push({
+                      pathname: ROUTES.SHIPPING_PRODUCT_ADD,
+                      state: arrayUpdate,
+                    })
+                  }}
+                  type="primary"
+                >
+                  Chuyển hàng
+                </Button>
+              </Permission> */}
+              <UpdateCategoryProducts />
+              {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
+                <Button size="large" type="primary" danger>
+                  Xoá
+                </Button>
+              </Permission> */}
+            </Space>
           </Row>
         ) : (
           ''
         )}
 
-        <Row style={{ width: '100%' }}>
-          <Tabs
-            defaultActiveKey="all"
-            style={{ width: '100%' }}
-            onChange={filterProductByStatus}
-          >
-            <Tabs.TabPane tab="Tất Cả" key={STATUS_PRODUCT.all} />
-            <Tabs.TabPane
-              tab="Hàng Vận Chuyển"
-              key={STATUS_PRODUCT.shipping_stock}
-            />
-            <Tabs.TabPane
-              tab="Hàng Khả Dụng"
-              key={STATUS_PRODUCT.available_stock}
-            />
-            <Tabs.TabPane tab="Hàng SL Thấp" key={STATUS_PRODUCT.low_stock} />
-            <Tabs.TabPane tab="Hàng Hết" key={STATUS_PRODUCT.out_stock} />
-          </Tabs>
-        </Row>
+        <Tabs
+          defaultActiveKey="all"
+          style={{ width: '100%' }}
+          onChange={filterProductByStatus}
+        >
+          <Tabs.TabPane
+            tab={
+              <Badge
+                offset={[0, -10]}
+                count={countProductByStatus.all_count}
+                showZero
+                overflowCount={10000}
+                style={{ backgroundColor: COLOR_STATUS.colorAll }}
+              >
+                Tất Cả
+              </Badge>
+            }
+            key={STATUS_PRODUCT.all}
+          />
+          <Tabs.TabPane
+            tab={
+              <Badge
+                offset={[0, -10]}
+                count={countProductByStatus.shipping_count}
+                showZero
+                overflowCount={10000}
+                style={{ backgroundColor: COLOR_STATUS.colorShipping }}
+              >
+                Hàng Vận Chuyển
+              </Badge>
+            }
+            key={STATUS_PRODUCT.shipping_stock}
+          />
+          <Tabs.TabPane
+            tab={
+              <Badge
+                offset={[0, -10]}
+                count={countProductByStatus.available_count}
+                showZero
+                overflowCount={10000}
+                style={{ backgroundColor: COLOR_STATUS.colorAvailable }}
+              >
+                Hàng Khả Dụng
+              </Badge>
+            }
+            key={STATUS_PRODUCT.available_stock}
+          />
+          <Tabs.TabPane
+            tab={
+              <Badge
+                offset={[0, -10]}
+                count={countProductByStatus.low_count}
+                showZero
+                overflowCount={10000}
+                style={{ backgroundColor: COLOR_STATUS.colorLow }}
+              >
+                Hàng Số Lượng Thấp
+              </Badge>
+            }
+            key={STATUS_PRODUCT.low_stock}
+          />
+          <Tabs.TabPane
+            tab={
+              <Badge
+                offset={[0, -10]}
+                count={countProductByStatus.out_count}
+                showZero
+                overflowCount={10000}
+                style={{ backgroundColor: COLOR_STATUS.colorOut }}
+              >
+                Hết Hàng
+              </Badge>
+            }
+            key={STATUS_PRODUCT.out_stock}
+          />
+        </Tabs>
         <div className={styles['view_product_table']}>
           <Table
             style={{ width: '100%' }}
-            // rowSelection={rowSelection}
-            rowKey="_id"
+            rowSelection={{
+              selectedRowKeys,
+              onChange: onSelectChange,
+            }}
+            rowKey="product_id"
+            expandable={{
+              expandedRowRender: (record) => {
+                if (record.variants && record.variants.length)
+                  return (
+                    <div
+                      style={{
+                        marginTop: 25,
+                        marginBottom: 25,
+                      }}
+                    >
+                      <Table
+                        style={{ width: '100%' }}
+                        pagination={false}
+                        columns={columnsVariant.map((column) => {
+                          if (column.key === 'category')
+                            return {
+                              ...column,
+                              render: () =>
+                                record._category && record._category.name,
+                            }
+
+                          return column
+                        })}
+                        dataSource={record.variants}
+                        size="small"
+                      />
+                    </div>
+                  )
+              },
+              expandedRowKeys: selectedRowKeys,
+              expandIconColumnIndex: -1,
+            }}
             columns={columns.map((column) => {
               if (column.key === 'image')
                 return {
                   ...column,
-                  width: !paramsFilter.has_variable && 390,
                   render: (text, record) =>
-                    paramsFilter.has_variable ? (
-                      <ImageProductVariable record={record} />
-                    ) : (
+                    !record.has_variable && (
                       <ImageProductNotVariable record={record} />
                     ),
                 }
@@ -2135,9 +1648,14 @@ export default function Product() {
               if (column.key === 'name-product')
                 return {
                   ...column,
-                  dataIndex: paramsFilter.has_variable ? 'title' : 'name',
-                  sorter: (a, b) =>
-                    compare(a, b, paramsFilter.has_variable ? 'title' : 'name'),
+                  render: (text, record) => (
+                    <Link
+                    // to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
+                    >
+                      {text}
+                    </Link>
+                  ),
+                  sorter: (a, b) => compare(a, b, 'name'),
                 }
 
               if (column.key === 'sku')
@@ -2150,31 +1668,51 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) =>
-                    (record._category && record._category.name) ||
-                    record.category,
+                    record._category && record._category.name,
+                }
+
+              if (column.key === 'sum-count')
+                return {
+                  ...column,
+                  render: (text, record) =>
+                    record.has_variable
+                      ? record.sumCountVariant
+                      : +record.available_stock_quantity +
+                        +record.low_stock_quantity,
                 }
 
               if (column.key === 'sale-price')
                 return {
                   ...column,
-                  sorter: (a, b) => compare(a, b, 'sale_price'),
+                  render: (text, record) =>
+                    record.has_variable
+                      ? 'Nhiều'
+                      : formatCash(record.sale_price),
                 }
 
-              if (column.key === 'create-date')
-                return {
-                  ...column,
-                  render: (text) => moment(text).format('DD-MM-YYYY HH:mm:ss'),
-                  sorter: (a, b) =>
-                    new Date(a.create_date).getTime() -
-                    new Date(b.create_date).getTime(),
-                }
-
-              if (column.key === 'supplier')
+              if (column.key === 'import-price')
                 return {
                   ...column,
                   render: (text, record) =>
-                    (record._supplier && record._supplier.name) ||
-                    record.supplier,
+                    record.has_variable
+                      ? 'Nhiều'
+                      : formatCash(record.import_price),
+                }
+
+              if (column.key === 'active')
+                return {
+                  ...column,
+                  render: (text, record) => (
+                    <Switch
+                      defaultChecked={record.active}
+                      onClick={() =>
+                        updateActiveProduct(
+                          { active: !record.active },
+                          record.product_id
+                        )
+                      }
+                    />
+                  ),
                 }
 
               return column
@@ -2194,7 +1732,7 @@ export default function Product() {
                 paramsFilter.page_size = pageSize
                 getAllProduct({ ...paramsFilter })
               },
-              total: count,
+              total: countProduct,
             }}
           />
         </div>
@@ -2273,92 +1811,6 @@ export default function Product() {
         >
           <Button onClick={onClickGroupProduct} type="primary" size="large">
             Tạo
-          </Button>
-        </div>
-      </Modal>
-
-      <Modal
-        title="Cập nhật danh mục"
-        centered
-        width={700}
-        footer={null}
-        visible={modal50Visible}
-        onOk={() => modal50VisibleModal(false)}
-        onCancel={() => modal50VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              marginBottom: '1rem',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'column',
-            }}
-          >
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn danh mục"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                onChange={onChangeCategory}
-                value={productGroupSelect}
-              >
-                {category.map((values, index) => {
-                  return (
-                    <Option value={values.category_id}>{values.name}</Option>
-                  )
-                })}
-              </Select>
-            </div>
-          </div>
-          {arrayUpdate.map((values, index) => {
-            return (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  marginBottom: '1rem',
-                  borderBottom: '1px solid rgb(235, 226, 226)',
-                  paddingBottom: '1rem',
-                }}
-              >
-                {values.name}
-              </div>
-            )
-          })}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Button
-            onClick={onClickGroupProductSelect}
-            type="primary"
-            size="large"
-          >
-            Cập nhật
           </Button>
         </div>
       </Modal>
@@ -2446,16 +1898,6 @@ export default function Product() {
           </Row>
           {selectedRowKeys && selectedRowKeys.length > 0 ? (
             <Row style={{ width: '100%', marginTop: 20 }}>
-              <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
-                <Button
-                  size="large"
-                  onClick={showDrawerCategoryGroupUpdate}
-                  type="primary"
-                  style={{ marginRight: '1rem' }}
-                >
-                  Cập nhật danh mục
-                </Button>
-              </Permission>
               <Permission permissions={[PERMISSIONS.xoa_nhom_san_pham]}>
                 <Button
                   size="large"
@@ -2481,9 +1923,8 @@ export default function Product() {
               size="small"
               rowKey="_id"
               loading={loading}
-              rowSelection={rowSelection}
               columns={columnsCategory}
-              dataSource={category}
+              dataSource={categories}
               scroll={{ x: 'max-content' }}
             />
           </div>

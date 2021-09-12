@@ -60,6 +60,7 @@ export default function Role() {
           pChildren: [
             'nhom_san_pham',
             'them_san_pham',
+            'xoa_san_pham',
             'tao_nhom_san_pham',
             'xoa_nhom_san_pham',
             'cap_nhat_nhom_san_pham',

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import styles from './../add/add.module.scss'
 
 import { ACTION, WAREHOUSE_TYPE } from 'consts'
-import { useHistory } from 'react-router-dom'
+import { removeAccents } from 'utils'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
@@ -50,6 +51,7 @@ import { apiAddProduct } from 'apis/product'
 
 export default function ProductAdd() {
   const dispatch = useDispatch()
+  const location = useLocation()
   const history = useHistory()
   const [form] = Form.useForm()
   const branchId = useSelector((state) => state.branch.branchId)
@@ -76,6 +78,8 @@ export default function ProductAdd() {
     useState(false)
   const [suppliers, setSuppliers] = useState([])
   const [supplier, setSupplier] = useState('') // dung o variant
+  const [isGeneratedSku, setIsGeneratedSku] = useState(false)
+  const [valueGeneratedSku, setValueGeneratedSku] = useState('')
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -94,14 +98,15 @@ export default function ProductAdd() {
 
   const addValueVariant = () => {
     let variantsNew = []
-    const dataProductAdd = form.getFieldsValue()
 
     //trường hợp chỉ có 1 attribute
     if (attributes.length === 1) {
       attributes[0].values.map((value) => {
         variantsNew.push({
           title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-          sku: `${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+          sku: `${
+            valueGeneratedSku || ''
+          }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
           image: '',
           imagePreview: '',
           options: [{ name: attributes[0].option, value: value }],
@@ -116,8 +121,10 @@ export default function ProductAdd() {
       attributes[0].values.map((v0) => {
         attributes[1].values.map((v1) => {
           variantsNew.push({
-            title: `${attributes[0].option.toUpperCase()} ${attributes[1].option.toUpperCase()} ${v0} ${v1}`,
-            sku: `${attributes[0].option.toUpperCase()}-${attributes[1].option.toUpperCase()}-${v0}-${v1}`,
+            title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()}  ${v1}`,
+            sku: `${
+              valueGeneratedSku || ''
+            }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
             image: '',
             imagePreview: '',
             options: [
@@ -241,7 +248,7 @@ export default function ProductAdd() {
         base_price: !isProductHasVariants ? formProduct.base_price : '',
         import_price: !isProductHasVariants ? formProduct.import_price : '',
         quantity: !isProductHasVariants ? formProduct.quantity : '',
-        sku: !isProductHasVariants ? formProduct.sku : '',
+        sku: !isProductHasVariants ? formProduct.sku : valueGeneratedSku,
         length: isInputInfoProduct ? formProduct.length || '' : '',
         width: isInputInfoProduct ? formProduct.width || '' : '',
         height: isInputInfoProduct ? formProduct.height || '' : '',
@@ -841,6 +848,14 @@ export default function ProductAdd() {
     addValueVariant()
   }, [attributes])
 
+  //update product
+  useEffect(() => {
+    if (location.state) {
+      const product = location.state
+      console.log(product)
+    }
+  }, [])
+
   return !isMobile ? (
     <div className={styles['product_manager']}>
       <Affix offsetTop={10} style={{ width: '100%' }}>
@@ -862,11 +877,11 @@ export default function ProductAdd() {
           >
             <ArrowLeftOutlined style={{ color: 'black' }} />
             <div className={styles['product_manager_title_product']}>
-              Thêm mới sản phẩm
+              {location.state ? 'Cập nhật sản phẩm' : 'Thêm mới sản phẩm'}
             </div>
           </a>
-          <Button type="primary" onClick={addProduct}>
-            Thêm
+          <Button size="large" type="primary" onClick={addProduct}>
+            {location.state ? 'Cập nhật' : 'Thêm'}
           </Button>
         </Row>
       </Affix>
@@ -884,8 +899,41 @@ export default function ProductAdd() {
                 { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
               ]}
             >
-              <Input size="large" placeholder="Nhập tên sản phẩm" />
+              <Input
+                size="large"
+                placeholder="Nhập tên sản phẩm"
+                onBlur={(e) => {
+                  const generatedItemsSku = e.target.value.split(' ')
+                  const valueSku = generatedItemsSku
+                    .map((items) =>
+                      items[0] ? removeAccents(items[0]).toUpperCase() : ''
+                    )
+                    .join('')
+
+                  if (isGeneratedSku) form.setFieldsValue({ sku: valueSku })
+
+                  setValueGeneratedSku(valueSku)
+                }}
+              />
             </Form.Item>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -17,
+              }}
+            >
+              <Checkbox
+                checked={isGeneratedSku}
+                onChange={(e) => {
+                  if (e.target.checked)
+                    form.setFieldsValue({ sku: valueGeneratedSku })
+
+                  setIsGeneratedSku(e.target.checked)
+                }}
+              >
+                Tự động tạo mã sản phẩm/sku
+              </Checkbox>
+            </div>
           </Col>
           <Col xs={24} sm={24} md={7} lg={7} xl={7}>
             <Form.Item
@@ -947,27 +995,22 @@ export default function ProductAdd() {
               </Select>
             </Form.Item>
           </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{
-              display: isProductHasVariants && 'none',
-            }}
-          >
+          <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
             <Form.Item
               label="Mã sản phẩm/SKU"
               name="sku"
               rules={[
                 {
-                  required: !isProductHasVariants && true,
+                  required: true,
                   message: 'Vui lòng nhập mã sản phẩm/sku!',
                 },
               ]}
             >
-              <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
+              <Input
+                disabled={isGeneratedSku}
+                size="large"
+                placeholder="Nhập mã sản phẩm/sku"
+              />
             </Form.Item>
           </Col>
           <Col
@@ -1418,7 +1461,7 @@ export default function ProductAdd() {
           marginTop: 20,
         }}
       >
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={24} md={9} lg={9} xl={9}>
           <Checkbox
             style={{ marginBottom: 4 }}
             checked={isWarranty}

@@ -35,6 +35,7 @@ export const rolesTranslate = (key) => {
     san_pham: 'Sản phẩm',
     quan_li_san_pham: 'Quản lý Sản phẩm',
     them_san_pham: 'Thêm sản phẩm',
+    xoa_san_pham: 'Xoá sản phẩm',
     nhom_san_pham: 'Nhóm sản phẩm',
     tao_nhom_san_pham: 'Tạo nhóm sản phẩm',
     cap_nhat_nhom_san_pham: 'Cập nhật nhóm sản phẩm',
