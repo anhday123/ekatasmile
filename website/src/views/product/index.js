@@ -80,7 +80,7 @@ export default function Product() {
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = product_id
-  const [arrayUpdate, setArrayUpdate] = useState([])
+  const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
@@ -227,31 +227,14 @@ export default function Product() {
     }
   }
 
-  const [arrayUpdateCategory, setArrayUpdateCategory] = useState([])
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-    const array = []
 
-    products.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          array.push(values)
-        }
-      })
-    })
-
-    setArrayUpdate([...array])
-
-    const array1 = []
-
-    categories.forEach((values, index) => {
-      selectedRowKeys.forEach((values1, index1) => {
-        if (values._id === values1) {
-          array1.push(values)
-        }
-      })
-    })
-    setArrayUpdateCategory([...array1])
+    const productsUpdateShipping = products.filter((product) =>
+      selectedRowKeys.includes(product.product_id)
+    )
+    console.log(productsUpdateShipping)
+    setArrayProductShipping([...productsUpdateShipping])
   }
 
   const typingTimeoutRef = useRef(null)
@@ -1186,20 +1169,20 @@ export default function Product() {
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
           <Row style={{ width: '100%', marginBottom: 10 }}>
             <Space size="middle">
-              {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+              <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
                 <Button
                   size="large"
                   onClick={() => {
                     history.push({
                       pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                      state: arrayUpdate,
+                      state: arrayProductShipping,
                     })
                   }}
                   type="primary"
                 >
                   Chuyển hàng
                 </Button>
-              </Permission> */}
+              </Permission>
               <UpdateCategoryProducts />
               <Permission permission={[PERMISSIONS.xoa_san_pham]}>
                 <Popconfirm
