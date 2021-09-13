@@ -328,7 +328,7 @@ export default function SupplierAdd(props) {
                   size="large"
                   showSearch
                   style={{ width: '100%' }}
-                  placeholder="Select a person"
+                  placeholder="Chọn quận/huyện"
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children

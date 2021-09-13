@@ -10,7 +10,6 @@ import {
   Form,
   notification,
   Checkbox,
-  Dropdown,
   Button,
   Modal,
   Table,
@@ -19,7 +18,6 @@ import {
   Col,
   DatePicker,
   Popover,
-  Radio,
   Space,
   Popconfirm,
   Tabs,
@@ -43,33 +41,30 @@ import SettingColumns from 'components/setting-column'
 import columnsProduct from 'views/product/columns'
 
 //icons
-import { PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined } from '@ant-design/icons'
 
 //apis
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
+import { apiAddCategory, apiAllCategorySearch } from 'apis/category'
 import {
-  apiAddCategory,
-  apiAllCategorySearch,
-  apiUpdateCategory,
-} from 'apis/category'
-import {
-  apiUpdateProduct,
   apiProductCategoryMerge,
   getProductsBranch,
   updateProductBranch,
   updateProductStore,
   getProductsStore,
+  deleteProductStore,
+  deleteProductBranch,
 } from 'apis/product'
-import { uploadFiles, uploadFile } from 'apis/upload'
+import { uploadFile } from 'apis/upload'
 import { compare } from 'utils'
 
+const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
   const dispatch = useDispatch()
   const history = useHistory()
-  const [form] = Form.useForm()
   const branchId = useSelector((state) => state.branch.branchId)
 
   const [loading, setLoading] = useState(true)
@@ -84,14 +79,9 @@ export default function Product() {
   const [supplier, setSupplier] = useState([])
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
-  const [modal6Visible, setModal6Visible] = useState(false)
-  const [visibleDrawer, setVisibleDrawer] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = product_id
   const [arrayUpdate, setArrayUpdate] = useState([])
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [categories, setCategories] = useState([])
-  const [visibleCategoryGroupUpdate, setVisibleCategoryGroupUpdate] =
-    useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
@@ -121,59 +111,22 @@ export default function Product() {
     colorOut: 'red',
   }
 
-  const showDrawerCategoryGroupUpdate = () => {
-    setVisibleCategoryGroupUpdate(true)
-  }
-
-  const onCloseCategoryGroupUpdate = () => {
-    setVisibleCategoryGroupUpdate(false)
-  }
-  const modal6VisibleModal = (modal6Visible) => {
-    setModal6Visible(modal6Visible)
-  }
-  // tạo Danh mục
-  const onFinishCategory = (values) => {
-    const object = {
-      name: values.name,
-      default: values.default,
-      description: values.description || '',
-    }
-    apiAddCategoryDataMain(object)
-  }
-  const [productGroupName, setProductGroupName] = useState('')
-  const onChangeGroupProduct = (e) => {
-    setProductGroupName(e.target.value)
-  }
-  const showDrawerGroup = () => {
-    setVisibleDrawer(true)
-    setSelectedRowKeys([])
-  }
-
-  const onCloseGroup = async () => {
-    setVisibleDrawer(false)
-    setSelectedRowKeys([])
-    await apiAllCategoryData()
-  }
   const columnsCategory = [
-    {
-      title: 'Mã nhóm',
-      dataIndex: 'category_id',
-      sorter: (a, b) => compare(a, b, 'category_id'),
-    },
     {
       title: 'Tên nhóm',
       dataIndex: 'name',
       sorter: (a, b) => compare(a, b, 'name'),
     },
     {
-      title: 'Số lượng sản phẩm',
-      dataIndex: 'address',
-      sorter: (a, b) => compare(a, b, 'address'),
+      title: 'Mã nhóm',
+      dataIndex: 'category_id',
+      sorter: (a, b) => compare(a, b, 'category_id'),
     },
     {
       title: 'Người tạo',
-      dataIndex: '_creator',
-      sorter: (a, b) => compare(a, b, '_creator'),
+      render: (text, record) =>
+        record._creator &&
+        `${record._creator.first_name} ${record._creator.last_name}`,
     },
     {
       title: 'Ngày tạo',
@@ -184,47 +137,19 @@ export default function Product() {
         moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
   ]
-  const openNotificationSuccessCategoryMain = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Xóa danh mục <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
-  const openNotificationSuccessCategoryMainSuccess = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: 'Thêm danh mục thành công.',
-    })
-  }
-  const openNotificationSuccessCategoryMainError = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: (
-        <div>
-          danh mục <b>{data}</b> đã tồn tại
-        </div>
-      ),
-    })
-  }
+
   const apiAddCategoryDataMain = async (object) => {
     try {
       setLoading(true)
       const res = await apiAddCategory(object)
+      console.log(res)
       if (res.status === 200) {
-        await apiAllCategoryData()
-        setModal6Visible(false)
-        form.resetFields()
-        openNotificationSuccessCategoryMainSuccess()
-      } else {
-        openNotificationSuccessCategoryMainError(object.name)
-      }
+        notification.success({ message: 'Tạo danh mục thành công' })
+      } else
+        notification.error({
+          message: res.data.mess || 'Tạo danh mục thất bại',
+        })
+
       setLoading(false)
     } catch (error) {
       console.log(error)
@@ -232,21 +157,6 @@ export default function Product() {
     }
   }
 
-  const apiUpdateCategoryData = async (object, id, data, name) => {
-    try {
-      setLoading(true)
-      const res = await apiUpdateCategory(object, id)
-      if (res.status === 200) {
-        await apiAllCategoryData()
-        setSelectedRowKeys([])
-        openNotificationSuccessCategoryMain(name)
-      }
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
   const openNotificationSuccessStoreUpdate = (data) => {
     notification.success({
       message: 'Thành công',
@@ -258,23 +168,7 @@ export default function Product() {
       ),
     })
   }
-  // bật - tắt trang thái sản phẩm
-  function onChangeSwitchCategory(checked) {
-    arrayUpdateCategory &&
-      arrayUpdateCategory.length > 0 &&
-      arrayUpdateCategory.forEach((values, index) => {
-        const object = {
-          active: false,
-        }
 
-        apiUpdateCategoryData(
-          object,
-          values.category_id,
-          checked ? 1 : 2,
-          values.name
-        )
-      })
-  }
   const apiAllCategoryData = async () => {
     try {
       const res = await apiAllCategorySearch()
@@ -283,14 +177,6 @@ export default function Product() {
     } catch (error) {
       console.log(error)
     }
-  }
-  const [modal5Visible, setModal5Visible] = useState(false)
-  const modal5VisibleModal = (modal5Visible) => {
-    setModal5Visible(modal5Visible)
-  }
-  const [modal50Visible, setModal50Visible] = useState(false)
-  const modal50VisibleModal = (modal50Visible) => {
-    setModal50Visible(modal50Visible)
   }
 
   const columnsVariant = [
@@ -368,32 +254,6 @@ export default function Product() {
     setArrayUpdateCategory([...array1])
   }
 
-  const [categoryProductGroup, setCategoryProductGroup] = useState([])
-  const apiAllCategorySearchData = async (value) => {
-    try {
-      setLoading(true)
-
-      const res = await apiAllCategorySearch({
-        keyword: value,
-      })
-      if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
-          res.data.data.forEach((values, index) => {
-            if (values.active) {
-              array.push(values)
-            }
-          })
-        setCategoryProductGroup([...array])
-        setCategories([...array])
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
   const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
@@ -411,47 +271,6 @@ export default function Product() {
       paramsFilter.page = 1
       setParamsFilter({ ...paramsFilter })
     }, 750)
-  }
-  const [record, setRecord] = useState({})
-  const modal2VisibleModalMain = (modal2Visible, record) => {
-    setModal2Visible(modal2Visible)
-    setRecord(record)
-  }
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-
-  const { Option } = Select
-
-  const openNotificationSuccessGroup = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Tạo nhóm thành công.',
-    })
-  }
-  const openNotificationSuccessGroupError = () => {
-    notification.error({
-      message: 'Thất bại',
-      description: 'Tạo nhóm thất bại.',
-    })
-  }
-  const apiAddCategoryData = async (object) => {
-    setLoading(true)
-    try {
-      const res = await apiAddCategory(object)
-      if (res.status === 200) {
-        await apiAllCategoryData()
-        setSelectedRowKeys([])
-        setModal5Visible(false)
-        openNotificationSuccessGroup()
-      } else {
-        openNotificationSuccessGroupError()
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
   }
 
   const apiProductCategoryMergeData = async () => {
@@ -538,69 +357,228 @@ export default function Product() {
       localStorage.setItem('columnsProduct', JSON.stringify(columnsProduct))
   }, [])
 
-  const onClickGroupProduct = () => {
-    // productGroupName
-    var array = []
-    arrayUpdate &&
-      arrayUpdate.length > 0 &&
-      arrayUpdate.forEach((values, index) => {
-        array.push(values.product_id)
-      })
-    const object = {
-      name: productGroupName ? productGroupName : '',
-      product_list: [...array],
+  const ModalCreateCategory = ({ reload }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [formCategory] = Form.useForm()
+
+    return (
+      <>
+        <Permission permissions={[PERMISSIONS.tao_nhom_san_pham]}>
+          <Button size="large" onClick={toggle} type="primary">
+            Tạo danh mục
+          </Button>
+        </Permission>
+        <Modal
+          title="Tạo danh mục"
+          centered
+          width={500}
+          footer={null}
+          visible={visible}
+          onCancel={toggle}
+        >
+          <Form layout="vertical" form={formCategory}>
+            <Form.Item
+              label={
+                <div style={{ color: 'black', fontWeight: '600' }}>
+                  Tên danh mục:
+                </div>
+              }
+              name="name"
+              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
+            >
+              <Input
+                size="large"
+                placeholder="Nhập tên danh mục"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <div style={{ color: 'black', fontWeight: '600' }}>Mô tả:</div>
+              }
+              name="description"
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder="Nhập mô tả"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Row
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Form.Item name="default" valuePropName="checked">
+                <Checkbox>Chọn làm mặc định</Checkbox>
+              </Form.Item>
+
+              <Button
+                size="large"
+                type="primary"
+                onClick={async () => {
+                  let isValidated = true
+                  try {
+                    await formCategory.validateFields()
+                    isValidated = true
+                  } catch (error) {
+                    isValidated = false
+                  }
+
+                  if (!isValidated) return
+                  const data = formCategory.getFieldsValue()
+                  const body = {
+                    name: data.name,
+                    default: data.default,
+                    description: data.description || '',
+                  }
+                  await apiAddCategoryDataMain(body)
+                  await reload()
+                  toggle()
+                }}
+              >
+                Tạo
+              </Button>
+            </Row>
+          </Form>
+        </Modal>
+      </>
+    )
+  }
+
+  const ViewCategories = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [categories, setCategories] = useState([])
+    const [loading, setLoading] = useState(false)
+
+    const getCategories = async (params) => {
+      try {
+        setLoading(true)
+        const res = await apiAllCategorySearch(params)
+        if (res.status === 200)
+          setCategories(res.data.data.filter((e) => e.active))
+        setLoading(false)
+      } catch (error) {
+        setLoading(false)
+        console.log(error)
+      }
     }
-    console.log(object)
-    apiAddCategoryData(object)
-  }
-  const [productGroupSelect, setProductGroupSelect] = useState()
 
-  const openNotificationProductGroupSelectError = () => {
-    notification.error({
-      message: 'Thất bại',
-      description: 'Bạn chưa chọn danh mục.',
-    })
-  }
-
-  const onClickGroupProductSelect = () => {
-    // productGroupName
-    if (
-      productGroupSelect === '' ||
-      productGroupSelect === ' ' ||
-      productGroupSelect === 'default'
-    ) {
-      openNotificationProductGroupSelectError()
-    } else {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          apiUpdateProductMulti(
-            { ...values, category: productGroupSelect },
-            values.product_id
-          )
-        })
+    const onSearchProductGroup = (e) => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        const value = e.target.value
+        if (value) getCategories({ search: value })
+        else getCategories()
+      }, 750)
     }
-  }
 
-  const contentProductGroup = (
-    <div className={styles['product__group-select']}>
-      {categoryProductGroup && categoryProductGroup.length > 0
-        ? categoryProductGroup.map((values, index) => {
-            return (
-              <div onClick={() => onSearchProductGroupMain(values.name)}>
-                {values.name}
-              </div>
-            )
-          })
-        : categories.map((values, index) => {
-            return (
-              <div onClick={() => onSearchProductGroupMain(values.name)}>
-                {values.name}
-              </div>
-            )
-          })}
-    </div>
-  )
+    useEffect(() => {
+      getCategories()
+    }, [])
+
+    return (
+      <>
+        <Permission permissions={[PERMISSIONS.nhom_san_pham]}>
+          <Button size="large" onClick={toggle} type="primary">
+            Xem danh mục
+          </Button>
+        </Permission>
+        <Drawer
+          title="Danh mục"
+          width={1000}
+          onClose={toggle}
+          visible={visible}
+          bodyStyle={{ paddingBottom: 80 }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              width: '100%',
+              flexDirection: 'column',
+            }}
+          >
+            <Row
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={11}
+                xl={11}
+              >
+                <Input
+                  size="large"
+                  style={{ width: '100%' }}
+                  name="name"
+                  enterButton
+                  onChange={onSearchProductGroup}
+                  className={styles['orders_manager_content_row_col_search']}
+                  placeholder="Tìm kiếm theo mã, theo tên"
+                  allowClear
+                  autocomplete="off"
+                />
+              </Col>
+              <Col
+                style={{ width: '100%' }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={11}
+                xl={11}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <ModalCreateCategory reload={getCategories} />
+                </div>
+              </Col>
+            </Row>
+
+            <div
+              style={{
+                width: '100%',
+                marginTop: '1.25rem',
+                border: '1px solid rgb(243, 234, 234)',
+              }}
+            >
+              <Table
+                size="small"
+                columns={columnsCategory}
+                dataSource={categories}
+                scroll={{ x: 'max-content' }}
+                pagination={false}
+                loading={loading}
+              />
+            </div>
+          </div>
+        </Drawer>
+      </>
+    )
+  }
 
   const UpdateCategoryProducts = () => {
     const [visible, setVisible] = useState(false)
@@ -695,28 +673,35 @@ export default function Product() {
     )
   }
 
-  const [valueSearchProductGroup, setValueSearchProductGroup] = useState('')
-  const onSearchProductGroup = (e) => {
-    setValueSearchProductGroup(e.target.value)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
+  const deleteProducts = async () => {
+    try {
+      setLoading(true)
+      let res
+      if (paramsFilter.store_id) {
+        const body = {
+          store_id: paramsFilter.store_id,
+          products: selectedRowKeys,
+        }
+        res = await deleteProductStore(body)
+      } else {
+        const body = {
+          branch_id: branchId,
+          products: selectedRowKeys,
+        }
+        res = await deleteProductBranch(body)
+      }
+
+      if (res.status === 200) {
+        await getAllProduct({ ...paramsFilter })
+        setSelectedRowKeys([])
+        notification.success({ message: 'Xoá sản phẩm thành công!' })
+      } else notification.error({ message: 'Xoá sản phẩm thất bại!' })
+
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
     }
-    typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value
-      apiAllCategorySearchData(value)
-    }, 300)
-    //
-  }
-  const onSearchProductGroupMain = (e) => {
-    setValueSearchProductGroup(e)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      // const value = e.target.value;
-      apiAllCategorySearchData(e)
-    }, 750)
-    //
   }
 
   /*image product */
@@ -741,46 +726,6 @@ export default function Product() {
     )
   }
 
-  const uploadImageProductVariable = async (file, record) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const image = await uploadFile(file)
-
-      const indexVariant = products.findIndex((p) => p.title === record.title)
-      let productId = ''
-      if (indexVariant !== -1) {
-        products[indexVariant].image = image || record.image
-        productId = products[0].product_id
-        const productsNew = products.map((e) => {
-          delete e.product_id
-          delete e.category
-          delete e.create_date
-          return e
-        })
-
-        const body = { variants: productsNew }
-
-        let res
-        if (paramsFilter.store_id)
-          res = await updateProductStore(body, productId)
-        else res = await updateProductBranch(body, productId)
-
-        if (res.status === 200) {
-          notification.success({ message: 'Upload ảnh thành công' })
-          getAllProduct({ ...paramsFilter })
-        } else
-          notification.success({
-            message: 'Upload ảnh thất bại, vui lòng thử lại',
-          })
-      }
-
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
   const ImageProductVariable = ({ record }) => {
     return (
       <Upload
@@ -792,7 +737,6 @@ export default function Product() {
         onChange={(info) => {
           if (info.file.status !== 'done') info.file.status = 'done'
         }}
-        data={(file) => uploadImageProductVariable(file, record)}
         disabled
       >
         {record.image ? (
@@ -810,188 +754,30 @@ export default function Product() {
     )
   }
 
-  const removeImagesProductNotVariable = async (images, record) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      console.log(images)
-      const body = { image: images }
-
-      let res
-      if (paramsFilter.store_id)
-        res = await updateProductStore(body, record.product_id)
-      else res = await updateProductBranch(body, record.product_id)
-
-      if (res.status === 200) {
-        notification.success({ message: 'Xoá ảnh thành công' })
-        getAllProduct({ ...paramsFilter })
-      } else
-        notification.success({ message: 'Xoá ảnh thất bại, vui lòng thử lại' })
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
-  const uploadImagesProductNotVariable = async (files, record) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const images = await uploadFiles(files)
-      const body = {
-        image: images ? [...record.image, ...images] : record.image,
-      }
-
-      let res
-      if (paramsFilter.store_id)
-        res = await updateProductStore(body, record.product_id)
-      else res = await updateProductBranch(body, record.product_id)
-
-      if (res.status === 200) {
-        notification.success({ message: 'Upload ảnh thành công' })
-        getAllProduct({ ...paramsFilter })
-      } else
-        notification.success({
-          message: 'Upload ảnh thất bại, vui lòng thử lại',
-        })
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
   const ImageProductNotVariable = ({ record }) => {
-    const [listImageRemove, setListImageRemove] = useState([]) // list checkbox xoa anh hang loat
-    const [classUploadImageProduct, setClassUploadImageProduct] = useState('')
-
-    const [data, setData] = useState([])
-
-    useEffect(() => {
-      setData(
-        record.image
-          ? [
-              ...record.image.map((url, index) => {
-                return {
-                  uid: index,
-                  name: 'image',
-                  status: 'done',
-                  url: url,
-                }
-              }),
-            ]
-          : []
-      )
-    }, [])
-
     return (
-      <>
-        <Upload
-          listType="picture-card"
-          multiple
-          fileList={data}
-          onChange={({ fileList }) => {
-            if (typingTimeoutRef.current) {
-              clearTimeout(typingTimeoutRef.current)
-            }
-            typingTimeoutRef.current = setTimeout(async () => {
-              const files = fileList
-                .filter((e) => e.originFileObj)
-                .map((file) => file.originFileObj)
-              uploadImagesProductNotVariable(files, record)
-            }, 350)
-          }}
-          className={classUploadImageProduct}
-          showUploadList={{
-            showRemoveIcon: false,
-            removeIcon: (file) => (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '-1px',
-                  right: '-1px',
-                  top: '-1px',
-                  bottom: '-1px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Checkbox
-                  defaultChecked={listImageRemove.includes(file.url)}
-                  onClick={(e) => {
-                    const listImageRemoveNew = [...listImageRemove]
-                    const indexLink = listImageRemoveNew.findIndex(
-                      (e) => e === file.url
-                    )
-
-                    if (indexLink !== -1)
-                      listImageRemoveNew.splice(indexLink, 1)
-                    else listImageRemoveNew.push(file.url)
-
-                    if (listImageRemoveNew.length)
-                      setClassUploadImageProduct('image-product')
-                    else setClassUploadImageProduct('')
-
-                    setListImageRemove([...listImageRemoveNew])
-
-                    e.stopPropagation()
-                  }}
-                ></Checkbox>
-              </div>
-            ),
-            showDownloadIcon: true,
-            downloadIcon: (file) => {
-              return (
-                <Popover
-                  style={{ top: 300 }}
-                  placement="top"
-                  content={ContentZoomImage(file.url)}
-                >
-                  <div
-                    style={{
-                      width: 100,
-                      height: 100,
-                      position: 'absolute',
-                      left: '-38px',
-                      top: '-38px',
-                    }}
-                  ></div>
-                </Popover>
-              )
-            },
-          }}
-        >
-          {/* <div >
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </div> */}
-        </Upload>
-
-        {/* <Popconfirm
-          title="Bạn có muốn xoá các ảnh này ?"
-          onConfirm={() => {
-            const listImagesRemoveNew = data.filter(
-              (e) => !listImageRemove.includes(e.url)
-            )
-
-            removeImagesProductNotVariable(
-              listImagesRemoveNew.map((e) => e.url),
-              record
-            )
-          }}
-          okText="Yes"
-          cancelText="No"
-        >
-          <Button
-            type="dashed"
-            danger
-            style={{ display: !listImageRemove.length && 'none' }}
-          >
-            Remove list image
-          </Button>
-        </Popconfirm> */}
-      </>
+      <Space>
+        {record.image.map((url) => (
+          <Popover content={ContentZoomImage(url)}>
+            <div
+              style={{
+                width: 85,
+                maxWidth: 85,
+                height: 85,
+                maxHeight: 85,
+                padding: 8,
+                border: '1px solid #d9d9d9',
+              }}
+            >
+              <img
+                alt=""
+                src={url}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
+          </Popover>
+        ))}
+      </Space>
     )
   }
   /*image product */
@@ -1010,38 +796,6 @@ export default function Product() {
     setValueTime()
   }
 
-  const apiUpdateProductMulti = async (object, id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      // console.log(value);
-      // if (viewMode === 1) {
-      //   const res = await apiUpdateProductStore(object, id)
-      //   console.log(res)
-      //   if (res.status === 200) {
-      //     setSelectedRowKeys([])
-      //     setModal50Visible(false)
-      //     openNotificationSuccessUpdateProduct(object.name)
-      //   } else {
-      //     openNotificationSuccessUpdateProductError()
-      //   }
-      // } else {
-      //   const res = await apiUpdateProduct(object, id)
-      //   console.log(res)
-      //   if (res.status === 200) {
-      //     setSelectedRowKeys([])
-      //     openNotificationSuccessUpdateProduct(object.name)
-      //     setModal50Visible(false)
-      //   } else {
-      //     openNotificationSuccessUpdateProductError()
-      //   }
-      // }
-
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
   const updateActiveProduct = async (body, product_id) => {
     try {
       setLoading(true)
@@ -1065,39 +819,6 @@ export default function Product() {
     }
   }
 
-  const openNotificationErrorCategory = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      description: `Bạn chưa nhập ${data} danh mục.`,
-    })
-  }
-
-  const onCloseUpdateFuncCategory = () => {
-    arrayUpdateCategory &&
-      arrayUpdateCategory.length > 0 &&
-      arrayUpdateCategory.forEach((values, index) => {
-        if (
-          values.name === '' ||
-          values.name === ' ' ||
-          values.name === 'default'
-        ) {
-          if (
-            values.name === '' ||
-            values.name === ' ' ||
-            values.name === 'default'
-          ) {
-            openNotificationErrorCategory('tên')
-          }
-        } else {
-          const object = {
-            name: values.name,
-            type: '',
-            description: values.description ? values.description : '',
-          }
-          apiUpdateCategoryDataUpdate(object, values.category_id)
-        }
-      })
-  }
   const apiAllWarrantyData = async () => {
     try {
       setLoading(true)
@@ -1129,24 +850,6 @@ export default function Product() {
 
     paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
-  }
-
-  const apiUpdateCategoryDataUpdate = async (object, id) => {
-    try {
-      setLoading(true)
-      const res = await apiUpdateCategory(object, id)
-      if (res.status === 200) {
-        await apiAllCategoryData()
-        setSelectedRowKeys([])
-
-        openNotificationSuccessStoreUpdate(object.name)
-        onCloseCategoryGroupUpdate()
-      }
-      // if (res.status === 200) setStatus(res.data.status);
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
   }
 
   const filterProductByStatus = (status) => {
@@ -1206,17 +909,7 @@ export default function Product() {
               }}
             >
               <Space size="large">
-                <Permission permissions={[PERMISSIONS.nhom_san_pham]}>
-                  <Button
-                    size="large"
-                    onClick={showDrawerGroup}
-                    type="primary"
-                    icon={<PlusCircleOutlined />}
-                  >
-                    Tạo danh mục
-                  </Button>
-                </Permission>
-
+                <ViewCategories />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
                   <Link to={ROUTES.PRODUCT_ADD}>
                     <Button
@@ -1508,11 +1201,18 @@ export default function Product() {
                 </Button>
               </Permission> */}
               <UpdateCategoryProducts />
-              {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
-                <Button size="large" type="primary" danger>
-                  Xoá
-                </Button>
-              </Permission> */}
+              <Permission permission={[PERMISSIONS.xoa_san_pham]}>
+                <Popconfirm
+                  title="Bạn có muốn xoá các sản phẩm này!"
+                  okText="Đồng ý"
+                  cancelText="Từ chối"
+                  onConfirm={deleteProducts}
+                >
+                  <Button size="large" type="primary" danger>
+                    Xoá
+                  </Button>
+                </Popconfirm>
+              </Permission>
             </Space>
           </Row>
         ) : (
@@ -1648,13 +1348,16 @@ export default function Product() {
               if (column.key === 'name-product')
                 return {
                   ...column,
-                  render: (text, record) => (
-                    <Link
-                    // to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
-                    >
-                      {text}
-                    </Link>
-                  ),
+                  render: (text, record) =>
+                    record.active ? (
+                      <Link
+                        to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
+                      >
+                        {text}
+                      </Link>
+                    ) : (
+                      text
+                    ),
                   sorter: (a, b) => compare(a, b, 'name'),
                 }
 
@@ -1737,328 +1440,6 @@ export default function Product() {
           />
         </div>
       </div>
-      <Modal
-        title="Tạo danh mục"
-        centered
-        width={700}
-        footer={null}
-        visible={modal5Visible}
-        onOk={() => modal5VisibleModal(false)}
-        onCancel={() => modal5VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              marginBottom: '1rem',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <div
-              style={{
-                color: 'black',
-                fontSize: '1rem',
-                fontWeight: '600',
-                width: 'max-content',
-              }}
-            >
-              Danh mục:
-            </div>
-            <div style={{ marginLeft: '1rem', width: '100%' }}>
-              <Input
-                size="large"
-                style={{ width: '100%' }}
-                onChange={onChangeGroupProduct}
-                placeholder="Nhập tên danh mục"
-              />
-            </div>
-          </div>
-          {arrayUpdate.map((values, index) => {
-            return (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                  marginBottom: '1rem',
-                  borderBottom: '1px solid rgb(235, 226, 226)',
-                  paddingBottom: '1rem',
-                }}
-              >
-                {values.name}
-              </div>
-            )
-          })}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Button onClick={onClickGroupProduct} type="primary" size="large">
-            Tạo
-          </Button>
-        </div>
-      </Modal>
-
-      <Drawer
-        title="Danh mục"
-        width={1000}
-        onClose={onCloseGroup}
-        visible={visibleDrawer}
-        bodyStyle={{ paddingBottom: 80 }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
-            >
-              <div style={{ width: '100%' }}>
-                <Dropdown
-                  style={{ width: '100' }}
-                  trigger={['click']}
-                  overlay={contentProductGroup}
-                >
-                  <Input
-                    size="large"
-                    style={{ width: '100%' }}
-                    name="name"
-                    value={valueSearchProductGroup}
-                    enterButton
-                    onChange={onSearchProductGroup}
-                    className={styles['orders_manager_content_row_col_search']}
-                    placeholder="Tìm kiếm theo mã, theo tên"
-                    allowClear
-                    autocomplete="off"
-                  />
-                </Dropdown>
-              </div>
-            </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={11}
-              xl={11}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Permission permissions={[PERMISSIONS.tao_nhom_san_pham]}>
-                  <Button
-                    size="large"
-                    onClick={() => modal6VisibleModal(true)}
-                    type="primary"
-                  >
-                    Tạo danh mục
-                  </Button>
-                </Permission>
-              </div>
-            </Col>
-          </Row>
-          {selectedRowKeys && selectedRowKeys.length > 0 ? (
-            <Row style={{ width: '100%', marginTop: 20 }}>
-              <Permission permissions={[PERMISSIONS.xoa_nhom_san_pham]}>
-                <Button
-                  size="large"
-                  onClick={onChangeSwitchCategory}
-                  danger
-                  type="primary"
-                >
-                  Xóa
-                </Button>
-              </Permission>
-            </Row>
-          ) : (
-            ''
-          )}
-          <div
-            style={{
-              width: '100%',
-              marginTop: '1.25rem',
-              border: '1px solid rgb(243, 234, 234)',
-            }}
-          >
-            <Table
-              size="small"
-              rowKey="_id"
-              loading={loading}
-              columns={columnsCategory}
-              dataSource={categories}
-              scroll={{ x: 'max-content' }}
-            />
-          </div>
-        </div>
-      </Drawer>
-
-      <Modal
-        title="Tạo danh mục"
-        centered
-        width={500}
-        footer={null}
-        visible={modal6Visible}
-        onOk={() => modal6VisibleModal(false)}
-        onCancel={() => modal6VisibleModal(false)}
-      >
-        <Form onFinish={onFinishCategory} layout="vertical" form={form}>
-          <Form.Item
-            label={
-              <div style={{ color: 'black', fontWeight: '600' }}>
-                Tên danh mục:
-              </div>
-            }
-            name="name"
-            rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-          >
-            <Input
-              size="large"
-              placeholder="Nhập tên danh mục"
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <div style={{ color: 'black', fontWeight: '600' }}>Mô tả:</div>
-            }
-            name="description"
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="Nhập mô tả"
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Form.Item name="default" valuePropName="checked">
-              <Checkbox>Chọn làm mặc định</Checkbox>
-            </Form.Item>
-            <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
-                Tạo danh mục
-              </Button>
-            </Form.Item>
-          </Row>
-        </Form>
-      </Modal>
-
-      <Drawer
-        title="Cập nhật danh mục"
-        width={500}
-        onClose={onCloseCategoryGroupUpdate}
-        visible={visibleCategoryGroupUpdate}
-        bodyStyle={{ paddingBottom: 80 }}
-        footer={
-          <div
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <Button onClick={onCloseUpdateFuncCategory} type="primary">
-              Cập nhật
-            </Button>
-          </div>
-        }
-      >
-        {arrayUpdateCategory.map((values, index) => {
-          const obj = Object.keys(values)
-          return (
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-            >
-              {obj.map((data) => {
-                if (data === 'name') {
-                  const InputName = () => (
-                    <Input
-                      style={{ width: '100%' }}
-                      placeholder="Nhập tên nhóm"
-                      defaultValue={values[data]}
-                      onChange={(event) => {
-                        arrayUpdateCategory[index].name = event.target.value
-                      }}
-                    />
-                  )
-                  return (
-                    <Col
-                      style={{ width: '100%', marginTop: '1rem' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
-                      <div>
-                        <div
-                          style={{
-                            color: 'black',
-                            fontWeight: '600',
-                            marginBottom: '0.5rem',
-                          }}
-                        >
-                          <b style={{ color: 'red' }}>*</b>Tên danh mục:
-                        </div>
-                        <InputName />
-                      </div>
-                    </Col>
-                  )
-                }
-              })}
-            </Row>
-          )
-        })}
-      </Drawer>
     </>
   )
 }
