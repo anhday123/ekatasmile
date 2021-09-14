@@ -15,7 +15,6 @@ import ProductCheck from './product-check/index'
 import OrderList from './order-list/index'
 import ReportFinancial from './report-financial/index'
 import ReportInventory from './report-inventory'
-import ReportEndDay from './report-end-day'
 import ShippingControl from './shipping-control'
 import Guarantee from './guarantee'
 import ShippingProduct from './shipping-product'
@@ -160,13 +159,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.REPORT_END_DAY,
-    Component: () => <ReportEndDay />,
-    title: 'Báo cáo cuối ngày',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SHIPPING_CONTROL,
     Component: () => <ShippingControl />,

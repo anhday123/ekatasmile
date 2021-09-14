@@ -1498,24 +1498,20 @@ export default function ProductAdd() {
           >
             <span style={{ color: 'red' }}>* </span>
             Hình ảnh
-            <Upload.Dragger
-              name="files"
-              listType="picture"
-              multiple
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              onChange={(info) => {
-                if (info.file.status !== 'done') info.file.status = 'done'
-                setHelpTextImage('')
+            {location.state ? (
+              <Upload.Dragger
+                name="files"
+                listType="picture"
+                multiple
+                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                onChange={(info) => {
+                  if (info.file.status !== 'done') info.file.status = 'done'
+                  setHelpTextImage('')
 
-                if (typingTimeoutRef.current) {
-                  clearTimeout(typingTimeoutRef.current)
-                }
-                typingTimeoutRef.current = setTimeout(async () => {
-                  if (!location.state) {
-                    let imagesProductNew = [...imagesProduct]
-                    imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                    setImagesProduct([...imagesProductNew])
-                  } else {
+                  if (typingTimeoutRef.current) {
+                    clearTimeout(typingTimeoutRef.current)
+                  }
+                  typingTimeoutRef.current = setTimeout(async () => {
                     let files = []
                     let urls = []
                     info.fileList.map((f) => {
@@ -1526,31 +1522,55 @@ export default function ProductAdd() {
                     const images = await uploadFiles(files)
                     dispatch({ type: ACTION.LOADING, data: false })
                     setImagesPreviewProduct([...images, ...urls])
+                  }, 250)
+                }}
+                fileList={imagesPreviewProduct.map((e, index) => {
+                  let nameFile = ['image']
+                  if (typeof e === 'string') nameFile = e.split('/')
+                  return {
+                    uid: index,
+                    name: nameFile[nameFile.length - 1] || 'image',
+                    status: 'done',
+                    url: e,
+                    thumbUrl: e,
                   }
-                }, 250)
-              }}
-              fileList={imagesPreviewProduct.map((e, index) => {
-                let nameFile = ['image']
-                if (typeof e === 'string') nameFile = e.split('/')
-                return {
-                  uid: index,
-                  name: nameFile[nameFile.length - 1] || 'image',
-                  status: 'done',
-                  url: e,
-                  thumbUrl: e,
-                }
-              })}
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">
-                Nhấp hoặc kéo tệp vào khu vực này để tải lên
-              </p>
-              <p className="ant-upload-hint">
-                Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
-              </p>
-            </Upload.Dragger>
+                })}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  Nhấp hoặc kéo tệp vào khu vực này để tải lên
+                </p>
+                <p className="ant-upload-hint">
+                  Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
+                </p>
+              </Upload.Dragger>
+            ) : (
+              <Upload.Dragger
+                name="files"
+                listType="picture"
+                multiple
+                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                onChange={(info) => {
+                  if (info.file.status !== 'done') info.file.status = 'done'
+                  let imagesProductNew = [...imagesProduct]
+                  imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                  setImagesProduct([...imagesProductNew])
+                  setHelpTextImage('')
+                }}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  Nhấp hoặc kéo tệp vào khu vực này để tải lên
+                </p>
+                <p className="ant-upload-hint">
+                  Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
+                </p>
+              </Upload.Dragger>
+            )}
             <span style={{ color: 'red' }}>{helpTextImage}</span>
           </Col>
         </Row>
