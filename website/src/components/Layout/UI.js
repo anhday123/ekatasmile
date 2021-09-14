@@ -185,7 +185,7 @@ const UI = (props) => {
     {
       icon: <BankOutlined />,
       path: ROUTES.BRANCH,
-      title: 'Quản lý chi nhánh & kho',
+      title: 'Quản lý chi nhánh',
       permissions: [PERMISSIONS.quan_li_chi_nhanh],
     },
     {
