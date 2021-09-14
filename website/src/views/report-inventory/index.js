@@ -42,58 +42,80 @@ export default function ReportInventory() {
   const columns = [
     {
       title: 'STT',
-      dataIndex: 'stt',
-      width: 150,
+      render: (text, record, index) => ++index,
+      align: 'center',
+      width: 70,
     },
     {
-      title: 'Mã sản phẩm',
-      dataIndex: 'productCode',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'productCode'),
+      title: 'Sản phẩm',
+      dataIndex: 'name',
+      align: 'center',
     },
     {
-      title: 'Tên sản phẩm',
-      dataIndex: 'productName',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'productname'),
+      title: 'Mã SKU',
+      align: 'center',
     },
     {
-      title: 'Số lượng tồn',
-      dataIndex: 'productQuantity',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'productQuantity'),
+      title: 'Chi nhánh mặc định',
+      align: 'center',
+      children: [
+        {
+          title: 'Tồn kho',
+          dataIndex: 'age',
+          key: 'age',
+          align: 'center',
+        },
+        {
+          title: 'Giá trị tồn kho',
+          dataIndex: 'age',
+          key: 'age',
+          align: 'center',
+        },
+        {
+          title: 'Giá vốn',
+          dataIndex: 'age',
+          key: 'age',
+          align: 'center',
+        },
+        {
+          title: 'Tỷ trọng (%)',
+          dataIndex: 'age',
+          key: 'age',
+          align: 'center',
+        },
+      ],
     },
     {
-      title: 'Mã lô hàng',
-      dataIndex: 'goodsCode',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'goodsCode'),
-    },
-    {
-      title: 'Tên kho',
-      dataIndex: 'inventoryName',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'inventoryName'),
+      title: 'Hệ thống',
+      align: 'center',
+      children: [
+        {
+          title: 'Số lượng tồn kho',
+          dataIndex: 'companyAddress',
+          key: 'companyAddress',
+        },
+        {
+          title: 'Giá trị tồn kho',
+          dataIndex: 'companyName',
+          key: 'companyName',
+        },
+      ],
     },
   ]
   const data = []
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 100; i++) {
     data.push({
       key: i,
-      stt: i,
-      productCode: <div>{i}</div>,
-      productName: `tên sản phẩm ${i}`,
-      productQuantity: i,
-      goodsCode: `BS5426${i}`,
-      inventoryName: `Bình thạnh`,
+      name: 'John Brown',
+      sku: i + 1,
+      street: 'Lake Park',
+      building: 'C',
+      number: 2035,
+      companyAddress: 'Lake Street 42',
+      companyName: 'SoftLake Co',
     })
   }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  )
+
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
@@ -236,6 +258,7 @@ export default function ReportInventory() {
                 justifyContent: 'flex-end',
                 alignItems: 'center',
                 width: '100%',
+                marginBottom: 35,
               }}
             >
               <Col
@@ -293,143 +316,50 @@ export default function ReportInventory() {
           </Col>
         </Row>
 
-        <div
-          style={{
-            width: '100%',
-            border: '1px solid rgb(235, 222, 222)',
-            marginTop: '1rem',
+        <Table
+          style={{ width: '100%' }}
+          bordered
+          pagination={{
+            position: ['bottomLeft'],
           }}
-        >
-          <Table
-            size="small"
-            rowSelection={rowSelection}
-            columns={columns}
-            summary={(pageData) => {
-              let totalPrice = 0
-
-              pageData.forEach((values, index) => {
-                totalPrice += parseInt(values.productQuantity)
-              })
-
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng cộng:{pageData.length}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Số lượng tồn: {totalPrice}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )
-            }}
-            dataSource={data}
-          />
-        </div>
-        <Row
-          style={{ width: '100%', marginTop: 15 }}
-          justify="end"
-          align="middle"
-        >
-          <Space>
-            {selectedRowKeys && selectedRowKeys.length > 0 ? (
-              <Popconfirm
-                title="Bạn chắc chắn muốn xóa?"
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button type="primary" danger size="large">
-                  Xóa báo cáo
-                </Button>
-              </Popconfirm>
-            ) : (
-              ''
-            )}
-            <Button
-              size="large"
-              type="primary"
-              style={{
-                backgroundColor: '#E9A800',
-                borderColor: '#E9A800',
-              }}
-            >
-              Xuất báo cáo
-            </Button>
-          </Space>
-        </Row>
+          // rowSelection={rowSelection}
+          columns={columns}
+          summary={(pageData) => {
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>
+                    <Text style={{ fontWeight: 650 }}>Tổng</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text style={{ fontWeight: 650 }}>300</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text style={{ fontWeight: 650 }}>3000000</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text></Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text style={{ fontWeight: 650 }}>123123232</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text style={{ fontWeight: 650 }}>760000000</Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
+          dataSource={data}
+        />
       </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-            flexDirection: 'column',
-          }}
-        >
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search
-                placeholder="Tìm kiếm khách hàng"
-                onSearch={onSearchCustomerChoose}
-                enterButton
-              />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
-            }}
-          >
-            {' '}
-            <Table
-              scroll={{ y: 500 }}
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-            />
-          </div>
-        </div>
-      </Modal>
     </>
   )
 }

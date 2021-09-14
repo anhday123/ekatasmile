@@ -10,7 +10,6 @@ import {
   notification,
   Checkbox,
   Drawer,
-  Tabs,
   Button,
   Switch,
   Input,
@@ -19,12 +18,10 @@ import {
 
 import {
   apiAddRole,
-  apiAllMenu,
-  apiAllRole,
   apiAllRolePermission,
   apiUpdateRole,
   apiUpdateRolePermission,
-} from '../../apis/role'
+} from 'apis/role'
 
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
 import Permission from 'components/permission'
@@ -35,7 +32,6 @@ export default function Role() {
   const dataUser = useSelector((state) => state.login.dataUser)
 
   const [visible, setVisible] = useState(false)
-  const [permission, setPermission] = useState([])
   const [treeAddData, setTreeAddData] = useState([])
   const PERMISSIONS_APP = [
     {
@@ -59,6 +55,7 @@ export default function Role() {
           pChildren: [
             'nhom_san_pham',
             'them_san_pham',
+            'xoa_san_pham',
             'tao_nhom_san_pham',
             'xoa_nhom_san_pham',
             'cap_nhat_nhom_san_pham',
@@ -104,9 +101,6 @@ export default function Role() {
     },
     {
       pParent: 'bao_cao_don_hang',
-    },
-    {
-      pParent: 'bao_cao_cuoi_ngay',
     },
     {
       pParent: 'bao_cao_nhap_hang',
@@ -237,34 +231,6 @@ export default function Role() {
     }
   }
 
-  const apiAllRoleData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRole()
-      if (res.status === 200) {
-        setPermission(res.data.data.permission_list)
-      }
-
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-  const [menu, setMenu] = useState([])
-  const apiAllMenuData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllMenu()
-      if (res.status === 200) {
-        setMenu(res.data.data.menu_list)
-      }
-
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
   const [rolePermission, setRolePermission] = useState([])
   const apiAllRolePermissionData = async () => {
     try {
@@ -306,7 +272,6 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiUpdateRole(object, id)
       if (res.status === 200) {
-        await apiAllRoleData()
         await apiAllRolePermissionData()
         openNotificationAddRoleDelete(e)
       }
@@ -449,8 +414,6 @@ export default function Role() {
   // get keys of parent and children
 
   useEffect(() => {
-    apiAllMenuData()
-    apiAllRoleData()
     apiAllRolePermissionData()
   }, [])
 
@@ -539,9 +502,8 @@ export default function Role() {
                     <div
                       style={{
                         display:
-                          Object.keys(ROLE_DEFAULT).includes(
-                            dataUser.data && dataUser.data._role.name
-                          ) && 'none',
+                          Object.keys(ROLE_DEFAULT).includes(values.name) &&
+                          'none',
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >

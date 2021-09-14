@@ -90,3 +90,9 @@
   opacity: 1 !important;
 }
 /* custom upload antd */
+
+/* custom tabs */
+.ant-tabs-nav-wrap {
+  padding-top: 5px;
+}
+/* custom tabs */

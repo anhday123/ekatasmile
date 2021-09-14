@@ -48,29 +48,28 @@ export function removeNull(a) {
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 
-export function searchTree(element, matchingTitle) {
-  if (element.title == matchingTitle) {
-    return element
-  } else if (element.children != null) {
-    var i
-    var result = null
-    for (i = 0; result == null && i < element.children.length; i++) {
-      result = searchTree(element.children[i], matchingTitle)
-    }
-    return result
+//xoá dấu
+export function removeAccents(str) {
+  var AccentsMap = [
+    'aàảãáạăằẳẵắặâầẩẫấậ',
+    'AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ',
+    'dđ',
+    'DĐ',
+    'eèẻẽéẹêềểễếệ',
+    'EÈẺẼÉẸÊỀỂỄẾỆ',
+    'iìỉĩíị',
+    'IÌỈĨÍỊ',
+    'oòỏõóọôồổỗốộơờởỡớợ',
+    'OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ',
+    'uùủũúụưừửữứự',
+    'UÙỦŨÚỤƯỪỬỮỨỰ',
+    'yỳỷỹýỵ',
+    'YỲỶỸÝỴ',
+  ]
+  for (var i = 0; i < AccentsMap.length; i++) {
+    var re = new RegExp('[' + AccentsMap[i].substr(1) + ']', 'g')
+    var char = AccentsMap[i][0]
+    str = str.replace(re, char)
   }
-  return null
+  return str
 }
-
-// export const getTreeStructure = (Array_Objects, value)=>{
-//   let matched = false
-//   let result = []
-//   Array_Objects.forEach((object, index)=>{
-//       if(typeof object === 'string'){
-//         if()
-//       }
-
-//   })
-
-//   return []
-// }

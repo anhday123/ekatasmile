@@ -182,10 +182,10 @@ export default function BranchAdd({ reload }) {
         type="primary"
         onClick={() => modal2VisibleModal(true)}
       >
-        Thêm chi nhánh & kho
+        Thêm chi nhánh
       </Button>
       <Modal
-        title="Thêm chi nhánh & kho"
+        title="Thêm chi nhánh"
         centered
         width={1000}
         footer={null}

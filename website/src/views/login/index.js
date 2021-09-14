@@ -237,8 +237,8 @@ export default function Login() {
       branch: '',
       business_areas: values.business_areas || '',
     }
-    console.log(object)
-    // apiRegister(object)
+
+    apiRegister(object)
   }
   const openNotificationLoginSuccess = () => {
     notification.success({
