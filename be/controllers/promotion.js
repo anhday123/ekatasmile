@@ -5,20 +5,17 @@ const DB = process.env.DATABASE;
 
 const promotionService = require(`../services/promotion`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getPromotionC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_promotion`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getPromotion)) throw new Error(`400 ~ Validate data wrong!`);
         await promotionService.getPromotionS(req, res, next);
     } catch (err) {
         next(err);
@@ -28,7 +25,6 @@ let getPromotionC = async (req, res, next) => {
 let addPromotionC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_promotion`)) throw new Error(`400 ~ Forbidden!`);
         ['name'].map((property) => {
             if (req.body[property] == undefined) {
                 throw new Error(`400 ~ ${property} is not null!`);
@@ -51,14 +47,17 @@ let addPromotionC = async (req, res, next) => {
         req.body[`promotion_id`] = String(_counts + 1);
         req.body[`code`] = String(1000000 + _counts + 1);
         req.body[`business_id`] = _business.user_id;
+        req.body['limit'] = {
+            amount: req.body.limit.amount || 0,
+            stores: req.body.limit.stores || [],
+        };
         if (req.body.limit.amount > 0) {
+            let len = String(req.body.limit.amount).length;
             req.body[`vouchers`] = [...new Array(req.body.limit.amount)].map(() => {
-                let voucher = `${req.body.name
-                    .normalize(`NFD`)
-                    .replace(/[\u0300-\u036f]|\s/g, ``)
-                    .replace(/đ/g, 'd')
-                    .replace(/Đ/g, 'D')}_${String(Math.random()).substr(2, 4)}`;
-                return { voucher, active: true };
+                let voucher = `${
+                    removeUnicode(req.body.promotion_code) || removeUnicode(req.body.name).toUpperCase()
+                }_${String(Math.random()).substr(2, len + 2)}`;
+                return { voucher, order_id: '', discount_amount: 0, active: true };
             });
         }
         _promotion = {
@@ -66,12 +65,14 @@ let addPromotionC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
+            promotion_code: req.body.promotion_code || removeUnicode(req.body.name).toUpperCase(),
             type: req.body.type || 'Percent',
-            sub_type: createSub(req.body.type || 'Percent'),
+            sub_type: removeUnicode(req.body.type || 'Percent').toLocaleLowerCase(),
             value: req.body.value || 0,
             limit: req.body.limit,
-            vouchers: req.body.vouchers,
+            vouchers: req.body.vouchers || [],
+            description: req.body.description || '',
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,
@@ -91,7 +92,7 @@ let updatePromotionC = async (req, res, next) => {
         if (!_promotion) throw new Error(`400 ~ Promotion is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = createSub(req.body.name);
+            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
             let _check = await client
                 .db(DB)
                 .collection(`Promotions`)
@@ -119,23 +120,21 @@ let updatePromotionC = async (req, res, next) => {
 let checkVoucherC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let promotion = req.body;
         if (!promotion.voucher) {
-            throw new Error(`400 ~ Validate data wrong!`);
+            throw new Error(`400 ~ Voucher must be not null or undefined!`);
         }
         let _promotion = await client
             .db(DB)
             .collection(`Promotions`)
-            .find({
+            .findOne({
                 business_id: token.business_id,
-                sub_name: new RegExp(promotion.voucher.split(`_`)[0]),
+                promotion_code: req.body.voucher.split(`_`)[0],
                 active: true,
-            })
-            .toArray();
+            });
         if (!_promotion) throw new Error(`400 ~ Promotion is not exists or expired!`);
         let _check = false;
         _promotion.vouchers.map((voucher) => {
-            if (voucher && voucher == promotion.voucher) {
+            if (voucher && voucher == req.body.voucher) {
                 _check = true;
             }
         });

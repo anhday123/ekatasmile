@@ -52,8 +52,8 @@ let clearVertifyLink = async () => {
                         { user_id: _link.user_id, active: false },
                         {
                             $set: {
-                                username: `viesoftware`,
-                                email: `viesoftware`,
+                                username: `user_was_delete`,
+                                email: `user_was_delete`,
                             },
                         }
                     );

@@ -35,7 +35,7 @@ let updateSaleProductC = async (req, res, next) => {
                 .replace(/Đ/g, 'D')
                 .replace(/\s/g, '-')
                 .toLowerCase();
-        if (req.body.warranty) {
+        if (req.body.warranties) {
             __warranties = await client.db(DB).collection(`Warranties`).find({}).toArray();
             let _warranties = {};
             __warranties.map((item) => {
@@ -65,64 +65,106 @@ let updateSaleProductC = async (req, res, next) => {
                     option.value = option.value.trim().toUpperCase();
                     return option;
                 });
-                if (variant.quantity >= 0) {
-                    if (variant[`out_stock_quantity`] > variant.quantity) {
-                        variant[`available_stock_quantity`] = 0;
-                        variant[`low_stock_quantity`] = 0;
-                        variant[`out_stock_quantity`] -= variant.quantity;
-                        variant[`status`] = `out_stock`;
-                    } else {
-                        if (variant[`out_stock_quantity`] == variant.quantity) {
-                            variant[`available_stock_quantity`] = 0;
-                            variant[`low_stock_quantity`] = 0;
-                            variant[`out_stock_quantity`] = 0;
-                            variant[`status`] = `low_stock`;
-                        } else {
+                if (variant.quantity && typeof variant.quantity == 'number') {
+                    if (variant.quantity >= 0) {
+                        if (variant[`status`] == `out_stock`) {
+                            if (variant[`out_stock_quantity`] > variant.quantity) {
+                                variant[`available_stock_quantity`] = 0;
+                                variant[`low_stock_quantity`] = 0;
+                                variant[`out_stock_quantity`] =
+                                    (variant[`out_stock_quantity`] || 0) - variant.quantity;
+                                variant[`shipping_quantity`] = variant[`shipping_quantity`] || 0;
+                                variant[`return_warehouse_quantity`] =
+                                    variant[`return_warehouse_quantity`] || 0;
+                                variant[`status`] = `out_stock`;
+                            }
+                            if (variant[`out_stock_quantity`] == variant.quantity) {
+                                variant[`available_stock_quantity`] = 0;
+                                variant[`low_stock_quantity`] = 0;
+                                variant[`out_stock_quantity`] = 0;
+                                variant[`shipping_quantity`] = variant[`shipping_quantity`] || 0;
+                                variant[`return_warehouse_quantity`] =
+                                    variant[`return_warehouse_quantity`] || 0;
+                                variant[`status`] = `low_stock`;
+                            }
                             if (variant[`out_stock_quantity`] < variant.quantity) {
-                                variant.quantity -= variant[`out_stock_quantity`];
+                                variant.quantity = variant.quantity - (variant[`out_stock_quantity`] || 0);
                                 variant[`available_stock_quantity`] = variant.quantity;
                                 variant[`low_stock_quantity`] = 0;
                                 variant[`out_stock_quantity`] = 0;
+                                variant[`shipping_quantity`] = variant[`shipping_quantity`] || 0;
+                                variant[`return_warehouse_quantity`] =
+                                    variant[`return_warehouse_quantity`] || 0;
                                 variant[`status`] = `available_stock`;
                                 variant[`status_check_value`] = Math.ceil(
                                     (variant[`status_check`] * variant[`available_stock_quantity`]) / 100
                                 );
                             }
+                        } else {
+                            variant.quantity = variant.quantity - (variant[`out_stock_quantity`] || 0);
+                            variant[`available_stock_quantity`] = variant.quantity;
+                            variant[`low_stock_quantity`] = 0;
+                            variant[`out_stock_quantity`] = 0;
+                            variant[`shipping_quantity`] = variant[`shipping_quantity`] || 0;
+                            variant[`return_warehouse_quantity`] = variant[`return_warehouse_quantity`] || 0;
+                            variant[`status`] = `available_stock`;
+                            variant[`status_check_value`] = Math.ceil(
+                                (variant[`status_check`] * variant[`available_stock_quantity`]) / 100
+                            );
                         }
+                    } else {
+                        variant[`out_stock_quantity`] = -variant.quantity;
+                        variant[`status`] = `out_stock`;
                     }
-                } else {
-                    variant[`out_stock_quantity`] = -variant.quantity;
-                    variant[`status`] = `out_stock`;
                 }
                 delete variant.quantity;
                 return variant;
             });
         } else {
             if (req.body.quantity >= 0) {
-                if (req.body[`out_stock_quantity`] > req.body.quantity) {
-                    req.body[`available_stock_quantity`] = 0;
-                    req.body[`low_stock_quantity`] = 0;
-                    req.body[`out_stock_quantity`] -= req.body.quantity;
-                    req.body[`status`] = `out_stock`;
-                }
-                if ((req.body[`out_stock_quantity`] = req.body.quantity)) {
-                    req.body[`available_stock_quantity`] = 0;
-                    req.body[`low_stock_quantity`] = 0;
-                    req.body[`out_stock_quantity`] = 0;
-                    req.body[`status`] = `low_stock`;
-                }
-                if (req.body[`out_stock_quantity`] < req.body.quantity) {
-                    req.body.quantity -= req.body[`out_stock_quantity`];
+                if (req.body[`status`] == `out_stock`) {
+                    if (req.body[`out_stock_quantity`] > req.body.quantity) {
+                        req.body[`available_stock_quantity`] = 0;
+                        req.body[`low_stock_quantity`] = 0;
+                        req.body[`out_stock_quantity`] =
+                            (req.body[`out_stock_quantity`] || 0) - req.body.quantity;
+                        req.body[`shipping_quantity`] = req.body[`shipping_quantity`] || 0;
+                        req.body[`return_warehouse_quantity`] = req.body[`return_warehouse_quantity`] || 0;
+                        req.body[`status`] = `out_stock`;
+                    }
+                    if (req.body[`out_stock_quantity`] == req.body.quantity) {
+                        req.body[`available_stock_quantity`] = 0;
+                        req.body[`low_stock_quantity`] = 0;
+                        req.body[`out_stock_quantity`] = 0;
+                        req.body[`shipping_quantity`] = req.body[`shipping_quantity`] || 0;
+                        req.body[`return_warehouse_quantity`] = req.body[`return_warehouse_quantity`] || 0;
+                        req.body[`status`] = `low_stock`;
+                    }
+                    if (req.body[`out_stock_quantity`] < req.body.quantity) {
+                        req.body.quantity = req.body.quantity - (req.body[`out_stock_quantity`] || 0);
+                        req.body[`available_stock_quantity`] = req.body.quantity;
+                        req.body[`low_stock_quantity`] = 0;
+                        req.body[`out_stock_quantity`] = 0;
+                        req.body[`shipping_quantity`] = req.body[`shipping_quantity`] || 0;
+                        req.body[`return_warehouse_quantity`] = req.body[`return_warehouse_quantity`] || 0;
+                        req.body[`status`] = `available_stock`;
+                        req.body[`status_check_value`] = Math.ceil(
+                            (req.body[`status_check`] * req.body[`available_stock_quantity`]) / 100
+                        );
+                    }
+                } else {
+                    req.body.quantity = req.body.quantity - (req.body[`out_stock_quantity`] || 0);
                     req.body[`available_stock_quantity`] = req.body.quantity;
                     req.body[`low_stock_quantity`] = 0;
                     req.body[`out_stock_quantity`] = 0;
+                    req.body[`shipping_quantity`] = req.body[`shipping_quantity`] || 0;
+                    req.body[`return_warehouse_quantity`] = req.body[`return_warehouse_quantity`] || 0;
                     req.body[`status`] = `available_stock`;
                     req.body[`status_check_value`] = Math.ceil(
                         (req.body[`status_check`] * req.body[`available_stock_quantity`]) / 100
                     );
                 }
-            }
-            if (req.body.quantity < 0) {
+            } else {
                 req.body[`out_stock_quantity`] = -req.body.quantity;
                 req.body[`status`] = `out_stock`;
             }
@@ -145,4 +187,27 @@ let updateSaleProductC = async (req, res, next) => {
     }
 };
 
-module.exports = { getSaleProductC, updateSaleProductC };
+let deleleProductC = async (req, res, next) => {
+    try {
+        ['products', 'store_id'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
+        if (typeof req.body.products != 'object') {
+            throw new Error(`400 ~ products must be array!`);
+        }
+        await client
+            .db(DB)
+            .collection('Products')
+            .updateMany(
+                { product_id: { $in: req.body.products }, store_id: req.body.store_id },
+                { $set: { delete: true } }
+            );
+        res.send({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { getSaleProductC, updateSaleProductC, deleleProductC };

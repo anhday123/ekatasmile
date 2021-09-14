@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const customerService = require(`../services/customer`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getCustomerC = async (req, res, next) => {
@@ -54,7 +53,10 @@ let addCustomerC = async (req, res, next) => {
         _customers.map((_customer) => {
             let oldName = _customer.first_name + _customer.last_name;
             let newName = req.body.first_name + req.body.last_name;
-            if (createSub(`khách lẻ`) == createSub(newName) && createSub(newName) == createSub(oldName)) {
+            if (
+                removeUnicode(`khách lẻ`).toLocaleLowerCase() == removeUnicode(newName).toLocaleLowerCase() &&
+                removeUnicode(newName).toLocaleLowerCase() == removeUnicode(oldName).toLocaleLowerCase()
+            ) {
                 throw new Error(`400 ~ "Khách lẻ" was exists!`);
             }
         });
@@ -68,19 +70,21 @@ let addCustomerC = async (req, res, next) => {
             code: req.body.code,
             phone: req.body.phone,
             type: req.body.type || 'Tiềm năng',
-            sub_type: createSub(req.body.type || 'Tiềm năng'),
+            sub_type: removeUnicode(req.body.type || 'Tiềm năng').toLocaleLowerCase(),
             first_name: req.body.first_name || ``,
             last_name: req.body.last_name || ``,
-            sub_name: createSub(String(req.body.first_name) + String(req.body.last_name)),
+            sub_name: removeUnicode(
+                String(req.body.first_name) + String(req.body.last_name)
+            ).toLocaleLowerCase(),
             gender: req.body.gender || `NAM`,
-            sub_gender: createSub(req.body.gender || 'Nam'),
+            sub_gender: removeUnicode(req.body.gender || 'Nam').toLocaleLowerCase(),
             birthday: req.body.birthday || `2000-01-01`,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             balance: req.body.balance || [],
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),
@@ -101,24 +105,24 @@ let updateCustomerC = async (req, res, next) => {
         let _customer = await client.db(DB).collection(`Customers`).findOne(req.params);
         if (!_customer) throw new Error(`400 ~ Customer is not exists!`);
         if (req.body.type) {
-            req.body[`sub_type`] = createSub(req.body.type);
+            req.body[`sub_type`] = removeUnicode(req.body.type).toLocaleLowerCase();
         }
         if (req.body.first_name || req.body.last_name) {
-            req.body.sub_name = createSub(
+            req.body.sub_name = removeUnicode(
                 `${req.body.first_name || _user.first_name}${req.body.last_name || _user.last_name}`
-            );
+            ).toLocaleLowerCase();
         }
         if (req.body.gender) {
-            req.body[`sub_gender`] = createSub(req.body.gender);
+            req.body[`sub_gender`] = removeUnicode(req.body.gender).toLocaleLowerCase();
         }
         if (req.body.address) {
-            req.body[`sub_address`] = createSub(req.body.address);
+            req.body[`sub_address`] = removeUnicode(req.body.address).toLocaleLowerCase();
         }
         if (req.body.district) {
-            req.body[`sub_district`] = createSub(req.body.district);
+            req.body[`sub_district`] = removeUnicode(req.body.district).toLocaleLowerCase();
         }
         if (req.body.province) {
-            req.body[`sub_province`] = createSub(req.body.province);
+            req.body[`sub_province`] = removeUnicode(req.body.province).toLocaleLowerCase();
         }
         delete req.body._id;
         delete req.body.customer_id;

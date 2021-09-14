@@ -7,13 +7,12 @@ const userService = require(`../services/user`);
 const bcrypt = require(`../libs/bcrypt`);
 const mail = require(`../libs/nodemailer`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getUserC = async (req, res, next) => {
@@ -89,14 +88,14 @@ let registerC = async (req, res, next) => {
             avatar: req.body.avatar || ``,
             first_name: req.body.first_name || ``,
             last_name: req.body.last_name || ``,
-            sub_name: createSub(`${req.body.first_name}${req.body.last_name}`),
+            sub_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`).toLocaleLowerCase(),
             birthday: req.body.birthday || `2000-01-01`,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             company_name: req.body.company_name || ``,
             company_website: req.body.company_website || ``,
             business_areas: req.body.business_areas || '',
@@ -153,14 +152,14 @@ let addUserC = async (req, res, next) => {
             avatar: req.body.avatar || ``,
             first_name: req.body.first_name || ``,
             last_name: req.body.last_name || ``,
-            sub_name: createSub(`${req.body.first_name}${req.body.last_name}`),
+            sub_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`).toLocaleLowerCase(),
             birthday: req.body.birthday || `2000-01-01`,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             company_name: token.company_name || ``,
             company_website: token.company_website || ``,
             business_areas: token.business_areas || '',
@@ -209,18 +208,18 @@ let updateUserC = async (req, res, next) => {
             }
         }
         if (req.body.first_name || req.body.last_name) {
-            req.body.sub_name = createSub(
+            req.body.sub_name = removeUnicode(
                 `${req.body.first_name || _user.first_name}${req.body.last_name || _user.last_name}`
-            );
+            ).toLocaleLowerCase();
         }
         if (req.body.address) {
-            req.body.address = createSub(req.body.address);
+            req.body.address = removeUnicode(req.body.address).toLocaleLowerCase();
         }
         if (req.body.district) {
-            req.body.district = createSub(req.body.district);
+            req.body.district = removeUnicode(req.body.district).toLocaleLowerCase();
         }
         if (req.body.province) {
-            req.body.province = createSub(req.body.province);
+            req.body.province = removeUnicode(req.body.province).toLocaleLowerCase();
         }
         if (req.body.company_name) {
             req.body.company_name = req.body.company_name.toUpperCase();
@@ -284,6 +283,29 @@ let forgotPassword = async (req, res, next) => {
     }
 };
 
+let deleleUserC = async (req, res, next) => {
+    try {
+        ['users'].map((property) => {
+            if (req.body[property] == undefined) {
+                throw new Error(`400 ~ ${property} is not null!`);
+            }
+        });
+        if (typeof req.body.users != 'object') {
+            throw new Error(`400 ~ users must be array!`);
+        }
+        await client
+            .db(DB)
+            .collection('Users')
+            .updateMany(
+                { user_id: { $in: req.body.users } },
+                { $set: { username: 'user_was_delete', email: 'user_was_delete' } }
+            );
+        res.send({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getUserC,
     registerC,
@@ -291,4 +313,5 @@ module.exports = {
     updateUserC,
     activeUser,
     forgotPassword,
+    deleleUserC,
 };

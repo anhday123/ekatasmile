@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const roleService = require(`../services/role`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getRoleC = async (req, res, next) => {
@@ -34,7 +33,10 @@ let addRoleC = async (req, res, next) => {
             }
         });
         req.body[`name`] = String(req.body.name).trim().toUpperCase();
-        if (createSub(req.body.name) == `admin` || createSub(req.body.name) == `business`) {
+        if (
+            removeUnicode(req.body.name).toLocaleLowerCase() == `admin` ||
+            removeUnicode(req.body.name).toLocaleLowerCase() == `business`
+        ) {
             throw new Error(`400 ~ Forbidden!`);
         }
         let [_counts, _business, _role] = await Promise.all([
@@ -57,7 +59,7 @@ let addRoleC = async (req, res, next) => {
             role_id: req.body.role_id,
             business_id: req.body.business_id,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
             permission_list: req.body.permission_list || [],
             menu_list: req.body.menu_list || [],
             default: false,
@@ -79,7 +81,7 @@ let updateRoleC = async (req, res, next) => {
         if (!_role) throw new Error(`400 ~ Role is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = createSub(req.body.name);
+            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
             let _check = await client
                 .db(DB)
                 .collection(`Roles`)

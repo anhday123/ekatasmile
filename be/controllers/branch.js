@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const branchService = require(`../services/branch`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getBranchC = async (req, res, next) => {
@@ -55,7 +54,7 @@ let addBranchC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
             logo: req.body.logo || ``,
             phone: req.body.phone || ``,
             email: req.body.email || ``,
@@ -64,13 +63,13 @@ let addBranchC = async (req, res, next) => {
             latitude: req.body.latitude || ``,
             longtitude: req.body.longtitude || ``,
             warehouse_type: req.body.warehouse_type || `Sở hữu`,
-            sub_warehouse_type: createSub(req.body.warehouse_type || `Sở hữu`),
+            sub_warehouse_type: removeUnicode(req.body.warehouse_type || `Sở hữu`).toLocaleLowerCase(),
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             accumulate_point: req.body.accumulate_point || false,
             use_point: req.body.use_point || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
@@ -92,7 +91,7 @@ let updateBranchC = async (req, res, next) => {
         if (!_branch) throw new Error(`400 ~ Branch is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = createSub(req.body.name);
+            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
             let _check = await client
                 .db(DB)
                 .collection(`Branchs`)
@@ -104,13 +103,13 @@ let updateBranchC = async (req, res, next) => {
             if (_check) throw new Error(`400 ~ Branch name was exists!`);
         }
         if (req.body.address) {
-            req.body[`sub_address`] = createSub(req.body.address);
+            req.body[`sub_address`] = removeUnicode(req.body.address).toLocaleLowerCase();
         }
         if (req.body.district) {
-            req.body[`sub_district`] = createSub(req.body.district);
+            req.body[`sub_district`] = removeUnicode(req.body.district).toLocaleLowerCase();
         }
         if (req.body.province) {
-            req.body[`sub_province`] = createSub(req.body.province);
+            req.body[`sub_province`] = removeUnicode(req.body.province).toLocaleLowerCase();
         }
         delete req.body._id;
         delete req.body.branch_id;
@@ -120,6 +119,7 @@ let updateBranchC = async (req, res, next) => {
         delete req.body.creator_id;
         delete req.body._bussiness;
         delete req.body._creator;
+        delete req.body._employees;
         req[`_update`] = { ..._branch, ...req.body };
         await branchService.updateBranchS(req, res, next);
     } catch (err) {
