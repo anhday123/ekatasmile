@@ -109,37 +109,7 @@ export default function Tax() {
     }, 300)
     //
   }
-  const data = []
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      taxName: <div>{`Thuế nhập hàng ${i}`}</div>,
-      taxCode: `Nhập hàng`,
-      tax: `10.00`,
-      value: `1000`,
-      action: (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div onClick={showDrawerUpdate} style={{ marginRight: '0.5rem' }}>
-            <EditOutlined
-              style={{
-                fontSize: '1.25rem',
-                cursor: 'pointer',
-                color: '#0500E8',
-              }}
-            />
-          </div>
-        </div>
-      ),
-    })
-  }
+
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -232,8 +202,6 @@ export default function Tax() {
       setLoading(true)
 
       const res = await apiUpdateTax(object, id)
-      console.log(res)
-      console.log('1111222')
       if (res.status === 200) {
         await apiAllTaxData()
         openNotificationDeleteSupplier(data)
@@ -515,7 +483,6 @@ export default function Tax() {
               return (
                 <Table.Summary fixed>
                   <Table.Summary.Row>
-                    <Table.Summary.Cell></Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>
                         <div style={{ color: 'black', fontWeight: '600' }}>
@@ -529,9 +496,6 @@ export default function Tax() {
                           style={{ color: 'black', fontWeight: '600' }}
                         >{`${totalTax}%`}</div>
                       </Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>

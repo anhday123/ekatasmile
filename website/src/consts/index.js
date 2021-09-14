@@ -20,6 +20,15 @@ export const ROLE_DEFAULT = {
   BUSINESS: 'BUSINESS',
 }
 
+//status product
+export const STATUS_PRODUCT = {
+  all: 'all',
+  shipping_stock: 'shipping_stock',
+  available_stock: 'available_stock',
+  low_stock: 'low_stock',
+  out_stock: 'out_stock',
+}
+
 export const ROUTES = {
   LOGIN: '/login',
   REPORT_IMPORT: '/report-import',
@@ -29,7 +38,6 @@ export const ROUTES = {
   ORDER_LIST: '/order-list',
   REPORT_FINANCIAL: '/report-financial',
   REPORT_INVENTORY: '/report-inventory',
-  REPORT_END_DAY: '/report-end-day',
   SHIPPING_CONTROL: '/shipping-control',
   GUARANTEE: '/guarantee',
   SHIPPING_PRODUCT: '/shipping-product',
@@ -120,7 +128,6 @@ export const PERMISSIONS = {
   kiem_hang_cuoi_ngay: 'kiem_hang_cuoi_ngay',
   quan_li_khach_hang: 'quan_li_khach_hang',
   bao_cao_don_hang: 'bao_cao_don_hang',
-  bao_cao_cuoi_ngay: 'bao_cao_cuoi_ngay',
   bao_cao_nhap_hang: 'bao_cao_nhap_hang',
   bao_cao_ton_kho: 'bao_cao_ton_kho',
   bao_cao_tai_chinh: 'bao_cao_tai_chinh',
@@ -135,6 +142,7 @@ export const PERMISSIONS = {
   tao_don_hang: 'tao_don_hang',
   nhom_san_pham: 'nhom_san_pham',
   them_san_pham: 'them_san_pham',
+  xoa_san_pham: 'xoa_san_pham',
   tao_nhom_san_pham: 'tao_nhom_san_pham',
   xoa_nhom_san_pham: 'xoa_nhom_san_pham',
   cap_nhat_nhom_san_pham: 'cap_nhat_nhom_san_pham',
@@ -172,3 +180,6 @@ export const PERMISSIONS = {
 }
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
+
+export const IMAGE_DEFAULT =
+  'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/12/8f70ac1d-4070-46cb-9ed9-577cd38d7f3c_noimage.jpg'

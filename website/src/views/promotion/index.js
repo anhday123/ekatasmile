@@ -79,6 +79,12 @@ export default function Promotion() {
   }
   const columnsPromotion = [
     {
+      title: 'Mã chương trình khuyến mãi',
+      dataIndex: 'code',
+      width: 200,
+      sorter: (a, b) => compare(a, b, 'code', parseInt),
+    },
+    {
       title: 'Tên chương trình khuyến mãi',
       dataIndex: 'name',
       width: 200,
@@ -168,10 +174,6 @@ export default function Promotion() {
   }
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
   }
 
   const changePagi = (page, page_size) => setPagination({ page, page_size })

@@ -328,7 +328,7 @@ export default function SupplierAdd(props) {
                   size="large"
                   showSearch
                   style={{ width: '100%' }}
-                  placeholder="Select a person"
+                  placeholder="Chọn quận/huyện"
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children
@@ -353,7 +353,12 @@ export default function SupplierAdd(props) {
               <Checkbox>Chọn làm mặc định</Checkbox>
             </Form.Item>
             <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
+              <Button
+                size="large"
+                type="primary"
+                htmlType="submit"
+                style={{ width: 120 }}
+              >
                 Lưu
               </Button>
             </Form.Item>

@@ -1,4 +1,4 @@
-import { get, patch, post } from './httpClient'
+import { get, patch, post, destroy } from './httpClient'
 
 export const apiAddProduct = (object) =>
   post('/branch-product/addproduct', object)
@@ -22,3 +22,7 @@ export const getProductsStore = (params) =>
   get('/store-product/getproduct', params)
 export const updateProductStore = (body, id) =>
   patch('/store-product/updateproduct/' + id, body)
+export const deleteProductBranch = (body) =>
+  destroy('/branch-product/deleteproduct', body)
+export const deleteProductStore = (body) =>
+  destroy('/store-product/deleteproduct', body)

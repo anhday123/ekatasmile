@@ -182,10 +182,10 @@ export default function BranchAdd({ reload }) {
         type="primary"
         onClick={() => modal2VisibleModal(true)}
       >
-        Thêm chi nhánh & kho
+        Thêm chi nhánh
       </Button>
       <Modal
-        title="Thêm chi nhánh & kho"
+        title="Thêm chi nhánh"
         centered
         width={1000}
         footer={null}
@@ -440,7 +440,12 @@ export default function BranchAdd({ reload }) {
 
           <Row justify="end" style={{ width: '100%' }}>
             <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
+              <Button
+                size="large"
+                type="primary"
+                htmlType="submit"
+                style={{ width: 120 }}
+              >
                 Thêm
               </Button>
             </Form.Item>

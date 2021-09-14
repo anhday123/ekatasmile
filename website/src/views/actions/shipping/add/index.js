@@ -486,7 +486,12 @@ export default function ShippingAdd(props) {
               xl={3}
             >
               <Form.Item>
-                <Button size="large" type="primary" htmlType="submit">
+                <Button
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  style={{ width: 120 }}
+                >
                   Lưu
                 </Button>
               </Form.Item>

@@ -1,4 +1,10 @@
-export const compare = (a, b, key) => {
+export const compare = (a, b, key, convert) => {
+  if (convert)
+    return convert(a[key]) > convert(b[key])
+      ? 1
+      : convert(a[key]) === convert(b[key])
+      ? 0
+      : -1
   return a[key] > b[key] ? 1 : a[key] === b[key] ? 0 : -1
 }
 
@@ -40,4 +46,30 @@ export function removeNull(a) {
   return Object.keys(a)
     .filter((key) => a[key] !== '' && a[key] !== undefined)
     .reduce((res, key) => ((res[key] = a[key]), res), {})
+}
+
+//xoá dấu
+export function removeAccents(str) {
+  var AccentsMap = [
+    'aàảãáạăằẳẵắặâầẩẫấậ',
+    'AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ',
+    'dđ',
+    'DĐ',
+    'eèẻẽéẹêềểễếệ',
+    'EÈẺẼÉẸÊỀỂỄẾỆ',
+    'iìỉĩíị',
+    'IÌỈĨÍỊ',
+    'oòỏõóọôồổỗốộơờởỡớợ',
+    'OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ',
+    'uùủũúụưừửữứự',
+    'UÙỦŨÚỤƯỪỬỮỨỰ',
+    'yỳỷỹýỵ',
+    'YỲỶỸÝỴ',
+  ]
+  for (var i = 0; i < AccentsMap.length; i++) {
+    var re = new RegExp('[' + AccentsMap[i].substr(1) + ']', 'g')
+    var char = AccentsMap[i][0]
+    str = str.replace(re, char)
+  }
+  return str
 }

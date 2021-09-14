@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styles from './../add/add.module.scss'
 
 import { ACTION, WAREHOUSE_TYPE } from 'consts'
-import { useHistory } from 'react-router-dom'
+import { removeAccents } from 'utils'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
@@ -38,6 +39,7 @@ import {
   EditOutlined,
   FileImageOutlined,
   DollarOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -46,10 +48,15 @@ import { apiAllSupplier } from 'apis/supplier'
 import { apiAllInventory } from 'apis/inventory'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
-import { apiAddProduct } from 'apis/product'
+import {
+  apiAddProduct,
+  updateProductStore,
+  updateProductBranch,
+} from 'apis/product'
 
 export default function ProductAdd() {
   const dispatch = useDispatch()
+  const location = useLocation()
   const history = useHistory()
   const [form] = Form.useForm()
   const branchId = useSelector((state) => state.branch.branchId)
@@ -68,7 +75,8 @@ export default function ProductAdd() {
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
   const [helpTextImage, setHelpTextImage] = useState('')
-  const [imagesProduct, setImagesProduct] = useState([])
+  const [imagesProduct, setImagesProduct] = useState([]) //files upload
+  const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
   const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
@@ -76,6 +84,9 @@ export default function ProductAdd() {
     useState(false)
   const [suppliers, setSuppliers] = useState([])
   const [supplier, setSupplier] = useState('') // dung o variant
+  const [isGeneratedSku, setIsGeneratedSku] = useState(false)
+  const [valueGeneratedSku, setValueGeneratedSku] = useState('')
+  const typingTimeoutRef = useRef(null)
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -94,14 +105,15 @@ export default function ProductAdd() {
 
   const addValueVariant = () => {
     let variantsNew = []
-    const dataProductAdd = form.getFieldsValue()
 
     //trường hợp chỉ có 1 attribute
     if (attributes.length === 1) {
       attributes[0].values.map((value) => {
         variantsNew.push({
           title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-          sku: `${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+          sku: `${
+            valueGeneratedSku || ''
+          }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
           image: '',
           imagePreview: '',
           options: [{ name: attributes[0].option, value: value }],
@@ -116,8 +128,10 @@ export default function ProductAdd() {
       attributes[0].values.map((v0) => {
         attributes[1].values.map((v1) => {
           variantsNew.push({
-            title: `${attributes[0].option.toUpperCase()} ${attributes[1].option.toUpperCase()} ${v0} ${v1}`,
-            sku: `${attributes[0].option.toUpperCase()}-${attributes[1].option.toUpperCase()}-${v0}-${v1}`,
+            title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
+            sku: `${
+              valueGeneratedSku || ''
+            }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
             image: '',
             imagePreview: '',
             options: [
@@ -146,25 +160,18 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllSupplier()
-      console.log(res)
       if (res.status === 200) {
-        let dataNew = []
-
         if (res.data.data && res.data.data.length) {
+          const dataNew = res.data.data.filter((value) => value.active)
+
           let supplierDefault = res.data.data.find(
             (supplier) => supplier.active && supplier.default
           )
-
-          res.data.data.forEach((values, index) => {
-            if (values.active) {
-              dataNew.push(values)
-            }
-          })
-
           if (supplierDefault) {
-            form.setFieldsValue({
-              supplier_id: supplierDefault.supplier_id,
-            })
+            if (!location.state)
+              form.setFieldsValue({
+                supplier_id: supplierDefault.supplier_id,
+              })
             setSupplier(supplierDefault.name)
           }
 
@@ -196,9 +203,18 @@ export default function ProductAdd() {
     }
 
     //validated images product
-    if (!isProductHasVariants && !imagesProduct.length) {
-      setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
-      return
+    if (!isProductHasVariants) {
+      if (!imagesProduct.length && !location.state) {
+        setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
+        return
+      }
+
+      if (!imagesPreviewProduct.length && location.state) {
+        setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
+        return
+      }
+
+      setHelpTextImage('')
     } else setHelpTextImage('')
 
     //validated quantity, prices
@@ -241,14 +257,14 @@ export default function ProductAdd() {
         base_price: !isProductHasVariants ? formProduct.base_price : '',
         import_price: !isProductHasVariants ? formProduct.import_price : '',
         quantity: !isProductHasVariants ? formProduct.quantity : '',
-        sku: !isProductHasVariants ? formProduct.sku : '',
+        sku: !isProductHasVariants ? formProduct.sku : valueGeneratedSku,
         length: isInputInfoProduct ? formProduct.length || '' : '',
         width: isInputInfoProduct ? formProduct.width || '' : '',
         height: isInputInfoProduct ? formProduct.height || '' : '',
         weight: isInputInfoProduct ? formProduct.weight || '' : '',
         unit: isInputInfoProduct ? formProduct.unit || '' : '',
         warranties: idsWarranty,
-        image: images || [],
+        image: location.state ? imagesPreviewProduct : images || [],
         has_variable: isProductHasVariants,
         description: productIsHaveDescription ? description || '' : '',
         branch_id: branchId,
@@ -257,12 +273,21 @@ export default function ProductAdd() {
       if (isProductHasVariants) {
         body.attributes = attributes
         const promiseUpload = variants.map(async (v) => {
-          const resUpload = await uploadFile(v.image)
-          delete v.imagePreview
-          return {
-            ...v,
-            supplier: supplier || '',
-            image: resUpload,
+          if (v.image && typeof v.image === 'string') {
+            delete v.imagePreview
+            return {
+              ...v,
+              supplier: supplier || '',
+              image: v.image,
+            }
+          } else {
+            const resUpload = await uploadFile(v.image)
+            delete v.imagePreview
+            return {
+              ...v,
+              supplier: supplier || '',
+              image: resUpload,
+            }
           }
         })
 
@@ -272,14 +297,28 @@ export default function ProductAdd() {
       }
 
       console.log(JSON.stringify({ products: [body] }))
-      const res = await apiAddProduct({ products: [body] })
+
+      let res
+      //case update product
+      if (location.state) {
+        if (location.state.store_id)
+          res = await updateProductStore(body, location.state.product_id)
+        //update product store
+        else res = await updateProductBranch(body, location.state.product_id) //update product branch
+      } else res = await apiAddProduct({ products: [body] })
       console.log(res)
       if (res.status === 200) {
-        notification.success({ message: 'Tạo sản phẩm thành công!' })
+        notification.success({
+          message: `${
+            location.state ? 'Cập nhật' : 'Tạo'
+          } sản phẩm thành công!`,
+        })
         history.goBack()
       } else
         notification.error({
-          message: res.data.message || 'Tạo sản phẩm thất bại!',
+          message:
+            res.data.message ||
+            `${location.state ? 'Cập nhật' : 'Tạo'} sản phẩm thất bại!`,
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -304,7 +343,7 @@ export default function ProductAdd() {
             if (values.active) dataNew.push(values)
           })
 
-          if (category)
+          if (category && !location.state)
             form.setFieldsValue({
               category_id: category.category_id,
             })
@@ -790,30 +829,10 @@ export default function ProductAdd() {
     },
   ]
 
-  const getWarehouse = async () => {
-    try {
-      const res = await apiAllInventory()
-      if (res.status === 200) {
-        var array = []
-        res.data.data &&
-          res.data.data.length > 0 &&
-          res.data.data.forEach((values, index) => {
-            if (values.active) {
-              array.push(values)
-            }
-          })
-        setWarehouse([...array])
-      }
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
   const apiAllWarrantyData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllWarranty()
-      console.log(res)
       if (res.status === 200) {
         setWarrantys(res.data.data)
       }
@@ -825,7 +844,6 @@ export default function ProductAdd() {
   }
 
   useEffect(() => {
-    getWarehouse()
     apiAllSupplierData()
     apiAllWarrantyData()
     apiAllCategoryData()
@@ -840,6 +858,74 @@ export default function ProductAdd() {
   useEffect(() => {
     addValueVariant()
   }, [attributes])
+
+  //update product
+  useEffect(() => {
+    if (location.state) {
+      const product = location.state
+      console.log(product)
+
+      delete product.sumCountVariant
+
+      if (product.has_variable) {
+        setIsProductHasVariants(true)
+        setAttributes([...product.attributes])
+        setTimeout(() => {
+          const variantsNew = product.variants.map((e) => {
+            return {
+              title: e.title,
+              sku: e.sku,
+              image: e.image,
+              imagePreview: e.image,
+              options: e.options,
+              quantity: +e.available_stock_quantity + +e.low_stock_quantity,
+              import_price: e.import_price,
+              base_price: e.base_price,
+              sale_price: e.sale_price,
+              supplier: e.supplier,
+            }
+          })
+          setVariants([...variantsNew])
+        }, 200)
+      } else {
+        setIsProductHasVariants(false)
+        setImagesPreviewProduct([...product.image])
+      }
+
+      //check product co thong so khac
+      if (
+        product.height ||
+        product.length ||
+        product.width ||
+        product.weight ||
+        product.unit
+      )
+        setIsInputInfoProduct(true)
+
+      //check product co mo ta ?
+      if (product.description) {
+        setProductIsHaveDescription(true)
+        setDescription(product.description)
+      }
+
+      form.setFieldsValue({
+        ...product,
+        supplier_id: product.supplier_id,
+        category_id: product.category_id,
+        quantity:
+          +product.available_stock_quantity + +product.low_stock_quantity,
+      })
+
+      setIsGeneratedSku(true)
+      setValueGeneratedSku(product.sku)
+
+      //check bao hanh
+      if (product.warranties.length) {
+        setIsWarranty(true)
+        setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
+      }
+    }
+  }, [])
 
   return !isMobile ? (
     <div className={styles['product_manager']}>
@@ -862,12 +948,27 @@ export default function ProductAdd() {
           >
             <ArrowLeftOutlined style={{ color: 'black' }} />
             <div className={styles['product_manager_title_product']}>
-              Thêm mới sản phẩm
+              {location.state ? 'Cập nhật sản phẩm' : 'Thêm mới sản phẩm'}
             </div>
           </a>
-          <Button type="primary" onClick={addProduct}>
-            Thêm
-          </Button>
+          <Space>
+            <Button
+              icon={<ReloadOutlined />}
+              style={{ display: !location.state && 'none' }}
+              size="large"
+              onClick={() => history.go(0)}
+            >
+              Tải lại
+            </Button>
+            <Button
+              icon={<EditOutlined />}
+              size="large"
+              type="primary"
+              onClick={addProduct}
+            >
+              {location.state ? 'Cập nhật' : 'Thêm'}
+            </Button>
+          </Space>
         </Row>
       </Affix>
       <Form
@@ -884,8 +985,41 @@ export default function ProductAdd() {
                 { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
               ]}
             >
-              <Input size="large" placeholder="Nhập tên sản phẩm" />
+              <Input
+                size="large"
+                placeholder="Nhập tên sản phẩm"
+                onBlur={(e) => {
+                  const generatedItemsSku = e.target.value.split(' ')
+                  const valueSku = generatedItemsSku
+                    .map((items) =>
+                      items[0] ? removeAccents(items[0]).toUpperCase() : ''
+                    )
+                    .join('')
+
+                  if (isGeneratedSku) form.setFieldsValue({ sku: valueSku })
+
+                  setValueGeneratedSku(valueSku)
+                }}
+              />
             </Form.Item>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -17,
+              }}
+            >
+              <Checkbox
+                checked={isGeneratedSku}
+                onChange={(e) => {
+                  if (e.target.checked)
+                    form.setFieldsValue({ sku: valueGeneratedSku })
+
+                  setIsGeneratedSku(e.target.checked)
+                }}
+              >
+                Tự động tạo mã sản phẩm/sku
+              </Checkbox>
+            </div>
           </Col>
           <Col xs={24} sm={24} md={7} lg={7} xl={7}>
             <Form.Item
@@ -947,27 +1081,22 @@ export default function ProductAdd() {
               </Select>
             </Form.Item>
           </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{
-              display: isProductHasVariants && 'none',
-            }}
-          >
+          <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
             <Form.Item
               label="Mã sản phẩm/SKU"
               name="sku"
               rules={[
                 {
-                  required: !isProductHasVariants && true,
+                  required: true,
                   message: 'Vui lòng nhập mã sản phẩm/sku!',
                 },
               ]}
             >
-              <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
+              <Input
+                disabled={isGeneratedSku}
+                size="large"
+                placeholder="Nhập mã sản phẩm/sku"
+              />
             </Form.Item>
           </Col>
           <Col
@@ -987,14 +1116,17 @@ export default function ProductAdd() {
             >
               <Switch
                 checked={productIsHaveDescription}
-                onChange={(checked) => setProductIsHaveDescription(checked)}
+                onChange={(checked) => {
+                  console.log(checked)
+                  setProductIsHaveDescription(checked)
+                }}
                 style={{ marginRight: 5 }}
               />
               Sản phẩm có mô tả
             </div>
             {productIsHaveDescription && (
               <CKEditor
-                // initData={location.state && parse(location.state.description)}
+                initData={location.state && parse(location.state.description)}
                 onChange={(e) => setDescription(e.editor.getData())}
               />
             )}
@@ -1027,6 +1159,7 @@ export default function ProductAdd() {
               {attributes.map((e, index) => {
                 const RenderInput = () => (
                   <Input
+                    disabled={location.state ? true : false}
                     size="large"
                     placeholder="Nhập tên thuộc tính"
                     defaultValue={e.option}
@@ -1049,6 +1182,7 @@ export default function ProductAdd() {
                     <Col xs={24} sm={24} md={9} lg={9} xl={9}>
                       <span style={{ marginBottom: 0 }}>Giá trị</span>
                       <Select
+                        disabled={location.state ? true : false}
                         mode="tags"
                         size="large"
                         style={{ width: '100%' }}
@@ -1105,6 +1239,7 @@ export default function ProductAdd() {
                           marginTop: 22,
                           marginLeft: 5,
                           display: attributes.length === 1 && 'none',
+                          visibility: location.state && 'hidden',
                         }}
                       />
                     </Popconfirm>
@@ -1117,6 +1252,7 @@ export default function ProductAdd() {
                             display: attributes.length === 2 && 'none',
                           }}
                           onClick={addAttribute}
+                          disabled={location.state ? true : false}
                         >
                           Thêm thuộc tính khác
                         </Button>
@@ -1362,51 +1498,79 @@ export default function ProductAdd() {
           >
             <span style={{ color: 'red' }}>* </span>
             Hình ảnh
-            <Upload.Dragger
-              name="files"
-              listType="picture"
-              multiple
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              onChange={(info) => {
-                if (info.file.status !== 'done') info.file.status = 'done'
-                let imagesProductNew = [...imagesProduct]
-                imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                setImagesProduct([...imagesProductNew])
-                setHelpTextImage('')
-              }}
-              // defaultFileList={d.mockup.map((e, index) => {
-              //   let nameFile = ['image']
-              //   if (typeof e === 'string')
-              //     nameFile = e.split('/')
-              //   return {
-              //     uid: index,
-              //     name: nameFile[nameFile.length - 1] || 'image',
-              //     status: 'done',
-              //     url: e,
-              //     thumbUrl: e,
-              //   }
-              // })}
-              // data={(file) => {
-              //   let imagesProductNew = [...imagesProduct]
-              //   imagesProductNew.push(file)
-              //   setImagesProduct([...imagesProductNew])
-              // }}
-              // onRemove={(file) => {
-              //   let imagesProductNew = [...imagesProduct]
-              //   console.log(file)
-              //   console.log(imagesProductNew)
-              // }}
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">
-                Nhấp hoặc kéo tệp vào khu vực này để tải lên
-              </p>
-              <p className="ant-upload-hint">
-                Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
-              </p>
-            </Upload.Dragger>
+            {location.state ? (
+              <Upload.Dragger
+                name="files"
+                listType="picture"
+                multiple
+                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                onChange={(info) => {
+                  if (info.file.status !== 'done') info.file.status = 'done'
+                  setHelpTextImage('')
+
+                  if (typingTimeoutRef.current) {
+                    clearTimeout(typingTimeoutRef.current)
+                  }
+                  typingTimeoutRef.current = setTimeout(async () => {
+                    let files = []
+                    let urls = []
+                    info.fileList.map((f) => {
+                      if (f.originFileObj) files.push(f.originFileObj)
+                      else urls.push(f.url)
+                    })
+                    dispatch({ type: ACTION.LOADING, data: true })
+                    const images = await uploadFiles(files)
+                    dispatch({ type: ACTION.LOADING, data: false })
+                    setImagesPreviewProduct([...images, ...urls])
+                  }, 250)
+                }}
+                fileList={imagesPreviewProduct.map((e, index) => {
+                  let nameFile = ['image']
+                  if (typeof e === 'string') nameFile = e.split('/')
+                  return {
+                    uid: index,
+                    name: nameFile[nameFile.length - 1] || 'image',
+                    status: 'done',
+                    url: e,
+                    thumbUrl: e,
+                  }
+                })}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  Nhấp hoặc kéo tệp vào khu vực này để tải lên
+                </p>
+                <p className="ant-upload-hint">
+                  Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
+                </p>
+              </Upload.Dragger>
+            ) : (
+              <Upload.Dragger
+                name="files"
+                listType="picture"
+                multiple
+                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                onChange={(info) => {
+                  if (info.file.status !== 'done') info.file.status = 'done'
+                  let imagesProductNew = [...imagesProduct]
+                  imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                  setImagesProduct([...imagesProductNew])
+                  setHelpTextImage('')
+                }}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  Nhấp hoặc kéo tệp vào khu vực này để tải lên
+                </p>
+                <p className="ant-upload-hint">
+                  Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
+                </p>
+              </Upload.Dragger>
+            )}
             <span style={{ color: 'red' }}>{helpTextImage}</span>
           </Col>
         </Row>
@@ -1418,7 +1582,7 @@ export default function ProductAdd() {
           marginTop: 20,
         }}
       >
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={24} md={9} lg={9} xl={9}>
           <Checkbox
             style={{ marginBottom: 4 }}
             checked={isWarranty}
