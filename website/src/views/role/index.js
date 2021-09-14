@@ -211,8 +211,8 @@ export default function Role() {
       apiUpdateRolePermissionData(body)
     }
   }
-  const onCheck = (checkedKeys) => {
-    setTreeAddData(checkedKeys.checked)
+  const onCheck = (checkedKeys, info) => {
+    setTreeAddData([...checkedKeys, ...info.halfCheckedKeys])
   }
 
   const removePermission = (permissionAdd, typePermission) => {
@@ -374,7 +374,7 @@ export default function Role() {
     }
     apiUpdateRoleData(object, id, e)
   }
-
+  // initial data tree
   const getTitle = (
     permissionAdd,
     typePermission,
@@ -445,6 +445,9 @@ export default function Role() {
       }
     })
   }
+
+  // get keys of parent and children
+
   useEffect(() => {
     apiAllMenuData()
     apiAllRoleData()
@@ -607,7 +610,7 @@ export default function Role() {
           </Row>
         }
       >
-        <div className={styles['role--add']}>
+        <div>
           <div>
             <div
               style={{
@@ -629,7 +632,7 @@ export default function Role() {
               />
             </div>
           </div>
-          <Row gutter={10}>
+          <Row gutter={10} justify="start" style={{ width: '100%' }}>
             <Col>
               <Row align="middle">
                 <div
@@ -638,8 +641,9 @@ export default function Role() {
                     height: 10,
                     borderRadius: '50%',
                     background: '#EC7100',
+                    marginRight: 7,
                   }}
-                ></div>{' '}
+                ></div>
                 Menu
               </Row>
             </Col>
@@ -651,6 +655,7 @@ export default function Role() {
                     height: 10,
                     borderRadius: '50%',
                     background: '#1772FA',
+                    marginRight: 7,
                   }}
                 ></div>{' '}
                 Quyền thao tác
@@ -661,7 +666,7 @@ export default function Role() {
             <Tree
               checkable
               defaultExpandAll
-              checkStrictly
+              // checkStrictly
               onCheck={onCheck}
               treeData={[...generateCreateTreeData(PERMISSIONS_APP)]}
             />

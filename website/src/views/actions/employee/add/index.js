@@ -1224,7 +1224,12 @@ export default function EmployeeAdd(props) {
 
           <div className={styles['button']}>
             <Form.Item>
-              <Button type="primary" size="large" htmlType="submit">
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                style={{ width: 120 }}
+              >
                 Thêm
               </Button>
             </Form.Item>

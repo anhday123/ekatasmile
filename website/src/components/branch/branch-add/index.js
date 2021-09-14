@@ -440,7 +440,12 @@ export default function BranchAdd({ reload }) {
 
           <Row justify="end" style={{ width: '100%' }}>
             <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
+              <Button
+                size="large"
+                type="primary"
+                htmlType="submit"
+                style={{ width: 120 }}
+              >
                 Thêm
               </Button>
             </Form.Item>

@@ -761,7 +761,12 @@ export default function ShippingProductAdd(props) {
           <Row justify="end" style={{ marginTop: '1rem', width: '100%' }}>
             <Space size="large">
               {selectedRowKeysMain.length ? (
-                <Button size="large" type="primary" danger>
+                <Button
+                  size="large"
+                  type="primary"
+                  danger
+                  // style={{ width: 120 }}
+                >
                   Xóa sản phẩm
                 </Button>
               ) : (
@@ -773,6 +778,7 @@ export default function ShippingProductAdd(props) {
                   type="primary"
                   htmlType="submit"
                   onClick={() => setFlag(1)}
+                  style={{ width: 120 }}
                 >
                   Lưu
                 </Button>
@@ -783,6 +789,7 @@ export default function ShippingProductAdd(props) {
                   type="primary"
                   htmlType="submit"
                   onClick={() => setFlag(0)}
+                  style={{ width: 120 }}
                 >
                   Chuyển
                 </Button>

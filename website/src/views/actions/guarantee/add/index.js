@@ -153,7 +153,12 @@ export default function GuaranteeAdd() {
             justifyContent: 'flex-end',
           }}
         >
-          <Button size="large" type="primary" htmlType="submit">
+          <Button
+            size="large"
+            type="primary"
+            htmlType="submit"
+            style={{ width: 120 }}
+          >
             Tạo
           </Button>
         </Row>

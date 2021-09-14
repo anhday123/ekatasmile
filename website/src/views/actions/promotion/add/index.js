@@ -7,10 +7,10 @@ import {
   Input,
   Form,
   InputNumber,
+  Checkbox,
 } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styles from './../add/add.module.scss'
-import { getAllBranch } from '../../../../apis/branch'
 import { addPromotion } from '../../../../apis/promotion'
 import { getAllStore } from 'apis/store'
 const { Option } = Select
@@ -57,6 +57,16 @@ export default function PromotionAdd(props) {
         description: e.data && e.data.message,
       })
     }
+  }
+
+  const selectAllStore = (value) => {
+    value.target.checked
+      ? form.setFieldsValue({
+          store: storeList.map((e) => {
+            return e.store_id
+          }),
+        })
+      : form.setFieldsValue({ store: [] })
   }
 
   useEffect(() => {
@@ -246,7 +256,8 @@ export default function PromotionAdd(props) {
                           styles['promotion_add_option_col_left_title']
                         }
                       >
-                        <span style={{ color: 'red' }}>*</span>&nbsp; Vourcher
+                        <span style={{ color: 'red' }}>*</span>&nbsp;Số lượng
+                        vourcher
                       </div>
                       <div
                         className={
@@ -315,6 +326,9 @@ export default function PromotionAdd(props) {
                   </Col>
                 </Row>
               </div>
+              <Checkbox onChange={selectAllStore}>
+                Chọn tất cả cửa hàng
+              </Checkbox>
             </Col>
 
             <Col
@@ -345,7 +359,12 @@ export default function PromotionAdd(props) {
 
           <div className={styles['promotion_add_button']}>
             <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
+              <Button
+                size="large"
+                type="primary"
+                htmlType="submit"
+                style={{ width: 120 }}
+              >
                 Tạo
               </Button>
             </Form.Item>

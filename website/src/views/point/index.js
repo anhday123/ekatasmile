@@ -170,7 +170,6 @@ export default function Point() {
               <div>
                 <InputNumber
                   value={config.accumulate_price}
-                  disabled={!config.accumulate}
                   onChange={(e) =>
                     setConfig({ ...config, accumulate_price: e })
                   }
@@ -201,7 +200,6 @@ export default function Point() {
                 1 điểm ={' '}
                 <InputNumber
                   value={config.use_price}
-                  disabled={!config.use}
                   onChange={(e) => setConfig({ ...config, use_price: e })}
                   formatter={(value) =>
                     `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
