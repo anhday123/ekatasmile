@@ -26,6 +26,7 @@ import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
 import { compare, tableSum } from 'utils'
+import { getAllStore } from 'apis/store'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -46,6 +47,7 @@ export default function Promotion() {
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [listPromotion, setListPromotion] = useState()
   const [listBranch, setListBranch] = useState([])
+  const [listStore, setListStore] = useState([])
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
@@ -55,17 +57,6 @@ export default function Promotion() {
     type: undefined,
   })
   const dispatch = useDispatch()
-  const showDrawer = (data) => {
-    setVisible(true)
-    form.setFieldsValue({
-      promotion_id: data.promotion_id,
-      name: data.name,
-      type: data.type,
-      value: data.value,
-      branch: data.limit.branchs,
-      amount: data.limit.amount,
-    })
-  }
 
   const onClose = () => {
     setVisible(false)
@@ -79,23 +70,22 @@ export default function Promotion() {
   }
   const columnsPromotion = [
     {
-      title: 'Mã chương trình khuyến mãi',
-      dataIndex: 'code',
-      width: 200,
-      sorter: (a, b) => compare(a, b, 'code', parseInt),
-    },
-    {
-      title: 'Tên chương trình khuyến mãi',
-      dataIndex: 'name',
+      title: 'Thông tin',
       width: 200,
       sorter: (a, b) => compare(a, b, 'name'),
+      render: (data) => (
+        <>
+          <div>{data.name}</div>
+          <div>Mô tả:{data.description}</div>
+        </>
+      ),
     },
     {
       title: 'Loại khuyến mãi',
       dataIndex: 'type',
       width: 150,
       render(data) {
-        return data == 'percent' ? 'Phần trăm' : 'VND'
+        return data == 'percent' ? 'Phần trăm' : 'Gía trị'
       },
       sorter: (a, b) => compare(a, b, 'type'),
     },
@@ -103,8 +93,9 @@ export default function Promotion() {
       title: 'Giá trị khuyến mãi',
       dataIndex: 'value',
       width: 150,
-      render(data) {
-        return formatCash(data.toString())
+      render(data, record) {
+        if (record.type === 'value') return formatCash(data.toString()) + ' VND'
+        return formatCash(data.toString()) + '%'
       },
       sorter: (a, b) => compare(a, b, 'value'),
     },
@@ -118,10 +109,17 @@ export default function Promotion() {
       sorter: (a, b) => compare(a, b, 'limit'),
     },
     {
-      title: 'Mô tả',
-      dataIndex: 'description',
+      title: 'Cửa hàng áp dụng',
+      dataIndex: 'limit',
       width: 150,
       sorter: (a, b) => compare(a, b, 'description'),
+      render: (data) => {
+        return data.stores
+          .map((e) => {
+            return listStore.find((s) => s.store_id === e)['name']
+          })
+          .join(', ')
+      },
     },
     {
       title: 'Trạng thái',
@@ -172,8 +170,16 @@ export default function Promotion() {
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
   }
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
+
+  const getStore = async (params) => {
+    try {
+      const res = await getAllStore(params)
+      if (res.data.success) {
+        setListStore(res.data.data)
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const changePagi = (page, page_size) => setPagination({ page, page_size })
@@ -209,6 +215,7 @@ export default function Promotion() {
   }
   useEffect(() => {
     getBranch()
+    getStore()
   }, [])
   useEffect(() => {
     getPromotions()

@@ -8,15 +8,19 @@ import {
   Form,
   InputNumber,
   Checkbox,
+  Radio,
 } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styles from './../add/add.module.scss'
 import { addPromotion } from '../../../../apis/promotion'
 import { getAllStore } from 'apis/store'
+import { removeAccents } from 'utils'
 const { Option } = Select
 
 export default function PromotionAdd(props) {
   const [storeList, setStoreList] = useState([])
+  const [showVoucher, setShowVoucher] = useState('show')
+  const [promotionCode, setPromotionCode] = useState('')
   const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
@@ -28,11 +32,13 @@ export default function PromotionAdd(props) {
     try {
       const obj = {
         name: values.name,
+        promotion_code: values.promotion_code,
         type: values.type ? values.type : 'percent',
         value: values.value,
+        has_voucher: showVoucher === 'show',
         limit: {
-          amount: parseInt(values.amount),
-          stores: values.store ? values.store : ['1'],
+          amount: values.amount ? parseInt(values.amount) : 0,
+          stores: values.store ? values.store : [],
         },
         description: values.description || ' ',
       }
@@ -59,8 +65,15 @@ export default function PromotionAdd(props) {
     }
   }
 
+  const generateCode = (value) => {
+    let tmp = value.toUpperCase()
+    tmp = tmp.replace(/\s/g, '')
+    tmp = removeAccents(tmp)
+    return tmp
+  }
+
   const selectAllStore = (value) => {
-    value.target.checked
+    value
       ? form.setFieldsValue({
           store: storeList.map((e) => {
             return e.store_id
@@ -86,291 +99,134 @@ export default function PromotionAdd(props) {
   }, [])
   return (
     <>
-      <div className={styles['promotion_add']}>
-        <Form
-          className={styles['promotion_add_form_parent']}
-          onFinish={onFinish}
-          form={form}
-        >
-          <Row className={styles['promotion_add_name']}>
-            <Col
-              className={styles['promotion_add_name_col']}
-              style={{ marginBottom: '1rem' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div className={styles['promotion_add_name_col_child']}>
-                <div className={styles['promotion_add_form_left_title']}>
-                  <span style={{ color: 'red' }}>*</span>&nbsp; Tên chương trình
-                  khuyến mãi
-                </div>
-                <Form.Item
-                  className={styles['promotion_add_name_col_child_title']}
-                  // label="Username"
-                  name="name"
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Input
-                    placeholder="Nhập tên chương trình khuyến mãi"
-                    size="large"
-                  />
-                </Form.Item>
+      <Form onFinish={onFinish} form={form} layout="vertical">
+        <Row gutter={30}>
+          <Col span={12}>
+            <div className={styles['promotion-add__box']}>
+              <div className={styles['promotion-add__title']}>
+                Tên chương trình khuyến mãi{' '}
+                <span style={{ color: 'red' }}>*</span>
               </div>
-            </Col>
+              <Form.Item name="name">
+                <Input
+                  placeholder="Nhập tên chương trình khuyến mãi"
+                  size="large"
+                  onChange={(e) => {
+                    form.setFieldsValue({
+                      promotion_code: generateCode(e.target.value),
+                    })
+                  }}
+                />
+              </Form.Item>
+              <div className={styles['promotion-add__title']}>
+                Mã chương trình khuyến mãi{' '}
+                <span style={{ color: 'red' }}>*</span>
+              </div>
+              <Form.Item name="promotion_code">
+                <Input
+                  placeholder="Nhập mã chương trình khuyến mãi"
+                  size="large"
+                />
+              </Form.Item>
+              <Radio.Group
+                value={showVoucher}
+                onChange={(e) => setShowVoucher(e.target.value)}
+                size="large"
+              >
+                <Radio value="show">
+                  <span style={{ fontSize: 16 }}>Giảm giá theo Voucher</span>
+                </Radio>
+                <Radio value="hidden">
+                  <span style={{ fontSize: 16 }}>Giảm giá tự động</span>
+                </Radio>
+              </Radio.Group>
+              {showVoucher == 'show' ? (
+                <>
+                  <div>
+                    Số lượng voucher <span style={{ color: 'red' }}>*</span>
+                  </div>
+                  <Form.Item name="amount">
+                    <InputNumber
+                      placeholder="Nhập số lượng voucher"
+                      size="large"
+                      style={{ width: '100%', borderRadius: '15px' }}
+                    />
+                  </Form.Item>
+                </>
+              ) : (
+                ''
+              )}
 
-            <Col
-              className={styles['promotion_add_name_col']}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div className={styles['promotion_add_name_col_child']}>
-                <div className={styles['promotion_add_form_left_title_parent']}>
-                  Tùy chọn khuyến mãi
-                </div>
-                <Row className={styles['promotion_add_option']}>
-                  <Col
-                    className={styles['promotion_add_option_col']}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles['promotion_add_option_col_left']}>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles['promotion_add_option_col_left_title']
-                        }
-                      >
-                        <span style={{ color: 'red' }}>*</span>&nbsp; Loại
-                        khuyến mãi
-                      </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
-                        <Form.Item
-                          name="type"
-                          noStyle
-                          rules={[{ required: true, message: 'Giá trị rỗng' }]}
-                        >
-                          <Select
-                            size="large"
-                            className={
-                              styles['promotion_add_form_left_select_child']
-                            }
-                            placeholder="Loại khuyến mãi"
-                          >
-                            <Option value="percent">Phần trăm</Option>
-                            <Option value="value">Giá trị</Option>
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col
-                    className={styles['promotion_add_option_col']}
-                    xs={22}
-                    sm={22}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
-                    <div className={styles['promotion_add_option_col_left']}>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_title_left']
-                        }
-                        style={{ marginBottom: '0.5rem' }}
-                      >
-                        <span style={{ color: 'red' }}>*</span>&nbsp; Giá trị
-                        khuyến mãi
-                      </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
-                        <Form.Item
-                          className={
-                            styles['promotion_add_name_col_child_title']
-                          }
-                          // label="Username"
-                          name="value"
-                          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                        >
-                          <InputNumber
-                            size="large"
-                            className="br-15__input"
-                            placeholder="Nhập giá trị"
-                            style={{ width: '100%' }}
-                            formatter={(value) =>
-                              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                            }
-                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col></Col>
-                </Row>
+              <div>
+                Cửa hàng <span style={{ color: 'red' }}>*</span>
               </div>
-            </Col>
-          </Row>
-          <Row className={styles['promotion_add_name']}>
-            <Col
-              style={{ marginBottom: '1rem' }}
-              className={styles['promotion_add_name_col']}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
-              <div className={styles['promotion_add_name_col_child']}>
-                <div className={styles['promotion_add_form_left_title_parent']}>
-                  Giới hạn số lượng khuyến mãi
-                </div>
-                <Row className={styles['promotion_add_option']}>
-                  <Col
-                    className={styles['promotion_add_option_col']}
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                  >
-                    <div className={styles['promotion_add_option_col_left']}>
-                      <div
-                        style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles['promotion_add_option_col_left_title']
-                        }
-                      >
-                        <span style={{ color: 'red' }}>*</span>&nbsp;Số lượng
-                        vourcher
-                      </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
-                        <Form.Item
-                          className={
-                            styles['promotion_add_name_col_child_title']
-                          }
-                          // label="Username"
-                          name="amount"
-                          rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                        >
-                          <Input
-                            placeholder="Nhập số lượng vourcher"
-                            size="large"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col
-                    style={{ marginBottom: '1rem' }}
-                    className={styles['promotion_add_option_col']}
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={24}
-                  >
-                    <div className={styles['promotion_add_option_col_left']}>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_title_left_fix']
-                        }
-                        style={{ marginBottom: '0.5rem' }}
-                      >
-                        Cửa hàng
-                      </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
-                        <Form.Item
-                          name="store"
-                          noStyle
-                          rules={[{ required: true, message: 'Giá trị rỗng' }]}
-                        >
-                          <Select
-                            size="large"
-                            mode="multiple"
-                            className={
-                              styles['promotion_add_form_left_select_child']
-                            }
-                            placeholder="Chọn cửa hàng"
-                          >
-                            {storeList.map((e) => (
-                              <Option value={e.store_id}>{e.name}</Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-              <Checkbox onChange={selectAllStore}>
+              <Form.Item name="store">
+                <Select
+                  placeholder="Chọn cửa hàng"
+                  mode="multiple"
+                  size="large"
+                  style={{ width: '100%' }}
+                >
+                  {storeList.map((e) => (
+                    <Option value={e.store_id}>{e.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Checkbox onChange={(e) => selectAllStore(e.target.checked)}>
                 Chọn tất cả cửa hàng
               </Checkbox>
-            </Col>
-
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['promotion_add_form_right']}
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className={styles['promotion-add__box']}>
+              <div className={styles['promotion-add__title']}>
+                Tùy chọn khuyến mãi
+              </div>
+              <Row gutter={20}>
+                <Col span={12}>
+                  <Form.Item
+                    name="type"
+                    initialValue="value"
+                    label="Loại khuyến mãi"
+                  >
+                    <Select placeholder="Loại khuyến mãi" size="large">
+                      <Option value="value">Giá trị</Option>
+                      <Option value="percent">Phần trăm</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="value" label="Giá trị khuyến mãi">
+                    <InputNumber
+                      placeholder="Giá trị Khuyến mãi"
+                      size="large"
+                      style={{ width: '100%', borderRadius: '15px' }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+            <div className={styles['promotion-add__box']}>
+              <div className={styles['promotion-add__title']}>Mô tả</div>
+              <Form.Item name="description">
+                <Input.TextArea style={{ height: 120, margin: '15px 0' }} />
+              </Form.Item>
+            </div>
+          </Col>
+        </Row>
+        <div className={styles['promotion_add_button']}>
+          <Form.Item>
+            <Button
+              size="large"
+              type="primary"
+              htmlType="submit"
+              style={{ width: 120 }}
             >
-              <div className={styles['promotion_add_form_left_title']}>
-                Mô tả
-              </div>
-              <div
-                style={{ width: '100%', height: '100%' }}
-                className={styles['promotion_add_form_right_content']}
-              >
-                <Form.Item name="description" style={{ width: '100%' }}>
-                  <Input.TextArea
-                    style={{ width: '100%', height: '100%' }}
-                    rows={4}
-                    placeholder="Nhập mô tả"
-                  />
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-
-          <div className={styles['promotion_add_button']}>
-            <Form.Item>
-              <Button
-                size="large"
-                type="primary"
-                htmlType="submit"
-                style={{ width: 120 }}
-              >
-                Tạo
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      </div>
+              Tạo
+            </Button>
+          </Form.Item>
+        </div>
+      </Form>
     </>
   )
 }

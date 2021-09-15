@@ -310,7 +310,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.CUSTOMER,
     Component: () => <Customer />,
-    title: 'QL đối tác vận chuyển',
+    title: 'QL khách hàng',
     permissions: [],
     exact: true,
   },

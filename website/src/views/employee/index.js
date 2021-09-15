@@ -750,7 +750,7 @@ export default function Employee() {
                 >
                   <div>
                     <b>Chức vụ:</b>{' '}
-                    {record && record.role ? record.role.name : ''}
+                    {record && record._role ? record._role.name : ''}
                   </div>
                 </Col>
               </Row>

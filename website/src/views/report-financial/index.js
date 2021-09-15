@@ -1,58 +1,214 @@
-import styles from "./../report-financial/report-financial.module.scss";
-import React from "react";
-import {  Row, Col, } from "antd";
-import {
-
-  Link,
-
-} from "react-router-dom";
-import report_cost from './../../assets/img/report_cost.png'
-import money from './../../assets/img/money.png'
-import { ROUTES } from "consts";
-
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  });
+import styles from './../report-financial/report-financial.module.scss'
+import React, { useState } from 'react'
+import { Row, Col, Button, Select, Table, Modal } from 'antd'
+import moment from 'moment'
+import { formatCash } from 'utils'
+import FilterRangeTime from './filterRangeTime'
+const getThisMonth = () => {
+  return {
+    from_date: moment().startOf('month').format('YYYY-MM-DD'),
+    to_date: moment().format('YYYY-MM-DD'),
+  }
 }
 export default function ReportFinancial() {
+  const [filter, setFilter] = useState({ ...getThisMonth() })
+  const [showKeyWord, setShowKeyword] = useState(false)
 
+  const columns = [
+    {
+      title: 'Loại phiếu',
+      dataIndex: '',
+      render(data) {
+        return 'Phiếu thu'
+      },
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: '',
+      render(data) {
+        return moment('2021-09-07T12:05:09').format('DD/MM/YYYY hh:mm:ss')
+      },
+    },
+    {
+      title: 'Ngày ghi nhận',
+      dataIndex: '',
+      render(data) {
+        return moment('2021-09-07T12:05:09').format('DD/MM/YYYY hh:mm:ss')
+      },
+    },
+    {
+      title: 'Mã phiếu',
+      dataIndex: '',
+      render(data) {
+        return 'RVN0016'
+      },
+    },
+    {
+      title: 'Mã doanh nghiệp',
+      dataIndex: '',
+      render(data) {
+        return 'BGY0016'
+      },
+    },
+    {
+      title: 'Người nộp/nhận',
+      dataIndex: '',
+      render(data) {
+        return 'Khách lẻ'
+      },
+    },
+    {
+      title: 'Hình thức thanh toán',
+      dataIndex: '',
+      render(data) {
+        return 'Tiền mặt'
+      },
+    },
+    {
+      title: 'tiền thu/tiền chi',
+      dataIndex: '',
+      render(data) {
+        return <span style={{ color: '#009D10' }}>+355,000</span>
+      },
+    },
+    {
+      title: 'Mô tả',
+      dataIndex: '',
+      render(data) {
+        return 'Bán hàng'
+      },
+    },
+  ]
+  const keyWordColumns = [
+    {
+      title: 'Thuật ngữ',
+      dataIndex: 'keyword',
+      width: 250,
+    },
+    {
+      title: 'Mô tả thuật ngữ',
+      dataIndex: 'description',
+    },
+  ]
+  const KeywordData = [
+    {
+      keyword: 'Ngày tạo',
+      description: 'Ngày phiếu thu hoặc phiếu chi được tạo trên hệ thống',
+    },
+    {
+      keyword: 'Ngày ghi nhận',
+      description: 'Ngày ghi nhận là ngày nhập vào hệ thống',
+    },
+    {
+      keyword: 'Số dư đầy kỳ',
+      description:
+        'Là số tiền trong quỹ tính đến ngày trước khoảng ngày lọc Ví dụ: Thời gian được lọc từ ngày 02/11/2020 - 15/11/2020 (Ngày ghi nhận hoặc Ngày tạo)->Quỹ đầu kỳ là số tiền tính đến ngày 01/11/2020',
+    },
+    {
+      keyword: 'Tổng thu',
+      description:
+        'Là số tiền cửa hàng thu về trong khoảng ngày lọc. Ví dụ: Thời gian được lọc từ ngày 02/11/2020 - 15/11/2020 (Ngày ghi nhận hoặc Ngày tạo)-> Tổng thu là số tiền tính của hàng thu được trong thời gian từ 02/11/2020 - 15/11/2020',
+    },
+    {
+      keyword: 'Tổng chi',
+      description:
+        'Là số tiền cửa hàng chi, thanh toán trong khoảng ngày lọc. Ví dụ: Thời gian được lọc từ ngày 02/11/2020 - 15/11/2020 (Ngày ghi nhận hoặc Ngày tạo) -> Tổng chi là số tiền tính của hàng bỏ ra trong thời gian từ 02/11/2020 - 15/11/2020',
+    },
+    {
+      keyword: 'Số dư cuối kỳ(Tồn quỹ)',
+      description:
+        'Là số tiền trong quỹ tính đến ngày cuối trong khoảng ngày lọc. Tồn quỹ = Quỹ đầu kỳ + Tổng thu - Tổng chi. Ví dụ: Thời gian được lọc từ ngày 02/11/2020 - 15/11/2020 (Ngày ghi nhận hoặc Ngày tạo) -> Tồn quỹ là số tiền tính đến ngày 15/11/2020',
+    },
+  ]
   return (
     <>
-      <div className={`${styles["promotion_manager"]}`}>
-        <div style={{ display: 'flex', borderBottom: '1px solid grey', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div className={styles["promotion_manager_title"]}>Báo cáo tài chính</div>
+      <div className={styles['report']}>
+        <div className={styles['report-header']}>
+          <div className={styles['report-title']}>Báo cáo tài chính</div>
+          <Button
+            size="large"
+            type="primary"
+            onClick={() => setShowKeyword(true)}
+          >
+            Giải thích thuật ngữ
+          </Button>
         </div>
-
-        <Row style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Col className={`${styles['hover_item']} ${styles["card"]}`} style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            <Link to={ROUTES.REPORT_FINANCIAL_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <div style={{ marginRight: '1rem' }}><img style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain' }} src={report_cost} alt="" /></div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: '#18A375', fontSize: '1.25rem', fontWeight: '600' }}>Báo cáo chi tiết bán hàng</div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '1rem', }}>Theo dõi các khoản chi phí của cửa hàng</div>
-              </div>
-            </Link>
+        <Row gutter={10}>
+          <Col xs={24} lg={8}>
+            <Select
+              placeholder="Chọn loại phiếu"
+              allowClear
+              style={{ width: '100%' }}
+              size="large"
+            >
+              <Select.Option value="chi">Phiếu chi</Select.Option>
+              <Select.Option value="thu">Phiếu chi</Select.Option>
+            </Select>
           </Col>
-          <Col className={`${styles['hover_item']} ${styles["card"]}`} style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-            <Link to={ROUTES.REPORT_REVENUE_VIEW} style={{ display: 'flex', backgroundColor: 'white', padding: '1.5rem 1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%', }}>
-              <div style={{ marginRight: '1rem' }}><img style={{ width: '3.5rem', height: '3.5rem', objectFit: 'contain' }} src={money} alt="" /></div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: '#18A375', fontSize: '1.25rem', fontWeight: '600' }}>Báo cáo chi phí doanh thu</div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%', color: 'black', fontSize: '1rem', }}>Theo dõi doanh thu, lợi nhuận của cửa hàng</div>
-              </div>
-            </Link>
+          <Col>
+            <Select
+              placeholder="Chọn hình thức thanh toán"
+              allowClear
+              style={{ width: '100%' }}
+              size="large"
+            >
+              <Select.Option value="money">Tiền mặt</Select.Option>
+              <Select.Option value="point">Điểm</Select.Option>
+              <Select.Option value="bank">Thẻ ngân hàng</Select.Option>
+            </Select>
+          </Col>
+          <Col>
+            <FilterRangeTime filter={filter} setFilter={setFilter} />
           </Col>
         </Row>
 
-      </div>
+        <Row gutter={10} justify="end" style={{ margin: '1em 0' }}>
+          <Col>
+            <Button type="primary" size="large">
+              Cài đặt ngày ghi nhận
+            </Button>
+          </Col>
+          <Col>
+            <Button type="primary" size="large">
+              Xóa tất cả các lọc
+            </Button>
+          </Col>
+        </Row>
 
+        <Row gutter={30} align="middle" className={styles['report-statis']}>
+          <Col>
+            <Row>Số dư đầu kỳ</Row>
+            <Row style={{ color: '#2F68BE' }}>{formatCash(0)}</Row>
+          </Col>
+          <Col>+</Col>
+          <Col>
+            <Row>Tổng thu</Row>
+            <Row style={{ color: '#00A324' }}>{formatCash(6789000)}</Row>
+          </Col>
+          <Col>-</Col>
+          <Col>
+            <Row>Tổng chi</Row>
+            <Row style={{ color: '#DF0000' }}>{formatCash(0)}</Row>
+          </Col>
+          <Col>=</Col>
+          <Col>
+            <Row>Tồn cuối kỳ</Row>
+            <Row style={{ color: '#2F68BE' }}>{formatCash(6789000)}</Row>
+          </Col>
+        </Row>
+
+        <Table columns={columns} dataSource={[1, 2, 3]} size="small" />
+      </div>
+      <Modal
+        title="Giải thích thuật ngữ"
+        visible={showKeyWord}
+        onCancel={() => setShowKeyword(false)}
+        onOk={() => setShowKeyword(false)}
+        width={800}
+        centered
+      >
+        <Table columns={keyWordColumns} dataSource={KeywordData} />
+      </Modal>
     </>
-  );
+  )
 }
