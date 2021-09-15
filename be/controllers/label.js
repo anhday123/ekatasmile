@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const labelService = require(`../services/label`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getLabelC = async (req, res, next) => {
@@ -57,7 +56,7 @@ let addLabelC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
             description: req.body.description || ``,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,

@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const warehouseService = require(`../services/warehouse`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getWarehouseC = async (req, res, next) => {
@@ -56,18 +55,18 @@ let addWarehouseC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
             type: req.body.type || `RIÊNG`,
-            sub_type: createSub(req.body.type || 'RIÊNG'),
+            sub_type: removeUnicode(req.body.type || 'RIÊNG').toLocaleLowerCase(),
             phone: req.body.phone || '',
             capacity: req.body.capacity || 0,
             monthly_cost: req.body.monthly_cost || 0,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
             active: true,

@@ -31,10 +31,10 @@ let getSettingC = async (req, res, next) => {
             let setting = {
                 point_setting_id: String(Number(_counts) + 1),
                 business_id: token.business_id,
-                accumulate_point: false,
-                accumulate_point_branchs: [],
+                accumulate_point: true,
+                accumulate_point_branchs: ['1', '2'],
                 use_point: false,
-                use_point_branchs: [],
+                use_point_branchs: ['1', '2'],
                 point_rate: 0,
                 currency_rate: 0,
             };

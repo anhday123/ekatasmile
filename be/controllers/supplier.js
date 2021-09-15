@@ -5,13 +5,12 @@ const DB = process.env.DATABASE;
 
 const supplierService = require(`../services/supplier`);
 
-let createSub = (str) => {
+let removeUnicode = (str) => {
     return str
         .normalize(`NFD`)
         .replace(/[\u0300-\u036f]|\s/g, ``)
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLocaleLowerCase();
+        .replace(/Đ/g, 'D');
 };
 
 let getSupplierC = async (req, res, next) => {
@@ -51,15 +50,15 @@ let addSupplierC = async (req, res, next) => {
             business_id: req.body.business_id,
             code: req.body.code,
             name: req.body.name,
-            sub_name: createSub(req.body.name),
+            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
             phone: req.body.phone || ``,
             email: req.body.email || ``,
             address: req.body.address || ``,
-            sub_address: createSub(req.body.address || ``),
+            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
             district: req.body.district || ``,
-            sub_district: createSub(req.body.district || ``),
+            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
             province: req.body.province || ``,
-            sub_province: createSub(req.body.province || ``),
+            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
             default: req.body.default || false,
             create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
             creator_id: token.user_id,
@@ -80,7 +79,7 @@ let updateSupplierC = async (req, res, next) => {
         if (!_supplier) throw new Error(`400 ~ Supplier is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = createSub(req.body.name);
+            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
             let _check = await client
                 .db(DB)
                 .collection(`Suppliers`)
@@ -92,13 +91,13 @@ let updateSupplierC = async (req, res, next) => {
             if (_check) throw new Error(`400 ~ Supplier name was exists!`);
         }
         if (req.body.address) {
-            req.body[`sub_address`] = createSub(req.body.address);
+            req.body[`sub_address`] = removeUnicode(req.body.address).toLocaleLowerCase();
         }
         if (req.body.district) {
-            req.body[`sub_district`] = createSub(req.body.district);
+            req.body[`sub_district`] = removeUnicode(req.body.district).toLocaleLowerCase();
         }
         if (req.body.province) {
-            req.body[`sub_province`] = createSub(req.body.province);
+            req.body[`sub_province`] = removeUnicode(req.body.province).toLocaleLowerCase();
         }
         delete req.body._id;
         delete req.body.supplier_id;

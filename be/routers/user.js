@@ -11,5 +11,6 @@ router.route(`/adduser`).post(auth, user.addUserC);
 router.route(`/updateuser/:user_id`).patch(auth, user.updateUserC);
 router.route(`/activeuser`).post(otp, user.activeUser);
 router.route(`/forgotpassword`).post(otp, user.forgotPassword);
+router.route(`/deleteuser`).delete(otp, user.deleleUserC);
 
 module.exports = router;

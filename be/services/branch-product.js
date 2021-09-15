@@ -4,8 +4,8 @@ const DB = process.env.DATABASE;
 
 let removeUnicode = (str) => {
     return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]|\s/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'D');
 };
@@ -16,6 +16,7 @@ let getProductS = async (req, res, next) => {
         let mongoQuery = {};
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        mongoQuery['delete'] = false;
         if (req.query.product_id) {
             mongoQuery['product_id'] = req.query.product_id;
         }
@@ -122,7 +123,6 @@ let getProductS = async (req, res, next) => {
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.sku) filterQuery = { ...filterQuery, sku: req.query.sku };
         if (req.query.name) filterQuery = { ...filterQuery, name: req.query.name };
-        if (req.query.status) filterQuery = { ...filterQuery, status: req.query.status };
         // lấy các thuộc tính tùy chọn khác
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;
@@ -190,7 +190,6 @@ let getProductS = async (req, res, next) => {
                 __products.push(_product);
             });
         }
-        // console.log(__products);
         _products = __products;
         // lọc theo keyword
         if (req.query.search) {
@@ -212,70 +211,74 @@ let getProductS = async (req, res, next) => {
         if (filterQuery) {
             filterQuery = Object.entries(filterQuery);
             filterQuery.forEach(([filterKey, filterValue]) => {
-                if (removeUnicode(filterKey) == 'status') {
-                    _products = _products.filter((_product) => {
-                        if (_product.has_variable == true) {
-                            check = false;
-                            _product.variants.map((variant) => {
-                                if (
-                                    'available_stock'.includes(removeUnicode(filterValue)) &&
-                                    'available_stock'.includes(variant.status)
-                                ) {
-                                    check = true;
-                                }
-                                if (
-                                    'low_stock'.includes(removeUnicode(filterValue)) &&
-                                    'low_stock'.includes(variant.status)
-                                ) {
-                                    check = true;
-                                }
-                                if (
-                                    'out_stock'.includes(removeUnicode(filterValue)) &&
-                                    'out_stock'.includes(variant.status)
-                                ) {
-                                    check = true;
-                                }
-                                if (
-                                    'shipping'.includes(removeUnicode(filterValue)) &&
-                                    variant.shipping_quantity > 0
-                                ) {
-                                    check = true;
-                                }
-                            });
-                            return check;
+                _products = _products.filter((_product) => {
+                    let value = removeUnicode(String(_product[filterKey])).toLocaleLowerCase();
+                    let compare = removeUnicode(String(filterValue)).toLocaleLowerCase();
+                    return value.includes(compare);
+                });
+            });
+        }
+        let all_count = 0;
+        let available_count = 0;
+        let low_count = 0;
+        let out_count = 0;
+        let shipping_count = 0;
+        let return_count = 0;
+        _products.map((_product) => {
+            if (_product.has_variable == true) {
+                _product.variants.map((variant) => {
+                    all_count += variant['available_stock_quantity'] || 0;
+                    available_count += variant['available_stock_quantity'] || 0;
+                    all_count += variant['low_stock_quantity'] || 0;
+                    low_count += variant['low_stock_quantity'] || 0;
+                    all_count += variant['out_stock_quantity'] || 0;
+                    out_count += variant['out_stock_quantity'] || 0;
+                    all_count += variant['shipping_quantity'] || 0;
+                    shipping_count += variant['shipping_quantity'] || 0;
+                    all_count += variant['return_warehouse_quantity'] || 0;
+                    return_count += variant['return_warehouse_quantity'] || 0;
+                });
+            } else {
+                all_count += _product['available_stock_quantity'] || 0;
+                available_count += _product['available_stock_quantity'] || 0;
+                all_count += _product['low_stock_quantity'] || 0;
+                low_count += _product['low_stock_quantity'] || 0;
+                all_count += _product['out_stock_quantity'] || 0;
+                out_count += _product['out_stock_quantity'] || 0;
+                all_count += _product['shipping_quantity'] || 0;
+                shipping_count += _product['shipping_quantity'] || 0;
+                all_count += _product['return_warehouse_quantity'] || 0;
+                return_count += _product['return_warehouse_quantity'] || 0;
+            }
+        });
+        if (req.query.status) {
+            _products = _products.filter((_product) => {
+                if (_product.has_variable == true) {
+                    check = false;
+                    _product.variants.map((variant) => {
+                        if (
+                            'shipping'.includes(removeUnicode(req.query.status)) &&
+                            variant.shipping_quantity > 0
+                        ) {
+                            check = true;
                         } else {
-                            if (
-                                'available_stock'.includes(removeUnicode(filterValue)) &&
-                                'available_stock'.includes(_product.status)
-                            ) {
-                                return true;
-                            }
-                            if (
-                                'low_stock'.includes(removeUnicode(filterValue)) &&
-                                'low_stock'.includes(_product.status)
-                            ) {
-                                return true;
-                            }
-                            if (
-                                'out_stock'.includes(removeUnicode(filterValue)) &&
-                                'out_stock'.includes(_product.status)
-                            ) {
-                                return true;
-                            }
-                            if (
-                                'shipping'.includes(removeUnicode(filterValue)) &&
-                                _product.shipping_quantity > 0
-                            ) {
-                                return true;
+                            if (variant.status.includes(removeUnicode(req.query.status))) {
+                                check = true;
                             }
                         }
                     });
+                    return check;
                 } else {
-                    _products = _products.filter((_product) => {
-                        let value = removeUnicode(String(_product[filterKey])).toLocaleLowerCase();
-                        let compare = removeUnicode(String(filterValue)).toLocaleLowerCase();
-                        return value.includes(compare);
-                    });
+                    if (
+                        'shipping'.includes(removeUnicode(req.query.status)) &&
+                        _product.shipping_quantity > 0
+                    ) {
+                        return true;
+                    } else {
+                        if (_product.status.includes(removeUnicode(req.query.status))) {
+                            return true;
+                        }
+                    }
                 }
             });
         }
@@ -285,37 +288,16 @@ let getProductS = async (req, res, next) => {
         if (page && page_size) {
             _products = _products.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
         }
-        let available_quantity = 0;
-        let low_quantity = 0;
-        let out_quantity = 0;
-        let shipping_quantity = 0;
-        let return_quantity = 0;
-        _products.map((_product) => {
-            if (_product.has_variable == true) {
-                _product.variants.map((variant) => {
-                    available_quantity += variant['available_stock_quantity'] || 0;
-                    low_quantity += variant['low_stock_quantity'] || 0;
-                    out_quantity += variant['out_stock_quantity'] || 0;
-                    shipping_quantity += variant['shipping_quantity'] || 0;
-                    return_quantity += variant['return_warehouse_quantity'] || 0;
-                });
-            } else {
-                available_quantity += _product['available_stock_quantity'] || 0;
-                low_quantity += _product['low_stock_quantity'] || 0;
-                out_quantity += _product['out_stock_quantity'] || 0;
-                shipping_quantity += _product['shipping_quantity'] || 0;
-                return_quantity += _product['return_warehouse_quantity'] || 0;
-            }
-        });
         res.send({
             success: true,
             data: _products,
             count: _counts,
-            available_quantity,
-            low_quantity,
-            out_quantity,
-            shipping_quantity,
-            return_quantity,
+            all_count,
+            available_count,
+            low_count,
+            out_count,
+            shipping_count,
+            return_count,
         });
     } catch (err) {
         next(err);

@@ -357,10 +357,8 @@ export default function StoreInformationAdd({ reloadData }) {
           <Row justify="space-between">
             <Form.Item
               name="branch_id"
-              label="Chi nhánh & kho"
-              rules={[
-                { required: true, message: 'Vui chọn chon chi nhánh & kho!' },
-              ]}
+              label="Chi nhánh"
+              rules={[{ required: true, message: 'Vui chọn chon chi nhánh!' }]}
             >
               <Select
                 style={{ width: 350 }}
@@ -370,7 +368,7 @@ export default function StoreInformationAdd({ reloadData }) {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
                   0
                 }
-                placeholder="Chọn chi nhánh & kho"
+                placeholder="Chọn chi nhánh"
               >
                 {branchList.map((value, index) => (
                   <Select.Option value={value.branch_id} key={index}>

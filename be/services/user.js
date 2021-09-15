@@ -5,8 +5,8 @@ const DB = process.env.DATABASE;
 
 let removeUnicode = (str) => {
     return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]|\s/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'D');
 };
@@ -16,7 +16,7 @@ let getUserS = async (req, res, next) => {
         let token = req.tokenData.data;
         let mongoQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        mongoQuery['username'] = { $ne: `viesoftware` };
+        mongoQuery['username'] = { $ne: `user_was_delete` };
         if (req.query.user_id) {
             mongoQuery['user_id'] = req.query.user_id;
         }
