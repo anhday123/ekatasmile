@@ -335,6 +335,20 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.SHIPPING_PRODUCT_ADD,
+    Component: () => <ShippingProductAdd />,
+    title: 'Thêm quản lý chuyển hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
+    Component: () => <DeliveryUpdate />,
+    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [
@@ -408,13 +422,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.SHIPPING_PRODUCT_ADD,
-    Component: () => <ShippingProductAdd />,
-    title: 'Thêm quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SHIPPING_PRODUCT_VIEW,
     Component: () => <ShippingProductView />,
@@ -422,13 +430,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
-    Component: () => <DeliveryUpdate />,
-    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SHIPPING_CONTROL_ADD,
     Component: () => <ShippingControlAdd />,

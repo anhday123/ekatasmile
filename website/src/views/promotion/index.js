@@ -371,16 +371,17 @@ export default function Promotion() {
                         %
                         <br />
                         Giá trị:{' '}
-                        {pageData.reduce(
-                          (a, b) => (a += b.type !== 'percent' ? b.value : 0),
-                          0
+                        {formatCash(
+                          pageData.reduce(
+                            (a, b) => (a += b.type !== 'percent' ? b.value : 0),
+                            0
+                          )
                         )}{' '}
                         VND
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>
-                        Số lượng khuyến mãi:{' '}
                         {formatCash(tableSum(pageData, 'limit.amount'))}
                       </Text>
                     </Table.Summary.Cell>

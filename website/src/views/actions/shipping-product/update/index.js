@@ -194,7 +194,12 @@ export default function DeliveryUpdate() {
           />
         </Row>
         <Row justify="end" style={{ width: '100%', marginTop: 20 }}>
-          <Button size="large" type="primary" onClick={updateDelivery}>
+          <Button
+            size="large"
+            type="primary"
+            onClick={updateDelivery}
+            style={{ width: 120 }}
+          >
             Lưu
           </Button>
         </Row>

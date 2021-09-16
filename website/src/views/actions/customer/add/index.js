@@ -226,8 +226,8 @@ export default function CustomerAdd({ close, reload }) {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select placeholder="Chọn loại khách hàng" size="large">
-                    <Option value="Tiềm năng">Tiềm năng</Option>
-                    <Option value="Vãng lai">Vãng lai</Option>
+                    <Option value="TIỀM NĂNG">Tiềm năng</Option>
+                    <Option value="VÃNG LAI">Vãng lai</Option>
                   </Select>
                 </Form.Item>
               </div>

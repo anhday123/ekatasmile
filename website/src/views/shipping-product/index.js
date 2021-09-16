@@ -28,7 +28,7 @@ import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
 import { compare, compareCustom } from 'utils'
 
-const { Text } = Typography
+import { ROUTES } from 'consts'
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function ShippingProduct() {
@@ -100,7 +100,7 @@ export default function ShippingProduct() {
   const columnsPromotion = [
     {
       title: 'STT',
-      width: 150,
+      width: 50,
       render(data, record, index) {
         return (pagination.page - 1) * pagination.page_size + index + 1
       },
@@ -125,7 +125,7 @@ export default function ShippingProduct() {
       dataIndex: 'status',
       width: 150,
       render(data, record) {
-        switch (data) {
+        switch (data.toUpperCase()) {
           case 'PROCESSING': {
             return (
               <div
@@ -208,6 +208,7 @@ export default function ShippingProduct() {
     {
       title: 'Ngày nhận',
       dataIndex: 'create_date',
+      width: 150,
       render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
       sorter: (a, b) =>
         moment(a.create_date).unix() - moment(b.create_date).unix(),
@@ -215,10 +216,15 @@ export default function ShippingProduct() {
     {
       title: 'Ngày chuyển',
       dataIndex: 'ship_time',
+      width: 150,
+      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
+      width: 150,
       render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
@@ -364,9 +370,9 @@ export default function ShippingProduct() {
             <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
               <Button
                 size="large"
-                onClick={() => setShowCreate(true)}
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
                 type="primary"
+                href={ROUTES.SHIPPING_PRODUCT_ADD}
               >
                 Tạo phiếu chuyển hàng
               </Button>
@@ -555,7 +561,7 @@ export default function ShippingProduct() {
             rowKey="delivery_id"
             pagination={{ onChange: changePage, total: totalRecord }}
             dataSource={deliveryList}
-            scroll={{ y: 500 }}
+            scroll={{ y: 500, x: 'max-content' }}
           />
         </div>
       </div>

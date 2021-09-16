@@ -51,6 +51,7 @@ export default function EmployeeAdd(props) {
         openNotification()
         props.close()
         props.reload()
+        form.resetFields()
       } else {
         openNotificationError()
       }

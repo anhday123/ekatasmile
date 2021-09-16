@@ -61,8 +61,8 @@ export default function Customer() {
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
       setPage(1)
-      if (value) paramsFilter._full_name = value
-      else delete paramsFilter._full_name
+      if (value) paramsFilter.name = value
+      else delete paramsFilter.name
 
       getAllCustomer({ page: 1, page_size, ...paramsFilter })
       setParamsFilter({ ...paramsFilter })
@@ -266,7 +266,7 @@ export default function Customer() {
   const openUpdateDrawer = () => {
     var tmp = []
     selectedRowKeys.forEach((e) => {
-      var customer = customerList.find((c) => c._id === e)
+      var customer = customerList.find((c) => c.customer_id === e)
       if (customer) tmp.push(customer)
     })
     setCustomerListUpdate(tmp)
@@ -375,8 +375,8 @@ export default function Customer() {
                 onChange={onChangeTypeCustomer}
                 allowClear
               >
-                <Option value="Tiềm năng">Khách hàng tiềm năng</Option>
-                <Option value="Vãng lai">Khách hàng vãng lai</Option>
+                <Option value="TIỀM NĂNG">Khách hàng tiềm năng</Option>
+                <Option value="VÃNG LAI">Khách hàng vãng lai</Option>
               </Select>
             </div>
           </Col>
@@ -487,6 +487,7 @@ export default function Customer() {
         onClose={() => {
           setCustomerUpdateDrawer(false)
         }}
+        reload={() => getAllCustomer({ page, page_size, ...paramsFilter })}
       />
       <Drawer
         visible={showCreate}

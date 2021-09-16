@@ -4,6 +4,7 @@ import { Row, Col, Button, Select, Table, Modal } from 'antd'
 import moment from 'moment'
 import { formatCash } from 'utils'
 import FilterRangeTime from './filterRangeTime'
+import { CalendarComponent } from '@syncfusion/ej2-react-calendars'
 const getThisMonth = () => {
   return {
     from_date: moment().startOf('month').format('YYYY-MM-DD'),
@@ -13,6 +14,7 @@ const getThisMonth = () => {
 export default function ReportFinancial() {
   const [filter, setFilter] = useState({ ...getThisMonth() })
   const [showKeyWord, setShowKeyword] = useState(false)
+  const [showDateCheck, setShowDateCheck] = useState()
 
   const columns = [
     {
@@ -164,7 +166,11 @@ export default function ReportFinancial() {
 
         <Row gutter={10} justify="end" style={{ margin: '1em 0' }}>
           <Col>
-            <Button type="primary" size="large">
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => setShowDateCheck(true)}
+            >
               Cài đặt ngày ghi nhận
             </Button>
           </Col>
@@ -175,25 +181,29 @@ export default function ReportFinancial() {
           </Col>
         </Row>
 
-        <Row gutter={30} align="middle" className={styles['report-statis']}>
-          <Col>
-            <Row>Số dư đầu kỳ</Row>
-            <Row style={{ color: '#2F68BE' }}>{formatCash(0)}</Row>
-          </Col>
-          <Col>+</Col>
-          <Col>
-            <Row>Tổng thu</Row>
-            <Row style={{ color: '#00A324' }}>{formatCash(6789000)}</Row>
-          </Col>
-          <Col>-</Col>
-          <Col>
-            <Row>Tổng chi</Row>
-            <Row style={{ color: '#DF0000' }}>{formatCash(0)}</Row>
-          </Col>
-          <Col>=</Col>
-          <Col>
-            <Row>Tồn cuối kỳ</Row>
-            <Row style={{ color: '#2F68BE' }}>{formatCash(6789000)}</Row>
+        <Row justify="center" style={{ margin: '1.5em 0' }}>
+          <Col span={23}>
+            <Row gutter={30} align="middle" className={styles['report-statis']}>
+              <Col>
+                <Row>Số dư đầu kỳ</Row>
+                <Row style={{ color: '#2F68BE' }}>{formatCash(0)}</Row>
+              </Col>
+              <Col>+</Col>
+              <Col>
+                <Row>Tổng thu</Row>
+                <Row style={{ color: '#00A324' }}>{formatCash(6789000)}</Row>
+              </Col>
+              <Col>-</Col>
+              <Col>
+                <Row>Tổng chi</Row>
+                <Row style={{ color: '#DF0000' }}>{formatCash(0)}</Row>
+              </Col>
+              <Col>=</Col>
+              <Col>
+                <Row>Tồn cuối kỳ</Row>
+                <Row style={{ color: '#2F68BE' }}>{formatCash(6789000)}</Row>
+              </Col>
+            </Row>
           </Col>
         </Row>
 
@@ -207,7 +217,37 @@ export default function ReportFinancial() {
         width={800}
         centered
       >
-        <Table columns={keyWordColumns} dataSource={KeywordData} />
+        <Table
+          columns={keyWordColumns}
+          dataSource={KeywordData}
+          pagination={false}
+        />
+      </Modal>
+      <Modal
+        title="Cài đặt ngày ghi nhận"
+        visible={showDateCheck}
+        onCancel={() => setShowDateCheck(false)}
+        centered
+        footer=""
+        width={300}
+      >
+        <div>
+          <b>Thời gian chốt sổ mỗi kì trong tháng.</b>
+        </div>
+        <Row justify="center">
+          <CalendarComponent id="calendar" />
+        </Row>
+
+        <Row justify="center" style={{ margin: '1em 0' }}>
+          <Button
+            type="primary"
+            style={{ width: 120 }}
+            size="large"
+            onClick={() => setShowDateCheck(false)}
+          >
+            Xác nhận
+          </Button>
+        </Row>
       </Modal>
     </>
   )

@@ -9,6 +9,7 @@ import {
   InputNumber,
   Checkbox,
   Radio,
+  Space,
 } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styles from './../add/add.module.scss'
@@ -132,6 +133,7 @@ export default function PromotionAdd(props) {
                 value={showVoucher}
                 onChange={(e) => setShowVoucher(e.target.value)}
                 size="large"
+                style={{ marginBottom: '10px' }}
               >
                 <Radio value="show">
                   <span style={{ fontSize: 16 }}>Giảm giá theo Voucher</span>
@@ -142,7 +144,7 @@ export default function PromotionAdd(props) {
               </Radio.Group>
               {showVoucher == 'show' ? (
                 <>
-                  <div>
+                  <div style={{ marginBottom: '10px' }}>
                     Số lượng voucher <span style={{ color: 'red' }}>*</span>
                   </div>
                   <Form.Item name="amount">
@@ -157,7 +159,7 @@ export default function PromotionAdd(props) {
                 ''
               )}
 
-              <div>
+              <div style={{ marginBottom: '10px' }}>
                 Cửa hàng <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="store">
@@ -201,6 +203,10 @@ export default function PromotionAdd(props) {
                       placeholder="Giá trị Khuyến mãi"
                       size="large"
                       style={{ width: '100%', borderRadius: '15px' }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>

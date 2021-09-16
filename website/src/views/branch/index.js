@@ -708,7 +708,16 @@ export default function Branch() {
               })}
             </Select>
           </Col>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          ></Col>
         </Row>
+        <Row></Row>
         <div
           style={{
             display: 'flex',

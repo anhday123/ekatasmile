@@ -22,6 +22,7 @@ import {
   Row,
   Col,
   Typography,
+  Modal,
 } from 'antd'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiFilterCity } from '../../apis/branch'
@@ -1036,14 +1037,13 @@ export default function Supplier() {
       >
         <SupplierAdd close={onCloseUpdate} reload={apiAllSupplierData} />
       </Drawer>
-      <Drawer
+      <Modal
         visible={viewSupplier}
-        onClose={() => setViewSupplier(false)}
+        onCancel={() => setViewSupplier(false)}
         title="Chi tiết nhà cung cấp"
-        width="75%"
       >
         <SupplierInformation data={data} />
-      </Drawer>
+      </Modal>
     </>
   )
 }
