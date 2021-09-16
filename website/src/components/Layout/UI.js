@@ -153,13 +153,13 @@ const UI = (props) => {
         {
           icon: <GiftOutlined />,
           path: ROUTES.PRODUCT,
-          title: 'Quản lý sản phẩm',
+          title: 'Quản lý sản phẩm theo cửa hàng',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
         {
           icon: <BankOutlined />,
           path: ROUTES.INVENTORY,
-          title: 'Quản lý kho',
+          title: 'Quản lý sản phẩm theo kho',
           permissions: [PERMISSIONS.quan_li_kho],
         },
         {
@@ -878,7 +878,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 240}
+        width={isMobile ? '100%' : 290}
         collapsedWidth={isMobile ? 0 : 160}
         style={{
           backgroundColor: 'white',
