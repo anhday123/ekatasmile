@@ -55,7 +55,7 @@ export default function ShippingProductAdd(props) {
     var success = true
     productDelivery.forEach((e) => {
       if (success)
-        if (e.variants) {
+        if (e.has_variable) {
           e.variants.forEach((variant) => {
             if (variant.quantity <= variant.available_stock_quantity)
               productSend.push({ ...variant, product_id: e.product_id })
@@ -345,13 +345,13 @@ export default function ShippingProductAdd(props) {
       const res =
         deliveryFlow.fromtype == 'BRANCH'
           ? await getProductsBranch({
-              keyword: value,
+              search: value,
               branch: deliveryFlow.from,
               page: 1,
               page_size: 20,
             })
           : await getProductsStore({
-              keyword: value,
+              search: value,
               warehouse: deliveryFlow.from,
               page: 1,
               page_size: 20,
@@ -751,7 +751,7 @@ export default function ShippingProductAdd(props) {
                     })}
                   />
                 ),
-                rowExpandable: (record) => record.variants,
+                rowExpandable: (record) => record.has_variable,
               }}
               rowKey="_id"
               columns={columns.map((e) => {

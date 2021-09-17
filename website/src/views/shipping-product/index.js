@@ -42,7 +42,7 @@ export default function ShippingProduct() {
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [filter, setFilter] = useState({
-    keyword: '',
+    search: '',
     from_date: moment().startOf('month').format('YYYY-MM-DD'),
     to_date: moment().format('YYYY-MM-DD'),
   })
@@ -92,7 +92,7 @@ export default function ShippingProduct() {
   }
 
   const onSearch = (value) => {
-    setFilter({ ...filter, keyword: value })
+    setFilter({ ...filter, search: value.target.value })
   }
   function handleChange(value) {
     // console.log(`selected ${value}`);
@@ -400,7 +400,6 @@ export default function ShippingProduct() {
                 size="large"
                 placeholder="Tìm kiếm theo mã, theo tên"
                 onChange={onSearch}
-                enterButton
                 allowClear
               />
             </div>

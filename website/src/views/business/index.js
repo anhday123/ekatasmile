@@ -184,7 +184,7 @@ export default function Business() {
     getAddress(apiDistrict, setAddress, 'district')
   }, [])
   useEffect(() => {
-    getAllBusiness({ role: 2, ...removeFalse(filter) })
+    getAllBusiness({ role_id: 2, ...removeFalse(filter) })
   }, [filter])
   return (
     <>
@@ -221,7 +221,7 @@ export default function Business() {
           >
             <div style={{ width: '100%' }}>
               <Input
-                placeholder="Tìm kiếm"
+                placeholder="Tìm kiếm tên bussiness"
                 onChange={onSearch}
                 value={filter.search}
                 enterButton

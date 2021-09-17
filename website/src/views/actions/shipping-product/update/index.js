@@ -1,19 +1,10 @@
 import styles from './../update/update.module.scss'
-import {
-  Select,
-  Button,
-  Table,
-  Row,
-  Col,
-  Radio,
-  notification,
-  Typography,
-} from 'antd'
+import { Button, Table, Row, Col, Radio, notification } from 'antd'
 import { useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { UpdateDelivery } from '../../../../apis/delivery'
-const { Text } = Typography
+import { ROUTES } from 'consts'
 export default function DeliveryUpdate() {
   const history = useHistory()
   const [status, setStatus] = useState(history.location.state.status)
@@ -72,7 +63,7 @@ export default function DeliveryUpdate() {
           message: 'Thành công',
           description: 'Cập nhật sản phẩm thành công',
         })
-        history.push('/shipping-product/9')
+        history.push(ROUTES.SHIPPING_PRODUCT)
       }
     } catch (e) {
       console.log(e)

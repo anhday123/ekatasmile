@@ -13,11 +13,13 @@ import {
 import { useEffect, useState } from 'react'
 import { getPointSetting, updatePointSetting } from 'apis/point'
 import { getAllBranch } from 'apis/branch'
+import { useDispatch } from 'react-redux'
 
 export default function Point() {
   const [pointSetting, setPoinSetting] = useState(false)
   const [branchList, setBranchList] = useState([])
   const [selectedBranch, setSelectedBranch] = useState(1)
+  const dispatch = useDispatch()
   const [config, setConfig] = useState({
     use: true,
     accumulate: true,
@@ -37,6 +39,7 @@ export default function Point() {
 
   const onSaveSetting = async () => {
     try {
+      dispatch({ type: 'LOADING', data: true })
       const data = {
         accumulate_point: config.accumulate,
         accumulate_point_branchs: config.selected,
@@ -48,9 +51,13 @@ export default function Point() {
       const res = await updatePointSetting(pointSetting.point_setting_id, data)
       if (res.data.success) {
         notification.success({ message: 'Cập nhật thành công' })
+      } else {
+        notification.error({ message: 'Cập nhật thất bại' })
       }
+      dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
+      dispatch({ type: 'LOADING', data: true })
       notification.error({ message: 'Cập nhật thất bại' })
     }
   }
@@ -98,8 +105,8 @@ export default function Point() {
   }, [])
   useEffect(() => {
     setConfig({
-      use: pointSetting.use,
-      accumulate: pointSetting.accumulate_point_branchs,
+      use: pointSetting.use_point,
+      accumulate: pointSetting.accumulate_point,
       accumulate_price: pointSetting.point_rate || 0,
       use_price: pointSetting.currency_rate || 0,
     })
@@ -187,7 +194,15 @@ export default function Point() {
           <div className={styles['setting-box']}>
             <Space direction="vertical" style={{ width: '100%' }}>
               <PointTitle title="Thiết lập đổi điểm" />
-              <Checkbox checked={config.use}>
+              <Checkbox
+                checked={config.use}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    use: e.target.checked,
+                  })
+                }
+              >
                 <span style={{ fontWeight: 500, color: 'blue' }}>
                   Áp dụng tính năng đổi điểm
                 </span>

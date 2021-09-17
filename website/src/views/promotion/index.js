@@ -116,7 +116,9 @@ export default function Promotion() {
       render: (data) => {
         return data.stores
           .map((e) => {
-            return listStore.find((s) => s.store_id === e)['name']
+            return listStore.find((s) => s.store_id === e)
+              ? listStore.find((s) => s.store_id === e)['name']
+              : undefined
           })
           .join(', ')
       },
@@ -218,8 +220,10 @@ export default function Promotion() {
     getStore()
   }, [])
   useEffect(() => {
-    getPromotions()
-  }, [pagination])
+    let tmp = { ...searchFilter }
+    delete tmp['date']
+    getPromotions(tmp)
+  }, [searchFilter, pagination])
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
@@ -269,7 +273,6 @@ export default function Promotion() {
                 placeholder="Tìm kiếm khuyến mãi"
                 onChange={(e) => {
                   setSearchFilter({ ...searchFilter, search: e.target.value })
-                  getPromotions({ search: e.target.value })
                 }}
                 allowClear
                 value={searchFilter.search}
@@ -298,7 +301,12 @@ export default function Promotion() {
                 }}
                 value={searchFilter.date}
                 onChange={(a, b) => {
-                  setSearchFilter({ ...searchFilter, date: a })
+                  setSearchFilter({
+                    ...searchFilter,
+                    from_date: b[0],
+                    to_date: b[1],
+                    date: a,
+                  })
                   onChange(a, b)
                 }}
               />

@@ -188,7 +188,7 @@ export default function ShippingAdd(props) {
   const apiFilterCityData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiFilterCity({ keyword: object })
+      const res = await apiFilterCity({ search: object })
       console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
