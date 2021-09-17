@@ -878,7 +878,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 290}
+        width={isMobile ? '100%' : 230}
         collapsedWidth={isMobile ? 0 : 160}
         style={{
           backgroundColor: 'white',
