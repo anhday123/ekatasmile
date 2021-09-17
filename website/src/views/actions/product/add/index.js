@@ -1122,7 +1122,7 @@ export default function ProductAdd() {
                 }}
                 style={{ marginRight: 5 }}
               />
-              Sản phẩm có mô tả
+              Sản phẩm {productIsHaveDescription ? 'có' : 'không'} mô tả
             </div>
             {productIsHaveDescription && (
               <CKEditor
@@ -1140,7 +1140,7 @@ export default function ProductAdd() {
               checked={isProductHasVariants}
               onChange={(checked) => setIsProductHasVariants(checked)}
             />
-            Sản phẩm có nhiều phiên bản
+            Sản phẩm {isProductHasVariants ? 'có nhiều' : 'không'} phiên bản
           </Row>
           <div
             style={{
