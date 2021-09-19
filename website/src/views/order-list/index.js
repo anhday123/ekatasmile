@@ -4,125 +4,273 @@ import {
   Input,
   Button,
   Tabs,
-  Popover,
   Pagination,
   Row,
   Col,
-  Radio,
   DatePicker,
   Table,
   Modal,
   Typography,
+  Select,
+  Form,
 } from 'antd'
 import { Link } from 'react-router-dom'
-import { PlusCircleOutlined, StarOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { apiAllOrder } from './../../apis/order'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permissions from 'components/permission'
-import { compare, compareCustom, tableSum } from 'utils'
+import { compare, compareCustom, tableSum, formatCash } from 'utils'
 
 const { Text } = Typography
 const { RangePicker } = DatePicker
 const { TabPane } = Tabs
-const columns = [
-  {
-    title: 'STT',
-    dataIndex: 'stt',
-    width: 150,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    width: 150,
-  },
-  {
-    title: 'Mã khách hàng',
-    dataIndex: 'customerCode',
-    width: 150,
-  },
-  {
-    title: 'Loại khách hàng',
-    dataIndex: 'customerType',
-    width: 150,
-  },
-  {
-    title: 'Liên hệ',
-    dataIndex: 'phoneNumber',
-    width: 150,
-  },
-]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
 export default function OrderList() {
-  const { Search } = Input
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [showUpdate, setShowUpdate] = useState(false)
 
-  const contentShippingDone = (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        width: '100%',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: '1rem',
-        }}
-      >
-        2021-08-13 09:10, Giao hàng thành công
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: '1rem',
-        }}
-      >
-        2021-08-12 10:10, Đang giao hàng
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        2021-08-11 09:10, Đơn hàng đã đến kho TP.HCM
-      </div>
-    </div>
-  )
+  const dataTmp = [
+    {
+      _id: '612ca61b8997e5680e63d0fe',
+      order_id: '34',
+      bussiness: {
+        _id: '6130603eca474e0a0c802a71',
+        user_id: '1',
+        business_id: '1',
+        username: 'phandangluu',
+        otp_code: false,
+        otp_timelife: false,
+        role_id: '2',
+        email: 'phandangluu.viesoftware@gmail.com',
+        phone: '0967845619',
+        avatar: '',
+        first_name: 'Phan Đăng',
+        last_name: 'Lưu',
+        sub_name: 'phandangluu',
+        birthday: '1993-06-07',
+        address: 'C7C/18H Phạm Hùng',
+        sub_address: 'c7c/18hphamhung',
+        district: 'Huyện Bình Chánh',
+        sub_district: 'huyenbinhchanh',
+        province: 'Hồ Chí Minh',
+        sub_province: 'hochiminh',
+        company_name: 'LULU',
+        company_website: '',
+        tax_code: '',
+        fax: '',
+        branch_id: '',
+        store_id: '',
+        create_date: '2021-09-02T12:25:18+07:00',
+        last_login: '2021-09-02T12:33:29+07:00',
+        creator: ' ',
+        exp: '2021-09-12T12:25:18+07:00',
+        is_new: true,
+        active: true,
+        sub_company_name: 'lulu',
+      },
+      code: '000034',
+      order_type: null,
+      platform: 'SHOP',
+      branch: {
+        _id: '613c34305965867d61e1bd82',
+        branch_id: '1',
+        business_id: '2',
+        code: '1000001',
+        name: 'HAI BÀ TRƯNG',
+        sub_name: 'haibatrung',
+        logo: '',
+        phone: '0833963029',
+        email: '',
+        fax: '',
+        website: '',
+        latitude: '',
+        longtitude: '',
+        warehouse_type: 'sở hữu',
+        sub_warehouse_type: 'sohuu',
+        address: 'TPHCM',
+        sub_address: 'tphcm',
+        district: 'Huyện Mường Khương',
+        sub_district: 'huyenmuongkhuong',
+        province: 'Lào Cai',
+        sub_province: 'laocai',
+        accumulate_point: false,
+        use_point: false,
+        create_date: '2021-09-11T11:44:32+07:00',
+        creator_id: '2',
+        active: true,
+      },
+      employee: {
+        _id: '6130603eca474e0a0c802a71',
+        user_id: '1',
+        business_id: '1',
+        username: 'phandangluu',
+        otp_code: false,
+        otp_timelife: false,
+        role_id: '2',
+        email: 'phandangluu.viesoftware@gmail.com',
+        phone: '0967845619',
+        avatar: '',
+        first_name: 'Phan Đăng',
+        last_name: 'Lưu',
+        sub_name: 'phandangluu',
+        birthday: '1993-06-07',
+        address: 'C7C/18H Phạm Hùng',
+        sub_address: 'c7c/18hphamhung',
+        district: 'Huyện Bình Chánh',
+        sub_district: 'huyenbinhchanh',
+        province: 'Hồ Chí Minh',
+        sub_province: 'hochiminh',
+        company_name: 'LULU',
+        company_website: '',
+        tax_code: '',
+        fax: '',
+        branch_id: '',
+        store_id: '',
+        create_date: '2021-09-02T12:25:18+07:00',
+        last_login: '2021-09-02T12:33:29+07:00',
+        creator: ' ',
+        exp: '2021-09-12T12:25:18+07:00',
+        is_new: true,
+        active: true,
+        sub_company_name: 'lulu',
+      },
+      customer: {
+        _id: '611b8e9c2b94861ee4e42aec',
+        customer_id: '98',
+        bussiness: '1',
+        code: 'DEMOBUSSINESS_98',
+        phone: '7493697401',
+        type: 'Tiềm năng',
+        first_name: 'Khách hàng',
+        last_name: 'Demo 98',
+        gender: 'NAM',
+        birthday: '2021-08-17T17:28:01+07:00',
+        address: 'Số nhà - tên đường',
+        ward: 'Xã/Phường',
+        district: 'Quận Gò Vấp',
+        province: 'Hồ Chí Minh',
+        balance: [],
+        create_date: '2021-08-17T17:25:32+07:00',
+        last_login: '2021-08-17T17:25:32+07:00',
+        creator: '1',
+        active: true,
+      },
+      payment: {
+        _id: '61013480db4cfa8d8c768b70',
+        payment_id: '1',
+        bussiness: '1',
+        name: 'Tiền mặt',
+        type: 'CASH',
+        description: 'mô tả',
+        tutorial: 'hướng dẫn sử dụng',
+        branchs: ['1', '2', '3', '4'],
+        active: true,
+      },
+      info_payment: null,
+      taxes: [
+        {
+          _id: '613b20a6c95b7c3f7306c036',
+          tax_id: '1',
+          business_id: '2',
+          code: '1000001',
+          name: 'VAT',
+          sub_name: 'vat',
+          value: 5,
+          description: '',
+          default: false,
+          create_date: '2021-09-10T16:08:54+07:00',
+          creator_id: '2',
+          active: true,
+        },
+      ],
+      shipping_company: {},
+      shipping: '',
+      order_details: [
+        {
+          quantityAvailable: 100,
+          sale_price: 500000,
+          title: 'SẢN PHẨM MẪU 2 WHITE S',
+          product_id: '2',
+          sku: 'SPM2-WHITE-S',
+          supplier: 'NCC1',
+          options: [
+            {
+              name: 'COLOR',
+              values: 'WHITE',
+            },
+            {
+              name: 'SIZE',
+              values: 'S',
+            },
+          ],
+          quantity: 1,
+          total_cost: 500000,
+          voucher: '',
+          discount: 0,
+          final_cost: 500000,
+          import_price: 90000,
+          base_price: 110000,
+        },
+      ],
+      voucher: '',
+      promotion: {},
+      total_cost: 500000,
+      discount: 0,
+      final_cost: 525000,
+      price_real: 525000,
+      note: '',
+      fulfillments: [],
+      latitude: '',
+      longtitude: '',
+      bill_status: 'PROCESSING',
+      shipping_status: 'COMPLETE',
+      hmac: null,
+      timestampe: null,
+      create_date: '2021-08-30T16:34:19+07:00',
+      creator: {
+        _id: '6130603eca474e0a0c802a71',
+        user_id: '1',
+        business_id: '1',
+        username: 'phandangluu',
+        otp_code: false,
+        otp_timelife: false,
+        role_id: '2',
+        email: 'phandangluu.viesoftware@gmail.com',
+        phone: '0967845619',
+        avatar: '',
+        first_name: 'Phan Đăng',
+        last_name: 'Lưu',
+        sub_name: 'phandangluu',
+        birthday: '1993-06-07',
+        address: 'C7C/18H Phạm Hùng',
+        sub_address: 'c7c/18hphamhung',
+        district: 'Huyện Bình Chánh',
+        sub_district: 'huyenbinhchanh',
+        province: 'Hồ Chí Minh',
+        sub_province: 'hochiminh',
+        company_name: 'LULU',
+        company_website: '',
+        tax_code: '',
+        fax: '',
+        branch_id: '',
+        store_id: '',
+        create_date: '2021-09-02T12:25:18+07:00',
+        last_login: '2021-09-02T12:33:29+07:00',
+        creator: ' ',
+        exp: '2021-09-12T12:25:18+07:00',
+        is_new: true,
+        active: true,
+        sub_company_name: 'lulu',
+      },
+      active: true,
+      _bussiness: 'Phan Đăng Lưu',
+      _creator: 'Phan Đăng Lưu',
+      _customer: 'Khách hàng Demo 98',
+    },
+  ]
 
-  function formatCash(str) {
-    return str
-      .split('')
-      .reverse()
-      .reduce((prev, next, index) => {
-        return (index % 3 ? next : next + ',') + prev
-      })
-  }
   const columnsPromotion = [
     {
       title: 'Mã hóa đơn',
@@ -133,11 +281,25 @@ export default function OrderList() {
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      width: 150,
+      width: 200,
       render: (text, record) =>
         text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
       sorter: (a, b) =>
         moment(a.create_date).unix() - moment(b.create_date).unix(),
+    },
+    {
+      title: 'Khách hàng',
+      dataIndex: 'customerMain',
+      width: 150,
+      render: (text, record) =>
+        record && record.customer && record.customer.first_name
+          ? `${record.customer.first_name} ${record.customer.last_name}`
+          : '',
+      sorter: (a, b) =>
+        compareCustom(
+          `${a.customer.first_name} ${a.customer.last_name}`,
+          `${b.customer.first_name} ${b.customer.last_name}`
+        ),
     },
     {
       title: 'Nhân viên',
@@ -152,114 +314,36 @@ export default function OrderList() {
           : '',
     },
     {
-      title: 'Khách hàng',
-      dataIndex: 'customerMain',
+      title: 'Thanh toán',
+      dataIndex: 'bill_status',
       width: 150,
-      render: (text, record) =>
-        record && record.customer && record.customer.first_name
-          ? `${record.customer.first_name} ${record.customer.last_name}`
-          : '',
-      sorter: (a, b) =>
-        compareCustom(
-          `${a.customer.first_name} ${a.customer.last_name}`,
-          `${b.customer.first_name} ${b.customer.last_name}`
-        ),
-    },
-    {
-      title: 'Thành tiền',
-      dataIndex: 'final_cost',
-      width: 150,
-      render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => compare(a, b, 'final_cost'),
-    },
-    {
-      title: 'Khách đã trả',
-      dataIndex: 'final_cost',
-      width: 150,
-      render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => compare(a, b, 'final_cost'),
-    },
-  ]
-  const columnsPromotionWebsite = [
-    {
-      title: 'Mã hóa đơn',
-      dataIndex: 'order_id',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'order_id'),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      width: 150,
-      render: (text, record) =>
-        text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
-      title: 'Khách hàng',
-      dataIndex: 'customerMain',
-      width: 150,
-      render: (text, record) =>
-        record && record.customer && record.customer.first_name
-          ? `${record.customer.first_name} ${record.customer.last_name}`
-          : '',
-      sorter: (a, b) =>
-        compareCustom(
-          `${a.customer.first_name} ${a.customer.last_name}`,
-          `${b.customer.first_name} ${b.customer.last_name}`
-        ),
+      render(data) {
+        return data.toLowerCase() === 'complete' ? (
+          <span style={{ color: '#04B000' }}>
+            <b>Đã thanh toán</b>
+          </span>
+        ) : (
+          <span style={{ color: '#E59700' }}>
+            <b>Chưa thanh toán</b>
+          </span>
+        )
+      },
     },
     {
       title: 'Giao hàng',
-      dataIndex: 'customerMain',
+      dataIndex: 'shipping_status',
       width: 150,
-      render: (text, record) => (
-        <div>
-          {record.order_id % 2 === 0 ? (
-            <Popover content={contentShippingDone}>
-              {' '}
-              <div style={{ color: '#04B000', cursor: 'pointer' }}>Đã giao</div>
-            </Popover>
-          ) : (
-            <div div style={{ color: '#FF9900' }}>
-              {' '}
-              Chưa giao hàng
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'Nhận xét KH',
-      dataIndex: 'customerMain',
-      width: 150,
-      render: (text, record) => (
-        <div style={{ color: 'black' }}>Giao nhanh</div>
-      ),
-      sorter: (a, b) => compare(a, b, 'customerMain'),
-    },
-    {
-      title: 'Đánh giá',
-      dataIndex: 'customerMain',
-      width: 150,
-      render: (text, record) => (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <StarOutlined style={{ color: '#F2E902', marginRight: '0.25rem' }} />
-          <StarOutlined style={{ color: '#F2E902', marginRight: '0.25rem' }} />
-          <StarOutlined style={{ color: '#F2E902', marginRight: '0.25rem' }} />
-          <StarOutlined style={{ color: '#575755', marginRight: '0.25rem' }} />
-          <StarOutlined style={{ color: '#575755' }} />
-        </div>
-      ),
-      sorter: (a, b) => compare(a, b, 'customerMain'),
+      render(data) {
+        return data.toLowerCase() === 'complete' ? (
+          <span style={{ color: '#04B000' }}>
+            <b>Đã giao hàng</b>
+          </span>
+        ) : (
+          <span style={{ color: '#E59700' }}>
+            <b>Chưa giao hàng</b>
+          </span>
+        )
+      },
     },
     {
       title: 'Thành tiền',
@@ -268,154 +352,61 @@ export default function OrderList() {
       render: (text, record) => `${formatCash(String(text))} VNĐ`,
       sorter: (a, b) => compare(a, b, 'final_cost'),
     },
+    // {
+    //   title: 'Khách đã trả',
+    //   dataIndex: 'final_cost',
+    //   width: 150,
+    //   render: (text, record) => `${formatCash(String(text))} VNĐ`,
+    //   sorter: (a, b) => compare(a, b, 'final_cost'),
+    // },
   ]
 
   const columnsDetailOrder = [
     {
-      title: 'Giá bán',
-      dataIndex: 'sale_price',
-      render: (text, record) =>
-        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => compare(a, b, 'sale_price'),
+      title: 'Mã sản phẩm',
+      dataIndex: 'sku',
+    },
+    {
+      title: 'ảnh',
+      dataIndex: 'image',
+      render(data) {
+        return data && <img src={data[0]} width="60" />
+      },
     },
     {
       title: 'Tên sản phẩm',
-      dataIndex: 'title',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'title'),
-    },
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'sku'),
-    },
-
-    {
-      title: 'Nhà cung cấp',
-      dataIndex: 'supplier',
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'supplier'),
-    },
-    {
-      title: 'Thuộc tính',
-      dataIndex: 'optionsMain',
-      width: 200,
-      render: (text, record) =>
-        record && record.options && record.options.length > 0 ? (
-          <div>
-            {record.options.map((values, index) => {
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    marginBottom: '1rem',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        fontWeight: '600',
-                        marginRight: '0.25rem',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
-                      -Thuộc tính:{' '}
-                    </div>
-                    <div>{values.name}.</div>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: 'black',
-                        fontWeight: '600',
-                        marginRight: '0.25rem',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                      }}
-                    >
-                      -Kích thước:{' '}
-                    </div>
-                    <div>{values.values}.</div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          ''
-        ),
-      // sorter: (a, b) =>
-      // compare(a,b, "customerMain"),
+      dataIndex: 'name',
+      render(data, record) {
+        return record.title || data
+      },
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
-      width: 150,
-      render: (text, record) =>
-        text ? <div>{`${formatCash(String(text))}`}</div> : 0,
-      sorter: (a, b) => compare(a, b, 'quantity'),
-    },
-
-    {
-      title: 'Tổng tiền',
-      dataIndex: 'total_cost',
-      render: (text, record) =>
-        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => compare(a, b, 'total_cost'),
     },
     {
-      title: 'Voucher',
-      dataIndex: 'voucher',
+      title: 'Đơn vị',
+      dataIndex: '',
+      // render(data) {
+      //   return formatCash(data)
+      // },
     },
     {
-      title: 'Giảm giá',
-      dataIndex: 'discount',
-      render: (text, record) =>
-        text ? <div>{`${formatCash(String(text))} VNĐ`}</div> : 0,
-      sorter: (a, b) => compare(a, b, 'discount'),
+      title: 'Đơn giá',
+      dataIndex: 'sale_price',
+      render(data) {
+        return formatCash(data)
+      },
     },
     {
       title: 'Thành tiền',
       dataIndex: 'final_cost',
-      sorter: (a, b) => compare(a, b, 'final_cost'),
-
-      render: (text, record) =>
-        text ? (
-          <div
-            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
-          >{`${formatCash(String(text))} VNĐ`}</div>
-        ) : (
-          0
-        ),
+      render(data) {
+        return formatCash(data)
+      },
     },
   ]
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
   const apiAllOrderDataTable = async (page, page_size) => {
     try {
       setLoading(true)
@@ -442,17 +433,7 @@ export default function OrderList() {
     selectedRowKeys,
     onChange: onSelectChange,
   }
-  const content = (
-    <div>
-      <div>Gợi ý 1</div>
-      <div>Gợi ý 2</div>
-    </div>
-  )
-  const [radioLocation, setRadioLocation] = useState('store')
-  const onChangeRadioLocation = (e) => {
-    setRadioLocation(e.target.value)
-    setSelectedRowKeys([])
-  }
+
   const [order, setOrder] = useState([])
   const apiAllOrderData = async (object, id, data) => {
     try {
@@ -582,1985 +563,314 @@ export default function OrderList() {
             </Permissions>
           </Col>
         </Row>
-        <Radio.Group
+
+        <Tabs style={{ width: '100%' }} defaultActiveKey="1">
+          <TabPane
+            tab={
+              <span style={{ fontSize: 16, fontWeight: 600 }}>
+                Tất cả đơn hàng
+              </span>
+            }
+            key="1"
+          ></TabPane>
+          <TabPane
+            tab={
+              <span style={{ fontSize: 16, fontWeight: 600 }}>
+                Đơn hàng Hủy
+              </span>
+            }
+            key="2"
+          ></TabPane>
+          <TabPane
+            tab={
+              <span style={{ fontSize: 16, fontWeight: 600 }}>
+                Đơn hàng hoàn tiền
+              </span>
+            }
+            key="3"
+          ></TabPane>
+        </Tabs>
+
+        <Row
           style={{
             display: 'flex',
             justifyContent: 'flex-start',
             alignItems: 'center',
             width: '100%',
-            marginTop: '1rem',
           }}
-          onChange={onChangeRadioLocation}
-          value={radioLocation}
         >
-          <Radio
-            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
-            value="store"
+          <Col
+            style={{
+              width: '100%',
+              marginTop: '1rem',
+              marginRight: '1rem',
+            }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
           >
-            Tại cửa hàng
-          </Radio>
-          <Radio
-            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
-            value="website"
+            <div style={{ width: '100%' }}>
+              <Input
+                size="large"
+                style={{ width: '100%' }}
+                name="name"
+                value={valueSearchOrderDetail}
+                enterButton
+                onChange={onSearchOrderDetail}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                allowClear
+              />
+            </div>
+          </Col>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
           >
-            Website
-          </Radio>
-          <Radio
-            style={{ color: 'black', fontSize: '1rem', fontWeight: '600' }}
-            value="mobile"
-          >
-            Mobile
-          </Radio>
-        </Radio.Group>
-        {radioLocation === 'store' ? (
-          <Tabs style={{ width: '100%' }} defaultActiveKey="1">
-            <TabPane tab="Tất cả đơn hàng" key="1">
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
+            <div style={{ width: '100%' }}>
+              <RangePicker
+                size="large"
+                className="br-15__date-picker"
+                value={
+                  clear === 1
+                    ? []
+                    : start !== ''
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
+                }
+                style={{ width: '100%' }}
+                ranges={{
+                  Today: [moment(), moment()],
+                  'This Month': [
+                    moment().startOf('month'),
+                    moment().endOf('month'),
+                  ],
                 }}
-              >
-                <Col
-                  style={{
-                    width: '100%',
-                    marginTop: '1rem',
-                    marginRight: '1rem',
-                  }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <Input
-                      size="large"
-                      style={{ width: '100%' }}
-                      name="name"
-                      value={valueSearchOrderDetail}
-                      enterButton
-                      onChange={onSearchOrderDetail}
-                      placeholder="Tìm kiếm theo mã, theo tên"
-                      allowClear
-                    />
-                  </div>
-                </Col>
-                <Col
-                  style={{ width: '100%', marginTop: '1rem' }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <RangePicker
-                      size="large"
-                      className="br-15__date-picker"
-                      value={
-                        clear === 1
-                          ? []
-                          : start !== ''
-                          ? [moment(start, dateFormat), moment(end, dateFormat)]
-                          : []
-                      }
-                      style={{ width: '100%' }}
-                      ranges={{
-                        Today: [moment(), moment()],
-                        'This Month': [
-                          moment().startOf('month'),
-                          moment().endOf('month'),
-                        ],
-                      }}
-                      onChange={onChangeDate}
-                    />
-                  </div>
-                </Col>
-              </Row>
+                onChange={onChangeDate}
+              />
+            </div>
+          </Col>
+        </Row>
 
-              <div
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  border: '1px solid rgb(243, 234, 234)',
-                }}
-              >
-                <Table
-                  size="small"
-                  rowKey="_id"
-                  loading={loading}
-                  bordered
-                  rowSelection={rowSelection}
-                  expandable={{
-                    expandedRowRender: (record) => {
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            width: '100%',
-                            flexDirection: 'column',
-                          }}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Mã hóa đơn:{' '}
-                                </div>
-                                <div>{record.order_id}</div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Trạng thái:{' '}
-                                </div>
-                                <div style={{ color: '#2F9BFF' }}>
-                                  {record.status}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Tổng số lượng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách cần trả:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Thời gian:{' '}
-                                </div>
-                                <div>
-                                  {moment(record.create_date).format(
-                                    'YYYY-MM-DD, HH:mm:ss'
-                                  )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người bán:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.customer &&
-                                  record.customer.first_name
-                                    ? `${record.customer.first_name} ${record.customer.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tạo:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Chi nhánh:{' '}
-                                </div>
-                                <div>
-                                  {record && record.branch && record.branch.name
-                                    ? `${record.branch.name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <div
-                            style={{
-                              backgroundColor: 'white',
-                              marginTop: '1rem',
-                              border: '1px solid rgb(231, 218, 218)',
-                              width: '100%',
-                            }}
-                          >
-                            <Table
-                              size="small"
-                              bordered
-                              columns={columnsDetailOrder}
-                              dataSource={
-                                record &&
-                                record.order_details &&
-                                record.order_details.length > 0
-                                  ? record.order_details
-                                  : []
-                              }
-                            />
-                          </div>
-                        </div>
-                      )
-                    },
-                    expandedRowKeys: selectedRowKeys,
-                    expandIconColumnIndex: -1,
-                  }}
-                  columns={columnsPromotion}
-                  style={{ width: '100%' }}
-                  pagination={false}
-                  dataSource={order}
-                  summary={(pageData) => {
-                    return (
-                      <Table.Summary fixed>
-                        <Table.Summary.Row>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
-                              VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                        </Table.Summary.Row>
-                      </Table.Summary>
-                    )
-                  }}
-                />
-                <Pagination
-                  style={{
-                    display: 'flex',
-                    marginBottom: '1rem',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginTop: '1rem',
-                  }}
-                  showSizeChanger
-                  onShowSizeChange={onShowSizeChangeTable}
-                  defaultCurrent={10}
-                  onChange={onChangeTable}
-                  total={countTable}
-                />
-              </div>
-            </TabPane>
-            <TabPane tab="Đơn hàng hủy" key="2">
-              Chưa có
-            </TabPane>
-            <TabPane tab="Đơn hàng hoàn tiền" key="3">
-              Chưa có
-            </TabPane>
-          </Tabs>
-        ) : radioLocation === 'website' ? (
-          <Tabs style={{ width: '100%' }} defaultActiveKey="1">
-            <TabPane tab="Tất cả đơn hàng" key="1">
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{
-                    width: '100%',
-                    marginTop: '1rem',
-                    marginRight: '1rem',
-                  }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <Input
-                      style={{ width: '100%' }}
-                      name="name"
-                      value={valueSearchOrderDetail}
-                      enterButton
-                      onChange={onSearchOrderDetail}
-                      className={
-                        styles['orders_manager_content_row_col_search']
-                      }
-                      placeholder="Tìm kiếm theo mã, theo tên"
-                      allowClear
-                    />
-                  </div>
-                </Col>
-                <Col
-                  style={{ width: '100%', marginTop: '1rem' }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <RangePicker
-                      // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
-                      value={
-                        clear === 1
-                          ? []
-                          : start !== ''
-                          ? [moment(start, dateFormat), moment(end, dateFormat)]
-                          : []
-                      }
-                      style={{ width: '100%' }}
-                      ranges={{
-                        Today: [moment(), moment()],
-                        'This Month': [
-                          moment().startOf('month'),
-                          moment().endOf('month'),
-                        ],
-                      }}
-                      onChange={onChangeDate}
-                    />
-                  </div>
-                </Col>
-              </Row>
-
-              <div
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  border: '1px solid rgb(243, 234, 234)',
-                }}
-              >
-                <Table
-                  size="small"
-                  loading={loading}
-                  bordered
-                  rowKey="_id"
-                  rowSelection={rowSelection}
-                  expandable={{
-                    expandedRowRender: (record) => {
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            width: '100%',
-                            flexDirection: 'column',
-                          }}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Mã hóa đơn:{' '}
-                                </div>
-                                <div>{record.order_id}</div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Trạng thái:{' '}
-                                </div>
-                                <div style={{ color: '#2F9BFF' }}>
-                                  {record.status}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Tổng số lượng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách cần trả:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Thời gian:{' '}
-                                </div>
-                                <div>
-                                  {moment(record.create_date).format(
-                                    'YYYY-MM-DD, HH:mm:ss'
-                                  )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người bán:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.customer &&
-                                  record.customer.first_name
-                                    ? `${record.customer.first_name} ${record.customer.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tạo:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Chi nhánh:{' '}
-                                </div>
-                                <div>
-                                  {record && record.branch && record.branch.name
-                                    ? `${record.branch.name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <div
-                            style={{
-                              backgroundColor: 'white',
-                              marginTop: '1rem',
-                              border: '1px solid rgb(231, 218, 218)',
-                              width: '100%',
-                            }}
-                          >
-                            <Table
-                              size="small"
-                              bordered
-                              columns={columnsDetailOrder}
-                              dataSource={
-                                record &&
-                                record.order_details &&
-                                record.order_details.length > 0
-                                  ? record.order_details
-                                  : []
-                              }
-                              summary={(pageData) => {
-                                return (
-                                  <Table.Summary fixed>
-                                    <Table.Summary.Row>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text>
-                                          Tổng cộng:{`${pageData.length}`}
-                                        </Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                    </Table.Summary.Row>
-                                  </Table.Summary>
-                                )
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    },
-                    expandedRowKeys: selectedRowKeys,
-                    expandIconColumnIndex: -1,
-                  }}
-                  columns={columnsPromotionWebsite}
-                  style={{ width: '100%' }}
-                  pagination={false}
-                  dataSource={order}
-                  summary={(pageData) => {
-                    return (
-                      <Table.Summary fixed>
-                        <Table.Summary.Row>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
-                              VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                        </Table.Summary.Row>
-                      </Table.Summary>
-                    )
-                  }}
-                />
-                <Pagination
-                  style={{
-                    display: 'flex',
-                    marginBottom: '1rem',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginTop: '1rem',
-                  }}
-                  showSizeChanger
-                  onShowSizeChange={onShowSizeChangeTable}
-                  defaultCurrent={10}
-                  onChange={onChangeTable}
-                  total={countTable}
-                />
-              </div>
-            </TabPane>
-            <TabPane tab="Đơn hàng hủy" key="2">
-              Chưa có
-            </TabPane>
-            <TabPane tab="Đơn hàng hoàn tiền" key="3">
-              Chưa có
-            </TabPane>
-          </Tabs>
-        ) : (
-          <Tabs style={{ width: '100%' }} defaultActiveKey="1">
-            <TabPane tab="Tất cả đơn hàng" key="1">
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{
-                    width: '100%',
-                    marginTop: '1rem',
-                    marginRight: '1rem',
-                  }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <Input
-                      style={{ width: '100%' }}
-                      name="name"
-                      value={valueSearchOrderDetail}
-                      enterButton
-                      onChange={onSearchOrderDetail}
-                      className={
-                        styles['orders_manager_content_row_col_search']
-                      }
-                      placeholder="Tìm kiếm theo mã, theo tên"
-                      allowClear
-                    />
-                  </div>
-                </Col>
-                <Col
-                  style={{ width: '100%', marginTop: '1rem' }}
-                  xs={24}
-                  sm={24}
-                  md={11}
-                  lg={11}
-                  xl={7}
-                >
-                  <div style={{ width: '100%' }}>
-                    <RangePicker
-                      value={
-                        clear === 1
-                          ? []
-                          : start !== ''
-                          ? [moment(start, dateFormat), moment(end, dateFormat)]
-                          : []
-                      }
-                      style={{ width: '100%' }}
-                      ranges={{
-                        Today: [moment(), moment()],
-                        'This Month': [
-                          moment().startOf('month'),
-                          moment().endOf('month'),
-                        ],
-                      }}
-                      onChange={onChangeDate}
-                    />
-                  </div>
-                </Col>
-              </Row>
-
-              <div
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  border: '1px solid rgb(243, 234, 234)',
-                }}
-              >
-                <Table
-                  size="small"
-                  loading={loading}
-                  bordered
-                  rowKey="_id"
-                  rowSelection={rowSelection}
-                  expandable={{
-                    expandedRowRender: (record) => {
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            width: '100%',
-                            flexDirection: 'column',
-                          }}
-                        >
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Mã hóa đơn:{' '}
-                                </div>
-                                <div>{record.order_id}</div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Trạng thái:{' '}
-                                </div>
-                                <div style={{ color: '#2F9BFF' }}>
-                                  {record.status}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Tổng số lượng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{ width: '100%', marginRight: '1rem' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách cần trả:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Thời gian:{' '}
-                                </div>
-                                <div>
-                                  {moment(record.create_date).format(
-                                    'YYYY-MM-DD, HH:mm:ss'
-                                  )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người bán:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                    record.order_details.length > 0 &&
-                                    record.order_details.reduce(
-                                      (tempInit, value) => {
-                                        return tempInit + value.quantity
-                                      },
-                                      0
-                                    )}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tiền hàng:{' '}
-                                </div>
-                                <div>{`${formatCash(
-                                  String(record.final_cost)
-                                )} VNĐ`}</div>
-                              </div>
-                            </Col>
-                          </Row>
-
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Khách hàng:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.customer &&
-                                  record.customer.first_name
-                                    ? `${record.customer.first_name} ${record.customer.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Người tạo:{' '}
-                                </div>
-                                <div>
-                                  {record &&
-                                  record.employee &&
-                                  record.employee.first_name &&
-                                  record.employee.last_name
-                                    ? `${record.employee.first_name} ${record.employee.last_name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <Row
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'flex-start',
-                              alignItems: 'center',
-                              width: '100%',
-                            }}
-                          >
-                            <Col
-                              style={{
-                                width: '100%',
-                                marginTop: '1rem',
-                                marginRight: '1rem',
-                              }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={5}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-start',
-                                  alignItems: 'center',
-                                  width: '100%',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    color: 'black',
-                                    fontWeight: '600',
-                                    marginRight: '0.25rem',
-                                  }}
-                                >
-                                  Chi nhánh:{' '}
-                                </div>
-                                <div>
-                                  {record && record.branch && record.branch.name
-                                    ? `${record.branch.name}`
-                                    : ''}
-                                </div>
-                              </div>
-                            </Col>
-                          </Row>
-                          <div
-                            style={{
-                              backgroundColor: 'white',
-                              marginTop: '1rem',
-                              border: '1px solid rgb(231, 218, 218)',
-                              width: '100%',
-                            }}
-                          >
-                            <Table
-                              size="small"
-                              bordered
-                              columns={columnsDetailOrder}
-                              dataSource={
-                                record &&
-                                record.order_details &&
-                                record.order_details.length > 0
-                                  ? record.order_details
-                                  : []
-                              }
-                              summary={(pageData) => {
-                                return (
-                                  <Table.Summary fixed>
-                                    <Table.Summary.Row>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text>
-                                          Tổng cộng:{`${pageData.length}`}
-                                        </Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                      <Table.Summary.Cell>
-                                        <Text></Text>
-                                      </Table.Summary.Cell>
-                                    </Table.Summary.Row>
-                                  </Table.Summary>
-                                )
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    },
-                    expandedRowKeys: selectedRowKeys,
-                    expandIconColumnIndex: -1,
-                  }}
-                  columns={columnsPromotionWebsite}
-                  style={{ width: '100%' }}
-                  pagination={false}
-                  dataSource={order}
-                  summary={(pageData) => {
-                    return (
-                      <Table.Summary fixed>
-                        <Table.Summary.Row>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Tổng tiền: {tableSum(pageData, 'final_cost')} VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text>
-                              Khách đã trả: {tableSum(pageData, 'final_cost')}{' '}
-                              VND
-                            </Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell>
-                            <Text></Text>
-                          </Table.Summary.Cell>
-                        </Table.Summary.Row>
-                      </Table.Summary>
-                    )
-                  }}
-                />
-                <Pagination
-                  style={{
-                    display: 'flex',
-                    marginBottom: '1rem',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    marginTop: '1rem',
-                  }}
-                  showSizeChanger
-                  onShowSizeChange={onShowSizeChangeTable}
-                  defaultCurrent={10}
-                  onChange={onChangeTable}
-                  total={countTable}
-                />
-              </div>
-            </TabPane>
-            <TabPane tab="Đơn hàng hủy" key="2">
-              Chưa có
-            </TabPane>
-            <TabPane tab="Đơn hàng hoàn tiền" key="3">
-              Chưa có
-            </TabPane>
-          </Tabs>
-        )}
-      </div>
-      <Modal
-        title="Danh sách khách hàng dùng khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
             width: '100%',
-            flexDirection: 'column',
+            marginTop: '1rem',
+            border: '1px solid rgb(243, 234, 234)',
           }}
         >
-          <Popover placement="bottomLeft" content={content} trigger="click">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Search placeholder="Tìm kiếm khách hàng" enterButton />
-            </div>
-          </Popover>
-          <div
-            style={{
-              marginTop: '1rem',
-              border: '1px solid rgb(209, 191, 191)',
-              width: '100%',
-              maxWidth: '100%',
-              overflow: 'auto',
+          <Table
+            size="small"
+            rowKey="_id"
+            loading={loading}
+            bordered
+            rowSelection={rowSelection}
+            expandable={{
+              expandedRowRender: (record) => {
+                return (
+                  <div
+                    style={{
+                      width: '100%',
+                      background: '#fff',
+                    }}
+                  >
+                    <Row
+                      justify="space-between"
+                      style={{ width: '1000px', padding: 10 }}
+                    >
+                      <Col span={5}>
+                        <Row>Mã hóa đơn: {record.order_id}</Row>
+                        <Row>
+                          Thời gian: {moment(record.create_date).format('L')}
+                        </Row>
+                        <Row>Khách hàng: {record._customer}</Row>
+                        <Row>Cửa hàng: {record._bussiness}</Row>
+                      </Col>
+                      <Col span={5}>
+                        <Row>
+                          <b
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowUpdate(true)}
+                          >
+                            Thông tin giao hàng <EditOutlined />
+                          </b>
+                        </Row>
+                        <Row>Trạng thái</Row>
+                        <Row>Nhân viên bán: {record._creator}</Row>
+                        <Row>Nhân viên tạo: {record._creator}</Row>
+                      </Col>
+                      <Col span={5}>
+                        <Row>
+                          Tổng số lượng:{' '}
+                          {record.order_details.reduce(
+                            (a, b) => a + b.quantity,
+                            0
+                          )}
+                        </Row>
+                        <Row>Tổng tiền: {record.total_cost}</Row>
+                        <Row>Chiết khấu: {record.discount}</Row>
+                        <Row>Thành tiền: {record.final_cost}</Row>
+                      </Col>
+                      <Col span={6}>
+                        <Row>Ghi chú</Row>
+                        <Row>
+                          <Input.TextArea />
+                        </Row>
+                        <Row>Nhãn</Row>
+                        <Row>
+                          <Select
+                            mode="tags"
+                            style={{ width: '100%' }}
+                          ></Select>
+                        </Row>
+                        <Row justify="end" style={{ margin: '1em 0' }}>
+                          <Button type="primary">Lưu</Button>
+                        </Row>
+                      </Col>
+                    </Row>
+                    <Table
+                      size="small"
+                      bordered
+                      style={{ width: '100%' }}
+                      columns={columnsDetailOrder}
+                      dataSource={
+                        record &&
+                        record.order_details &&
+                        record.order_details.length > 0
+                          ? record.order_details
+                          : []
+                      }
+                    />
+                  </div>
+                )
+              },
+              // expandedRowKeys: selectedRowKeys,
+              // expandIconColumnIndex: -1,
+              rowExpandable: (record) => true,
             }}
-          >
-            <Table
-              size="small"
-              rowKey="_id"
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-            />
-          </div>
+            columns={columnsPromotion}
+            style={{ width: '100%' }}
+            pagination={false}
+            scroll={{ x: 'max-content' }}
+            dataSource={dataTmp} //order
+            summary={(pageData) => {
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>Tổng</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Text>
+                        {formatCash(tableSum(pageData, 'final_cost'))} VND
+                      </Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )
+            }}
+          />
+          <Pagination
+            style={{
+              display: 'flex',
+              marginBottom: '1rem',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              marginTop: '1rem',
+            }}
+            showSizeChanger
+            onShowSizeChange={onShowSizeChangeTable}
+            defaultCurrent={10}
+            onChange={onChangeTable}
+            total={countTable}
+          />
         </div>
+      </div>
+      <Modal
+        title="Cập nhật địa chỉ giao hàng"
+        visible={showUpdate}
+        onCancel={() => setShowUpdate(false)}
+        onOk={() => setShowUpdate(false)}
+        centered
+      >
+        <Form layout="vertical">
+          <Row gutter={10}>
+            <Col span={12}>
+              <Form.Item label="tên khách hàng">
+                <Input placeholder="Nhập  tên khách hàng" size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Địa chỉ">
+                <Input placeholder="Nhập địa chỉ" size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Số điện thoại">
+                <Input placeholder="Nhập số điện thoại" size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Tỉnh/ Thành phố">
+                <Select
+                  placeholder="Chọn Tỉnh/Thành phố"
+                  style={{ width: '100%' }}
+                  size="large"
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Quận/huyện">
+                <Select
+                  placeholder="Chọn Quận/Huyện"
+                  style={{ width: '100%' }}
+                  size="large"
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Quốc gia">
+                <Select
+                  placeholder="Chọn Quốc gia"
+                  style={{ width: '100%' }}
+                  size="large"
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Công ty">
+                <Input placeholder="Nhập tên công ty" size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
       </Modal>
     </>
   )
