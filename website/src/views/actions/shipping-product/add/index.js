@@ -607,7 +607,7 @@ export default function ShippingProductAdd(props) {
                       : storeList
                           .filter((e) => e.active)
                           .map((e) => (
-                            <Option value={e.warehouse_id}>{e.name}</Option>
+                            <Option value={e.stote_id}>{e.name}</Option>
                           ))}
                   </Select>
                 </Form.Item>
