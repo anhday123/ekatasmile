@@ -45,6 +45,7 @@ export default function ShippingProduct() {
     search: '',
     from_date: moment().startOf('month').format('YYYY-MM-DD'),
     to_date: moment().format('YYYY-MM-DD'),
+    status: undefined,
   })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const history = useHistory()
@@ -259,6 +260,14 @@ export default function ShippingProduct() {
   const changeRange = (date, dateString) => {
     setFilter({ ...filter, from_date: dateString[0], to_date: dateString[1] })
   }
+  const resetFilter = () => {
+    setFilter({
+      search: '',
+      from_date: moment().startOf('month').format('YYYY-MM-DD'),
+      to_date: moment().format('YYYY-MM-DD'),
+      status: undefined,
+    })
+  }
   const changeTimeOption = (value) => {
     switch (value) {
       case 'to_day':
@@ -398,7 +407,7 @@ export default function ShippingProduct() {
             <div style={{ width: '100%' }}>
               <Input
                 size="large"
-                placeholder="Tìm kiếm theo mã, theo tên"
+                placeholder="Tìm kiếm theo mã"
                 onChange={onSearch}
                 allowClear
               />
@@ -468,8 +477,14 @@ export default function ShippingProduct() {
                 size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc phiếu chuyển"
-                onChange={handleChange}
-              ></Select>
+                value={filter.status}
+                onChange={(e) => setFilter({ ...filter, status: e })}
+              >
+                <Option value="processing">Chờ chuyển</Option>
+                <Option value="shipping">Đang chuyển</Option>
+                <Option value="cancel">Đã hủy</Option>
+                <Option value="complete">Hoàn thành</Option>
+              </Select>
             </div>
           </Col>
         </Row>
@@ -522,6 +537,21 @@ export default function ShippingProduct() {
                   onClick={() => setExportVisible(true)}
                 >
                   Xuất excel
+                </Button>
+              </Col>
+              <Col
+                style={{
+                  marginTop: '1rem',
+                  marginLeft: '1rem',
+                }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={6}
+              >
+                <Button size="large" type="primary" onClick={resetFilter}>
+                  Xóa bộ lọc
                 </Button>
               </Col>
             </Row>

@@ -50,6 +50,7 @@ export default function ShippingAdd(props) {
         openNotification()
         props.close()
         props.reload()
+        form.resetFields()
       } else {
         openNotificationError()
       }

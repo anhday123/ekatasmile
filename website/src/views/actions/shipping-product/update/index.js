@@ -157,7 +157,7 @@ export default function DeliveryUpdate() {
           <span style={{ marginRight: 20, fontSize: 16 }}>Trạng thái:</span>
           <Radio.Group
             onChange={(e) => setStatus(e.target.value)}
-            defaultValue={history.location.state.status}
+            defaultValue={history.location.state.status.toUpperCase()}
           >
             <Radio value="PROCESSING">Chờ chuyển</Radio>
             <Radio value="SHIPPING">Đang chuyển</Radio>

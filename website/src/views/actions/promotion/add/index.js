@@ -211,11 +211,37 @@ export default function PromotionAdd(props) {
                   </Form.Item>
                 </Col>
               </Row>
+              <Row style={{ margin: '1rem 0 0' }} gutter={20}>
+                <Col span={12}>
+                  <Form.Item label="Hạn mức khuyến mãi">
+                    <InputNumber
+                      style={{ width: '100%', borderRadius: 15 }}
+                      size="large"
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Giới hạn khuyến mãi">
+                    <InputNumber
+                      style={{ width: '100%', borderRadius: 15 }}
+                      size="large"
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
             </div>
             <div className={styles['promotion-add__box']}>
               <div className={styles['promotion-add__title']}>Mô tả</div>
-              <Form.Item name="description">
-                <Input.TextArea style={{ height: 120, margin: '15px 0' }} />
+              <Form.Item name="description" style={{ marginBottom: 0 }}>
+                <Input.TextArea style={{ height: 100, margin: '15px 0' }} />
               </Form.Item>
             </div>
           </Col>
