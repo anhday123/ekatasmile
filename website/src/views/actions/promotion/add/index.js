@@ -213,7 +213,7 @@ export default function PromotionAdd(props) {
               </Row>
               <Row style={{ margin: '1rem 0 0' }} gutter={20}>
                 <Col span={12}>
-                  <Form.Item label="Hạn mức khuyến mãi">
+                  <Form.Item label="Hạn mức áp dụng">
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"

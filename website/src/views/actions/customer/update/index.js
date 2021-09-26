@@ -69,9 +69,9 @@ export default function CustomerUpdate(props) {
     )
   }
 
-  const getAddress = async (api, callback, keyword) => {
+  const getAddress = async (api, callback, keyword, params) => {
     try {
-      const res = await api()
+      const res = await api(params)
       if (res.status == 200) {
         callback((e) => {
           return { ...e, [keyword]: res.data.data }
@@ -382,6 +382,11 @@ export default function CustomerUpdate(props) {
                             option.children
                               .toLowerCase()
                               .indexOf(input.toLowerCase()) >= 0
+                          }
+                          onChange={(e) =>
+                            getAddress(apiDistrict, setAddress, 'district', {
+                              search: e,
+                            })
                           }
                         >
                           {Address.province.map((e) => (

@@ -284,9 +284,16 @@ export default function CustomerAdd({ close, reload }) {
                   <Select
                     size="large"
                     placeholder="Chọn tỉnh/thành phố"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
                     onChange={(e) =>
                       getAddress(apiDistrict, setLocation, 'district', {
-                        keyword: e,
+                        search: e,
                       })
                     }
                   >
@@ -317,7 +324,17 @@ export default function CustomerAdd({ close, reload }) {
                   Quận/huyện
                 </div>
                 <Form.Item name="district" hasFeedback>
-                  <Select size="large" placeholder="Chọn quận/huyện">
+                  <Select
+                    size="large"
+                    placeholder="Chọn quận/huyện"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
                     {Location.district.map((e) => (
                       <Option value={e.district_name}>{e.district_name}</Option>
                     ))}

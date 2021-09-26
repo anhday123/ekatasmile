@@ -1162,8 +1162,8 @@ export default function EmployeeAdd(props) {
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
-                          value={storeValue}
-                          onChange={onChangeStoreValue}
+                          // value={storeValue}
+                          // onChange={onChangeStoreValue}
                           placeholder="Chọn cửa hàng"
                           filterOption={(input, option) =>
                             option.children
