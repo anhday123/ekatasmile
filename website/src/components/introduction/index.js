@@ -240,8 +240,8 @@ function ModalIntro() {
 
   useEffect(() => {
     getProvinceData()
-    getDistrictStore({ keyword: 'Hồ Chí Minh' })
-    getDistrictBranch({ keyword: 'Hồ Chí Minh' })
+    getDistrictStore({ search: 'Hồ Chí Minh' })
+    getDistrictBranch({ search: 'Hồ Chí Minh' })
     getLabelData()
   }, [])
 
@@ -314,7 +314,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                onChange={(value) => getDistrictBranch({ keyword: value })}
+                onChange={(value) => getDistrictBranch({ search: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -414,7 +414,7 @@ function ModalIntro() {
                   0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                onChange={(value) => getDistrictStore({ keyword: value })}
+                onChange={(value) => getDistrictStore({ search: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>

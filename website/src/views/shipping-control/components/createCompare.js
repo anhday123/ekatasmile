@@ -77,7 +77,7 @@ export default function CreateCompare(props) {
                     {transportList
                       .filter((e) => e.active)
                       .map((e) => (
-                        <Select.Option value={e.transport_id}>
+                        <Select.Option value={e.shipping_company_id}>
                           {e.name}
                         </Select.Option>
                       ))}

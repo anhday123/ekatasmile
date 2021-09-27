@@ -243,10 +243,6 @@ export default function Store() {
       })
     setArrayUpdate([...array])
   }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
   const openNotificationErrorStoreRegexPhone = (data) => {
     notification.error({
       message: 'Thất bại',
@@ -395,10 +391,10 @@ export default function Store() {
   }
 
   const [districtMain, setDistrictMain] = useState([])
-  const apiDistrictData = async () => {
+  const apiDistrictData = async (params) => {
     try {
       setLoading(true)
-      const res = await apiDistrict()
+      const res = await apiDistrict(params)
       console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
@@ -425,9 +421,11 @@ export default function Store() {
     }
   }
   useEffect(() => {
-    apiDistrictData()
     apiProvinceData()
   }, [])
+  useEffect(() => {
+    apiDistrictData({ search: paramsFilter.province })
+  }, [paramsFilter.province])
 
   useEffect(() => _getStores({ ...paramsFilter }), [paramsFilter])
 
