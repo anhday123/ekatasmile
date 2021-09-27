@@ -14,12 +14,14 @@ import { addCustomer } from '../../../../apis/customer'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
+
 const { Option } = Select
 export default function CustomerAdd({ close, reload }) {
   const [gender, setGender] = useState('male')
   const [birthday, setBirthday] = useState(null)
   const dispatch = useDispatch()
   const [Location, setLocation] = useState({ province: [], district: [] })
+  const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -49,7 +51,12 @@ export default function CustomerAdd({ close, reload }) {
         await reload()
         openNotification()
         close()
-      } else notification.error({ message: 'Tạo khách hàng không thành công!' })
+        form.resetFields()
+      } else
+        notification.error({
+          message: 'Thất bại!',
+          description: res.data.message,
+        })
       dispatch({ type: 'LOADING', data: false })
     } catch (e) {
       console.log(e)
@@ -75,7 +82,11 @@ export default function CustomerAdd({ close, reload }) {
   return (
     <>
       <div className={styles['supplier_add']}>
-        <Form className={styles['supplier_add_content']} onFinish={onFinish}>
+        <Form
+          className={styles['supplier_add_content']}
+          onFinish={onFinish}
+          form={form}
+        >
           <Row
             style={{
               display: 'flex',

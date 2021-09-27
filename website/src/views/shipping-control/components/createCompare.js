@@ -36,6 +36,11 @@ export default function CreateCompare(props) {
         notification.success({ message: 'Thành công' })
         props.reload()
         onClose()
+      } else {
+        notification.error({
+          message: 'Thất bại',
+          // description: res.data && res.data.message,
+        })
       }
     } catch (e) {
       console.log(e)
