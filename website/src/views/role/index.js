@@ -134,6 +134,7 @@ export default function Role() {
 
     {
       pParent: 'cau_hinh_thong_tin',
+      //thiếu ql cửa hàng permission them_cua_hang
       pChildren: [
         { pParent: 'quan_li_nguoi_dung', pChildren: ['them_nguoi_dung'] },
         {
