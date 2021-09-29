@@ -44,9 +44,9 @@ export default function Role() {
       pParent: 'danh_sach_don_hang',
       pChildren: ['tao_don_hang'],
     },
-    {
-      pParent: 'business_management',
-    },
+    // {
+    //   pParent: 'business_management',
+    // },
     {
       pParent: 'san_pham',
       pChildren: [
@@ -105,9 +105,9 @@ export default function Role() {
     {
       pParent: 'bao_cao_don_hang',
     },
-    {
-      pParent: 'bao_cao_nhap_hang',
-    },
+    // {
+    //   pParent: 'bao_cao_nhap_hang',
+    // },
     {
       pParent: 'bao_cao_ton_kho',
     },
@@ -492,12 +492,14 @@ export default function Role() {
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
-              if (
-                values.name === 'ADMIN' ||
-                (values.name === 'BUSINESS' &&
-                  dataUser.data._role.name === 'BUSINESS')
-              )
-                return ''
+              // if (
+              //   values.name === 'ADMIN' ||
+              //   (values.name === 'BUSINESS' &&
+              //     dataUser.data._role.name !== 'ADMIN') ||
+              //   (values.name === 'EMPLOYEE' &&
+              //     dataUser.data._role.name !== 'ADMIN')
+              // )
+              //   return ''
 
               return (
                 <Panel

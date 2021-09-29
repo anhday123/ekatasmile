@@ -1037,6 +1037,7 @@ export default function Supplier() {
         <SupplierAdd close={onCloseUpdate} reload={apiAllSupplierData} />
       </Drawer>
       <Modal
+        footer=""
         visible={viewSupplier}
         onCancel={() => setViewSupplier(false)}
         title="Chi tiết nhà cung cấp"

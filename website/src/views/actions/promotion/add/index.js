@@ -50,11 +50,14 @@ export default function PromotionAdd(props) {
         props.close()
         form.setFieldsValue({
           name: '',
-          type: '',
+          promotion_code: '',
+          type: 'value',
           value: '',
           amount: '',
           store: [],
           description: '',
+          low: '',
+          hight: '',
         })
       } else throw res
     } catch (e) {
@@ -213,7 +216,7 @@ export default function PromotionAdd(props) {
               </Row>
               <Row style={{ margin: '1rem 0 0' }} gutter={20}>
                 <Col span={12}>
-                  <Form.Item label="Hạn mức áp dụng">
+                  <Form.Item name="low" label="Hạn mức áp dụng">
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"
@@ -225,7 +228,7 @@ export default function PromotionAdd(props) {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item label="Giới hạn khuyến mãi">
+                  <Form.Item name="hight" label="Giới hạn khuyến mãi">
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"

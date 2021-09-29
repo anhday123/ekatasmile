@@ -25,7 +25,7 @@ export default function CustomerAdd({ close, reload }) {
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
-      description: 'Cập nhật thông tin khách hàng thành công.',
+      description: 'Thêm khách hàng thành công.',
     })
   }
 

@@ -212,7 +212,7 @@ export default function Customer() {
           return updateCustomer(e, { active: false })
         })
       )
-      if (res.reduce((a, b) => a && b, true)) {
+      if (res.reduce((a, b) => a && b.data.success, true)) {
         notification.success({
           message: 'Thành công',
           description: 'Xóa khách hàng thành công',

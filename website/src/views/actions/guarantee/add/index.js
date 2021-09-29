@@ -25,6 +25,11 @@ export default function GuaranteeAdd() {
       if (res.status == 200) {
         openNotification()
         history.push(ROUTES.GUARANTEE)
+      } else {
+        notification.error({
+          message: 'Thất bại',
+          description: res.data.message,
+        })
       }
     } catch (e) {
       notification.error({
