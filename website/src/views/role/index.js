@@ -96,6 +96,9 @@ export default function Role() {
       pChildren: ['them_phieu_kiem_hang'],
     },
     {
+      pParent: 'tich_diem',
+    },
+    {
       pParent: 'quan_li_khach_hang',
       pChildren: ['them_khach_hang', 'cap_nhat_khach_hang'],
     },

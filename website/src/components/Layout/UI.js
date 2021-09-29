@@ -197,7 +197,7 @@ const UI = (props) => {
     {
       path: ROUTES.POINT,
       title: 'Tích điểm',
-      permissions: [],
+      permissions: [PERMISSIONS.tich_diem],
       icon: <AlertOutlined />,
     },
     {
