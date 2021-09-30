@@ -117,8 +117,8 @@ export default function BranchAdd({ reload }) {
         website: '',
         fax: '',
         email: '',
-        accumulate_point: true,
-        use_point: true,
+        accumulate_point: false,
+        use_point: false,
       }
 
       dispatch({ type: ACTION.LOADING, data: false })
