@@ -114,12 +114,12 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi chuyển',
-      dataIndex: '_from',
+      dataIndex: 'from',
       width: 150,
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a._from.name, b._from.name),
+      sorter: (a, b) => compareCustom(a.from.name, b.from.name),
     },
     {
       title: 'Trạng thái',
@@ -160,7 +160,7 @@ export default function ShippingProduct() {
               <div
                 onClick={() => onClickStatus(record)}
                 style={{
-                  color: '#ff7875',
+                  color: 'red',
                   fontWeight: '600',
                   cursor: 'pointer',
                 }}
@@ -199,12 +199,12 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi nhận',
-      dataIndex: '_to',
+      dataIndex: 'to',
       width: 150,
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a._to.name, b._to.name),
+      sorter: (a, b) => compareCustom(a.to.name, b.to.name),
     },
     {
       title: 'Ngày nhận',

@@ -120,7 +120,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi chuyển: {history.location.state._from.name}
+            Nơi chuyển: {history.location.state.from.name}
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -140,7 +140,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi nhận: {history.location.state._to.name}
+            Nơi nhận: {history.location.state.to.name}
           </Col>
           <Col
             style={{ width: '100%' }}

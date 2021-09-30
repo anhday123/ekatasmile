@@ -87,8 +87,14 @@ export default function ShippingProductAdd(props) {
           type: `${deliveryFlow.fromtype}-${deliveryFlow.totype}`,
           user_ship: values.from,
           user_receive: values.to,
-          from_id: values.from,
-          to_id: values.to,
+          from:
+            deliveryFlow.fromtype === 'BRANCH'
+              ? branchList.find((e) => e.branch_id === values.from)
+              : storeList.find((e) => e.store_id === values.from),
+          to:
+            deliveryFlow.totype === 'BRANCH'
+              ? branchList.find((e) => e.branch_id === values.to)
+              : storeList.find((e) => e.store_id === values.to),
           products: productSend,
           ship_time: moment(values.ship_date).format(),
           status: flag ? 'processing' : 'shipping',
