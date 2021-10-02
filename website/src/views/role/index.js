@@ -242,8 +242,9 @@ export default function Role() {
   const apiAllRolePermissionData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRolePermission()
-      console.log('role', res)
+      const res = await apiAllRolePermission(
+        dataUser.data._role.name === 'ADMIN' && { default: true }
+      )
       if (res.status === 200) {
         setRolePermission([...res.data.data])
       }
@@ -512,14 +513,14 @@ export default function Role() {
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
-              // if (
-              //   values.name === 'ADMIN' ||
-              //   (values.name === 'BUSINESS' &&
-              //     dataUser.data._role.name !== 'ADMIN') ||
-              //   (values.name === 'EMPLOYEE' &&
-              //     dataUser.data._role.name !== 'ADMIN')
-              // )
-              //   return ''
+              if (
+                values.name === 'ADMIN' ||
+                (values.name === 'BUSINESS' &&
+                  dataUser.data._role.name !== 'ADMIN') ||
+                (values.name === 'EMPLOYEE' &&
+                  dataUser.data._role.name !== 'ADMIN')
+              )
+                return ''
 
               return (
                 <Panel
@@ -527,7 +528,7 @@ export default function Role() {
                     <div
                       style={{
                         display:
-                          Object.keys(ROLE_DEFAULT).includes(values.name) &&
+                          values.default && //Object.keys(ROLE_DEFAULT).includes(values.name)
                           'none',
                       }}
                       onClick={(e) => e.stopPropagation()}

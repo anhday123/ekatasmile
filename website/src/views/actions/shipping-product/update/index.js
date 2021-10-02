@@ -53,6 +53,40 @@ export default function DeliveryUpdate() {
     //   width: 150,
     // },
   ]
+  const columnsVariant = [
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      render(data) {
+        return <img src={data[0]} width="80px" />
+      },
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+    },
+    {
+      title: 'Giá nhập',
+      dataIndex: 'import_price',
+    },
+    {
+      title: 'Giá cơ bản',
+      dataIndex: 'base_price',
+    },
+    {
+      title: 'Giá bán',
+      dataIndex: 'sale_price',
+    },
+    {
+      title: 'Số lượng tồn',
+      dataIndex: 'available_stock_quantity',
+    },
+    {
+      title: 'Số lượng chuyển',
+      dataIndex: 'quantity',
+      key: 'quantity',
+    },
+  ]
   const updateDelivery = async () => {
     try {
       const res = await UpdateDelivery(history.location.state.delivery_id, {
@@ -182,6 +216,17 @@ export default function DeliveryUpdate() {
             style={{ width: '100%' }}
             columns={columns}
             dataSource={history.location.state.products}
+            expandable={{
+              expandedRowRender: (record, indexRecord) => (
+                <Table
+                  size="small"
+                  pagination={false}
+                  dataSource={record.variants}
+                  columns={columnsVariant}
+                />
+              ),
+              rowExpandable: (record) => record.has_variable,
+            }}
           />
         </Row>
         <Row justify="end" style={{ width: '100%', marginTop: 20 }}>

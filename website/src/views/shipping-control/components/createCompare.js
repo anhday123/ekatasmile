@@ -39,7 +39,7 @@ export default function CreateCompare(props) {
       } else {
         notification.error({
           message: 'Thất bại',
-          // description: res.data && res.data.message,
+          description: res.data && res.data.message,
         })
       }
     } catch (e) {
@@ -77,7 +77,7 @@ export default function CreateCompare(props) {
             <Row>
               <Col span={8}>Đơn vị vận chuyển</Col>
               <Col span={16}>
-                <Form.Item name="shipping_company">
+                <Form.Item name="shipping_company_id">
                   <Select>
                     {transportList
                       .filter((e) => e.active)
@@ -95,7 +95,17 @@ export default function CreateCompare(props) {
             <Row>
               <Col span={8}>Mã vận đơn</Col>
               <Col span={16}>
-                <Form.Item name="order">
+                <Form.Item name="shipping_code">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Col>
+          <Col span={11}>
+            <Row>
+              <Col span={8}>Mã đơn hàng</Col>
+              <Col span={16}>
+                <Form.Item name="order_id">
                   <Input />
                 </Form.Item>
               </Col>

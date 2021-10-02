@@ -56,18 +56,22 @@ export default function ShippingProductAdd(props) {
     productDelivery.forEach((e) => {
       if (success)
         if (e.has_variable) {
+          let quantityIsvalid = true
           e.variants.forEach((variant) => {
-            if (variant.quantity <= variant.available_stock_quantity)
-              productSend.push({ ...variant, product_id: e.product_id })
-            else {
+            if (variant.quantity > variant.available_stock_quantity) {
+              quantityIsvalid = false
+              success = false
               notification.error({
                 message: 'Thất bại!',
-                description: 'Số lượng vượt quá số lượng hiện có',
+                description: `Số lượng ${e.name} vượt quá số lượng hiện có`,
               })
               success = false
               return
             }
           })
+          if (quantityIsvalid) {
+            productSend.push(e)
+          }
         } else {
           if (e.quantity <= e.available_stock_quantity) productSend.push(e)
           else {
@@ -199,38 +203,6 @@ export default function ShippingProductAdd(props) {
       key: 'variantsNumber',
     },
   ]
-  const data = []
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      productCode: (
-        <Link to="/actions/shipping-product/view/9">{`DHN ${i}`}</Link>
-      ),
-      productName: `Sản phẩm ${i}`,
-      inventory: i,
-      quantity: `Số lượng ${i}`,
-      //   action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //     {/* <Link style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link> */}
-      //     <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      //   </div>
-    })
-  }
-  const dataAddProuct = []
-  for (let i = 0; i < 46; i++) {
-    dataAddProuct.push({
-      key: i,
-      stt: i,
-      productCode: `DHN ${i}`,
-      productName: `Sản phẩm ${i}`,
-      inventory: i,
-      quantity: <Input placeholder="Nhâp số lượng" />,
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   <div onClick={() => modal3VisibleModal(true)} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
-    })
-  }
 
   const settings = {
     name: 'file',
@@ -263,7 +235,7 @@ export default function ShippingProductAdd(props) {
                     merge: false,
                   })
                 : getProductsStore({
-                    warehouse: deliveryFlow.from,
+                    store: deliveryFlow.from,
                     sku: e.sku,
                     product_id: e.product_id,
                     merge: false,
@@ -339,7 +311,8 @@ export default function ShippingProductAdd(props) {
         true
       )
     ) {
-      setProductDelivery([...productDelivery, ...ImportData])
+      ImportData.forEach((e) => onSelect(JSON.stringify(e)))
+      // setProductDelivery([...productDelivery, ...ImportData])
       setModalImportVisible(false)
     } else {
       notification.error({ message: 'Số lượng không hợp lệ' })
@@ -393,13 +366,47 @@ export default function ShippingProductAdd(props) {
   }
 
   const onSelect = (value) => {
-    setProductDelivery([...productDelivery, JSON.parse(value)])
+    let tmp = JSON.parse(value)
+    if (
+      !productDelivery
+        .map((e) => {
+          return e._id
+        })
+        .includes(tmp._id)
+    ) {
+      setProductDelivery([...productDelivery, tmp])
+    } else {
+      notification.info({ message: `Sản phẩm ${tmp.name} đã được thêm` })
+    }
   }
   const ImportButton = () => (
     <Upload {...settings}>
       <Button>Nhập Excel</Button>
     </Upload>
   )
+  const removeProduct = () => {
+    selectedRowKeysMain.forEach((e) => {
+      if (
+        productDelivery
+          .map((e) => {
+            return e._id
+          })
+          .indexOf(e) != -1
+      ) {
+        let tmp = [...productDelivery]
+        tmp.splice(
+          productDelivery
+            .map((e) => {
+              return e._id
+            })
+            .indexOf(e),
+          1
+        )
+        setSelectedRowKeysMain([])
+        setProductDelivery(tmp)
+      }
+    })
+  }
   useEffect(() => {
     getBranch()
     getStore()
@@ -794,6 +801,7 @@ export default function ShippingProductAdd(props) {
                   type="primary"
                   danger
                   // style={{ width: 120 }}
+                  onClick={removeProduct}
                 >
                   Xóa sản phẩm
                 </Button>
