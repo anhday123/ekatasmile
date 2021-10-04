@@ -45,6 +45,7 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
   EditOutlined,
+  ExportOutlined,
 } from '@ant-design/icons'
 
 import FastfoodIcon from '@material-ui/icons/Fastfood'
@@ -415,9 +416,9 @@ const UI = (props) => {
   const content = (
     <div className={styles['user_information']}>
       <div onClick={() => modal1VisibleModal(true)}>
-        <div>
+        <div style={{ color: '#565656', paddingLeft: 10 }}>
           <UserOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+            style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }}
           />
           Tài khoản của tôi
         </div>
@@ -426,11 +427,11 @@ const UI = (props) => {
         to={ROUTES.LOGIN}
         onClick={onClickSignout}
         className={styles['user_information_link']}
-        style={{ color: 'black', fontWeight: '600' }}
+        style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
       >
         <div>
-          <LogoutOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+          <ExportOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }}
           />
           Đăng xuất
         </div>
