@@ -7,32 +7,36 @@
 
 /* custom select */
 .ant-select-selector {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 /* custom select */
 
 .br-15__date-picker {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 
 /* custom button */
 .ant-btn {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 .br-15__button {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 /* custom button */
 
 /* custom input */
 .br-15__input {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 .ant-input {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
 }
 .ant-input-affix-wrapper {
-  border-radius: 15px !important;
+  border-radius: 5px !important;
+}
+
+.ant-picker {
+  border-radius: 5px !important;
 }
 /* custom input */
 
@@ -96,3 +100,8 @@
   padding-top: 5px;
 }
 /* custom tabs */
+
+/* custom popover */
+.ant-popover-arrow {
+  display: none;
+}
