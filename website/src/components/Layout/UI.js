@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as types from './../../consts/index'
-import axios from 'axios'
 import { ACTION, ROUTES } from './../../consts/index'
 import {
   Layout,
@@ -22,6 +21,7 @@ import {
   Badge,
   Empty,
 } from 'antd'
+
 import {
   MenuOutlined,
   GoldOutlined,
@@ -68,6 +68,7 @@ import { Bell, CarretDown, Plus } from 'utils/icon'
 import { apiAllRole, updateUser, apiSearch } from 'apis/user'
 import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
+import { uploadFile } from 'apis/upload'
 
 import { decodeToken } from 'react-jwt'
 const { Sider } = Layout
@@ -490,36 +491,16 @@ const UI = (props) => {
     multiple: true,
     showUploadList: false,
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    maxCount: 1,
     async onChange(info) {
       var { status } = info.file
       if (status !== 'done') {
         status = 'done'
         if (status === 'done') {
-          console.log(info.file, info.fileList)
-          if (info.fileList && info.fileList.length > 0) {
-            const image = info.fileList[info.fileList.length - 1].originFileObj
-            let formData = new FormData() //formdata object
-            formData.append('files', image) //append the values with key, value pair
-            if (formData) {
-              dispatch({ type: ACTION.LOADING, data: true })
-              let a = axios
-                .post(
-                  'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                  formData,
-                  {
-                    headers: {
-                      'Content-Type': 'multipart/form-data',
-                    },
-                  }
-                )
-                .then((resp) => resp)
-              let resultsMockup = await Promise.all([a])
-              console.log(resultsMockup[0].data.data[0])
-              dispatch({ type: ACTION.LOADING, data: false })
+          const imgLink = await uploadFile(info.file.originFileObj)
+          dispatch({ type: ACTION.LOADING, data: false })
 
-              setList(resultsMockup[0].data.data[0])
-            }
-          }
+          setList(imgLink)
         }
       }
     },
