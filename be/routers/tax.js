@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const tax = require(`../controllers/tax`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/gettax`).get(auth, tax.getTaxC);
 router.route(`/addtax`).post(auth, tax.addTaxC);

@@ -1,20 +1,16 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
-
-let removeUnicode = (str) => {
-    return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]|\s/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
 
 let getWarrantyS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let mongoQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        mongoQuery['delete'] = false;
         if (req.query.warranty_id) {
             mongoQuery['warranty_id'] = req.query.warranty_id;
         }
@@ -30,70 +26,7 @@ let getWarrantyS = async (req, res, next) => {
         if (req.query.time) {
             mongoQuery['time'] = Number(req.query.time);
         }
-        if (req.query.today != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.yesterday != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_week != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query[`from_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
@@ -103,23 +36,23 @@ let getWarrantyS = async (req, res, next) => {
         if (req.query.to_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+                $lte: req.query.to_date,
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.code) {
-            mongoQuery['code'] = new RegExp(removeUnicode(req.query.code).toUpperCase());
+            mongoQuery['code'] = createRegExpQuery(req.query.code);
         }
         if (req.query.code) {
-            mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
+            mongoQuery['sub_name'] = createRegExpQuery(req.query.name);
         }
         if (req.query.type) {
-            mongoQuery['sub_type'] = new RegExp(removeUnicode(req.query.type).toLowerCase());
+            mongoQuery['sub_type'] = createRegExpQuery(req.query.type);
         }
         if (req.query.search) {
             mongoQuery['$or'] = [
-                { code: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
-                { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
+                { code: createRegExpQuery(req.query.search) },
+                { sub_name: createRegExpQuery(req.query.search) },
             ];
         }
         // lấy các thuộc tính tùy chọn khác
@@ -135,7 +68,9 @@ let getWarrantyS = async (req, res, next) => {
         if (page && page_size) {
             _warranties = _warranties.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
         }
-        let [__users] = await Promise.all([client.db(DB).collection(`Users`).find({}).toArray()]);
+        let [__users] = await Promise.all([
+            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+        ]);
         let _business = {};
         let _creator = {};
         __users.map((__user) => {
@@ -162,7 +97,7 @@ let addWarrantyS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _warranty = await client.db(DB).collection(`Warranties`).insertOne(req._insert);
-        if (!_warranty.ops) throw new Error(`500 ~ Create warranty fail!`);
+        if (!_warranty.ops) throw new Error(`500: Create warranty fail!`);
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
                 business_id: token.business_id,

@@ -1,4 +1,5 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -9,7 +10,7 @@ let getSaleProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         // if (!token.role.permission_list.includes(`view_saleproduct`))
-        //     throw new Error(`400 ~ Forbidden!`);
+        //     throw new Error(`400: Forbidden!`);
         await saleProductService.getSaleProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -19,11 +20,9 @@ let getSaleProductC = async (req, res, next) => {
 let updateSaleProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_product`))
-        //     throw new Error(`400 ~ Forbidden!`);
-        req.params[`store_id`] = req.body.store_id;
+        req.params._id = ObjectId(req.params._id);
         let _product = await client.db(DB).collection(`SaleProducts`).findOne(req.params);
-        if (!_product) throw new Error(`400 ~ Product is not exists!`);
+        if (!_product) throw new Error(`400: Product is not exists!`);
         if (req.body.name) req.body.name = req.body.name.trim().toUpperCase();
         if (req.body.sku) req.body.sku = req.body.sku.trim().toUpperCase();
         if (req.body.slug)
@@ -191,11 +190,11 @@ let deleleProductC = async (req, res, next) => {
     try {
         ['products', 'store_id'].map((property) => {
             if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
+                throw new Error(`400: ${property} is not null!`);
             }
         });
         if (typeof req.body.products != 'object') {
-            throw new Error(`400 ~ products must be array!`);
+            throw new Error(`400: products must be array!`);
         }
         await client
             .db(DB)

@@ -1,4 +1,5 @@
 const client = require(`../config/mongo/mongodb`);
+const { ObjectId } = require('mongodb');
 const DB = process.env.DATABASE;
 
 let getPermissionS = async (req, res, next) => {
@@ -12,7 +13,10 @@ let getPermissionS = async (req, res, next) => {
 
 let addPermissionS = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Permissions`).findOneAndUpdate({ name: `permission` }, { $set: req._permission });
+        await client
+            .db(DB)
+            .collection(`Permissions`)
+            .findOneAndUpdate({ name: `permission` }, { $set: req._permission });
         res.send({ success: true, data: req._permission });
     } catch (err) {
         next(err);

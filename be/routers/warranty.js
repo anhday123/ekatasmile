@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const warranty = require(`../controllers/warranty`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getwarranty`).get(auth, warranty.getWarrantyC);
 router.route(`/addwarranty`).post(auth, warranty.addWarrantyC);

@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const compare = require(`../controllers/compare`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getsession`).get(auth, compare.getSessionC);
 router.route(`/getcompare`).get(auth, compare.getCompareC);

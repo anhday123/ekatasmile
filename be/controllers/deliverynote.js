@@ -1,4 +1,5 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -8,9 +9,6 @@ const deliverySerice = require(`../services/deliverynote`);
 let getDeliveryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_delivery`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getStore))
-        //     throw new Error(`400 ~ Validate data wrong!`);
         await deliverySerice.getDeliveryS(req, res, next);
     } catch (err) {
         next(err);
@@ -20,10 +18,10 @@ let getDeliveryC = async (req, res, next) => {
 let addDeliveryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_delivery`)) throw new Error(`400 ~ Forbidden!`);
-        ['type', 'from_id', 'to_id'].map((property) => {
+        // if (!token.role.permission_list.includes(`add_delivery`)) throw new Error(`400: Forbidden!`);
+        ['from', 'to', 'products'].map((property) => {
             if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
+                throw new Error(`400: ${property} is not null!`);
             }
         });
         let [_counts, _business] = await Promise.all([
@@ -33,7 +31,7 @@ let addDeliveryC = async (req, res, next) => {
                 active: true,
             }),
         ]);
-        if (!_business) throw new Error(`400 ~ Business is not exists or inactive!`);
+        if (!_business) throw new Error(`400: Business is not exists or inactive!`);
         req.body[`delivery_id`] = String(_counts + 1);
         req.body[`type`] = String(req.body.type).trim().toUpperCase();
         req.body[`code`] = String(1000000 + _counts + 1);
@@ -42,11 +40,10 @@ let addDeliveryC = async (req, res, next) => {
             delivery_id: req.body.delivery_id,
             business_id: req.body.business_id,
             code: req.body.code,
-            type: req.body.type,
             user_ship_id: req.body.user_ship_id || token.user_id,
             user_receive_id: req.body.user_receive_id || '',
-            from_id: req.body.from_id,
-            to_id: req.body.to_id,
+            from: req.body.from,
+            to: req.body.to,
             products: req.body.products || [],
             note: req.body.note || '',
             tag: req.body.tag || '',
@@ -68,9 +65,9 @@ let addDeliveryC = async (req, res, next) => {
 let updateDeliveryC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_delivery`)) throw new Error(`400 ~ Forbidden!`);
+        // if (!token.role.permission_list.includes(`update_delivery`)) throw new Error(`400: Forbidden!`);
         let _delivery = await client.db(DB).collection(`DeliveryNotes`).findOne(req.params);
-        if (!_delivery) throw new Error(`400 ~ Delivery note is not exists!`);
+        if (!_delivery) throw new Error(`400: Delivery note is not exists!`);
         delete req.body._id;
         delete req.body.delivery_id;
         delete req.body.business_id;

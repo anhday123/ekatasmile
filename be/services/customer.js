@@ -1,165 +1,118 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
-
-let removeUnicode = (str) => {
-    return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]|\s/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
 
 let getCustomerS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let mongoQuery = {};
+        let matchQuery = {};
+        let projectQuery = {};
+        let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        matchQuery['delete'] = false;
         if (req.query.customer_id) {
-            mongoQuery['customer_id'] = req.query.customer_id;
+            matchQuery['customer_id'] = ObjectId(req.query.customer_id);
         }
         if (token) {
-            mongoQuery['business_id'] = token.business_id;
+            matchQuery['business_id'] = ObjectId(token.business_id);
         }
         if (req.query.business_id) {
-            mongoQuery['business_id'] = req.query.business_id;
+            matchQuery['business_id'] = ObjectId(req.query.business_id);
         }
         if (req.query.creator_id) {
-            mongoQuery['creator_id'] = req.query.creator_id;
+            matchQuery['creator_id'] = ObjectId(req.query.creator_id);
         }
-        if (req.query.today != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.yesterday != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_week != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query[`from_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
-            mongoQuery[`create_date`] = {
-                ...mongoQuery[`create_date`],
+            matchQuery[`create_date`] = {
+                ...matchQuery[`create_date`],
                 $gte: req.query.from_date,
             };
         }
         if (req.query.to_date) {
-            mongoQuery[`create_date`] = {
-                ...mongoQuery[`create_date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+            matchQuery[`create_date`] = {
+                ...matchQuery[`create_date`],
+                $lte: req.query.to_date,
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.code) {
-            mongoQuery['code'] = new RegExp(removeUnicode(req.query.code).toUpperCase());
+            matchQuery['code'] = createRegExpQuery(req.query.code);
         }
         if (req.query.type) {
-            mongoQuery['sub_type'] = new RegExp(removeUnicode(req.query.type).toLowerCase());
+            matchQuery['sub_type'] = createRegExpQuery(req.query.type);
         }
         if (req.query.gender) {
-            mongoQuery['sub_gender'] = new RegExp(removeUnicode(req.query.gender).toLowerCase());
+            matchQuery['sub_gender'] = createRegExpQuery(req.query.gender);
         }
         if (req.query.name) {
-            mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
+            matchQuery['sub_name'] = createRegExpQuery(req.query.name);
         }
         if (req.query.address) {
-            mongoQuery['sub_address'] = new RegExp(removeUnicode(req.query.address).toLowerCase());
+            matchQuery['sub_address'] = createRegExpQuery(req.query.address);
         }
         if (req.query.district) {
-            mongoQuery['sub_district'] = new RegExp(removeUnicode(req.query.district).toLowerCase());
+            matchQuery['sub_district'] = createRegExpQuery(req.query.district);
         }
         if (req.query.province) {
-            mongoQuery['sub_province'] = new RegExp(removeUnicode(req.query.province).toLowerCase());
+            matchQuery['sub_province'] = createRegExpQuery(req.query.province);
         }
         if (req.query.search) {
-            mongoQuery['$or'] = [
-                { code: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
-                { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
+            matchQuery['$or'] = [
+                { code: createRegExpQuery(req.query.search) },
+                { phone: createRegExpQuery(req.query.search) },
+                { sub_name: createRegExpQuery(req.query.search) },
             ];
         }
+        aggregateQuery.push({ $match: matchQuery });
         // lấy các thuộc tính tùy chọn khác
-        let [page, page_size] = [req.query.page || 1, req.query.page_size || 50];
-        // lấy data từ database
-        let _customers = await client.db(DB).collection(`Customers`).find(mongoQuery).toArray();
-        // đảo ngược data sau đó gắn data liên quan vào khóa định danh
-        _customers.reverse();
-        // đếm số phần tử
-        let _counts = _customers.length;
-        // phân trang
-        if (page && page_size) {
-            _customers = _customers.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'user_id',
+                        as: '_business',
+                    },
+                },
+                { $unwind: '$_business' }
+            );
+            projectQuery['_business.password'] = 0;
         }
-        let [__users] = await Promise.all([client.db(DB).collection(`Users`).find({}).toArray()]);
-        let _business = {};
-        let _creator = {};
-        __users.map((__user) => {
-            delete __user.password;
-            _business[__user.user_id] = __user;
-            _creator[__user.user_id] = __user;
-        });
-        _customers.map((_customer) => {
-            _customer[`_business`] = _business[_customer.business_id];
-            _customer[`_creator`] = _creator[_customer.creator_id];
-            return _customer;
-        });
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'user_id',
+                        as: '_creator',
+                    },
+                },
+                { $unwind: '$_creator' }
+            );
+            projectQuery['_creator.password'] = 0;
+        }
+        if (Object.keys(projectQuery).length != 0) {
+            aggregateQuery.push({ $project: projectQuery });
+        }
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        let page = Number(req.query.page) || 1;
+        let page_size = Number(req.query.page_size) || 50;
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        // lấy data từ database
+        let [customers, counts] = await Promise.all([
+            client.db(DB).collection(`Customers`).aggregate(aggregateQuery).toArray(),
+            client.db(DB).collection(`Customers`).find(matchQuery).count(),
+        ]);
         res.send({
             success: true,
-            data: _customers,
-            count: _counts,
+            data: customers,
+            count: counts,
         });
     } catch (err) {
         next(err);
@@ -170,7 +123,7 @@ let addCustomerS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _customer = await client.db(DB).collection(`Customers`).insertOne(req._insert);
-        if (!_customer.insertedId) throw new Error(`500 ~ Failed create customer!`);
+        if (!_customer.insertedId) throw new Error(`500: Failed create customer!`);
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
                 business_id: token.business_id,

@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const permission = require(`../controllers/permission`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getpermission`).get(auth, permission.getPermissionC);
 router.route(`/addpermission`).post(auth, permission.addPermissionC);

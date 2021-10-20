@@ -1,67 +1,103 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 
 const bcrypt = require(`../libs/bcrypt`);
 const jwt = require(`../libs/jwt`);
 const mail = require(`../libs/otp`);
 const client = require(`../config/mongo/mongodb`);
-const { activeUser } = require('./user');
 const DB = process.env.DATABASE;
+const { activeUser } = require('./user');
 
 let loginC = async (req, res, next) => {
     try {
-        ['username', 'password'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
+        if (!req.body.username) {
+            throw new Error('400: username không được để trống!');
+        }
+        if (!req.body.password) {
+            throw new Error('400: password không được để trống!');
+        }
         req.body.username = req.body.username.toLowerCase();
-        let _user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
-        if (!_user) {
-            throw new Error(`400 ~ User is not exists!`);
+        let [user] = await client
+            .db(DB)
+            .collection(`Users`)
+            .aggregate([
+                { $match: { username: req.body.username, delete: false } },
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'user_id',
+                        as: '_business',
+                    },
+                },
+                { $project: { '_business.password': 0 } },
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Roles',
+                        localField: 'role_id',
+                        foreignField: 'role_id',
+                        as: '_role',
+                    },
+                },
+                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'user_id',
+                        as: '_creator',
+                    },
+                },
+                { $project: { '_creator.password': 0 } },
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } },
+            ])
+            .toArray();
+        if (!user) {
+            throw new Error(`400: User <${req.body.username}> không tồn tại!`);
         }
-        if (_user.active == false) {
-            throw new Error(`400 ~ User has not activated!`);
+        if (user.active == false) {
+            throw new Error(`400: User <${req.body.username}> chưa được kích hoạt!`);
         }
-        if (_user.active == `banned`) {
-            throw new Error(`400 ~ User had banned by admin!`);
+        if (user.active == `banned`) {
+            throw new Error(`400: User <${req.body.username}> đã bị chặn bởi ADMIN!`);
         }
-        if (!bcrypt.compare(req.body.password, _user.password)) {
-            throw new Error(`400 ~ Wrong password!`);
+        if (!bcrypt.compare(req.body.password, user.password)) {
+            throw new Error(`400: Mật khẩu không chính xác!`);
         }
-        [_user[`_business`], _user[`_creator`], _user[`_role`], _user[`_branch`], _user[`_store`]] =
-            await Promise.all([
-                client.db(DB).collection(`Users`).findOne({ user_id: _user.business_id }),
-                client.db(DB).collection(`Users`).findOne({ user_id: _user.creator_id }),
-                client.db(DB).collection(`Roles`).findOne({ role_id: _user.role_id }),
-                client.db(DB).collection(`Branchs`).findOne({ branch_id: _user.branch_id }),
-                client.db(DB).collection(`Stores`).findOne({ store_id: _user.store_id }),
-            ]);
-        if (!_user._business || _user._business.active != true) {
-            throw new Error(`400 ~ Forbidden!`);
-        }
-        if (_user._business) {
-            delete _user._business.password;
-        }
-        if (_user._creator) {
-            delete _user._creator.password;
-        }
-        delete _user.password;
+        delete user.password;
         let [accessToken, refreshToken, _update] = await Promise.all([
-            jwt.createToken(_user, process.env.ACCESS_TOKEN_LIFE),
-            jwt.createToken(_user, process.env.REFRESH_TOKEN_LIFE),
+            jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
+            jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
             client
                 .db(DB)
                 .collection(`Users`)
                 .findOneAndUpdate(
-                    { username: _user.username },
-                    { $set: { last_login: moment.tz(`Asia/Ho_Chi_Minh`).format() } }
+                    { _id: ObjectId(user._id) },
+                    { $set: { last_login: moment().utc().format() } }
                 ),
         ]);
         res.send({
             success: true,
             data: {
-                username: _user.username,
-                role: _user._role,
                 accessToken,
                 refreshToken,
             },
@@ -73,19 +109,16 @@ let loginC = async (req, res, next) => {
 
 let refreshTokenC = async (req, res, next) => {
     try {
-        if (!req.body.refreshToken) throw new Error(`400 ~ Validate data wrong!`);
-        const { refreshToken } = req.body;
-        if (refreshToken) {
-            try {
-                const decoded = await jwt.verifyToken(refreshToken);
-                const userData = decoded.data;
-                const accessToken = await jwt.createToken(userData, process.env.ACCESS_TOKEN_LIFE);
-                res.send({ success: true, accessToken });
-            } catch (error) {
-                throw new Error(`400 ~ Invalid refresh token!`);
-            }
-        } else {
-            throw new Error(`400 ~ No token provided!`);
+        if (!req.body.refreshToken) {
+            throw new Error(`400: refreshToken không được để trống!`);
+        }
+        try {
+            let decoded = await jwt.verifyToken(req.body.refreshToken);
+            let userData = decoded.data;
+            let accessToken = await jwt.createToken(userData, process.env.ACCESS_TOKEN_LIFE);
+            res.send({ success: true, accessToken });
+        } catch (error) {
+            throw new Error(`400: Refresh token không chính xác!`);
         }
     } catch (err) {
         next(err);
@@ -94,16 +127,16 @@ let refreshTokenC = async (req, res, next) => {
 
 let checkLinkVertifyC = async (req, res, next) => {
     try {
-        if (!req.body.UID) throw new Error(`400 ~ Validate data wrong!`);
-        let _link = await client
-            .db(DB)
-            .collection(`VertifyLinks`)
-            .findOne({
-                UID: req.body.UID,
-                vertify_timelife: { $gte: moment.tz(`Asia/Ho_Chi_Minh`).format() },
-            });
-        if (!_link) throw new Error(`400 ~ Link is not exists!`);
-        res.send({ success: true, data: _link });
+        if (!req.body.UID) {
+            throw new Error(`400: UID không được để trống!`);
+        }
+        let link = await client.db(DB).collection(`VertifyLinks`).findOne({
+            UID: req.body.UID,
+        });
+        if (!link) {
+            throw new Error('400: UID không tồn tại!');
+        }
+        res.send({ success: true, data: link });
     } catch (err) {
         next(err);
     }
@@ -111,23 +144,30 @@ let checkLinkVertifyC = async (req, res, next) => {
 
 let getOTPC = async (req, res, next) => {
     try {
-        if (!req.body.username) throw new Error(`400 ~ Validate data wrong!`);
-        let _user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
-        if (!_user) throw new Error(`400 ~ User is not exists!`);
-        let otp = await mail.createOtp(_user.email);
+        if (!req.body.username) {
+            throw new Error(`400: username không được để trống!`);
+        }
+        let user = await client
+            .db(DB)
+            .collection(`Users`)
+            .findOne({ username: req.body.username, delete: false });
+        if (!user) {
+            throw new Error('400: Tài khoản không tồn tại!');
+        }
+        let otp = await mail.sendOTP(user.email);
         await client
             .db(DB)
             .collection(`Users`)
             .findOneAndUpdate(
-                { username: _user.username },
+                { _id: ObjectId(user._id) },
                 {
                     $set: {
                         otp_code: otp.otp_code,
-                        otp_timelife: otp.otp_timelife,
+                        otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, 'minutes').format(),
                     },
                 }
             );
-        res.send({ success: true, data: `Send OTP success!` });
+        res.send({ success: true, data: `Gửi OTP đến email <${user.email}> thành công!` });
     } catch (err) {
         next(err);
     }
@@ -135,31 +175,56 @@ let getOTPC = async (req, res, next) => {
 
 let vertifyOTPC = async (req, res, next) => {
     try {
-        if (!req.body.otp_code || !req.body.username) throw new Error(`400 ~ Validate data wrong!`);
-        let [otp_code, username] = [req.body[`otp_code`], req.body[`username`]];
-        let _user = await client
+        if (!req.body.username) {
+            throw new Error(`400: username không được để trống!`);
+        }
+        if (!req.body.otp_code) {
+            throw new Error(`400: otp_code không được để trống!`);
+        }
+        req.body.username = req.body.username.trim().toLowerCase();
+        let user = await client
             .db(DB)
-            .collection(`Users`)
+            .collection('Users')
             .findOne({
-                username: username,
-                otp_code: otp_code,
-                otp_timelife: { $gte: moment.tz(`Asia/Ho_Chi_Minh`).format() },
+                username: req.body.username,
+                otp_code: req.body.otp_code,
+                otp_timelife: { $gte: moment().utc().format() },
+                delete: false,
             });
-        if (!_user) throw new Error(`400 ~ OTP is not correct or expried!`);
-        await client
-            .db(DB)
-            .collection(`Users`)
-            .findOneAndUpdate(
-                { username: username },
-                {
-                    $set: {
-                        otp_code: true,
-                        otp_timelife: true,
+        if (!user) {
+            throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
+        }
+        if (user.active == false) {
+            await client
+                .db(DB)
+                .collection('Users')
+                .updateOne(
+                    {
+                        user_id: ObjectId(user.user_id),
                     },
-                }
-            );
-        if (_user.active == false) activeUser(req, res, next);
-        else res.send({ success: true, data: `OTP is correct!` });
+                    {
+                        $set: {
+                            otp_code: false,
+                            otp_timelife: false,
+                            active: true,
+                        },
+                    }
+                );
+            res.send({ success: true, message: 'Kích hoạt tài khoản thành công!' });
+        } else {
+            await client
+                .db(DB)
+                .collection('Users')
+                .updateOne(
+                    {
+                        user_id: ObjectId(user.user_id),
+                    },
+                    {
+                        $set: { otp_code: true, otp_timelife: true },
+                    }
+                );
+            res.send({ success: true, message: `Mã OTP chính xác, xác thực thành công!` });
+        }
     } catch (err) {
         next(err);
     }

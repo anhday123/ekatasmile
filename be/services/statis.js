@@ -1,103 +1,41 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
 
 let getStatisS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let mongoQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        if (token) mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
-        if (req.query.bussiness) mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
-        if (req.query.today != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
+        if (token) {
+            mongoQuery['business_id'] = token.business_id;
         }
-        if (req.query.yesterday != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
+        if (req.query.bussiness) {
+            mongoQuery['business_id'] = req.query.business_id;
         }
-        if (req.query.this_week != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(7).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query.from_date = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query.to_date = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).daysInMonth());
-        }
-        if (req.query.last_month != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
-        if (req.query.from_date)
-            mongoQuery[`date`] = {
-                ...mongoQuery[`date`],
+        req.query = createTimeline(req.query);
+        if (req.query.from_date) {
+            mongoQuery[`create_date`] = {
+                ...mongoQuery[`create_date`],
                 $gte: req.query.from_date,
             };
-        if (req.query.to_date)
-            mongoQuery[`date`] = {
-                ...mongoQuery[`date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+        }
+        if (req.query.to_date) {
+            mongoQuery[`create_date`] = {
+                ...mongoQuery[`create_date`],
+                $lte: req.query.to_date,
             };
+        }
         // lấy data từ database
-        let [_orders, __products] = await Promise.all([
+        let [orders, products] = await Promise.all([
             client.db(DB).collection(`Orders`).find(mongoQuery).toArray(),
-            client.db(DB).collection(`SaleProducts`).find({ bussiness: token.bussiness.user_id }).toArray(),
+            client.db(DB).collection(`Products`).find({ business_id: mongoQuery.business_id }).toArray(),
         ]);
         let _products = {};
-        __products.map((item) => {
+        products.map((item) => {
             if (item.has_variable) {
                 for (let i in item.variants) {
                     let _image = item.image.concat(item.variants[i].image);

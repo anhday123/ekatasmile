@@ -1,22 +1,15 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
 const supplierService = require(`../services/supplier`);
-
-let removeUnicode = (str) => {
-    return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { Supplier } = require('../models/supplier');
 
 let getSupplierC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_supplier`)) throw new Error(`400 ~ Forbidden!`);
         await supplierService.getSupplierS(req, res, next);
     } catch (err) {
         next(err);
@@ -26,44 +19,46 @@ let getSupplierC = async (req, res, next) => {
 let addSupplierC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_supplier`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.absolute(req.body, form.addsupplier)) throw new Error(`400 ~ Validate Data Wrong!`);
-        req.body[`name`] = String(req.body.name).trim().toUpperCase();
-        let [_counts, _business, _supplier] = await Promise.all([
-            client.db(DB).collection(`Suppliers`).countDocuments(),
-            client.db(DB).collection(`Users`).findOne({
-                user_id: token.business_id,
-                active: true,
-            }),
-            client.db(DB).collection(`Suppliers`).findOne({
-                name: req.body.name,
-                business_id: token.business_id,
-            }),
+        let _supplier = new Supplier();
+        _supplier.validateInput(req.body);
+        req.body.name = req.body.name.trim().toUpperCase();
+        let [business, supplier] = await Promise.all([
+            client
+                .db(DB)
+                .collection(`Users`)
+                .findOne({
+                    user_id: ObjectId(token.business_id),
+                    delete: false,
+                    active: true,
+                }),
+            client
+                .db(DB)
+                .collection(`Suppliers`)
+                .findOne({
+                    business_id: ObjectId(token.business_id),
+                    name: req.body.name,
+                    delete: false,
+                }),
         ]);
-        if (_supplier) throw new Error(`400 ~ Supplier name was exists!`);
-        if (!_business) throw new Error(`400 ~ Bussiness is not exists or inactive!`);
-        req.body[`supplier_id`] = String(_counts + 1);
-        req.body[`code`] = String(1000000 + _counts + 1);
-        req.body[`business_id`] = _business.user_id;
-        _supplier = {
-            supplier_id: req.body.supplier_id,
-            business_id: req.body.business_id,
-            code: req.body.code,
-            name: req.body.name,
-            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
-            phone: req.body.phone || ``,
-            email: req.body.email || ``,
-            address: req.body.address || ``,
-            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
-            district: req.body.district || ``,
-            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
-            province: req.body.province || ``,
-            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
-            default: req.body.default || false,
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: token.user_id,
-            active: true,
-        };
+        if (!business) {
+            throw new Error(
+                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
+            );
+        }
+        if (supplier) {
+            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+        }
+        _supplier.create({
+            ...req.body,
+            ...{
+                supplier_id: ObjectId(),
+                business_id: token.business_id,
+                create_date: moment().utc().format(),
+                creator_id: token._id,
+                delete: false,
+                active: true,
+            },
+        });
         req[`_insert`] = _supplier;
         await supplierService.addSupplierS(req, res, next);
     } catch (err) {
@@ -74,40 +69,29 @@ let addSupplierC = async (req, res, next) => {
 let updateSupplierC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_supplier`)) throw new Error(`400 ~ Forbidden!`);
-        let _supplier = await client.db(DB).collection(`Suppliers`).findOne(req.params);
-        if (!_supplier) throw new Error(`400 ~ Supplier is not exists!`);
+        req.params.supplier_id = ObjectId(req.params.supplier_id);
+        let _supplier = new Supplier();
+        req.body.name = req.body.name.trim().toUpperCase();
+        let supplier = await client.db(DB).collection(`Suppliers`).findOne(req.params);
+        if (!tax) {
+            throw new Error(`400: tax_id <${req.params.tax_id}> không tồn tại!`);
+        }
         if (req.body.name) {
-            req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
-            let _check = await client
+            let check = await client
                 .db(DB)
                 .collection(`Suppliers`)
                 .findOne({
-                    supplier_id: { $ne: _supplier.supplier_id },
+                    business_id: ObjectId(token.business_id),
+                    supplier_id: { $ne: tax.supplier_id },
                     name: req.body.name,
-                    business_id: token.business_id,
                 });
-            if (_check) throw new Error(`400 ~ Supplier name was exists!`);
+            if (check) {
+                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            }
         }
-        if (req.body.address) {
-            req.body[`sub_address`] = removeUnicode(req.body.address).toLocaleLowerCase();
-        }
-        if (req.body.district) {
-            req.body[`sub_district`] = removeUnicode(req.body.district).toLocaleLowerCase();
-        }
-        if (req.body.province) {
-            req.body[`sub_province`] = removeUnicode(req.body.province).toLocaleLowerCase();
-        }
-        delete req.body._id;
-        delete req.body.supplier_id;
-        delete req.body.business_id;
-        delete req.body.code;
-        delete req.body.create_date;
-        delete req.body.creator_id;
-        delete req.body._business;
-        delete req.body._creator;
-        req['_update'] = { ..._supplier, ...req.body };
+        _supplier.create(supplier);
+        _supplier.update(req.body);
+        req['_update'] = _supplier;
         await supplierService.updateSupplierS(req, res, next);
     } catch (err) {
         next(err);

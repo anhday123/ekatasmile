@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const branch = require(`../controllers/branch`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getbranch`).get(auth, branch.getBranchC);
 router.route(`/addbranch`).post(auth, branch.addBranchC);

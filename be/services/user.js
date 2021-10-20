@@ -1,110 +1,42 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const { createToken } = require('../libs/jwt');
 const DB = process.env.DATABASE;
-
-let removeUnicode = (str) => {
-    return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]|\s/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
 
 let getUserS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let mongoQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        mongoQuery['username'] = { $ne: `user_was_delete` };
+        mongoQuery['delete'] = false;
         if (req.query.user_id) {
-            mongoQuery['user_id'] = req.query.user_id;
+            mongoQuery['user_id'] = ObjectId(req.query.user_id);
         }
         if (token) {
-            mongoQuery['business_id'] = token.business_id;
+            mongoQuery['business_id'] = ObjectId(token.business_id);
         }
         if (req.query.business_id) {
-            mongoQuery['business_id'] = req.query.business_id;
+            mongoQuery['business_id'] = ObjectId(req.query.business_id);
         }
         if (req.query.creator_id) {
-            mongoQuery['creator_id'] = req.query.creator_id;
+            mongoQuery['creator_id'] = ObjectId(req.query.creator_id);
         }
         if (req.query.branch_id) {
-            mongoQuery['branch_id'] = req.query.branch_id;
+            mongoQuery['branch_id'] = ObjectId(req.query.branch_id);
         }
         if (req.query.store_id) {
-            mongoQuery['store_id'] = req.query.store_id;
+            mongoQuery['store_id'] = ObjectId(req.query.store_id);
         }
         if (req.query.role_id) {
-            mongoQuery['role_id'] = req.query.role_id;
-            if (req.query.role_id == `2`) {
+            mongoQuery['role_id'] = ObjectId(req.query.role_id);
+            if (req.query.role_id == `6166a2d4dddaf490b0c4a68d`) {
                 delete mongoQuery['business_id'];
             }
         }
-        if (req.query.today != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.yesterday != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_week != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query[`from_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
@@ -114,28 +46,36 @@ let getUserS = async (req, res, next) => {
         if (req.query.to_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+                $lte: req.query.to_date,
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.name) {
-            mongoQuery['sub_name'] = new RegExp(removeUnicode(req.query.name).toLowerCase());
+            mongoQuery['sub_name'] = createRegExpQuery(req.query.name);
         }
         if (req.query.address) {
-            mongoQuery['sub_address'] = new RegExp(removeUnicode(req.query.address).toLowerCase());
+            mongoQuery['sub_address'] = createRegExpQuery(req.query.address);
         }
         if (req.query.district) {
-            mongoQuery['sub_district'] = new RegExp(removeUnicode(req.query.district).toLowerCase());
+            mongoQuery['sub_district'] = createRegExpQuery(req.query.district);
         }
         if (req.query.province) {
-            mongoQuery['sub_province'] = new RegExp(removeUnicode(req.query.province).toLowerCase());
+            mongoQuery['sub_province'] = createRegExpQuery(req.query.province);
         }
         if (req.query.search) {
-            mongoQuery['$or'] = [
-                { user_id: new RegExp(removeUnicode(req.query.search).toUpperCase()) },
-                { username: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
-                { sub_name: new RegExp(removeUnicode(req.query.search).toLowerCase()) },
-            ];
+            if (req.query.role_id != '6166a2d4dddaf490b0c4a68d') {
+                mongoQuery['$or'] = [
+                    { user_id: createRegExpQuery(req.query.search) },
+                    { username: createRegExpQuery(req.query.search) },
+                    { sub_name: createRegExpQuery(req.query.search) },
+                ];
+            } else {
+                mongoQuery['$or'] = [
+                    { user_id: createRegExpQuery(req.query.search) },
+                    { username: createRegExpQuery(req.query.search) },
+                    { phone: createRegExpQuery(req.query.search) },
+                ];
+            }
         }
         // lấy các thuộc tính tùy chọn khác
         let page = Number(req.query.page) || 1;
@@ -151,10 +91,10 @@ let getUserS = async (req, res, next) => {
             _users = _users.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
         }
         let [__users, __roles, __branchs, __stores] = await Promise.all([
-            client.db(DB).collection(`Users`).find({}).toArray(),
-            client.db(DB).collection(`Roles`).find({}).toArray(),
-            client.db(DB).collection(`Branchs`).find({}).toArray(),
-            client.db(DB).collection(`Stores`).find({}).toArray(),
+            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+            client.db(DB).collection(`Roles`).find().toArray(),
+            client.db(DB).collection(`Branchs`).find({ business_id: mongoQuery.business_id }).toArray(),
+            client.db(DB).collection(`Stores`).find({ business_id: mongoQuery.business_id }).toArray(),
         ]);
         let _business = {};
         let _creator = {};
@@ -199,7 +139,8 @@ let addUserS = async (req, res, next) => {
         let token;
         if (req.tokenData) token = req.tokenData.data;
         let _user = await client.db(DB).collection(`Users`).insertOne(req._insert);
-        if (!_user.insertedId) throw new Error(`500 ~ Failed create user!`);
+        console.log(_user);
+        if (!_user.insertedId) throw new Error(`500: Failed create user!`);
         delete _user.ops[0].password;
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
@@ -245,7 +186,12 @@ let updateUserS = async (req, res, next) => {
                         .collection(`Users`)
                         .updateMany(
                             { business_id: token.business_id },
-                            { $set: { company_name: req._update.company_name } }
+                            {
+                                $set: {
+                                    company_name: req._update.company_name,
+                                    sub_company_name: req._update.sub_company_name,
+                                },
+                            }
                         );
                 if (req._update.company_website)
                     await client

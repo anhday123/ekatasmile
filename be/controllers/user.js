@@ -1,4 +1,5 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -6,20 +7,10 @@ const DB = process.env.DATABASE;
 const userService = require(`../services/user`);
 const bcrypt = require(`../libs/bcrypt`);
 const mail = require(`../libs/nodemailer`);
-
-let removeUnicode = (str) => {
-    return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { User } = require('../models/user');
 
 let getUserC = async (req, res, next) => {
     try {
-        // if (!valid.relative(req.query, form.getUser)) {
-        //     throw new Error(`400 ~ Validate data wrong!`);
-        // }
         await userService.getUserS(req, res, next);
     } catch (err) {
         next(err);
@@ -28,43 +19,39 @@ let getUserC = async (req, res, next) => {
 
 let registerC = async (req, res, next) => {
     try {
-        ['username', 'password', 'email'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        req.body.username = req.body.username.toLowerCase();
-        req.body.email = req.body.email.toLowerCase();
-        req.body.company_name = req.body.company_name.toUpperCase();
-        let [_counts, _user] = await Promise.all([
-            client.db(DB).collection(`Users`).countDocuments(),
+        let _user = new User();
+        _user.validateInput(req.body);
+        _user.validateEmail(req.body.email);
+        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.password = bcrypt.hash(req.body.password);
+        req.body.email = req.body.email.trim().toLowerCase();
+        let [user] = await Promise.all([
             client
                 .db(DB)
-                .collection(`Users`)
+                .collection('Users')
                 .findOne({
                     $or: [{ username: req.body.username }, { email: req.body.email }],
+                    delete: false,
                 }),
         ]);
-        if (_user) {
-            throw new Error(`400 ~ Username or Email is exists!`);
+        if (user) {
+            throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
-        req.body[`user_id`] = String(_counts + 1);
         let otpCode = String(Math.random()).substr(2, 6);
         let vertifyId = crypto.randomBytes(10).toString(`hex`);
-        let vertifyLink = `https://quantribanhang.networkdemo.site/vertifyaccount?uid=${vertifyId}_${req.body.user_id}`;
-        await client
+        let vertifyLink = `https://quantribanhang.networkdemo.site/vertifyaccount?uid=${String(vertifyId)}`;
+        let link = await client
             .db(DB)
             .collection(`VertifyLinks`)
             .insertOne({
-                user_id: req.body.user_id,
                 username: req.body.username,
-                UID: `${vertifyId}_${req.body.user_id}`,
+                UID: String(vertifyId),
                 vertify_link: vertifyLink,
-                vertify_timelife: moment
-                    .tz(`Asia/Ho_Chi_Minh`)
-                    .add(process.env.OTP_TIMELIFE, `minutes`)
-                    .format(),
+                vertify_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
             });
+        if (!link.insertedId) {
+            throw new Error('Tạo tài khoản thất bại!');
+        }
         await mail.sendMail(
             req.body.email,
             `Yêu cầu xác thực`,
@@ -75,41 +62,23 @@ let registerC = async (req, res, next) => {
                 Create by Demo Team.
             </div>`
         );
-        _user = {
-            user_id: req.body.user_id,
-            business_id: req.body.user_id,
-            username: req.body.username,
-            password: bcrypt.hash(req.body.password),
-            otp_code: otpCode,
-            otp_timelife: moment.tz(`Asia/Ho_Chi_Minh`).add(process.env.OTP_TIMELIFE, `minutes`).format(),
-            role_id: `2`,
-            email: req.body.email,
-            phone: req.body.phone || ``,
-            avatar: req.body.avatar || ``,
-            first_name: req.body.first_name || ``,
-            last_name: req.body.last_name || ``,
-            sub_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`).toLocaleLowerCase(),
-            birthday: req.body.birthday || `2000-01-01`,
-            address: req.body.address || ``,
-            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
-            district: req.body.district || ``,
-            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
-            province: req.body.province || ``,
-            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
-            company_name: req.body.company_name || ``,
-            company_website: req.body.company_website || ``,
-            business_areas: req.body.business_areas || '',
-            tax_code: req.body.tax_code || ``,
-            fax: req.body.fax || ``,
-            branch_id: req.body.branch_id || ``,
-            store_id: req.body.store_id || ``,
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: ``,
-            exp: moment.tz(`Asia/Ho_Chi_Minh`).add(10, 'days').format(),
-            is_new: true,
-            active: false,
-        };
+        let id = ObjectId();
+        _user.create({
+            ...req.body,
+            ...{
+                user_id: id,
+                business_id: id,
+                role_id: '6166a2ebdddaf490b0c4a68f',
+                otp_code: otpCode,
+                otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
+                create_date: moment().utc().format(),
+                last_login: moment().utc().format(),
+                exp: moment().utc().add(10, 'days').format(),
+                creator_id: id,
+                delete: false,
+                active: false,
+            },
+        });
         req[`_insert`] = _user;
         await userService.addUserS(req, res, next);
     } catch (err) {
@@ -120,60 +89,37 @@ let registerC = async (req, res, next) => {
 let addUserC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_user`)) throw new Error(`400 ~ Forbidden!`);
-        ['username', 'password', 'email'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        req.body.username = req.body.username.toLowerCase();
-        req.body.email = req.body.email.toLowerCase();
-        let [_counts, _user] = await Promise.all([
-            client.db(DB).collection(`Users`).countDocuments(),
+        let _user = new User();
+        _user.validateInput(req.body);
+        _user.validateEmail(req.body.email);
+        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.password = bcrypt.hash(req.body.password);
+        req.body.email = req.body.email.trim().toLowerCase();
+        let [user] = await Promise.all([
             client
                 .db(DB)
-                .collection(`Users`)
+                .collection('Users')
                 .findOne({
                     $or: [{ username: req.body.username }, { email: req.body.email }],
+                    delete: false,
                 }),
         ]);
-        if (_user) throw new Error(`400 ~ Username or Email is exists!`);
-        req.body[`user_id`] = String(_counts + 1);
-        _user = {
-            user_id: req.body.user_id,
-            business_id: token.business_id,
-            username: req.body.username,
-            password: bcrypt.hash(req.body.password),
-            email_OTP: false,
-            timelife_OTP: false,
-            role_id: req.body.role_id || ``,
-            phone: req.body.phone || ``,
-            email: req.body.email,
-            avatar: req.body.avatar || ``,
-            first_name: req.body.first_name || ``,
-            last_name: req.body.last_name || ``,
-            sub_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`).toLocaleLowerCase(),
-            birthday: req.body.birthday || `2000-01-01`,
-            address: req.body.address || ``,
-            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
-            district: req.body.district || ``,
-            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
-            province: req.body.province || ``,
-            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
-            company_name: token.company_name || ``,
-            company_website: token.company_website || ``,
-            business_areas: token.business_areas || '',
-            tax_code: token.tax_code || ``,
-            fax: token.fax || ``,
-            branch_id: req.body.branch_id || ``,
-            store_id: req.body.store_id || ``,
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            last_login: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: token.user_id,
-            exp: ``,
-            is_new: false,
-            active: true,
-        };
+        if (user) {
+            throw new Error('400: Username hoặc Email đã được sử dụng!');
+        }
+        _user.create({
+            ...req.body,
+            ...{
+                user_id: ObjectId(),
+                business_id: token.business_id,
+                create_date: moment().utc().format(),
+                last_login: moment().utc().format(),
+                exp: '',
+                creator_id: token._id,
+                delete: false,
+                active: true,
+            },
+        });
         req[`_insert`] = _user;
         await userService.addUserS(req, res, next);
     } catch (err) {
@@ -184,86 +130,16 @@ let addUserC = async (req, res, next) => {
 let updateUserC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        delete req.body.password;
-        let _user = await client.db(DB).collection(`Users`).findOne(req.params);
-        if (!_user) {
-            throw new Error(`400 ~ User is not exists!`);
+        req.params.user_id = ObjectId(req.params.user_id);
+        let _user = new User();
+        let user = await client.db(DB).collection('Users').findOne(req.params);
+        if (!user) {
+            throw new Error(`400: _id <${req.params.user_id}> không tồn tại!`);
         }
-        if (req.body.new_password && req.body.old_password) {
-            if (!bcrypt.compare(req.body.old_password, _user.password))
-                throw new Error(`400 ~ Wrong password!`);
-            req.body[`password`] = bcrypt.hash(req.body.new_password);
-        }
-        if (req.body.email) {
-            req.body.email = req.body.email.toLowerCase();
-            let _email = await client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: { $ne: _user.user_id },
-                    email: req.body.email,
-                });
-            if (_email) {
-                throw new Error(`400 ~ Email was exists!`);
-            }
-        }
-        if (req.body.first_name || req.body.last_name) {
-            req.body.sub_name = removeUnicode(
-                `${req.body.first_name || _user.first_name}${req.body.last_name || _user.last_name}`
-            ).toLocaleLowerCase();
-        }
-        if (req.body.address) {
-            req.body.address = removeUnicode(req.body.address).toLocaleLowerCase();
-        }
-        if (req.body.district) {
-            req.body.district = removeUnicode(req.body.district).toLocaleLowerCase();
-        }
-        if (req.body.province) {
-            req.body.province = removeUnicode(req.body.province).toLocaleLowerCase();
-        }
-        if (req.body.company_name) {
-            req.body.company_name = req.body.company_name.toUpperCase();
-        }
-        if (req.body.branch_id) {
-            let _branch = await client
-                .db(DB)
-                .collection(`Branchs`)
-                .findOne({ branch_id: req.body.branch_id });
-            req.body.store_id = _branch.store_id;
-        }
-        if (_user.user_id && _user.business_id && _user.user_id == _user.business_id) {
-            req[`_updateBussiness`] = true;
-        }
-        delete req.body._id;
-        delete req.body.user_id;
-        delete req.body.business_id;
-        delete req.body.username;
-        delete req.body.old_password;
-        delete req.body.new_password;
-        delete req.body.create_date;
-        delete req.body.last_login;
-        delete req.body.creator_id;
-        delete req.body._business;
-        delete req.body._creator;
-        delete req.body._role;
-        delete req.body._branch;
-        delete req.body._store;
-        req['_update'] = { ..._user, ...req.body };
+        _user.create(user);
+        _user.update(req.body);
+        req['_update'] = _user;
         await userService.updateUserS(req, res, next);
-    } catch (err) {
-        next(err);
-    }
-};
-
-let activeUser = async (req, res, next) => {
-    try {
-        req.query[`username`] = req.body.username;
-        delete req.body.otp_code;
-        req.body[`otp_code`] = false;
-        req.body[`otp_timelife`] = false;
-        req.body[`active`] = true;
-        await client.db(DB).collection(`Users`).findOneAndUpdate(req.query, { $set: req.body });
-        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
@@ -271,36 +147,27 @@ let activeUser = async (req, res, next) => {
 
 let forgotPassword = async (req, res, next) => {
     try {
-        req.query[`username`] = req.otpData.username;
-        req.body[`otp_code`] = false;
-        req.body[`otp_timelife`] = false;
-        if (req.body.password) req.body.password = bcrypt.hash(req.body.password);
-        await client.db(DB).collection(`Users`).findOneAndUpdate(req.query, { $set: req.body });
-        if (req.body.password) req.body.password = `Successful change password!`;
-        res.send({ success: true, data: req.body });
-    } catch (err) {
-        next(err);
-    }
-};
-
-let deleleUserC = async (req, res, next) => {
-    try {
-        ['users'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        if (typeof req.body.users != 'object') {
-            throw new Error(`400 ~ users must be array!`);
+        if (!req.body.username) {
+            throw new Error('400: username không được để trống!');
         }
+        if (!req.body.password) {
+            throw new Error('400: password không được để trống!');
+        }
+        req.body.username = req.body.username.trim().toLowerCase();
         await client
             .db(DB)
-            .collection('Users')
-            .updateMany(
-                { user_id: { $in: req.body.users } },
-                { $set: { username: 'user_was_delete', email: 'user_was_delete' } }
+            .collection(`Users`)
+            .findOneAndUpdate(
+                { username: req.body.username, delete: false },
+                {
+                    $set: {
+                        password: bcrypt.hash(req.body.password),
+                        otp_code: false,
+                        otp_timelife: false,
+                    },
+                }
             );
-        res.send({ success: true });
+        res.send({ success: true, message: 'Đổi mật khẩu thành công!' });
     } catch (err) {
         next(err);
     }
@@ -311,7 +178,5 @@ module.exports = {
     registerC,
     addUserC,
     updateUserC,
-    activeUser,
     forgotPassword,
-    deleleUserC,
 };

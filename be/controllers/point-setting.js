@@ -1,4 +1,5 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -31,16 +32,16 @@ let getSettingC = async (req, res, next) => {
             let setting = {
                 point_setting_id: String(Number(_counts) + 1),
                 business_id: token.business_id,
-                accumulate_point: true,
-                accumulate_point_branchs: ['1', '2'],
+                accumulate_point: false,
+                accumulate_point_branchs: [],
                 use_point: false,
-                use_point_branchs: ['1', '2'],
+                use_point_branchs: [],
                 point_rate: 0,
                 currency_rate: 0,
             };
             _setting = await client.db(DB).collection(`PointSettings`).insertOne(setting);
             if (!_setting.insertedId) {
-                throw new Error(`500 ~ Failed create point setting!`);
+                throw new Error(`500: Failed create point setting!`);
             }
             _setting = _setting.ops[0];
         }
@@ -55,55 +56,74 @@ let updateSettingC = async (req, res, next) => {
         let token = req.tokenData.data;
         let _setting = client.db(DB).collection('PointSettings').findOne({ business_id: token.business_id });
         if (!_setting) {
-            throw new Error(`400 ~ Business is not exists!`);
+            throw new Error(`400: Business is not exists!`);
         }
         if (req.body.accumulate_point_branchs) {
             if (typeof req.body.accumulate_point_branchs != 'object') {
-                throw new Error(`400 ~ accumulate_point_branchs must be array!`);
+                throw new Error(`400: accumulate_point_branchs must be array!`);
+            }
+
+            if (req.body.accumulate_point == false) {
+                req.body.accumulate_point_branchs = [];
             }
             await Promise.all([
                 client
                     .db(DB)
                     .collection('Branchs')
                     .updateMany(
-                        { branch_id: { $in: [req.body.accumulate_point_branchs] } },
+                        {
+                            business_id: token.business_id,
+                            branch_id: { $in: req.body.accumulate_point_branchs },
+                        },
                         { $set: { accumulate_point: true } }
                     ),
                 client
                     .db(DB)
                     .collection('Branchs')
                     .updateMany(
-                        { branch_id: { $nin: [req.body.accumulate_point_branchs] } },
+                        {
+                            business_id: token.business_id,
+                            branch_id: { $nin: req.body.accumulate_point_branchs },
+                        },
                         { $set: { accumulate_point: false } }
                     ),
             ]);
         }
         if (req.body.use_point_branchs) {
             if (typeof req.body.use_point_branchs != 'object') {
-                throw new Error(`400 ~ use_point_branchs must be array!`);
+                throw new Error(`400: use_point_branchs must be array!`);
+            }
+            if (req.body.use_point == false) {
+                req.body.use_point_branchs = [];
             }
             await Promise.all([
                 client
                     .db(DB)
                     .collection('Branchs')
                     .updateMany(
-                        { branch_id: { $in: [req.body.use_point_branchs] } },
+                        {
+                            business_id: token.business_id,
+                            branch_id: { $in: req.body.use_point_branchs },
+                        },
                         { $set: { use_point: true } }
                     ),
                 client
                     .db(DB)
                     .collection('Branchs')
                     .updateMany(
-                        { branch_id: { $nin: [req.body.use_point_branchs] } },
+                        {
+                            business_id: token.business_id,
+                            branch_id: { $nin: req.body.use_point_branchs },
+                        },
                         { $set: { use_point: false } }
                     ),
             ]);
         }
         if (typeof req.body.point_rate != 'number') {
-            throw new Error("400 ~ Typeof 'point_rate' must be number");
+            throw new Error("400: Typeof 'point_rate' must be number");
         }
-        if (req.body.currency_rate) {
-            throw new Error("400 ~ Typeof 'currency_rate' must be number");
+        if (typeof req.body.currency_rate != 'number') {
+            throw new Error("400: Typeof 'currency_rate' must be number");
         }
         delete req.body._id;
         delete req.body.business_id;

@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const order = require(`../controllers/order`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getorder`).get(auth, order.getOrderC);
 router.route(`/addorder`).post(auth, order.addOrderC);

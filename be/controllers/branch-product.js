@@ -1,4 +1,5 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
@@ -16,8 +17,6 @@ let removeUnicode = (str) => {
 let getProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_product`))
-        //     throw new Error(`400 ~ Forbidden!`);
         await productService.getProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -27,13 +26,12 @@ let getProductC = async (req, res, next) => {
 let addProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_product`))
-        //     throw new Error(`400 ~ Forbidden!`);
-        ['products'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
+        if (!req.body.products) {
+            throw new Error(`400: <products> không được để trống!`);
+        }
+        if (!Array.isArray(req.body.products)) {
+            throw new Error(`400: Kiểu dữ liệu của <products> phải là array!`);
+        }
         // lấy các thông tin để xác định input hợp lệ
         let [_counts, _business, __branchs, __warranties, __suppliers, __categories, __products, _sku] =
             await Promise.all([
@@ -50,7 +48,7 @@ let addProductC = async (req, res, next) => {
                 client.db(DB).collection(`SKUProducts`).findOne({ business_id: token.business_id }),
             ]);
         if (!_business) {
-            throw new Error(`400 ~ Bussiness is not exists or inactive!`);
+            throw new Error(`400: Bussiness is not exists or inactive!`);
         }
         if (!_sku) {
             _sku = {
@@ -59,7 +57,7 @@ let addProductC = async (req, res, next) => {
             };
             let _insert = await client.db(DB).collection(`SKUProducts`).insertOne(_sku);
             if (!_insert.insertedId) {
-                throw new Error(`500 ~ Create SKU fail!`);
+                throw new Error(`500: Create SKU fail!`);
             }
         }
         _sku.sku_count = Number(_sku.sku_count);
@@ -86,7 +84,7 @@ let addProductC = async (req, res, next) => {
         req.body.products.map((product) => {
             ['sku', 'name'].map((property) => {
                 if (product[property] == undefined) {
-                    throw new Error(`400 ~ ${property} is not null!`);
+                    throw new Error(`400: ${property} is not null!`);
                 }
             });
             //uppercase tên + sku của sản phẩm
@@ -105,23 +103,23 @@ let addProductC = async (req, res, next) => {
                 .toUpperCase();
             // Kiểm tra chi nhánh có tồn tại không
             if (!_branchs[product.branch_id]) {
-                throw new Error(`400 ~ Branch ${product.branch_id} is not exists or inactive!`);
+                throw new Error(`400: Branch ${product.branch_id} is not exists or inactive!`);
             }
             // Kiểm tra loại sản phẩm có tồn tại không
             if (!_categories[product.category_id]) {
-                throw new Error(`400 ~ Category ${product.category_id} is not exists or inactive!`);
+                throw new Error(`400: Category ${product.category_id} is not exists or inactive!`);
             }
             // Kiểm tra danh sách bảo hành có tồn tại không nếu có thì gắn vào thay cho warranty_id
             product.warranties = product.warranties.map((warranty) => {
                 if (!_warranties[warranty]) {
-                    throw new Error(`400 ~ Warranty ${warranty} is not exists or inactive!`);
+                    throw new Error(`400: Warranty ${warranty} is not exists or inactive!`);
                 } else {
                     return _warranties[warranty];
                 }
             });
             // Kiểm tra nhà cung cấp có tồn tại không
             if (!_suppliers[product.supplier_id]) {
-                throw new Error(`400 ~ Supplier ${product.supplier_id} is not exists or inactive!`);
+                throw new Error(`400: Supplier ${product.supplier_id} is not exists or inactive!`);
             }
             // Tạo sản phẩm mới
             product[`product_id`] = String(_counts + 1 + index);
@@ -176,7 +174,7 @@ let addProductC = async (req, res, next) => {
                 product.attributes = product.attributes.map((attribute) => {
                     ['option', 'values'].map((property) => {
                         if (attribute[property] == undefined) {
-                            throw new Error(`400 ~ Attributes - ${property} is not null!`);
+                            throw new Error(`400: Attributes - ${property} is not null!`);
                         }
                     });
                     attribute.option = String(attribute.option).trim().toUpperCase();
@@ -189,7 +187,7 @@ let addProductC = async (req, res, next) => {
                 product.variants = product.variants.map((variant) => {
                     ['title', 'sku'].map((property) => {
                         if (variant[property] == undefined) {
-                            throw new Error(`400 ~ Variants - ${property} is not null!`);
+                            throw new Error(`400: Variants - ${property} is not null!`);
                         }
                     });
                     variant[`title`] = String(variant[`title`]).trim().toUpperCase();
@@ -200,7 +198,7 @@ let addProductC = async (req, res, next) => {
                     variant.options = variant.options.map((option) => {
                         ['name', 'value'].map((property) => {
                             if (option[property] == undefined) {
-                                throw new Error(`400 ~ Variant - options - ${property} is not null!`);
+                                throw new Error(`400: Variant - options - ${property} is not null!`);
                             }
                         });
                         option.name = String(option.name).trim().toUpperCase();
@@ -281,7 +279,7 @@ let addProductC = async (req, res, next) => {
                 low_stock_quantity: product.low_stock_quantity || 0,
                 out_stock_quantity: product.out_stock_quantity || 0,
                 shipping_quantity: product.shipping_quantity || 0,
-                return_warehouse_quantity: product.return_warehouse_quantity || 0,
+                return_quantity: product.return_quantity || 0,
                 status_check: product.status_check || 10,
                 status_check_value: product.status_check_value,
                 //available_stock - low_stock - out_stock
@@ -306,10 +304,9 @@ let addProductC = async (req, res, next) => {
 let updateProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_product`))
-        //     throw new Error(`400 ~ Forbidden!`);
+        req.params._id = ObjectId(req.params._id);
         let _product = await client.db(DB).collection(`Products`).findOne(req.params);
-        if (!_product) throw new Error(`400 ~ Product is not exists!`);
+        if (!_product) throw new Error(`400: Product is not exists!`);
         if (req.body.name) req.body.name = req.body.name.trim().toUpperCase();
         if (req.body.sku) req.body.sku = req.body.sku.trim().toUpperCase();
         if (req.body.slug)
@@ -477,11 +474,11 @@ let deleleProductC = async (req, res, next) => {
     try {
         ['products'].map((property) => {
             if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
+                throw new Error(`400: ${property} is not null!`);
             }
         });
         if (typeof req.body.products != 'object') {
-            throw new Error(`400 ~ products must be array!`);
+            throw new Error(`400: products must be array!`);
         }
         await client
             .db(DB)

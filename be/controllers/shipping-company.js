@@ -1,23 +1,15 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
 const shippingCompanyService = require(`../services/shipping-company`);
-
-let removeUnicode = (str) => {
-    return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { ShippingCompany } = require(`../models/shipping-company`);
 
 let getShippingCompanyC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_transport`)) throw new Error(`400 ~ Forbidden!`);
-        // if (!valid.relative(req.query, form.getTransport)) throw new Error(`400 ~ Validate data wrong!`);
         await shippingCompanyService.getShippingCompanyS(req, res, next);
     } catch (err) {
         next(err);
@@ -27,48 +19,46 @@ let getShippingCompanyC = async (req, res, next) => {
 let addShippingCompanyC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_transport`)) throw new Error(`400 ~ Forbidden!`);
-        ['name'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        req.body[`name`] = String(req.body.name).trim().toUpperCase();
-        let [_counts, _business, _shippingCompany] = await Promise.all([
-            client.db(DB).collection(`ShippingCompanies`).countDocuments(),
-            client.db(DB).collection(`Users`).findOne({
-                user_id: token.business_id,
-                active: true,
-            }),
-            client.db(DB).collection(`Transports`).findOne({
-                name: req.body.name,
-                business_id: token.business_id,
-            }),
+        let _shippingCompany = new ShippingCompany();
+        _shippingCompany.validateInput(req.body);
+        req.body.name = req.body.name.trim().toUpperCase();
+        let [business, shippingCompany] = await Promise.all([
+            client
+                .db(DB)
+                .collection(`Users`)
+                .findOne({
+                    user_id: ObjectId(token.business_id),
+                    delete: false,
+                    active: true,
+                }),
+            client
+                .db(DB)
+                .collection(`ShippingCompanies`)
+                .findOne({
+                    business_id: ObjectId(token.business_id),
+                    name: req.body.name,
+                    delete: false,
+                }),
         ]);
-        if (_shippingCompany) throw new Error(`400 ~ Shipping company name was exists!`);
-        if (!_business) throw new Error(`400 ~ Bussiness is not exists or inactive!`);
-        req.body[`shipping_company_id`] = String(_counts + 1);
-        req.body[`code`] = String(1000000 + _counts + 1);
-        req.body[`business_id`] = _business.user_id;
-        _shippingCompany = {
-            shipping_company_id: req.body.shipping_company_id,
-            business_id: req.body.business_id,
-            code: req.body.code,
-            name: req.body.name,
-            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
-            image: req.body.image || ``,
-            phone: req.body.phone || ``,
-            zipcode: req.body.zipcode || ``,
-            address: req.body.address || ``,
-            sub_address: removeUnicode(req.body.address || ``).toLocaleLowerCase(),
-            district: req.body.district || ``,
-            sub_district: removeUnicode(req.body.district || ``).toLocaleLowerCase(),
-            province: req.body.province || ``,
-            sub_province: removeUnicode(req.body.province || ``).toLocaleLowerCase(),
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: token.user_id,
-            active: true,
-        };
+        if (!business) {
+            throw new Error(
+                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
+            );
+        }
+        if (shippingCompany) {
+            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+        }
+        _shippingCompany.create({
+            ...req.body,
+            ...{
+                store_id: ObjectId(),
+                business_id: token.business_id,
+                create_date: moment().utc().format(),
+                creator_id: token._id,
+                delete: false,
+                active: true,
+            },
+        });
         req[`_insert`] = _shippingCompany;
         await shippingCompanyService.addShippingCompanyS(req, res, next);
     } catch (err) {
@@ -78,40 +68,29 @@ let addShippingCompanyC = async (req, res, next) => {
 let updateShippingCompanyC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_transport`)) throw new Error(`400 ~ Forbidden!`);
-        let _shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne(req.params);
-        if (!_shippingCompany) throw new Error(`400 ~ Shipping company is not exists!`);
+        req.params.store_id = ObjectId(req.params.store_id);
+        let _shippingCompany = new ShippingCompany();
+        req.body.name = req.body.name.trim().toUpperCase();
+        let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne(req.params);
+        if (!shippingCompany) {
+            throw new Error(`400: shipping_company_id <${req.params.shipping_company_id}> không tồn tại!`);
+        }
         if (req.body.name) {
-            req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
-            let _check = await client
+            let check = await client
                 .db(DB)
                 .collection(`ShippingCompanies`)
                 .findOne({
-                    shipping_company_id: { $ne: _shippingCompany.shipping_company_id },
+                    business_id: ObjectId(token.business_id),
+                    shipping_company_id: { $ne: store.shipping_company_id },
                     name: req.body.name,
-                    business_id: token.business_id,
                 });
-            if (_check) throw new Error(`400 ~ Transport name was exists!`);
+            if (check) {
+                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            }
         }
-        if (req.body.address) {
-            req.body[`sub_address`] = removeUnicode(req.body.address).toLocaleLowerCase();
-        }
-        if (req.body.district) {
-            req.body[`sub_district`] = removeUnicode(req.body.district).toLocaleLowerCase();
-        }
-        if (req.body.province) {
-            req.body[`sub_province`] = removeUnicode(req.body.province).toLocaleLowerCase();
-        }
-        delete req.body._id;
-        delete req.body.shipping_company_id;
-        delete req.body.business_id;
-        delete req.body.code;
-        delete req.body.create_date;
-        delete req.body.creator_id;
-        delete req.body._business;
-        delete req.body._creator;
-        req['_update'] = { ..._shippingCompany, ...req.body };
+        _shippingCompany.create(shippingCompany);
+        _shippingCompany.update(req.body);
+        req['_update'] = _shippingCompany;
         await shippingCompanyService.updateShippingCompanyS(req, res, next);
     } catch (err) {
         next(err);

@@ -1,22 +1,15 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
 const taxService = require(`../services/tax`);
-
-let removeUnicode = (str) => {
-    return str
-        .normalize(`NFD`)
-        .replace(/[\u0300-\u036f]|\s/g, ``)
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { Tax } = require('../models/tax');
 
 let getTaxC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_tax`)) throw new Error(`400 ~ Forbidden!`);
         await taxService.getTaxS(req, res, next);
     } catch (err) {
         next(err);
@@ -26,42 +19,46 @@ let getTaxC = async (req, res, next) => {
 let addTaxC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_tax`)) throw new Error(`400 ~ Forbidden!`);
-        ['name'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        req.body[`name`] = String(req.body.name).trim().toUpperCase();
-        let [_counts, _business, _tax] = await Promise.all([
-            client.db(DB).collection(`Taxes`).countDocuments(),
-            client.db(DB).collection(`Users`).findOne({
-                user_id: token.business_id,
-                active: true,
-            }),
-            client.db(DB).collection(`Taxes`).findOne({
-                name: req.body.name,
-                business_id: token.business_id,
-            }),
+        let _tax = new Tax();
+        _tax.validateInput(req.body);
+        req.body.name = req.body.name.trim().toUpperCase();
+        let [business, tax] = await Promise.all([
+            client
+                .db(DB)
+                .collection(`Users`)
+                .findOne({
+                    user_id: ObjectId(token.business_id),
+                    delete: false,
+                    active: true,
+                }),
+            client
+                .db(DB)
+                .collection(`Taxes`)
+                .findOne({
+                    business_id: ObjectId(token.business_id),
+                    name: req.body.name,
+                    delete: false,
+                }),
         ]);
-        if (_tax) throw new Error(`400 ~ Tax name was exists!`);
-        if (!_business) throw new Error(`400 ~ Bussiness is not exists or inactive!`);
-        req.body[`tax_id`] = String(_counts + 1);
-        req.body[`code`] = String(1000000 + _counts + 1);
-        req.body[`business_id`] = _business.user_id;
-        _tax = {
-            tax_id: req.body.tax_id,
-            business_id: req.body.business_id,
-            code: req.body.code,
-            name: req.body.name,
-            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
-            value: req.body.value || 0,
-            description: req.body.description || '',
-            default: req.body.default || false,
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: token.user_id,
-            active: true,
-        };
+        if (!business) {
+            throw new Error(
+                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
+            );
+        }
+        if (tax) {
+            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+        }
+        _tax.create({
+            ...req.body,
+            ...{
+                tax_id: ObjectId(),
+                business_id: token.business_id,
+                create_date: moment().utc().format(),
+                creator_id: token._id,
+                delete: false,
+                active: true,
+            },
+        });
         req[`_insert`] = _tax;
         await taxService.addTaxS(req, res, next);
     } catch (err) {
@@ -71,31 +68,29 @@ let addTaxC = async (req, res, next) => {
 let updateTaxC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_tax`)) throw new Error(`400 ~ Forbidden!`);
-        let _tax = await client.db(DB).collection(`Taxes`).findOne(req.params);
-        if (!_tax) throw new Error(`400 ~ Tax is not exists!`);
+        req.params.tax_id = ObjectId(req.params.tax_id);
+        let _tax = new Tax();
+        req.body.name = req.body.name.trim().toUpperCase();
+        let tax = await client.db(DB).collection(`Taxes`).findOne(req.params);
+        if (!tax) {
+            throw new Error(`400: tax_id <${req.params.tax_id}> không tồn tại!`);
+        }
         if (req.body.name) {
-            req.body[`name`] = String(req.body.name).toUpperCase();
-            req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
-            let _check = await client
+            let check = await client
                 .db(DB)
                 .collection(`Taxs`)
                 .findOne({
-                    tax_id: { $ne: _tax.tax_id },
+                    business_id: ObjectId(token.business_id),
+                    tax_id: { $ne: tax.tax_id },
                     name: req.body.name,
-                    bussiness: token.bussiness.user_id,
                 });
-            if (_check) throw new Error(`400 ~ Tax name was exists!`);
+            if (check) {
+                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            }
         }
-        delete req.body._id;
-        delete req.body.tax_id;
-        delete req.body.bussiness;
-        delete req.body.code;
-        delete req.body.create_date;
-        delete req.body.creator;
-        delete req.body._bussiness;
-        delete req.body._creator;
-        req['_update'] = { ..._tax, ...req.body };
+        _tax.create(tax);
+        _tax.update(req.body);
+        req['_update'] = _tax;
         await taxService.updateTaxS(req, res, next);
     } catch (err) {
         next(err);

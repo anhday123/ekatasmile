@@ -1,14 +1,10 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
-
-let removeUnicode = (str) => {
-    return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]|\s/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-};
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
+const { removeUnicode } = require('../utils/string-handle');
 
 let getProductS = async (req, res, next) => {
     try {
@@ -38,76 +34,13 @@ let getProductS = async (req, res, next) => {
         if (req.query.supplier_id) {
             mongoQuery['supplier_id'] = req.query.supplier_id;
         }
-        if (req.query.has_variable && req.query.has_variable.toLocaleLowerCase() == 'true') {
+        if (req.query.has_variable && req.query.has_variable.toLowerCase() == 'true') {
             mongoQuery['has_variable'] = true;
         }
-        if (req.query.has_variable && req.query.has_variable.toLocaleLowerCase() == 'false') {
+        if (req.query.has_variable && req.query.has_variable.toLowerCase() == 'false') {
             mongoQuery['has_variable'] = false;
         }
-        if (req.query.today != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.yesterday != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_week != undefined) {
-            req.query[`from_date`] = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query[`from_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query[`to_date`] = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_month != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query[`from_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query[`to_date`] =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
@@ -117,7 +50,7 @@ let getProductS = async (req, res, next) => {
         if (req.query.to_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+                $lte: req.query.to_date,
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
@@ -131,10 +64,10 @@ let getProductS = async (req, res, next) => {
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh
         _products.reverse();
         let [__users, __branchs, __categories, __suppliers] = await Promise.all([
-            client.db(DB).collection(`Users`).find({}).toArray(),
-            client.db(DB).collection(`Branchs`).find({}).toArray(),
-            client.db(DB).collection(`Categories`).find({}).toArray(),
-            client.db(DB).collection(`Suppliers`).find({}).toArray(),
+            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+            client.db(DB).collection(`Branchs`).find({ business_id: mongoQuery.business_id }).toArray(),
+            client.db(DB).collection(`Categories`).find({ business_id: mongoQuery.business_id }).toArray(),
+            client.db(DB).collection(`Suppliers`).find({ business_id: mongoQuery.business_id }).toArray(),
         ]);
         let _business = {};
         let _creator = {};
@@ -310,7 +243,7 @@ let addProductS = async (req, res, next) => {
         if (req._insert.length != 0) {
             let _product = await client.db(DB).collection(`Products`).insertMany(req._insert);
             if (!_product.insertedIds) {
-                throw new Error(`500 ~ Create product fail!`);
+                throw new Error(`500: Create product fail!`);
             }
             await client
                 .db(DB)

@@ -1,16 +1,18 @@
-class _object {
-    constructor(obj) {
-        this.name = obj.name || ``;
-        this.value = obj.value || 0;
-    }
-    change(quantity) {
-        if (typeof quantity != `number`) throw new Error(`Quantity is a numer`);
-        this.value += quantity || 0;
-    }
-}
+const client = require('./config/mongo/mongodb');
 
-let test = { name: `old`, value: 10 };
-test = new _object(test);
-test.change('qưe');
-test[`a`] = 5;
-console.log(test);
+(async () => {
+    let asd = await client
+        .db('SaleManager')
+        .collection('_Products')
+        .insertMany([
+            {
+                username: 'asdasdouaod',
+                password: 'asdasd',
+            },
+            {
+                username: 'qeqweqwe',
+                password: 'qweqe',
+            },
+        ]);
+    console.log(asd);
+})();

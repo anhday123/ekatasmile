@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const promotion = require(`../controllers/promotion`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getpromotion`).get(auth, promotion.getPromotionC);
 router.route(`/addpromotion`).post(auth, promotion.addPromotionC);

@@ -1,8 +1,7 @@
-const express = require(`express`);
+const express = require('express');
 const cors = require(`cors`);
 const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
-const requestIp = require(`request-ip`);
 
 const router = require(`./routers/index`);
 const client = require('./config/mongo/mongodb');
@@ -11,27 +10,22 @@ const DB = process.env.DATABASE;
 const app = express();
 const endPoint = process.env.END_POINT;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(requestIp.mw());
-app.use(
-    `/` + endPoint,
-    (req, res, next) => {
-        let clientIp = req.clientIp;
-        console.log(clientIp);
-        next();
-    },
-    router
-)
+app.use(cors()).use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+app.use(`/` + endPoint, router)
     .use((req, res, next) => {
-        next(new Error(`404 ~ Not Found!`));
+        next(new Error(`404: Endpoint is not exists!`));
     })
     .use((error, req, res, next) => {
-        const messages = error.message.split(` ~ `).map((v) => (Number(v) ? Number(v) : v));
-        const httpError = createError(...messages);
-        console.log(error.message);
         console.log(error);
+        let message = error.message.split(`: `).map((v) => (Number(v) ? Number(v) : v));
+        let httpError = createError(...message);
         res.status(httpError.statusCode || 500).send(httpError);
     });
 

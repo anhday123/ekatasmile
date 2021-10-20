@@ -2,7 +2,7 @@ const express = require(`express`);
 
 const router = express.Router();
 const role = require(`../controllers/role`);
-const { auth } = require(`../middleware/jwt/jwt`);
+const { auth } = require(`../middleware/jwt`);
 
 router.route(`/getrole`).get(auth, role.getRoleC);
 router.route(`/addrole`).post(auth, role.addRoleC);

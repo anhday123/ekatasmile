@@ -1,6 +1,9 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
+const { createTimeline } = require('../utils/date-handle');
+const { createRegExpQuery } = require('../utils/regex');
 
 let getSessionS = async (req, res, next) => {
     try {
@@ -8,92 +11,24 @@ let getSessionS = async (req, res, next) => {
         let mongoQuery = {};
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        mongoQuery['delete'] = false;
         if (req.query.session_id) mongoQuery = { ...mongoQuery, session_id: req.query.session_id };
-        if (token) mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
-        if (req.query.bussiness) mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
+        if (token) mongoQuery = { ...mongoQuery, business_id: token.business_id };
+        if (req.query.business_id) mongoQuery = { ...mongoQuery, business_id: req.query.business_id };
         if (req.query.creator) mongoQuery = { ...mongoQuery, creator: req.query.creator };
-        if (req.query.today != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.yesterday != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).add(-1, `days`).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_week != undefined) {
-            req.query.from_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(1).format(`YYYY-MM-DD`);
-            req.query.to_date = moment.tz(`Asia/Ho_Chi_Minh`).isoWeekday(7).format(`YYYY-MM-DD`);
-        }
-        if (req.query.last_week != undefined) {
-            req.query.from_date = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(1 - 7)
-                .format(`YYYY-MM-DD`);
-            req.query.to_date = moment
-                .tz(`Asia/Ho_Chi_Minh`)
-                .isoWeekday(7 - 7)
-                .format(`YYYY-MM-DD`);
-        }
-        if (req.query.this_month != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).daysInMonth());
-        }
-        if (req.query.last_month != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`YYYY`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).format(`MM`)) +
-                `-` +
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `months`).daysInMonth());
-        }
-        if (req.query.this_year != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-        }
-        if (req.query.last_year != undefined) {
-            req.query.from_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`01`) +
-                `-` +
-                String(`01`);
-            req.query.to_date =
-                String(moment().tz(`Asia/Ho_Chi_Minh`).add(-1, `years`).format(`YYYY`)) +
-                `-` +
-                String(`12`) +
-                `-` +
-                String(`31`);
-        }
-        if (req.query.from_date)
+        req.query = createTimeline(req.query);
+        if (req.query.from_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
                 $gte: req.query.from_date,
             };
-        if (req.query.to_date)
+        }
+        if (req.query.to_date) {
             mongoQuery[`create_date`] = {
                 ...mongoQuery[`create_date`],
-                $lte: moment(req.query.to_date).add(1, `days`).format(),
+                $lte: req.query.to_date,
             };
+        }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.code) filterQuery = { ...filterQuery, code: req.query.code };
         if (req.query._bussiness) filterQuery = { ...filterQuery, _bussiness: req.query._bussiness };
@@ -104,7 +39,9 @@ let getSessionS = async (req, res, next) => {
         let _sessions = await client.db(DB).collection(`CompareSessions`).find(mongoQuery).toArray();
         // đảo ngược data sau đó gắn data liên quan vào khóa định danh
         _sessions.reverse();
-        let [__users] = await Promise.all([client.db(DB).collection(`Users`).find({}).toArray()]);
+        let [__users] = await Promise.all([
+            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+        ]);
         let _bussiness = {};
         let _creator = {};
         __users.map((item) => {
@@ -203,8 +140,8 @@ let getCompareS = async (req, res, next) => {
         let filterQuery = {};
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.compare_id) mongoQuery = { ...mongoQuery, compare_id: req.query.compare_id };
-        if (token) mongoQuery = { ...mongoQuery, bussiness: token.bussiness.user_id };
-        if (req.query.bussiness) mongoQuery = { ...mongoQuery, bussiness: req.query.bussiness };
+        if (token) mongoQuery = { ...mongoQuery, business_id: token.business_id };
+        if (req.query.business_id) mongoQuery = { ...mongoQuery, business_id: req.query.business_id };
         if (req.query.session) mongoQuery = { ...mongoQuery, session: req.query.session };
         if (req.query.creator) mongoQuery = { ...mongoQuery, creator: req.query.creator };
         if (req.query.from_date)
@@ -323,12 +260,12 @@ let addCompareS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _session = await client.db(DB).collection(`CompareSessions`).insertOne(req._session);
-        if (!_session.insertedId) throw new Error(`500 ~ Create session fail!`);
+        if (!_session.insertedId) throw new Error(`500: Create session fail!`);
         let _compares = await client.db(DB).collection(`Compares`).insertMany(req._compares);
-        if (!_compares.insertedIds) throw new Error(`500 ~ Create compare fail!`);
+        if (!_compares.insertedIds) throw new Error(`500: Create compare fail!`);
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
-                bussiness: token.bussiness.user_id,
+                business_id: token.business_id,
                 type: `Add`,
                 properties: `Compare`,
                 name: `Thêm đối soát vận chuyển mới`,

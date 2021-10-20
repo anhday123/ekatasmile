@@ -1,9 +1,11 @@
 const moment = require(`moment-timezone`);
+const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 
 const roleService = require(`../services/role`);
+const { Role } = require('../models/role');
 
 let removeUnicode = (str) => {
     return str
@@ -16,7 +18,6 @@ let removeUnicode = (str) => {
 let getRoleC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`view_role`)) throw new Error(`400 ~ Forbidden!`);
         await roleService.getRoleS(req, res, next);
     } catch (err) {
         next(err);
@@ -26,35 +27,32 @@ let getRoleC = async (req, res, next) => {
 let addRoleC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`add_role`)) throw new Error(`400 ~ Forbidden!`);
-        ['name'].map((property) => {
-            if (req.body[property] == undefined) {
-                throw new Error(`400 ~ ${property} is not null!`);
-            }
-        });
-        req.body[`name`] = String(req.body.name).trim().toUpperCase();
-        if (
-            removeUnicode(req.body.name).toLocaleLowerCase() == `admin` ||
-            removeUnicode(req.body.name).toLocaleLowerCase() == `business`
-        ) {
-            throw new Error(`400 ~ Forbidden!`);
-        }
-        let [_counts, _business, _role] = await Promise.all([
+        let _role = new Role();
+        _role.validateInput(req.body);
+        _role.validateName(req.body);
+        let [counts, business, role] = await Promise.all([
             client.db(DB).collection(`Roles`).countDocuments(),
             client.db(DB).collection(`Users`).findOne({
                 user_id: token.business_id,
                 active: true,
             }),
             client.db(DB).collection(`Roles`).findOne({
-                name: req.body.name,
+                name: req.body.name.trim().toUpperCase(),
                 business_id: token.business_id,
             }),
         ]);
-        if (_role) throw new Error(`400 ~ Role name was exists!`);
-        if (!_business) throw new Error(`400 ~ Bussiness is not exists or inactive!`);
-        req.body[`role_id`] = String(_counts + 1);
+        if (!business) {
+            throw new Error(
+                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
+            );
+        }
+        if (role) {
+            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+        }
+
+        req.body[`role_id`] = String(counts + 1);
         req.body[`code`] = String(1000000 + _counts + 1);
-        req.body[`business_id`] = _business.user_id;
+        req.body[`business_id`] = business.user_id;
         _role = {
             role_id: req.body.role_id,
             business_id: req.body.business_id,
@@ -76,9 +74,9 @@ let addRoleC = async (req, res, next) => {
 let updateRoleC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        // if (!token.role.permission_list.includes(`update_role`)) throw new Error(`400 ~ Forbidden!`);
+        // if (!token.role.permission_list.includes(`update_role`)) throw new Error(`400: Forbidden!`);
         let _role = await client.db(DB).collection(`Roles`).findOne(req.params);
-        if (!_role) throw new Error(`400 ~ Role is not exists!`);
+        if (!_role) throw new Error(`400: Role is not exists!`);
         if (req.body.name) {
             req.body[`name`] = String(req.body.name).toUpperCase();
             req.body[`sub_name`] = removeUnicode(req.body.name).toLocaleLowerCase();
@@ -90,7 +88,7 @@ let updateRoleC = async (req, res, next) => {
                     name: req.body.name,
                     business_id: token.business_id,
                 });
-            if (_check) throw new Error(`400 ~ Role name was exists!`);
+            if (_check) throw new Error(`400: Role name was exists!`);
         }
         delete req.body._id;
         delete req.body.role_id;
