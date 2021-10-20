@@ -79,7 +79,7 @@ export default function Product() {
   const [supplier, setSupplier] = useState([])
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = product_id
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
   const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -231,7 +231,7 @@ export default function Product() {
     setSelectedRowKeys(selectedRowKeys)
 
     const productsUpdateShipping = products.filter((product) =>
-      selectedRowKeys.includes(product.product_id)
+      selectedRowKeys.includes(product._id)
     )
     console.log(productsUpdateShipping)
     setArrayProductShipping([...productsUpdateShipping])
@@ -619,15 +619,15 @@ export default function Product() {
                 try {
                   setLoading(true)
                   const productsSelect = products.filter((product) =>
-                    selectedRowKeys.includes(product.product_id)
+                    selectedRowKeys.includes(product._id)
                   )
 
                   const listPromise = productsSelect.map(async (e) => {
                     let res
                     const body = { category_id: categoryId }
                     if (paramsFilter.store_id)
-                      res = await updateProductStore(body, e.product_id)
-                    else res = await updateProductBranch(body, e.product_id)
+                      res = await updateProductStore(body, e._id)
+                    else res = await updateProductBranch(body, e._id)
 
                     return res
                   })
@@ -779,13 +779,12 @@ export default function Product() {
     setValueTime()
   }
 
-  const updateActiveProduct = async (body, product_id) => {
+  const updateActiveProduct = async (body, _id) => {
     try {
       setLoading(true)
       let res
-      if (paramsFilter.store_id)
-        res = await updateProductStore(body, product_id)
-      else res = await updateProductBranch(body, product_id)
+      if (paramsFilter.store_id) res = await updateProductStore(body, _id)
+      else res = await updateProductBranch(body, _id)
 
       if (res.status === 200) {
         await getAllProduct({ ...paramsFilter })
@@ -917,7 +916,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Col
+          {/* <Col
             style={{
               width: '100%',
               marginTop: '1rem',
@@ -947,36 +946,7 @@ export default function Product() {
                 </Option>
               ))}
             </Select>
-          </Col>
-          <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
-            <Select
-              size="large"
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo danh mục"
-              allowClear
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.category_id}
-              onChange={onChangeCategoryValue}
-            >
-              {categories.map((values, index) => {
-                return <Option value={values.category_id}>{values.name}</Option>
-              })}
-            </Select>
-          </Col>
+          </Col> */}
 
           <Col
             style={{ width: '100%', marginTop: '1rem' }}
@@ -1024,6 +994,36 @@ export default function Product() {
                 </Col>
               </Row>
             </Input.Group>
+          </Col>
+
+          <Col
+            style={{
+              width: '100%',
+              marginTop: '1rem',
+            }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo danh mục"
+              allowClear
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.category_id}
+              onChange={onChangeCategoryValue}
+            >
+              {categories.map((values, index) => {
+                return <Option value={values.category_id}>{values.name}</Option>
+              })}
+            </Select>
           </Col>
 
           <Col
@@ -1285,7 +1285,7 @@ export default function Product() {
               selectedRowKeys,
               onChange: onSelectChange,
             }}
-            rowKey="product_id"
+            rowKey="_id"
             expandable={{
               expandedRowRender: (record) => {
                 if (record.variants && record.variants.length)
@@ -1394,7 +1394,7 @@ export default function Product() {
                       onClick={() =>
                         updateActiveProduct(
                           { active: !record.active },
-                          record.product_id
+                          record._id
                         )
                       }
                     />

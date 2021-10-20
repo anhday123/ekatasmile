@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
 
 const { Option } = Select
-export default function CustomerAdd({ close, reload }) {
+export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
   const [gender, setGender] = useState('male')
   const [birthday, setBirthday] = useState(null)
   const dispatch = useDispatch()
@@ -386,12 +386,12 @@ export default function CustomerAdd({ close, reload }) {
             >
               <Form.Item>
                 <Button
-                  style={{ width: '7.5rem' }}
+                  style={{ width: '7.5rem', backgroundColor: '#0877DE' }}
                   type="primary"
                   htmlType="submit"
                   size="large"
                 >
-                  Lưu
+                  {text}
                 </Button>
               </Form.Item>
             </Col>

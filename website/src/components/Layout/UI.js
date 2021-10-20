@@ -134,12 +134,12 @@ const UI = (props) => {
       permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined />,
     },
-    {
-      path: ROUTES.SELL,
-      title: 'Bán hàng',
-      permissions: [PERMISSIONS.ban_hang],
-      icon: <ShoppingCartOutlined />,
-    },
+    // {
+    //   path: ROUTES.SELL,
+    //   title: 'Bán hàng',
+    //   permissions: [PERMISSIONS.ban_hang],
+    //   icon: <ShoppingCartOutlined />,
+    // },
     {
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',

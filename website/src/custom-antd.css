@@ -9,6 +9,24 @@
 .ant-select-selector {
   border-radius: 5px !important;
 }
+
+.select-product-sell .ant-select-arrow {
+  left: 11px !important;
+}
+.select-product-sell .ant-select-selector {
+  padding-left: 31px !important;
+}
+
+.select-product-sell .ant-select-selector .ant-select-selection-search {
+  padding-left: 20px !important;
+}
+.dropdown-select-search-product {
+  min-width: 400px !important;
+}
+.dropdown-select-search-product .ant-select-item {
+  padding: 0px !important;
+}
+
 /* custom select */
 
 .br-15__date-picker {
@@ -43,14 +61,9 @@
 .ant-popover {
   z-index: 1500;
 }
-/* custom menu */
-/* .ant-menu-title-content {
-  color: black !important;
-} */
+
 .ant-menu-item-only-child {
   height: max-content !important;
-  /* padding-left: 0 !important;
-  padding-top: 10px !important; */
 }
 .ant-menu-submenu-vertical > .ant-menu-submenu-title {
   height: 60px !important;
@@ -98,6 +111,58 @@
 /* custom tabs */
 .ant-tabs-nav-wrap {
   padding-top: 5px;
+}
+.tabs-invoices .ant-tabs-nav::before {
+  border-bottom: 0 !important;
+}
+.tabs-invoices .ant-tabs-nav {
+  margin-bottom: 0px !important;
+}
+.tabs-invoices .ant-tabs-nav-wrap {
+  padding-top: 0px !important;
+}
+.tabs-invoices .ant-tabs-tab div {
+  overflow: hidden !important;
+}
+.tabs-invoices .ant-tabs-tab div,
+.anticon-close-circle {
+  color: white !important;
+  font-size: 16px !important;
+}
+.tabs-invoices .ant-tabs-tab {
+  background-color: #192da0 !important;
+  border-color: #192da0 !important;
+}
+.tabs-invoices .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: black !important;
+}
+.tabs-invoices .ant-tabs-tab.ant-tabs-tab-active .anticon-close-circle {
+  color: black !important;
+}
+.tabs-invoices .ant-tabs-tab.ant-tabs-tab-active {
+  background-color: white !important;
+  border-color: white !important;
+}
+.tabs-invoices {
+  max-width: 550px;
+  min-width: 550px;
+}
+
+.tabs-invoices .ant-tabs-tab {
+  max-width: 120px !important;
+  min-width: 120px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.tabs-invoices .ant-tabs-nav-add {
+  position: relative !important;
+  border: 0 !important;
+  background-color: transparent !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 /* custom tabs */
 

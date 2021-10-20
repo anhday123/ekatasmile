@@ -302,9 +302,9 @@ export default function ProductAdd() {
       //case update product
       if (location.state) {
         if (location.state.store_id)
-          res = await updateProductStore(body, location.state.product_id)
+          res = await updateProductStore(body, location.state._id)
         //update product store
-        else res = await updateProductBranch(body, location.state.product_id) //update product branch
+        else res = await updateProductBranch(body, location.state._id) //update product branch
       } else res = await apiAddProduct({ products: [body] })
       console.log(res)
       if (res.status === 200) {
@@ -347,7 +347,6 @@ export default function ProductAdd() {
             form.setFieldsValue({
               category_id: category.category_id,
             })
-
           setCategories([...dataNew])
         }
       }
@@ -929,7 +928,7 @@ export default function ProductAdd() {
 
   return !isMobile ? (
     <div className={styles['product_manager']}>
-      <Affix offsetTop={10} style={{ width: '100%' }}>
+      <Affix offsetTop={65} style={{ width: '100%' }}>
         <Row
           align="middle"
           justify="space-between"
