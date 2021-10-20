@@ -19,20 +19,19 @@ import {
   Typography,
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
-import { FileExcelOutlined } from '@ant-design/icons'
+import { FileExcelOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { getAllBranch } from '../../../../apis/branch'
-import { apiProductSeller, apiAllProduct } from '../../../../apis/product'
+import { getProductsBranch, getProductsStore } from '../../../../apis/product'
 import { addDelivery } from '../../../../apis/delivery'
 import { useDispatch } from 'react-redux'
-import { apiAllInventory } from '../../../../apis/inventory'
 import XLSX from 'xlsx'
 import ImportModal from '../../../../components/ExportCSV/importModal'
 import moment from 'moment'
+import { ROUTES } from 'consts'
+import { getAllStore } from 'apis/store'
 const { Option } = Select
-const { Text } = Typography
 export default function ShippingProductAdd(props) {
   const [modal3Visible, setModal3Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRowKeysMain, setSelectedRowKeysMain] = useState([])
   const [branchList, setBranchList] = useState([])
   const [deliveryFlow, setDeliveryFlow] = useState({
@@ -41,12 +40,12 @@ export default function ShippingProductAdd(props) {
     to: '',
     totype: 'BRANCH',
   })
-  const [warehouseList, setWarehouseList] = useState([])
   const [productDelivery, setProductDelivery] = useState([])
   const [modalImportVisible, setModalImportVisible] = useState(false)
   const [options, setOptions] = useState([])
   const [ImportData, setImportData] = useState([])
   const [importLoading, setImportLoading] = useState(false)
+  const [storeList, setStoreList] = useState([])
   const [flag, setFlag] = useState(0)
   const history = useHistory()
   const dispatch = useDispatch()
@@ -56,19 +55,23 @@ export default function ShippingProductAdd(props) {
     var success = true
     productDelivery.forEach((e) => {
       if (success)
-        if (e.variants) {
+        if (e.has_variable) {
+          let quantityIsvalid = true
           e.variants.forEach((variant) => {
-            if (variant.quantity <= variant.available_stock_quantity)
-              productSend.push({ ...variant, product_id: e.product_id })
-            else {
+            if (variant.quantity > variant.available_stock_quantity) {
+              quantityIsvalid = false
+              success = false
               notification.error({
                 message: 'Thất bại!',
-                description: 'Số lượng vượt quá số lượng hiện có',
+                description: `Số lượng ${e.name} vượt quá số lượng hiện có`,
               })
               success = false
               return
             }
           })
+          if (quantityIsvalid) {
+            productSend.push(e)
+          }
         } else {
           if (e.quantity <= e.available_stock_quantity) productSend.push(e)
           else {
@@ -88,8 +91,14 @@ export default function ShippingProductAdd(props) {
           type: `${deliveryFlow.fromtype}-${deliveryFlow.totype}`,
           user_ship: values.from,
           user_receive: values.to,
-          from: values.from,
-          to: values.to,
+          from:
+            deliveryFlow.fromtype === 'BRANCH'
+              ? branchList.find((e) => e.branch_id === values.from)
+              : storeList.find((e) => e.store_id === values.from),
+          to:
+            deliveryFlow.totype === 'BRANCH'
+              ? branchList.find((e) => e.branch_id === values.to)
+              : storeList.find((e) => e.store_id === values.to),
           products: productSend,
           ship_time: moment(values.ship_date).format(),
           status: flag ? 'processing' : 'shipping',
@@ -102,7 +111,12 @@ export default function ShippingProductAdd(props) {
             message: 'Thành công',
             description: 'Thêm phiếu chuyển hàng thành công',
           })
-          props.close()
+          history.push(ROUTES.SHIPPING_PRODUCT)
+        } else {
+          notification.error({
+            message: 'Thất bại',
+            description: res.data.message,
+          })
         }
         dispatch({ type: 'LOADING', data: false })
       } catch (e) {
@@ -189,38 +203,6 @@ export default function ShippingProductAdd(props) {
       key: 'variantsNumber',
     },
   ]
-  const data = []
-  for (let i = 0; i < 46; i++) {
-    data.push({
-      key: i,
-      stt: i,
-      productCode: (
-        <Link to="/actions/shipping-product/view/9">{`DHN ${i}`}</Link>
-      ),
-      productName: `Sản phẩm ${i}`,
-      inventory: i,
-      quantity: `Số lượng ${i}`,
-      //   action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //     {/* <Link style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></Link> */}
-      //     <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      //   </div>
-    })
-  }
-  const dataAddProuct = []
-  for (let i = 0; i < 46; i++) {
-    dataAddProuct.push({
-      key: i,
-      stt: i,
-      productCode: `DHN ${i}`,
-      productName: `Sản phẩm ${i}`,
-      inventory: i,
-      quantity: <Input placeholder="Nhâp số lượng" />,
-      // action: <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-      //   <div onClick={() => modal3VisibleModal(true)} style={{ marginRight: '0.5rem' }}><EditOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#0500E8' }} /></div>
-      //   <div><DeleteOutlined style={{ fontSize: '1.25rem', cursor: 'pointer', color: '#E50000' }} /></div>
-      // </div>
-    })
-  }
 
   const settings = {
     name: 'file',
@@ -246,14 +228,14 @@ export default function ShippingProductAdd(props) {
           const productList = await Promise.all(
             fileData.map((e) => {
               return deliveryFlow.fromtype == 'BRANCH'
-                ? apiProductSeller({
+                ? getProductsBranch({
                     branch: deliveryFlow.from,
                     sku: e.sku,
                     product_id: e.product_id,
                     merge: false,
                   })
-                : apiAllProduct({
-                    warehouse: deliveryFlow.from,
+                : getProductsStore({
+                    store: deliveryFlow.from,
                     sku: e.sku,
                     product_id: e.product_id,
                     merge: false,
@@ -301,13 +283,6 @@ export default function ShippingProductAdd(props) {
     selectedRowKeysMain,
     onChange: onSelectChangeMain,
   }
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
   const getBranch = async () => {
     try {
       const res = await getAllBranch()
@@ -319,11 +294,11 @@ export default function ShippingProductAdd(props) {
     }
   }
 
-  const getWarehouse = async () => {
+  const getStore = async () => {
     try {
-      const res = await apiAllInventory()
+      const res = await getAllStore()
       if (res.status == 200) {
-        setWarehouseList(res.data.data)
+        setStoreList(res.data.data)
       }
     } catch (e) {
       console.log(e)
@@ -336,7 +311,8 @@ export default function ShippingProductAdd(props) {
         true
       )
     ) {
-      setProductDelivery([...productDelivery, ...ImportData])
+      ImportData.forEach((e) => onSelect(JSON.stringify(e)))
+      // setProductDelivery([...productDelivery, ...ImportData])
       setModalImportVisible(false)
     } else {
       notification.error({ message: 'Số lượng không hợp lệ' })
@@ -347,14 +323,14 @@ export default function ShippingProductAdd(props) {
     if (deliveryFlow.from != '') {
       const res =
         deliveryFlow.fromtype == 'BRANCH'
-          ? await apiProductSeller({
-              keyword: value,
+          ? await getProductsBranch({
+              search: value,
               branch: deliveryFlow.from,
               page: 1,
               page_size: 20,
             })
-          : await apiAllProduct({
-              keyword: value,
+          : await getProductsStore({
+              search: value,
               warehouse: deliveryFlow.from,
               page: 1,
               page_size: 20,
@@ -390,16 +366,50 @@ export default function ShippingProductAdd(props) {
   }
 
   const onSelect = (value) => {
-    setProductDelivery([...productDelivery, JSON.parse(value)])
+    let tmp = JSON.parse(value)
+    if (
+      !productDelivery
+        .map((e) => {
+          return e._id
+        })
+        .includes(tmp._id)
+    ) {
+      setProductDelivery([...productDelivery, tmp])
+    } else {
+      notification.info({ message: `Sản phẩm ${tmp.name} đã được thêm` })
+    }
   }
   const ImportButton = () => (
     <Upload {...settings}>
       <Button>Nhập Excel</Button>
     </Upload>
   )
+  const removeProduct = () => {
+    selectedRowKeysMain.forEach((e) => {
+      if (
+        productDelivery
+          .map((e) => {
+            return e._id
+          })
+          .indexOf(e) != -1
+      ) {
+        let tmp = [...productDelivery]
+        tmp.splice(
+          productDelivery
+            .map((e) => {
+              return e._id
+            })
+            .indexOf(e),
+          1
+        )
+        setSelectedRowKeysMain([])
+        setProductDelivery(tmp)
+      }
+    })
+  }
   useEffect(() => {
-    getWarehouse()
     getBranch()
+    getStore()
   }, [])
   useEffect(() => {
     if (history.location.state) setProductDelivery(history.location.state)
@@ -407,6 +417,16 @@ export default function ShippingProductAdd(props) {
   return (
     <>
       <div className={styles['supplier_add']}>
+        <Row className={styles['supplier_add-header']}>
+          <Col>
+            <ArrowLeftOutlined
+              onClick={() => history.goBack()}
+              style={{ cursor: 'pointer' }}
+            />
+          </Col>
+          <Col>Thêm phiếu chuyển hàng</Col>
+        </Row>
+
         <Form
           style={{}}
           className={styles['supplier_add_content']}
@@ -468,7 +488,7 @@ export default function ShippingProductAdd(props) {
                     }
                   >
                     <Radio value="BRANCH">Chi nhánh</Radio>
-                    <Radio value="WAREHOUSE">Kho</Radio>
+                    <Radio value="STORE">Cửa hàng</Radio>
                   </Radio.Group>
                 </div>
                 <Form.Item
@@ -496,10 +516,10 @@ export default function ShippingProductAdd(props) {
                           .map((e) => (
                             <Option value={e.branch_id}>{e.name}</Option>
                           ))
-                      : warehouseList
+                      : storeList
                           .filter((e) => e.active)
                           .map((e) => (
-                            <Option value={e.warehouse_id}>{e.name}</Option>
+                            <Option value={e.store_id}>{e.name}</Option>
                           ))}
                   </Select>
                 </Form.Item>
@@ -569,7 +589,7 @@ export default function ShippingProductAdd(props) {
                     }
                   >
                     <Radio value="BRANCH">Chi nhánh</Radio>
-                    <Radio value="WAREHOUSE">Kho</Radio>
+                    <Radio value="STORE">Cửa hàng</Radio>
                   </Radio.Group>
                 </div>
                 <Form.Item
@@ -597,10 +617,10 @@ export default function ShippingProductAdd(props) {
                           .map((e) => (
                             <Option value={e.branch_id}>{e.name}</Option>
                           ))
-                      : warehouseList
+                      : storeList
                           .filter((e) => e.active)
                           .map((e) => (
-                            <Option value={e.warehouse_id}>{e.name}</Option>
+                            <Option value={e.store_id}>{e.name}</Option>
                           ))}
                   </Select>
                 </Form.Item>
@@ -654,7 +674,6 @@ export default function ShippingProductAdd(props) {
           </div>
 
           <AutoComplete
-            placeholder="Tìm kiếm theo mã, theo tên"
             size="large"
             dropdownMatchSelectWidth={252}
             style={{
@@ -664,7 +683,23 @@ export default function ShippingProductAdd(props) {
             onSelect={onSelect}
             onSearch={handleSearch}
             onFocus={handleSearch}
-          />
+          >
+            <div
+              style={{
+                display: 'flex',
+                margin: '1rem 0',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Input
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                size="large"
+              />
+            </div>
+          </AutoComplete>
 
           <Row
             style={{
@@ -729,7 +764,7 @@ export default function ShippingProductAdd(props) {
                     })}
                   />
                 ),
-                rowExpandable: (record) => record.variants,
+                rowExpandable: (record) => record.has_variable,
               }}
               rowKey="_id"
               columns={columns.map((e) => {
@@ -766,6 +801,7 @@ export default function ShippingProductAdd(props) {
                   type="primary"
                   danger
                   // style={{ width: 120 }}
+                  onClick={removeProduct}
                 >
                   Xóa sản phẩm
                 </Button>

@@ -11,12 +11,12 @@ import {
   Modal,
   Button,
   Typography,
+  notification,
 } from 'antd'
-import { apiAllUser } from 'apis/user'
+import { apiAllUser, updateUser } from 'apis/user'
 import { apiDistrict, apiProvince } from 'apis/information'
 import moment from 'moment'
 const { Option } = Select
-const { Text } = Typography
 const columns = [
   {
     title: 'STT',
@@ -69,13 +69,13 @@ export default function Business() {
   const [pagination, setpagination] = useState({ page: 1, page_size: 10 })
   const [Address, setAddress] = useState({ province: [], district: [] })
   const [filter, setFilter] = useState({
-    keyword: '',
+    search: '',
     province: undefined,
     district: undefined,
   })
 
   const onSearch = (value) => {
-    setFilter({ ...filter, keyword: value.target.value })
+    setFilter({ ...filter, search: value.target.value })
   }
   function handleChange(value) {
     getAddress(apiDistrict, setAddress, 'district', { province_name: value })
@@ -120,7 +120,6 @@ export default function Business() {
   }
   const onSearchCustomerChoose = (value) => console.log(value)
   const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
     setSelectedRowKeys(selectedRowKeys)
   }
   const rowSelection = {
@@ -133,12 +132,33 @@ export default function Business() {
       <div>Gợi ý 2</div>
     </div>
   )
+  const onDelete = async () => {
+    try {
+      const res = await Promise.all(
+        selectedRowKeys.map((user) => {
+          return updateUser({ active: 'banned' }, user)
+        })
+      )
+      console.log(res)
+      if (res.reduce((a, b) => a && b.data.success, true)) {
+        notification.success({ message: 'Xóa khách hàng thành công' })
+        getAllBusiness()
+        setSelectedRowKeys([])
+      } else {
+        console.log(res)
+        notification.error({ message: 'Xóa khách hàng không thành công' })
+      }
+    } catch (err) {
+      console.log(err)
+      notification.error({ message: 'Xóa khách hàng không thành công' })
+    }
+  }
   const getAllBusiness = async (params) => {
     try {
       const res = await apiAllUser({ ...params, ...pagination })
       console.log(res)
       if (res.status === 200) {
-        setBusinessList(res.data.data)
+        setBusinessList(res.data.data.filter((e) => e.active === true))
       }
     } catch (e) {
       console.log(e)
@@ -158,13 +178,13 @@ export default function Business() {
   }
   const changePagi = (page, page_size) => setpagination({ page, page_size })
   const resetFilter = () =>
-    setFilter({ keyword: '', province: undefined, district: undefined })
+    setFilter({ search: '', province: undefined, district: undefined })
   useEffect(() => {
     getAddress(apiProvince, setAddress, 'province')
     getAddress(apiDistrict, setAddress, 'district')
   }, [])
   useEffect(() => {
-    getAllBusiness({ role: 2, ...removeFalse(filter) })
+    getAllBusiness({ role_id: 2, ...removeFalse(filter) })
   }, [filter])
   return (
     <>
@@ -201,9 +221,9 @@ export default function Business() {
           >
             <div style={{ width: '100%' }}>
               <Input
-                placeholder="Tìm kiếm"
+                placeholder="Tìm kiếm tên bussiness"
                 onChange={onSearch}
-                value={filter.keyword}
+                value={filter.search}
                 enterButton
                 size="large"
               />
@@ -283,9 +303,10 @@ export default function Business() {
             }}
           >
             <Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
+              title="Dữ liệu sẽ không thể khôi phục. Bạn chắc chắn muốn xóa?"
               okText="Yes"
               cancelText="No"
+              onConfirm={onDelete}
             >
               <Button size="large" type="primary" danger>
                 Xóa Business
@@ -306,7 +327,7 @@ export default function Business() {
         >
           <Table
             rowSelection={rowSelection}
-            rowKey="_id"
+            rowKey="user_id"
             size="small"
             pagination={{ onChange: changePagi }}
             columns={columnsPromotion}

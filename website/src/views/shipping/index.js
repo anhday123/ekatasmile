@@ -671,7 +671,6 @@ export default function Shipping() {
   }
   const [city, setCity] = useState('')
   const handleChange = async (value) => {
-    console.log(`selected ${value}`)
     setCity(value)
     if (value !== 'default') {
       apiSearchProvinceData(value)

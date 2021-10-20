@@ -82,11 +82,10 @@ export default function BranchAdd({ reload }) {
         openNotification()
         modal2VisibleModal(false)
       } else {
-        if (res.data.message === 'Branch name was exists!') {
-          openNotificationError()
-        } else {
-          openNotificationErrorStore()
-        }
+        notification.error({
+          message: 'Thất bại',
+          description: res.data.message || '',
+        })
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -118,8 +117,8 @@ export default function BranchAdd({ reload }) {
         website: '',
         fax: '',
         email: '',
-        accumulate_point: true,
-        use_point: true,
+        accumulate_point: false,
+        use_point: false,
       }
 
       dispatch({ type: ACTION.LOADING, data: false })

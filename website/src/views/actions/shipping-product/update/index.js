@@ -1,19 +1,10 @@
 import styles from './../update/update.module.scss'
-import {
-  Select,
-  Button,
-  Table,
-  Row,
-  Col,
-  Radio,
-  notification,
-  Typography,
-} from 'antd'
+import { Button, Table, Row, Col, Radio, notification } from 'antd'
 import { useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { UpdateDelivery } from '../../../../apis/delivery'
-const { Text } = Typography
+import { ROUTES } from 'consts'
 export default function DeliveryUpdate() {
   const history = useHistory()
   const [status, setStatus] = useState(history.location.state.status)
@@ -62,6 +53,40 @@ export default function DeliveryUpdate() {
     //   width: 150,
     // },
   ]
+  const columnsVariant = [
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      render(data) {
+        return <img src={data[0]} width="80px" />
+      },
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+    },
+    {
+      title: 'Giá nhập',
+      dataIndex: 'import_price',
+    },
+    {
+      title: 'Giá cơ bản',
+      dataIndex: 'base_price',
+    },
+    {
+      title: 'Giá bán',
+      dataIndex: 'sale_price',
+    },
+    {
+      title: 'Số lượng tồn',
+      dataIndex: 'available_stock_quantity',
+    },
+    {
+      title: 'Số lượng chuyển',
+      dataIndex: 'quantity',
+      key: 'quantity',
+    },
+  ]
   const updateDelivery = async () => {
     try {
       const res = await UpdateDelivery(history.location.state.delivery_id, {
@@ -72,7 +97,7 @@ export default function DeliveryUpdate() {
           message: 'Thành công',
           description: 'Cập nhật sản phẩm thành công',
         })
-        history.push('/shipping-product/9')
+        history.push(ROUTES.SHIPPING_PRODUCT)
       }
     } catch (e) {
       console.log(e)
@@ -129,7 +154,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi chuyển: {history.location.state._from.name}
+            Nơi chuyển: {history.location.state.from.name}
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -149,7 +174,7 @@ export default function DeliveryUpdate() {
             lg={11}
             xl={11}
           >
-            Nơi nhận: {history.location.state._to.name}
+            Nơi nhận: {history.location.state.to.name}
           </Col>
           <Col
             style={{ width: '100%' }}
@@ -166,7 +191,7 @@ export default function DeliveryUpdate() {
           <span style={{ marginRight: 20, fontSize: 16 }}>Trạng thái:</span>
           <Radio.Group
             onChange={(e) => setStatus(e.target.value)}
-            defaultValue={history.location.state.status}
+            defaultValue={history.location.state.status.toUpperCase()}
           >
             <Radio value="PROCESSING">Chờ chuyển</Radio>
             <Radio value="SHIPPING">Đang chuyển</Radio>
@@ -191,10 +216,26 @@ export default function DeliveryUpdate() {
             style={{ width: '100%' }}
             columns={columns}
             dataSource={history.location.state.products}
+            expandable={{
+              expandedRowRender: (record, indexRecord) => (
+                <Table
+                  size="small"
+                  pagination={false}
+                  dataSource={record.variants}
+                  columns={columnsVariant}
+                />
+              ),
+              rowExpandable: (record) => record.has_variable,
+            }}
           />
         </Row>
         <Row justify="end" style={{ width: '100%', marginTop: 20 }}>
-          <Button size="large" type="primary" onClick={updateDelivery}>
+          <Button
+            size="large"
+            type="primary"
+            onClick={updateDelivery}
+            style={{ width: 120 }}
+          >
             Lưu
           </Button>
         </Row>

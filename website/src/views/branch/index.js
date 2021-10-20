@@ -42,6 +42,7 @@ import { apiDistrict, apiProvince } from 'apis/information'
 import { getAllStore } from 'apis/store'
 import { apiUpdateBranch, getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
+import { getPointSetting } from 'apis/point'
 import { compare } from 'utils'
 
 const { Option } = Select
@@ -63,6 +64,7 @@ export default function Branch() {
   const [paramsFilter, setParamsFilter] = useState({})
   const [formUpdateBranch] = Form.useForm()
   const [districtsDefault, setDistrictsDefault] = useState([])
+  const [poin, setPoint] = useState({})
 
   function getBase64(img, callback) {
     const reader = new FileReader()
@@ -493,12 +495,21 @@ export default function Branch() {
       console.log(error)
     }
   }
+  const getPoint = async () => {
+    try {
+      const res = await getPointSetting()
+      setPoint(res.data.data && res.data.data[0])
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   useEffect(() => {
     apiProvinceData()
     getAllStoreData()
     getAllBranchData({ page, page_size })
     apiDistrictData()
+    getPoint()
   }, [])
 
   function onChangeSwitch(checked, record) {
@@ -708,7 +719,16 @@ export default function Branch() {
               })}
             </Select>
           </Col>
+          <Col
+            style={{ width: '100%', marginTop: '1rem' }}
+            xs={24}
+            sm={24}
+            md={11}
+            lg={11}
+            xl={7}
+          ></Col>
         </Row>
+        <Row></Row>
         <div
           style={{
             display: 'flex',

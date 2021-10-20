@@ -28,7 +28,7 @@ import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
 import { compare, compareCustom } from 'utils'
 
-const { Text } = Typography
+import { ROUTES } from 'consts'
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function ShippingProduct() {
@@ -42,9 +42,10 @@ export default function ShippingProduct() {
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [filter, setFilter] = useState({
-    keyword: '',
+    search: '',
     from_date: moment().startOf('month').format('YYYY-MM-DD'),
     to_date: moment().format('YYYY-MM-DD'),
+    status: undefined,
   })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const history = useHistory()
@@ -92,7 +93,7 @@ export default function ShippingProduct() {
   }
 
   const onSearch = (value) => {
-    setFilter({ ...filter, keyword: value })
+    setFilter({ ...filter, search: value.target.value })
   }
   function handleChange(value) {
     // console.log(`selected ${value}`);
@@ -100,7 +101,7 @@ export default function ShippingProduct() {
   const columnsPromotion = [
     {
       title: 'STT',
-      width: 150,
+      width: 50,
       render(data, record, index) {
         return (pagination.page - 1) * pagination.page_size + index + 1
       },
@@ -113,19 +114,19 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi chuyển',
-      dataIndex: '_from',
+      dataIndex: 'from',
       width: 150,
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a._from.name, b._from.name),
+      sorter: (a, b) => compareCustom(a.from.name, b.from.name),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       width: 150,
       render(data, record) {
-        switch (data) {
+        switch (data.toUpperCase()) {
           case 'PROCESSING': {
             return (
               <div
@@ -159,7 +160,7 @@ export default function ShippingProduct() {
               <div
                 onClick={() => onClickStatus(record)}
                 style={{
-                  color: '#ff7875',
+                  color: 'red',
                   fontWeight: '600',
                   cursor: 'pointer',
                 }}
@@ -198,16 +199,17 @@ export default function ShippingProduct() {
     },
     {
       title: 'Nơi nhận',
-      dataIndex: '_to',
+      dataIndex: 'to',
       width: 150,
       render(data) {
         return data.name
       },
-      sorter: (a, b) => compareCustom(a._to.name, b._to.name),
+      sorter: (a, b) => compareCustom(a.to.name, b.to.name),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'create_date',
+      width: 150,
       render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
       sorter: (a, b) =>
         moment(a.create_date).unix() - moment(b.create_date).unix(),
@@ -215,10 +217,15 @@ export default function ShippingProduct() {
     {
       title: 'Ngày chuyển',
       dataIndex: 'ship_time',
+      width: 150,
+      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      sorter: (a, b) =>
+        moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
+      width: 150,
       render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
@@ -252,6 +259,14 @@ export default function ShippingProduct() {
 
   const changeRange = (date, dateString) => {
     setFilter({ ...filter, from_date: dateString[0], to_date: dateString[1] })
+  }
+  const resetFilter = () => {
+    setFilter({
+      search: '',
+      from_date: moment().startOf('month').format('YYYY-MM-DD'),
+      to_date: moment().format('YYYY-MM-DD'),
+      status: undefined,
+    })
   }
   const changeTimeOption = (value) => {
     switch (value) {
@@ -364,9 +379,9 @@ export default function ShippingProduct() {
             <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
               <Button
                 size="large"
-                onClick={() => setShowCreate(true)}
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
                 type="primary"
+                href={ROUTES.SHIPPING_PRODUCT_ADD}
               >
                 Tạo phiếu chuyển hàng
               </Button>
@@ -392,9 +407,8 @@ export default function ShippingProduct() {
             <div style={{ width: '100%' }}>
               <Input
                 size="large"
-                placeholder="Tìm kiếm theo mã, theo tên"
+                placeholder="Tìm kiếm theo mã"
                 onChange={onSearch}
-                enterButton
                 allowClear
               />
             </div>
@@ -463,8 +477,14 @@ export default function ShippingProduct() {
                 size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc phiếu chuyển"
-                onChange={handleChange}
-              ></Select>
+                value={filter.status}
+                onChange={(e) => setFilter({ ...filter, status: e })}
+              >
+                <Option value="processing">Chờ chuyển</Option>
+                <Option value="shipping">Đang chuyển</Option>
+                <Option value="cancel">Đã hủy</Option>
+                <Option value="complete">Hoàn thành</Option>
+              </Select>
             </div>
           </Col>
         </Row>
@@ -519,6 +539,21 @@ export default function ShippingProduct() {
                   Xuất excel
                 </Button>
               </Col>
+              <Col
+                style={{
+                  marginTop: '1rem',
+                  marginLeft: '1rem',
+                }}
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={6}
+              >
+                <Button size="large" type="primary" onClick={resetFilter}>
+                  Xóa bộ lọc
+                </Button>
+              </Col>
             </Row>
           </Col>
         </Row>
@@ -555,7 +590,7 @@ export default function ShippingProduct() {
             rowKey="delivery_id"
             pagination={{ onChange: changePage, total: totalRecord }}
             dataSource={deliveryList}
-            scroll={{ y: 500 }}
+            scroll={{ y: 500, x: 'max-content' }}
           />
         </div>
       </div>

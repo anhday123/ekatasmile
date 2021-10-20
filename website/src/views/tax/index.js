@@ -45,6 +45,7 @@ export default function Tax() {
   const [loading, setLoading] = useState(false)
   const [defaultActive, setDefaultActive] = useState(false)
   const [arrayUpdate, setArrayUpdate] = useState([])
+  const [form] = Form.useForm()
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
@@ -153,8 +154,12 @@ export default function Tax() {
         await apiAllTaxData()
         setVisible(false)
         openNotification()
+        form.resetFields()
       } else {
-        openNotificationUpdateTaxError()
+        notification.error({
+          message: 'Thất bại',
+          description: res.data.message,
+        })
       }
       setLoading(false)
     } catch (error) {
@@ -521,6 +526,7 @@ export default function Tax() {
           className={styles['supplier_add_content']}
           onFinish={onFinish}
           layout="vertical"
+          form={form}
         >
           <Row
             style={{

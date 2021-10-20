@@ -18,6 +18,7 @@ import { apiProvince } from '../../../../apis/information'
 import { apiAllRole, apiAllUser } from '../../../../apis/user'
 import { apiUpdateEmployee } from '../../../../apis/employee'
 import { getAllStore } from '../../../../apis/store'
+import { removeAccents } from 'utils'
 
 export default function EmployeeAdd(props) {
   const dispatch = useDispatch()
@@ -51,6 +52,7 @@ export default function EmployeeAdd(props) {
         openNotification()
         props.close()
         props.reload()
+        form.resetFields()
       } else {
         openNotificationError()
       }
@@ -107,7 +109,11 @@ export default function EmployeeAdd(props) {
           res.data.data.forEach((values, index) => {
             if (username === values.username) {
               setUser(values)
-              setUserString(values.company_name.toLowerCase())
+              setUserString(
+                removeAccents(
+                  values.company_name.toLowerCase().replace(/\s/g, '')
+                )
+              )
             }
           })
       }
@@ -1161,8 +1167,8 @@ export default function EmployeeAdd(props) {
                           showSearch
                           style={{ width: '100%' }}
                           optionFilterProp="children"
-                          value={storeValue}
-                          onChange={onChangeStoreValue}
+                          // value={storeValue}
+                          // onChange={onChangeStoreValue}
                           placeholder="Chọn cửa hàng"
                           filterOption={(input, option) =>
                             option.children

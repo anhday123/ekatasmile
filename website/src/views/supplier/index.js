@@ -22,6 +22,7 @@ import {
   Row,
   Col,
   Typography,
+  Modal,
 } from 'antd'
 import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiFilterCity } from '../../apis/branch'
@@ -433,7 +434,7 @@ export default function Supplier() {
   const apiFilterCityData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiFilterCity({ keyword: object })
+      const res = await apiFilterCity({ search: object })
       console.log(res)
       if (res.status === 200) {
         setDistrictMainAPI(res.data.data)
@@ -473,7 +474,6 @@ export default function Supplier() {
   }
   const [city, setCity] = useState('')
   const handleChange = async (value) => {
-    console.log(`selected ${value}`)
     setCity(value)
     if (value !== 'default') {
       apiSearchProvinceData(value)
@@ -599,7 +599,7 @@ export default function Supplier() {
                 size="large"
                 showSearch
                 style={{ width: '100%' }}
-                placeholder="Select a person"
+                placeholder="Chọn quận/huyện"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
@@ -1036,14 +1036,15 @@ export default function Supplier() {
       >
         <SupplierAdd close={onCloseUpdate} reload={apiAllSupplierData} />
       </Drawer>
-      <Drawer
+      <Modal
+        footer=""
         visible={viewSupplier}
-        onClose={() => setViewSupplier(false)}
+        onCancel={() => setViewSupplier(false)}
         title="Chi tiết nhà cung cấp"
-        width="75%"
+        width={650}
       >
         <SupplierInformation data={data} />
-      </Drawer>
+      </Modal>
     </>
   )
 }

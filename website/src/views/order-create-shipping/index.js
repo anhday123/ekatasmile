@@ -9,9 +9,11 @@ import {
   InputNumber,
   AutoComplete,
   notification,
-  Drawer,
+  Modal,
+  Form,
   Select,
   Typography,
+  Radio,
 } from 'antd'
 import { useHistory } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
@@ -31,7 +33,7 @@ import { apiAllTax } from 'apis/tax'
 import { apiCheckPromotion, getPromoton } from 'apis/promotion'
 import { apiOrderVoucher } from 'apis/order'
 import { ROUTES } from 'consts'
-const { Text } = Typography
+import SearchProductItem from './components/SearchProductItem'
 function formatCash(str) {
   return str
     .toString()
@@ -60,29 +62,13 @@ export default function OrderCreateShipping() {
   const [branch, setBranch] = useState('')
   const columns = [
     {
+      title: 'Mã SKU',
+      dataIndex: 'sku',
+    },
+    {
       title: 'Sản phẩm',
       render(data) {
-        return (
-          <div>
-            <Row gutter={10}>
-              <Col>
-                <img src={data.image[0]} width="50" />
-              </Col>
-              <Col>
-                <div>{data.title || data.name}</div>
-                <div>
-                  {data.options &&
-                    data.options
-                      .map((e) => {
-                        return e.values
-                      })
-                      .join('/')}
-                </div>
-                <div>{data.sku}</div>
-              </Col>
-            </Row>
-          </div>
-        )
+        return <div>{data.title || data.name}</div>
       },
     },
     {
@@ -103,7 +89,7 @@ export default function OrderCreateShipping() {
       },
     },
     {
-      title: 'Giá',
+      title: 'Đơn giá',
       dataIndex: 'sale_price',
       render(data) {
         return formatCash(data)
@@ -128,64 +114,38 @@ export default function OrderCreateShipping() {
     }
   }
   const handleSearch = async (value) => {
-    if (!branch) {
-      notification.warning({ message: 'Vui lòng chọn chi nhánh' })
-      return
-    }
-    const data = await getProduct({
-      keyword: value,
-      branch: branch,
-      merge: false,
-    })
-    setOptions(!data.length ? [] : searchResult(data))
+    // if (!branch) {
+    //   notification.warning({ message: 'Vui lòng chọn chi nhánh' })
+    //   return
+    // }
+    // const data = await getProduct({
+    //   search: value,
+    //   branch: branch,
+    //   merge: false,
+    // })
+    // setOptions(!data.length ? [] : searchResult(data))
+    setOptions(
+      searchResult([
+        {
+          image:
+            'https://namlongfashion.com/wp-content/uploads/2020/03/125.jpg',
+          name: 'Áo khoán nữ sang trọng RXS56 - Trắng',
+          sale_price: 300000,
+        },
+      ])
+    )
   }
   const searchResult = (query) => {
     return query.map((_, idx) => {
       return {
         value: JSON.stringify(_),
-        label: (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div style={{ display: 'flex', width: '50%' }}>
-              <img src={_.image[0]} width="60px" style={{ marginRight: 20 }} />
-              <div
-                style={{
-                  width: '230px',
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden',
-                }}
-              >
-                {_.title || _.name}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', width: '50%' }}>
-              <div style={{ padding: '10px', width: '110px' }}>
-                {formatCash(_.sale_price)} VND
-              </div>
-              <div style={{ padding: '10px', width: '80px', color: 'green' }}>
-                <CheckCircleOutlined />
-                {formatCash(_.available_stock_quantity)}
-              </div>
-              <div style={{ padding: '10px', width: '80px', color: 'orange' }}>
-                <AlertOutlined /> {_.low_stock_quantity}
-              </div>
-              <div style={{ padding: '10px', width: '80px', color: 'red' }}>
-                <CloseCircleOutlined /> {_.out_stock_quantity}
-              </div>
-            </div>
-          </div>
-        ),
+        label: <SearchProductItem {..._} />,
       }
     })
   }
   const customerSearch = async (value) => {
     try {
-      const res = await getCustomer({ keyword: value })
+      const res = await getCustomer({ search: value })
       setCustomerOptions(
         !res.data.data.length
           ? []
@@ -213,7 +173,7 @@ export default function OrderCreateShipping() {
   }
   const onChooseCustomer = async (value) => {
     try {
-      const res = await getCustomer({ keyword: value.split('-').pop() })
+      const res = await getCustomer({ search: value.split('-').pop() })
       if (res.data.success) {
         setCustomerInfo(res.data.data[0])
       }
@@ -360,12 +320,12 @@ export default function OrderCreateShipping() {
         <Row gutter={30}>
           <Col span={16}>
             <div className={styles['block']}>
-              <div className={styles['title']}>Chi nhánh</div>
+              <div className={styles['title']}>Cửa hàng</div>
               <Select
                 size="large"
                 style={{ width: '200px' }}
                 onChange={(e) => setBranch(e)}
-                placeholder="chọn chi nhánh"
+                placeholder="chọn cửa hàng"
               >
                 {branchList
                   .filter((e) => e.active)
@@ -375,116 +335,115 @@ export default function OrderCreateShipping() {
               </Select>
               <div className={styles['title']}>Sản phẩm</div>
               <AutoComplete
-                size="large"
                 options={options}
                 style={{ width: '100%', marginBottom: 10 }}
-                onSelect={onSelect}
+                // onSelect={onSelect}
                 onSearch={handleSearch}
                 onFocus={handleSearch}
-                placeholder="Tìm kiếm sản phẩm"
-              />
+              >
+                <div>
+                  <Input placeholder="Tìm kiếm sản phẩm" size="large" />
+                </div>
+              </AutoComplete>
 
-              <Table
-                columns={columns}
-                size="small"
-                dataSource={productData}
-                summary={(pageData) => {
-                  return (
-                    <Table.Summary fixed>
-                      <Table.Summary.Row>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text>
-                            Tổng tiền:{' '}
-                            {formatCash(
-                              pageData.reduce(
-                                (a, b) => a + b.quantity * b.sale_price,
-                                0
-                              )
-                            )}
-                          </Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell>
-                          <Text></Text>
-                        </Table.Summary.Cell>
-                      </Table.Summary.Row>
-                    </Table.Summary>
-                  )
-                }}
-              />
+              <Table columns={columns} size="small" dataSource={productData} />
             </div>
             <div className={styles['block']} style={{ marginTop: 30 }}>
               <div className={styles['title']}>Thanh toán</div>
               <Row gutter={20}>
                 <Col span={12}>
-                  <div style={{ fontWeight: 500 }}>Ghi chú đơn hàng</div>
-                  <Input
+                  <div className={styles['payment-title']}>
+                    Ghi chú đơn hàng
+                  </div>
+                  <Input.TextArea
                     size="large"
                     placeholder="Ghi chú đơn hàng tại đây"
                     onChange={(e) => setNote(e.target.value)}
                   />
+                  <div className={styles['payment-title']}>Nhãn</div>
+                  <Select
+                    mode="tags"
+                    style={{ width: '100%' }}
+                    placeholder="Thêm nhãn"
+                    size="large"
+                  ></Select>
+                  <div className={styles['payment-title']}>
+                    Trạng thái đơn hàng
+                  </div>
+                  <Select
+                    mode="tags"
+                    style={{ width: '100%' }}
+                    placeholder="Trạng thái đơn"
+                    size="large"
+                  ></Select>
+                  <div className={styles['payment-title']}>
+                    Trạng thái vận chuyển
+                  </div>
+                  <Select
+                    mode="tags"
+                    style={{ width: '100%' }}
+                    placeholder="Trạng thái vận chuyển"
+                    size="large"
+                  ></Select>
+                  <div className={styles['payment-title']}>Tracking number</div>
+                  <Input placeholder="Tracking number" size="large" />
                 </Col>
-                <Col span={12}>
-                  <Row>
-                    <div style={{ color: 'blue' }}>Thuế</div>
-                    <Select
-                      mode="tags"
-                      size="large"
-                      placeholder="Please select"
-                      defaultValue={tax}
-                      onChange={addTax}
-                      style={{ width: '100%' }}
-                    >
-                      {taxList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Select.Option value={e.tax_id}>
-                            {e.name}
-                          </Select.Option>
-                        ))}
-                    </Select>
-                    <div style={{ color: 'blue' }}>voucher</div>
-                    <Input
-                      disabled={promotion}
-                      size="large"
-                      onChange={(e) => checkVoucher(e.target.value)}
-                    />
-                    <div style={{ color: 'blue' }}>chương trình khuyến mãi</div>
-                    <Select
-                      size="large"
-                      style={{ width: '100%' }}
-                      disabled={voucher}
-                      allowClear
-                      onChange={addPromotion}
-                    >
-                      {promotionList
-                        .filter((e) => e.active)
-                        .map((e) => (
-                          <Select.Option value={e.promotion_id}>
-                            {e.name}
-                          </Select.Option>
-                        ))}
-                    </Select>
+                <Col span={12} style={{ fontSize: 16 }}>
+                  <Row gutter={[5, 5]}>
+                    <Col span={6}>
+                      <div>Thuế</div>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        mode="tags"
+                        size="large"
+                        placeholder="Please select"
+                        defaultValue={tax}
+                        onChange={addTax}
+                        style={{ width: '100%' }}
+                      >
+                        {taxList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Select.Option value={e.tax_id}>
+                              {e.name}
+                            </Select.Option>
+                          ))}
+                      </Select>
+                    </Col>
+                    <Col span={6}>
+                      <div>voucher</div>
+                    </Col>
+                    <Col span={18}>
+                      <Input
+                        disabled={promotion}
+                        size="large"
+                        onChange={(e) => checkVoucher(e.target.value)}
+                      />
+                    </Col>
+                    <Col span={6}>
+                      <div>CTKM</div>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        size="large"
+                        style={{ width: '100%' }}
+                        disabled={voucher}
+                        allowClear
+                        onChange={addPromotion}
+                      >
+                        {promotionList
+                          .filter((e) => e.active)
+                          .map((e) => (
+                            <Select.Option value={e.promotion_id}>
+                              {e.name}
+                            </Select.Option>
+                          ))}
+                      </Select>
+                    </Col>
                   </Row>
                   <Row>
-                    <Col span={12}>Số lượng sản phẩm</Col>
+                    <Col span={12}>Số lượng </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
                       {productData.length
                         ? productData.reduce((a, b) => a + b.quantity, 0)
@@ -492,7 +451,7 @@ export default function OrderCreateShipping() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col span={12}>Tổng tiền hàng</Col>
+                    <Col span={12}>Tổng tiền</Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
                       {productData.length
                         ? formatCash(
@@ -524,7 +483,7 @@ export default function OrderCreateShipping() {
                   </Row>
                   <Row>
                     <Col span={12}>
-                      <span style={{ color: 'blue' }}>Giảm giá</span>
+                      <span>Giảm giá</span>
                     </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
                       0
@@ -547,14 +506,8 @@ export default function OrderCreateShipping() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col span={12}>Tạm tính</Col>
-                    <Col span={12} style={{ textAlign: 'end' }}>
-                      0
-                    </Col>
-                  </Row>
-                  <Row>
                     <Col span={12}>
-                      <span style={{ color: 'blue' }}>Phí vận chuyển</span>
+                      <span>Phí vận chuyển</span>
                     </Col>
                     <Col span={12} style={{ textAlign: 'end' }}>
                       0
@@ -599,35 +552,22 @@ export default function OrderCreateShipping() {
                         : 0}
                     </Col>
                   </Row>
+                  <Row justify="end" style={{ marginTop: 20 }}>
+                    <Button type="primary" size="large" onClick={createOrder}>
+                      Thanh toán
+                    </Button>
+                  </Row>
                 </Col>
               </Row>
             </div>
-            <Divider />
-            <Row justify="end">
-              <Button type="primary" size="large" onClick={createOrder}>
-                Thanh toán
-              </Button>
-            </Row>
           </Col>
           <Col span={8}>
-            <div
-              className={styles['block']}
-              style={{
-                boxShadow:
-                  ' rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px',
-              }}
-            >
-              {!customerInfo ? (
-                <>
-                  <Row justify="space-between" className={styles['title']}>
-                    <div>Khách hàng</div>
-                    <div
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setShowCreate(true)}
-                    >
-                      <PlusOutlined /> Tạo khách hàng
-                    </div>
-                  </Row>
+            <div className={styles['block']}>
+              <Row justify="space-between" className={styles['title']}>
+                <div>Khách hàng</div>
+              </Row>
+              <Row gutter={10} align="middle">
+                <Col span={20}>
                   <AutoComplete
                     placeholder="Tìm kiếm khách hàng"
                     size="large"
@@ -637,66 +577,56 @@ export default function OrderCreateShipping() {
                     onFocus={customerSearch}
                     style={{ width: '100%' }}
                   />
+                </Col>
+                <Col span={4}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 5,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      background: '#1890ff',
+                      color: '#fff',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setShowCreate(true)}
+                  >
+                    <PlusOutlined />
+                  </div>
+                </Col>
+              </Row>
 
-                  <Divider />
-                </>
-              ) : (
+              <Divider />
+              {customerInfo && (
                 <>
                   <Row justify="space-between">
-                    <span style={{ color: '#0000FF', fontWeight: 500 }}>
-                      Thông tin người mua
+                    <span className={styles['payment-title']}>
+                      Thông tin khách hàng
                     </span>
-                    <CloseOutlined
-                      onClick={() => setCustomerInfo(false)}
-                      cursor="pointer"
-                    />
                   </Row>
                   <Row>
                     <Col span={24}>
-                      {`${customerInfo.first_name} ${customerInfo.last_name}`}
+                      {`Họ tên: ${customerInfo.first_name || ''} ${
+                        customerInfo.last_name || ''
+                      }`}
                     </Col>
                     <Col span={24}>
                       <span style={{ color: '#808080' }}>
-                        {customerInfo.email}
+                        Số điện thoại: {customerInfo.phone || ''}
                       </span>
-                    </Col>
-                  </Row>
-                  <Divider />
-                  <Row>
-                    <span style={{ color: '#0000FF', fontWeight: 500 }}>
-                      Thông tin giao hàng
-                    </span>
-                  </Row>
-                  <Row>
-                    <Col span={24}>
-                      {`${customerInfo.first_name} ${customerInfo.last_name}`}
                     </Col>
                     <Col span={24}>
                       <span style={{ color: '#808080' }}>
-                        Không có thông tin công ty
+                        Email:{customerInfo.email || ''}
                       </span>
                     </Col>
-                  </Row>
-                  <Divider />
-                  <Row justify="space-between">
-                    <span style={{ color: '#0000FF', fontWeight: 500 }}>
-                      Địa chỉ giao hàng
-                    </span>
-                  </Row>
-                  <Row>
                     <Col span={24}>
-                      {customerInfo.address}, {customerInfo.ward},{' '}
-                      {customerInfo.district}, {customerInfo.province}
+                      <span style={{ color: '#808080' }}>
+                        Địa chỉ:{customerInfo.address || ''}
+                      </span>
                     </Col>
-                  </Row>
-                  <Divider />
-                  <Row justify="space-between">
-                    <span style={{ color: '#0000FF', fontWeight: 500 }}>
-                      Ghi chú về khách hàng
-                    </span>
-                  </Row>
-                  <Row>
-                    <Col span={24}>Không có ghi chú</Col>
                   </Row>
                 </>
               )}
@@ -704,14 +634,64 @@ export default function OrderCreateShipping() {
           </Col>
         </Row>
       </div>
-      <Drawer
-        title="Tạo khách hàng"
+      <Modal
+        title="Thêm mới khách hàng"
         visible={showCreate}
-        onClose={() => setShowCreate(false)}
-        width="75%"
+        onCancel={() => setShowCreate(false)}
+        centered
       >
-        <CustomerAdd close={() => setShowCreate(false)} hiddenType />
-      </Drawer>
+        <Form layout="vertical">
+          <Row gutter={10}>
+            <Col span={12}>
+              <Form.Item label="Tên khách hàng">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Địa chỉ">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Liên hệ">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Tỉnh/Thành phố">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Email">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Quận/huyện">
+                <Input size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+        <div>Độ tuổi</div>
+        <Row>
+          <Radio.Group defaultValue="1">
+            <Radio value="1">Dưới 18</Radio>
+            <Radio value="2">18 đến 25</Radio>
+            <Radio value="3">25 đến 35</Radio>
+            <Radio value="4">Trên 35</Radio>
+          </Radio.Group>
+        </Row>
+        <div>Giới tính</div>
+        <Row>
+          <Radio.Group defaultValue="male">
+            <Radio value="male">Nam</Radio>
+            <Radio value="female">Nữ</Radio>
+            <Radio value="other">Khác</Radio>
+          </Radio.Group>
+        </Row>
+      </Modal>
     </div>
   )
 }

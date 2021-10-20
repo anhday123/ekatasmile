@@ -14,16 +14,18 @@ import { addCustomer } from '../../../../apis/customer'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { apiDistrict, apiProvince } from '../../../../apis/information'
+
 const { Option } = Select
 export default function CustomerAdd({ close, reload }) {
   const [gender, setGender] = useState('male')
   const [birthday, setBirthday] = useState(null)
   const dispatch = useDispatch()
   const [Location, setLocation] = useState({ province: [], district: [] })
+  const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
-      description: 'Cập nhật thông tin khách hàng thành công.',
+      description: 'Thêm khách hàng thành công.',
     })
   }
 
@@ -49,7 +51,12 @@ export default function CustomerAdd({ close, reload }) {
         await reload()
         openNotification()
         close()
-      } else notification.error({ message: 'Tạo khách hàng không thành công!' })
+        form.resetFields()
+      } else
+        notification.error({
+          message: 'Thất bại!',
+          description: res.data.message,
+        })
       dispatch({ type: 'LOADING', data: false })
     } catch (e) {
       console.log(e)
@@ -75,7 +82,11 @@ export default function CustomerAdd({ close, reload }) {
   return (
     <>
       <div className={styles['supplier_add']}>
-        <Form className={styles['supplier_add_content']} onFinish={onFinish}>
+        <Form
+          className={styles['supplier_add_content']}
+          onFinish={onFinish}
+          form={form}
+        >
           <Row
             style={{
               display: 'flex',
@@ -226,8 +237,8 @@ export default function CustomerAdd({ close, reload }) {
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select placeholder="Chọn loại khách hàng" size="large">
-                    <Option value="Tiềm năng">Tiềm năng</Option>
-                    <Option value="Vãng lai">Vãng lai</Option>
+                    <Option value="TIỀM NĂNG">Tiềm năng</Option>
+                    <Option value="VÃNG LAI">Vãng lai</Option>
                   </Select>
                 </Form.Item>
               </div>
@@ -284,9 +295,16 @@ export default function CustomerAdd({ close, reload }) {
                   <Select
                     size="large"
                     placeholder="Chọn tỉnh/thành phố"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
                     onChange={(e) =>
                       getAddress(apiDistrict, setLocation, 'district', {
-                        keyword: e,
+                        search: e,
                       })
                     }
                   >
@@ -317,7 +335,17 @@ export default function CustomerAdd({ close, reload }) {
                   Quận/huyện
                 </div>
                 <Form.Item name="district" hasFeedback>
-                  <Select size="large" placeholder="Chọn quận/huyện">
+                  <Select
+                    size="large"
+                    placeholder="Chọn quận/huyện"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
                     {Location.district.map((e) => (
                       <Option value={e.district_name}>{e.district_name}</Option>
                     ))}

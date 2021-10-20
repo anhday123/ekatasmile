@@ -198,7 +198,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.BRANCH,
     Component: () => <Branch />,
-    title: 'Quản lý chi nhánh và kho',
+    title: 'Quản lý chi nhánh',
     permissions: [],
     exact: true,
   },
@@ -310,7 +310,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.CUSTOMER,
     Component: () => <Customer />,
-    title: 'QL đối tác vận chuyển',
+    title: 'QL khách hàng',
     permissions: [],
     exact: true,
   },
@@ -332,6 +332,20 @@ const DEFINE_ROUTER = [
     path: ROUTES.ROLE,
     Component: () => <Role />,
     title: 'Quản lý phân quyền',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_PRODUCT_ADD,
+    Component: () => <ShippingProductAdd />,
+    title: 'Thêm quản lý chuyển hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
+    Component: () => <DeliveryUpdate />,
+    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
     permissions: [],
     exact: true,
   },
@@ -408,13 +422,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.SHIPPING_PRODUCT_ADD,
-    Component: () => <ShippingProductAdd />,
-    title: 'Thêm quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SHIPPING_PRODUCT_VIEW,
     Component: () => <ShippingProductView />,
@@ -422,13 +430,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
-    Component: () => <DeliveryUpdate />,
-    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SHIPPING_CONTROL_ADD,
     Component: () => <ShippingControlAdd />,

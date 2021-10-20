@@ -96,14 +96,14 @@ export default function Role() {
       pChildren: ['them_phieu_kiem_hang'],
     },
     {
+      pParent: 'tich_diem',
+    },
+    {
       pParent: 'quan_li_khach_hang',
       pChildren: ['them_khach_hang', 'cap_nhat_khach_hang'],
     },
     {
       pParent: 'bao_cao_don_hang',
-    },
-    {
-      pParent: 'bao_cao_nhap_hang',
     },
     {
       pParent: 'bao_cao_ton_kho',
@@ -131,6 +131,7 @@ export default function Role() {
 
     {
       pParent: 'cau_hinh_thong_tin',
+      //thiếu ql cửa hàng permission them_cua_hang
       pChildren: [
         { pParent: 'quan_li_nguoi_dung', pChildren: ['them_nguoi_dung'] },
         {
@@ -142,8 +143,14 @@ export default function Role() {
           pParent: 'quan_li_thanh_toan',
           pChildren: ['them_hinh_thuc_thanh_toan'],
         },
-        'nhap_xuat_file',
-        'nhat_ki_hoat_dong',
+        {
+          pParent: 'nhap_xuat_file',
+          isParent: true,
+        },
+        {
+          pParent: 'nhat_ki_hoat_dong',
+          isParent: true,
+        },
       ],
     },
     {
@@ -235,8 +242,9 @@ export default function Role() {
   const apiAllRolePermissionData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRolePermission()
-      console.log('role', res)
+      const res = await apiAllRolePermission(
+        dataUser.data._role.name === 'ADMIN' && { default: true }
+      )
       if (res.status === 200) {
         setRolePermission([...res.data.data])
       }
@@ -364,54 +372,70 @@ export default function Role() {
   }
 
   const generateTreeData = (data, roleProps, typePermission = 1) => {
-    return data.map((p) => {
-      if (typeof p === 'string') {
+    return data
+      .filter((e) =>
+        [
+          ...JSON.parse(localStorage.menu_list),
+          ...JSON.parse(localStorage.permission_list),
+        ].includes(e.pParent || e)
+      )
+      .map((p) => {
+        if (p.isParent || typeof p === 'string') {
+          return {
+            title: getTitle(
+              p.pParent || p,
+              typePermission ? 'menu_list' : 'permission_list',
+              roleProps,
+              typeof p === 'string' ? '#1772FA' : '#EC7100'
+            ),
+            key: p.pParent || p,
+          }
+        }
         return {
           title: getTitle(
-            p,
+            p.pParent,
             typePermission ? 'menu_list' : 'permission_list',
-            roleProps,
-            '#1772FA'
+            roleProps
           ),
-          key: p,
+          key: p.pParent,
+          children:
+            p.pChildren &&
+            generateTreeData(
+              p.pChildren,
+              roleProps,
+              typeof p.pChildren[0] === 'string' ? 0 : 1
+            ),
         }
-      }
-      return {
-        title: getTitle(
-          p.pParent,
-          typePermission ? 'menu_list' : 'permission_list',
-          roleProps
-        ),
-        key: p.pParent,
-        children:
-          p.pChildren &&
-          generateTreeData(
-            p.pChildren,
-            roleProps,
-            typeof p.pChildren[0] === 'string' ? 0 : 1
-          ),
-      }
-    })
+      })
   }
   const generateCreateTreeData = (data) => {
-    return data.map((p) => {
-      if (typeof p === 'string') {
-        return {
-          title: <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>,
-          key: `permission.${p}`,
+    return data
+      .filter((e) =>
+        [
+          ...JSON.parse(localStorage.menu_list),
+          ...JSON.parse(localStorage.permission_list),
+        ].includes(e.pParent || e)
+      )
+      .map((p) => {
+        if (typeof p === 'string') {
+          return {
+            title: (
+              <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>
+            ),
+            key: `permission.${p}`,
+          }
         }
-      }
-      return {
-        title: (
-          <span style={{ color: '#EC7100' }}>{rolesTranslate(p.pParent)}</span>
-        ),
-        key: `menu.${p.pParent}`,
-        children: p.pChildren && generateCreateTreeData(p.pChildren),
-      }
-    })
+        return {
+          title: (
+            <span style={{ color: '#EC7100' }}>
+              {rolesTranslate(p.pParent)}
+            </span>
+          ),
+          key: `menu.${p.pParent}`,
+          children: p.pChildren && generateCreateTreeData(p.pChildren),
+        }
+      })
   }
-
-  // get keys of parent and children
 
   useEffect(() => {
     apiAllRolePermissionData()
@@ -492,7 +516,9 @@ export default function Role() {
               if (
                 values.name === 'ADMIN' ||
                 (values.name === 'BUSINESS' &&
-                  dataUser.data._role.name === 'BUSINESS')
+                  dataUser.data._role.name !== 'ADMIN') ||
+                (values.name === 'EMPLOYEE' &&
+                  dataUser.data._role.name !== 'ADMIN')
               )
                 return ''
 
@@ -502,7 +528,7 @@ export default function Role() {
                     <div
                       style={{
                         display:
-                          Object.keys(ROLE_DEFAULT).includes(values.name) &&
+                          values.default && //Object.keys(ROLE_DEFAULT).includes(values.name)
                           'none',
                       }}
                       onClick={(e) => e.stopPropagation()}

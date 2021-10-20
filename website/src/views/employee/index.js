@@ -17,6 +17,8 @@ import {
   Button,
   Drawer,
   Table,
+  Menu,
+  Dropdown,
 } from 'antd'
 import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
@@ -47,12 +49,19 @@ export default function Employee() {
   const [district, setDistrict] = useState([])
   const [branch, setBranch] = useState([])
   const [store, setStore] = useState([])
+  const [rolelist, setRolelist] = useState([])
+  const [showBulkUpdate, setShowBulkUpdate] = useState({
+    visible: false,
+    key: '',
+    title: '',
+  })
   const [filter, setFilter] = useState({
     search: '',
     from_date: undefined,
     to_date: undefined,
     role_id: '',
   })
+  const [updateForm] = Form.useForm()
   const { RangePicker } = DatePicker
   var temp = 0
   const modal2VisibleModal = (modal2Visible) => {
@@ -110,7 +119,10 @@ export default function Employee() {
       render: (text, record) => (
         <div
           style={{ color: '#40A9FF', cursor: 'pointer' }}
-          onClick={() => modal2VisibleModalMain(true, record)}
+          onClick={() => {
+            updateForm.setFieldsValue(record)
+            modal2VisibleModalMain(true, record)
+          }}
         >
           {text}
         </div>
@@ -205,25 +217,6 @@ export default function Employee() {
         ),
     },
   ]
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
-
-      const res = await apiSearch({
-        from_date: start,
-        to_date: end,
-        page: pagination.page,
-        page_size: pagination.page_size,
-      })
-
-      if (res.status === 200) {
-        setEmployee(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
 
   const openNotificationClear = () => {
     notification.success({
@@ -235,7 +228,7 @@ export default function Employee() {
     notification.success({
       message: 'Thành công',
       description:
-        data === 2
+        data && data === 2
           ? 'Vô hiệu hóa nhân sự thành công.'
           : 'Kích hoạt nhân sự thành công.',
     })
@@ -268,6 +261,32 @@ export default function Employee() {
         setSelectedRowKeys([])
       } else {
         openNotificationErrorUpdate()
+      }
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
+    }
+  }
+
+  const onUpdateFinish = async (value) => {
+    let tmp = { ...value }
+    delete tmp.user_id
+    try {
+      const res = await updateUser(tmp, value.user_id)
+      console.log(res)
+      if (res.status === 200) {
+        await apiAllEmployeeData()
+        notification.success({
+          message: 'Thành công',
+          description: 'Cập nhật thông tin nhân sự thành công',
+        })
+        modal2VisibleModal(false)
+      } else {
+        notification.error({
+          message: 'Thất bại',
+          description: res.data.message,
+        })
       }
       setLoading(false)
     } catch (error) {
@@ -392,6 +411,94 @@ export default function Employee() {
   function handleChangeCity(value) {
     apiFilterCityData(value)
   }
+  const finishBulkUpdate = async (value) => {
+    try {
+      const res = await Promise.all(
+        selectedRowKeys.map((e) => {
+          return updateUser(value, e)
+        })
+      )
+      if (res.reduce((a, b) => a && b.data.success, true)) {
+        notification.success({ message: 'Cập nhật thông tin thành công' })
+        apiAllEmployeeData(removeNull(filter))
+        setShowBulkUpdate({ visible: false, key: '', title: '' })
+        setSelectedRowKeys([])
+      } else {
+        notification.error({ message: 'Thất bại' })
+      }
+    } catch (err) {
+      console.log(err)
+      notification.error({ message: 'Thất bại' })
+    }
+  }
+  const menuUpdate = () => (
+    <Menu>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'phone', title: 'liên hệ' })
+        }
+      >
+        Liên hệ
+      </Menu.Item>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'email', title: 'email' })
+        }
+      >
+        Email
+      </Menu.Item>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'last_name', title: 'tên' })
+        }
+      >
+        Tên
+      </Menu.Item>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'first_name', title: 'họ' })
+        }
+      >
+        Họ
+      </Menu.Item>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'address', title: 'địa chỉ' })
+        }
+      >
+        Địa chỉ
+      </Menu.Item>
+      {/* <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({
+            visible: true,
+            key: 'district',
+            title: 'quận/huyện',
+          })
+        }
+      >
+        Quận huyện
+      </Menu.Item>
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({
+            visible: true,
+            key: 'province',
+            title: 'thành phố',
+          })
+        }
+      >
+        Thành phố
+      </Menu.Item> */}
+      <Menu.Item
+        onClick={() =>
+          setShowBulkUpdate({ visible: true, key: 'role_id', title: 'vai trò' })
+        }
+      >
+        Vai trò
+      </Menu.Item>
+    </Menu>
+  )
   useEffect(() => {
     getAllStoreData()
   }, [])
@@ -626,9 +733,11 @@ export default function Employee() {
               }}
             >
               <Permission permissions={[PERMISSIONS.cap_nhat_nhan_su]}>
-                <Button type="primary" onClick={showDrawer} size="large">
-                  Cập nhật nhân sự
-                </Button>
+                <Dropdown overlay={menuUpdate}>
+                  <Button type="primary" size="large">
+                    Cập nhật nhân sự
+                  </Button>
+                </Dropdown>
               </Permission>
             </div>
           ) : (
@@ -637,7 +746,7 @@ export default function Employee() {
           <div className={styles['employee_manager_bottom_table']}>
             <Table
               size="small"
-              rowKey="_id"
+              rowKey="user_id"
               columns={columns}
               rowSelection={rowSelection}
               loading={loading}
@@ -650,7 +759,7 @@ export default function Employee() {
       </div>
 
       <Modal
-        title="Xem chi tiết thông tin nhân sự"
+        title="Cập nhật thông tin nhân sự"
         centered
         footer={null}
         width={800}
@@ -658,299 +767,113 @@ export default function Employee() {
         onOk={() => modal2VisibleModal(false)}
         onCancel={() => modal2VisibleModal(false)}
       >
-        <div className={styles['supplier_information_content_parent']}>
-          <Row className={styles['supplier_information_content_main']}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_left']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  {' '}
-                  <div>
-                    <b>Tên nhân sự:</b>{' '}
-                    {`${record.first_name} ${record.last_name}`}
-                  </div>
-                </Col>
-              </Row>
+        <Form
+          wrapperCol={{ xs: 24, lg: 17 }}
+          labelCol={{ xs: 24, lg: 7 }}
+          form={updateForm}
+          onFinish={onUpdateFinish}
+        >
+          <Row gutter={20}>
+            <Col span={12}>
+              <Form.Item name="first_name" label="Họ">
+                <Input />
+              </Form.Item>
             </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_left']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Email:</b> {record.email}
-                  </div>
-                </Col>
-              </Row>
+            <Col span={12}>
+              <Form.Item name="last_name" label="Tên">
+                <Input />
+              </Form.Item>
             </Col>
-          </Row>
-          <Row className={styles['supplier_information_content_main']}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_left']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Chức vụ:</b>{' '}
-                    {record && record.role ? record.role.name : ''}
-                  </div>
-                </Col>
-              </Row>
+            <Col span={12}>
+              <Form.Item name="email" label="Email">
+                <Input />
+              </Form.Item>
             </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Liên hệ:</b> {record.username}
-                  </div>
-                </Col>
-              </Row>
+            <Col span={12}>
+              <Form.Item name="phone" label="Liên hệ">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="branch_id" label="Chi nhánh">
+                <Select>
+                  {branch.map((e) => (
+                    <Option value={e.branch_id}>{e.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="role_id" label="Vai trò">
+                <Select>
+                  {permission.map((e) => (
+                    <Option value={e.role_id}>{e.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="province" label="Tỉnh/Thành phố">
+                <Select>
+                  {province.map((e) => (
+                    <Option value={e.name}>{e.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="district" label="Quận/Huyện">
+                <Select>
+                  {district.map((e) => (
+                    <Option value={e.name}>{e.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
             </Col>
           </Row>
-
-          <Row className={styles['supplier_information_content_main']}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Ngày tạo:</b>{' '}
-                    {moment(record.create_date).format('YYYY-MM-DD')}
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Địa chỉ:</b> {record.address}
-                  </div>
-                </Col>
-              </Row>
-            </Col>
+          <Form.Item name="user_id">
+            <Input hidden />
+          </Form.Item>
+          <Row justify="end">
+            <Button type="primary" htmlType="submit">
+              Cập nhật
+            </Button>
           </Row>
-
-          <Row className={styles['supplier_information_content_main']}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Quận/huyện:</b> {record.district}
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Chi nhánh làm việc:</b> {record.branch_id}
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Row className={styles['supplier_information_content_main']}>
-            <Col
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-              className={styles['supplier_information_content_child_right']}
-            >
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Col
-                  style={{ width: '100%' }}
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={24}
-                  xl={24}
-                >
-                  <div>
-                    <b>Tỉnh/thành phố:</b> {record.province}
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </div>
+        </Form>
       </Modal>
-
+      <Modal
+        centered
+        title={`Cập nhật ${showBulkUpdate.title}`}
+        footer=""
+        visible={showBulkUpdate.visible}
+        onCancel={() => setShowBulkUpdate({ visible: false, key: '' })}
+      >
+        <Form onFinish={finishBulkUpdate}>
+          <Form.Item name={showBulkUpdate.key}>
+            {showBulkUpdate.key === 'role_id' ? (
+              <Select
+                placeholder={`Chọn ${showBulkUpdate.title}`}
+                style={{ width: '100%' }}
+                size="large"
+              >
+                {permission.map((e) => (
+                  <Option value={e.role_id}>{e.name}</Option>
+                ))}
+              </Select>
+            ) : (
+              <Input
+                size="large"
+                placeholder={`Nhập ${showBulkUpdate.title}`}
+              />
+            )}
+          </Form.Item>
+          <Row>
+            <Button type="primary" htmlType="submit">
+              Xác nhận
+            </Button>
+          </Row>
+        </Form>
+      </Modal>
       <Drawer
         title="Cập nhật thông tin nhân sự"
         width={1000}
@@ -966,541 +889,7 @@ export default function Employee() {
             <Button type="primary">Cập nhật</Button>
           </div>
         }
-      >
-        {arrayUpdate &&
-          arrayUpdate.length > 0 &&
-          arrayUpdate.map((values, index) => {
-            const obj = Object.keys(values)
-            return (
-              <Form
-                style={{
-                  borderBottom: '1px solid rgb(238, 224, 224)',
-                  paddingBottom: '1.5rem',
-                }}
-                className={styles['supplier_add_content']}
-                // form={form}
-                layout="vertical"
-                initialValues={values}
-              >
-                <Row
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  {obj.map((data) => {
-                    if (data === 'username') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          disabled
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Tên đăng nhập
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'phone') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Liên hệ
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'email') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Email
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'branch') {
-                      const InputName = () => (
-                        <Select
-                          size="large"
-                          defaultValue={values[data].branch_id}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Chọn chi nhánh"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {branch &&
-                            branch.length > 0 &&
-                            branch.map((values, index) => {
-                              return (
-                                <Option value={values.branch_id}>
-                                  {values.name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Chi nhánh làm việc
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'store') {
-                      const InputName = () => (
-                        <Select
-                          size="large"
-                          defaultValue={values[data].store_id}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Chọn cửa hàng"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {store &&
-                            store.length > 0 &&
-                            store.map((values, index) => {
-                              return (
-                                <Option value={values.store_id}>
-                                  {values.name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Cửa hàng
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'role') {
-                      const InputName = () => (
-                        <Select
-                          size="large"
-                          defaultValue={
-                            values[data] && values[data].role_id
-                              ? values[data].role_id
-                              : 'Đã lưu vai trò'
-                          }
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Chọn vai trò"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {permission &&
-                            permission.length > 0 &&
-                            permission.map((values, index) => {
-                              return (
-                                <Option value={values.role_id}>
-                                  {values.name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Vai trò
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-
-                    if (data === 'first_name') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Tên
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'last_name') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Họ
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'address') {
-                      const InputName = () => (
-                        <Input
-                          size="large"
-                          defaultValue={values[data]}
-                          onChange={(event) => {
-                            const value = event.target.value
-                            arrayUpdate[index][data] = value
-                          }}
-                        />
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Địa chỉ
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'province') {
-                      const InputName = () => (
-                        <Select
-                          size="large"
-                          defaultValue={values[data]}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Select a person"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            arrayUpdate[index][data] = event
-                            handleChangeCity(event)
-                          }}
-                        >
-                          {province &&
-                            province.length > 0 &&
-                            province.map((values, index) => {
-                              return (
-                                <Option value={values.province_name}>
-                                  {values.province_name}
-                                </Option>
-                              )
-                            })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Tỉnh/thành phố
-                            </div>
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                    if (data === 'district') {
-                      const InputName = () => (
-                        <Select
-                          size="large"
-                          defaultValue={values[data]}
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Select a person"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          onChange={(event) => {
-                            arrayUpdate[index][data] = event
-                          }}
-                        >
-                          {districtMainAPI && districtMainAPI.length > 0
-                            ? districtMainAPI &&
-                              districtMainAPI.length > 0 &&
-                              districtMainAPI.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>
-                                    {values.district_name}
-                                  </Option>
-                                )
-                              })
-                            : district &&
-                              district.length > 0 &&
-                              district.map((values, index) => {
-                                return (
-                                  <Option value={values.district_name}>
-                                    {values.district_name}
-                                  </Option>
-                                )
-                              })}
-                        </Select>
-                      )
-                      return (
-                        <Col
-                          style={{ width: '100%' }}
-                          xs={24}
-                          sm={24}
-                          md={11}
-                          lg={11}
-                          xl={11}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                color: 'black',
-                                fontWeight: '600',
-                                marginBottom: '0.5rem',
-                                marginTop: '1rem',
-                              }}
-                            >
-                              Quận/huyện
-                            </div>
-
-                            <InputName />
-                          </div>
-                        </Col>
-                      )
-                    }
-                  })}
-                </Row>
-              </Form>
-            )
-          })}
-      </Drawer>
+      ></Drawer>
 
       <Drawer
         title="Thêm nhân sự"

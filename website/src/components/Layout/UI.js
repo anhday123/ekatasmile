@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as types from './../../consts/index'
-import axios from 'axios'
 import { ACTION, ROUTES } from './../../consts/index'
-import avatar from './../../assets/img/icon_header_right.png'
 import {
   Layout,
   Menu,
@@ -13,11 +11,17 @@ import {
   Upload,
   Button,
   Input,
-  Popover,
+  Dropdown,
   Modal,
   Form,
   BackTop,
+  Affix,
+  Avatar,
+  Image,
+  Badge,
+  Empty,
 } from 'antd'
+
 import {
   MenuOutlined,
   GoldOutlined,
@@ -41,7 +45,9 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
   EditOutlined,
+  ExportOutlined,
 } from '@ant-design/icons'
+
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import styles from './../Layout/layout.module.scss'
@@ -56,11 +62,13 @@ import { Link, useLocation, useRouteMatch } from 'react-router-dom'
 import { Row, Col } from 'antd'
 import { getStoreSelectValue } from './../../actions/store/index'
 import { PERMISSIONS } from 'consts'
+import { Bell, CarretDown, Plus } from 'utils/icon'
 
 //apis
 import { apiAllRole, updateUser, apiSearch } from 'apis/user'
 import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
+import { uploadFile } from 'apis/upload'
 
 import { decodeToken } from 'react-jwt'
 const { Sider } = Layout
@@ -139,12 +147,6 @@ const UI = (props) => {
       icon: <NoteAddIcon />,
     },
     {
-      path: ROUTES.BUSINESS,
-      title: 'Quản lý các doanh nghiệp',
-      permissions: [PERMISSIONS.business_management],
-      icon: <ApartmentOutlined />,
-    },
-    {
       path: 'product',
       title: 'Sản phẩm',
       permissions: [PERMISSIONS.san_pham],
@@ -153,31 +155,31 @@ const UI = (props) => {
         {
           icon: <GiftOutlined />,
           path: ROUTES.PRODUCT,
-          title: 'Quản lý sản phẩm',
+          title: 'Sản phẩm cửa hàng',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
         {
           icon: <BankOutlined />,
           path: ROUTES.INVENTORY,
-          title: 'Quản lý kho',
+          title: 'Sản phẩm ở kho',
           permissions: [PERMISSIONS.quan_li_kho],
         },
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
-          title: 'Quản lý chuyển hàng',
+          title: 'Chuyển hàng',
           permissions: [PERMISSIONS.quan_li_chuyen_hang],
         },
         {
           icon: <GoldOutlined />,
           path: ROUTES.SUPPLIER,
-          title: 'Quản lý nhà cung cấp',
+          title: 'Nhà cung cấp',
           permissions: [PERMISSIONS.quan_li_nha_cung_cap],
         },
         {
           icon: <AccountBookOutlined />,
           path: ROUTES.GUARANTEE,
-          title: 'Quản lý bảo hành',
+          title: 'Bảo hành',
           permissions: [PERMISSIONS.quan_li_bao_hanh],
         },
       ],
@@ -197,7 +199,7 @@ const UI = (props) => {
     {
       path: ROUTES.POINT,
       title: 'Tích điểm',
-      permissions: [],
+      permissions: [PERMISSIONS.tich_diem],
       icon: <AlertOutlined />,
     },
     {
@@ -208,7 +210,7 @@ const UI = (props) => {
     },
     {
       path: 'report',
-      title: 'Báo cáo đơn hàng',
+      title: 'Báo cáo',
       permissions: [PERMISSIONS.bao_cao_don_hang],
       icon: <DollarCircleOutlined />,
       menuItems: [
@@ -247,26 +249,32 @@ const UI = (props) => {
         {
           icon: <ClusterOutlined />,
           path: ROUTES.SHIPPING_CONTROL,
-          title: 'Đối soát vận chuyển',
+          title: 'Đối soát',
           permissions: [PERMISSIONS.doi_soat_van_chuyen],
         },
         {
           icon: <CarOutlined />,
           path: ROUTES.SHIPPING,
-          title: 'Quản lý đối tác vận chuyển',
+          title: 'Đối tác',
           permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
         },
       ],
     },
     {
+      path: ROUTES.BUSINESS,
+      title: 'Quản lý doanh nghiệp',
+      permissions: [PERMISSIONS.business_management],
+      icon: <ApartmentOutlined />,
+    },
+    {
       path: ROUTES.CONFIGURATION_STORE,
-      title: 'Cấu hình thông tin',
+      title: 'Cấu hình',
       permissions: [PERMISSIONS.cau_hinh_thong_tin],
       icon: <SettingOutlined />,
     },
     {
       path: ROUTES.ROLE,
-      title: 'Quản lý phân quyền',
+      title: 'Phân quyền',
       permissions: [PERMISSIONS.quan_li_phan_quyen],
       icon: <PartitionOutlined />,
     },
@@ -408,35 +416,35 @@ const UI = (props) => {
   }, [])
   const content = (
     <div className={styles['user_information']}>
-      <div onClick={() => modal2VisibleModal(true)}>
-        <div>
-          <UserOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
-          />
-          Thông tin cá nhân
-        </div>
-      </div>
       <div onClick={() => modal1VisibleModal(true)}>
-        <div>
-          <EditOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+        <div style={{ color: '#565656', paddingLeft: 10 }}>
+          <UserOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }}
           />
-          Chỉnh sửa thông tin cá nhân
+          Tài khoản của tôi
         </div>
       </div>
       <Link
         to={ROUTES.LOGIN}
         onClick={onClickSignout}
         className={styles['user_information_link']}
-        style={{ color: 'black', fontWeight: '600' }}
+        style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
       >
         <div>
-          <LogoutOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: 'black' }}
+          <ExportOutlined
+            style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }}
           />
           Đăng xuất
         </div>
       </Link>
+    </div>
+  )
+  const NotifyContent = (props) => (
+    <div className={styles['notificationBox']}>
+      <div className={styles['title']}>Thông báo</div>
+      <div className={styles['content']}>
+        <Empty />
+      </div>
     </div>
   )
   const modal1VisibleModal = (modal1Visible) => {
@@ -448,7 +456,7 @@ const UI = (props) => {
       data.phoneNumber = user.phone
       data.email = user.email
       data.workPlace = user.company_name
-      data.role = user.role.role_id
+      data.role = user._role.role_id
       data.address = user.address
     } else {
       data.firstName = login.objectUsername.first_name
@@ -456,7 +464,7 @@ const UI = (props) => {
       data.phoneNumber = login.objectUsername.phone
       data.email = login.objectUsername.email
       data.workPlace = login.objectUsername.company_name
-      data.role = login.objectUsername.role.role_id
+      data.role = login.objectUsername._role.role_id
       data.address = login.objectUsername.address
     }
   }
@@ -483,36 +491,16 @@ const UI = (props) => {
     multiple: true,
     showUploadList: false,
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    maxCount: 1,
     async onChange(info) {
       var { status } = info.file
       if (status !== 'done') {
         status = 'done'
         if (status === 'done') {
-          console.log(info.file, info.fileList)
-          if (info.fileList && info.fileList.length > 0) {
-            const image = info.fileList[info.fileList.length - 1].originFileObj
-            let formData = new FormData() //formdata object
-            formData.append('files', image) //append the values with key, value pair
-            if (formData) {
-              dispatch({ type: ACTION.LOADING, data: true })
-              let a = axios
-                .post(
-                  'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-                  formData,
-                  {
-                    headers: {
-                      'Content-Type': 'multipart/form-data',
-                    },
-                  }
-                )
-                .then((resp) => resp)
-              let resultsMockup = await Promise.all([a])
-              console.log(resultsMockup[0].data.data[0])
-              dispatch({ type: ACTION.LOADING, data: false })
+          const imgLink = await uploadFile(info.file.originFileObj)
+          dispatch({ type: ACTION.LOADING, data: false })
 
-              setList(resultsMockup[0].data.data[0])
-            }
-          }
+          setList(imgLink)
         }
       }
     },
@@ -878,7 +866,7 @@ const UI = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 240}
+        width={isMobile ? '100%' : 230}
         collapsedWidth={isMobile ? 0 : 160}
         style={{
           backgroundColor: 'white',
@@ -956,111 +944,139 @@ const UI = (props) => {
         </Menu>
       </Sider>
       <Layout className={styles['site-layout']}>
-        <Row className={styles['background_right_top']}>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-            <Row
-              wrap={isMobile}
-              justify="space-between"
-              className={styles['navbar']}
-            >
+        <Affix offsetTop={0}>
+          <Row className={styles['background_right_top']}>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Row
-                align="middle"
-                wrap={false}
-                style={{
-                  width: '100%',
-                  paddingLeft: 5,
-                  paddingRight: 5,
-                  marginTop: 10,
-                  marginBottom: 15,
-                }}
-                justify={isMobile && 'space-between'}
+                wrap={isMobile}
+                justify="space-between"
+                className={styles['navbar']}
               >
-                <div className={styles['navbar_left_parent']}>
-                  <MenuOutlined
-                    onClick={toggle}
-                    className={styles['header_navbar_left_icon']}
-                  />
-                </div>
-                <Permission permissions={[PERMISSIONS.them_cua_hang]}>
-                  <Link
-                    to={{
-                      pathname: ROUTES.BRANCH,
-                      state: 'show-modal-create-branch',
-                    }}
-                    style={{ marginRight: '1rem', cursor: 'pointer' }}
-                  >
-                    <Button
-                      type="primary"
-                      size="large"
-                      style={{
-                        backgroundColor: '#FFAB2D',
-                        borderColor: '#FFAB2D',
-                        fontWeight: 600,
-                        marginLeft: 10,
-                        display: login.role === 'EMPLOYEE' && 'none',
-                      }}
-                    >
-                      Thêm chi nhánh
-                    </Button>
-                  </Link>
-                </Permission>
-                <Select
-                  disabled={login.role === 'EMPLOYEE' ? true : false}
-                  placeholder="Chọn chi nhánh"
-                  style={{ width: isMobile ? '90%' : 250 }}
-                  size="large"
-                  onChange={changeBranch}
-                  value={branchId || user.branch_id}
+                <Row
+                  align="middle"
+                  wrap={false}
+                  style={{
+                    width: '100%',
+                    paddingLeft: 5,
+                    paddingRight: 5,
+                    marginTop: 10,
+                    marginBottom: 15,
+                  }}
+                  justify={isMobile && 'space-between'}
                 >
-                  {listBranch.map((e, index) => (
-                    <Option value={e.branch_id} key={index}>
-                      {e.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Row>
-              <div className={styles['navbar_right']}>
-                <Popover placement="bottomRight" content={content}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div style={{ padding: '0 0.75rem 0 0.5rem' }}>
-                      <img
-                        src={
-                          (user && user.avatar === ' ') || !user.avatar
-                            ? avatar
-                            : user.avatar
-                        }
+                  <div className={styles['navbar_left_parent']}>
+                    <MenuOutlined
+                      onClick={toggle}
+                      className={styles['header_navbar_left_icon']}
+                    />
+                  </div>
+                  <Permission permissions={[PERMISSIONS.them_cua_hang]}>
+                    <Link
+                      to={{
+                        pathname: ROUTES.BRANCH,
+                        state: 'show-modal-create-branch',
+                      }}
+                      style={{ marginRight: '1rem', cursor: 'pointer' }}
+                    >
+                      <Button
+                        type="primary"
+                        size="large"
                         style={{
-                          width: '2.5rem',
-                          height: '2.5rem',
-                          objectFit: 'contain',
-                        }}
-                        alt=""
-                      />
-                    </div>
-                    <div className={styles['navbar_right_left_name']}>
-                      <div
-                        style={{
-                          color: 'black',
-                          fontWeight: '600',
-                          fontSize: '1rem',
+                          backgroundColor: '#FFAB2D',
+                          borderColor: '#FFAB2D',
+                          fontSize: 18,
+                          marginLeft: 10,
+                          display: login.role === 'EMPLOYEE' && 'none',
                         }}
                       >
-                        {username ? username : login.username}
-                      </div>
-                      <div>0 VNĐ</div>
-                    </div>
+                        <Plus />
+                      </Button>
+                    </Link>
+                  </Permission>
+                  <Select
+                    disabled={login.role === 'EMPLOYEE' ? true : false}
+                    placeholder="Chọn chi nhánh"
+                    style={{ width: isMobile ? '90%' : 250 }}
+                    size="large"
+                    onChange={changeBranch}
+                    value={branchId || user.branch_id}
+                  >
+                    {listBranch.map((e, index) => (
+                      <Option value={e.branch_id} key={index}>
+                        {e.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Row>
+                <div className={styles['navbar_right']}>
+                  <div className={styles['navbar_notification']}>
+                    <Dropdown
+                      overlay={<NotifyContent />}
+                      placement="bottomCenter"
+                      trigger="click"
+                    >
+                      <Badge count={0} showZero size="small" offset={[-3, 3]}>
+                        <Bell style={{ color: 'rgb(253, 170, 62)' }} />
+                      </Badge>
+                    </Dropdown>
                   </div>
-                </Popover>
-              </div>
-            </Row>
-          </Col>
-        </Row>
+                  <Dropdown overlay={content} trigger="click">
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ padding: '0 0.75rem 0 0.5rem' }}>
+                        {(user && user.avatar === ' ') || !user.avatar ? (
+                          <Avatar
+                            style={{
+                              color: '#FFF',
+                              backgroundColor: '#FDAA3E',
+                            }}
+                          >
+                            {username ? (
+                              <span style={{ textTransform: 'capitalize' }}>
+                                {username[0]}
+                              </span>
+                            ) : (
+                              <span style={{ textTransform: 'capitalize' }}>
+                                {login.username[0]}
+                              </span>
+                            )}
+                          </Avatar>
+                        ) : (
+                          <Avatar src={<Image src={user.avatar} />} />
+                        )}
+                      </div>
+                      <div className={styles['navbar_right_left_name']}>
+                        <div
+                          style={{
+                            color: '#FFF',
+                            fontWeight: '600',
+                            fontSize: '1rem',
+                          }}
+                        >
+                          {username ? (
+                            <span style={{ textTransform: 'capitalize' }}>
+                              {username}
+                            </span>
+                          ) : (
+                            <span style={{ textTransform: 'capitalize' }}>
+                              {login.username}
+                            </span>
+                          )}{' '}
+                          &nbsp; <CarretDown />
+                        </div>
+                      </div>
+                    </div>
+                  </Dropdown>
+                </div>
+              </Row>
+            </Col>
+          </Row>
+        </Affix>
         <Row>
           <Col
             style={{
