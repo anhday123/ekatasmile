@@ -21,10 +21,23 @@ let configEnv = () => {
             return 'SaleManager';
         }
         if (IPs[0] == '194.233.78.9' || IPs.includes('194.233.78.9')) {
-            return 'B2B';
+            return 'POS';
         }
         if (IPs[0] == '194.233.82.28' || IPs.includes('194.233.82.28')) {
-            return 'POS';
+            return 'B2B';
+        }
+        return process.env.DATABASE;
+    })();
+    process.env.GLOBAL_HOST_NAME = (() => {
+        let IPs = getMyIP();
+        if (IPs[0] == '103.81.87.65' || IPs.includes('103.81.87.65')) {
+            return 'quantribanhang.viesoftware.net';
+        }
+        if (IPs[0] == '194.233.78.9' || IPs.includes('194.233.78.9')) {
+            return 'admin.anreji.jp';
+        }
+        if (IPs[0] == '194.233.82.28' || IPs.includes('194.233.82.28')) {
+            return 'ipackvina.com';
         }
         return process.env.DATABASE;
     })();
