@@ -81,7 +81,7 @@ let updateLabelC = async (req, res, next) => {
                 .collection(`Labels`)
                 .findOne({
                     business_id: ObjectId(token.user_id),
-                    label_id: { $ne: _label.label_id },
+                    label_id: { $ne: label.label_id },
                     name: req.body.name,
                 });
             if (check) {

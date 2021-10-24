@@ -20,8 +20,8 @@ class Label {
     }
     create(data) {
         this.validateInput(data);
-        this.label_id = ObjectId(data.label_id);
         this.business_id = ObjectId(data.business_id);
+        this.label_id = ObjectId(data.label_id);
         this.name = data.name.trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.description = data.description || '';

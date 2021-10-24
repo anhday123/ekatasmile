@@ -3,21 +3,21 @@ const { removeUnicode } = require('../utils/string-handle');
 const { validate } = require('../utils/validate');
 
 let actionForm = {
-    business_id: { data_type: ['string', 'object'], not_null: true },
+    business_id: { data_type: ['string', 'object'], not_null: false },
     type: { data_type: ['string'], not_null: true },
     properties: { data_type: ['string'], not_null: true },
     name: { data_type: ['string'], not_null: true },
     data: { data_type: ['string'], not_null: true },
-    performer_id: { data_type: ['string', 'object'], not_null: true },
-    date: { data_type: ['string'], not_null: true },
+    performer_id: { data_type: ['string', 'object'], not_null: false },
+    date: { data_type: ['string'], not_null: false },
 };
 
 class Action {
-    validateInput(data) {
-        validate(data, actionForm, true, 400);
+    validateInput(inputData) {
+        validate(inputData, actionForm, true, 400);
     }
+    validataOutput(outputData) {}
     create(data) {
-        this.validateInput(data);
         this.business_id = ObjectId(data.business_id);
         this.type = data.type.trim().toUpperCase();
         this.sub_type = removeUnicode(this.type, true).toLowerCase();

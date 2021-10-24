@@ -48,6 +48,9 @@ let addPromotionC = async (req, res, next) => {
         if (promotion) {
             throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
         }
+        if (req.body.limit) {
+            _promotion.check;
+        }
         _promotion.create({
             ...req.body,
             ...{
@@ -59,6 +62,7 @@ let addPromotionC = async (req, res, next) => {
                 active: true,
             },
         });
+        _promotion.createLimit(req.body.limit);
         req[`_insert`] = _promotion;
         await promotionService.addPromotionS(req, res, next);
     } catch (err) {

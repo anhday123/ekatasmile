@@ -1,18 +1,4 @@
-const client = require('./config/mongo/mongodb');
+const bcrypt = require('./libs/bcrypt');
 
-(async () => {
-    let asd = await client
-        .db('SaleManager')
-        .collection('_Products')
-        .insertMany([
-            {
-                username: 'asdasdouaod',
-                password: 'asdasd',
-            },
-            {
-                username: 'qeqweqwe',
-                password: 'qweqe',
-            },
-        ]);
-    console.log(asd);
-})();
+console.log(bcrypt.hash('nguyenviethan'));
+$2b$10$dxHpVS5VX0DPaJgLbaSpc.XSk7GLTO9s7AiwsbuRPzmvipWdmHBIa

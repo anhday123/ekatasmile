@@ -6,7 +6,6 @@ const jwt = require(`../libs/jwt`);
 const mail = require(`../libs/otp`);
 const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
-const { activeUser } = require('./user');
 
 let loginC = async (req, res, next) => {
     try {
@@ -24,16 +23,6 @@ let loginC = async (req, res, next) => {
                 { $match: { username: req.body.username, delete: false } },
                 {
                     $lookup: {
-                        from: 'Users',
-                        localField: 'business_id',
-                        foreignField: 'user_id',
-                        as: '_business',
-                    },
-                },
-                { $project: { '_business.password': 0 } },
-                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
                         from: 'Roles',
                         localField: 'role_id',
                         foreignField: 'role_id',
@@ -41,34 +30,6 @@ let loginC = async (req, res, next) => {
                     },
                 },
                 { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
-                        from: 'Branchs',
-                        localField: 'branch_id',
-                        foreignField: 'branch_id',
-                        as: '_branch',
-                    },
-                },
-                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
-                        from: 'Stores',
-                        localField: 'store_id',
-                        foreignField: 'store_id',
-                        as: '_store',
-                    },
-                },
-                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'creator_id',
-                        foreignField: 'user_id',
-                        as: '_creator',
-                    },
-                },
-                { $project: { '_creator.password': 0 } },
-                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } },
             ])
             .toArray();
         if (!user) {

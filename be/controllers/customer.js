@@ -45,7 +45,7 @@ let addCustomerC = async (req, res, next) => {
             );
         }
         if (customer) {
-            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            throw new Error(`400: phone <${req.body.phone}> đã tồn tại!`);
         }
         _customer.create({
             ...req.body,

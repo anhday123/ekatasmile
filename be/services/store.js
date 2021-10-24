@@ -4,6 +4,7 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getStoreS = async (req, res, next) => {
     try {
@@ -129,22 +130,26 @@ let getStoreS = async (req, res, next) => {
 let addStoreS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let _store = await client.db(DB).collection(`Stores`).insertOne(req._insert);
-        if (!_store.insertedId) throw new Error(`500: Create store fail!`);
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        let store = await client.db(DB).collection(`Stores`).insertOne(req._insert);
+        if (!store.insertedId) {
+            throw new Error(`500: Lỗi hệ thống, tạo cửa hàng thất bại!`);
+        }
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Store`,
-                sub_properties: `store`,
-                name: `Thêm cửa hàng mới`,
-                sub_name: `themcuahangmoi`,
-                data: _store.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Store',
+                name: 'Thêm cửa hàng mới',
+                data: store.ops[0],
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
-        res.send({ success: true, data: _store.ops[0] });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: store.ops[0] });
     } catch (err) {
         next(err);
     }
@@ -154,19 +159,21 @@ let updateStoreS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Stores`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Store`,
-                sub_properties: `store`,
-                name: `Cập nhật thông tin cửa hàng`,
-                sub_name: `capnhatthongtincuahang`,
+                type: 'Update',
+                properties: 'Store',
+                name: 'Cập nhật thông tin cửa hàng',
                 data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

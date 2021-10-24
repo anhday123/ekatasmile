@@ -23,7 +23,11 @@ let removeUnicode = (text, removeSpace) => {
 let getFirstLetter = (text) => {
     text = text.split(' ');
     text = text.map((item) => {
-        return item[0];
+        if (/[a-zA-Z]/.test(item)) {
+            return item[0];
+        } else {
+            return item;
+        }
     });
     text = text.join('');
     return text;

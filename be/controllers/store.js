@@ -31,15 +31,20 @@ let addStoreC = async (req, res, next) => {
                     delete: false,
                     active: true,
                 }),
-            client
-                .db(DB)
-                .collection(`Branchs`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    branch_id: ObjectId(req.body.branch_id),
-                    delete: false,
-                    active: true,
-                }),
+            (async () => {
+                if (req.body.branch_id && req.body.branch_id != '') {
+                    return client
+                        .db(DB)
+                        .collection(`Branchs`)
+                        .findOne({
+                            business_id: ObjectId(token.business_id),
+                            branch_id: ObjectId(req.body.branch_id),
+                            delete: false,
+                            active: true,
+                        });
+                }
+                return true;
+            })(),
             client
                 .db(DB)
                 .collection(`Stores`)
@@ -48,18 +53,20 @@ let addStoreC = async (req, res, next) => {
                     name: req.body.name,
                     delete: false,
                 }),
-            client
-                .db(DB)
-                .collection(`Labels`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    label_id:
-                        req.body.label_id && req.body.label_id != ''
-                            ? ObjectId(req.body.label_id)
-                            : req.body.label_id,
-                    delete: false,
-                    active: true,
-                }),
+            (async () => {
+                if (req.body.label_id && req.body.label_id != '') {
+                    return client
+                        .db(DB)
+                        .collection(`Labels`)
+                        .findOne({
+                            business_id: ObjectId(token.business_id),
+                            label_id: ObjectId(req.body.label_id),
+                            delete: false,
+                            active: true,
+                        });
+                }
+                return true;
+            })(),
         ]);
         if (!business) {
             throw new Error(
@@ -72,7 +79,7 @@ let addStoreC = async (req, res, next) => {
         if (store) {
             throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
         }
-        if (req.body.label_id != '' && !label) {
+        if (!label) {
             throw new Error(`400: label_id <${req.body.label_id}> không tồn tại hoặc chưa được kích hoạt!`);
         }
         _store.create({
@@ -113,6 +120,20 @@ let updateStoreC = async (req, res, next) => {
                 });
             if (check) {
                 throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            }
+        }
+        if (ObjectId(req.body.branch_id) != store.branch_id) {
+            let branch = await client
+                .db(DB)
+                .collection(`Branchs`)
+                .findOne({
+                    business_id: ObjectId(token.business_id),
+                    branch_id: ObjectId(req.body.branch_id),
+                    delete: false,
+                    active: true,
+                });
+            if (!branch) {
+                throw new Error(`400: branch_id <${req.body.branch_id}> không khả dụng!`);
             }
         }
         _store.create(store);

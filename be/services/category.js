@@ -4,6 +4,7 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getCategoryS = async (req, res, next) => {
     try {
@@ -121,19 +122,21 @@ let addCategoryS = async (req, res, next) => {
                 })
             );
         }
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Category`,
-                sub_properties: `category`,
-                name: `Thêm loại sản phẩm mới`,
-                sub_name: `themloaisanphammoi`,
-                data: _category.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Category',
+                name: 'Thêm phân loại sản phẩm mới',
+                data: _branch.ops[0],
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: _category.ops[0] });
     } catch (err) {
         next(err);
@@ -144,19 +147,21 @@ let updateCategoryS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Categories`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Category`,
-                sub_properties: `category`,
-                name: `Cập nhật thông tin phân loại sản phẩm`,
-                sub_name: `capnhatthongtinphanloaisanpham`,
-                data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Update',
+                properties: 'Category',
+                name: 'Thêm phân loại sản phẩm mới',
+                data: _branch.ops[0],
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

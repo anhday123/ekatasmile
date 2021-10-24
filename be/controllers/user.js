@@ -25,7 +25,7 @@ let registerC = async (req, res, next) => {
         req.body.username = req.body.username.trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
         req.body.email = req.body.email.trim().toLowerCase();
-        let [user] = await Promise.all([
+        let [user, role] = await Promise.all([
             client
                 .db(DB)
                 .collection('Users')
@@ -33,9 +33,13 @@ let registerC = async (req, res, next) => {
                     $or: [{ username: req.body.username }, { email: req.body.email }],
                     delete: false,
                 }),
+            client.db(DB).collection('Roles').findOne({ name: 'BUSINESS' }),
         ]);
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
+        }
+        if (!role) {
+            throw new Error('500: Không tìm được role!');
         }
         let otpCode = String(Math.random()).substr(2, 6);
         let vertifyId = crypto.randomBytes(10).toString(`hex`);
@@ -49,7 +53,6 @@ let registerC = async (req, res, next) => {
                 vertify_link: vertifyLink,
                 vertify_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
             });
-        console.log(link);
         if (!link.insertedId) {
             throw new Error('Tạo tài khoản thất bại!');
         }
@@ -69,7 +72,7 @@ let registerC = async (req, res, next) => {
             ...{
                 user_id: id,
                 business_id: id,
-                role_id: '6166a2ebdddaf490b0c4a68f',
+                role_id: role.role_id,
                 otp_code: otpCode,
                 otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
                 is_new: true,
@@ -114,6 +117,8 @@ let addUserC = async (req, res, next) => {
             ...{
                 user_id: ObjectId(),
                 business_id: token.business_id,
+                company_name: token.company_name,
+                company_website: token.company_website,
                 create_date: moment().utc().format(),
                 last_login: moment().utc().format(),
                 exp: '',

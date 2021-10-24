@@ -4,6 +4,7 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getBranchS = async (req, res, next) => {
     try {
@@ -130,20 +131,24 @@ let addBranchS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _branch = await client.db(DB).collection(`Branchs`).insertOne(req._insert);
-        if (!_branch.ops) throw new Error(`500: Create branch fail!`);
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        if (!_branch.ops) {
+            throw new Error('500: Lỗi hệ thống, tạo chi nhánh thất bại!');
+        }
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Branch`,
-                sub_properties: `branch`,
-                name: `Thêm chi nhánh mới`,
-                sub_name: `themchinhanhmoi`,
+                type: 'Add',
+                properties: 'Branch',
+                name: 'Thêm chi nhánh mới',
                 data: _branch.ops[0],
                 performer_id: token.user_id,
-                date: moment().format(),
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: _branch.ops[0] });
     } catch (err) {
         next(err);
@@ -154,19 +159,21 @@ let updateBranchS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Branch`,
-                sub_properties: `chinhanh`,
-                name: `Cập nhật thông tin chi nhánh`,
-                sub_name: `capnhatthongtinchinhanh`,
+                type: 'Update',
+                properties: 'Branch',
+                name: 'Cập nhật thông tin chi nhánh',
                 data: req._update,
                 performer_id: token.user_id,
-                date: moment().format(),
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

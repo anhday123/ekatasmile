@@ -27,6 +27,7 @@ class Role {
         this.validateInput(data);
         this.validateName(data);
         this.business_id = ObjectId(data.business_id);
+        this.role_id = ObjectId(data.role_id);
         this.name = data.name.trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.permission_list = data.permission_list || [];

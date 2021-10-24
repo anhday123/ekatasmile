@@ -30,8 +30,18 @@ class Store {
         this.store_id = ObjectId(data.store_id);
         this.name = data.name;
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.branch_id = data.branch_id && data.branch_id != '' ? ObjectId(data.branch_id) : data.branch_id;
-        this.label_id = data.label_id && data.label_id != '' ? ObjectId(data.label_id) : data.label_id;
+        this.branch_id = (() => {
+            if (data.branch_id && data.branch_id != '') {
+                return ObjectId(data.branch_id);
+            }
+            return data.branch_id;
+        })();
+        this.label_id = (() => {
+            if (data.label_id && data.label_id != '') {
+                return ObjectId(data.label_id);
+            }
+            return data.label_id;
+        })();
         this.logo = data.logo || '';
         this.phone = data.phone || '';
         this.latitude = data.latitude || '';
@@ -44,8 +54,8 @@ class Store {
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
         this.create_date = data.create_date;
         this.creator_id = ObjectId(data.creator_id);
-        this.delete = data.delete;
-        this.active = data.active;
+        this.delete = data.delete || false;
+        this.active = data.active || true;
     }
     update(data) {
         delete data._id;

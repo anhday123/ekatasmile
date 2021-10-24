@@ -42,8 +42,16 @@ class User {
         validate(data, userForm, true, 400);
     }
     /** Kiểm tra email có đúng định dạng hay không */
+    validateUsername(data) {
+        let regex = /[a-z][a-z0-9_\.]{6,32}/;
+        if (!regex.test(data)) {
+            throw new Error('400: Username không đúng định dạng!');
+        }
+        return data;
+    }
+    /** Kiểm tra email có đúng định dạng hay không */
     validateEmail(data) {
-        let regex = /^[a-z][a-z0-9_\.]{5,32}@[a-z0-9]{2,}(\.[a-z0-9]{2,4}){1,2}$/;
+        let regex = /^[a-z][a-z0-9_\.]{6,32}@[a-z0-9]{2,}(\.[a-z0-9]{2,4}){1,2}$/;
         if (!regex.test(data)) {
             throw new Error('400: Email không đúng định dạng!');
         }
@@ -67,7 +75,12 @@ class User {
         this.password = data.password;
         this.otp_code = data.otp_code || false;
         this.otp_timelife = data.otp_timelife || false;
-        this.role_id = data.role_id && data.role_id != '' ? ObjectId(data.role_id) : '';
+        this.role_id = (() => {
+            if (data.role_id && data.role_id != '') {
+                return ObjectId(data.role_id);
+            }
+            return data.role_id;
+        })();
         this.email = this.validateEmail(data.email);
         this.phone = this.validatePhone(data.phone);
         this.avatar = data.avatar || '';
@@ -83,11 +96,26 @@ class User {
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
         this.company_name = data.company_name || '';
         this.company_website = data.company_website || '';
-        this.career_id = data.career_id && data.career_id != '' ? ObjectId(data.career_id) : '';
+        this.career_id = (() => {
+            if (data.career_id && data.career_id != '') {
+                return ObjectId(data.career_id);
+            }
+            return data.career_id;
+        })();
         this.tax_code = data.tax_code || '';
         this.fax = data.fax || '';
-        this.branch_id = data.branch_id && data.branch_id != '' ? ObjectId(data.branch_id) : data.branch_id;
-        this.store_id = data.store_id && data.store_id != '' ? ObjectId(data.store_id) : data.store_id;
+        this.branch_id = (() => {
+            if (data.branch_id && data.branch_id != '') {
+                return ObjectId(data.branch_id);
+            }
+            return data.branch_id;
+        })();
+        this.store_id = (() => {
+            if (data.store_id && data.store_id != '') {
+                return ObjectId(data.store_id);
+            }
+            return data.store_id;
+        })();
         this.is_new = data.is_new || false;
         this.create_date = data.create_date;
         this.last_login = data.last_login;
@@ -101,6 +129,7 @@ class User {
         delete data._id;
         delete data.user_id;
         delete data.business_id;
+        delete data.username;
         delete data.create_date;
         delete data.creator_id;
         if (data.new_password) {
