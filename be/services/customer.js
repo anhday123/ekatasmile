@@ -4,6 +4,7 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getCustomerS = async (req, res, next) => {
     try {
@@ -123,20 +124,24 @@ let addCustomerS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _customer = await client.db(DB).collection(`Customers`).insertOne(req._insert);
-        if (!_customer.insertedId) throw new Error(`500: Failed create customer!`);
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        if (!_customer.insertedId) {
+            throw new Error(`500: Lỗi hệ thống, tạo khách hàng thất bại!`);
+        }
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Customer`,
-                sub_properties: `customer`,
-                name: `Thêm khách hàng mới`,
-                sub_name: `themkhachhangmoi`,
-                data: _customer.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Customer',
+                name: 'Thêm khách hàng mới',
+                data: req._insert,
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: _customer.ops[0] });
     } catch (err) {
         next(err);
@@ -147,19 +152,21 @@ let updateCustomerS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Customers`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Customer`,
-                sub_properties: `customer`,
-                name: `Cập nhật thông tin khách hàng`,
-                sub_name: `capnhatthongtinkhachhang`,
+                type: 'Update',
+                properties: 'Customer',
+                name: 'Cập nhật thông tin khách hàng',
                 data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

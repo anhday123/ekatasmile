@@ -84,7 +84,7 @@ class Promotion {
         this.value = data.value || 0;
         this.max_discount = data.max_discount || 0;
         this.discount_condition = data.discount_condition || 0;
-        this.has_limit = data.has_limit || false;
+        this.has_voucher = data.has_voucher || false;
         this.limit = data.limit || {};
         this.vouchers = data.vouchers || [];
         this.description = data.description || '';

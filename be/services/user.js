@@ -220,7 +220,7 @@ let updateUserS = async (req, res, next) => {
                     }
                 );
         }
-        let [accessToken, refreshToken, _update] = await Promise.all([
+        let [accessToken, refreshToken] = await Promise.all([
             jwt.createToken(req._update, process.env.ACCESS_TOKEN_LIFE),
             jwt.createToken(req._update, process.env.REFRESH_TOKEN_LIFE),
         ]);

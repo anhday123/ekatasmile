@@ -4,6 +4,7 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getToppingS = async (req, res, next) => {
     try {
@@ -107,19 +108,21 @@ let addToppingS = async (req, res, next) => {
         if (!_topping.insertedId) {
             throw new Error('500: Thêm topping thất bại!');
         }
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Store`,
-                sub_properties: `store`,
-                name: `Thêm cửa hàng mới`,
-                sub_name: `themcuahangmoi`,
-                data: _topping.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Topping',
+                name: 'Thêm topping mới',
+                data: req._insert,
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: _topping.ops[0] });
     } catch (err) {
         next(err);
@@ -130,19 +133,21 @@ let updateToppingS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Toppings`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Store`,
-                sub_properties: `store`,
-                name: `Cập nhật thông tin cửa hàng`,
-                sub_name: `capnhatthongtincuahang`,
+                type: 'Update',
+                properties: 'Topping',
+                name: 'Cập nhật thông tin topping',
                 data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

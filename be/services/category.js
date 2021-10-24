@@ -108,7 +108,9 @@ let addCategoryS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _category = await client.db(DB).collection(`Categories`).insertOne(req._insert);
-        if (!_category.insertedId) throw new Error(`500: Create category fail!`);
+        if (!_category.insertedId) {
+            throw new Error('500: Lỗi hệ thống, tạo phân loại sản phẩm thất bại!');
+        }
         if (req.body.products) {
             await Promise.all(
                 req.body.products.map((product) => {
@@ -129,7 +131,7 @@ let addCategoryS = async (req, res, next) => {
                 type: 'Add',
                 properties: 'Category',
                 name: 'Thêm phân loại sản phẩm mới',
-                data: _branch.ops[0],
+                data: req._insert,
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });
@@ -137,7 +139,7 @@ let addCategoryS = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: _category.ops[0] });
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }
@@ -153,8 +155,8 @@ let updateCategoryS = async (req, res, next) => {
                 business_id: token.business_id,
                 type: 'Update',
                 properties: 'Category',
-                name: 'Thêm phân loại sản phẩm mới',
-                data: _branch.ops[0],
+                name: 'Cập nhật phân loại sản phẩm',
+                data: req._update,
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });

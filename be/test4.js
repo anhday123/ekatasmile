@@ -1,4 +1,3 @@
-const bcrypt = require('./libs/bcrypt');
+let a = new Date(1635106000000);
 
-console.log(bcrypt.hash('nguyenviethan'));
-$2b$10$dxHpVS5VX0DPaJgLbaSpc.XSk7GLTO9s7AiwsbuRPzmvipWdmHBIa
+console.log(a);

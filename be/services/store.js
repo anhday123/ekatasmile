@@ -141,7 +141,7 @@ let addStoreS = async (req, res, next) => {
                 type: 'Add',
                 properties: 'Store',
                 name: 'Thêm cửa hàng mới',
-                data: store.ops[0],
+                data: req._insert,
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });
@@ -149,7 +149,7 @@ let addStoreS = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: store.ops[0] });
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }

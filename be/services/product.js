@@ -127,7 +127,7 @@ let getProductS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'business_id',
                         as: '_business',
                     },
                 },
@@ -141,7 +141,7 @@ let getProductS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: '_id',
+                        foreignField: 'creator_id',
                         as: '_creator',
                     },
                 },
@@ -160,8 +160,8 @@ let getProductS = async (req, res, next) => {
         }
         // lấy data từ database
         let [products, counts] = await Promise.all([
-            client.db(DB).collection(`_Products`).aggregate(aggregateQuery).toArray(),
-            client.db(DB).collection(`_Products`).find(matchQuery).count(),
+            client.db(DB).collection(`Products`).aggregate(aggregateQuery).toArray(),
+            client.db(DB).collection(`Products`).find(matchQuery).count(),
         ]);
         res.send({
             success: true,
@@ -176,52 +176,60 @@ let getProductS = async (req, res, next) => {
 let addProductS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        await Promise.all(
-            req._insert._products.map((_product) => {
-                client
-                    .db(DB)
-                    .collection('_Products')
-                    .updateOne(
-                        {
-                            business_id: ObjectId(token.business_id),
-                            product_id: ObjectId(_product.product_id),
-                        },
-                        { $set: _product },
-                        { upsert: true }
-                    );
-            })
-        );
-        await Promise.all(
-            req._insert._attributes.map((_attribute) => {
-                client
-                    .db(DB)
-                    .collection('Attributes')
-                    .updateOne(
-                        {
-                            product_id: ObjectId(_attribute.product_id),
-                            option: _attribute.option,
-                        },
-                        { $set: _attribute },
-                        { upsert: true }
-                    );
-            })
-        );
-        await Promise.all(
-            req._insert._variants.map((_variant) => {
-                client
-                    .db(DB)
-                    .collection('Variants')
-                    .updateOne(
-                        {
-                            product_id: ObjectId(_variant.product_id),
-                            variant_id: _variant.variant_id,
-                        },
-                        { $set: _variant },
-                        { upsert: true }
-                    );
-            })
-        );
-        await Promise.all([client.db(DB).collection('Locations').insertMany(req._insert._locations)]);
+        if (req._insert._products) {
+            await Promise.all(
+                req._insert._products.map((_product) => {
+                    client
+                        .db(DB)
+                        .collection('Products')
+                        .updateOne(
+                            {
+                                business_id: ObjectId(token.business_id),
+                                product_id: ObjectId(_product.product_id),
+                            },
+                            { $set: _product },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        if (req._insert._attributes) {
+            await Promise.all(
+                req._insert._attributes.map((_attribute) => {
+                    client
+                        .db(DB)
+                        .collection('Attributes')
+                        .updateOne(
+                            {
+                                product_id: ObjectId(_attribute.product_id),
+                                option: _attribute.option,
+                            },
+                            { $set: _attribute },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        if (req._insert._variants) {
+            await Promise.all(
+                req._insert._variants.map((_variant) => {
+                    client
+                        .db(DB)
+                        .collection('Variants')
+                        .updateOne(
+                            {
+                                product_id: ObjectId(_variant.product_id),
+                                variant_id: _variant.variant_id,
+                            },
+                            { $set: _variant },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        if (req._insert._variants) {
+            await Promise.all([client.db(DB).collection('Locations').insertMany(req._insert._locations)]);
+        }
         res.send({
             success: true,
             data: req._insert,
@@ -235,20 +243,6 @@ let updateProductS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Products`).updateMany(req.params, { $set: req._update });
-        if (token) {
-            await client.db(DB).collection(`Actions`).insertOne({
-                business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Product`,
-                sub_properties: `product`,
-                name: `Cập nhật thông tin sản phẩm`,
-                sub_name: `capnhatthongtinsanpham`,
-                data: req._update,
-                performer_id: token.user_id,
-                date: moment().format(),
-            });
-        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

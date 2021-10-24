@@ -72,7 +72,7 @@ let getBranchS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'business_id',
                         as: '_business',
                     },
                 },
@@ -86,7 +86,7 @@ let getBranchS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: '_id',
+                        foreignField: 'creator_id',
                         as: '_creator',
                     },
                 },
@@ -141,7 +141,7 @@ let addBranchS = async (req, res, next) => {
                 type: 'Add',
                 properties: 'Branch',
                 name: 'Thêm chi nhánh mới',
-                data: _branch.ops[0],
+                data: req._insert,
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });
@@ -149,7 +149,7 @@ let addBranchS = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: _branch.ops[0] });
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }

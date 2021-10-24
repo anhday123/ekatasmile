@@ -4,92 +4,108 @@ const client = require(`../config/mongo/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
+const { Action } = require('../models/action');
 
 let getSupplierS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let mongoQuery = {};
+        let matchQuery = {};
+        let projectQuery = {};
+        let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        mongoQuery['delete'] = false;
+        matchQuery['delete'] = false;
         if (req.query.supplier_id) {
-            mongoQuery['supplier_id'] = ObjectId(req.query.supplier_id);
+            matchQuery['supplier_id'] = ObjectId(req.query.supplier_id);
         }
         if (token) {
-            mongoQuery['business_id'] = ObjectId(token.business_id);
+            matchQuery['business_id'] = ObjectId(token.business_id);
         }
         if (req.query.business_id) {
-            mongoQuery['business_id'] = ObjectId(req.query.business_id);
+            matchQuery['business_id'] = ObjectId(req.query.business_id);
         }
         if (req.query.creator_id) {
-            mongoQuery['creator_id'] = ObjectId(req.query.creator_id);
+            matchQuery['creator_id'] = ObjectId(req.query.creator_id);
         }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
-            mongoQuery[`create_date`] = {
-                ...mongoQuery[`create_date`],
+            matchQuery[`create_date`] = {
+                ...matchQuery[`create_date`],
                 $gte: req.query.from_date,
             };
         }
         if (req.query.to_date) {
-            mongoQuery[`create_date`] = {
-                ...mongoQuery[`create_date`],
+            matchQuery[`create_date`] = {
+                ...matchQuery[`create_date`],
                 $lte: req.query.to_date,
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.code) {
-            mongoQuery['code'] = createRegExpQuery(req.query.code);
+            matchQuery['code'] = createRegExpQuery(req.query.code);
         }
         if (req.query.name) {
-            mongoQuery['sub_name'] = createRegExpQuery(req.query.name);
+            matchQuery['sub_name'] = createRegExpQuery(req.query.name);
         }
         if (req.query.address) {
-            mongoQuery['sub_address'] = createRegExpQuery(req.query.address);
+            matchQuery['sub_address'] = createRegExpQuery(req.query.address);
         }
         if (req.query.district) {
-            mongoQuery['sub_district'] = createRegExpQuery(req.query.district);
+            matchQuery['sub_district'] = createRegExpQuery(req.query.district);
         }
         if (req.query.province) {
-            mongoQuery['sub_province'] = createRegExpQuery(req.query.province);
+            matchQuery['sub_province'] = createRegExpQuery(req.query.province);
         }
         if (req.query.search) {
-            mongoQuery['$or'] = [
+            matchQuery['$or'] = [
                 { code: createRegExpQuery(req.query.search) },
                 { sub_name: createRegExpQuery(req.query.search) },
             ];
         }
         // lấy các thuộc tính tùy chọn khác
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: '_id',
+                        as: '_business',
+                    },
+                },
+                { $unwind: '$_business' }
+            );
+            projectQuery['_business.password'] = 0;
+        }
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: '_id',
+                        as: '_creator',
+                    },
+                },
+                { $unwind: '$_creator' }
+            );
+            projectQuery['_creator.password'] = 0;
+        }
+        if (Object.keys(projectQuery).length != 0) {
+            aggregateQuery.push({ $project: projectQuery });
+        }
+        aggregateQuery.push({ $sort: { create_date: -1 } });
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         // lấy data từ database
-        var _suppliers = await client.db(DB).collection(`Suppliers`).find(mongoQuery).toArray();
-        // đảo ngược data sau đó gắn data liên quan vào khóa định danh
-        _suppliers.reverse();
-        // đếm số phần tử
-        let _counts = _suppliers.length;
-        // phân trang
-        if (page && page_size) {
-            _suppliers = _suppliers.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
-        }
-        let [__users] = await Promise.all([
-            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+        let [suppliers, counts] = await Promise.all([
+            client.db(DB).collection(`Suppliers`).aggregate(aggregateQuery).toArray(),
+            client.db(DB).collection(`Suppliers`).find(matchQuery).count(),
         ]);
-        let _business = {};
-        let _creator = {};
-        __users.map((__user) => {
-            delete __user.password;
-            _business[__user.user_id] = __user;
-            _creator[__user.user_id] = __user;
-        });
-        _suppliers.map((_supplier) => {
-            _supplier[`_business`] = _business[_supplier.business_id];
-            _supplier[`_creator`] = _creator[_supplier.creator_id];
-            return _supplier;
-        });
         res.send({
             success: true,
-            data: _suppliers,
-            count: _counts,
+            data: suppliers,
+            count: counts,
         });
     } catch (err) {
         next(err);
@@ -100,20 +116,24 @@ let addSupplierS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _supplier = await client.db(DB).collection(`Suppliers`).insertOne(req._insert);
-        if (!_supplier.insertedId) throw new Error(`500: Create supplier fail!`);
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        if (!_supplier.insertedId) {
+            throw new Error(`500: Lỗi hệ thống, thêm nhà cung cấp thất bại!`);
+        }
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `Supplier`,
-                sub_properties: `supplier`,
-                name: `Thêm nhà cung cấp mới`,
-                sub_name: `themnhacungcapmoi`,
-                data: _supplier.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Supplier',
+                name: 'Thêm nhà cung cấp mới',
+                data: req._insert,
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: _supplier.ops[0] });
     } catch (err) {
         next(err);
@@ -124,19 +144,21 @@ let updateSupplierS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         await client.db(DB).collection(`Suppliers`).findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `Supplier`,
-                sub_properties: `supplier`,
-                name: `Cập nhật thông tin nhà cung cấp`,
-                sub_name: `capnhatthongtinnhacungcap`,
+                type: 'Update',
+                properties: 'Supplier',
+                name: 'Cập nhật thông tin nhà cung cấp',
                 data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

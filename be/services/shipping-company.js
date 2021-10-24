@@ -8,7 +8,9 @@ const { createRegExpQuery } = require('../utils/regex');
 let getShippingCompanyS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let mongoQuery = {};
+        let matchQuery = {};
+        let projectQuery = {};
+        let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         mongoQuery['delete'] = false;
         if (req.query.shipping_company_id) {
@@ -59,44 +61,50 @@ let getShippingCompanyS = async (req, res, next) => {
             ];
         }
         // lấy các thuộc tính tùy chọn khác
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'business_id',
+                        as: '_business',
+                    },
+                },
+                { $unwind: '$_business' }
+            );
+            projectQuery['_business.password'] = 0;
+        }
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'creator_id',
+                        as: '_creator',
+                    },
+                },
+                { $unwind: '$_creator' }
+            );
+            projectQuery['_creator.password'] = 0;
+        }
+        if (Object.keys(projectQuery).length != 0) {
+            aggregateQuery.push({ $project: projectQuery });
+        }
+        aggregateQuery.push({ $sort: { create_date: -1 } });
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         // lấy data từ database
-        var _shippingCompanies = await client
-            .db(DB)
-            .collection(`ShippingCompanies`)
-            .find(mongoQuery)
-            .toArray();
-        // đảo ngược data sau đó gắn data liên quan vào khóa định danh
-        _shippingCompanies.reverse();
-        // đếm số phần tử
-        let _counts = _shippingCompanies.length;
-        // phân trang
-        if (page && page_size) {
-            _shippingCompanies = _shippingCompanies.slice(
-                (page - 1) * page_size,
-                (page - 1) * page_size + page_size
-            );
-        }
-        let [__users] = await Promise.all([
-            client.db(DB).collection(`Users`).find({ business_id: mongoQuery.business_id }).toArray(),
+        let [shippingCompanies, counts] = await Promise.all([
+            client.db(DB).collection(`ShippingCompanies`).aggregate(aggregateQuery).toArray(),
+            client.db(DB).collection(`ShippingCompanies`).find(matchQuery).count(),
         ]);
-        let _business = {};
-        let _creator = {};
-        __users.map((__user) => {
-            delete __user.password;
-            _business[__user.user_id] = __user;
-            _creator[__user.user_id] = __user;
-        });
-        _shippingCompanies.map((_shippingCompany) => {
-            _shippingCompany[`_business`] = _business[_shippingCompany.business_id];
-            _shippingCompany[`_creator`] = _creator[_shippingCompany.creator_id];
-            return _shippingCompany;
-        });
         res.send({
             success: true,
-            data: _shippingCompanies,
-            count: _counts,
+            data: shippingCompanies,
+            count: counts,
         });
     } catch (err) {
         next(err);
@@ -107,21 +115,25 @@ let addShippingCompanyS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let _shippingCompany = await client.db(DB).collection(`ShippingCompanies`).insertOne(req._insert);
-        if (!_shippingCompany.insertedId) throw new Error(`500: Create shipping company fail!`);
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        if (!_shippingCompany.insertedId) {
+            throw new Error(`500: Lỗi hệ thống, tạo đối tác vận chuyển thất bại!`);
+        }
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Add`,
-                sub_type: `add`,
-                properties: `ShippingCompany`,
-                sub_properties: `shippingcompany`,
-                name: `Thêm đối tác vận chuyển mới`,
-                sub_name: `themdoitacvanchuyenmoi`,
-                data: _shippingCompany.ops[0],
-                performer: token.user_id,
-                date: moment().format(),
+                type: 'Add',
+                properties: 'Shipping Company',
+                name: 'Thêm đối tác vận chuyển mới',
+                data: req._insert,
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
-        res.send({ success: true, data: _shippingCompany.ops[0] });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }
@@ -134,19 +146,21 @@ let updateShippingCompanyS = async (req, res, next) => {
             .db(DB)
             .collection(`ShippingCompanies`)
             .findOneAndUpdate(req.params, { $set: req._update });
-        if (token)
-            await client.db(DB).collection(`Actions`).insertOne({
+        try {
+            let _action = new Action();
+            _action.create({
                 business_id: token.business_id,
-                type: `Update`,
-                sub_type: `update`,
-                properties: `ShippingCompany`,
-                sub_properties: `shippingcompany`,
-                name: `Cập nhật thông tin đối tác vận chuyển`,
-                sub_name: `capnhatthongtindoitacvanchuyen`,
+                type: 'Update',
+                properties: 'Shipping Company',
+                name: 'Cập nhật thông tin đối tác vận chuyển',
                 data: req._update,
-                performer: token.user_id,
-                date: moment().format(),
+                performer_id: token.user_id,
+                data: moment().utc().format(),
             });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

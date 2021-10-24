@@ -59,7 +59,7 @@ let getLabelS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'business_id',
                         as: '_business',
                     },
                 },
@@ -73,7 +73,7 @@ let getLabelS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: '_id',
+                        foreignField: 'creator_id',
                         as: '_creator',
                     },
                 },
@@ -107,7 +107,9 @@ let addLabelS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
         let label = await client.db(DB).collection(`Labels`).insertOne(req._insert);
-        if (!label.insertedId) throw new Error(`500: Create label fail!`);
+        if (!label.insertedId) {
+            throw new Error('500: Lỗi hệ thống, thêm nhóm cửa hàng thất bại!');
+        }
         try {
             let _action = new Action();
             _action.create({
@@ -115,7 +117,7 @@ let addLabelS = async (req, res, next) => {
                 type: 'Add',
                 properties: 'Label',
                 name: 'Thêm nhóm cửa hàng mới',
-                data: label.ops[0],
+                data: req._insert,
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });
@@ -123,7 +125,7 @@ let addLabelS = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: label.ops[0] });
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }
