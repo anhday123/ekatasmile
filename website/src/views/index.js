@@ -22,6 +22,7 @@ import Business from './business'
 import Branch from './branch'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
+import ReceiptsAndPayment from './receipts-and-payment'
 import PasswordNew from './password-new'
 import ForgetPassword from './forget-password'
 import Overview from './overview'
@@ -213,13 +214,6 @@ const DEFINE_ROUTER = [
     path: ROUTES.OVERVIEW,
     Component: () => <Overview />,
     title: 'Tổng quan',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SELL,
-    Component: () => <Sell />,
-    title: 'Bán hàng',
     permissions: [],
     exact: true,
   },
@@ -617,6 +611,20 @@ const AUTH_ROUTER = [
     path: ROUTES.VERTIFY_ACCOUNT,
     Component: () => <VertifyAccount />,
     title: 'Xác thực tài khoản',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SELL,
+    Component: () => <Sell />,
+    title: 'Bán hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.RECEIPTS_PAYMENT,
+    Component: () => <ReceiptsAndPayment />,
+    title: 'Phiếu thu chi',
     permissions: [],
     exact: true,
   },

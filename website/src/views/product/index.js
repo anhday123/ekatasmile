@@ -79,7 +79,7 @@ export default function Product() {
   const [supplier, setSupplier] = useState([])
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = product_id
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
   const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -147,7 +147,7 @@ export default function Product() {
         notification.success({ message: 'Tạo danh mục thành công' })
       } else
         notification.error({
-          message: res.data.mess || 'Tạo danh mục thất bại',
+          message: res.data.mess || res.data.message || 'Tạo danh mục thất bại',
         })
 
       setLoading(false)
@@ -155,18 +155,6 @@ export default function Product() {
       console.log(error)
       setLoading(false)
     }
-  }
-
-  const openNotificationSuccessStoreUpdate = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Cập nhật thông tin danh mục <b>{data}</b> thành công
-        </div>
-      ),
-    })
   }
 
   const apiAllCategoryData = async () => {
@@ -231,7 +219,7 @@ export default function Product() {
     setSelectedRowKeys(selectedRowKeys)
 
     const productsUpdateShipping = products.filter((product) =>
-      selectedRowKeys.includes(product.product_id)
+      selectedRowKeys.includes(product._id)
     )
     console.log(productsUpdateShipping)
     setArrayProductShipping([...productsUpdateShipping])
@@ -619,16 +607,16 @@ export default function Product() {
                 try {
                   setLoading(true)
                   const productsSelect = products.filter((product) =>
-                    selectedRowKeys.includes(product.product_id)
+                    selectedRowKeys.includes(product._id)
                   )
 
                   const listPromise = productsSelect.map(async (e) => {
                     let res
                     const body = { category_id: categoryId }
                     if (paramsFilter.store_id)
-                      res = await updateProductStore(body, e.product_id)
-                    else res = await updateProductBranch(body, e.product_id)
-
+                      res = await updateProductStore(body, e._id)
+                    else res = await updateProductBranch(body, e._id)
+                    console.log(res)
                     return res
                   })
 
@@ -779,13 +767,12 @@ export default function Product() {
     setValueTime()
   }
 
-  const updateActiveProduct = async (body, product_id) => {
+  const updateActiveProduct = async (body, _id) => {
     try {
       setLoading(true)
       let res
-      if (paramsFilter.store_id)
-        res = await updateProductStore(body, product_id)
-      else res = await updateProductBranch(body, product_id)
+      if (paramsFilter.store_id) res = await updateProductStore(body, _id)
+      else res = await updateProductBranch(body, _id)
 
       if (res.status === 200) {
         await getAllProduct({ ...paramsFilter })
@@ -1285,7 +1272,7 @@ export default function Product() {
               selectedRowKeys,
               onChange: onSelectChange,
             }}
-            rowKey="product_id"
+            rowKey="_id"
             expandable={{
               expandedRowRender: (record) => {
                 if (record.variants && record.variants.length)
@@ -1394,7 +1381,7 @@ export default function Product() {
                       onClick={() =>
                         updateActiveProduct(
                           { active: !record.active },
-                          record.product_id
+                          record._id
                         )
                       }
                     />
