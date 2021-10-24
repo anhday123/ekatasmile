@@ -42,13 +42,14 @@ let registerC = async (req, res, next) => {
         let vertifyLink = `https://quantribanhang.networkdemo.site/vertifyaccount?uid=${String(vertifyId)}`;
         let link = await client
             .db(DB)
-            .collection(`VertifyLinks`)
+            .collection('VertifyLinks')
             .insertOne({
                 username: req.body.username,
                 UID: String(vertifyId),
                 vertify_link: vertifyLink,
                 vertify_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
             });
+        console.log(link);
         if (!link.insertedId) {
             throw new Error('Tạo tài khoản thất bại!');
         }
@@ -71,6 +72,7 @@ let registerC = async (req, res, next) => {
                 role_id: '6166a2ebdddaf490b0c4a68f',
                 otp_code: otpCode,
                 otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
+                is_new: true,
                 create_date: moment().utc().format(),
                 last_login: moment().utc().format(),
                 exp: moment().utc().add(10, 'days').format(),

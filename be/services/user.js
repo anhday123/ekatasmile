@@ -138,10 +138,11 @@ let addUserS = async (req, res, next) => {
     try {
         let token;
         if (req.tokenData) token = req.tokenData.data;
-        let _user = await client.db(DB).collection(`Users`).insertOne(req._insert);
-        console.log(_user);
-        if (!_user.insertedId) throw new Error(`500: Failed create user!`);
-        delete _user.ops[0].password;
+        let user = await client.db(DB).collection(`Users`).insertOne(req._insert);
+        if (!user.insertedId) {
+            throw new Error(`500: Tạo user thất bại!`);
+        }
+        delete user.ops[0].password;
         if (token)
             await client.db(DB).collection(`Actions`).insertOne({
                 business_id: token.business_id,
@@ -151,11 +152,11 @@ let addUserS = async (req, res, next) => {
                 sub_properties: `user`,
                 name: `Thêm tài khoản mới`,
                 sub_name: `themtaikhoanmoi`,
-                data: _user.ops[0],
+                data: user.ops[0],
                 performer: token.user_id,
                 date: moment().format(),
             });
-        res.send({ success: true, data: _user.ops[0] });
+        res.send({ success: true, data: user.ops[0] });
     } catch (err) {
         next(err);
     }

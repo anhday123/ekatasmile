@@ -34,6 +34,9 @@ let getProductS = async (req, res, next) => {
         if (req.query.supplier_id) {
             matchQuery['supplier_id'] = ObjectId(req.query.supplier_id);
         }
+        if (req.query.slug) {
+            matchQuery['slug'] = req.query.slug;
+        }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
             matchQuery[`create_date`] = {
@@ -60,40 +63,64 @@ let getProductS = async (req, res, next) => {
         });
         aggregateQuery.push({
             $lookup: {
-                from: 'Toppings',
-                let: { categoryId: '$category_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
-                as: 'toppings',
+                from: 'Variants',
+                let: { productId: '$product_id' },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                    {
+                        $lookup: {
+                            from: 'Locations',
+                            let: { variantId: '$variant_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } },
+                                ...(() => {
+                                    if (req.query.store_id) {
+                                        return [
+                                            {
+                                                $match: {
+                                                    $expr: {
+                                                        $eq: ['$inventory_id', ObjectId(req.query.store_id)],
+                                                    },
+                                                },
+                                            },
+                                        ];
+                                    }
+                                    if (req.query.branch_id) {
+                                        return [
+                                            {
+                                                $match: {
+                                                    $expr: {
+                                                        $eq: ['$inventory_id', ObjectId(req.query.branch_id)],
+                                                    },
+                                                },
+                                            },
+                                        ];
+                                    }
+                                    return [];
+                                })(),
+                                ...(() => {
+                                    if (req.query.merge == 'true') {
+                                        return [
+                                            {
+                                                $group: {
+                                                    _id: '$inventory_id',
+                                                    name: { $first: '$name' },
+                                                    inventory_id: { $first: '$inventory_id' },
+                                                    quantity: { $sum: '$quantity' },
+                                                },
+                                            },
+                                        ];
+                                    }
+                                    return [];
+                                })(),
+                            ],
+                            as: 'locations',
+                        },
+                    },
+                ],
+                as: 'variants',
             },
         });
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Variants',
-                    let: { productId: '$product_id' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-                        {
-                            $lookup: {
-                                from: 'Locations',
-                                let: { variantId: '$variant_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
-                                as: 'locations',
-                            },
-                        },
-                    ],
-                    as: 'variants',
-                },
-            }
-            // ...(() => {
-            //     if (req.query.sku) {
-            //         return [
-            //             { $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } },
-            //             { $match: { 'variants.sku': createRegExpQuery(req.query.variant_sku) } },
-            //         ];
-            //     }
-            // })()
-        );
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -126,9 +153,11 @@ let getProductS = async (req, res, next) => {
             aggregateQuery.push({ $project: projectQuery });
         }
         aggregateQuery.push({ $sort: { create_date: -1 } });
-        let page = Number(req.query.page) || 1;
-        let page_size = Number(req.query.page_size) || 50;
-        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
         // lấy data từ database
         let [products, counts] = await Promise.all([
             client.db(DB).collection(`_Products`).aggregate(aggregateQuery).toArray(),

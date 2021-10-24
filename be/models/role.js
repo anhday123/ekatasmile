@@ -3,14 +3,14 @@ const { removeUnicode } = require('../utils/string-handle');
 const { validate } = require('../utils/validate');
 
 let roleForm = {
-    business_id: { data_type: ['string', 'object'], not_null: true },
+    business_id: { data_type: ['string', 'object'], not_null: false },
     name: { data_type: ['string'], not_null: true },
     permission_list: { data_type: ['array'], not_null: false },
     menu_list: { data_type: ['array'], not_null: false },
-    create_date: { data_type: ['string'], not_null: true },
-    creator_id: { data_type: ['string', 'object'], not_null: true },
-    delete: { data_type: ['boolean'], not_null: true },
-    active: { data_type: ['boolean'], not_null: true },
+    create_date: { data_type: ['string'], not_null: false },
+    creator_id: { data_type: ['string', 'object'], not_null: false },
+    delete: { data_type: ['boolean'], not_null: false },
+    active: { data_type: ['boolean'], not_null: false },
 };
 
 class Role {

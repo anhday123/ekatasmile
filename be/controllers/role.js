@@ -29,17 +29,23 @@ let addRoleC = async (req, res, next) => {
         let token = req.tokenData.data;
         let _role = new Role();
         _role.validateInput(req.body);
+        req.body.name = req.body.name.trim().toUpperCase();
         _role.validateName(req.body);
-        let [counts, business, role] = await Promise.all([
-            client.db(DB).collection(`Roles`).countDocuments(),
-            client.db(DB).collection(`Users`).findOne({
-                user_id: token.business_id,
-                active: true,
-            }),
-            client.db(DB).collection(`Roles`).findOne({
-                name: req.body.name.trim().toUpperCase(),
-                business_id: token.business_id,
-            }),
+        let [business, role] = await Promise.all([
+            client
+                .db(DB)
+                .collection(`Users`)
+                .findOne({
+                    user_id: ObjectId(token.business_id),
+                    active: true,
+                }),
+            client
+                .db(DB)
+                .collection(`Roles`)
+                .findOne({
+                    business_id: ObjectId(token.business_id),
+                    name: req.body.name.trim().toUpperCase(),
+                }),
         ]);
         if (!business) {
             throw new Error(
@@ -49,22 +55,17 @@ let addRoleC = async (req, res, next) => {
         if (role) {
             throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
         }
-
-        req.body[`role_id`] = String(counts + 1);
-        req.body[`code`] = String(1000000 + _counts + 1);
-        req.body[`business_id`] = business.user_id;
-        _role = {
-            role_id: req.body.role_id,
-            business_id: req.body.business_id,
-            name: req.body.name,
-            sub_name: removeUnicode(req.body.name).toLocaleLowerCase(),
-            permission_list: req.body.permission_list || [],
-            menu_list: req.body.menu_list || [],
-            default: false,
-            create_date: moment.tz(`Asia/Ho_Chi_Minh`).format(),
-            creator_id: token.user_id,
-            active: true,
-        };
+        _role.create({
+            ...req.body,
+            ...{
+                role_id: ObjectId(),
+                business_id: token.business_id,
+                create_date: moment().utc().format(),
+                creator_id: token._id,
+                delete: false,
+                active: true,
+            },
+        });
         req[`_insert`] = _role;
         await roleService.addRoleS(req, res, next);
     } catch (err) {
