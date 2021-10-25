@@ -8,7 +8,6 @@ const { createRegExpQuery } = require('../utils/regex');
 
 let getWardC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let matchQuery = {};
         let projectQuery = {};
         let aggregateQuery = [];
@@ -43,7 +42,6 @@ let getWardC = async (req, res, next) => {
 
 let getDistrictC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let matchQuery = {};
         let projectQuery = {};
         let aggregateQuery = [];
@@ -73,7 +71,6 @@ let getDistrictC = async (req, res, next) => {
 
 let getProvinceC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let matchQuery = {};
         let projectQuery = {};
         let aggregateQuery = [];

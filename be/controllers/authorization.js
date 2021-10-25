@@ -30,6 +30,24 @@ let loginC = async (req, res, next) => {
                     },
                 },
                 { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
             ])
             .toArray();
         if (!user) {
