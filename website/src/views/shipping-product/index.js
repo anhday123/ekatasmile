@@ -381,7 +381,7 @@ export default function ShippingProduct() {
                 size="large"
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
                 type="primary"
-                href={ROUTES.SHIPPING_PRODUCT_ADD}
+                onClick={() => history.push(ROUTES.SHIPPING_PRODUCT_ADD)}
               >
                 Tạo phiếu chuyển hàng
               </Button>

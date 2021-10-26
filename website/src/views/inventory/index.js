@@ -37,7 +37,7 @@ import moment from 'moment'
 
 //components
 import Permission from 'components/permission'
-import SettingColumns from 'components/setting-column'
+import SettingColumns from 'components/setting-columns'
 import columnsProduct from 'views/product/columns'
 
 //icons
@@ -90,8 +90,8 @@ export default function Product() {
   const [stores, setStores] = useState([]) //list store in filter
   const [storeId, setStoreId] = useState() //filter product by store
   const [columns, setColumns] = useState(
-    localStorage.getItem('columnsProduct')
-      ? JSON.parse(localStorage.getItem('columnsProduct'))
+    localStorage.getItem('columnsProductInventory')
+      ? JSON.parse(localStorage.getItem('columnsProductInventory'))
       : [...columnsProduct]
   )
   const [countProductByStatus, setCountProductByStatus] = useState({
@@ -336,8 +336,11 @@ export default function Product() {
   useEffect(() => {
     loadingAll()
 
-    if (!localStorage.getItem('columnsProduct'))
-      localStorage.setItem('columnsProduct', JSON.stringify(columnsProduct))
+    if (!localStorage.getItem('columnsProductInventory'))
+      localStorage.setItem(
+        'columnsProductInventory',
+        JSON.stringify(columnsProduct)
+      )
   }, [])
 
   const ModalCreateCategory = ({ reload }) => {
@@ -1163,7 +1166,12 @@ export default function Product() {
             <Button size="large" onClick={onClickClear} type="primary">
               Xóa tất cả lọc
             </Button>
-            <SettingColumns columns={columns} setColumns={setColumns} />
+            <SettingColumns
+              columnsDefault={columnsProduct}
+              nameColumn="columnsProductInventory"
+              columns={columns}
+              setColumns={setColumns}
+            />
           </Space>
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (

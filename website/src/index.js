@@ -5,10 +5,12 @@ import './custom-antd.css'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { Provider } from 'react-redux'
-import store from './redux/store'
+import { PersistGate } from 'redux-persist/integration/react'
+import { store, persistor } from './redux/store'
 import * as Sentry from '@sentry/react'
 import { Integrations } from '@sentry/tracing'
 import 'antd/dist/antd.css'
+
 // Sentry.init({
 //   dsn: 'https://3e5e5efe140c4de7bef78cbaba9cae70@o880922.ingest.sentry.io/5835082',
 //   integrations: [new Integrations.BrowserTracing()],
@@ -21,7 +23,9 @@ import 'antd/dist/antd.css'
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <PersistGate loading={<div>loading ...</div>} persistor={persistor}>
+      <App />
+    </PersistGate>
   </Provider>,
   document.getElementById('root')
 )

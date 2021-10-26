@@ -37,7 +37,7 @@ import moment from 'moment'
 
 //components
 import Permission from 'components/permission'
-import SettingColumns from 'components/setting-column'
+import SettingColumns from 'components/setting-columns'
 import columnsProduct from 'views/product/columns'
 
 //icons
@@ -1150,7 +1150,12 @@ export default function Product() {
             <Button size="large" onClick={onClickClear} type="primary">
               Xóa tất cả lọc
             </Button>
-            <SettingColumns columns={columns} setColumns={setColumns} />
+            <SettingColumns
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsProduct}
+              nameColumn="columnsProduct"
+            />
           </Space>
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (

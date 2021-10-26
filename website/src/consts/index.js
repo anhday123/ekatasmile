@@ -52,6 +52,8 @@ export const ROUTES = {
   SELL: '/sell',
   STORE: '/store',
   RECEIPTS_PAYMENT: '/receipts-payment',
+  PAYMENT_TYPE: '/payment-type',
+  RECEIPTS_TYPE: '/receipts-type',
   ACTIVITY_DIARY: '/activity-diary',
   USER_ADD: '/actions/user/add',
   BUSINESS_VIEW: '/actions/business/view',

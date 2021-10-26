@@ -23,6 +23,8 @@ import Branch from './branch'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
 import ReceiptsAndPayment from './receipts-and-payment'
+import PaymentType from './receipts-and-payment/payment-type'
+import ReceiptsType from './receipts-and-payment/receipts-type'
 import PasswordNew from './password-new'
 import ForgetPassword from './forget-password'
 import Overview from './overview'
@@ -625,6 +627,20 @@ const AUTH_ROUTER = [
     path: ROUTES.RECEIPTS_PAYMENT,
     Component: () => <ReceiptsAndPayment />,
     title: 'Phiếu thu chi',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.PAYMENT_TYPE,
+    Component: () => <PaymentType />,
+    title: 'Loại phiêu chi',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.RECEIPTS_TYPE,
+    Component: () => <ReceiptsType />,
+    title: 'Loại phiếu thu',
     permissions: [],
     exact: true,
   },
