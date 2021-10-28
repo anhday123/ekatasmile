@@ -12,13 +12,13 @@
 -   viesoftware
 -   admin.anreji.jp
 
-# B2B
+# B2B:
 
 -   ssh root@194.233.82.28
--   viesoftware1A
+-   viesoftware
 -   ipackvina.com
 
-# Mongo URI
+# Mongo URI:
 
 # AdminOrder:
 

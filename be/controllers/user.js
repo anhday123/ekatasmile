@@ -21,7 +21,6 @@ let registerC = async (req, res, next) => {
     try {
         let _user = new User();
         _user.validateInput(req.body);
-        _user.validateEmail(req.body.email);
         req.body.username = req.body.username.trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
         req.body.email = req.body.email.trim().toLowerCase();

@@ -25,11 +25,17 @@ let getProductS = async (req, res, next) => {
         if (req.query.creator_id) {
             matchQuery['creator_id'] = ObjectId(req.query.creator_id);
         }
-        if (req.query.branch_id) {
-            matchQuery['branch_id'] = ObjectId(req.query.branch_id);
-        }
         if (req.query.category_id) {
-            matchQuery['category_id'] = ObjectId(req.query.category_id);
+            matchQuery['category_id'] = {
+                $in: (() => {
+                    category_ids = req.query.category_id.split('---');
+                    return category_ids.map((id) => {
+                        if (id) {
+                            return ObjectId(id);
+                        }
+                    });
+                })(),
+            };
         }
         if (req.query.supplier_id) {
             matchQuery['supplier_id'] = ObjectId(req.query.supplier_id);
@@ -249,8 +255,53 @@ let updateProductS = async (req, res, next) => {
     }
 };
 
+let getAllAtttributeS = async (req, res, next) => {
+    try {
+        let mongoQuery = {};
+        if (req.query.store_id) {
+            mongoQuery['name'] = 'STORE';
+            mongoQuery['inventory_id'] = req.query.store_id;
+        }
+        if (req.query.branch_id) {
+            mongoQuery['name'] = 'BRANCH';
+            mongoQuery['inventory_id'] = req.query.branch_id;
+        }
+        let locations = await client.db(DB).collection('Locations').find(mongoQuery).toArray();
+        let product_ids = locations.map((location) => {
+            return String(location.product_id);
+        });
+        product_ids = [...new Set(product_ids)];
+        product_ids = product_ids.map((product_id) => {
+            return ObjectId(product_id);
+        });
+        let attributes = await client
+            .db(DB)
+            .collection('Attributes')
+            .find({ product_id: { $in: product_ids } })
+            .toArray();
+        let _attributes = {};
+        attributes.map((attribute) => {
+            if (!_attributes[attribute.option]) {
+                _attributes[attribute.option] = attribute;
+            } else {
+                if (Array.isArray(_attributes[attribute.option].values))
+                    _attributes[attribute.option].values = _attributes[attribute.option].values.concat(
+                        attribute.values
+                    );
+            }
+        });
+        for (let i in _attributes) {
+            _attributes[i].values = [...new Set(_attributes[i].values)];
+        }
+        res.send({ success: true, data: Object.values(_attributes) });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductS,
     addProductS,
     updateProductS,
+    getAllAtttributeS,
 };

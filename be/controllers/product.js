@@ -230,8 +230,17 @@ let updateProductC = async (req, res, next) => {
     }
 };
 
+let getAllAtttributeC = async (req, res, next) => {
+    try {
+        await productService.getAllAtttributeS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductC,
     addProductC,
     updateProductC,
+    getAllAtttributeC,
 };
