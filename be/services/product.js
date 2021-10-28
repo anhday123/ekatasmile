@@ -260,11 +260,11 @@ let getAllAtttributeS = async (req, res, next) => {
         let mongoQuery = {};
         if (req.query.store_id) {
             mongoQuery['name'] = 'STORE';
-            mongoQuery['inventory_id'] = req.query.store_id;
+            mongoQuery['inventory_id'] = ObjectId(req.query.store_id);
         }
         if (req.query.branch_id) {
             mongoQuery['name'] = 'BRANCH';
-            mongoQuery['inventory_id'] = req.query.branch_id;
+            mongoQuery['inventory_id'] = ObjectId(req.query.branch_id);
         }
         let locations = await client.db(DB).collection('Locations').find(mongoQuery).toArray();
         let product_ids = locations.map((location) => {
