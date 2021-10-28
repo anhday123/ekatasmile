@@ -244,7 +244,6 @@ export default function Customer() {
     setTableLoading(true)
     try {
       const res = await getCustomer(params)
-
       if (res.status === 200 && res.data.success) {
         setCustomerList(res.data.data.filter((e) => e.active))
         setCountCustomer(res.data.count)

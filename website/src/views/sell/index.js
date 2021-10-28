@@ -6,7 +6,9 @@ import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { dataMockup } from './data-mockup'
 import { formatCash } from 'utils'
-import { ACTION, PERMISSIONS, ROUTES } from 'consts'
+import { PERMISSIONS, ROUTES } from 'consts'
+import noData from 'assets/icons/no-data.png'
+import { decodeToken } from 'react-jwt'
 
 //components
 import AddCustomer from 'views/actions/customer/add'
@@ -17,9 +19,9 @@ import ModalPromotion from './promotion-available'
 import Permission from 'components/permission'
 import PaymentMethods from './payment-methods'
 import ModalOrdersReturn from './orders-returns'
-
-//images
-import location from 'assets/icons/location.png'
+import ModalChangeStore from './change-store'
+import ModalInfoSeller from './info-seller'
+import CustomerUpdate from 'views/actions/customer/update'
 
 //antd
 import {
@@ -31,7 +33,6 @@ import {
   Tooltip,
   Modal,
   Button,
-  notification,
   Divider,
   Switch,
   Radio,
@@ -40,6 +41,7 @@ import {
   Table,
   Pagination,
   Popover,
+  Affix,
 } from 'antd'
 
 //icons antd
@@ -47,6 +49,7 @@ import {
   SearchOutlined,
   PlusOutlined,
   CloseCircleOutlined,
+  CloseCircleTwoTone,
   MoreOutlined,
   UserOutlined,
   CloseOutlined,
@@ -55,17 +58,77 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined,
   EditOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from '@ant-design/icons'
 
 //apis
-import { getAllStore } from 'apis/store'
-import { updateUser } from 'apis/user'
 import { getAllCustomer } from 'apis/customer'
+import { apiAllShipping } from 'apis/shipping'
+import { getProductsStore } from 'apis/product'
 
 export default function Sell() {
   const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
+  const sell = useSelector((state) => state.sell)
+
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [shippingsMethod, setShippingsMethod] = useState([])
+  const [visibleCustomerUpdate, setVisibleCustomerUpdate] = useState(false)
+
+  const [invoices, setInvoices] = useState([])
+  const [activeKeyTab, setActiveKeyTab] = useState('')
+  const [isDelivery, setIsDelivery] = useState(false)
+
+  const [customer, setCustomer] = useState(null)
+  const [customers, setCustomers] = useState([])
+
+  //object invoice
+  const initInvoice = {
+    id: uuidv4(),
+    name: 'Đơn ' + (invoices.length + 1),
+    customer: null,
+  }
+
+  var elem = document.documentElement
+  /* View in fullscreen */
+  function openFullscreen() {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen()
+    } else if (elem.webkitRequestFullscreen) {
+      /* Safari */
+      elem.webkitRequestFullscreen()
+    } else if (elem.msRequestFullscreen) {
+      /* IE11 */
+      elem.msRequestFullscreen()
+    }
+
+    setIsFullScreen(true)
+  }
+
+  /* Close fullscreen */
+  function closeFullscreen() {
+    setIsFullScreen(false)
+
+    if (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msExitFullscreenElement
+    ) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen()
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen()
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen()
+      }
+    }
+  }
+
   const SHORT_CUTS = [
     {
       text: 'Thanh toán',
@@ -84,35 +147,6 @@ export default function Sell() {
       icon: '',
     },
   ]
-
-  const [invoices, setInvoices] = useState([
-    { id: uuidv4(), name: 'Đơn 1 Đơn 1' },
-  ])
-  const [activeKeyTab, setActiveKeyTab] = useState('')
-  const [isDelivery, setIsDelivery] = useState(false)
-  const [customer, setCustomer] = useState(null)
-
-  const [stores, setStores] = useState([])
-  const [customers, setCustomers] = useState([])
-
-  const _changeStore = async (store_id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const id = dataUser.data && dataUser.data.user_id
-      const body = { store_id: store_id }
-      const res = await updateUser(body, id)
-      console.log(res)
-      if (res.status === 200)
-        if (res.data.accessToken) {
-          dispatch({ type: ACTION.LOGIN, data: res.data })
-          notification.success({ message: 'Chuyển đổi cửa hàng thành công!' })
-        } else notification.error({ message: 'Chuyển đổi cửa hàng thất bại!' })
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-      console.log(error)
-    }
-  }
 
   const ModalQuantityProduct = ({ product }) => {
     const [visible, setVisible] = useState(false)
@@ -241,86 +275,6 @@ export default function Sell() {
     )
   }
 
-  const ModalChangeStore = () => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-
-    const [value, setValue] = useState(
-      dataUser.data && dataUser.data._store.store_id
-    )
-
-    useEffect(() => {
-      if (!visible) setValue(dataUser.data && dataUser.data._store.store_id)
-    }, [visible])
-
-    return (
-      <>
-        <Row
-          wrap={false}
-          align="middle"
-          style={{ cursor: 'pointer' }}
-          onClick={toggle}
-        >
-          <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
-          <p className={styles['name-store']}>
-            {dataUser.data && dataUser.data._store.name}
-          </p>
-        </Row>
-        <Modal
-          width={400}
-          onCancel={toggle}
-          visible={visible}
-          footer={null}
-          title="Chuyển đổi cửa hàng"
-        >
-          <div>
-            <p style={{ marginBottom: 0 }}>Doanh nghiệp</p>
-            <Select
-              style={{ width: '100%' }}
-              disabled
-              value={dataUser.data && dataUser.data._branch.name}
-            >
-              <Select.Option
-                value={dataUser.data && dataUser.data._branch.name}
-              >
-                <div style={{ color: 'black' }}>
-                  {dataUser.data && dataUser.data._branch.name}
-                </div>
-              </Select.Option>
-            </Select>
-          </div>
-          <div style={{ marginBottom: 25, marginTop: 20 }}>
-            <p style={{ marginBottom: 0 }}>Điểm bán</p>
-            <Select
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              style={{ width: '100%' }}
-              value={value}
-              onChange={(value) => setValue(value)}
-            >
-              {stores.map((store, index) => (
-                <Select.Option key={index} value={store.store_id}>
-                  {store.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-          <Row justify="end">
-            <Button
-              onClick={() => _changeStore(value)}
-              type="primary"
-              style={{ backgroundColor: '#0877DE', borderColor: '#0877DE' }}
-            >
-              Chuyển đổi
-            </Button>
-          </Row>
-        </Modal>
-      </>
-    )
-  }
-
   const ModalAddCustomer = () => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
@@ -348,15 +302,6 @@ export default function Sell() {
     )
   }
 
-  const _getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200) setStores(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getCustomers = async () => {
     try {
       const res = await getAllCustomer()
@@ -366,19 +311,53 @@ export default function Sell() {
     }
   }
 
+  const _getShippingsMethod = async () => {
+    try {
+      const res = await apiAllShipping()
+      if (res.status === 200) setShippingsMethod(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getProducts = async (store_id) => {
+    try {
+      const res = await getProductsStore({ store_id })
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
-    _getStores()
     _getCustomers()
+    _getShippingsMethod()
   }, [])
 
   useEffect(() => {
     //back to login
     if (!localStorage.getItem('accessToken')) history.push(ROUTES.LOGIN)
+    // else {
+    //   const data = decodeToken(localStorage.getItem('accessToken'))
+    //   if (!localStorage.getItem('storeSell')) {
+    //     localStorage.setItem('storeSell', JSON.stringify(data.data._store))
+    //     _getProducts(data.data._store.store_id)
+    //   } else
+    //     _getProducts(JSON.parse(localStorage.getItem('storeSell')).store_id)
+    // }
+  }, [])
+
+  //init invoice
+  useEffect(() => {
+    setActiveKeyTab(initInvoice.id)
+
+    setInvoices([initInvoice])
+
+    dispatch({ type: 'UPDATE_INVOICE', data: [initInvoice] })
   }, [])
 
   return (
     <div className={styles['sell-container']}>
-      <ModalOrdersReturn />
       <div className={styles['sell-header']}>
         <Row align="middle" wrap={false}>
           <div className="select-product-sell">
@@ -489,21 +468,26 @@ export default function Sell() {
           <img
             src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/b2c0b183-9330-4582-8ff0-9050b411532c/barcode 3.png"
             alt=""
-            style={{ width: 30, height: 30, marginLeft: 17, cursor: 'pointer' }}
+            style={{
+              width: 30,
+              height: 30,
+              marginLeft: 17,
+              cursor: 'pointer',
+            }}
           />
         </Row>
         <Row align="middle" style={{ marginLeft: 30 }}>
           <Tabs
             hideAdd={invoices.length > 9 && true}
             moreIcon={<MoreOutlined style={{ color: 'white', fontSize: 16 }} />}
-            activeKey={activeKeyTab || invoices[0].id}
+            activeKey={activeKeyTab}
             onEdit={(key, action) => {
               const invoicesNew = [...invoices]
               if (action === 'add') {
-                const id = uuidv4()
-                invoicesNew.push({ id: id, name: uuidv4() })
+                invoicesNew.push(initInvoice)
                 setInvoices([...invoicesNew])
-                setActiveKeyTab(id)
+                setActiveKeyTab(initInvoice.id)
+                console.log(initInvoice.id)
               }
             }}
             onChange={(activeKey) => setActiveKeyTab(activeKey)}
@@ -554,36 +538,48 @@ export default function Sell() {
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <ModalChangeStore />
-            <Row wrap={false} align="middle">
-              <UserOutlined
-                style={{ marginRight: 10, width: 10, color: 'white' }}
-              />
-              <p className={styles['name-user']}>
-                {((dataUser.data && dataUser.data.first_name) || '') +
-                  ' ' +
-                  ((dataUser.data && dataUser.data.last_name) || '')}
-              </p>
-            </Row>
+            <ModalInfoSeller />
           </div>
-          <Space size="large" wrap={false}>
-            <img
-              src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/notes 1.png"
-              alt=""
-              style={{ width: 24, height: 24, cursor: 'pointer' }}
-              onClick={() => history.push(ROUTES.RECEIPTS_PAYMENT)}
-            />
-            <img
-              src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/report 1.png"
-              alt=""
-              style={{ width: 24, height: 24, cursor: 'pointer' }}
-              onClick={() => history.push(ROUTES.REPORT_FINANCIAL)}
-            />
-            <img
-              src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/home 1.png"
-              alt=""
-              style={{ width: 24, height: 24, cursor: 'pointer' }}
-              onClick={() => history.push(ROUTES.OVERVIEW)}
-            />
+          <Space size="middle" wrap={false}>
+            {isFullScreen ? (
+              <Tooltip title="Thu nhỏ màn hình">
+                <FullscreenExitOutlined
+                  style={{ color: 'white', fontSize: 25 }}
+                  onClick={closeFullscreen}
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip title="Mở rộng màn hình">
+                <FullscreenOutlined
+                  style={{ color: 'white', fontSize: 25 }}
+                  onClick={openFullscreen}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title="Đi tới trang quản lí thu chi">
+              <img
+                src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/notes 1.png"
+                alt=""
+                style={{ width: 24, height: 24, cursor: 'pointer' }}
+                onClick={() => history.push(ROUTES.RECEIPTS_PAYMENT)}
+              />
+            </Tooltip>
+            <Tooltip title="Đi tới trang báo cáo tài chính">
+              <img
+                src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/report 1.png"
+                alt=""
+                style={{ width: 24, height: 24, cursor: 'pointer' }}
+                onClick={() => history.push(ROUTES.REPORT_FINANCIAL)}
+              />
+            </Tooltip>
+            <Tooltip title="Quay về trang tổng quan">
+              <img
+                src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/home 1.png"
+                alt=""
+                style={{ width: 24, height: 24, cursor: 'pointer' }}
+                onClick={() => history.push(ROUTES.OVERVIEW)}
+              />
+            </Tooltip>
           </Space>
         </Row>
       </div>
@@ -594,7 +590,9 @@ export default function Sell() {
               <Row
                 align="middle"
                 wrap={false}
-                className={styles['sell-product__item']}
+                className={`${styles['sell-product__item']} ${
+                  styles[index % 2 === 0 && 'bg-active']
+                }`}
               >
                 <Row wrap={false} align="middle">
                   <p
@@ -608,16 +606,24 @@ export default function Sell() {
                     {index}
                   </p>
                   <DeleteOutlined
-                    style={{ color: 'red', marginRight: 15, cursor: 'pointer' }}
+                    style={{
+                      color: 'red',
+                      marginRight: 15,
+                      cursor: 'pointer',
+                    }}
                   />
-                  <p className={styles['sell-product__item-sku']}>
-                    {product.sku}
-                  </p>
+                  <Tooltip title={product.sku}>
+                    <p className={styles['sell-product__item-sku']}>
+                      {product.sku}
+                    </p>
+                  </Tooltip>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <p className={styles['sell-product__item-name']}>
-                        {product.title}
-                      </p>
+                      <Tooltip title={product.title}>
+                        <p className={styles['sell-product__item-name']}>
+                          {product.title}
+                        </p>
+                      </Tooltip>
                       <ModalQuantityProduct product={product} />
                     </div>
                     <ModalNoteProduct product={product} />
@@ -629,26 +635,43 @@ export default function Sell() {
                   align="middle"
                   style={{ marginLeft: 20, marginRight: 10, width: '100%' }}
                 >
-                  <Input style={{ width: 120 }} placeholder="Đơn vị" />
-                  <InputNumber
-                    min={0}
-                    style={{ width: 80 }}
-                    placeholder="Số lượng"
-                  />
-                  <InputNumber
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    placeholder="Giá tiền"
-                    style={{ width: 130 }}
-                  />
+                  <div className={styles['sell-product__item-unit']}>
+                    <Input
+                      style={{ width: '100%' }}
+                      placeholder="Đơn vị"
+                      bordered={false}
+                    />
+                  </div>
+                  <div className={styles['sell-product__item-quantity']}>
+                    <InputNumber
+                      className="show-handler-number"
+                      style={{ width: '100%' }}
+                      bordered={false}
+                      min={0}
+                      placeholder="Số lượng"
+                    />
+                  </div>
+                  <div className={styles['sell-product__item-price']}>
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      bordered={false}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      placeholder="Giá tiền"
+                    />
+                  </div>
                   <p style={{ marginBottom: 0, fontWeight: 600 }}>
                     {formatCash(150000)}
                   </p>
                 </Row>
               </Row>
             ))}
+            {/* <div style={{ textAlign: 'center' }}>
+              <img src={noData} alt="" style={{ width: 100, height: 100 }} />
+              <h3>Đơn hàng của bạn chưa có sản phẩm</h3>
+            </div> */}
           </div>
           <div className={styles['sell-products-related']}>
             <Row justify="space-between">
@@ -705,10 +728,7 @@ export default function Sell() {
           <Row
             wrap={false}
             justify="space-between"
-            style={{
-              backgroundColor: 'white',
-              padding: '15px 10px',
-            }}
+            style={{ backgroundColor: 'white', padding: '15px 10px' }}
           >
             {SHORT_CUTS.map((shortcut) => (
               <div className={styles['keyboard-shorcuts']}>
@@ -752,7 +772,9 @@ export default function Sell() {
               ))}
             </Select>
 
-            <ModalAddCustomer />
+            <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+              <ModalAddCustomer />
+            </Permission>
           </Row>
           <Row
             wrap={false}
@@ -762,9 +784,27 @@ export default function Sell() {
             <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
             <div style={{ width: '100%' }}>
               <Row wrap={false} align="middle">
-                <a style={{ fontWeight: 600, marginRight: 5 }}>
+                <a
+                  style={{ fontWeight: 600, marginRight: 5 }}
+                  onClick={() => {
+                    setVisibleCustomerUpdate(true)
+                    console.log(customer)
+                  }}
+                >
                   {customer && customer.first_name + ' ' + customer.last_name}
                 </a>
+                <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                  {customer && (
+                    <CustomerUpdate
+                      customerData={[customer]}
+                      visible={visibleCustomerUpdate}
+                      onClose={() => setVisibleCustomerUpdate(false)}
+                      // reload={() =>
+                      //   getAllCustomer({ page, page_size, ...paramsFilter })
+                      // }
+                    />
+                  )}
+                </Permission>
                 <span style={{ fontWeight: 500 }}>
                   {' '}
                   - {customer && customer.phone}
@@ -781,6 +821,16 @@ export default function Sell() {
                 </div>
               </Row>
             </div>
+            <Popconfirm
+              title="Bạn có muốn xoá khách hàng này ?"
+              okText="Đồng ý"
+              cancelText="Từ chối"
+              onConfirm={() => setCustomer(null)}
+            >
+              <CloseCircleTwoTone
+                style={{ cursor: 'pointer', marginLeft: 20, fontSize: 30 }}
+              />
+            </Popconfirm>
           </Row>
           <Divider style={{ marginTop: 15, marginBottom: 15 }} />
           <Row justify="space-between" align="middle" wrap={false}>
@@ -811,14 +861,11 @@ export default function Sell() {
           </Row>
           <Divider style={{ marginTop: 15, marginBottom: 15 }} />
 
-          <Radio.Group>
-            <Row wrap={false} justify="space-between" align="middle">
-              <Radio value={1}>Tạo hoá đơn</Radio>
-              <Radio value={2}>Đặt online</Radio>
-              <Radio value={3}>Trả hàng</Radio>
-            </Row>
-          </Radio.Group>
-
+          <Row wrap={false} justify="space-between" align="middle">
+            <Radio value={1}>Tạo hoá đơn</Radio>
+            <Radio value={2}>Đặt online</Radio>
+            <ModalOrdersReturn />
+          </Row>
           <div>
             <Row justify="space-between" wrap={false} align="middle">
               <Row wrap={false} align="middle">
@@ -844,25 +891,56 @@ export default function Sell() {
               <Row justify="space-between" wrap={false} align="middle">
                 <p>Đơn vị vận chuyển</p>
                 <div
-                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '37%' }}
+                  style={{
+                    borderBottom: '0.75px solid #C9C8C8',
+                    width: '40%',
+                  }}
                 >
-                  <Select bordered={false} style={{ width: '100%' }}></Select>
+                  <Select
+                    bordered={false}
+                    style={{ width: '100%' }}
+                    placeholder="Chọn đơn vị vận chuyển"
+                    optionFilterProp="children"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {shippingsMethod.map((shipping, index) => (
+                      <Select.Option index={index}>
+                        {shipping.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
               </Row>
               <Row justify="space-between" wrap={false} align="middle">
                 <p>Mã vận đơn</p>
                 <div
-                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '37%' }}
+                  style={{
+                    borderBottom: '0.75px solid #C9C8C8',
+                    width: '40%',
+                  }}
                 >
-                  <Input bordered={false} style={{ width: '100%' }} />
+                  <Input
+                    placeholder="Nhập mã vận đơn"
+                    bordered={false}
+                    style={{ width: '100%' }}
+                  />
                 </div>
               </Row>
               <Row justify="space-between" wrap={false} align="middle">
                 <p>Phí giao hàng</p>
                 <div
-                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '37%' }}
+                  style={{
+                    borderBottom: '0.75px solid #C9C8C8',
+                    width: '40%',
+                  }}
                 >
                   <InputNumber
+                    placeholder="Nhập phí giao hàng"
                     min={0}
                     bordered={false}
                     style={{ width: '100%' }}
@@ -882,7 +960,10 @@ export default function Sell() {
             <Row justify="space-between" wrap={false} align="middle">
               <p>Tiền thanh toán trước</p>
               <div
-                style={{ borderBottom: '0.75px solid #C9C8C8', width: '37%' }}
+                style={{
+                  borderBottom: '0.75px solid #C9C8C8',
+                  width: '40%',
+                }}
               >
                 <InputNumber
                   min={0}
@@ -913,7 +994,12 @@ export default function Sell() {
               style={{ width: '100%' }}
             />
           </div>
-          <Row justify="center" align="middle">
+
+          <Row
+            justify="center"
+            align="middle"
+            className={styles['sell-right__footer-btn']}
+          >
             <Space>
               <Button
                 type="primary"

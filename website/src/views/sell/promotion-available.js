@@ -1,18 +1,37 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { Modal, Row, Col, Button, Radio, Space, Input } from 'antd'
 
 import gift from 'assets/icons/gift.png'
 
+//apis
+import { getAllPromotion } from 'apis/promotion'
+import { apiCheckPromotion } from 'apis/promotion'
+
 export default function PromotionAvailable() {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const promotions = [
+  const [promotions, setPromotions] = useState([])
+
+  const PROMOTIONS = [
     { title: 'Khuyến mãi hè 2021', value: 100000, price: 100000 },
     { title: 'Khuyến mãi trung thu 2021', value: 500000, price: 500000 },
     { title: 'Khuyến mãi xuân 2022', value: 20, price: 600000 },
   ]
+
+  const _getPromotions = async () => {
+    try {
+      const res = await getAllPromotion()
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    _getPromotions()
+  }, [])
 
   return (
     <>
@@ -53,7 +72,7 @@ export default function PromotionAvailable() {
             <h3 style={{ textAlign: 'center' }}>Hạn mức áp dụng</h3>
           </Col>
         </Row>
-        {promotions.map((promotion) => (
+        {PROMOTIONS.map((promotion) => (
           <Row>
             <Col xs={8} sm={8}>
               <Radio>{promotion.title}</Radio>

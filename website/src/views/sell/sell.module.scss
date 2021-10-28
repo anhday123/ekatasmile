@@ -37,31 +37,51 @@
       display: flex;
       flex-direction: column;
       padding: 10px 15px;
+      position: relative;
+
+      .sell-right__footer-btn {
+        position: fixed;
+        width: 32%;
+        bottom: 10px;
+        right: 0px;
+        background-color: white;
+        z-index: 10;
+      }
     }
 
     .sell-left {
       width: 67%;
       margin-right: 15px;
-      min-height: 100%;
 
       .sell-products-invoice {
         width: 100%;
-        height: calc(100vh - 55px);
         display: flex;
         flex-direction: column;
-        max-height: 400px;
+        justify-content: center;
+        align-items: center;
+        height: 400px;
         overflow-y: auto;
         margin-bottom: 15px;
         background-color: white;
-        padding: 10px;
+        padding-top: 340px;
+        padding-left: 5px;
+        padding-right: 5px;
+
+        .bg-active {
+          background-color: #f3f7fc;
+        }
 
         .sell-product__item {
           border-radius: 3px;
           width: 100%;
-          padding: 5px 9px;
-          margin-bottom: 10px;
+          padding: 30px 9px;
           min-height: 50px;
-          border-bottom: 1px solid rgb(196, 193, 193);
+          border-bottom: 0.5px solid #cac7c7;
+
+          &:nth-child(1) {
+            border: 1px solid #a4a4a4;
+            box-shadow: 0px 2px 4px rgb(63 63 63 / 25%);
+          }
 
           .sell-product__item-sku {
             margin-bottom: 0px;
@@ -84,6 +104,22 @@
             -webkit-box-orient: vertical;
             display: -webkit-box;
             min-width: 180px;
+            max-width: 180px;
+          }
+
+          .sell-product__item-unit {
+            width: 100px;
+            border-bottom: 0.5px solid #cac7c7;
+          }
+
+          .sell-product__item-quantity {
+            width: 100px;
+            border-bottom: 0.5px solid #cac7c7;
+          }
+
+          .sell-product__item-price {
+            width: 130px;
+            border-bottom: 0.5px solid #cac7c7;
           }
 
           .sell-product__item-note {

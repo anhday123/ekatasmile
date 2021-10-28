@@ -8,6 +8,7 @@ import {
   InputNumber,
   Space,
   Popconfirm,
+  Input,
 } from 'antd'
 import {
   IdcardOutlined,
@@ -19,15 +20,26 @@ import {
 
 import { formatCash } from 'utils'
 
-export default function PaymentMethods({}) {
+export default function PaymentMethods() {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const [payments, setPayments] = useState([])
+  const COST = 1000000
+  const [payments, setPayments] = useState([{ name: 'Quẹt thẻ', value: '0' }])
+  const [costPaid, setCostPaid] = useState('0')
+  const [excessCash, setExcessCash] = useState('0')
 
   const _inputValue = (value, index) => {
     let paymentsNew = [...payments]
     paymentsNew[index].value = value
+    const sumCostPaid = paymentsNew.reduce(
+      (total, current) => total + +current.value.replaceAll(',', ''),
+      0
+    )
+    const excessCash = sumCostPaid > COST ? +sumCostPaid - COST : '0'
+
+    setExcessCash(excessCash)
+    setCostPaid(sumCostPaid)
     setPayments([...paymentsNew])
   }
 
@@ -39,13 +51,23 @@ export default function PaymentMethods({}) {
 
   const _addPaymentMethod = (payment) => {
     let paymentsNew = [...payments]
-    paymentsNew.push({ name: payment, value: 0 })
-    setPayments([...paymentsNew])
+    if (!paymentsNew.find((p) => p.name === payment)) {
+      paymentsNew.push({ name: payment, value: '0' })
+      setPayments([...paymentsNew])
+    }
   }
 
   const _removePaymentMethod = (index) => {
     let paymentsNew = [...payments]
     paymentsNew.splice(index, 1)
+    const sumCostPaid = paymentsNew.reduce(
+      (total, current) => total + +current.value.replaceAll(',', ''),
+      0
+    )
+    const excessCash = sumCostPaid > COST ? +sumCostPaid - COST : '0'
+
+    setExcessCash(excessCash)
+    setCostPaid(sumCostPaid)
     setPayments([...paymentsNew])
   }
 
@@ -56,6 +78,9 @@ export default function PaymentMethods({}) {
         width={540}
         footer={
           <Row justify="end">
+            <Button style={{ width: 100, borderRadius: 5 }} onClick={toggle}>
+              Thoát
+            </Button>
             <Button
               style={{
                 width: 100,
@@ -73,15 +98,19 @@ export default function PaymentMethods({}) {
         onCancel={toggle}
         visible={visible}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Row justify="space-between">
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ width: '100%', fontSize: 18 }}
+        >
+          <Row justify="space-between" style={{ fontWeight: 600 }}>
             <p>Khách phải trả</p>
-            <p>{formatCash(100000)}</p>
+            <p>{formatCash(COST)}</p>
           </Row>
 
           <Row wrap={false} justify="space-between" align="middle">
             <Button
-              onClick={() => _addPaymentMethod('1')}
+              onClick={() => _addPaymentMethod('Quẹt thẻ')}
               icon={<IdcardOutlined />}
               style={{
                 backgroundColor: '#3579FE',
@@ -93,7 +122,7 @@ export default function PaymentMethods({}) {
               Quẹt thẻ
             </Button>
             <Button
-              onClick={() => _addPaymentMethod('2')}
+              onClick={() => _addPaymentMethod('COD')}
               icon={<UsergroupDeleteOutlined />}
               style={{
                 color: '#3579FE',
@@ -104,7 +133,7 @@ export default function PaymentMethods({}) {
               COD
             </Button>
             <Button
-              onClick={() => _addPaymentMethod('3')}
+              onClick={() => _addPaymentMethod('Chuyển khoản')}
               icon={<CreditCardOutlined />}
               style={{
                 backgroundColor: '#3579FE',
@@ -116,7 +145,7 @@ export default function PaymentMethods({}) {
               Chuyển khoản
             </Button>
             <Button
-              onClick={() => _addPaymentMethod('4')}
+              onClick={() => _addPaymentMethod('Tiền mặt')}
               icon={<DollarOutlined />}
               style={{
                 color: '#3579FE',
@@ -130,23 +159,21 @@ export default function PaymentMethods({}) {
           <Space direction="vertical" style={{ width: '100%' }}>
             {payments.map((payment, index) => {
               const SelectPayments = () => (
-                <Select
+                <Input
+                  value={payment.name}
                   onChange={(value) => _changePaymentMethod(value, index)}
-                  defaultValue={payment.name}
-                  style={{ width: 150 }}
+                  style={{ width: 150, pointerEvents: 'none' }}
                   bordered={false}
                   placeholder="Chọn phương thức thanh toán"
-                >
-                  <Select.Option value="1">Quẹt thẻ</Select.Option>
-                  <Select.Option value="2">COD</Select.Option>
-                  <Select.Option value="3">Chuyển khoản</Select.Option>
-                  <Select.Option value="4">Tiền mặt</Select.Option>
-                </Select>
+                />
               )
 
               const InputValue = () => (
                 <InputNumber
-                  onBlur={(e) => _inputValue(e.target.value, index)}
+                  onBlur={(e) => {
+                    const value = e.target.value
+                    _inputValue(value, index)
+                  }}
                   defaultValue={payment.value}
                   formatter={(value) =>
                     `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -188,13 +215,13 @@ export default function PaymentMethods({}) {
               )
             })}
           </Space>
-          <Row justify="space-between">
-            <p>Tổng tiền khách phải trả</p>
-            <p>{formatCash(600000)}</p>
+          <Row justify="space-between" style={{ fontWeight: 600 }}>
+            <p>Tổng tiền khách trả</p>
+            <p>{formatCash(costPaid)}</p>
           </Row>
-          <Row justify="space-between">
+          <Row justify="space-between" style={{ fontWeight: 600 }}>
             <p>Tiền thừa</p>
-            <p>0</p>
+            <p>{formatCash(excessCash)}</p>
           </Row>
         </Space>
       </Modal>

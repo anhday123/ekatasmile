@@ -56,6 +56,9 @@
 .ant-picker {
   border-radius: 5px !important;
 }
+.show-handler-number .ant-input-number-handler-wrap {
+  opacity: 1 !important;
+}
 /* custom input */
 
 .ant-popover {

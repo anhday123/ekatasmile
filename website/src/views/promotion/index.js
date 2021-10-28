@@ -25,23 +25,13 @@ import { useDispatch } from 'react-redux'
 import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
-import { compare, tableSum } from 'utils'
+import { compare, tableSum, formatCash } from 'utils'
 import { getAllStore } from 'apis/store'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
 
-function formatCash(str) {
-  return str
-    .toString()
-    .split('')
-    .reverse()
-    .reduce((prev, next, index) => {
-      return (index % 3 ? next : next + ',') + prev
-    })
-}
 export default function Promotion() {
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [visible, setVisible] = useState(false)
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
@@ -94,7 +84,8 @@ export default function Promotion() {
       dataIndex: 'value',
       width: 150,
       render(data, record) {
-        if (record.type === 'value') return formatCash(data.toString()) + ' VND'
+        if (record.type.toLowerCase() === 'value')
+          return formatCash(data.toString()) + ' VND'
         return formatCash(data.toString()) + '%'
       },
       sorter: (a, b) => compare(a, b, 'value'),
@@ -169,10 +160,6 @@ export default function Promotion() {
     }
   }
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-
   const getStore = async (params) => {
     try {
       const res = await getAllStore(params)
@@ -189,6 +176,7 @@ export default function Promotion() {
     try {
       setLoading(true)
       const res = await getPromoton({ ...params, ...pagination })
+      console.log(res)
       if (res.status === 200) {
         setListPromotion(res.data.data)
       } else {
@@ -453,15 +441,7 @@ export default function Promotion() {
           ''
         )}
       </div>
-      <Modal
-        title="Thông tin khuyến mãi"
-        centered
-        footer={null}
-        width={1000}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      ></Modal>
+
       <Drawer
         title="Chỉnh sửa chương trình khuyến mãi"
         width={1000}
