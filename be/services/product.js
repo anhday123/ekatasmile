@@ -127,6 +127,33 @@ let getProductS = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        if (req.query.attribute) {
+            req.query.attribute = req.query.attribute.trim().toUpperCase();
+            console.log(req.query);
+            let filters = req.query.attribute.split('---');
+            filters = filters.map((filter) => {
+                let [option, values] = filter.split(':');
+                values = values.split('||');
+                return { option: option, values: values };
+            });
+            filters = filters.map((filter) => {
+                aggregateQuery.push({
+                    $match: {
+                        'attributes.option': createRegExpQuery(filter.option),
+                        'attributes.values': {
+                            $in: (() => {
+                                return filter.values.map((value) => {
+                                    return createRegExpQuery(value);
+                                });
+                            })(),
+                        },
+                    },
+                });
+            });
+
+            console.log(aggregateQuery);
+        }
+
         if (req.query._business) {
             aggregateQuery.push(
                 {
