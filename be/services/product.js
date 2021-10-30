@@ -123,6 +123,7 @@ let getProductS = async (req, res, next) => {
                             as: 'locations',
                         },
                     },
+                    { $addFields: { total_quantity: { $sum: '$locations.quantity' } } },
                 ],
                 as: 'variants',
             },
@@ -153,7 +154,6 @@ let getProductS = async (req, res, next) => {
 
             console.log(aggregateQuery);
         }
-
         if (req.query._business) {
             aggregateQuery.push(
                 {
