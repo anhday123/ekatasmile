@@ -119,6 +119,22 @@ let getProductS = async (req, res, next) => {
                                     }
                                     return [];
                                 })(),
+                                {
+                                    $lookup: {
+                                        from: 'Branchs',
+                                        localField: 'inventory_id',
+                                        foreignField: 'branch_id',
+                                        as: '_branch',
+                                    },
+                                },
+                                {
+                                    $lookup: {
+                                        from: 'Stores',
+                                        localField: 'inventory_id',
+                                        foreignField: 'store_id',
+                                        as: '_store',
+                                    },
+                                },
                             ],
                             as: 'locations',
                         },
@@ -130,7 +146,6 @@ let getProductS = async (req, res, next) => {
         });
         if (req.query.attribute) {
             req.query.attribute = req.query.attribute.trim().toUpperCase();
-            console.log(req.query);
             let filters = req.query.attribute.split('---');
             filters = filters.map((filter) => {
                 let [option, values] = filter.split(':');
@@ -140,19 +155,17 @@ let getProductS = async (req, res, next) => {
             filters = filters.map((filter) => {
                 aggregateQuery.push({
                     $match: {
-                        'attributes.option': createRegExpQuery(filter.option),
+                        'attributes.option': createRegExpQuery(filter.option.trim().toUpperCase()),
                         'attributes.values': {
                             $in: (() => {
                                 return filter.values.map((value) => {
-                                    return createRegExpQuery(value);
+                                    return createRegExpQuery(value.trim().toUpperCase());
                                 });
                             })(),
                         },
                     },
                 });
             });
-
-            console.log(aggregateQuery);
         }
         if (req.query._business) {
             aggregateQuery.push(

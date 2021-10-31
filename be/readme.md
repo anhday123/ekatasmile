@@ -4,7 +4,7 @@
 
 -   ssh root@103.81.87.65
 -   viesoftware
--   quantribanhang.viesoftware.net
+-   quantribanhang.viesoftware.vn
 
 # POS-system:
 
