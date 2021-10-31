@@ -81,8 +81,8 @@ class User {
             }
             return data.role_id;
         })();
-        this.email = this.validateEmail(data.email);
-        this.phone = this.validatePhone(data.phone);
+        this.email = data.email;
+        this.phone = data.phone;
         this.avatar = data.avatar || '';
         this.first_name = data.first_name || '';
         this.last_name = data.last_name || '';
