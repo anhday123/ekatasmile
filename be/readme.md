@@ -34,4 +34,4 @@
 
 # Deploy
 
--   Đưa folder lên server, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
+-   Đưa folder lên server qua git/ssh, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
