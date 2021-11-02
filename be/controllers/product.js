@@ -160,14 +160,18 @@ let addProductC = async (req, res, next) => {
                 variant.locations.map((location) => {
                     let _location = new Location();
                     _location.validateInput(location);
-                    location.name = location.name.trim().toUpperCase();
-                    if (location.name == 'BRANCH') {
+                    location.type = location.type.trim().toUpperCase();
+                    if (location.type == 'BRANCH') {
                         if (!_branchs[location.inventory_id]) {
                             throw new Error(`400: branch_id <${location.inventory_id}> không khả dụng!`);
+                        } else {
+                            location['name'] = _branchs[location.inventory_id].name;
                         }
                     } else {
                         if (!_stores[location.inventory_id]) {
                             throw new Error(`400: store_id <${location.inventory_id}> không khả dụng!`);
+                        } else {
+                            location['name'] = _stores[location.inventory_id].name;
                         }
                     }
                     let locationId = ObjectId();

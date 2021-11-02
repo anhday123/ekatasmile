@@ -17,6 +17,8 @@ _connect.then(async (message) => {
     console.log(message);
     console.log('Database URI: ' + process.env.MONGO_DATABASE_URI);
     console.log('Database Name: ' + process.env.DATABASE);
+    client.db(process.env.DATABASE).collection('Products').deleteMany();
+    
 });
 
 _connect.catch((err) => {

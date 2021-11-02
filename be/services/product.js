@@ -119,22 +119,6 @@ let getProductS = async (req, res, next) => {
                                     }
                                     return [];
                                 })(),
-                                {
-                                    $lookup: {
-                                        from: 'Branchs',
-                                        localField: 'inventory_id',
-                                        foreignField: 'branch_id',
-                                        as: '_branch',
-                                    },
-                                },
-                                {
-                                    $lookup: {
-                                        from: 'Stores',
-                                        localField: 'inventory_id',
-                                        foreignField: 'store_id',
-                                        as: '_store',
-                                    },
-                                },
                             ],
                             as: 'locations',
                         },

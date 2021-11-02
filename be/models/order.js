@@ -45,8 +45,18 @@ class Order {
                 this.sale_location.branch_id = ObjectId(this.sale_location.branch_id);
             }
         }
-        this.employee_id = ObjectId(data.employee_id);
-        this.customer_id = ObjectId(data.customer_id);
+        this.employee_id = (() => {
+            if (data.employee_id && data.employee_id != '') {
+                return ObjectId(data.employee_id);
+            }
+            return data.employee_id;
+        })();
+        this.customer_id = (() => {
+            if (data.customer_id && data.customer_id != '') {
+                return ObjectId(data.customer_id);
+            }
+            return data.customer_id;
+        })();
         this.order_details = data.order_details || [];
         this.payments = data.payments || [];
         this.shipping_company_id =

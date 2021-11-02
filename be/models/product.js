@@ -151,8 +151,9 @@ let locationForm = {
     product_id: { data_type: ['string', 'object'], not_null: false },
     variant_id: { data_type: ['string', 'object'], not_null: false },
     location_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
+    type: { data_type: ['string'], not_null: true },
     inventory_id: { data_type: ['string', 'object'], not_null: true },
+    name: { data_type: ['string'], not_null: true },
     quantity: { data_type: ['number'], not_null: true },
     create_date: { data_type: ['string'], not_null: false },
     creator_id: { data_type: ['string', 'object'], not_null: false },
@@ -170,6 +171,7 @@ class Location {
         this.product_id = ObjectId(data.product_id);
         this.variant_id = ObjectId(data.variant_id);
         this.location_id = ObjectId(data.location_id);
+        this.type = data.type.trim().toUpperCase();
         this.name = data.name.trim().toUpperCase();
         this.inventory_id = ObjectId(data.inventory_id);
         this.quantity = data.quantity;
