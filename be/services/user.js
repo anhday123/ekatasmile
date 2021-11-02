@@ -196,8 +196,8 @@ let updateUserS = async (req, res, next) => {
                 type: 'Update',
                 properties: 'Users',
                 name: 'Cập nhật thông tin người dùng',
-                data: user.ops[0],
-                performer_id: req._update.user_id,
+                data: req._update,
+                performer_id: token.user_id || req._update.user_id,
                 data: moment().utc().format(),
             });
             await client.db(DB).collection(`Actions`).insertOne(_action);
@@ -220,9 +220,44 @@ let updateUserS = async (req, res, next) => {
                     }
                 );
         }
+        let [user] = await client
+            .db(DB)
+            .collection(`Users`)
+            .aggregate([
+                { $match: { user_id: req._update.user_id } },
+                {
+                    $lookup: {
+                        from: 'Roles',
+                        localField: 'role_id',
+                        foreignField: 'role_id',
+                        as: '_role',
+                    },
+                },
+                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+            ])
+            .toArray();
+        delete user.password;
         let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(req._update, process.env.ACCESS_TOKEN_LIFE),
-            jwt.createToken(req._update, process.env.REFRESH_TOKEN_LIFE),
+            jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
+            jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
         ]);
         res.send({ success: true, data: req._update, accessToken, refreshToken });
     } catch (err) {
