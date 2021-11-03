@@ -39,7 +39,7 @@ let configEnv = () => {
         if (IPs[0] == '194.233.82.28' || IPs.includes('194.233.82.28')) {
             return 'ipackvina.com';
         }
-        return process.env.DATABASE;
+        return process.env.GLOBAL_HOST_NAME;
     })();
 };
 

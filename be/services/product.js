@@ -57,6 +57,9 @@ let getProductS = async (req, res, next) => {
             };
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
+        if (req.query.name) {
+            matchQuery['slug'] = createRegExpQuery(req.query.name);
+        }
         aggregateQuery.push({ $match: matchQuery });
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
