@@ -275,8 +275,67 @@ let addProductS = async (req, res, next) => {
 let updateProductS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        await client.db(DB).collection(`Products`).updateMany(req.params, { $set: req._update });
-        res.send({ success: true, data: req._update });
+        await client
+            .db(DB)
+            .collection('Products')
+            .updateOne(
+                {
+                    product_id: ObjectId(req._update._product.product_id),
+                },
+                { $set: req._update._product },
+                { upsert: true }
+            );
+        if (req._update._attributes) {
+            await Promise.all(
+                req._update._attributes.map((_attribute) => {
+                    client
+                        .db(DB)
+                        .collection('Attributes')
+                        .updateOne(
+                            {
+                                product_id: ObjectId(req._update._product.product_id),
+                                option: _attribute.option,
+                            },
+                            { $set: _attribute },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        if (req._update._variants) {
+            await Promise.all(
+                req._update._variants.map((_variant) => {
+                    client
+                        .db(DB)
+                        .collection('Variants')
+                        .updateOne(
+                            {
+                                variant_id: ObjectId(req._update._variants.variant_id),
+                            },
+                            { $set: _variant },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        if (req._update._locations) {
+            await Promise.all(
+                req._update._variants.map((location) => {
+                    client
+                        .db(DB)
+                        .collection('Locations')
+                        .updateOne(
+                            { location_id: ObjectId(req._update._locations.location_id) },
+                            { $set: location },
+                            { upsert: true }
+                        );
+                })
+            );
+        }
+        res.send({
+            success: true,
+            data: req._update,
+        });
     } catch (err) {
         next(err);
     }

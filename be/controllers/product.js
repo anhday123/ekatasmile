@@ -207,27 +207,28 @@ let addProductC = async (req, res, next) => {
 let updateProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        req.params._id = ObjectId(req.params._id);
-        let _branch = new Branch();
-        let branch = await client.db(DB).collection(`Branchs`).findOne(req.params);
-        if (!branch) {
-            throw new Error(`400: _id <${req.params._id}> không tồn tại!`);
-        }
-        if (req.body.name) {
-            let check = await client
-                .db(DB)
-                .collection(`Branchs`)
-                .findOne({
-                    _id: { $ne: req.params._id },
-                    name: req.body.name.trim().toUpperCase(),
-                });
-            if (check) {
-                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
-            }
-        }
-        _branch.create(branch);
-        _branch.update(req.body);
-        req[`_update`] = _branch;
+        req[`_update`] = {};
+        let _product = new Product();
+        let _attribute = new Attribute();
+        let _variant = new Variant();
+        let _location = new Location();
+        _product.create(req.body);
+        req._update._product = _product;
+        req.body.attributes.map((attribute) => {
+            _attribute.create(attribute);
+            req._update._attributes = [];
+            req._update._attributes.push(_attribute);
+        });
+        req.body.variants.map((variant) => {
+            _variant.create(variant);
+            req._update._variants = [];
+            req._update._variants.push(_variant);
+            variant.locations.map((location) => {
+                _location.create(location);
+                req._update._locations = [];
+                req._update._locations.push(_location);
+            });
+        });
         await productService.updateProductS(req, res, next);
     } catch (err) {
         next(err);
