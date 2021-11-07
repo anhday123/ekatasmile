@@ -215,24 +215,66 @@ let updateProductC = async (req, res, next) => {
         _product.update(req.body);
         req._update._product = _product;
         if (req.body.attributes) {
+            req._update['_attributes'] = [];
             req.body.attributes.map((attribute) => {
                 let _attribute = new Attribute();
-                _attribute.create(attribute);
-                req._update._attributes = [];
+                let attributeInfo = (() => {
+                    if (attribute.attribute_id) {
+                        return {
+                            business_id: ObjectId(attribute.business_id),
+                            product_id: ObjectId(attribute.product_id),
+                            attribute_id: ObjectId(attribute.attribute_id),
+                        };
+                    }
+                    return {
+                        business_id: ObjectId(_product.business_id),
+                        product_id: ObjectId(_product.product_id),
+                        attribute_id: ObjectId(),
+                    };
+                })();
+                _attribute.create({ ...attribute, ...attributeInfo });
                 req._update._attributes.push(_attribute);
             });
         }
         if (req.body.variants) {
+            req._update['_variants'] = [];
             req.body.variants.map((variant) => {
                 let _variant = new Variant();
-                _variant.create(variant);
-                req._update._variants = [];
+                let variantInfo = (() => {
+                    if (variant.variant_id) {
+                        return {
+                            business_id: ObjectId(variant.business_id),
+                            product_id: ObjectId(variant.product_id),
+                            variant_id: ObjectId(variant.variant_id),
+                        };
+                    }
+                    return {
+                        business_id: ObjectId(_product.business_id),
+                        product_id: ObjectId(_product.product_id),
+                        variant_id: ObjectId(),
+                    };
+                })();
+                _variant.create({ ...variant, ...variantInfo });
                 req._update._variants.push(_variant);
                 if (variant.locations) {
+                    req._update['_locations'] = [];
                     variant.locations.map((location) => {
                         let _location = new Location();
-                        _location.create(location);
-                        req._update._locations = [];
+                        let locationInfo = (() => {
+                            if (location.location_id) {
+                                return {
+                                    business_id: ObjectId(location.business_id),
+                                    product_id: ObjectId(location.product_id),
+                                    location_id: ObjectId(location.location_id),
+                                };
+                            }
+                            return {
+                                business_id: ObjectId(_product.business_id),
+                                product_id: ObjectId(_product.product_id),
+                                location_id: ObjectId(),
+                            };
+                        })();
+                        _location.create({ ...location, ...locationInfo });
                         req._update._locations.push(_location);
                     });
                 }

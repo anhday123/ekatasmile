@@ -293,8 +293,7 @@ let updateProductS = async (req, res, next) => {
                         .collection('Attributes')
                         .updateOne(
                             {
-                                product_id: ObjectId(req._update._product.product_id),
-                                option: _attribute.option,
+                                attribute_id: ObjectId(_attribute.attribute_id),
                             },
                             { $set: _attribute },
                             { upsert: true }
@@ -310,7 +309,7 @@ let updateProductS = async (req, res, next) => {
                         .collection('Variants')
                         .updateOne(
                             {
-                                variant_id: ObjectId(req._update._variants.variant_id),
+                                variant_id: ObjectId(_variant.variant_id),
                             },
                             { $set: _variant },
                             { upsert: true }
@@ -320,13 +319,13 @@ let updateProductS = async (req, res, next) => {
         }
         if (req._update._locations) {
             await Promise.all(
-                req._update._variants.map((location) => {
+                req._update._locations.map((_location) => {
                     client
                         .db(DB)
                         .collection('Locations')
                         .updateOne(
-                            { location_id: ObjectId(req._update._locations.location_id) },
-                            { $set: location },
+                            { location_id: ObjectId(_location.location_id) },
+                            { $set: _location },
                             { upsert: true }
                         );
                 })
