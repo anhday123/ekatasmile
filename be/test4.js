@@ -1,8 +1,11 @@
-let str = 'string';
-let num = 10;
-let nul = null;
-let obj = { a: 1 };
-let arr = [1, '2'];
-let und = undefined;
-
-console.log(Number(und));
+const client = require('./config/mongo/mongodb');
+const { ObjectId } = require('mongodb');
+(async () => {
+    await client
+        .db('SaleManager')
+        .collection('Variants')
+        .deleteMany({ product_id: ObjectId('61879a700781f771eebd3bac') })
+        .then((mess) => {
+            console.log(mess);
+        });
+})();

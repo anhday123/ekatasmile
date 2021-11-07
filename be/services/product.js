@@ -293,7 +293,8 @@ let updateProductS = async (req, res, next) => {
                         .collection('Attributes')
                         .updateOne(
                             {
-                                attribute_id: ObjectId(_attribute.attribute_id),
+                                business_id: ObjectId(_attribute.business_id),
+                                option: _attribute.option,
                             },
                             { $set: _attribute },
                             { upsert: true }
@@ -309,7 +310,8 @@ let updateProductS = async (req, res, next) => {
                         .collection('Variants')
                         .updateOne(
                             {
-                                variant_id: ObjectId(_variant.variant_id),
+                                business_id: ObjectId(_variant.business_id),
+                                sku: _variant.sku,
                             },
                             { $set: _variant },
                             { upsert: true }
@@ -324,7 +326,10 @@ let updateProductS = async (req, res, next) => {
                         .db(DB)
                         .collection('Locations')
                         .updateOne(
-                            { location_id: ObjectId(_location.location_id) },
+                            {
+                                business_id: ObjectId(_location.business_id),
+                                location_id: _location.location_id,
+                            },
                             { $set: _location },
                             { upsert: true }
                         );

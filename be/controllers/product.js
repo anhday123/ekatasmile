@@ -245,7 +245,7 @@ let updateProductC = async (req, res, next) => {
                         return {
                             business_id: ObjectId(variant.business_id),
                             product_id: ObjectId(variant.product_id),
-                            variant_id: ObjectId(variant.variant_id),
+                            variant_id: ObjectId(),
                         };
                     }
                     return {
@@ -265,12 +265,14 @@ let updateProductC = async (req, res, next) => {
                                 return {
                                     business_id: ObjectId(location.business_id),
                                     product_id: ObjectId(location.product_id),
-                                    location_id: ObjectId(location.location_id),
+                                    variant_id: ObjectId(_variant.variant_id),
+                                    location_id: ObjectId(),
                                 };
                             }
                             return {
                                 business_id: ObjectId(_product.business_id),
                                 product_id: ObjectId(_product.product_id),
+                                variant_id: ObjectId(_variant.variant_id),
                                 location_id: ObjectId(),
                             };
                         })();
