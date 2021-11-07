@@ -31,7 +31,6 @@ class Product {
         validate(data, productForm, true, 400);
     }
     create(data) {
-        this.validateInput(data);
         this.business_id = ObjectId(data.business_id);
         this.supplier_id = data.supplier_id || '';
         this.category_id = (() => {
@@ -77,7 +76,6 @@ class Attribute {
         validate(data, attributeForm, true, 400);
     }
     create(data) {
-        this.validateInput(data);
         this.business_id = data.business_id;
         this.product_id = data.product_id;
         this.attribute_id = data.attribute_id;
@@ -118,7 +116,6 @@ class Variant {
         validate(data, variantForm, true, 400);
     }
     create(data) {
-        this.validateInput(data);
         this.business_id = ObjectId(data.business_id);
         this.product_id = ObjectId(data.product_id);
         this.variant_id = ObjectId(data.variant_id);
@@ -166,7 +163,6 @@ class Location {
         validate(data, locationForm, true, 400);
     }
     create(data) {
-        this.validateInput(data);
         this.business_id = ObjectId(data.business_id);
         this.product_id = ObjectId(data.product_id);
         this.variant_id = ObjectId(data.variant_id);
