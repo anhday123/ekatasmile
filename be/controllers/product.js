@@ -207,28 +207,37 @@ let addProductC = async (req, res, next) => {
 let updateProductC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
+        req.params.product_id = ObjectId(req.params.product_id);
         req[`_update`] = {};
+        let product = await client.db(DB).collection('Products').findOne(req.params);
         let _product = new Product();
-        let _attribute = new Attribute();
-        let _variant = new Variant();
-        let _location = new Location();
-        _product.create(req.body);
+        _product.create(product);
+        _product.update(req.body);
         req._update._product = _product;
-        req.body.attributes.map((attribute) => {
-            _attribute.create(attribute);
-            req._update._attributes = [];
-            req._update._attributes.push(_attribute);
-        });
-        req.body.variants.map((variant) => {
-            _variant.create(variant);
-            req._update._variants = [];
-            req._update._variants.push(_variant);
-            variant.locations.map((location) => {
-                _location.create(location);
-                req._update._locations = [];
-                req._update._locations.push(_location);
+        if (req.body.attributes) {
+            req.body.attributes.map((attribute) => {
+                let _attribute = new Attribute();
+                _attribute.create(attribute);
+                req._update._attributes = [];
+                req._update._attributes.push(_attribute);
             });
-        });
+        }
+        if (req.body.variants) {
+            req.body.variants.map((variant) => {
+                let _variant = new Variant();
+                _variant.create(variant);
+                req._update._variants = [];
+                req._update._variants.push(_variant);
+                if (variant.locations) {
+                    variant.locations.map((location) => {
+                        let _location = new Location();
+                        _location.create(location);
+                        req._update._locations = [];
+                        req._update._locations.push(_location);
+                    });
+                }
+            });
+        }
         await productService.updateProductS(req, res, next);
     } catch (err) {
         next(err);
