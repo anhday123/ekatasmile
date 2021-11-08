@@ -130,6 +130,12 @@ let getProductS = async (req, res, next) => {
                 ],
                 as: 'variants',
             },
+            ...(() => {
+                if (req.query.detach == 'true') {
+                    return { $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } };
+                }
+                return {};
+            })(),
         });
         if (req.query.attribute) {
             req.query.attribute = req.query.attribute.trim().toUpperCase();
