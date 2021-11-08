@@ -145,11 +145,59 @@ let addStoreS = async (req, res, next) => {
                 performer_id: token.user_id,
                 data: moment().utc().format(),
             });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await Promise.all([
+                client.db(DB).collection(`Actions`).insertOne(_action),
+                client
+                    .db(DB)
+                    .collection(`Users`)
+                    .updateOne(
+                        { user_id: ObjectId(token.user_id) },
+                        { $set: { store_id: req._insert.store_id } }
+                    ),
+            ]);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._insert });
+        let [user] = await client
+            .db(DB)
+            .collection(`Users`)
+            .aggregate([
+                { $match: { user_id: req._update.user_id } },
+                {
+                    $lookup: {
+                        from: 'Roles',
+                        localField: 'role_id',
+                        foreignField: 'role_id',
+                        as: '_role',
+                    },
+                },
+                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+            ])
+            .toArray();
+        delete user.password;
+        let [accessToken, refreshToken] = await Promise.all([
+            jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
+            jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
+        ]);
+        res.send({ success: true, data: req._insert, accessToken, refreshToken });
     } catch (err) {
         next(err);
     }
