@@ -122,7 +122,7 @@ let checkVoucherC = async (req, res, next) => {
         }
         let check = false;
         promotion.vouchers.map((voucher) => {
-            if (voucher && voucher == req.body.voucher) {
+            if (voucher && voucher.voucher == req.body.voucher) {
                 check = true;
             }
         });
