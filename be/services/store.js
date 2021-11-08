@@ -6,6 +6,8 @@ const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');
 const { Action } = require('../models/action');
 
+const jwt = require(`../libs/jwt`);
+
 let getStoreS = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
@@ -162,7 +164,7 @@ let addStoreS = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { user_id: req._update.user_id } },
+                { $match: { user_id: ObjectId(token.user_id) } },
                 {
                     $lookup: {
                         from: 'Roles',

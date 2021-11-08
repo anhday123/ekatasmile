@@ -12,7 +12,7 @@ let getShippingCompanyS = async (req, res, next) => {
         let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        mongoQuery['delete'] = false;
+        matchQuery['delete'] = false;
         if (req.query.shipping_company_id) {
             mongoQuery['shipping_company_id'] = ObjectId(req.query.shipping_company_id);
         }
