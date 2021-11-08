@@ -130,13 +130,10 @@ let getProductS = async (req, res, next) => {
                 ],
                 as: 'variants',
             },
-            ...(() => {
-                if (req.query.detach == 'true') {
-                    return { $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } };
-                }
-                return {};
-            })(),
         });
+        if (req.query.detach == 'true') {
+            aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
+        }
         if (req.query.attribute) {
             req.query.attribute = req.query.attribute.trim().toUpperCase();
             let filters = req.query.attribute.split('---');
