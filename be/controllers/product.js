@@ -37,7 +37,6 @@ let addProductC = async (req, res, next) => {
         req._insert['_attributes'] = [];
         req._insert['_variants'] = [];
         req._insert['_locations'] = [];
-        req._insert['_prices'] = [];
         let product_id = (() => {
             if (maxProductId) {
                 if (maxProductId.value) {
@@ -113,7 +112,6 @@ let addProductC = async (req, res, next) => {
             }
             return 0;
         })();
-
         req.body.products.map((product) => {
             let _product = new Product();
             _product.validateInput(product);
@@ -128,7 +126,7 @@ let addProductC = async (req, res, next) => {
                         business_id: Number(req.user.business_id),
                         create_date: new Date(),
                         creator_id: Number(req.user.user_id),
-                        is_active: true,
+                        active: true,
                     },
                 });
             }
@@ -151,12 +149,12 @@ let addProductC = async (req, res, next) => {
                         attribute_id++;
                         _attribute.create({
                             ...attribute,
-                            attribute_id: Number(attribute_id),
                             business_id: Number(req.user.business_id),
+                            attribute_id: Number(attribute_id),
                             product_id: Number(_product.product_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
-                            is_active: true,
+                            active: true,
                         });
                     }
                     req._insert._attributes.push(_attribute);
@@ -176,12 +174,12 @@ let addProductC = async (req, res, next) => {
                         variant_id++;
                         _variant.create({
                             ...variant,
-                            supplier_id: Number(req.user.supplier_id),
+                            business_id: Number(req.user.business_id),
                             product_id: Number(_product.product_id),
                             variant_id: Number(variant_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
-                            is_active: true,
+                            active: true,
                         });
                     }
                     req._insert._variants.push(_variant);
@@ -200,51 +198,23 @@ let addProductC = async (req, res, next) => {
                                 location_id++;
                                 _location.create({
                                     ...location,
-                                    supplier_id: Number(req.user.supplier_id),
+                                    business_id: Number(req.user.business_id),
                                     product_id: Number(_product.product_id),
                                     variant_id: Number(_variant.variant_id),
                                     location_id: Number(location_id),
                                     create_date: new Date(),
                                     creator_id: Number(req.user.user_id),
-                                    is_active: true,
+                                    active: true,
                                 });
                             }
                             req._insert._locations.push(_location);
                         });
                     }
-                    if (variant.prices) {
-                        variant.prices.map((price) => {
-                            let _price = new Price();
-                            _price.validateInput(price);
-                            if (
-                                _priceInDBs[
-                                    `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
-                                ]
-                            ) {
-                                _price.create({
-                                    ..._priceInDBs[
-                                        `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
-                                    ],
-                                });
-                            } else {
-                                price_id++;
-                                _price.create({
-                                    ...price,
-                                    supplier_id: Number(req.user.supplier_id),
-                                    product_id: Number(_product.product_id),
-                                    variant_id: Number(_variant.variant_id),
-                                    price_id: Number(price_id),
-                                    create_date: new Date(),
-                                    creator_id: Number(req.user.user_id),
-                                    is_active: true,
-                                });
-                            }
-                            req._insert._prices.push(_price);
-                        });
-                    }
                 });
             }
         });
+        console.log(req._insert);
+        return;
         await client
             .db(DB)
             .collection('AppSetting')
@@ -277,10 +247,6 @@ let addProductC = async (req, res, next) => {
                 { $set: { name: 'Locations', value: location_id } },
                 { upsert: true }
             );
-        await client
-            .db(DB)
-            .collection('AppSetting')
-            .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true });
         await productService.addProductS(req, res, next);
     } catch (err) {
         next(err);

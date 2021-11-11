@@ -17,78 +17,85 @@ let createTimeline = (timelineObject, timezone) => {
         throw new Error('Timezone must be string!');
     }
     if (timelineObject['today'] != undefined) {
-        timelineObject[`from_date`] = moment.tz(timezone).format(`YYYY-MM-DD`);
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 00:00:00`));
+        timelineObject[`to_date`] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 23:59:59`));
+        console.log(timelineObject[`to_date`]);
         delete timelineObject.today;
     }
     if (timelineObject['yesterday'] != undefined) {
-        timelineObject[`from_date`] = moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD`);
-        timelineObject[`to_date`] = moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD`);
+        timelineObject[`from_date`] = new Date(
+            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 00:00:00`)
+        );
+        timelineObject[`to_date`] = new Date(
+            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 23:59:59`)
+        );
         delete timelineObject.yesterday;
     }
     if (timelineObject['this_week'] != undefined) {
-        timelineObject[`from_date`] = moment.tz(timezone).isoWeekday(1).format(`YYYY-MM-DD`);
+        timelineObject[`from_date`] = new Date(
+            moment.tz(timezone).isoWeekday(1).format(`YYYY-MM-DD 00:00:00`)
+        );
+        timelineObject[`to_date`] = new Date(moment.tz(timezone).isoWeekday(7).format(`YYYY-MM-DD 23:59:59`));
         delete timelineObject.this_week;
     }
     if (timelineObject['last_week'] != undefined) {
-        timelineObject[`from_date`] = moment
-            .tz(timezone)
-            .isoWeekday(1 - 7)
-            .format(`YYYY-MM-DD`);
-        timelineObject[`to_date`] = moment
-            .tz(timezone)
-            .isoWeekday(7 - 7)
-            .format(`YYYY-MM-DD`);
+        timelineObject[`from_date`] = new Date(
+            moment
+                .tz(timezone)
+                .isoWeekday(1 - 7)
+                .format(`YYYY-MM-DD 00:00:00`)
+        );
+        timelineObject[`to_date`] = new Date(
+            moment
+                .tz(timezone)
+                .isoWeekday(7 - 7)
+                .format(`YYYY-MM-DD 23:59:59`)
+        );
         delete timelineObject.last_week;
     }
     if (timelineObject['this_month'] != undefined) {
-        timelineObject[`from_date`] =
-            String(moment.tz(timezone).format(`YYYY`)) +
-            `-` +
-            String(moment.tz(timezone).format(`MM`)) +
-            `-` +
-            String(`01`);
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).format(`YYYY-MM-01 00:00:00`));
+        timelineObject[`to_date`] = new Date(
+            moment.tz(timezone).format(`YYYY-MM-${String(moment.tz(timezone).daysInMonth())} 23:59:59`)
+        );
         delete timelineObject.this_month;
     }
     if (timelineObject['last_month'] != undefined) {
-        timelineObject[`from_date`] =
-            String(moment.tz(timezone).add(-1, `months`).format(`YYYY`)) +
-            `-` +
-            String(moment.tz(timezone).add(-1, `months`).format(`MM`)) +
-            `-` +
-            String(`01`);
-        timelineObject[`to_date`] =
-            String(moment.tz(timezone).add(-1, `months`).format(`YYYY`)) +
-            `-` +
-            String(moment.tz(timezone).add(-1, `months`).format(`MM`)) +
-            `-` +
-            String(moment.tz(timezone).add(-1, `months`).daysInMonth());
+        timelineObject[`from_date`] = new Date(
+            moment.tz(timezone).add(-1, `months`).format(`YYYY-MM-01 00:00:00`)
+        );
+        timelineObject[`to_date`] = new Date(
+            moment
+                .tz(timezone)
+                .add(-1, `months`)
+                .format(`YYYY-MM-${String(moment.tz(timezone).add(-1, `months`).daysInMonth())} 23:59:59`)
+        );
         delete timelineObject.last_month;
     }
     if (timelineObject['this_year'] != undefined) {
-        timelineObject[`from_date`] =
-            String(moment.tz(timezone).format(`YYYY`)) + `-` + String(`01`) + `-` + String(`01`);
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).format(`YYYY-01-01 00:00:00`));
+        timelineObject[`to_date`] = new Date(moment.tz(timezone).format(`YYYY-12-31 23:59:59`));
         delete timelineObject.this_year;
     }
     if (timelineObject['last_year'] != undefined) {
-        timelineObject[`from_date`] =
-            String(moment.tz(timezone).add(-1, `years`).format(`YYYY`)) +
-            `-` +
-            String(`01`) +
-            `-` +
-            String(`01`);
-        timelineObject[`to_date`] =
-            String(moment.tz(timezone).format(`YYYY`)) + `-` + String(`12`) + `-` + String(`31`);
+        timelineObject[`from_date`] = new Date(
+            moment.tz(timezone).add(-1, `years`).format(`YYYY-01-01 00:00:00`)
+        );
+
+        timelineObject[`to_date`] = new Date(
+            moment.tz(timezone).add(-1, `years`).format(`YYYY-12-31 23:59:59`)
+        );
         delete timelineObject.last_year;
     }
     if (timelineObject['from_date'] != undefined) {
-        timelineObject[`from_date`] = moment(timelineObject[`from_date`]).tz(timezone).format();
+        timelineObject[`from_date`] = new Date(
+            moment(timelineObject[`from_date`]).tz(timezone).format('YYYY-MM-DD 00:00:00')
+        );
     }
     if (timelineObject['to_date'] != undefined) {
-        timelineObject[`to_date`] = moment(timelineObject[`to_date`])
-            .tz(timezone)
-            .add(1, 'days')
-            .add(-1, 'seconds')
-            .format();
+        timelineObject[`to_date`] = new Date(
+            moment(timelineObject[`to_date`]).tz(timezone).format('YYYY-MM-DD 23:59:59')
+        );
     }
     return timelineObject;
 };

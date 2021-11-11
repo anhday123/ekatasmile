@@ -1,21 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let productForm = [
-    'sku',
-    'barcode',
-    'name',
-    'warranties',
-    'taxes',
-    'sub_product',
-    'brand',
-    'length',
-    'width',
-    'height',
-    'weight',
-    'unit',
-    'description',
-];
+let productForm = ['sku', 'name'];
 
 class Product {
     validateInput(data) {
@@ -102,7 +88,7 @@ class Variant {
     }
 }
 
-let locationForm = ['inventory_id', 'type', 'name', 'quantity'];
+let locationForm = ['inventory_id', 'type', 'quantity'];
 
 class Location {
     validateInput(data) {
