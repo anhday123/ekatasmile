@@ -186,4 +186,4 @@ export const PERMISSIONS = {
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
 export const IMAGE_DEFAULT =
-  'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/12/8f70ac1d-4070-46cb-9ed9-577cd38d7f3c_noimage.jpg'
+  'https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/11/08/757a2f95-f144-4963-8e11-931bafdee356/image_default.jpg'

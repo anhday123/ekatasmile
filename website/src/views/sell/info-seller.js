@@ -11,7 +11,6 @@ export default function InfoSeller() {
 
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
-  console.log(dataUser)
   return (
     <>
       <Row

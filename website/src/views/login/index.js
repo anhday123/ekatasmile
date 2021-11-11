@@ -49,23 +49,18 @@ export default function Login() {
 
         //luu branch id len redux
         const dataUser = decodeToken(res.data.data.accessToken)
+        console.log(dataUser)
         dispatch({
           type: 'SET_BRANCH_ID',
           data: dataUser.data.branch_id,
         })
 
         history.push(ROUTES.OVERVIEW)
-      } else {
-        if (res.data.message === 'User has not activated!') {
-          openNotificationLoginErrorActive()
-        } else if (res.data.message === 'User is not exists!') {
-          openNotificationLoginErrorActiveError()
-        } else if (res.data.message === 'User had banned by admin!') {
-          openNotificationLoginErrorActiveErrorBanned()
-        } else {
-          openNotificationLoginErrorActiveErrorPassword()
-        }
-      }
+      } else
+        notification.error({
+          message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',
+        })
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)

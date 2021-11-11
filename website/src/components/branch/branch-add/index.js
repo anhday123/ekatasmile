@@ -57,20 +57,6 @@ export default function BranchAdd({ reload }) {
       description: 'Thêm chi nhánh thành công.',
     })
   }
-  const openNotificationError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 6,
-      description: 'Tên chi nhánh đã tồn tại.',
-    })
-  }
-  const openNotificationErrorStore = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 6,
-      description: 'Cửa hàng đã bị vô hiệu hóa, không thể thêm chi nhánh.',
-    })
-  }
 
   const addBranchData = async (body) => {
     try {
@@ -78,6 +64,13 @@ export default function BranchAdd({ reload }) {
       const res = await addBranch(body)
       console.log(res)
       if (res.status === 200) {
+        dispatch({
+          type: ACTION.LOGIN,
+          data: {
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+          },
+        })
         await reload()
         openNotification()
         modal2VisibleModal(false)
@@ -266,10 +259,7 @@ export default function BranchAdd({ reload }) {
                 >
                   Địa chỉ
                 </div>
-                <Form.Item
-                  name="address"
-                  // rules={[{ required: true, message: "Giá trị rỗng!" }]}
-                >
+                <Form.Item name="address">
                   <Input placeholder="Nhập địa chỉ" size="large" />
                 </Form.Item>
               </div>

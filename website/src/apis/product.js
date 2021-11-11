@@ -1,7 +1,5 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const apiAddProduct = (object) =>
-  post('/branch-product/addproduct', object)
 export const apiAllProduct = (params) =>
   get('/product/getproduct', { ...params })
 export const apiUpdateProduct = (object, id) =>
@@ -26,3 +24,8 @@ export const deleteProductBranch = (body) =>
   destroy('/branch-product/deleteproduct', body)
 export const deleteProductStore = (body) =>
   destroy('/store-product/deleteproduct', body)
+export const getProducts = (params) => get('/product/getproduct', params)
+export const getAttributes = (params) => get('/product/getattribute', params)
+export const addProduct = (body) => post('/product/addproduct', body)
+export const updateProduct = (body, id) =>
+  patch('/product/updateproduct/' + id, body)

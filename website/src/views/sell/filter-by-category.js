@@ -1,27 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //antd
 import { Drawer, Row, Button, Input, Checkbox, Space, Spin } from 'antd'
 
 //icons
-import { UnorderedListOutlined } from '@ant-design/icons'
+import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons'
 
 //apis
 import { apiAllCategorySearch } from 'apis/category'
 
-export default function FilterProductsByCategory() {
-  const typingTimeoutRef = useRef(null)
-
+export default function FilterProductsByCategory({
+  setParamsFilter,
+  paramsFilter,
+}) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
+  const [valueSearch, setValueSearch] = useState('')
+  const [listCategory, setListCategory] = useState([])
 
   const _getCategories = async (params) => {
     try {
       setLoading(true)
       const res = await apiAllCategorySearch(params)
-      console.log(res)
       if (res.status === 200) setCategories(res.data.data)
       setLoading(false)
     } catch (error) {
@@ -30,17 +32,12 @@ export default function FilterProductsByCategory() {
     }
   }
 
-  const onSearch = (e) => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value
-
-      if (value) _getCategories({ name: value })
-      else _getCategories()
-    }, 750)
-  }
+  useEffect(() => {
+    if (visible)
+      setListCategory(
+        paramsFilter.category_id ? paramsFilter.category_id.split('---') : []
+      )
+  }, [visible])
 
   useEffect(() => {
     _getCategories()
@@ -58,6 +55,13 @@ export default function FilterProductsByCategory() {
         footer={
           <Row justify="end">
             <Button
+              onClick={() => {
+                if (listCategory.length)
+                  paramsFilter.category_id = listCategory.join('---')
+                else delete paramsFilter.category_id
+                setParamsFilter({ ...paramsFilter })
+                toggle()
+              }}
               type="primary"
               style={{
                 backgroundColor: '#0877DE',
@@ -71,15 +75,21 @@ export default function FilterProductsByCategory() {
         }
       >
         <Row justify="end" style={{ marginBottom: 15 }}>
-          <a>Xoá chọn tất cả</a>
+          <a onClick={() => setListCategory([])}>Xoá chọn tất cả</a>
         </Row>
-        <Input placeholder="Tìm kiếm danh mục" onChange={onSearch} />
+        <Input
+          allowClear
+          value={valueSearch}
+          prefix={<SearchOutlined />}
+          placeholder="Tìm kiếm danh mục"
+          onChange={(e) => setValueSearch(e.target.value)}
+        />
 
         {loading ? (
           <div
             style={{
               width: '100%',
-              height: '100%',
+              height: '60%',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -90,7 +100,34 @@ export default function FilterProductsByCategory() {
         ) : (
           <Space direction="vertical" style={{ marginTop: 20 }}>
             {categories.map((category) => (
-              <Checkbox style={{ marginLeft: 0 }}>{category.name}</Checkbox>
+              <Checkbox
+                checked={listCategory.includes(category.category_id)}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  const listCategoryNew = [...listCategory]
+
+                  if (checked) listCategoryNew.push(category.category_id)
+                  else {
+                    const indexRemove = listCategoryNew.findIndex(
+                      (c) => c === category.category_id
+                    )
+                    listCategoryNew.splice(indexRemove, 1)
+                  }
+
+                  setListCategory([...listCategoryNew])
+                }}
+              >
+                {valueSearch &&
+                category.name
+                  .toLowerCase()
+                  .includes(valueSearch.toLowerCase()) ? (
+                  <mark style={{ backgroundColor: 'yellow' }}>
+                    {category.name}
+                  </mark>
+                ) : (
+                  category.name
+                )}
+              </Checkbox>
             ))}
           </Space>
         )}

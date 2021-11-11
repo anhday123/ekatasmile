@@ -1,34 +1,60 @@
 import React, { useState, useEffect } from 'react'
 
-import { Modal, Row, Col, Button, Radio, Space, Input } from 'antd'
+import {
+  Modal,
+  Row,
+  Col,
+  Button,
+  Radio,
+  Space,
+  Input,
+  notification,
+} from 'antd'
 
 import gift from 'assets/icons/gift.png'
-
+import { formatCash } from 'utils'
 //apis
-import { getAllPromotion } from 'apis/promotion'
-import { apiCheckPromotion } from 'apis/promotion'
+import { getPromoton, checkVoucher } from 'apis/promotion'
 
-export default function PromotionAvailable() {
+export default function PromotionAvailable({ invoiceCurrent }) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const [promotions, setPromotions] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [voucherCheck, setVoucherCheck] = useState('')
 
-  const PROMOTIONS = [
-    { title: 'Khuyến mãi hè 2021', value: 100000, price: 100000 },
-    { title: 'Khuyến mãi trung thu 2021', value: 500000, price: 500000 },
-    { title: 'Khuyến mãi xuân 2022', value: 20, price: 600000 },
-  ]
+  const [promotions, setPromotions] = useState([])
+  const [promotionCheck, setPromotionCheck] = useState(null)
 
   const _getPromotions = async () => {
     try {
-      const res = await getAllPromotion()
+      const res = await getPromoton()
       console.log(res)
+      if (res.status === 200)
+        setPromotions(res.data.data.filter((e) => e.active))
     } catch (error) {
       console.log(error)
     }
   }
 
+  const _checkVoucher = async () => {
+    try {
+      setLoading(true)
+      const res = await checkVoucher(voucherCheck)
+      if (res.status === 200) {
+      } else
+        notification.warning({
+          message:
+            res.data.message || 'Kiểm tra voucher thất bại, vui lòng thử lại!',
+        })
+      console.log(res)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+
+      console.log(error)
+    }
+  }
   useEffect(() => {
     _getPromotions()
   }, [])
@@ -72,24 +98,52 @@ export default function PromotionAvailable() {
             <h3 style={{ textAlign: 'center' }}>Hạn mức áp dụng</h3>
           </Col>
         </Row>
-        {PROMOTIONS.map((promotion) => (
+        {promotions.map((promotion) => (
           <Row>
             <Col xs={8} sm={8}>
-              <Radio>{promotion.title}</Radio>
+              <Radio
+                checked={
+                  promotionCheck && promotionCheck._id === promotion._id
+                    ? true
+                    : false
+                }
+                onClick={() => {
+                  if (invoiceCurrent.sumCostPaid >= promotion.max_discount)
+                    setPromotionCheck(promotion)
+                  else
+                    notification.warning({
+                      message:
+                        'Đơn hàng của bạn đủ điều kiện để áp dụng chương trình khuyến mãi này !',
+                    })
+                }}
+              >
+                {promotion.name}
+              </Radio>
             </Col>
             <Col xs={8} sm={8}>
-              <p style={{ textAlign: 'center' }}>{promotion.value}</p>
+              <p style={{ textAlign: 'center' }}>
+                {formatCash(promotion.value)}
+              </p>
             </Col>
             <Col xs={8} sm={8}>
-              <p style={{ textAlign: 'center' }}>{promotion.price}</p>
+              <p style={{ textAlign: 'center' }}>
+                {formatCash(promotion.max_discount)}
+              </p>
             </Col>
           </Row>
         ))}
         <div style={{ marginTop: 15 }}>
           <h3 style={{ marginBottom: 0, fontSize: 17 }}>Nhập voucher</h3>
           <Space wrap={false}>
-            <Input placeholder="Nhập voucher" style={{ width: 300 }} />
+            <Input
+              value={voucherCheck}
+              onChange={(e) => setVoucherCheck(e.target.value)}
+              placeholder="Nhập voucher"
+              style={{ width: 300 }}
+            />
             <Button
+              onClick={_checkVoucher}
+              loading={loading}
               type="primary"
               style={{
                 backgroundColor: '#0877DE',

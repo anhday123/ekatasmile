@@ -70,7 +70,15 @@ export default function StoreInformationAdd({ reloadData }) {
       dispatch({ type: ACTION.LOADING, data: true })
       console.log(body)
       const res = await addStore(body)
+      console.log(res)
       if (res.status === 200) {
+        dispatch({
+          type: ACTION.LOGIN,
+          data: {
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+          },
+        })
         await reloadData() //reload data khi tao store thanh cong
 
         openNotificationSuccessStore()
