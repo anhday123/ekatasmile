@@ -1,10 +1,8 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
-
 const bcrypt = require(`../libs/bcrypt`);
 const jwt = require(`../libs/jwt`);
 const mail = require(`../libs/otp`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 let loginC = async (req, res, next) => {
@@ -20,7 +18,7 @@ let loginC = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { username: req.body.username, delete: false } },
+                { $match: { username: req.body.username } },
                 {
                     $lookup: {
                         from: 'Roles',
@@ -51,13 +49,13 @@ let loginC = async (req, res, next) => {
             ])
             .toArray();
         if (!user) {
-            throw new Error(`400: User <${req.body.username}> không tồn tại!`);
+            throw new Error(`400: Tài khoản không tồn tại!`);
         }
         if (user.active == false) {
-            throw new Error(`400: User <${req.body.username}> chưa được kích hoạt!`);
+            throw new Error(`400: Tài khoản chưa được kích hoạt!`);
         }
         if (user.active == `banned`) {
-            throw new Error(`400: User <${req.body.username}> đã bị chặn bởi ADMIN!`);
+            throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`);
         }
         if (!bcrypt.compare(req.body.password, user.password)) {
             throw new Error(`400: Mật khẩu không chính xác!`);
@@ -69,10 +67,7 @@ let loginC = async (req, res, next) => {
             client
                 .db(DB)
                 .collection(`Users`)
-                .findOneAndUpdate(
-                    { _id: ObjectId(user._id) },
-                    { $set: { last_login: moment().utc().format() } }
-                ),
+                .findOneAndUpdate({ user_id: Number(user.user_id) }, { $set: { last_login: new Date() } }),
         ]);
         res.send({
             success: true,
@@ -124,12 +119,9 @@ let checkLinkVertifyC = async (req, res, next) => {
 let getOTPC = async (req, res, next) => {
     try {
         if (!req.body.username) {
-            throw new Error(`400: username không được để trống!`);
+            throw new Error(`400: Tên tài khoản không được để trống!`);
         }
-        let user = await client
-            .db(DB)
-            .collection(`Users`)
-            .findOne({ username: req.body.username, delete: false });
+        let user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
         if (!user) {
             throw new Error('400: Tài khoản không tồn tại!');
         }
@@ -138,15 +130,15 @@ let getOTPC = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .findOneAndUpdate(
-                { _id: ObjectId(user._id) },
+                { user_id: Number(user.user_id) },
                 {
                     $set: {
                         otp_code: otp.otp_code,
-                        otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, 'minutes').format(),
+                        otp_timelife: new Date(moment().add(process.env.OTP_TIMELIFE, 'minutes').format()),
                     },
                 }
             );
-        res.send({ success: true, data: `Gửi OTP đến email <${user.email}> thành công!` });
+        res.send({ success: true, data: `Gửi OTP đến email thành công!` });
     } catch (err) {
         next(err);
     }
@@ -167,8 +159,7 @@ let vertifyOTPC = async (req, res, next) => {
             .findOne({
                 username: req.body.username,
                 otp_code: req.body.otp_code,
-                otp_timelife: { $gte: moment().utc().format() },
-                delete: false,
+                otp_timelife: { $gte: new Date() },
             });
         if (!user) {
             throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
@@ -179,7 +170,7 @@ let vertifyOTPC = async (req, res, next) => {
                 .collection('Users')
                 .updateOne(
                     {
-                        user_id: ObjectId(user.user_id),
+                        user_id: Number(user.user_id),
                     },
                     {
                         $set: {
@@ -196,7 +187,7 @@ let vertifyOTPC = async (req, res, next) => {
                 .collection('Users')
                 .updateOne(
                     {
-                        user_id: ObjectId(user.user_id),
+                        user_id: Number(user.user_id),
                     },
                     {
                         $set: { otp_code: true, otp_timelife: true },

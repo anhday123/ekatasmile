@@ -1,17 +1,12 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
 const { relative } = require('../utils/filter');
-const { createRegExpQuery } = require('../utils/regex');
 
 let getWardC = async (req, res, next) => {
     try {
         let matchQuery = {};
-        let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.ward_code) {

@@ -1,7 +1,6 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const productService = require(`../services/product`);
@@ -9,7 +8,6 @@ const { Product, Attribute, Variant, Location } = require('../models/product');
 
 let getProductC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await productService.getProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,186 +16,271 @@ let getProductC = async (req, res, next) => {
 
 let addProductC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         if (!req.body.products) {
             throw new Error('400: products không được để trống!');
         }
-        let _skuProducts = [];
-        let _skuVariants = [];
+        let productSkus = [];
         req.body.products.map((product) => {
-            _skuProducts.push(product.sku);
-            product.variants.map((variant) => {
-                _skuVariants.push(variant.sku);
-            });
+            productSkus.push(product.sku);
         });
-        let [business, branchs, stores, skuProducts, skuVariants] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                }),
-            client
-                .db(DB)
-                .collection(`Branchs`)
-                .find({
-                    business_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                })
-                .toArray(),
-            client
-                .db(DB)
-                .collection(`Stores`)
-                .find({
-                    business_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                })
-                .toArray(),
-            client
-                .db(DB)
-                .collection(`_Products`)
-                .find({
-                    business_id: ObjectId(token.business_id),
-                    sku: { $in: _skuProducts },
-                    delete: false,
-                    active: true,
-                })
-                .toArray(),
-            client
-                .db(DB)
-                .collection(`Variants`)
-                .find({
-                    business_id: ObjectId(token.business_id),
-                    sku: { $in: _skuVariants },
-                    delete: false,
-                    active: true,
-                })
-                .toArray(),
-        ]);
-        if (!business) {
-            throw new Error(`400: business_id <${token.business_id}> không khả dụng!`);
-        }
-        let _branchs = {};
-        branchs.map((branch) => {
-            _branchs[branch.branch_id] = branch;
+        let products = await client
+            .db(DB)
+            .collection(`Products`)
+            .find({
+                business_id: Number(req.user.business_id),
+                sku: { $in: productSkus },
+            })
+            .toArray();
+        let maxProductId = await client.db(DB).collection('AppSetting').findOne({ name: 'Products' });
+        req['_insert'] = {};
+        req._insert['_products'] = [];
+        req._insert['_attributes'] = [];
+        req._insert['_variants'] = [];
+        req._insert['_locations'] = [];
+        req._insert['_prices'] = [];
+        let product_id = (() => {
+            if (maxProductId) {
+                if (maxProductId.value) {
+                    return Number(maxProductId.value);
+                }
+            }
+            return 0;
+        })();
+        let _productSkuInDBs = {};
+        let _productIdInDBs = [];
+        products.map((product) => {
+            _productSkuInDBs[product.sku] = product;
+            _productIdInDBs.push(product.product_id);
         });
-        let _stores = {};
-        stores.map((store) => {
-            _stores[store.store_id] = store;
+
+        let attributes = await client
+            .db(DB)
+            .collection(`Attributes`)
+            .find({
+                product_id: { $in: _productIdInDBs },
+            })
+            .toArray();
+        let maxAttributeId = await client.db(DB).collection('AppSetting').findOne({ name: 'Attributes' });
+        let variants = await client
+            .db(DB)
+            .collection(`Variants`)
+            .find({
+                product_id: { $in: _productIdInDBs },
+            })
+            .toArray();
+        let maxVariantId = await client.db(DB).collection('AppSetting').findOne({ name: 'Variants' });
+        let locations = await client
+            .db(DB)
+            .collection(`Locations`)
+            .find({
+                product_id: { $in: _productIdInDBs },
+            })
+            .toArray();
+        let maxLocationId = await client.db(DB).collection('AppSetting').findOne({ name: 'Locations' });
+        let _attributeInDBs = {};
+        attributes.map((attribute) => {
+            _attributeInDBs[`pId${attribute.product_id}-aId${attribute.option}`] = attribute;
         });
-        let _products = {};
-        skuProducts.map((product) => {
-            _products[product.sku] = product;
+        let attribute_id = (() => {
+            if (maxAttributeId) {
+                if (maxAttributeId.value) {
+                    return Number(maxAttributeId.value);
+                }
+            }
+            return 0;
+        })();
+        let _variantInDBs = {};
+        variants.map((variant) => {
+            _variantInDBs[`pId${variant.product_id}-vId${variant.sku}`] = variant;
         });
-        let _variants = {};
-        skuVariants.map((variant) => {
-            _variants[variant.sku] = variant;
+        let variant_id = (() => {
+            if (maxVariantId) {
+                if (maxVariantId.value) {
+                    return Number(maxVariantId.value);
+                }
+            }
+            return 0;
+        })();
+        let _locationInDBs = {};
+        locations.map((location) => {
+            _locationInDBs[`vId${location.variant_id}-sId${location.store_id}`] = location;
         });
-        let products = [];
-        let attributes = [];
-        let variants = [];
-        let locations = [];
+        let location_id = (() => {
+            if (maxLocationId) {
+                if (maxLocationId.value) {
+                    return Number(maxLocationId.value);
+                }
+            }
+            return 0;
+        })();
+
         req.body.products.map((product) => {
             let _product = new Product();
             _product.validateInput(product);
-            let productId = _products[product.sku] ? ObjectId(_products[product.sku].product_id) : ObjectId();
-            if (_products[product.sku]) {
-                _product.create(_products[product.sku]);
+            if (_productSkuInDBs[product.sku]) {
+                _product.create({ ..._productSkuInDBs[product.sku] });
             } else {
+                product_id++;
                 _product.create({
                     ...product,
                     ...{
-                        business_id: token.business_id,
-                        product_id: productId,
-                        create_date: moment().utc().format(),
-                        creator_id: token.user_id,
-                        delete: false,
-                        active: true,
+                        product_id: Number(product_id),
+                        business_id: Number(req.user.business_id),
+                        create_date: new Date(),
+                        creator_id: Number(req.user.user_id),
+                        is_active: true,
                     },
                 });
             }
-            products.push(_product);
-            product.attributes.map((attribute) => {
-                let _attribute = new Attribute();
-                _attribute.validateInput(attribute);
-                let attributeId = ObjectId();
-                _attribute.create({
-                    ...attribute,
-                    ...{
-                        business_id: ObjectId(token.business_id),
-                        product_id: productId,
-                        attribute_id: attributeId,
-                    },
-                });
-                if (_products[product.sku]) {
-                    delete _attribute.attribute_id;
-                }
-                attributes.push(_attribute);
-            });
-            product.variants.map((variant) => {
-                let _variant = new Variant();
-                _variant.validateInput(variant);
-                let variantId = _variants[variant.sku]
-                    ? ObjectId(_variants[variant.sku].variant_id)
-                    : ObjectId();
-                _variant.create({
-                    ...variant,
-                    ...{
-                        business_id: token.business_id,
-                        product_id: productId,
-                        variant_id: variantId,
-                        create_date: moment().utc().format(),
-                        creator_id: token.user_id,
-                        delete: false,
-                        active: true,
-                    },
-                });
-                variants.push(_variant);
-                variant.locations.map((location) => {
-                    let _location = new Location();
-                    _location.validateInput(location);
-                    location.type = location.type.trim().toUpperCase();
-                    if (location.type == 'BRANCH') {
-                        if (!_branchs[location.inventory_id]) {
-                            throw new Error(`400: branch_id <${location.inventory_id}> không khả dụng!`);
-                        } else {
-                            location['name'] = _branchs[location.inventory_id].name;
-                        }
+            req._insert._products.push(_product);
+            if (product.attributes) {
+                product.attributes.map((attribute) => {
+                    let _attribute = new Attribute();
+                    _attribute.validateInput(attribute);
+                    if (
+                        _attributeInDBs[
+                            `pId${_product.product_id}-aId${String(attribute.option).toUpperCase()}`
+                        ]
+                    ) {
+                        _attribute.create({
+                            ..._attributeInDBs[
+                                `pId${_product.product_id}-aId${String(attribute.option).toUpperCase()}`
+                            ],
+                        });
                     } else {
-                        if (!_stores[location.inventory_id]) {
-                            throw new Error(`400: store_id <${location.inventory_id}> không khả dụng!`);
-                        } else {
-                            location['name'] = _stores[location.inventory_id].name;
-                        }
+                        attribute_id++;
+                        _attribute.create({
+                            ...attribute,
+                            attribute_id: Number(attribute_id),
+                            business_id: Number(req.user.business_id),
+                            product_id: Number(_product.product_id),
+                            create_date: new Date(),
+                            creator_id: Number(req.user.user_id),
+                            is_active: true,
+                        });
                     }
-                    let locationId = ObjectId();
-                    _location.create({
-                        ...location,
-                        ...{
-                            business_id: token.business_id,
-                            product_id: productId,
-                            variant_id: variantId,
-                            location_id: locationId,
-                            create_date: moment().utc().format(),
-                            creator_id: token.user_id,
-                            delete: false,
-                            active: true,
-                        },
-                    });
-                    locations.push(_location);
+                    req._insert._attributes.push(_attribute);
                 });
-            });
+            }
+            if (product.variants) {
+                product.variants.map((variant) => {
+                    let _variant = new Variant();
+                    _variant.validateInput(variant);
+                    if (_variantInDBs[`pId${_product.product_id}-vId${String(variant.sku).toUpperCase()}`]) {
+                        _variant.create({
+                            ..._variantInDBs[
+                                `pId${_product.product_id}-vId${String(variant.sku).toUpperCase()}`
+                            ],
+                        });
+                    } else {
+                        variant_id++;
+                        _variant.create({
+                            ...variant,
+                            supplier_id: Number(req.user.supplier_id),
+                            product_id: Number(_product.product_id),
+                            variant_id: Number(variant_id),
+                            create_date: new Date(),
+                            creator_id: Number(req.user.user_id),
+                            is_active: true,
+                        });
+                    }
+                    req._insert._variants.push(_variant);
+                    if (variant.locations) {
+                        variant.locations.map((location) => {
+                            let _location = new Location();
+                            _location.validateInput(location);
+                            if (_locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]) {
+                                _location.create({
+                                    ..._locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`],
+                                    quantity:
+                                        _locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]
+                                            .quantity + location.quantity,
+                                });
+                            } else {
+                                location_id++;
+                                _location.create({
+                                    ...location,
+                                    supplier_id: Number(req.user.supplier_id),
+                                    product_id: Number(_product.product_id),
+                                    variant_id: Number(_variant.variant_id),
+                                    location_id: Number(location_id),
+                                    create_date: new Date(),
+                                    creator_id: Number(req.user.user_id),
+                                    is_active: true,
+                                });
+                            }
+                            req._insert._locations.push(_location);
+                        });
+                    }
+                    if (variant.prices) {
+                        variant.prices.map((price) => {
+                            let _price = new Price();
+                            _price.validateInput(price);
+                            if (
+                                _priceInDBs[
+                                    `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
+                                ]
+                            ) {
+                                _price.create({
+                                    ..._priceInDBs[
+                                        `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
+                                    ],
+                                });
+                            } else {
+                                price_id++;
+                                _price.create({
+                                    ...price,
+                                    supplier_id: Number(req.user.supplier_id),
+                                    product_id: Number(_product.product_id),
+                                    variant_id: Number(_variant.variant_id),
+                                    price_id: Number(price_id),
+                                    create_date: new Date(),
+                                    creator_id: Number(req.user.user_id),
+                                    is_active: true,
+                                });
+                            }
+                            req._insert._prices.push(_price);
+                        });
+                    }
+                });
+            }
         });
-        req[`_insert`] = {
-            _products: products,
-            _attributes: attributes,
-            _variants: variants,
-            _locations: locations,
-        };
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Products' },
+                { $set: { name: 'Products', value: product_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Attributes' },
+                { $set: { name: 'Attributes', value: attribute_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Variants' },
+                { $set: { name: 'Variants', value: variant_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Locations' },
+                { $set: { name: 'Locations', value: location_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true });
         await productService.addProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -206,83 +289,272 @@ let addProductC = async (req, res, next) => {
 
 let updateProductC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.product_id = ObjectId(req.params.product_id);
-        req[`_update`] = {};
-        let product = await client.db(DB).collection('Products').findOne(req.params);
+        let product = await client
+            .db(DB)
+            .collection(`Products`)
+            .findOne({
+                product_id: Number(req.params.product_id),
+            });
+        if (!product) {
+            throw new Error('400: Sản phẩm không tồn tại!');
+        }
+        let maxProductId = await client.db(DB).collection('AppSetting').findOne({ name: 'Products' });
+        req['_update'] = {};
+        req._update['_products'] = [];
+        req._update['_attributes'] = [];
+        req._update['_variants'] = [];
+        req._update['_locations'] = [];
+        req._update['_prices'] = [];
+        let product_id = (() => {
+            if (maxProductId) {
+                if (maxProductId.value) {
+                    return Number(maxProductId.value);
+                }
+            }
+            return 0;
+        })();
+        let attributes = await client
+            .db(DB)
+            .collection(`Attributes`)
+            .find({
+                product_id: Number(product.product_id),
+            })
+            .toArray();
+        let maxAttributeId = await client.db(DB).collection('AppSetting').findOne({ name: 'Attributes' });
+        let variants = await client
+            .db(DB)
+            .collection(`Variants`)
+            .find({
+                product_id: Number(product.product_id),
+            })
+            .toArray();
+        let maxVariantId = await client.db(DB).collection('AppSetting').findOne({ name: 'Variants' });
+        let locations = await client
+            .db(DB)
+            .collection(`Locations`)
+            .find({
+                product_id: Number(product.product_id),
+            })
+            .toArray();
+        let maxLocationId = await client.db(DB).collection('AppSetting').findOne({ name: 'Locations' });
+        let prices = await client
+            .db(DB)
+            .collection(`Prices`)
+            .find({
+                product_id: Number(product.product_id),
+            })
+            .toArray();
+        let maxPriceId = await client.db(DB).collection('AppSetting').findOne({ name: 'Prices' });
+        let _attributeInDBs = {};
+        attributes.map((attribute) => {
+            _attributeInDBs[`pId${attribute.product_id}-aId${attribute.option}`] = attribute;
+        });
+        let attribute_id = (() => {
+            if (maxAttributeId) {
+                if (maxAttributeId.value) {
+                    return Number(maxAttributeId.value);
+                }
+            }
+            return 0;
+        })();
+        let _variantInDBs = {};
+        variants.map((variant) => {
+            _variantInDBs[`pId${variant.product_id}-vId${variant.sku}`] = variant;
+        });
+        let variant_id = (() => {
+            if (maxVariantId) {
+                if (maxVariantId.value) {
+                    return Number(maxVariantId.value);
+                }
+            }
+            return 0;
+        })();
+        let _locationInDBs = {};
+        locations.map((location) => {
+            _locationInDBs[`vId${location.variant_id}-sId${location.store_id}`] = location;
+        });
+        let location_id = (() => {
+            if (maxLocationId) {
+                if (maxLocationId.value) {
+                    return Number(maxLocationId.value);
+                }
+            }
+            return 0;
+        })();
+        let _priceInDBs = {};
+        prices.map((price) => {
+            _priceInDBs[`vId${price.variant_id}-min${price.min_quantity}-max${price.max_quantity}`] = price;
+        });
+        let price_id = (() => {
+            if (maxPriceId) {
+                if (maxPriceId.value) {
+                    return Number(maxPriceId.value);
+                }
+            }
+            return 0;
+        })();
         let _product = new Product();
+        _product.validateInput(product);
         _product.create(product);
         _product.update(req.body);
-        req._update._product = _product;
+        req._update._products.push(_product);
         if (req.body.attributes) {
-            req._update['_attributes'] = [];
             req.body.attributes.map((attribute) => {
                 let _attribute = new Attribute();
-                let attributeInfo = (() => {
-                    if (attribute.attribute_id) {
-                        return {
-                            business_id: ObjectId(attribute.business_id),
-                            product_id: ObjectId(attribute.product_id),
-                            attribute_id: ObjectId(attribute.attribute_id),
-                        };
-                    }
-                    return {
-                        business_id: ObjectId(_product.business_id),
-                        product_id: ObjectId(_product.product_id),
-                        attribute_id: ObjectId(),
-                    };
-                })();
-                _attribute.create({ ...attribute, ...attributeInfo });
+                _attribute.validateInput(attribute);
+                if (_attributeInDBs[`pId${_product.product_id}-aId${attribute.option.toUpperCase()}`]) {
+                    _attribute.create({
+                        ..._attributeInDBs[`pId${_product.product_id}-aId${attribute.option.toUpperCase()}`],
+                    });
+                    _attribute.update(attribute);
+                } else {
+                    attribute_id++;
+                    _attribute.create({
+                        ...attribute,
+                        supplier_id: Number(req.user.supplier_id),
+                        product_id: Number(_product.product_id),
+                        attribute_id: Number(attribute_id),
+                        create_date: new Date(),
+                        creator_id: Number(req.user.user_id),
+                        is_active: true,
+                    });
+                }
                 req._update._attributes.push(_attribute);
             });
         }
         if (req.body.variants) {
-            req._update['_variants'] = [];
             req.body.variants.map((variant) => {
                 let _variant = new Variant();
-                let variantInfo = (() => {
-                    if (variant.variant_id) {
-                        return {
-                            business_id: ObjectId(variant.business_id),
-                            product_id: ObjectId(variant.product_id),
-                            variant_id: ObjectId(),
-                        };
-                    }
-                    return {
-                        business_id: ObjectId(_product.business_id),
-                        product_id: ObjectId(_product.product_id),
-                        variant_id: ObjectId(),
-                    };
-                })();
-                _variant.create({ ...variant, ...variantInfo });
+                _variant.validateInput(variant);
+                if (_variantInDBs[`pId${_product.product_id}-vId${variant.sku.toUpperCase()}`]) {
+                    _variant.create({
+                        ..._variantInDBs[`pId${_product.product_id}-vId${variant.sku.toUpperCase()}`],
+                    });
+                    _variant.update(variant);
+                } else {
+                    variant_id++;
+                    _variant.create({
+                        ...variant,
+                        supplier_id: Number(req.user.supplier_id),
+                        product_id: Number(_product.product_id),
+                        variant_id: Number(variant_id),
+                        create_date: new Date(),
+                        creator_id: Number(req.user.user_id),
+                        is_active: true,
+                    });
+                }
                 req._update._variants.push(_variant);
                 if (variant.locations) {
-                    req._update['_locations'] = [];
                     variant.locations.map((location) => {
                         let _location = new Location();
-                        let locationInfo = (() => {
-                            if (location.location_id) {
-                                return {
-                                    business_id: ObjectId(location.business_id),
-                                    product_id: ObjectId(location.product_id),
-                                    variant_id: ObjectId(_variant.variant_id),
-                                    location_id: ObjectId(),
-                                };
-                            }
-                            return {
-                                business_id: ObjectId(_product.business_id),
-                                product_id: ObjectId(_product.product_id),
-                                variant_id: ObjectId(_variant.variant_id),
-                                location_id: ObjectId(),
-                            };
-                        })();
-                        _location.create({ ...location, ...locationInfo });
+                        _location.validateInput(location);
+                        if (_locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]) {
+                            _location.create({
+                                ..._locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`],
+                            });
+                            _location.update(location);
+                        } else {
+                            location_id++;
+                            _location.create({
+                                ...location,
+                                supplier_id: Number(req.user.supplier_id),
+                                product_id: Number(_product.product_id),
+                                variant_id: Number(_variant.variant_id),
+                                location_id: Number(location_id),
+                                create_date: new Date(),
+                                creator_id: Number(req.user.user_id),
+                                is_active: true,
+                            });
+                        }
                         req._update._locations.push(_location);
+                    });
+                }
+                if (variant.prices) {
+                    variant.prices.map((price) => {
+                        let _price = new Price();
+                        _price.validateInput(price);
+                        if (
+                            _priceInDBs[
+                                `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
+                            ]
+                        ) {
+                            _price.create({
+                                ..._priceInDBs[
+                                    `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
+                                ],
+                            });
+                            _price.update(price);
+                        } else {
+                            price_id++;
+                            _price.create({
+                                ...price,
+                                supplier_id: Number(req.user.supplier_id),
+                                product_id: Number(_product.product_id),
+                                variant_id: Number(_variant.variant_id),
+                                price_id: Number(price_id),
+                                create_date: new Date(),
+                                creator_id: Number(req.user.user_id),
+                                is_active: true,
+                            });
+                        }
+                        req._update._prices.push(_price);
                     });
                 }
             });
         }
+
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Products' },
+                { $set: { name: 'Products', value: product_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Attributes' },
+                { $set: { name: 'Attributes', value: attribute_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Variants' },
+                { $set: { name: 'Variants', value: variant_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Locations' },
+                { $set: { name: 'Locations', value: location_id } },
+                { upsert: true }
+            );
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true });
         await productService.updateProductS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+let deleteProductC = async (req, res, next) => {
+    try {
+        let product = await client
+            .db(DB)
+            .collection('Products')
+            .findOne({ product_id: Number(req.params.product_id) });
+        if (!product) {
+            throw new Error('400: Sản phẩm không tồn tại!');
+        }
+        await productService.deleteProductS(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -300,5 +572,6 @@ module.exports = {
     getProductC,
     addProductC,
     updateProductC,
+    deleteProductC,
     getAllAtttributeC,
 };

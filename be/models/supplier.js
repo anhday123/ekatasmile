@@ -1,45 +1,28 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let supplierForm = {
-    supplier_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    logo: { data_type: ['string'], not_null: false },
-    phone: { data_type: ['string'], not_null: false },
-    email: { data_type: ['string'], not_null: false },
-    address: { data_type: ['string'], not_null: false },
-    district: { data_type: ['string'], not_null: false },
-    province: { data_type: ['string'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let supplierForm = ['name', 'logo', 'phone', 'email', 'address', 'district', 'province'];
 
 class Supplier {
     validateInput(data) {
-        validate(data, supplierForm, true, 400);
+        softValidate(data, supplierForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.supplier_id = ObjectId(data.supplier_id);
-        this.business_id = ObjectId(data.business_id);
-        this.name = data.name.trim().toUpperCase();
+        this.business_id = Number(data.business_id);
+        this.supplier_id = Number(data.supplier_id);
+        this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.logo = data.logo || '';
-        this.phone = data.phone || '';
-        this.email = data.email || '';
-        this.address = data.address || '';
+        this.logo = String(data.logo) || '';
+        this.phone = String(data.phone) || '';
+        this.email = String(data.email) || '';
+        this.address = String(data.address) || '';
         this.sub_address = removeUnicode(this.address, true).toLowerCase();
-        this.district = data.district || '';
+        this.district = String(data.district) || '';
         this.sub_district = removeUnicode(this.district, true).toLowerCase();
-        this.province = data.province || '';
+        this.province = String(data.province) || '';
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
-        this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
-        this.delete = data.delete;
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

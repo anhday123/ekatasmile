@@ -1,7 +1,6 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const toppingService = require(`../services/topping`);
@@ -9,7 +8,6 @@ const { Topping } = require('../models/topping');
 
 let getToppingC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await toppingService.getToppingS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,47 +16,47 @@ let getToppingC = async (req, res, next) => {
 
 let addToppingC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _topping = new Topping();
         _topping.validateInput(req.body);
-        req.body.name = req.body.name.trim().toUpperCase();
-        let [business, topping] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                }),
-            client
-                .db(DB)
-                .collection(`Toppings`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    name: req.body.name,
-                    delete: false,
-                }),
-        ]);
-        if (!business) {
-            throw new Error(
-                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
-            );
-        }
+        req.body.name = String(req.body.name).trim().toUpperCase();
+        let topping = await client
+            .db(DB)
+            .collection(`Toppings`)
+            .findOne({
+                business_id: Number(req.user.business_id),
+                name: req.body.name,
+            });
+        let toppingMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Toppings' });
         if (topping) {
-            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            throw new Error(`400: Topping đã tồn tại!`);
         }
+        let topping_id = (() => {
+            if (toppingMaxId) {
+                if (toppingMaxId.value) {
+                    return Number(toppingMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        topping_id++;
         _topping.create({
             ...req.body,
             ...{
-                business_id: business.user_id,
-                topping_id: ObjectId(),
-                create_date: moment().utc().format(),
-                creator_id: ObjectId(token.user_id),
-                delete: false,
+                topping_id: Number(topping_id),
+                business_id: Number(req.user.business_id),
+                create_date: new Date(),
+                creator_id: Number(req.user.user_id),
                 active: true,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Toppings' },
+                { $set: { name: 'Toppings', value: topping_id } },
+                { upsert: true }
+            );
         req[`_insert`] = _topping;
         await toppingService.addToppingS(req, res, next);
     } catch (err) {
@@ -67,25 +65,24 @@ let addToppingC = async (req, res, next) => {
 };
 let updateToppingC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.topping_id = ObjectId(req.params.topping_id);
+        req.params.topping_id = Number(req.params.topping_id);
         let _topping = new Topping();
-        req.body.name = req.body.name.trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let topping = await client.db(DB).collection(`Toppings`).findOne(req.params);
         if (!topping) {
-            throw new Error(`400: topping_id <${req.params.topping_id}> không tồn tại!`);
+            throw new Error(`400: Topping không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
                 .db(DB)
                 .collection(`Toppings`)
                 .findOne({
-                    business_id: ObjectId(token.user_id),
-                    topping_id: { $ne: _topping.topping_id },
+                    business_id: Number(req.user.user_id),
+                    topping_id: { $ne: Number(topping.topping_id) },
                     name: req.body.name,
                 });
             if (check) {
-                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+                throw new Error(`400: Topping đã tồn tại!`);
             }
         }
         _topping.create(topping);

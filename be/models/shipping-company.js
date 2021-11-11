@@ -1,32 +1,16 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let shippingCompanyForm = {
-    shipping_company_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    image: { data_type: ['string'], not_null: false },
-    phone: { data_type: ['string'], not_null: false },
-    zipcode: { data_type: ['string'], not_null: false },
-    address: { data_type: ['string'], not_null: false },
-    district: { data_type: ['string'], not_null: false },
-    province: { data_type: ['string'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let shippingCompanyForm = ['name', 'image', 'phone', 'zipcode', 'address', 'district', 'province', ''];
 
 class ShippingCompany {
     validateInput(data) {
-        validate(data, shippingCompanyForm, true, 400);
+        softValidate(data, shippingCompanyForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.shipping_company_id = ObjectId(data.shipping_company_id);
-        this.business_id = ObjectId(data.business_id);
-        this.name = data.name.trim().toUpperCase();
+        this.shipping_company_id = Number(data.shipping_company_id);
+        this.business_id = Number(data.business_id);
+        this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.image = data.image || '';
         this.phone = data.phone || '';
@@ -37,9 +21,8 @@ class ShippingCompany {
         this.sub_district = removeUnicode(this.district, true).toLowerCase();
         this.province = data.province || '';
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
-        this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
-        this.delete = data.delete;
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

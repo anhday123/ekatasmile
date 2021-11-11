@@ -1,6 +1,5 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
 let sessionForm = {
     business_id: { data_type: ['string', 'object'], not_null: true },
@@ -14,7 +13,7 @@ let sessionForm = {
 
 class Session {
     validateInput(data) {
-        validate(data, sessionForm, true, 400);
+        softValidate(data, sessionForm, 400);
     }
     create(data) {
         this.business_id = ObjectId(data.business_id);
@@ -58,10 +57,9 @@ let compareForm = {
 
 class Compare {
     validateInput(data) {
-        validate(data, compareForm, true, 400);
+        softValidate(data, compareForm, 400);
     }
     create(data) {
-        this.validateInput(data);
         this.business_id = ObjectId(data.business_id);
         this.session_id = ObjectId(data.session_id);
         this.order_id = ObjectId(data.order_id);

@@ -1,36 +1,22 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let taxForm = {
-    tax_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    value: { data_type: ['number'], not_null: true },
-    description: { data_type: ['string'], not_null: false },
-    default: { data_type: ['boolean'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let taxForm = ['name', 'value', 'description'];
 
 class Tax {
     validateInput(data) {
-        validate(data, taxForm, true, 400);
+        softValidate(data, taxForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.tax_id = ObjectId(data.tax_id);
-        this.business_id = ObjectId(data.business_id);
-        this.name = data.name.trim().toUpperCase();
+        this.tax_id = Number(data.tax_id);
+        this.business_id = Number(data.business_id);
+        this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.value = data.value;
-        this.description = data.description || '';
+        this.value = Number(data.value);
+        this.description = String(data.description) || '';
         this.default = data.default || false;
-        this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
-        this.delete = data.delete;
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

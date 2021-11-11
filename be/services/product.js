@@ -1,66 +1,67 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
-const { createRegExpQuery } = require('../utils/regex');
+const { removeUnicode } = require('../utils/string-handle');
+const { Action } = require('../models/action');
 
 let getProductS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        let matchQuery = {};
-        let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        matchQuery['delete'] = false;
         if (req.query.product_id) {
-            matchQuery['product_id'] = ObjectId(req.query.product_id);
+            aggregateQuery.push({ $match: { product_id: Number(req.query.product_id) } });
         }
-        if (token) {
-            matchQuery['business_id'] = ObjectId(token.business_id);
+        if (req.user) {
+            aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
         }
         if (req.query.business_id) {
-            matchQuery['business_id'] = ObjectId(req.query.business_id);
+            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
         }
         if (req.query.creator_id) {
-            matchQuery['creator_id'] = ObjectId(req.query.creator_id);
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
         if (req.query.category_id) {
-            matchQuery['category_id'] = {
-                $in: (() => {
-                    category_ids = req.query.category_id.split('---');
-                    return category_ids.map((id) => {
-                        if (id) {
-                            return ObjectId(id);
-                        }
-                    });
-                })(),
-            };
+            let ids = req.query.category_id.split('---');
+            ids = ids.map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ $match: { category_id: { $in: ids } } });
         }
         if (req.query.supplier_id) {
-            matchQuery['supplier_id'] = ObjectId(req.query.supplier_id);
+            aggregateQuery.push({ $match: { supplier_id: Number(req.query.supplier_id) } });
         }
         if (req.query.slug) {
-            matchQuery['slug'] = req.query.slug;
+            aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
         }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
-            matchQuery[`create_date`] = {
-                ...matchQuery[`create_date`],
-                $gte: req.query.from_date,
-            };
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
         if (req.query.to_date) {
-            matchQuery[`create_date`] = {
-                ...matchQuery[`create_date`],
-                $lte: req.query.to_date,
-            };
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.name) {
-            matchQuery['slug'] = createRegExpQuery(req.query.name);
+        if (req.query.code) {
+            aggregateQuery.push({
+                $match: {
+                    code: new RegExp(
+                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
-        aggregateQuery.push({ $match: matchQuery });
+        if (req.query.name) {
+            aggregateQuery.push({
+                $match: {
+                    slug: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
@@ -70,6 +71,33 @@ let getProductS = async (req, res, next) => {
                 as: 'attributes',
             },
         });
+        let storeQuery = (() => {
+            if (req.query.store_id) {
+                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } }];
+            }
+            return [];
+        })();
+        let branchQuery = (() => {
+            if (req.query.branch_id) {
+                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } }];
+            }
+            return [];
+        })();
+        let mergeQuery = (() => {
+            if (req.query.merge == 'true') {
+                return [
+                    {
+                        $group: {
+                            _id: '$inventory_id',
+                            name: { $first: '$name' },
+                            inventory_id: { $first: '$inventory_id' },
+                            quantity: { $sum: '$quantity' },
+                        },
+                    },
+                ];
+            }
+            return [];
+        })();
         aggregateQuery.push({
             $lookup: {
                 from: 'Variants',
@@ -82,46 +110,9 @@ let getProductS = async (req, res, next) => {
                             let: { variantId: '$variant_id' },
                             pipeline: [
                                 { $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } },
-                                ...(() => {
-                                    if (req.query.store_id) {
-                                        return [
-                                            {
-                                                $match: {
-                                                    $expr: {
-                                                        $eq: ['$inventory_id', ObjectId(req.query.store_id)],
-                                                    },
-                                                },
-                                            },
-                                        ];
-                                    }
-                                    if (req.query.branch_id) {
-                                        return [
-                                            {
-                                                $match: {
-                                                    $expr: {
-                                                        $eq: ['$inventory_id', ObjectId(req.query.branch_id)],
-                                                    },
-                                                },
-                                            },
-                                        ];
-                                    }
-                                    return [];
-                                })(),
-                                ...(() => {
-                                    if (req.query.merge == 'true') {
-                                        return [
-                                            {
-                                                $group: {
-                                                    _id: '$inventory_id',
-                                                    name: { $first: '$name' },
-                                                    inventory_id: { $first: '$inventory_id' },
-                                                    quantity: { $sum: '$quantity' },
-                                                },
-                                            },
-                                        ];
-                                    }
-                                    return [];
-                                })(),
+                                ...storeQuery,
+                                ...branchQuery,
+                                ...mergeQuery,
                             ],
                             as: 'locations',
                         },
@@ -135,7 +126,7 @@ let getProductS = async (req, res, next) => {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
         if (req.query.attribute) {
-            req.query.attribute = req.query.attribute.trim().toUpperCase();
+            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
             let filters = req.query.attribute.split('---');
             filters = filters.map((filter) => {
                 let [option, values] = filter.split(':');
@@ -143,16 +134,19 @@ let getProductS = async (req, res, next) => {
                 return { option: option, values: values };
             });
             filters = filters.map((filter) => {
+                let values = filter.values.map((value) => {
+                    return new RegExp(
+                        `${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    );
+                });
                 aggregateQuery.push({
                     $match: {
-                        'attributes.option': createRegExpQuery(filter.option.trim().toUpperCase()),
-                        'attributes.values': {
-                            $in: (() => {
-                                return filter.values.map((value) => {
-                                    return createRegExpQuery(value.trim().toUpperCase());
-                                });
-                            })(),
-                        },
+                        'attributes.option': new RegExp(
+                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                            'ig'
+                        ),
+                        'attributes.values': { $in: values },
                     },
                 });
             });
@@ -167,9 +161,8 @@ let getProductS = async (req, res, next) => {
                         as: '_business',
                     },
                 },
-                { $unwind: '$_business' }
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
             );
-            projectQuery['_business.password'] = 0;
         }
         if (req.query._creator) {
             aggregateQuery.push(
@@ -181,13 +174,16 @@ let getProductS = async (req, res, next) => {
                         as: '_creator',
                     },
                 },
-                { $unwind: '$_creator' }
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
-            projectQuery['_creator.password'] = 0;
         }
-        if (Object.keys(projectQuery).length != 0) {
-            aggregateQuery.push({ $project: projectQuery });
-        }
+        aggregateQuery.push({
+            $project: {
+                '_business.password': 0,
+                '_creator.password': 0,
+            },
+        });
+        let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
@@ -197,12 +193,16 @@ let getProductS = async (req, res, next) => {
         // lấy data từ database
         let [products, counts] = await Promise.all([
             client.db(DB).collection(`Products`).aggregate(aggregateQuery).toArray(),
-            client.db(DB).collection(`Products`).find(matchQuery).count(),
+            client
+                .db(DB)
+                .collection(`Products`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
         ]);
         res.send({
             success: true,
             data: products,
-            count: counts,
+            count: counts[0] ? counts[0].counts : 0,
         });
     } catch (err) {
         next(err);
@@ -211,60 +211,73 @@ let getProductS = async (req, res, next) => {
 
 let addProductS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        if (req._insert._products) {
-            await Promise.all(
-                req._insert._products.map((_product) => {
-                    client
+        if (req._insert._products.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._insert._products) {
+                    await client
                         .db(DB)
                         .collection('Products')
                         .updateOne(
                             {
-                                business_id: ObjectId(token.business_id),
-                                product_id: ObjectId(_product.product_id),
+                                product_id: Number(req._insert._products[i].product_id),
                             },
-                            { $set: _product },
+                            { $set: { ...req._insert._products[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
         }
-        if (req._insert._attributes) {
-            await Promise.all(
-                req._insert._attributes.map((_attribute) => {
-                    client
+        if (req._insert._attributes.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._insert._attributes) {
+                    await client
                         .db(DB)
                         .collection('Attributes')
                         .updateOne(
                             {
-                                product_id: ObjectId(_attribute.product_id),
-                                option: _attribute.option,
+                                attribute_id: Number(req._insert._attributes[i].attribute_id),
                             },
-                            { $set: _attribute },
+                            { $set: { ...req._insert._attributes[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
         }
-        if (req._insert._variants) {
-            await Promise.all(
-                req._insert._variants.map((_variant) => {
-                    client
+        if (req._insert._variants.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._insert._variants) {
+                    await client
                         .db(DB)
                         .collection('Variants')
                         .updateOne(
                             {
-                                product_id: ObjectId(_variant.product_id),
-                                variant_id: _variant.variant_id,
+                                variant_id: Number(req._insert._variants[i].variant_id),
                             },
-                            { $set: _variant },
+                            { $set: { ...req._insert._variants[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
         }
-        if (req._insert._variants) {
-            await Promise.all([client.db(DB).collection('Locations').insertMany(req._insert._locations)]);
+        if (req._insert._locations.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._insert._locations) {
+                    await client
+                        .db(DB)
+                        .collection('Locations')
+                        .updateOne(
+                            {
+                                location_id: Number(req._insert._locations[i].location_id),
+                            },
+                            { $set: { ...req._insert._locations[i] } },
+                            { upsert: true }
+                        );
+                }
+                resolve();
+            });
         }
         res.send({
             success: true,
@@ -277,67 +290,90 @@ let addProductS = async (req, res, next) => {
 
 let updateProductS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        await client
-            .db(DB)
-            .collection('Products')
-            .updateOne(
-                {
-                    product_id: ObjectId(req._update._product.product_id),
-                },
-                { $set: req._update._product },
-                { upsert: true }
-            );
-        if (req._update._attributes) {
-            await Promise.all(
-                req._update._attributes.map((_attribute) => {
-                    client
+        if (req._update._products.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._update._products) {
+                    await client
+                        .db(DB)
+                        .collection('Products')
+                        .updateOne(
+                            {
+                                product_id: Number(req._update._products[i].product_id),
+                            },
+                            { $set: { ...req._update._products[i] } },
+                            { upsert: true }
+                        );
+                }
+                resolve();
+            });
+        }
+        if (req._update._attributes.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._update._attributes) {
+                    await client
                         .db(DB)
                         .collection('Attributes')
                         .updateOne(
                             {
-                                business_id: ObjectId(_attribute.business_id),
-                                option: _attribute.option,
+                                attribute_id: Number(req._update._attributes[i].attribute_id),
                             },
-                            { $set: _attribute },
+                            { $set: { ...req._update._attributes[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
         }
-        if (req._update._variants) {
-            await Promise.all(
-                req._update._variants.map((_variant) => {
-                    client
+        if (req._update._variants.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._update._variants) {
+                    await client
                         .db(DB)
                         .collection('Variants')
                         .updateOne(
                             {
-                                business_id: ObjectId(_variant.business_id),
-                                sku: _variant.sku,
+                                variant_id: Number(req._update._variants[i].variant_id),
                             },
-                            { $set: _variant },
+                            { $set: { ...req._update._variants[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
         }
-        if (req._update._locations) {
-            await Promise.all(
-                req._update._locations.map((_location) => {
-                    client
+        if (req._update._locations.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._update._locations) {
+                    await client
                         .db(DB)
                         .collection('Locations')
                         .updateOne(
                             {
-                                business_id: ObjectId(_location.business_id),
-                                location_id: _location.location_id,
+                                location_id: Number(req._update._locations[i].location_id),
                             },
-                            { $set: _location },
+                            { $set: { ...req._update._locations[i] } },
                             { upsert: true }
                         );
-                })
-            );
+                }
+                resolve();
+            });
+        }
+        if (req._update._prices.length > 0) {
+            await new Promise(async (resolve, reject) => {
+                for (let i in req._update._prices) {
+                    await client
+                        .db(DB)
+                        .collection('Prices')
+                        .updateOne(
+                            {
+                                price_id: Number(req._update._prices[i].price_id),
+                            },
+                            { $set: { ...req._update._prices[i] } },
+                            { upsert: true }
+                        );
+                }
+                resolve();
+            });
         }
         res.send({
             success: true,
@@ -348,16 +384,40 @@ let updateProductS = async (req, res, next) => {
     }
 };
 
+let deleteProductS = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection('Products')
+            .deleteMany({ product_id: Number(req.params.product_id) });
+        await client
+            .db(DB)
+            .collection('Attributes')
+            .deleteMany({ product_id: Number(req.params.product_id) });
+        await client
+            .db(DB)
+            .collection('Variants')
+            .deleteMany({ product_id: Number(req.params.product_id) });
+        await client
+            .db(DB)
+            .collection('Locations')
+            .deleteMany({ product_id: Number(req.params.product_id) });
+        res.send({ success: true, message: 'Xoá sản phẩm thành công!' });
+    } catch (err) {
+        next(err);
+    }
+};
+
 let getAllAtttributeS = async (req, res, next) => {
     try {
         let mongoQuery = {};
         if (req.query.store_id) {
             mongoQuery['name'] = 'STORE';
-            mongoQuery['inventory_id'] = ObjectId(req.query.store_id);
+            mongoQuery['inventory_id'] = Number(req.query.store_id);
         }
         if (req.query.branch_id) {
             mongoQuery['name'] = 'BRANCH';
-            mongoQuery['inventory_id'] = ObjectId(req.query.branch_id);
+            mongoQuery['inventory_id'] = Number(req.query.branch_id);
         }
         let locations = await client.db(DB).collection('Locations').find(mongoQuery).toArray();
         let product_ids = locations.map((location) => {
@@ -365,7 +425,7 @@ let getAllAtttributeS = async (req, res, next) => {
         });
         product_ids = [...new Set(product_ids)];
         product_ids = product_ids.map((product_id) => {
-            return ObjectId(product_id);
+            return Number(product_id);
         });
         let attributes = await client
             .db(DB)

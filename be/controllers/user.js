@@ -1,7 +1,7 @@
 const moment = require(`moment-timezone`);
 const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const userService = require(`../services/user`);
@@ -21,19 +21,17 @@ let registerC = async (req, res, next) => {
     try {
         let _user = new User();
         _user.validateInput(req.body);
-        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.username = String(req.body.username).trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
-        req.body.email = req.body.email.trim().toLowerCase();
-        let [user, role] = await Promise.all([
-            client
-                .db(DB)
-                .collection('Users')
-                .findOne({
-                    $or: [{ username: req.body.username }, { email: req.body.email }],
-                    delete: false,
-                }),
-            client.db(DB).collection('Roles').findOne({ name: 'BUSINESS' }),
-        ]);
+        req.body.email = String(req.body.email).trim().toLowerCase();
+        let user = await client
+            .db(DB)
+            .collection('Users')
+            .findOne({
+                $or: [{ username: req.body.username }, { email: req.body.email }],
+            });
+        let role = await client.db(DB).collection('Roles').findOne({ name: 'BUSINESS' });
+        let userMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Users' });
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
@@ -65,24 +63,35 @@ let registerC = async (req, res, next) => {
                 Create by Demo Team.
             </div>`
         );
-        let id = ObjectId();
+        let user_id = (() => {
+            if (userMaxId) {
+                if (userMaxId.value) {
+                    return Number(userMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        user_id++;
         _user.create({
             ...req.body,
             ...{
-                user_id: id,
-                business_id: id,
-                role_id: role.role_id,
+                business_id: Number(user_id),
+                user_id: Number(user_id),
+                role_id: Number(role.role_id),
                 otp_code: otpCode,
-                otp_timelife: moment().utc().add(process.env.OTP_TIMELIFE, `minutes`).format(),
+                otp_timelife: new Date(moment().add(process.env.OTP_TIMELIFE, `minutes`).format()),
                 is_new: true,
-                create_date: moment().utc().format(),
-                last_login: moment().utc().format(),
-                exp: moment().utc().add(10, 'days').format(),
-                creator_id: id,
-                delete: false,
+                create_date: new Date(),
+                last_login: new Date(),
+                exp: new Date(moment().add(10, 'days').format()),
+                creator_id: Number(user_id),
                 active: false,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: user_id } }, { upsert: true });
         req[`_insert`] = _user;
         await userService.addUserS(req, res, next);
     } catch (err) {
@@ -92,40 +101,48 @@ let registerC = async (req, res, next) => {
 
 let addUserC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _user = new User();
         _user.validateInput(req.body);
-        _user.validateEmail(req.body.email);
-        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.username = String(req.body.username).trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
-        req.body.email = req.body.email.trim().toLowerCase();
-        let [user] = await Promise.all([
-            client
-                .db(DB)
-                .collection('Users')
-                .findOne({
-                    $or: [{ username: req.body.username }, { email: req.body.email }],
-                    delete: false,
-                }),
-        ]);
+        req.body.email = String(req.body.email).trim().toLowerCase();
+        let user = await client
+            .db(DB)
+            .collection('Users')
+            .findOne({
+                $or: [{ username: req.body.username }, { email: req.body.email }],
+            });
+        let userMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Users' });
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
+        let user_id = (() => {
+            if (userMaxId) {
+                if (userMaxId.value) {
+                    return Number(userMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        user_id++;
         _user.create({
             ...req.body,
             ...{
-                user_id: ObjectId(),
-                business_id: token.business_id,
-                company_name: token.company_name,
-                company_website: token.company_website,
-                create_date: moment().utc().format(),
-                last_login: moment().utc().format(),
+                user_id: Number(user_id),
+                business_id: Number(req.user.business_id),
+                company_name: String(req.user.company_name),
+                company_website: String(req.user.company_website),
+                create_date: new Date(),
+                last_login: new Date(),
                 exp: '',
-                creator_id: token._id,
-                delete: false,
+                creator_id: Number(req.user.user_id),
                 active: true,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: user_id } }, { upsert: true });
         req[`_insert`] = _user;
         await userService.addUserS(req, res, next);
     } catch (err) {
@@ -135,12 +152,11 @@ let addUserC = async (req, res, next) => {
 
 let updateUserC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.user_id = ObjectId(req.params.user_id);
+        req.params.user_id = Number(req.params.user_id);
         let _user = new User();
         let user = await client.db(DB).collection('Users').findOne(req.params);
         if (!user) {
-            throw new Error(`400: _id <${req.params.user_id}> không tồn tại!`);
+            throw new Error(`400: Người dùng không tồn tại!`);
         }
         _user.create(user);
         _user.update(req.body);
@@ -159,12 +175,12 @@ let forgotPassword = async (req, res, next) => {
         if (!req.body.password) {
             throw new Error('400: password không được để trống!');
         }
-        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.username = String(req.body.username).trim().toLowerCase();
         await client
             .db(DB)
             .collection(`Users`)
             .findOneAndUpdate(
-                { username: req.body.username, delete: false },
+                { username: req.body.username },
                 {
                     $set: {
                         password: bcrypt.hash(req.body.password),

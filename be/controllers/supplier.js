@@ -1,7 +1,6 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const supplierService = require(`../services/supplier`);
@@ -9,7 +8,6 @@ const { Supplier } = require('../models/supplier');
 
 let getSupplierC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await supplierService.getSupplierS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,47 +16,47 @@ let getSupplierC = async (req, res, next) => {
 
 let addSupplierC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _supplier = new Supplier();
         _supplier.validateInput(req.body);
-        req.body.name = req.body.name.trim().toUpperCase();
-        let [business, supplier] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                }),
-            client
-                .db(DB)
-                .collection(`Suppliers`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    name: req.body.name,
-                    delete: false,
-                }),
-        ]);
-        if (!business) {
-            throw new Error(
-                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
-            );
-        }
+        req.body.name = Number(req.body.name).trim().toUpperCase();
+        let supplier = await client
+            .db(DB)
+            .collection(`Suppliers`)
+            .findOne({
+                business_id: Number(req.user.business_id),
+                name: req.body.name,
+            });
+        let supplierMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Suppliers' });
         if (supplier) {
-            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            throw new Error(`400: Nhà cung cấp đã tồn tại!`);
         }
+        let supplier_id = (() => {
+            if (supplierMaxId) {
+                if (supplierMaxId.value) {
+                    return Number(supplierMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        supplier_id++;
         _supplier.create({
             ...req.body,
             ...{
-                supplier_id: ObjectId(),
-                business_id: token.business_id,
-                create_date: moment().utc().format(),
-                creator_id: token._id,
-                delete: false,
+                supplier_id: Number(supplier_id),
+                business_id: Number(req.user.business_id),
+                create_date: new Date(),
+                creator_id: Number(req.user.user_id),
                 active: true,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'Suppliers' },
+                { $set: { name: 'Suppliers', value: supplier_id } },
+                { upsert: true }
+            );
         req[`_insert`] = _supplier;
         await supplierService.addSupplierS(req, res, next);
     } catch (err) {
@@ -68,25 +66,24 @@ let addSupplierC = async (req, res, next) => {
 
 let updateSupplierC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.supplier_id = ObjectId(req.params.supplier_id);
+        req.params.supplier_id = Number(req.params.supplier_id);
         let _supplier = new Supplier();
-        req.body.name = req.body.name.trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let supplier = await client.db(DB).collection(`Suppliers`).findOne(req.params);
-        if (!tax) {
-            throw new Error(`400: tax_id <${req.params.tax_id}> không tồn tại!`);
+        if (!supplier) {
+            throw new Error(`400: Nhà cung cấp không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
                 .db(DB)
                 .collection(`Suppliers`)
                 .findOne({
-                    business_id: ObjectId(token.business_id),
-                    supplier_id: { $ne: tax.supplier_id },
+                    business_id: Number(req.user.supplier_id),
+                    supplier_id: { $ne: Number(supplier.supplier_id) },
                     name: req.body.name,
                 });
             if (check) {
-                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+                throw new Error(`400: Nhà cung cấp đã tồn tại!`);
             }
         }
         _supplier.create(supplier);

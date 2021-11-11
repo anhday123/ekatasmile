@@ -4,7 +4,7 @@ const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
 
 const router = require(`./routers/index`);
-const client = require('./config/mongo/mongodb');
+const client = require('./config/mongodb');
 const DB = process.env.DATABASE;
 
 const app = express();

@@ -4,7 +4,7 @@ const fs = require(`fs`);
 require(`dotenv`).config();
 require(`./utils/env-config`).configEnv();
 
-const client = require(`./config/mongo/mongodb`);
+const client = require(`./config/mongodb`);
 const app = require(`./app`);
 
 try {

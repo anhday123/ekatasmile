@@ -1,6 +1,6 @@
 const moment = require(`moment-timezone`);
 const { ObjectId } = require('mongodb');
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { createRegExpQuery } = require('../utils/regex');

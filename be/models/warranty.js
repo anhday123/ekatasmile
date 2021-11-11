@@ -1,37 +1,23 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let warrantyForm = {
-    label_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    type: { data_type: ['string'], not_null: true },
-    time: { data_type: ['number'], not_null: true },
-    description: { data_type: ['string'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let warrantyForm = ['name', 'type', 'time', 'description'];
 
 class Warranty {
     validateInput(data) {
-        validate(data, warrantyForm, true, 400);
+        softValidate(data, warrantyForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.label_id = ObjectId(data.label_id);
-        this.business_id = ObjectId(data.business_id);
-        this.name = data.name.trim().toUpperCase();
+        this.warranty_id = Number(data.warranty_id);
+        this.business_id = Number(data.business_id);
+        this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.type = data.type || '';
+        this.type = String(data.type || '');
         this.sub_type = removeUnicode(this.type, true).toLowerCase();
-        this.time = data.time || 0;
+        this.time = Number(data.time || 0);
         this.description = data.description || '';
-        this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
-        this.delete = data.delete;
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

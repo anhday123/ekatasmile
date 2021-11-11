@@ -1,34 +1,29 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let categoryForm = {
-    category_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    description: { data_type: ['string'], not_null: false },
-    default: { data_type: ['boolean'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let categoryForm = ['name', 'description'];
 
 class Category {
     validateInput(data) {
-        validate(data, categoryForm, true, 400);
+        softValidate(data, categoryForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.category_id = ObjectId(data.category_id);
-        this.business_id = ObjectId(data.business_id);
-        this.name = data.name.trim().toUpperCase();
+        this.category_id = Number(data.category_id);
+        this.business_id = Number(data.business_id);
+        this.parent_id = (() => {
+            if (isNaN(data.parent_id)) {
+                return -1;
+            }
+            return Number(data.parent_id);
+        })();
+        this.priority = Number(data.priority);
+        this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.description = data.description || '';
+        this.image = String(data.image);
+        this.description = String(data.description);
         this.default = data.default || false;
-        this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
-        this.delete = data.delete;
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

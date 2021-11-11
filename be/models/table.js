@@ -1,45 +1,36 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 
-let tableForm = {
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    store_id: { data_type: ['string', 'object'], not_null: false },
-    position_id: { data_type: ['string', 'object'], not_null: false },
-    table_id: { data_type: ['string', 'object'], not_null: false },
-    name: { data_type: ['string'], not_null: true },
-    current_people: { data_type: ['number'], not_null: false },
-    limit_people: { data_type: ['number'], not_null: false },
-    current_payment: { data_type: ['number'], not_null: false },
-    timepass: { data_type: ['string'], not_null: false },
-    status: { data_type: ['string'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let tableForm = [
+    'store_id',
+    'position',
+    'name',
+    'current_people',
+    'limit_people',
+    'current_payment',
+    'timepass',
+    'status',
+];
 
 class Table {
     validateInput(data) {
-        validate(data, tableForm, true, 400);
+        softValidate(data, tableForm, 400);
     }
     create(data) {
-        this.validateInput(data);
-        this.business_id = ObjectId(data.business_id);
-        this.store_id = ObjectId(data.store_id);
-        this.position = data.position;
+        this.business_id = Number(data.business_id);
+        this.store_id = Number(data.store_id);
+        this.position = String(data.position);
         this.sub_position = removeUnicode(this.position, true).toLowerCase();
-        this.table_id = ObjectId(data.table_id);
-        this.name = data.name;
+        this.table_id = Number(data.table_id);
+        this.name = String(data.name);
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.current_people = data.current_people || 0;
-        this.limit_people = data.limit_people || 10;
-        this.current_payment = data.current_payment || 0;
-        this.timepass = data.timepass || 0;
-        this.status = data.status || 'READY';
-        this.create_date = data.create_date;
-        this.creator_id = ObjectId(data.creator_id);
-        this.delete = data.delete;
+        this.current_people = Number(data.current_people) || 0;
+        this.limit_people = Number(data.limit_people) || 10;
+        this.current_payment = Number(data.current_payment) || 0;
+        this.timepass = Number(data.timepass) || 0;
+        this.status = String(data.status) || 'READY';
+        this.create_date = new Date(data.create_date);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

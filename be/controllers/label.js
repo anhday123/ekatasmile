@@ -1,7 +1,6 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const labelService = require(`../services/label`);
@@ -9,7 +8,6 @@ const { Label } = require('../models/label');
 
 let getLabelC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await labelService.getLabelS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,47 +16,43 @@ let getLabelC = async (req, res, next) => {
 
 let addLabelC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _label = new Label();
         _label.validateInput(req.body);
-        req.body.name = req.body.name.trim().toUpperCase();
-        let [business, label] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                }),
-            client
-                .db(DB)
-                .collection(`Labels`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    name: req.body.name,
-                    delete: false,
-                }),
-        ]);
-        if (!business) {
-            throw new Error(
-                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
-            );
-        }
+        req.body.name = String(req.body.name).trim().toUpperCase();
+        let label = await client
+            .db(DB)
+            .collection(`Labels`)
+            .findOne({
+                business_id: Number(req.user.business_id),
+                name: req.body.name,
+            });
+        let labelMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Labels' });
         if (label) {
-            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
         }
+        let label_id = (() => {
+            if (labelMaxId) {
+                if (labelMaxId.value) {
+                    return Number(labelMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        label_id++;
         _label.create({
             ...req.body,
             ...{
-                label_id: ObjectId(),
-                business_id: business.user_id,
-                create_date: moment().utc().format(),
-                creator_id: ObjectId(token.user_id),
-                delete: false,
+                label_id: Number(label_id),
+                business_id: Number(req.user.user_id),
+                create_date: new Date(),
+                creator_id: Number(req.user.user_id),
                 active: true,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Labels' }, { $set: { name: 'Labels', value: label_id } }, { upsert: true });
         req[`_insert`] = _label;
         await labelService.addLabelS(req, res, next);
     } catch (err) {
@@ -67,25 +61,24 @@ let addLabelC = async (req, res, next) => {
 };
 let updateLabelC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.label_id = ObjectId(req.params.label_id);
+        req.params.label_id = Number(req.params.label_id);
         let _label = new Label();
-        req.body.name = req.body.name.trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let label = await client.db(DB).collection(`Labels`).findOne(req.params);
         if (!label) {
-            throw new Error(`400: label_id <${req.params.label_id}> không tồn tại!`);
+            throw new Error(`400: Nhóm cửa hàng không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
                 .db(DB)
                 .collection(`Labels`)
                 .findOne({
-                    business_id: ObjectId(token.user_id),
-                    label_id: { $ne: label.label_id },
+                    business_id: Number(req.user.business_id),
+                    label_id: { $ne: Number(label.label_id) },
                     name: req.body.name,
                 });
             if (check) {
-                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+                throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
             }
         }
         _label.create(label);

@@ -1,72 +1,116 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
-const { createRegExpQuery } = require('../utils/regex');
+const { removeUnicode } = require('../utils/string-handle');
 const { Action } = require('../models/action');
 
 const jwt = require(`../libs/jwt`);
 
 let getBranchS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        let matchQuery = {};
-        let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        matchQuery['delete'] = false;
         if (req.query.branch_id) {
-            matchQuery['branch_id'] = ObjectId(req.query.branch_id);
+            aggregateQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
         }
-        if (token) {
-            matchQuery['business_id'] = ObjectId(token.business_id);
+        if (req.user) {
+            aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
         }
         if (req.query.business_id) {
-            matchQuery['business_id'] = ObjectId(req.query.business_id);
+            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
         }
         if (req.query.creator_id) {
-            matchQuery['creator_id'] = ObjectId(req.query.creator_id);
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
-            matchQuery[`create_date`] = {
-                ...matchQuery[`create_date`],
-                $gte: req.query.from_date,
-            };
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
         if (req.query.to_date) {
-            matchQuery[`create_date`] = {
-                ...matchQuery[`create_date`],
-                $lte: req.query.to_date,
-            };
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.code) {
-            matchQuery['code'] = createRegExpQuery(req.query.code);
+            aggregateQuery.push({
+                $match: {
+                    code: new RegExp(
+                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.name) {
-            matchQuery['sub_name'] = createRegExpQuery(req.query.name);
+            aggregateQuery.push({
+                $match: {
+                    sub_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.warehouse_type) {
-            matchQuery['sub_warehouse_type'] = createRegExpQuery(req.query.warehouse_type);
+            aggregateQuery.push({
+                $match: {
+                    sub_warehouse_type: new RegExp(
+                        `${removeUnicode(req.query.warehouse_type, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.address) {
-            matchQuery['sub_address'] = createRegExpQuery(req.query.address);
+            aggregateQuery.push({
+                $match: {
+                    sub_address: new RegExp(
+                        `${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.district) {
-            matchQuery['sub_district'] = createRegExpQuery(req.query.district);
+            aggregateQuery.push({
+                $match: {
+                    sub_district: new RegExp(
+                        `${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.province) {
-            matchQuery['sub_province'] = createRegExpQuery(req.query.province);
+            aggregateQuery.push({
+                $match: {
+                    sub_province: new RegExp(
+                        `${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
         }
         if (req.query.search) {
-            matchQuery['$or'] = [
-                { code: createRegExpQuery(req.query.search) },
-                { sub_name: createRegExpQuery(req.query.search) },
-            ];
+            aggregateQuery.push({
+                $match: {
+                    $or: [
+                        {
+                            code: new RegExp(
+                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        },
+                        {
+                            sub_name: new RegExp(
+                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        },
+                    ],
+                },
+            });
         }
-        aggregateQuery.push({ $match: matchQuery });
         // lấy các thuộc tính tùy chọn khác
         if (req.query._business) {
             aggregateQuery.push(
@@ -78,9 +122,8 @@ let getBranchS = async (req, res, next) => {
                         as: '_business',
                     },
                 },
-                { $unwind: '$_business' }
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
             );
-            projectQuery['_business.password'] = 0;
         }
         if (req.query._creator) {
             aggregateQuery.push(
@@ -92,24 +135,35 @@ let getBranchS = async (req, res, next) => {
                         as: '_creator',
                     },
                 },
-                { $unwind: '$_creator' }
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
-            projectQuery['_creator.password'] = 0;
         }
         if (req.query._employees) {
-            aggregateQuery.push({
-                $lookup: {
-                    from: 'Users',
-                    let: { branchId: '$branch_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
-                    as: '_employees',
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        let: { branchId: '$branch_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
+                        as: '_employees',
+                    },
                 },
-            });
-            projectQuery['_employees.password'] = 0;
+                { $unwind: { path: '$_employees', preserveNullAndEmptyArrays: true } }
+            );
         }
-        if (Object.keys(projectQuery).length != 0) {
-            aggregateQuery.push({ $project: projectQuery });
-        }
+        aggregateQuery.push({
+            $project: {
+                sub_name: 0,
+                sub_warehouse_type: 0,
+                sub_address: 0,
+                sub_district: 0,
+                sub_province: 0,
+                '_business.password': 0,
+                '_creator.password': 0,
+                '_employees.password': 0,
+            },
+        });
+        let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;
@@ -117,12 +171,16 @@ let getBranchS = async (req, res, next) => {
         // lấy data từ database
         let [branchs, counts] = await Promise.all([
             client.db(DB).collection(`Branchs`).aggregate(aggregateQuery).toArray(),
-            client.db(DB).collection(`Branchs`).find(matchQuery).count(),
+            client
+                .db(DB)
+                .collection(`Branchs`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
         ]);
         res.send({
             success: true,
             data: branchs,
-            count: counts,
+            count: counts[0] ? counts[0].counts : 0,
         });
     } catch (err) {
         next(err);
@@ -131,32 +189,29 @@ let getBranchS = async (req, res, next) => {
 
 let addBranchS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _branch = await client.db(DB).collection(`Branchs`).insertOne(req._insert);
-        if (!_branch.ops) {
+        if (!_branch.insertedId) {
             throw new Error('500: Lỗi hệ thống, tạo chi nhánh thất bại!');
         }
         try {
             let _action = new Action();
             _action.create({
-                business_id: token.business_id,
+                business_id: Number(req.user.business_id),
                 type: 'Add',
                 properties: 'Branch',
                 name: 'Thêm chi nhánh mới',
                 data: req._insert,
-                performer_id: token.user_id,
-                data: moment().utc().format(),
+                performer_id: Number(req.user.user_id),
+                date: new Date(),
             });
-            await Promise.all([
-                client.db(DB).collection(`Actions`).insertOne(_action),
-                client
-                    .db(DB)
-                    .collection(`Users`)
-                    .updateOne(
-                        { user_id: ObjectId(token.user_id) },
-                        { $set: { branch_id: req._insert.branch_id } }
-                    ),
-            ]);
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await client
+                .db(DB)
+                .collection(`Users`)
+                .updateOne(
+                    { user_id: Number(req.user.user_id) },
+                    { $set: { branch_id: Number(req._insert.branch_id) } }
+                );
         } catch (err) {
             console.log(err);
         }
@@ -164,7 +219,7 @@ let addBranchS = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { user_id: ObjectId(token.user_id) } },
+                { $match: { user_id: Number(req.user.user_id) } },
                 {
                     $lookup: {
                         from: 'Roles',
@@ -207,18 +262,17 @@ let addBranchS = async (req, res, next) => {
 
 let updateBranchS = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
         try {
             let _action = new Action();
             _action.create({
-                business_id: token.business_id,
+                business_id: Number(req.user.business_id),
                 type: 'Update',
                 properties: 'Branch',
                 name: 'Cập nhật thông tin chi nhánh',
                 data: req._update,
-                performer_id: token.user_id,
-                data: moment().utc().format(),
+                performer_id: Number(req.user.user_id),
+                date: new Date(),
             });
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {

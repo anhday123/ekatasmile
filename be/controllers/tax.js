@@ -1,7 +1,6 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const taxService = require(`../services/tax`);
@@ -9,7 +8,6 @@ const { Tax } = require('../models/tax');
 
 let getTaxC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await taxService.getTaxS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,47 +16,43 @@ let getTaxC = async (req, res, next) => {
 
 let addTaxC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _tax = new Tax();
         _tax.validateInput(req.body);
-        req.body.name = req.body.name.trim().toUpperCase();
-        let [business, tax] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Users`)
-                .findOne({
-                    user_id: ObjectId(token.business_id),
-                    delete: false,
-                    active: true,
-                }),
-            client
-                .db(DB)
-                .collection(`Taxes`)
-                .findOne({
-                    business_id: ObjectId(token.business_id),
-                    name: req.body.name,
-                    delete: false,
-                }),
-        ]);
-        if (!business) {
-            throw new Error(
-                `400: business_id <${token.business_id}> không tồn tại hoặc chưa được kích hoạt!`
-            );
-        }
+        req.body.name = String(req.body.name).trim().toUpperCase();
+        let tax = await client
+            .db(DB)
+            .collection(`Taxes`)
+            .findOne({
+                business_id: Number(req.user.business_id),
+                name: req.body.name,
+            });
+        let taxMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Taxes' });
         if (tax) {
-            throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+            throw new Error(`400: Thuế đã tồn tại!`);
         }
+        let tax_id = (() => {
+            if (taxMaxId) {
+                if (taxMaxId.value) {
+                    return Number(taxMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        tax_id++;
         _tax.create({
             ...req.body,
             ...{
-                tax_id: ObjectId(),
-                business_id: token.business_id,
-                create_date: moment().utc().format(),
-                creator_id: token._id,
-                delete: false,
+                tax_id: Number(tax_id),
+                business_id: Number(req.user.business_id),
+                create_date: new Date(),
+                creator_id: Number(req.user.user_id),
                 active: true,
             },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Taxes' }, { $set: { name: 'Taxes', value: tax_id } }, { upsert: true });
         req[`_insert`] = _tax;
         await taxService.addTaxS(req, res, next);
     } catch (err) {
@@ -67,25 +61,24 @@ let addTaxC = async (req, res, next) => {
 };
 let updateTaxC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
-        req.params.tax_id = ObjectId(req.params.tax_id);
+        req.params.tax_id = Number(req.params.tax_id);
         let _tax = new Tax();
-        req.body.name = req.body.name.trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let tax = await client.db(DB).collection(`Taxes`).findOne(req.params);
         if (!tax) {
-            throw new Error(`400: tax_id <${req.params.tax_id}> không tồn tại!`);
+            throw new Error(`400: Thuế không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
                 .db(DB)
                 .collection(`Taxs`)
                 .findOne({
-                    business_id: ObjectId(token.business_id),
-                    tax_id: { $ne: tax.tax_id },
+                    business_id: Number(req.user.business_id),
+                    tax_id: { $ne: Number(tax.tax_id) },
                     name: req.body.name,
                 });
             if (check) {
-                throw new Error(`400: name <${req.body.name}> đã tồn tại!`);
+                throw new Error(`400: Thuế đã tồn tại!`);
             }
         }
         _tax.create(tax);

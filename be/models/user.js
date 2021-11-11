@@ -1,45 +1,13 @@
-const { ObjectId } = require('mongodb');
 const { removeUnicode } = require('../utils/string-handle');
-const { validate } = require('../utils/validate');
+const { softValidate } = require('../utils/validate');
 const bcrypt = require('../libs/bcrypt');
 
-let userForm = {
-    user_id: { data_type: ['string', 'object'], not_null: false },
-    business_id: { data_type: ['string', 'object'], not_null: false },
-    username: { data_type: ['string'], not_null: true },
-    password: { data_type: ['string'], not_null: true },
-    otp_code: { data_type: ['string', 'boolean'], not_null: false },
-    otp_timelife: { data_type: ['string', 'boolean'], not_null: false },
-    role_id: { data_type: ['string', 'object'], not_null: false },
-    email: { data_type: ['string'], not_null: false },
-    phone: { data_type: ['string'], not_null: false },
-    avatar: { data_type: ['string'], not_null: false },
-    first_name: { data_type: ['string'], not_null: false },
-    last_name: { data_type: ['string'], not_null: false },
-    birthday: { data_type: ['string'], not_null: false },
-    address: { data_type: ['string'], not_null: false },
-    district: { data_type: ['string'], not_null: false },
-    province: { data_type: ['string'], not_null: false },
-    company_name: { data_type: ['string'], not_null: false },
-    company_website: { data_type: ['string'], not_null: false },
-    career_id: { data_type: ['string', 'object'], not_null: false },
-    tax_code: { data_type: ['string'], not_null: false },
-    fax: { data_type: ['string'], not_null: false },
-    branch_id: { data_type: ['string', 'object'], not_null: false },
-    store_id: { data_type: ['string', 'object'], not_null: false },
-    is_new: { data_type: ['boolean'], not_null: false },
-    create_date: { data_type: ['string'], not_null: false },
-    last_login: { data_type: ['string'], not_null: false },
-    exp: { data_type: ['string'], not_null: false },
-    creator_id: { data_type: ['string', 'object'], not_null: false },
-    delete: { data_type: ['boolean'], not_null: false },
-    active: { data_type: ['boolean'], not_null: false },
-};
+let userForm = ['username', 'password'];
 
 class User {
     /** Kiểm tra dữ liệu tạo user */
     validateInput(data) {
-        validate(data, userForm, true, 400);
+        softValidate(data, userForm, 400);
     }
     /** Kiểm tra email có đúng định dạng hay không */
     validateUsername(data) {
@@ -68,24 +36,23 @@ class User {
     /** Tạo user object: data là thông tin user, type là kiểu tạo: register là user đăng ký, create là user được business tạo
      */
     create(data) {
-        this.validateInput(data);
-        this.user_id = ObjectId(data.user_id);
-        this.business_id = ObjectId(data.business_id);
-        this.username = data.username;
-        this.password = data.password;
-        this.otp_code = data.otp_code || false;
-        this.otp_timelife = data.otp_timelife || false;
+        this.business_id = Number(data.business_id);
+        this.user_id = Number(data.user_id);
+        this.username = String(data.username).replace(/\s/g, '').toLowerCase();
+        this.password = String(data.password);
+        this.otp_code = String(data.otp_code) || false;
+        this.otp_timelife = new Date(data.otp_timelife) || false;
         this.role_id = (() => {
             if (data.role_id && data.role_id != '') {
-                return ObjectId(data.role_id);
+                return Number(data.role_id);
             }
             return data.role_id;
         })();
-        this.email = data.email;
-        this.phone = data.phone;
-        this.avatar = data.avatar || '';
-        this.first_name = data.first_name || '';
-        this.last_name = data.last_name || '';
+        this.email = String(data.email);
+        this.phone = String(data.phone);
+        this.avatar = String(data.avatar) || '';
+        this.first_name = String(data.first_name) || '';
+        this.last_name = String(data.last_name) || '';
         this.sub_name = removeUnicode(this.first_name + this.last_name, true).toLowerCase();
         this.birthday = data.birthday || '2000-01-01';
         this.address = data.address || '';
@@ -98,7 +65,7 @@ class User {
         this.company_website = data.company_website || '';
         this.career_id = (() => {
             if (data.career_id && data.career_id != '') {
-                return ObjectId(data.career_id);
+                return Number(data.career_id);
             }
             return data.career_id;
         })();
@@ -106,13 +73,13 @@ class User {
         this.fax = data.fax || '';
         this.branch_id = (() => {
             if (data.branch_id && data.branch_id != '') {
-                return ObjectId(data.branch_id);
+                return Number(data.branch_id);
             }
             return data.branch_id;
         })();
         this.store_id = (() => {
             if (data.store_id && data.store_id != '') {
-                return ObjectId(data.store_id);
+                return Number(data.store_id);
             }
             return data.store_id;
         })();
@@ -120,7 +87,7 @@ class User {
         this.create_date = data.create_date;
         this.last_login = data.last_login;
         this.exp = data.exp;
-        this.creator_id = ObjectId(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.delete = data.delete;
         this.active = data.active;
     }

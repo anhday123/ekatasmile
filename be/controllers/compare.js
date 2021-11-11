@@ -1,7 +1,7 @@
 const moment = require(`moment-timezone`);
 const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
-const client = require(`../config/mongo/mongodb`);
+const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const compareServices = require(`../services/compare`);
@@ -9,7 +9,6 @@ const { Compare, Session } = require('../models/compare');
 
 let getSessionC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await compareServices.getSessionS(req, res, next);
     } catch (err) {
         next(err);
@@ -18,7 +17,6 @@ let getSessionC = async (req, res, next) => {
 
 let getCompareC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await compareServices.getCompareS(req, res, next);
     } catch (err) {
         next(err);
@@ -27,7 +25,6 @@ let getCompareC = async (req, res, next) => {
 
 let addCompareC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         let _session = new Session();
         let [counts, session_counts, business, orders, customers] = await Promise.all([
             client.db(DB).collection(`Compares`).countDocuments(),
@@ -79,7 +76,6 @@ let addCompareC = async (req, res, next) => {
 
 let updateCompareC = async (req, res, next) => {
     try {
-        let token = req.tokenData.data;
         await compareServices.updateCompareS(req, res, next);
     } catch (err) {
         next(err);
