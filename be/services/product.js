@@ -62,6 +62,32 @@ let getProductS = async (req, res, next) => {
                 },
             });
         }
+        if (req.query.attribute) {
+            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
+            let filters = req.query.attribute.split('---');
+            filters = filters.map((filter) => {
+                let [option, values] = filter.split(':');
+                values = values.split('||');
+                return { option: option, values: values };
+            });
+            filters = filters.map((filter) => {
+                let values = filter.values.map((value) => {
+                    return new RegExp(
+                        `${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    );
+                });
+                aggregateQuery.push({
+                    $match: {
+                        'attributes.option': new RegExp(
+                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                            'ig'
+                        ),
+                        'attributes.values': { $in: values },
+                    },
+                });
+            });
+        }
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
@@ -124,32 +150,6 @@ let getProductS = async (req, res, next) => {
         });
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
-        }
-        if (req.query.attribute) {
-            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
-            let filters = req.query.attribute.split('---');
-            filters = filters.map((filter) => {
-                let [option, values] = filter.split(':');
-                values = values.split('||');
-                return { option: option, values: values };
-            });
-            filters = filters.map((filter) => {
-                let values = filter.values.map((value) => {
-                    return new RegExp(
-                        `${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    );
-                });
-                aggregateQuery.push({
-                    $match: {
-                        'attributes.option': new RegExp(
-                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
-                        'attributes.values': { $in: values },
-                    },
-                });
-            });
         }
         if (req.query._business) {
             aggregateQuery.push(

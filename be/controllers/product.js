@@ -32,6 +32,21 @@ let addProductC = async (req, res, next) => {
             })
             .toArray();
         let maxProductId = await client.db(DB).collection('AppSetting').findOne({ name: 'Products' });
+        let suppliers = await client.db(DB).collection('Suppliers').find({business_id: Number(req.user.business_id)}).toArray();
+        let _suppliers = {};
+        suppliers.map((supplier)=>{
+            _suppliers[supplier.supplier_id] = supplier;
+        });
+        let branchs = await client.db(DB).collection('Branchs').find({business_id: Number(req.user.business_id)}).toArray();
+        let _branchs = {};
+        branchs.map((branch)=>{
+            _branchs[branch.branch_id] = branch;
+        });
+        let stores = await client.db(DB).collection('Stores').find({business_id: Number(req.user.business_id)}).toArray();
+        let _stores = {};
+        stores.map((store)=>{
+            _stores[store.store_id] = store;
+        });
         req['_insert'] = {};
         req._insert['_products'] = [];
         req._insert['_attributes'] = [];
@@ -51,7 +66,6 @@ let addProductC = async (req, res, next) => {
             _productSkuInDBs[product.sku] = product;
             _productIdInDBs.push(product.product_id);
         });
-
         let attributes = await client
             .db(DB)
             .collection(`Attributes`)
@@ -68,13 +82,6 @@ let addProductC = async (req, res, next) => {
             })
             .toArray();
         let maxVariantId = await client.db(DB).collection('AppSetting').findOne({ name: 'Variants' });
-        let locations = await client
-            .db(DB)
-            .collection(`Locations`)
-            .find({
-                product_id: { $in: _productIdInDBs },
-            })
-            .toArray();
         let maxLocationId = await client.db(DB).collection('AppSetting').findOne({ name: 'Locations' });
         let _attributeInDBs = {};
         attributes.map((attribute) => {
@@ -100,10 +107,6 @@ let addProductC = async (req, res, next) => {
             }
             return 0;
         })();
-        let _locationInDBs = {};
-        locations.map((location) => {
-            _locationInDBs[`vId${location.variant_id}-sId${location.store_id}`] = location;
-        });
         let location_id = (() => {
             if (maxLocationId) {
                 if (maxLocationId.value) {
@@ -149,8 +152,8 @@ let addProductC = async (req, res, next) => {
                         attribute_id++;
                         _attribute.create({
                             ...attribute,
-                            business_id: Number(req.user.business_id),
                             attribute_id: Number(attribute_id),
+                            business_id: Number(req.user.business_id),
                             product_id: Number(_product.product_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
@@ -172,11 +175,12 @@ let addProductC = async (req, res, next) => {
                         });
                     } else {
                         variant_id++;
+                        variant['supplier'] = _suppliers[_product.supplier_id].name;
                         _variant.create({
                             ...variant,
                             business_id: Number(req.user.business_id),
-                            product_id: Number(_product.product_id),
                             variant_id: Number(variant_id),
+                            product_id: Number(_product.product_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
                             active: true,
@@ -187,34 +191,31 @@ let addProductC = async (req, res, next) => {
                         variant.locations.map((location) => {
                             let _location = new Location();
                             _location.validateInput(location);
-                            if (_locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]) {
-                                _location.create({
-                                    ..._locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`],
-                                    quantity:
-                                        _locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]
-                                            .quantity + location.quantity,
-                                });
-                            } else {
-                                location_id++;
-                                _location.create({
-                                    ...location,
-                                    business_id: Number(req.user.business_id),
-                                    product_id: Number(_product.product_id),
-                                    variant_id: Number(_variant.variant_id),
-                                    location_id: Number(location_id),
-                                    create_date: new Date(),
-                                    creator_id: Number(req.user.user_id),
-                                    active: true,
-                                });
-                            }
+                            location_id++;
+                            location['name'] = (()=>{
+                                if(String(location.type).toLowerCase() == 'branch') {
+                                    return _branchs[location.inventory_id].name;
+                                }
+                                if(String(location.type).toLowerCase() == 'store') {
+                                    return _stores[location.inventory_id].name;
+                                }
+                            })();
+                            _location.create({
+                                ...location,
+                                business_id: Number(req.user.business_id),
+                                product_id: Number(_product.product_id),
+                                variant_id: Number(_variant.variant_id),
+                                location_id: Number(location_id),
+                                create_date: new Date(),
+                                creator_id: Number(req.user.user_id),
+                                active: true,
+                            });
                             req._insert._locations.push(_location);
                         });
                     }
                 });
             }
         });
-        console.log(req._insert);
-        return;
         await client
             .db(DB)
             .collection('AppSetting')

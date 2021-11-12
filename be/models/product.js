@@ -24,6 +24,7 @@ class Product {
         this.weight = data.weight || 0;
         this.unit = data.unit || '';
         this.description = data.description || '';
+        this.files = data.files || [];
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
@@ -112,4 +113,19 @@ class Location {
     }
 }
 
-module.exports = { Product, Attribute, Variant, Location };
+let feedbackForm = ['product_id', 'user_id', 'rate', 'content'];
+
+class Feedback {
+    validateInput(data) {
+        softValidate(data, feedbackForm, 400);
+    }
+    create(data) {
+        this.feedback_id = Number(data.feedback_id);
+        this.product_id = Number(data.product_id);
+        this.user_id = Number(data.user_id);
+        this.rate = Number(data.rate);
+        this.content = String(data.content)
+    }
+}
+
+module.exports = { Product, Attribute, Variant, Location, Feedback };
