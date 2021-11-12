@@ -127,21 +127,12 @@
 .tabs-invoices .ant-tabs-tab div {
   overflow: hidden !important;
 }
-.tabs-invoices .ant-tabs-tab div,
-.anticon-close-circle {
-  color: white !important;
-  font-size: 16px !important;
-}
+
 .tabs-invoices .ant-tabs-tab {
   background-color: #192da0 !important;
   border-color: #192da0 !important;
 }
-.tabs-invoices .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: black !important;
-}
-.tabs-invoices .ant-tabs-tab.ant-tabs-tab-active .anticon-close-circle {
-  color: black !important;
-}
+
 .tabs-invoices .ant-tabs-tab.ant-tabs-tab-active {
   background-color: white !important;
   border-color: white !important;

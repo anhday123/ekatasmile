@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './../add/add.module.scss'
 
-import { ACTION, WAREHOUSE_TYPE } from 'consts'
+import { ACTION } from 'consts'
 import { removeAccents } from 'utils'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
 import NotSupportMobile from 'components/not-support-mobile'
+import delay from 'delay'
 
 //antd
 import {
@@ -45,26 +46,22 @@ import {
 //apis
 import { apiAllCategory } from 'apis/category'
 import { apiAllSupplier } from 'apis/supplier'
-import { apiAllInventory } from 'apis/inventory'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
-import {
-  apiAddProduct,
-  updateProductStore,
-  updateProductBranch,
-} from 'apis/product'
+import { updateProduct, addProduct } from 'apis/product'
+import { getAllStore } from 'apis/store'
 
 export default function ProductAdd() {
   const dispatch = useDispatch()
   const location = useLocation()
   const history = useHistory()
   const [form] = Form.useForm()
-  const branchId = useSelector((state) => state.branch.branchId)
 
+  const [locations, setLocations] = useState([])
   const [idsWarranty, setIdsWarranty] = useState([])
   const [isWarranty, setIsWarranty] = useState(false)
-  const [warrantys, setWarrantys] = useState([])
-  const [warehouse, setWarehouse] = useState([])
+  const [warranties, setWarranties] = useState([])
+  const [stores, setStores] = useState([])
   const [attributes, setAttributes] = useState([
     {
       option: '',
@@ -106,46 +103,77 @@ export default function ProductAdd() {
   const addValueVariant = () => {
     let variantsNew = []
 
-    //trường hợp chỉ có 1 attribute
-    if (attributes.length === 1) {
-      attributes[0].values.map((value) => {
-        variantsNew.push({
-          title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-          sku: `${
-            valueGeneratedSku || ''
-          }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
-          image: '',
-          imagePreview: '',
-          options: [{ name: attributes[0].option, value: value }],
-          quantity: 0,
-          import_price: 0,
-          base_price: 0,
-          sale_price: 0,
-        })
-      })
-    } else {
-      //trường hợp có 2 attribute
-      attributes[0].values.map((v0) => {
-        attributes[1].values.map((v1) => {
+    const initVariant = {
+      image: '',
+      imagePreview: '',
+      locations: [],
+      import_price: 0,
+      base_price: 0,
+      sale_price: 0,
+    }
+
+    if (attributes.length !== 0) {
+      //trường hợp chỉ có 1 attribute
+      if (attributes.length === 1) {
+        attributes[0].values.map((value) => {
           variantsNew.push({
-            title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
+            title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
             sku: `${
               valueGeneratedSku || ''
-            }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
-            image: '',
-            imagePreview: '',
-            options: [
-              { name: attributes[0].option, value: v0 },
-              { name: attributes[1].option, value: v1 },
-            ],
-            quantity: 0,
-            import_price: 0,
-            base_price: 0,
-            sale_price: 0,
+            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+            options: [{ name: attributes[0].option, value: value }],
+            ...initVariant,
           })
         })
-      })
+      } else {
+        //trường hợp có 2 attribute
+        if (!attributes[0].values.length)
+          attributes[1].values.map((value) => {
+            variantsNew.push({
+              title: `${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+              options: [{ name: attributes[1].option, value: value }],
+              ...initVariant,
+            })
+          })
+
+        if (!attributes[1].values.length)
+          attributes[0].values.map((value) => {
+            variantsNew.push({
+              title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              options: [{ name: attributes[0].option, value: value }],
+            })
+          })
+
+        if (attributes[0].values.length && attributes[1].values.length)
+          attributes[0].values.map((v0) => {
+            attributes[1].values.map((v1) => {
+              variantsNew.push({
+                title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
+                sku: `${
+                  valueGeneratedSku || ''
+                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                options: [
+                  { name: attributes[0].option, value: v0 },
+                  { name: attributes[1].option, value: v1 },
+                ],
+                ...initVariant,
+              })
+            })
+          })
+      }
     }
+
+    variantsNew = variantsNew.map((e) => {
+      const variantCurrent = variants.find((v) => v.title === e.title)
+      if (variantCurrent) return variantCurrent
+      else return e
+    })
 
     setVariants([...variantsNew])
   }
@@ -185,7 +213,7 @@ export default function ProductAdd() {
     }
   }
 
-  const addProduct = async () => {
+  const addOrUpdateProduct = async () => {
     //validated
     let isValidated = true
     try {
@@ -197,8 +225,8 @@ export default function ProductAdd() {
 
     if (!isValidated) return
 
-    if (isProductHasVariants && !variants.length) {
-      notification.error({ message: 'Vui lòng nhập ít nhất một phiên bản' })
+    if (isProductHasVariants && variants.length < 2) {
+      notification.error({ message: 'Vui lòng nhập ít nhất hai phiên bản' })
       return
     }
 
@@ -217,7 +245,7 @@ export default function ProductAdd() {
       setHelpTextImage('')
     } else setHelpTextImage('')
 
-    //validated quantity, prices
+    //validated locations, prices
     for (let i = 0; i < variants.length; ++i) {
       if (!variants[i].base_price) {
         notification.error({
@@ -237,9 +265,9 @@ export default function ProductAdd() {
         })
         return
       }
-      if (!variants[i].quantity) {
+      if (!variants[i].locations.length) {
         notification.error({
-          message: 'Vui lòng nhập số lượng sản phẩm trong phiên bản!',
+          message: 'Vui lòng nhập số lượng sản phẩm trong ít nhất 1 cửa hàng!',
         })
         return
       }
@@ -249,36 +277,30 @@ export default function ProductAdd() {
       dispatch({ type: ACTION.LOADING, data: true })
       const formProduct = form.getFieldsValue()
 
-      const images = await uploadFiles(imagesProduct)
-
       let body = {
-        ...formProduct,
-        sale_price: !isProductHasVariants ? formProduct.sale_price : '',
-        base_price: !isProductHasVariants ? formProduct.base_price : '',
-        import_price: !isProductHasVariants ? formProduct.import_price : '',
-        quantity: !isProductHasVariants ? formProduct.quantity : '',
-        sku: !isProductHasVariants ? formProduct.sku : valueGeneratedSku,
-        length: isInputInfoProduct ? formProduct.length || '' : '',
-        width: isInputInfoProduct ? formProduct.width || '' : '',
-        height: isInputInfoProduct ? formProduct.height || '' : '',
-        weight: isInputInfoProduct ? formProduct.weight || '' : '',
-        unit: isInputInfoProduct ? formProduct.unit || '' : '',
+        sku: !isGeneratedSku ? formProduct.sku : valueGeneratedSku,
+        barcode: '',
+        name: formProduct.name,
+        category_id: formProduct.category_id,
+        supplier_id: formProduct.supplier_id,
+        length: formProduct.length || '',
+        width: formProduct.width || '',
+        height: formProduct.height || '',
+        weight: formProduct.weight || '',
+        unit: formProduct.unit || '',
         warranties: idsWarranty,
-        image: location.state ? imagesPreviewProduct : images || [],
-        has_variable: isProductHasVariants,
         description: productIsHaveDescription ? description || '' : '',
-        branch_id: branchId,
       }
 
       if (isProductHasVariants) {
         body.attributes = attributes
         const promiseUpload = variants.map(async (v) => {
-          if (v.image && typeof v.image === 'string') {
+          if (v.image && Array.isArray(v.image)) {
             delete v.imagePreview
             return {
               ...v,
               supplier: supplier || '',
-              image: v.image,
+              image: v.image.length && v.image[0] ? [v.image[0]] : [],
             }
           } else {
             const resUpload = await uploadFile(v.image)
@@ -286,7 +308,7 @@ export default function ProductAdd() {
             return {
               ...v,
               supplier: supplier || '',
-              image: resUpload,
+              image: resUpload ? [resUpload] : [],
             }
           }
         })
@@ -294,18 +316,38 @@ export default function ProductAdd() {
         const variantsNew = await Promise.all(promiseUpload)
 
         body.variants = variantsNew
-      }
+      } else {
+        if (!locations.length) {
+          notification.error({
+            message: 'Vui lòng nhập số lượng sản phẩm trong ít nhất 1 cửa hàng',
+          })
+          dispatch({ type: ACTION.LOADING, data: false })
+          return
+        }
+        const images = location.state
+          ? imagesPreviewProduct
+          : await uploadFiles(imagesProduct)
 
-      console.log(JSON.stringify({ products: [body] }))
+        body.attributes = []
+        const bodyOneVariant = {
+          title: formProduct.name,
+          sku: !isGeneratedSku ? formProduct.sku : valueGeneratedSku,
+          options: [],
+          image: images || [],
+          supplier: supplier || '',
+          sale_price: formProduct.sale_price,
+          base_price: formProduct.base_price,
+          import_price: formProduct.import_price,
+          locations: locations,
+        }
+        body.variants = [bodyOneVariant]
+      }
 
       let res
       //case update product
-      if (location.state) {
-        if (location.state.store_id)
-          res = await updateProductStore(body, location.state._id)
-        //update product store
-        else res = await updateProductBranch(body, location.state._id) //update product branch
-      } else res = await apiAddProduct({ products: [body] })
+      if (location.state)
+        res = await updateProduct(body, location.state.product_id)
+      else res = await addProduct({ products: [body] })
       console.log(res)
       if (res.status === 200) {
         notification.success({
@@ -332,22 +374,16 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllCategory()
-
       if (res.status === 200) {
-        var dataNew = []
         if (res.data.data && res.data.data.length) {
           const category = res.data.data.find(
             (category) => category.active && category.default
           )
-          res.data.data.forEach((values, index) => {
-            if (values.active) dataNew.push(values)
-          })
-
           if (category && !location.state)
             form.setFieldsValue({
               category_id: category.category_id,
             })
-          setCategories([...dataNew])
+          setCategories(res.data.data.filter((e) => e.active))
         }
       }
 
@@ -377,6 +413,58 @@ export default function ProductAdd() {
     }
   }
 
+  const UploadImageWithEditProduct = () => {
+    return (
+      <Upload.Dragger
+        name="files"
+        listType="picture"
+        multiple
+        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+        onChange={(info) => {
+          if (info.file.status !== 'done') info.file.status = 'done'
+          setHelpTextImage('')
+
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current)
+          }
+          typingTimeoutRef.current = setTimeout(async () => {
+            let files = []
+            let urls = []
+            info.fileList.map((f) => {
+              if (f.originFileObj) files.push(f.originFileObj)
+              else urls.push(f.url)
+            })
+            dispatch({ type: ACTION.LOADING, data: true })
+            const images = await uploadFiles(files)
+            dispatch({ type: ACTION.LOADING, data: false })
+            setImagesPreviewProduct([...images, ...urls])
+          }, 350)
+        }}
+        fileList={imagesPreviewProduct.map((e, index) => {
+          let nameFile = ['image']
+          if (typeof e === 'string') nameFile = e.split('/')
+          return {
+            uid: index,
+            name: nameFile[nameFile.length - 1] || 'image',
+            status: 'done',
+            url: e,
+            thumbUrl: e,
+          }
+        })}
+      >
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">
+          Nhấp hoặc kéo tệp vào khu vực này để tải lên
+        </p>
+        <p className="ant-upload-hint">
+          Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
+        </p>
+      </Upload.Dragger>
+    )
+  }
+
   const UploadImageProduct = ({ variant }) => {
     return (
       <Upload
@@ -394,8 +482,12 @@ export default function ProductAdd() {
           })
         }}
       >
-        {variant.imagePreview ? (
-          <img src={variant.imagePreview} alt="" style={{ width: '100%' }} />
+        {variant.imagePreview || variant.image ? (
+          <img
+            src={variant.imagePreview || variant.image[0] || ''}
+            alt=""
+            style={{ width: '100%' }}
+          />
         ) : (
           <div>
             <PlusOutlined />
@@ -425,25 +517,122 @@ export default function ProductAdd() {
     )
   }
 
-  const InputQuantity = ({ value, variant }) => {
-    const [valueQuantity, setValueQuantity] = useState(value)
+  const InputQuantityStores = ({ locations, variant }) => {
+    const [locationsVariant, setLocationsVariant] = useState(
+      locations ? locations : []
+    )
 
     return (
-      <InputNumber
-        placeholder="Nhập số lượng"
-        className="br-15__input"
+      <Select
+        mode="multiple"
+        placeholder="Nhập số lượng vào cửa hàng"
         size="large"
-        defaultValue={value}
-        min={0}
-        onBlur={() => {
+        style={{ width: '100%' }}
+        value={locationsVariant.map(
+          (location) => `${location.name}: ${location.quantity + ''}`
+        )}
+        onDeselect={(value) => {
+          const locationsNew = [...locationsVariant]
+          const indexRemove = locationsNew.findIndex((e) =>
+            value.includes(e.name)
+          )
+          if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
+
           let variantsNew = [...variants]
           const index = variantsNew.findIndex((e) => e.title === variant.title)
-          variantsNew[index].quantity = valueQuantity
+          variantsNew[index].locations = locationsNew
           setVariants([...variantsNew])
+
+          setLocationsVariant([...locationsNew])
         }}
-        onChange={(value) => setValueQuantity(value)}
-        style={{ width: '100%' }}
-      />
+        dropdownRender={() => (
+          <div>
+            {stores.map((store) => (
+              <Row
+                wrap={false}
+                align="middle"
+                justify="space-between"
+                style={{ marginBottom: 9, padding: '0px 10px' }}
+              >
+                <div style={{ color: 'black' }}>{store.name}</div>
+                <Space>
+                  <InputNumber
+                    min={0}
+                    placeholder="Nhập số lượng"
+                    style={{ width: 100 }}
+                    onBlur={(e) => {
+                      const value = +e.target.value
+                      const locationsNew = [...locationsVariant]
+
+                      const indexLocation = locationsNew.findIndex(
+                        (l) => l.inventory_id === store.store_id
+                      )
+
+                      if (value) {
+                        const location = {
+                          type: 'store',
+                          name: store.name,
+                          inventory_id: store.store_id,
+                          quantity: value,
+                        }
+
+                        if (indexLocation !== -1)
+                          locationsNew[indexLocation] = location
+                        else locationsNew.push(location)
+                      } else {
+                        if (indexLocation !== -1)
+                          locationsNew.splice(indexLocation, 1)
+                      }
+
+                      let variantsNew = [...variants]
+                      const index = variantsNew.findIndex(
+                        (e) => e.title === variant.title
+                      )
+                      variantsNew[index].locations = locationsNew
+                      setVariants([...variantsNew])
+
+                      setLocationsVariant([...locationsNew])
+                    }}
+                    onPressEnter={(e) => {
+                      const value = +e.target.value
+                      const locationsNew = [...locationsVariant]
+
+                      const indexLocation = locationsNew.findIndex(
+                        (l) => l.inventory_id === store.store_id
+                      )
+
+                      if (value) {
+                        const location = {
+                          type: 'store',
+                          name: store.name,
+                          inventory_id: store.store_id,
+                          quantity: value,
+                        }
+
+                        if (indexLocation !== -1)
+                          locationsNew[indexLocation] = location
+                        else locationsNew.push(location)
+                      } else {
+                        if (indexLocation !== -1)
+                          locationsNew.splice(indexLocation, 1)
+                      }
+
+                      let variantsNew = [...variants]
+                      const index = variantsNew.findIndex(
+                        (e) => e.title === variant.title
+                      )
+                      variantsNew[index].locations = locationsNew
+                      setVariants([...variantsNew])
+
+                      setLocationsVariant([...locationsNew])
+                    }}
+                  />
+                </Space>
+              </Row>
+            ))}
+          </div>
+        )}
+      ></Select>
     )
   }
 
@@ -600,18 +789,18 @@ export default function ProductAdd() {
     )
   }
 
-  const EditQuantity = () => {
+  const EditQuantityStores = () => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-    const [valueQuantity, setValueQuantity] = useState('')
+    const [locationsVariant, setLocationsVariant] = useState([])
 
     const edit = () => {
-      if (valueQuantity) {
+      if (locationsVariant.length) {
         let variantsNew = [...variants]
 
         selectRowKeyVariant.map((key) => {
           const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
-          variantsNew[indexVariant].quantity = valueQuantity
+          variantsNew[indexVariant].locations = locationsVariant
         })
 
         setVariants([...variantsNew])
@@ -622,13 +811,13 @@ export default function ProductAdd() {
 
     //reset
     useEffect(() => {
-      if (!visible) setValueQuantity('')
+      if (!visible) setLocationsVariant([])
     }, [visible])
 
     return (
       <>
         <Button size="large" onClick={toggle} icon={<EditOutlined />}>
-          Chỉnh sửa lượng sản phẩm
+          Chỉnh sửa số lượng sản phẩm
         </Button>
         <Modal
           visible={visible}
@@ -636,19 +825,97 @@ export default function ProductAdd() {
           onOk={edit}
           title="Nhập số lượng sản phẩm"
         >
-          <InputNumber
-            placeholder="Nhập số lượng"
-            className="br-15__input"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          <Select
+            mode="multiple"
+            placeholder="Nhập số lượng vào cửa hàng"
             size="large"
-            defaultValue={valueQuantity}
-            min={0}
-            onChange={(value) => setValueQuantity(value)}
             style={{ width: '100%' }}
-          />
+            value={locationsVariant.map(
+              (location) => `${location.name}: ${location.quantity + ''}`
+            )}
+            onDeselect={(value) => {
+              const locationsNew = [...locationsVariant]
+              const indexRemove = locationsNew.findIndex((e) =>
+                value.includes(e.name)
+              )
+              if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
+
+              setLocationsVariant([...locationsNew])
+            }}
+            dropdownRender={() => (
+              <div>
+                {stores.map((store) => (
+                  <Row
+                    wrap={false}
+                    align="middle"
+                    justify="space-between"
+                    style={{ marginBottom: 9, padding: '0px 10px' }}
+                  >
+                    <div style={{ color: 'black' }}>{store.name}</div>
+                    <Space>
+                      <InputNumber
+                        min={0}
+                        placeholder="Nhập số lượng"
+                        style={{ width: 100 }}
+                        onBlur={(e) => {
+                          const value = +e.target.value
+                          const locationsNew = [...locationsVariant]
+
+                          const indexLocation = locationsNew.findIndex(
+                            (l) => l.inventory_id === store.store_id
+                          )
+
+                          if (value) {
+                            const location = {
+                              type: 'store',
+                              name: store.name,
+                              inventory_id: store.store_id,
+                              quantity: value,
+                            }
+
+                            if (indexLocation !== -1)
+                              locationsNew[indexLocation] = location
+                            else locationsNew.push(location)
+                          } else {
+                            if (indexLocation !== -1)
+                              locationsNew.splice(indexLocation, 1)
+                          }
+
+                          setLocationsVariant([...locationsNew])
+                        }}
+                        onPressEnter={(e) => {
+                          const value = +e.target.value
+                          const locationsNew = [...locationsVariant]
+
+                          const indexLocation = locationsNew.findIndex(
+                            (l) => l.inventory_id === store.store_id
+                          )
+
+                          if (value) {
+                            const location = {
+                              type: 'store',
+                              name: store.name,
+                              inventory_id: store.store_id,
+                              quantity: value,
+                            }
+
+                            if (indexLocation !== -1)
+                              locationsNew[indexLocation] = location
+                            else locationsNew.push(location)
+                          } else {
+                            if (indexLocation !== -1)
+                              locationsNew.splice(indexLocation, 1)
+                          }
+
+                          setLocationsVariant([...locationsNew])
+                        }}
+                      />
+                    </Space>
+                  </Row>
+                ))}
+              </div>
+            )}
+          ></Select>
         </Modal>
       </>
     )
@@ -688,7 +955,7 @@ export default function ProductAdd() {
           <Input
             placeholder="Nhập sku"
             size="large"
-            defaultValue={valueSku}
+            value={valueSku}
             onChange={(e) => setValueSku(e.target.value)}
             style={{ width: '100%' }}
           />
@@ -812,7 +1079,7 @@ export default function ProductAdd() {
       title: 'Số lượng',
       width: 250,
       render: (text, record) => (
-        <InputQuantity value={record.quantity} variant={record} />
+        <InputQuantityStores locations={record.locations} variant={record} />
       ),
     },
     {
@@ -833,7 +1100,7 @@ export default function ProductAdd() {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiAllWarranty()
       if (res.status === 200) {
-        setWarrantys(res.data.data)
+        setWarranties(res.data.data)
       }
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -842,10 +1109,79 @@ export default function ProductAdd() {
     }
   }
 
+  const apiGetAllStore = async () => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await getAllStore()
+      if (res.status === 200) {
+        setStores(res.data.data)
+      }
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const initProductWithEditProduct = async () => {
+    if (location.state) {
+      const product = location.state
+      console.log(product)
+      delete product.sumBasePrice
+      delete product.sumImportPrice
+      delete product.sumQuantity
+      delete product.sumSalePrice
+
+      form.setFieldsValue({ ...product })
+
+      if (product.variants.length === 1) {
+        setIsProductHasVariants(false)
+        setImagesPreviewProduct(product.variants[0].image || [])
+        setLocations([...product.variants[0].locations])
+        form.setFieldsValue({ ...product.variants[0] })
+      } else {
+        setIsProductHasVariants(true)
+        setAttributes([
+          ...product.attributes.map((e) => {
+            return { option: e.option, values: e.values }
+          }),
+        ])
+        await delay(1000)
+        setVariants([...product.variants])
+      }
+
+      //check product co thong so khac
+      if (
+        product.height ||
+        product.length ||
+        product.width ||
+        product.weight ||
+        product.unit
+      ) {
+        setIsInputInfoProduct(true)
+      }
+
+      //check product co mo ta ?
+      if (product.description) {
+        setProductIsHaveDescription(true)
+        setDescription(product.description)
+      }
+
+      setIsGeneratedSku(true)
+      setValueGeneratedSku(product.sku)
+
+      //check bao hanh
+      if (product.waranties.length) {
+        setIsWarranty(true)
+        setIdsWarranty([...product.waranties.map((e) => e.warranty_id)])
+      }
+    }
+  }
+
   useEffect(() => {
     apiAllSupplierData()
     apiAllWarrantyData()
     apiAllCategoryData()
+    apiGetAllStore()
   }, [])
 
   //get width device
@@ -860,70 +1196,7 @@ export default function ProductAdd() {
 
   //update product
   useEffect(() => {
-    if (location.state) {
-      const product = location.state
-      console.log(product)
-
-      delete product.sumCountVariant
-
-      if (product.has_variable) {
-        setIsProductHasVariants(true)
-        setAttributes([...product.attributes])
-        setTimeout(() => {
-          const variantsNew = product.variants.map((e) => {
-            return {
-              title: e.title,
-              sku: e.sku,
-              image: e.image,
-              imagePreview: e.image,
-              options: e.options,
-              quantity: +e.available_stock_quantity + +e.low_stock_quantity,
-              import_price: e.import_price,
-              base_price: e.base_price,
-              sale_price: e.sale_price,
-              supplier: e.supplier,
-            }
-          })
-          setVariants([...variantsNew])
-        }, 200)
-      } else {
-        setIsProductHasVariants(false)
-        setImagesPreviewProduct([...product.image])
-      }
-
-      //check product co thong so khac
-      if (
-        product.height ||
-        product.length ||
-        product.width ||
-        product.weight ||
-        product.unit
-      )
-        setIsInputInfoProduct(true)
-
-      //check product co mo ta ?
-      if (product.description) {
-        setProductIsHaveDescription(true)
-        setDescription(product.description)
-      }
-
-      form.setFieldsValue({
-        ...product,
-        supplier_id: product.supplier_id,
-        category_id: product.category_id,
-        quantity:
-          +product.available_stock_quantity + +product.low_stock_quantity,
-      })
-
-      setIsGeneratedSku(true)
-      setValueGeneratedSku(product.sku)
-
-      //check bao hanh
-      if (product.warranties.length) {
-        setIsWarranty(true)
-        setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
-      }
-    }
+    initProductWithEditProduct()
   }, [])
 
   return !isMobile ? (
@@ -963,7 +1236,7 @@ export default function ProductAdd() {
               icon={<EditOutlined />}
               size="large"
               type="primary"
-              onClick={addProduct}
+              onClick={addOrUpdateProduct}
             >
               {location.state ? 'Cập nhật' : 'Thêm'}
             </Button>
@@ -1101,6 +1374,112 @@ export default function ProductAdd() {
           <Col
             xs={24}
             sm={24}
+            md={7}
+            lg={7}
+            xl={7}
+            style={{ marginTop: 30, display: isProductHasVariants && 'none' }}
+          >
+            <div>
+              <div>
+                <span style={{ color: 'red' }}>*</span>
+                <span>Danh sách cửa hàng</span>
+              </div>
+              <Select
+                mode="multiple"
+                placeholder="Nhập số lượng vào cửa hàng"
+                size="large"
+                style={{ width: '100%' }}
+                value={locations.map(
+                  (location) => `${location.name}: ${location.quantity + ''}`
+                )}
+                onDeselect={(value) => {
+                  const locationsNew = [...locations]
+                  const indexRemove = locationsNew.findIndex((e) =>
+                    value.includes(e.name)
+                  )
+                  if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
+
+                  setLocations([...locationsNew])
+                }}
+                dropdownRender={() => (
+                  <div>
+                    {stores.map((store) => (
+                      <Row
+                        wrap={false}
+                        align="middle"
+                        justify="space-between"
+                        style={{ marginBottom: 9, padding: '0px 10px' }}
+                      >
+                        <div style={{ color: 'black' }}>{store.name}</div>
+                        <Space>
+                          <InputNumber
+                            min={0}
+                            placeholder="Nhập số lượng"
+                            style={{ width: 100 }}
+                            onBlur={(e) => {
+                              const value = +e.target.value
+                              const locationsNew = [...locations]
+
+                              const indexLocation = locationsNew.findIndex(
+                                (l) => l.inventory_id === store.store_id
+                              )
+
+                              if (value) {
+                                const location = {
+                                  type: 'store',
+                                  name: store.name,
+                                  inventory_id: store.store_id,
+                                  quantity: value,
+                                }
+
+                                if (indexLocation !== -1)
+                                  locationsNew[indexLocation] = location
+                                else locationsNew.push(location)
+                              } else {
+                                if (indexLocation !== -1)
+                                  locationsNew.splice(indexLocation, 1)
+                              }
+                              console.log(locationsNew)
+                              setLocations([...locationsNew])
+                            }}
+                            onPressEnter={(e) => {
+                              const value = +e.target.value
+                              const locationsNew = [...locations]
+
+                              const indexLocation = locationsNew.findIndex(
+                                (l) => l.inventory_id === store.store_id
+                              )
+
+                              if (value) {
+                                const location = {
+                                  type: 'store',
+                                  name: store.name,
+                                  inventory_id: store.store_id,
+                                  quantity: value,
+                                }
+
+                                if (indexLocation !== -1)
+                                  locationsNew[indexLocation] = location
+                                else locationsNew.push(location)
+                              } else {
+                                if (indexLocation !== -1)
+                                  locationsNew.splice(indexLocation, 1)
+                              }
+
+                              setLocations([...locationsNew])
+                            }}
+                          />
+                        </Space>
+                      </Row>
+                    ))}
+                  </div>
+                )}
+              ></Select>
+            </div>
+          </Col>
+          <Col
+            xs={24}
+            sm={24}
             md={24}
             lg={24}
             xl={24}
@@ -1116,30 +1495,38 @@ export default function ProductAdd() {
               <Switch
                 checked={productIsHaveDescription}
                 onChange={(checked) => {
-                  console.log(checked)
                   setProductIsHaveDescription(checked)
                 }}
                 style={{ marginRight: 5 }}
               />
               Sản phẩm {productIsHaveDescription ? 'có' : 'không'} mô tả
             </div>
-            {productIsHaveDescription && (
-              <CKEditor
-                initData={location.state && parse(location.state.description)}
-                onChange={(e) => setDescription(e.editor.getData())}
-              />
+            {productIsHaveDescription ? (
+              <div style={{ display: !productIsHaveDescription && 'none' }}>
+                <CKEditor
+                  initData={location.state && parse(location.state.description)}
+                  onChange={(e) => setDescription(e.editor.getData())}
+                />
+              </div>
+            ) : (
+              ''
             )}
           </Col>
           <Row
             align="middle"
-            style={{ width: '100%', marginTop: 15, marginBottom: 15 }}
+            style={{
+              width: '100%',
+              marginTop: 15,
+              marginBottom: 15,
+              display: location.state && 'none',
+            }}
           >
             <Switch
               style={{ marginRight: 5 }}
               checked={isProductHasVariants}
               onChange={(checked) => setIsProductHasVariants(checked)}
             />
-            Sản phẩm {isProductHasVariants ? 'có nhiều' : 'không'} phiên bản
+            Sản phẩm {isProductHasVariants ? 'có nhiều' : 'có 1'} phiên bản
           </Row>
           <div
             style={{
@@ -1291,7 +1678,7 @@ export default function ProductAdd() {
               >
                 <Space wrap>
                   <UploadAllVariant />
-                  <EditQuantity />
+                  <EditQuantityStores />
                   <EditSku />
                   <EditPrice />
                 </Space>
@@ -1407,37 +1794,6 @@ export default function ProductAdd() {
               />
             </Form.Item>
           </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{ display: isProductHasVariants && 'none' }}
-          >
-            <Form.Item
-              label="Số lượng sản phẩm"
-              name="quantity"
-              rules={[
-                {
-                  required: !isProductHasVariants && true,
-                  message: 'Vui lòng nhập số lượng sản phẩm!',
-                },
-              ]}
-            >
-              <InputNumber
-                size="large"
-                min={1}
-                placeholder="Nhập số lượng sản phẩm"
-                style={{ width: '100%' }}
-                className="br-15__input"
-                formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-              />
-            </Form.Item>
-          </Col>
 
           <Row
             align="middle"
@@ -1460,27 +1816,47 @@ export default function ProductAdd() {
             }}
           >
             <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item name="length">
-                <Input size="large" placeholder="Chiều dài (cm)" />
+              <Form.Item label="Chiều dài" name="length">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  className="br-15__input"
+                  size="large"
+                  placeholder="Chiều dài (cm)"
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item name="width">
-                <Input size="large" placeholder="Chiều rộng (cm)" />
+              <Form.Item label="Chiều rộng" name="width">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  className="br-15__input"
+                  size="large"
+                  placeholder="Chiều rộng (cm)"
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item name="height">
-                <Input size="large" placeholder="Chiều cao (cm)" />
+              <Form.Item label="Chiều cao" name="height">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  className="br-15__input"
+                  size="large"
+                  placeholder="Chiều cao (cm)"
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item name="weight">
-                <Input size="large" placeholder="Cân nặng (kg)" />
+              <Form.Item label="Cân nặng" name="weight">
+                <InputNumber
+                  style={{ width: '100%' }}
+                  className="br-15__input"
+                  size="large"
+                  placeholder="Cân nặng (kg)"
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item name="unit">
+              <Form.Item label="Đơn vị" name="unit">
                 <Input size="large" placeholder="Đơn vị" />
               </Form.Item>
             </Col>
@@ -1498,53 +1874,7 @@ export default function ProductAdd() {
             <span style={{ color: 'red' }}>* </span>
             Hình ảnh
             {location.state ? (
-              <Upload.Dragger
-                name="files"
-                listType="picture"
-                multiple
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                onChange={(info) => {
-                  if (info.file.status !== 'done') info.file.status = 'done'
-                  setHelpTextImage('')
-
-                  if (typingTimeoutRef.current) {
-                    clearTimeout(typingTimeoutRef.current)
-                  }
-                  typingTimeoutRef.current = setTimeout(async () => {
-                    let files = []
-                    let urls = []
-                    info.fileList.map((f) => {
-                      if (f.originFileObj) files.push(f.originFileObj)
-                      else urls.push(f.url)
-                    })
-                    dispatch({ type: ACTION.LOADING, data: true })
-                    const images = await uploadFiles(files)
-                    dispatch({ type: ACTION.LOADING, data: false })
-                    setImagesPreviewProduct([...images, ...urls])
-                  }, 250)
-                }}
-                fileList={imagesPreviewProduct.map((e, index) => {
-                  let nameFile = ['image']
-                  if (typeof e === 'string') nameFile = e.split('/')
-                  return {
-                    uid: index,
-                    name: nameFile[nameFile.length - 1] || 'image',
-                    status: 'done',
-                    url: e,
-                    thumbUrl: e,
-                  }
-                })}
-              >
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">
-                  Nhấp hoặc kéo tệp vào khu vực này để tải lên
-                </p>
-                <p className="ant-upload-hint">
-                  Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS
-                </p>
-              </Upload.Dragger>
+              <UploadImageWithEditProduct />
             ) : (
               <Upload.Dragger
                 name="files"
@@ -1553,8 +1883,9 @@ export default function ProductAdd() {
                 action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
                 onChange={(info) => {
                   if (info.file.status !== 'done') info.file.status = 'done'
-                  let imagesProductNew = [...imagesProduct]
-                  imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                  let imagesProductNew = info.fileList.map(
+                    (e) => e.originFileObj
+                  )
                   setImagesProduct([...imagesProductNew])
                   setHelpTextImage('')
                 }}
@@ -1602,7 +1933,7 @@ export default function ProductAdd() {
             onChange={(value) => setIdsWarranty(value)}
             value={idsWarranty}
           >
-            {warrantys.map((values, index) => (
+            {warranties.map((values, index) => (
               <Select.Option value={values.warranty_id} key={index}>
                 {values.name}
               </Select.Option>

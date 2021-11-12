@@ -78,7 +78,7 @@ let updateCategoryC = async (req, res, next) => {
                 .db(DB)
                 .collection(`Categories`)
                 .findOne({
-                    business_id: Number(req.user.user_id),
+                    business_id: Number(req.user.business_id),
                     category_id: { $ne: Number(category.category_id) },
                     name: req.body.name,
                 });

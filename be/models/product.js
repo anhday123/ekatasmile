@@ -1,21 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let productForm = [
-    'sku',
-    'barcode',
-    'name',
-    'warranties',
-    'taxes',
-    'sub_product',
-    'brand',
-    'length',
-    'width',
-    'height',
-    'weight',
-    'unit',
-    'description',
-];
+let productForm = ['sku', 'name'];
 
 class Product {
     validateInput(data) {
@@ -28,7 +14,7 @@ class Product {
         this.name = String(data.name).trim().toUpperCase();
         this.slug = removeUnicode(this.name, false).toLowerCase().split(' ').join('-');
         this.supplier_id = Number(data.supplier_id);
-        this.category_id = Number(data.category_id);
+        this.category_id = data.category_id || [];
         this.waranties = data.waranties || [];
         this.taxes = data.taxes || [];
         this.sub_products = data.sub_products || [];
@@ -37,7 +23,10 @@ class Product {
         this.height = data.height || 0;
         this.weight = data.weight || 0;
         this.unit = data.unit || '';
+        this.origin = data.origin || '';
         this.description = data.description || '';
+        this.files = data.files || [];
+        this.sale_amount = data.sale_amount || 0;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
@@ -62,6 +51,10 @@ class Attribute {
         this.values = data.values.map((value) => {
             return String(value).trim().toUpperCase();
         });
+        this.sub_option = removeUnicode(this.option, true).toLowerCase();
+        this.sub_values = this.values.map((value) => {
+            return removeUnicode(value, true).toLowerCase();
+        });
     }
     update(data) {
         data = { ...this, ...data };
@@ -82,7 +75,7 @@ class Variant {
         this.title = String(data.title).trim().toUpperCase();
         this.sku = String(data.sku).trim().toUpperCase();
         this.image = data.image;
-        this.options = String(data.options);
+        this.options = data.options || [];
         if (data.options && data.options.length > 0) {
             for (let i = 0; i < data.options.length; i++) {
                 this[`option${i + 1}`] = data.options[i];
@@ -102,7 +95,7 @@ class Variant {
     }
 }
 
-let locationForm = ['inventory_id', 'type', 'name', 'quantity'];
+let locationForm = ['inventory_id', 'type', 'quantity'];
 
 class Location {
     validateInput(data) {
@@ -126,4 +119,19 @@ class Location {
     }
 }
 
-module.exports = { Product, Attribute, Variant, Location };
+let feedbackForm = ['product_id', 'user_id', 'rate', 'content'];
+
+class Feedback {
+    validateInput(data) {
+        softValidate(data, feedbackForm, 400);
+    }
+    create(data) {
+        this.feedback_id = Number(data.feedback_id);
+        this.product_id = Number(data.product_id);
+        this.user_id = Number(data.user_id);
+        this.rate = Number(data.rate);
+        this.content = String(data.content);
+    }
+}
+
+module.exports = { Product, Attribute, Variant, Location, Feedback };

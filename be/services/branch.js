@@ -263,6 +263,7 @@ let addBranchS = async (req, res, next) => {
 let updateBranchS = async (req, res, next) => {
     try {
         await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection('Locations').updateMany({inventory_id: Number(req.params.branch_id)},{name: req._update.name});
         try {
             let _action = new Action();
             _action.create({

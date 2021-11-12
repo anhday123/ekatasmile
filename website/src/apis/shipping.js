@@ -1,9 +1,9 @@
 import { get, patch, post } from './httpClient'
 
 export const apiCreateShipping = (object) =>
-  post('/shipping-company/addshippingcompany', object)
-export const apiAllShipping = () => get('/shipping-company/getshippingcompany')
+  post('/shippingcompany/addshippingcompany', object)
+export const apiAllShipping = () => get('/shippingcompany/getshippingcompany')
 export const apiSearchShipping = (object) =>
-  get('/shipping-company/getshippingcompany', object)
+  get('/shippingcompany/getshippingcompany', object)
 export const apiUpdateShipping = (object, id) =>
-  patch(`/shipping-company/updateshippingcompany/${id}`, object)
+  patch(`/shippingcompany/updateshippingcompany/${id}`, object)

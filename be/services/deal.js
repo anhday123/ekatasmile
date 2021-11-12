@@ -5,12 +5,12 @@ const { createTimeline } = require('../utils/date-handle');
 const { removeUnicode } = require('../utils/string-handle');
 const { Action } = require('../models/action');
 
-let getToppingS = async (req, res, next) => {
+let getDealS = async (req, res, next) => {
     try {
         let aggregateQuery = [];
-        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...
-        if (req.query.topping_id) {
-            aggregateQuery.push({ $match: { topping_id: Number(req.query.topping_id) } });
+        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        if (req.query.deal_id) {
+            aggregateQuery.push({ $match: { deal_id: Number(req.query.deal_id) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -76,7 +76,7 @@ let getToppingS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'user_id',
                         as: '_business',
                     },
                 },
@@ -89,7 +89,7 @@ let getToppingS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: '_id',
+                        foreignField: 'user_id',
                         as: '_creator',
                     },
                 },
@@ -103,23 +103,23 @@ let getToppingS = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
-        console.log(aggregateQuery);
         let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;
         aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         // lấy data từ database
-        let [toppings, counts] = await Promise.all([
-            client.db(DB).collection(`Toppings`).aggregate(aggregateQuery).toArray(),
+        let [deals, counts] = await Promise.all([
+            client.db(DB).collection(`Deals`).aggregate(aggregateQuery).toArray(),
             client
                 .db(DB)
-                .collection(`Toppings`)
+                .collection(`Deals`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
         ]);
         res.send({
             success: true,
-            data: toppings,
+            data: deals,
             count: counts[0] ? counts[0].counts : 0,
         });
     } catch (err) {
@@ -127,19 +127,19 @@ let getToppingS = async (req, res, next) => {
     }
 };
 
-let addToppingS = async (req, res, next) => {
+let addDealS = async (req, res, next) => {
     try {
-        let _topping = await client.db(DB).collection(`Toppings`).insertOne(req._insert);
-        if (!_topping.insertedId) {
-            throw new Error('500: Thêm topping thất bại!');
+        let deal = await client.db(DB).collection(`Deals`).insertOne(req._insert);
+        if (!deal.insertedId) {
+            throw new Error('500: Lỗi hệ thống, thêm chương trình giảm giá thất bại!');
         }
         try {
             let _action = new Action();
             _action.create({
                 business_id: Number(req.user.business_id),
                 type: 'Add',
-                properties: 'Topping',
-                name: 'Thêm topping mới',
+                properties: 'Deal',
+                name: 'Thêm chương trình giảm giá mới',
                 data: req._insert,
                 performer_id: Number(req.user.user_id),
                 date: new Date(),
@@ -148,22 +148,22 @@ let addToppingS = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: _topping.ops[0] });
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }
 };
 
-let updateToppingS = async (req, res, next) => {
+let updateDealS = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Toppings`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Labels`).findOneAndUpdate(req.params, { $set: req._update });
         try {
             let _action = new Action();
             _action.create({
                 business_id: Number(req.user.business_id),
                 type: 'Update',
-                properties: 'Topping',
-                name: 'Cập nhật thông tin topping',
+                properties: 'Deal',
+                name: 'Cập nhật thông tin chương trình giảm giá',
                 data: req._update,
                 performer_id: Number(req.user.user_id),
                 date: new Date(),
@@ -179,7 +179,7 @@ let updateToppingS = async (req, res, next) => {
 };
 
 module.exports = {
-    getToppingS,
-    addToppingS,
-    updateToppingS,
+    addDealS,
+    getDealS,
+    updateDealS,
 };

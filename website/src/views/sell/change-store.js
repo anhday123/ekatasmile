@@ -5,10 +5,10 @@ import { ACTION } from 'consts'
 import { useSelector, useDispatch } from 'react-redux'
 
 //antd
-import { Row, Modal, Select, Button, notification } from 'antd'
+import { Row, Modal, Select, Button, notification, Input } from 'antd'
 
 //icons antd
-import { SearchOutlined } from '@ant-design/icons'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 //images
 import location from 'assets/icons/location.png'
@@ -16,7 +16,7 @@ import location from 'assets/icons/location.png'
 //apis
 import { getAllStore } from 'apis/store'
 
-export default function ChangeStore() {
+export default function ChangeStore({ resetInvoices }) {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
 
@@ -46,9 +46,21 @@ export default function ChangeStore() {
   }
 
   const _changeStore = async () => {
+    resetInvoices()
     const store = stores.find((s) => s.store_id === storeId)
     localStorage.setItem('storeSell', JSON.stringify(store))
     window.location.reload()
+  }
+
+  function confirm() {
+    Modal.confirm({
+      onOk: () => _changeStore(),
+      title: 'Bạn có muốn chuyển đổi cửa hàng này không ?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Hệ thống sẽ không lưu lại thông tin của các đơn hàng này',
+      okText: 'Đồng ý',
+      cancelText: 'Từ chối',
+    })
   }
 
   useEffect(() => {
@@ -58,9 +70,6 @@ export default function ChangeStore() {
   useEffect(() => {
     _getStores()
   }, [])
-
-  console.log(storeId)
-  console.log(storeActive)
 
   return (
     <>
@@ -72,7 +81,7 @@ export default function ChangeStore() {
       >
         <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
         <p className={styles['name-store']}>
-          {dataUser.data && dataUser.data._store.name}
+          {storeActive && storeActive.name}
         </p>
       </Row>
       <Modal
@@ -84,21 +93,20 @@ export default function ChangeStore() {
       >
         <div>
           <p style={{ marginBottom: 0 }}>Doanh nghiệp</p>
-          <Select
-            style={{ width: '100%' }}
+          <Input
+            style={{ color: 'black' }}
+            value={
+              dataUser.data &&
+              dataUser.data._branch &&
+              dataUser.data._branch.name
+            }
             disabled
-            value={dataUser.data && dataUser.data._branch.name}
-          >
-            <Select.Option value={dataUser.data && dataUser.data._branch.name}>
-              <div style={{ color: 'black' }}>
-                {dataUser.data && dataUser.data._branch.name}
-              </div>
-            </Select.Option>
-          </Select>
+          />
         </div>
         <div style={{ marginBottom: 25, marginTop: 20 }}>
           <p style={{ marginBottom: 0 }}>Điểm bán</p>
           <Select
+            placeholder="Chọn điểm bán"
             loading={loading}
             showSearch
             filterOption={(input, option) =>
@@ -117,7 +125,7 @@ export default function ChangeStore() {
         </div>
         <Row justify="end">
           <Button
-            onClick={_changeStore}
+            onClick={confirm}
             type="primary"
             style={{ backgroundColor: '#0877DE', borderColor: '#0877DE' }}
           >

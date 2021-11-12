@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let shippingCompanyForm = ['name', 'image', 'phone', 'zipcode', 'address', 'district', 'province', ''];
+let shippingCompanyForm = ['name'];
 
 class ShippingCompany {
     validateInput(data) {

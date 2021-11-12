@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import styles from './overview.module.scss'
+import ModalIntro from 'components/introduction'
 
 import { LineChart } from 'react-chartkick'
 import 'chartkick/chart.js'
@@ -24,8 +25,6 @@ const Overview = () => {
   const [statis, setStatis] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
-  const { Option } = Select
 
   const contentProfit = <div>Profit = Seller's Revenue - Total Base cost</div>
   const contentRevenue = (
@@ -63,6 +62,7 @@ const Overview = () => {
 
   return (
     <div className={styles['dashboard_manager']}>
+      <ModalIntro />
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (

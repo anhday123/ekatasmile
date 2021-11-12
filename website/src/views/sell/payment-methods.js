@@ -73,7 +73,12 @@ export default function PaymentMethods() {
 
   return (
     <>
-      <a onClick={toggle}>Chọn hình thức thanh toán</a>
+      <p
+        onClick={toggle}
+        style={{ marginBottom: 10, color: '#1890ff', cursor: 'pointer' }}
+      >
+        Chọn hình thức thanh toán
+      </p>
       <Modal
         width={540}
         footer={

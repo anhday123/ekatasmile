@@ -42,8 +42,8 @@ let addToppingC = async (req, res, next) => {
         _topping.create({
             ...req.body,
             ...{
-                topping_id: Number(topping_id),
                 business_id: Number(req.user.business_id),
+                topping_id: Number(topping_id),
                 create_date: new Date(),
                 creator_id: Number(req.user.user_id),
                 active: true,

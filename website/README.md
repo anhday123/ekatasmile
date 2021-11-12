@@ -1,4 +1,4 @@
 deploy:
-ssh root@103.81.87.65
+ssh root@194.233.82.28
 rm -r /var/www/quantribanhang/build
 viesoftware

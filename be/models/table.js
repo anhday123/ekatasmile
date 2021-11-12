@@ -5,11 +5,6 @@ let tableForm = [
     'store_id',
     'position',
     'name',
-    'current_people',
-    'limit_people',
-    'current_payment',
-    'timepass',
-    'status',
 ];
 
 class Table {

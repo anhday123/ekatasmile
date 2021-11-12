@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let categoryForm = ['name', 'description'];
+let categoryForm = ['name'];
 
 class Category {
     validateInput(data) {
@@ -29,6 +29,7 @@ class Category {
     update(data) {
         delete data._id;
         delete data.business_id;
+        delete data.category_id;
         delete data.creator_id;
         delete data.create_date;
         data = { ...this, ...data };

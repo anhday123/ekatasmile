@@ -18,7 +18,7 @@ let addSupplierC = async (req, res, next) => {
     try {
         let _supplier = new Supplier();
         _supplier.validateInput(req.body);
-        req.body.name = Number(req.body.name).trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let supplier = await client
             .db(DB)
             .collection(`Suppliers`)

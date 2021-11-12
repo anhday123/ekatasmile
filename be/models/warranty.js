@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let warrantyForm = ['name', 'type', 'time', 'description'];
+let warrantyForm = ['name', 'time'];
 
 class Warranty {
     validateInput(data) {
@@ -23,6 +23,7 @@ class Warranty {
     update(data) {
         delete data._id;
         delete data.business_id;
+        delete data.warranty_id;
         delete data.creator_id;
         delete data.create_date;
         data = { ...this, ...data };

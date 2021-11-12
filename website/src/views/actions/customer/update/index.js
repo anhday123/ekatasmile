@@ -22,6 +22,7 @@ const dateFormat = 'YYYY/MM/DD'
 const { Option } = Select
 export default function CustomerUpdate(props) {
   let history = useHistory()
+  const [loading, setLoading] = useState(false)
   const [Address, setAddress] = useState({ province: [], district: [] })
   const [form] = Form.useForm()
   const openNotification = () => {
@@ -31,6 +32,7 @@ export default function CustomerUpdate(props) {
   }
   const onFinish = async (values) => {
     try {
+      setLoading(true)
       const res = await Promise.all(
         values.customer.map((e) => {
           var obj = {
@@ -51,14 +53,10 @@ export default function CustomerUpdate(props) {
         props.reload()
         props.onClose()
       }
+      setLoading(false)
     } catch (e) {
+      setLoading(false)
       console.log(e)
-      notification.error({
-        message: 'Thất bại',
-        description: e.data
-          ? e.data.message
-          : 'Cập nhật thông tin không thành công!',
-      })
     }
   }
 
@@ -175,7 +173,6 @@ export default function CustomerUpdate(props) {
                         className={
                           styles['supplier_add_content_supplier_code_input']
                         }
-                        rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Input placeholder="GH6789" disabled size="large" />
                       </Form.Item>
@@ -512,7 +509,12 @@ export default function CustomerUpdate(props) {
             xl={3}
           >
             <Form.Item>
-              <Button size="large" type="primary" htmlType="submit">
+              <Button
+                loading={loading}
+                size="large"
+                type="primary"
+                htmlType="submit"
+              >
                 Cập nhật
               </Button>
             </Form.Item>

@@ -254,7 +254,8 @@ let addStoreS = async (req, res, next) => {
 
 let updateStoreS = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Stores`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Stores`).updateOne(req.params, { $set: req._update });
+        await client.db(DB).collection('Locations').updateMany({inventory_id: Number(req.params.store_id)},{name: req._update.name});
         try {
             let _action = new Action();
             _action.create({

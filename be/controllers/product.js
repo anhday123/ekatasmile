@@ -4,7 +4,7 @@ const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const productService = require(`../services/product`);
-const { Product, Attribute, Variant, Location } = require('../models/product');
+const { Product, Attribute, Variant, Location, Feedback } = require('../models/product');
 
 let getProductC = async (req, res, next) => {
     try {
@@ -32,12 +32,38 @@ let addProductC = async (req, res, next) => {
             })
             .toArray();
         let maxProductId = await client.db(DB).collection('AppSetting').findOne({ name: 'Products' });
+        let suppliers = await client
+            .db(DB)
+            .collection('Suppliers')
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
+        let _suppliers = {};
+        suppliers.map((supplier) => {
+            _suppliers[supplier.supplier_id] = supplier;
+        });
+        let branchs = await client
+            .db(DB)
+            .collection('Branchs')
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
+        let _branchs = {};
+        branchs.map((branch) => {
+            _branchs[branch.branch_id] = branch;
+        });
+        let stores = await client
+            .db(DB)
+            .collection('Stores')
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
+        let _stores = {};
+        stores.map((store) => {
+            _stores[store.store_id] = store;
+        });
         req['_insert'] = {};
         req._insert['_products'] = [];
         req._insert['_attributes'] = [];
         req._insert['_variants'] = [];
         req._insert['_locations'] = [];
-        req._insert['_prices'] = [];
         let product_id = (() => {
             if (maxProductId) {
                 if (maxProductId.value) {
@@ -52,7 +78,6 @@ let addProductC = async (req, res, next) => {
             _productSkuInDBs[product.sku] = product;
             _productIdInDBs.push(product.product_id);
         });
-
         let attributes = await client
             .db(DB)
             .collection(`Attributes`)
@@ -69,13 +94,6 @@ let addProductC = async (req, res, next) => {
             })
             .toArray();
         let maxVariantId = await client.db(DB).collection('AppSetting').findOne({ name: 'Variants' });
-        let locations = await client
-            .db(DB)
-            .collection(`Locations`)
-            .find({
-                product_id: { $in: _productIdInDBs },
-            })
-            .toArray();
         let maxLocationId = await client.db(DB).collection('AppSetting').findOne({ name: 'Locations' });
         let _attributeInDBs = {};
         attributes.map((attribute) => {
@@ -101,10 +119,6 @@ let addProductC = async (req, res, next) => {
             }
             return 0;
         })();
-        let _locationInDBs = {};
-        locations.map((location) => {
-            _locationInDBs[`vId${location.variant_id}-sId${location.store_id}`] = location;
-        });
         let location_id = (() => {
             if (maxLocationId) {
                 if (maxLocationId.value) {
@@ -113,7 +127,6 @@ let addProductC = async (req, res, next) => {
             }
             return 0;
         })();
-
         req.body.products.map((product) => {
             let _product = new Product();
             _product.validateInput(product);
@@ -128,7 +141,7 @@ let addProductC = async (req, res, next) => {
                         business_id: Number(req.user.business_id),
                         create_date: new Date(),
                         creator_id: Number(req.user.user_id),
-                        is_active: true,
+                        active: true,
                     },
                 });
             }
@@ -156,7 +169,7 @@ let addProductC = async (req, res, next) => {
                             product_id: Number(_product.product_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
-                            is_active: true,
+                            active: true,
                         });
                     }
                     req._insert._attributes.push(_attribute);
@@ -174,14 +187,22 @@ let addProductC = async (req, res, next) => {
                         });
                     } else {
                         variant_id++;
+                        variant['supplier'] = (() => {
+                            if (_suppliers[_product.supplier_id]) {
+                                if (_suppliers[_product.supplier_id].name) {
+                                    return _suppliers[_product.supplier_id].name;
+                                }
+                            }
+                            return '';
+                        })();
                         _variant.create({
                             ...variant,
-                            supplier_id: Number(req.user.supplier_id),
-                            product_id: Number(_product.product_id),
+                            business_id: Number(req.user.business_id),
                             variant_id: Number(variant_id),
+                            product_id: Number(_product.product_id),
                             create_date: new Date(),
                             creator_id: Number(req.user.user_id),
-                            is_active: true,
+                            active: true,
                         });
                     }
                     req._insert._variants.push(_variant);
@@ -189,57 +210,36 @@ let addProductC = async (req, res, next) => {
                         variant.locations.map((location) => {
                             let _location = new Location();
                             _location.validateInput(location);
-                            if (_locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]) {
-                                _location.create({
-                                    ..._locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`],
-                                    quantity:
-                                        _locationInDBs[`vId${_variant.variant_id}-sId${location.store_id}`]
-                                            .quantity + location.quantity,
-                                });
-                            } else {
-                                location_id++;
-                                _location.create({
-                                    ...location,
-                                    supplier_id: Number(req.user.supplier_id),
-                                    product_id: Number(_product.product_id),
-                                    variant_id: Number(_variant.variant_id),
-                                    location_id: Number(location_id),
-                                    create_date: new Date(),
-                                    creator_id: Number(req.user.user_id),
-                                    is_active: true,
-                                });
-                            }
+                            location_id++;
+                            location['name'] = (() => {
+                                if (String(location.type).toLowerCase() == 'branch') {
+                                    if (_branchs[location.inventory_id]) {
+                                        if (_branchs[location.inventory_id].name) {
+                                            return _branchs[location.inventory_id].name;
+                                        }
+                                    }
+                                    return '';
+                                }
+                                if (String(location.type).toLowerCase() == 'store') {
+                                    if (_stores[location.inventory_id]) {
+                                        if (_stores[location.inventory_id].name) {
+                                            return _stores[location.inventory_id].name;
+                                        }
+                                    }
+                                    return '';
+                                }
+                            })();
+                            _location.create({
+                                ...location,
+                                business_id: Number(req.user.business_id),
+                                product_id: Number(_product.product_id),
+                                variant_id: Number(_variant.variant_id),
+                                location_id: Number(location_id),
+                                create_date: new Date(),
+                                creator_id: Number(req.user.user_id),
+                                active: true,
+                            });
                             req._insert._locations.push(_location);
-                        });
-                    }
-                    if (variant.prices) {
-                        variant.prices.map((price) => {
-                            let _price = new Price();
-                            _price.validateInput(price);
-                            if (
-                                _priceInDBs[
-                                    `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
-                                ]
-                            ) {
-                                _price.create({
-                                    ..._priceInDBs[
-                                        `vId${_variant.variant_id}-min${price.min_quantity}-max${price.max_quantity}`
-                                    ],
-                                });
-                            } else {
-                                price_id++;
-                                _price.create({
-                                    ...price,
-                                    supplier_id: Number(req.user.supplier_id),
-                                    product_id: Number(_product.product_id),
-                                    variant_id: Number(_variant.variant_id),
-                                    price_id: Number(price_id),
-                                    create_date: new Date(),
-                                    creator_id: Number(req.user.user_id),
-                                    is_active: true,
-                                });
-                            }
-                            req._insert._prices.push(_price);
                         });
                     }
                 });
@@ -277,10 +277,6 @@ let addProductC = async (req, res, next) => {
                 { $set: { name: 'Locations', value: location_id } },
                 { upsert: true }
             );
-        await client
-            .db(DB)
-            .collection('AppSetting')
-            .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true });
         await productService.addProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -568,10 +564,47 @@ let getAllAtttributeC = async (req, res, next) => {
     }
 };
 
+let addFeedbackC = async (req, res, next) => {
+    try {
+        let _feedback = new Feedback();
+        let feedbackMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Feedbacks' });
+        let feedback_id = (() => {
+            if (feedbackMaxId) {
+                if (feedbackMaxId.value) {
+                    return Number(feedbackMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        feedback_id++;
+        _feedback.create({
+            ...req.body,
+            feedback_id: Number(feedback_id),
+        });
+        req['_insert'] = _feedback;
+        await productService.addFeedbackS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+let importFileC = async (req, res, next) => {
+    try {
+        if (req.file == undefined) {
+            throw new Error('400: Vui lòng truyền file!');
+        }
+        return;
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductC,
     addProductC,
     updateProductC,
     deleteProductC,
     getAllAtttributeC,
+    addFeedbackC,
+    importFileC,
 };

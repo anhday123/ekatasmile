@@ -71,15 +71,47 @@ let getProductS = async (req, res, next) => {
                 as: 'attributes',
             },
         });
+        if (req.query.attribute) {
+            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
+            let filters = req.query.attribute.split('---');
+            filters = filters.map((filter) => {
+                let [option, values] = filter.split(':');
+                values = values.split('||');
+                return { option: option, values: values };
+            });
+            filters = filters.map((filter) => {
+                let values = filter.values.map((value) => {
+                    return new RegExp(
+                        `${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    );
+                });
+                aggregateQuery.push({
+                    $match: {
+                        'attributes.sub_option': new RegExp(
+                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
+                            'ig'
+                        ),
+                        'attributes.sub_values': { $in: values },
+                    },
+                });
+            });
+        }
         let storeQuery = (() => {
             if (req.query.store_id) {
-                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } }];
+                return [
+                    { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } },
+                    { $match: { $expr: { $eq: ['$type', 'STORE'] } } }
+                ];
             }
             return [];
         })();
         let branchQuery = (() => {
             if (req.query.branch_id) {
-                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } }];
+                return [
+                    { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } },
+                    { $match: { $expr: { $eq: ['$type', 'BRANCH'] } } }
+                ];
             }
             return [];
         })();
@@ -89,6 +121,7 @@ let getProductS = async (req, res, next) => {
                     {
                         $group: {
                             _id: '$inventory_id',
+                            type: { $first: '$type' },
                             name: { $first: '$name' },
                             inventory_id: { $first: '$inventory_id' },
                             quantity: { $sum: '$quantity' },
@@ -125,32 +158,15 @@ let getProductS = async (req, res, next) => {
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
-        if (req.query.attribute) {
-            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
-            let filters = req.query.attribute.split('---');
-            filters = filters.map((filter) => {
-                let [option, values] = filter.split(':');
-                values = values.split('||');
-                return { option: option, values: values };
-            });
-            filters = filters.map((filter) => {
-                let values = filter.values.map((value) => {
-                    return new RegExp(
-                        `${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    );
-                });
-                aggregateQuery.push({
-                    $match: {
-                        'attributes.option': new RegExp(
-                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
-                        'attributes.values': { $in: values },
-                    },
-                });
-            });
-        }
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Feedbacks',
+                let: { productId: '$product_id' },
+                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                as: 'feedbacks',
+            },
+        });
+        aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -179,12 +195,32 @@ let getProductS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
+                'attributes.option': 0,
+                'attributes.values': 0,
                 '_business.password': 0,
                 '_creator.password': 0,
             },
         });
+        let sortQuery = (()=>{
+            if(req.query.sort) {
+                let [field, option] = req.query.sort.split(':');
+                let productClass = ['name'];
+                let variantClass = ['sale_price'];
+                if(productClass.includes(field)) {
+                    let result = {};
+                    result[field] = Number(option);
+                    return result;
+                }
+                if(variantClass.includes(field)) {
+                    let result = {};
+                    result[`variants.${field}`] = Number(option);
+                    return result;
+                }
+            }
+            return { create_date: -1 };
+        })();
+        aggregateQuery.push({$sort: sortQuery});
         let countQuery = [...aggregateQuery];
-        aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
             let page_size = Number(req.query.page_size) || 50;
@@ -452,9 +488,22 @@ let getAllAtttributeS = async (req, res, next) => {
     }
 };
 
+let addFeedbackS = async (req, res, next) => {
+    try {
+        let _insert = await client.db(DB).collection(`Feedbacks`).insertOne(req._insert);
+        if (!_insert.insertedId) {
+            throw new Error('500: Thêm nhận xét thất bại!');
+        }
+        res.send({ success: true, data: req._insert});
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductS,
     addProductS,
     updateProductS,
     getAllAtttributeS,
+    addFeedbackS
 };

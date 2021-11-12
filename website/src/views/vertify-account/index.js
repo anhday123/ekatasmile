@@ -33,7 +33,7 @@ export default function VertifyAccount() {
   useEffect(() => {
     const uid = new URLSearchParams(location.search).get('uid')
 
-    if (!uid) history.push(ROUTES.LOGIN)
+    if (!uid) history.push(ROUTES.OVERVIEW)
     else checkUid(uid)
   }, [])
 

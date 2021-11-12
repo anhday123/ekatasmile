@@ -13,8 +13,8 @@ import { decodeToken } from 'react-jwt'
 const Authentication = ({ permissions, title, children, ...props }) => {
   const history = useHistory()
   const payload =
-    localStorage.getItem('refreshToken') &&
-    decodeToken(localStorage.getItem('refreshToken'))
+    localStorage.getItem('accessToken') &&
+    decodeToken(localStorage.getItem('accessToken'))
 
   //modify title
   document.title = title

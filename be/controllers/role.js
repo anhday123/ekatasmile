@@ -66,6 +66,7 @@ let updateRoleC = async (req, res, next) => {
         let _role = new Role();
         req.body.name = String(req.body.name).trim().toUpperCase();
         let role = await client.db(DB).collection(`Roles`).findOne(req.params);
+        console.log(role);
         if (!role) {
             throw new Error(`400: Vai trò không tồn tại!`);
         }

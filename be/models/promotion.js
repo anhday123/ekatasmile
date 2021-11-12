@@ -6,11 +6,8 @@ let promotionForm = [
     'promotion_code',
     'type',
     'value',
-    'max_discount',
-    'discount_condition',
     'has_voucher',
     'limit',
-    'description',
 ];
 
 class Promotion {

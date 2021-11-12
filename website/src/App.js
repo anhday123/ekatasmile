@@ -4,7 +4,6 @@ import { ACTION } from './consts/index'
 import { decodeToken } from 'react-jwt'
 
 import Loading from 'components/loading/Loading'
-import ModalIntro from 'components/introduction'
 
 //views
 import Views from 'views'
@@ -37,7 +36,6 @@ function App() {
   return (
     <>
       <Loading />
-      <ModalIntro />
       <Views />
     </>
   )

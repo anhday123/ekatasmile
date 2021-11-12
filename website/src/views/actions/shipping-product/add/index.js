@@ -21,7 +21,7 @@ import {
 import { Link, useHistory } from 'react-router-dom'
 import { FileExcelOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import { getAllBranch } from '../../../../apis/branch'
-import { getProductsBranch, getProductsStore } from '../../../../apis/product'
+import { getProducts } from '../../../../apis/product'
 import { addDelivery } from '../../../../apis/delivery'
 import { useDispatch } from 'react-redux'
 import XLSX from 'xlsx'
@@ -228,14 +228,14 @@ export default function ShippingProductAdd(props) {
           const productList = await Promise.all(
             fileData.map((e) => {
               return deliveryFlow.fromtype == 'BRANCH'
-                ? getProductsBranch({
-                    branch: deliveryFlow.from,
+                ? getProducts({
+                    branch: true,
                     sku: e.sku,
                     product_id: e.product_id,
                     merge: false,
                   })
-                : getProductsStore({
-                    store: deliveryFlow.from,
+                : getProducts({
+                    store: true,
                     sku: e.sku,
                     product_id: e.product_id,
                     merge: false,
@@ -323,15 +323,15 @@ export default function ShippingProductAdd(props) {
     if (deliveryFlow.from != '') {
       const res =
         deliveryFlow.fromtype == 'BRANCH'
-          ? await getProductsBranch({
+          ? await getProducts({
               search: value,
-              branch: deliveryFlow.from,
               page: 1,
               page_size: 20,
+              branch: true,
             })
-          : await getProductsStore({
+          : await getProducts({
               search: value,
-              warehouse: deliveryFlow.from,
+              store: true,
               page: 1,
               page_size: 20,
             })
