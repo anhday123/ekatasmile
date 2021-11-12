@@ -18,7 +18,7 @@ let addWarrantyC = async (req, res, next) => {
     try {
         let _warranty = new Warranty();
         _warranty.validateInput(req.body);
-        req.body.name = Number(req.body.name).trim().toUpperCase();
+        req.body.name = String(req.body.name).trim().toUpperCase();
         let warranty = await client
             .db(DB)
             .collection(`Warranties`)

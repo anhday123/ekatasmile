@@ -2,16 +2,7 @@ const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
 let customerForm = [
-    'phone',
-    'type',
-    'first_name',
-    'last_name',
-    'gender',
-    'address',
-    'district',
-    'province',
-    'point',
-    'debt',
+    'phone'
 ];
 
 class Customer {

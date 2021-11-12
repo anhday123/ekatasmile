@@ -75,17 +75,7 @@ let getCategoryS = async (req, res, next) => {
             $lookup: {
                 from: 'Categories',
                 let: { category_id: '$category_id' },
-                pipeline: [
-                    { $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } },
-                    {
-                        $lookup: {
-                            from: 'Categories',
-                            let: { category_id: '$category_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } }],
-                            as: 'children_category',
-                        },
-                    },
-                ],
+                pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } }],
                 as: 'children_category',
             },
         });

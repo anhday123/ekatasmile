@@ -4,7 +4,7 @@ const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const productService = require(`../services/product`);
-const { Product, Attribute, Variant, Location } = require('../models/product');
+const { Product, Attribute, Variant, Location, Feedback } = require('../models/product');
 
 let getProductC = async (req, res, next) => {
     try {
@@ -542,10 +542,35 @@ let getAllAtttributeC = async (req, res, next) => {
     }
 };
 
+let addFeedbackC = async (req,res,next)=> {
+    try {
+        let _feedback = new Feedback();
+        let feedbackMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Feedbacks' });
+        let feedback_id = (()=>{
+            if (feedbackMaxId) {
+                if (feedbackMaxId.value) {
+                    return Number(feedbackMaxId.value);
+                }
+            }
+            return 0;
+        })();
+        feedback_id++;
+        _feedback.create({
+            ...req.body,
+            feedback_id: Number(feedback_id),
+        });
+        req['_insert'] = _feedback;
+        await productService.addFeedbackS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductC,
     addProductC,
     updateProductC,
     deleteProductC,
     getAllAtttributeC,
+    addFeedbackC
 };

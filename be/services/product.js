@@ -99,13 +99,19 @@ let getProductS = async (req, res, next) => {
         }
         let storeQuery = (() => {
             if (req.query.store_id) {
-                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } }];
+                return [
+                    { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } },
+                    { $match: { $expr: { $eq: ['$type', 'STORE'] } } }
+                ];
             }
             return [];
         })();
         let branchQuery = (() => {
             if (req.query.branch_id) {
-                return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } }];
+                return [
+                    { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } },
+                    { $match: { $expr: { $eq: ['$type', 'BRANCH'] } } }
+                ];
             }
             return [];
         })();
@@ -115,6 +121,7 @@ let getProductS = async (req, res, next) => {
                     {
                         $group: {
                             _id: '$inventory_id',
+                            type: { $first: '$type' },
                             name: { $first: '$name' },
                             inventory_id: { $first: '$inventory_id' },
                             quantity: { $sum: '$quantity' },
@@ -151,6 +158,14 @@ let getProductS = async (req, res, next) => {
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
+        aggregateQuery.push({
+            $lookup: {
+                from: 'FeedBacks',
+                let: { productId: '$product_id' },
+                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                as: 'feedbacks',
+            },
+        });
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -179,6 +194,8 @@ let getProductS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
+                'attributes.option': 0,
+                'attributes.values': 0,
                 '_business.password': 0,
                 '_creator.password': 0,
             },
@@ -452,9 +469,22 @@ let getAllAtttributeS = async (req, res, next) => {
     }
 };
 
+let addFeedbackS = async (req, res, next) => {
+    try {
+        let _insert = await client.db(DB).collection(`Feedbacks`).insertOne(req._insert);
+        if (!_insert.insertedId) {
+            throw new Error('500: Thêm nhận xét thất bại!');
+        }
+        res.send({ success: true, data: req._insert});
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getProductS,
     addProductS,
     updateProductS,
     getAllAtttributeS,
+    addFeedbackS
 };

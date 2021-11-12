@@ -96,9 +96,6 @@ let getToppingS = async (req, res, next) => {
                 { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
         }
-        if (Object.keys(projectQuery).length != 0) {
-            aggregateQuery.push({ $project: projectQuery });
-        }
         aggregateQuery.push({
             $project: {
                 sub_name: 0,
@@ -106,6 +103,7 @@ let getToppingS = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
+        console.log(aggregateQuery);
         let countQuery = [...aggregateQuery];
         let page = Number(req.query.page) || 1;
         let page_size = Number(req.query.page_size) || 50;

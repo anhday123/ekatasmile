@@ -30,9 +30,6 @@ let addPromotionC = async (req, res, next) => {
         if (promotion) {
             throw new Error(`400: Chương trình khuyến mãi đã tồn tại!`);
         }
-        if (req.body.limit) {
-            _promotion.createLimit(req.body.limit);
-        }
         let promotion_id = (() => {
             if (promotionMaxId) {
                 if (promotionMaxId.value) {
@@ -52,6 +49,9 @@ let addPromotionC = async (req, res, next) => {
                 active: true,
             },
         });
+        if (req.body.limit) {
+            _promotion.createLimit(req.body.limit);
+        }
         await client
             .db(DB)
             .collection('AppSetting')

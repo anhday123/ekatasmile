@@ -68,7 +68,7 @@ let addShippingCompanyC = async (req, res, next) => {
 };
 let updateShippingCompanyC = async (req, res, next) => {
     try {
-        req.params.shipping_company_id = ObjectId(req.params.shipping_company_id);
+        req.params.shipping_company_id = Number(req.params.shipping_company_id);
         let _shippingCompany = new ShippingCompany();
         req.body.name = String(req.body.name).trim().toUpperCase();
         let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne(req.params);

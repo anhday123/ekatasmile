@@ -25,6 +25,7 @@ class Product {
         this.unit = data.unit || '';
         this.description = data.description || '';
         this.files = data.files || [];
+        this.sale_amount = data.sale_amount || 0;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
@@ -126,7 +127,7 @@ class Feedback {
     create(data) {
         this.feedback_id = Number(data.feedback_id);
         this.product_id = Number(data.product_id);
-        this.user_id = Number(data.user_id);
+        this.customer_id = Number(data.customer_id);
         this.rate = Number(data.rate);
         this.content = String(data.content)
     }

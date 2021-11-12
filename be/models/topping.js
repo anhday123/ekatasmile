@@ -8,16 +8,15 @@ class Topping {
         softValidate(data, toppingForm, 400);
     }
     create(data) {
-        this.business_id = ObjectId(data.business_id);
-        this.category_id = ObjectId(data.category_id);
-        this.topping_id = ObjectId(data.topping_id);
+        this.business_id = Number(data.business_id);
+        this.category_id = Number(data.category_id);
+        this.topping_id = Number(data.topping_id);
         this.name = data.name.trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.price = data.price || 0;
         this.limit = data.limit || 10;
         this.create_date = data.create_date;
         this.creator_id = data.creator_id;
-        this.delete = data.delete;
         this.active = data.active;
     }
     update(data) {
