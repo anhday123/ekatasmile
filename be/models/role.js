@@ -28,6 +28,7 @@ class Role {
     update(data) {
         delete data._id;
         delete data.business_id;
+        delete data.role_id;
         delete data.creator_id;
         delete data.create_date;
         data = { ...this, ...data };

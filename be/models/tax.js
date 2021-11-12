@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let taxForm = ['name', 'value', 'description'];
+let taxForm = ['name', 'value'];
 
 class Tax {
     validateInput(data) {
@@ -22,6 +22,7 @@ class Tax {
     update(data) {
         delete data._id;
         delete data.business_id;
+        delete data.tax_id;
         delete data.creator_id;
         delete data.create_date;
         data = { ...this, ...data };
