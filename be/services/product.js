@@ -160,12 +160,13 @@ let getProductS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $lookup: {
-                from: 'FeedBacks',
+                from: 'Feedbacks',
                 let: { productId: '$product_id' },
                 pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                 as: 'feedbacks',
             },
         });
+        aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -200,8 +201,26 @@ let getProductS = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
+        let sortQuery = (()=>{
+            if(req.query.sort) {
+                let [field, option] = req.query.sort.split(':');
+                let productClass = ['name'];
+                let variantClass = ['sale_price'];
+                if(productClass.includes(field)) {
+                    let result = {};
+                    result[field] = Number(option);
+                    return result;
+                }
+                if(variantClass.includes(field)) {
+                    let result = {};
+                    result[`variants.${field}`] = Number(option);
+                    return result;
+                }
+            }
+            return { create_date: -1 };
+        })();
+        aggregateQuery.push({$sort: sortQuery});
         let countQuery = [...aggregateQuery];
-        aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
             let page_size = Number(req.query.page_size) || 50;

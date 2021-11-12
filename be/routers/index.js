@@ -15,6 +15,7 @@ router.use(`/label`, require(`./label`));
 router.use(`/table`, require(`.//table`));
 router.use(`/supplier`, require(`./supplier`));
 router.use(`/product`, require(`./product`));
+router.use(`/deal`, require(`./deal`));
 router.use(`/topping`, require(`./topping`));
 router.use(`/category`, require(`./category`));
 router.use(`/tax`, require(`./tax`));

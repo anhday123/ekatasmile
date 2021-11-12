@@ -23,6 +23,7 @@ class Product {
         this.height = data.height || 0;
         this.weight = data.weight || 0;
         this.unit = data.unit || '';
+        this.origin = data.origin || '';
         this.description = data.description || '';
         this.files = data.files || [];
         this.sale_amount = data.sale_amount || 0;
@@ -127,7 +128,7 @@ class Feedback {
     create(data) {
         this.feedback_id = Number(data.feedback_id);
         this.product_id = Number(data.product_id);
-        this.customer_id = Number(data.customer_id);
+        this.user_id = Number(data.user_id);
         this.rate = Number(data.rate);
         this.content = String(data.content)
     }
