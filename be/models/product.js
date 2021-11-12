@@ -73,7 +73,7 @@ class Variant {
         this.title = String(data.title).trim().toUpperCase();
         this.sku = String(data.sku).trim().toUpperCase();
         this.image = data.image;
-        this.options = String(data.options);
+        this.options = data.options || [];
         if (data.options && data.options.length > 0) {
             for (let i = 0; i < data.options.length; i++) {
                 this[`option${i + 1}`] = data.options[i];

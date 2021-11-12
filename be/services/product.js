@@ -62,6 +62,15 @@ let getProductS = async (req, res, next) => {
                 },
             });
         }
+        // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Attributes',
+                let: { productId: '$product_id' },
+                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                as: 'attributes',
+            },
+        });
         if (req.query.attribute) {
             req.query.attribute = String(req.query.attribute).trim().toUpperCase();
             let filters = req.query.attribute.split('---');
@@ -79,24 +88,15 @@ let getProductS = async (req, res, next) => {
                 });
                 aggregateQuery.push({
                     $match: {
-                        'attributes.option': new RegExp(
+                        'attributes.sub_option': new RegExp(
                             `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
                             'ig'
                         ),
-                        'attributes.values': { $in: values },
+                        'attributes.sub_values': { $in: values },
                     },
                 });
             });
         }
-        // lấy các thuộc tính tùy chọn khác
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Attributes',
-                let: { productId: '$product_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                as: 'attributes',
-            },
-        });
         let storeQuery = (() => {
             if (req.query.store_id) {
                 return [{ $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } }];
