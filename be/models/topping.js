@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let toppingForm = ['category_id', 'name', 'price', 'limit'];
+let toppingForm = ['category_id', 'name', 'price'];
 
 class Topping {
     validateInput(data) {
