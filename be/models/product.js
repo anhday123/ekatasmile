@@ -49,6 +49,10 @@ class Attribute {
         this.values = data.values.map((value) => {
             return String(value).trim().toUpperCase();
         });
+        this.sub_option = removeUnicode(this.option, true).toLowerCase();
+        this.sub_values = this.values.map((value) => {
+            return removeUnicode(value, true).toLowerCase();
+        });
     }
     update(data) {
         data = { ...this, ...data };
