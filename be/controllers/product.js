@@ -175,7 +175,14 @@ let addProductC = async (req, res, next) => {
                         });
                     } else {
                         variant_id++;
-                        variant['supplier'] = _suppliers[_product.supplier_id].name;
+                        variant['supplier'] = (()=> {
+                            if( _suppliers[_product.supplier_id]) {
+                                if(_suppliers[_product.supplier_id].name) {
+                                    return _suppliers[_product.supplier_id].name;
+                                }
+                            }
+                            return '';
+                        })();
                         _variant.create({
                             ...variant,
                             business_id: Number(req.user.business_id),
