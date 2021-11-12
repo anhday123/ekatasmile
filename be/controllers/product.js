@@ -201,10 +201,20 @@ let addProductC = async (req, res, next) => {
                             location_id++;
                             location['name'] = (()=>{
                                 if(String(location.type).toLowerCase() == 'branch') {
-                                    return _branchs[location.inventory_id].name;
+                                    if(_branchs[location.inventory_id]) {
+                                        if(_branchs[location.inventory_id].name) {
+                                            return _branchs[location.inventory_id].name;
+                                        }
+                                    }
+                                    return '';
                                 }
                                 if(String(location.type).toLowerCase() == 'store') {
-                                    return _stores[location.inventory_id].name;
+                                    if(_stores[location.inventory_id]) {
+                                        if(_stores[location.inventory_id].name) {
+                                            return _stores[location.inventory_id].name;
+                                        }
+                                    }
+                                    return '';
                                 }
                             })();
                             _location.create({
