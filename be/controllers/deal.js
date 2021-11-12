@@ -28,7 +28,7 @@ let addDealC = async (req, res, next) => {
             });
         let dealMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Deals' });
         if (deal) {
-            throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
+            throw new Error(`400: Chương trình giảm giá đã tồn tại!`);
         }
         let deal_id = (() => {
             if (dealMaxId) {

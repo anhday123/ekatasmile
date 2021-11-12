@@ -1,7 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let dealFrom = ['name'];
+let dealFrom = ['type', 'name'];
 
 class Deal {
     validateInput(data) {
@@ -12,7 +12,10 @@ class Deal {
         this.deal_id = Number(data.deal_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
-        this.products = data.products;
+        this.type = String(data.type).trim().toUpperCase();
+        this.sub_type = removeUnicode(this.type, true).toLowerCase();
+        this.image = data.image;
+        this.list = data.list;
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
         this.create_date = new Date(data.create_date);
