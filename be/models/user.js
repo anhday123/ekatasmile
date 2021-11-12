@@ -88,7 +88,6 @@ class User {
         this.last_login = data.last_login;
         this.exp = data.exp;
         this.creator_id = Number(data.creator_id);
-        this.delete = data.delete;
         this.active = data.active;
     }
     /** Update user bằng thông tin trong data */
