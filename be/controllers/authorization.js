@@ -61,6 +61,8 @@ let loginC = async (req, res, next) => {
             throw new Error(`400: Mật khẩu không chính xác!`);
         }
         delete user.password;
+        user.branch_id = Number(user.branch_id);
+        user.store_id = Number(user.store_id)
         let [accessToken, refreshToken, _update] = await Promise.all([
             jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
             jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
