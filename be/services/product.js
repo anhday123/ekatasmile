@@ -166,6 +166,12 @@ let getProductS = async (req, res, next) => {
                 as: 'feedbacks',
             },
         });
+        if(req.query.min_price) {
+            aggregateQuery.push({ $match: { 'variants.sale_price': { $gte: Number(req.query.min_price) }} });
+        }
+        if(req.query.max_price) {
+            aggregateQuery.push({ $match: { 'variants.sale_price': { $lte: Number(req.query.max_price) }} });
+        }
         aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
         if (req.query._business) {
             aggregateQuery.push(
