@@ -8,8 +8,8 @@ class Warranty {
         softValidate(data, warrantyForm, 400);
     }
     create(data) {
-        this.warranty_id = String(data.warranty_id);
-        this.business_id = String(data.business_id);
+        this.warranty_id = Number(data.warranty_id);
+        this.business_id = Number(data.business_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.type = String(data.type || '');
@@ -17,7 +17,7 @@ class Warranty {
         this.time = Number(data.time || 0);
         this.description = data.description || '';
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

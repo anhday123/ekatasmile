@@ -8,8 +8,8 @@ class Deal {
         softValidate(data, dealFrom, 400);
     }
     create(data) {
-        this.business_id = String(data.business_id);
-        this.deal_id = String(data.deal_id);
+        this.business_id = Number(data.business_id);
+        this.deal_id = Number(data.deal_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.type = String(data.type).trim().toUpperCase();
@@ -19,7 +19,7 @@ class Deal {
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

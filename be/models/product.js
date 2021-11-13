@@ -8,12 +8,12 @@ class Product {
         softValidate(data, productForm, 400);
     }
     create(data) {
-        this.product_id = String(data.product_id);
-        this.business_id = String(data.business_id);
+        this.product_id = Number(data.product_id);
+        this.business_id = Number(data.business_id);
         this.sku = String(data.sku);
         this.name = String(data.name).trim().toUpperCase();
         this.slug = removeUnicode(this.name, false).toLowerCase().split(' ').join('-');
-        this.supplier_id = String(data.supplier_id);
+        this.supplier_id = Number(data.supplier_id);
         this.category_id = data.category_id || [];
         this.waranties = data.waranties || [];
         this.taxes = data.taxes || [];
@@ -28,7 +28,7 @@ class Product {
         this.files = data.files || [];
         this.sale_amount = data.sale_amount || 0;
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {
@@ -44,9 +44,9 @@ class Attribute {
         softValidate(data, attributeForm, 400);
     }
     create(data) {
-        this.attribute_id = String(data.attribute_id);
-        this.business_id = String(data.business_id);
-        this.product_id = String(data.product_id);
+        this.attribute_id = Number(data.attribute_id);
+        this.business_id = Number(data.business_id);
+        this.product_id = Number(data.product_id);
         this.option = String(data.option).trim().toUpperCase();
         this.values = data.values.map((value) => {
             return String(value).trim().toUpperCase();
@@ -69,9 +69,9 @@ class Variant {
         softValidate(data, variantForm, 400);
     }
     create(data) {
-        this.business_id = String(data.business_id);
-        this.product_id = String(data.product_id);
-        this.variant_id = String(data.variant_id);
+        this.business_id = Number(data.business_id);
+        this.product_id = Number(data.product_id);
+        this.variant_id = Number(data.variant_id);
         this.title = String(data.title).trim().toUpperCase();
         this.sku = String(data.sku).trim().toUpperCase();
         this.image = data.image;
@@ -86,7 +86,7 @@ class Variant {
         this.base_price = Number(data.base_price || 0);
         this.sale_price = Number(data.sale_price || 0);
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {
@@ -102,16 +102,16 @@ class Location {
         softValidate(data, locationForm, 400);
     }
     create(data) {
-        this.location_id = String(data.location_id);
-        this.business_id = String(data.business_id);
-        this.product_id = String(data.product_id);
-        this.variant_id = String(data.variant_id);
-        this.inventory_id = String(data.inventory_id);
+        this.location_id = Number(data.location_id);
+        this.business_id = Number(data.business_id);
+        this.product_id = Number(data.product_id);
+        this.variant_id = Number(data.variant_id);
+        this.inventory_id = Number(data.inventory_id);
         this.type = String(data.type).trim().toUpperCase();
         this.name = String(data.name).trim().toUpperCase();
         this.quantity = Number(data.quantity);
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
     }
     update(data) {
         data = { ...this, ...data };
@@ -126,9 +126,9 @@ class Feedback {
         softValidate(data, feedbackForm, 400);
     }
     create(data) {
-        this.feedback_id = String(data.feedback_id);
-        this.product_id = String(data.product_id);
-        this.user_id = String(data.user_id);
+        this.feedback_id = Number(data.feedback_id);
+        this.product_id = Number(data.product_id);
+        this.user_id = Number(data.user_id);
         this.rate = Number(data.rate);
         this.content = String(data.content);
     }

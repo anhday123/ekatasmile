@@ -8,8 +8,8 @@ class Branch {
         softValidate(data, branchForm, 400);
     }
     create(data) {
-        this.business_id = String(data.business_id);
-        this.branch_id = String(data.branch_id);
+        this.business_id = Number(data.business_id);
+        this.branch_id = Number(data.branch_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.logo = String(data.logo);
@@ -30,7 +30,7 @@ class Branch {
         this.accumulate_point = data.accumulate_point || false;
         this.use_point = data.use_point || false;
         this.create_date = new Date(data.create_date);
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

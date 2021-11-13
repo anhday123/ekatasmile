@@ -36,8 +36,8 @@ class User {
     /** Tạo user object: data là thông tin user, type là kiểu tạo: register là user đăng ký, create là user được business tạo
      */
     create(data) {
-        this.business_id = String(data.business_id);
-        this.user_id = String(data.user_id);
+        this.business_id = Number(data.business_id);
+        this.user_id = Number(data.user_id);
         this.username = String(data.username).replace(/\s/g, '').toLowerCase();
         this.password = String(data.password);
         this.otp_code = String(data.otp_code) || false;
@@ -87,7 +87,7 @@ class User {
         this.create_date = data.create_date;
         this.last_login = data.last_login;
         this.exp = data.exp;
-        this.creator_id = String(data.creator_id);
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     /** Update user bằng thông tin trong data */

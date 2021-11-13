@@ -38,8 +38,8 @@ class OrderDetail {
         softValidate(data, orderDetailForm,  400);
     }
     create(data) {
-        this.product_id = String(data.product_id);
-        this.variant_id = String(data.variant_id);
+        this.product_id = Number(data.product_id);
+        this.variant_id = Number(data.variant_id);
         this.variants = data.variants || [];
         this.properties = data.properties || [];
         this.images = data.images || [];
@@ -100,15 +100,15 @@ class Order {
         softValidate(data, orderForm, 400);
     }
     create(data) {
-        this.order_id = String(data.order_id);
-        this.business_id = String(data.business_id);
+        this.order_id = Number(data.order_id);
+        this.business_id = Number(data.business_id);
         this.sale_location = data.sale_location;
         if (this.sale_location) {
             if (this.sale_location.store_id) {
-                this.sale_location.store_id = String(this.sale_location.store_id);
+                this.sale_location.store_id = Number(this.sale_location.store_id);
             }
             if (this.sale_location.branch_id) {
-                this.sale_location.branch_id = String(this.sale_location.branch_id);
+                this.sale_location.branch_id = Number(this.sale_location.branch_id);
             }
         }
         this.employee_id = (() => {
