@@ -65,6 +65,14 @@ let getProductS = async (req, res, next) => {
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
+                from: 'Taxes',
+                localField: 'taxes',
+                foreignField: 'tax_id',
+                as: '_taxes',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
                 from: 'Attributes',
                 let: { productId: '$product_id' },
                 pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
