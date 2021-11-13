@@ -66,7 +66,7 @@ let updateDealC = async (req, res, next) => {
         req.body.name = String(req.body.name).trim().toUpperCase();
         let deal = await client.db(DB).collection(`Deals`).findOne(req.params);
         if (!deal) {
-            throw new Error(`400: Nhóm cửa hàng không tồn tại!`);
+            throw new Error(`400: Chương trình giảm giá không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
@@ -78,7 +78,7 @@ let updateDealC = async (req, res, next) => {
                     name: req.body.name,
                 });
             if (check) {
-                throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
+                throw new Error(`400: Chương trình giảm giá đã tồn tại!`);
             }
         }
         _deal.create(deal);

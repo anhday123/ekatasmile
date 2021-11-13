@@ -156,7 +156,7 @@ let addDealS = async (req, res, next) => {
 
 let updateDealS = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Labels`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Deals`).findOneAndUpdate(req.params, { $set: req._update });
         try {
             let _action = new Action();
             _action.create({
