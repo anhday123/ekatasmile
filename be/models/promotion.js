@@ -32,19 +32,19 @@ class Promotion {
             }
             if (this.limit.branchs) {
                 this.limit.branchs.map((branch) => {
-                    return Number(branch);
+                    return String(branch);
                 });
             }
             if (this.limit.stores) {
                 this.limit.stores.map((store) => {
-                    return Number(store);
+                    return String(store);
                 });
             }
         }
     }
     create(data) {
-        this.business_id = Number(data.business_id);
-        this.promotion_id = Number(data.promotion_id);
+        this.business_id = String(data.business_id);
+        this.promotion_id = String(data.promotion_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.promotion_code = (() => {
@@ -63,7 +63,7 @@ class Promotion {
         this.vouchers = data.vouchers || [];
         this.description = String(data.description) || '';
         this.create_date = new Date(data.create_date);
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     update(data) {

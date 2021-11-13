@@ -8,7 +8,7 @@ class Action {
         softValidate(inputData, actionForm, 400);
     }
     create(data) {
-        this.business_id = Number(data.business_id);
+        this.business_id = String(data.business_id);
         this.type = String(data.type).trim().toUpperCase();
         this.sub_type = removeUnicode(this.type, true).toLowerCase();
         this.properties = String(data.properties).trim().toUpperCase();
@@ -16,7 +16,7 @@ class Action {
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.data = data.data;
-        this.performer_id = Number(data.performer_id);
+        this.performer_id = String(data.performer_id);
         this.date = new Date(data.date);
     }
 }

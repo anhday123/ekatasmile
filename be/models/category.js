@@ -8,13 +8,13 @@ class Category {
         softValidate(data, categoryForm, 400);
     }
     create(data) {
-        this.category_id = Number(data.category_id);
-        this.business_id = Number(data.business_id);
+        this.category_id = String(data.category_id);
+        this.business_id = String(data.business_id);
         this.parent_id = (() => {
             if (isNaN(data.parent_id)) {
                 return -1;
             }
-            return Number(data.parent_id);
+            return String(data.parent_id);
         })();
         this.priority = Number(data.priority);
         this.name = String(data.name).trim().toUpperCase();
@@ -23,7 +23,7 @@ class Category {
         this.description = String(data.description);
         this.default = data.default || false;
         this.create_date = new Date(data.create_date);
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     update(data) {

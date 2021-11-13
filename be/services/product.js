@@ -65,14 +65,6 @@ let getProductS = async (req, res, next) => {
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
-                from: 'Taxes',
-                localField: 'taxes',
-                foreignField: 'tax_id',
-                as: '_taxes',
-            },
-        });
-        aggregateQuery.push({
-            $lookup: {
                 from: 'Attributes',
                 let: { productId: '$product_id' },
                 pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
@@ -163,6 +155,15 @@ let getProductS = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Taxes',
+                localField: 'taxes',
+                foreignField: 'tax_id',
+                as: '_taxes',
+            },
+        });
+        aggregateQuery.push({$addFields: {'variants._taxes': '$_taxes'}});
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }

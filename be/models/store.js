@@ -8,19 +8,19 @@ class Store {
         softValidate(data, storeForm, 400);
     }
     create(data) {
-        this.business_id = Number(data.business_id);
-        this.store_id = Number(data.store_id);
+        this.business_id = String(data.business_id);
+        this.store_id = String(data.store_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.branch_id = (() => {
             if (data.branch_id && data.branch_id != '') {
-                return Number(data.branch_id);
+                return String(data.branch_id);
             }
             return data.branch_id;
         })();
         this.label_id = (() => {
             if (data.label_id && data.label_id != '') {
-                return Number(data.label_id);
+                return String(data.label_id);
             }
             return data.label_id;
         })();
@@ -35,7 +35,7 @@ class Store {
         this.province = String(data.province) || '';
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
         this.create_date = new Date(data.create_date);
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     update(data) {

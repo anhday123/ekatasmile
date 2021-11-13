@@ -12,11 +12,11 @@ class Table {
         softValidate(data, tableForm, 400);
     }
     create(data) {
-        this.business_id = Number(data.business_id);
-        this.store_id = Number(data.store_id);
+        this.business_id = String(data.business_id);
+        this.store_id = String(data.store_id);
         this.position = String(data.position);
         this.sub_position = removeUnicode(this.position, true).toLowerCase();
-        this.table_id = Number(data.table_id);
+        this.table_id = String(data.table_id);
         this.name = String(data.name);
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.current_people = Number(data.current_people) || 0;
@@ -25,7 +25,7 @@ class Table {
         this.timepass = Number(data.timepass) || 0;
         this.status = String(data.status) || 'READY';
         this.create_date = new Date(data.create_date);
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     update(data) {

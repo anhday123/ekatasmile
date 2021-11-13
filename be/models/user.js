@@ -36,15 +36,15 @@ class User {
     /** Tạo user object: data là thông tin user, type là kiểu tạo: register là user đăng ký, create là user được business tạo
      */
     create(data) {
-        this.business_id = Number(data.business_id);
-        this.user_id = Number(data.user_id);
+        this.business_id = String(data.business_id);
+        this.user_id = String(data.user_id);
         this.username = String(data.username).replace(/\s/g, '').toLowerCase();
         this.password = String(data.password);
         this.otp_code = String(data.otp_code) || false;
         this.otp_timelife = new Date(data.otp_timelife) || false;
         this.role_id = (() => {
             if (data.role_id && data.role_id != '') {
-                return Number(data.role_id);
+                return String(data.role_id);
             }
             return data.role_id;
         })();
@@ -65,7 +65,7 @@ class User {
         this.company_website = data.company_website || '';
         this.career_id = (() => {
             if (data.career_id && data.career_id != '') {
-                return Number(data.career_id);
+                return String(data.career_id);
             }
             return data.career_id;
         })();
@@ -73,13 +73,13 @@ class User {
         this.fax = data.fax || '';
         this.branch_id = (() => {
             if (data.branch_id && data.branch_id != '') {
-                return Number(data.branch_id);
+                return String(data.branch_id);
             }
             return data.branch_id;
         })();
         this.store_id = (() => {
             if (data.store_id && data.store_id != '') {
-                return Number(data.store_id);
+                return String(data.store_id);
             }
             return data.store_id;
         })();
@@ -87,7 +87,7 @@ class User {
         this.create_date = data.create_date;
         this.last_login = data.last_login;
         this.exp = data.exp;
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     /** Update user bằng thông tin trong data */

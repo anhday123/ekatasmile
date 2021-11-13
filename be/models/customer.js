@@ -10,8 +10,8 @@ class Customer {
         softValidate(data, customerForm, 400);
     }
     create(data) {
-        this.customer_id = Number(data.customer_id);
-        this.business_id = Number(data.business_id);
+        this.customer_id = String(data.customer_id);
+        this.business_id = String(data.business_id);
         this.phone = String(data.phone);
         this.type = String(data.type || 'Tiềm năng');
         this.sub_type = removeUnicode(this.type, true).toLowerCase();
@@ -31,7 +31,7 @@ class Customer {
         this.point = Number(data.point || 0);
         this.debt = Number(data.debt || 0);
         this.create_date = new Date(data.create_date);
-        this.creator_id = Number(data.creator_id);
+        this.creator_id = String(data.creator_id);
         this.active = data.active;
     }
     update(data) {
