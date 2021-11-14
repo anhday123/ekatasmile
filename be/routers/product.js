@@ -13,6 +13,6 @@ router.route(`/addproduct`).post(auth, product.addProductC);
 router.route(`/updateproduct/:product_id`).patch(auth, product.updateProductC);
 router.route(`/getattribute`).get(auth, product.getAllAtttributeC);
 router.route(`/addfeedback`).post(auth, product.addFeedbackC);
-router.route(`/importfile`).post(upload.single('file'), product.importFileC);
+router.route(`/importfile`).post(auth, upload.single('file'), product.importFileC);
 
 module.exports = router;

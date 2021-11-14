@@ -600,6 +600,94 @@ let importFileC = async (req, res, next) => {
         });
         let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         console.log(excelProducts);
+        let suppliers = await client
+            .db(DB)
+            .collection('Suppliers')
+            .find({ business_id: Number(req.user.business_id) });
+        let _suppliers = {};
+        suppliers.map((supplier) => {
+            _suppliers[supplier.name] = supplier;
+        });
+        let categories = await client
+            .db(DB)
+            .collection('Categories')
+            .find({ business_id: Number(req.user.business_id) });
+        let _categories = {};
+        categories.map((category) => {
+            _categories[category.name] = category;
+        });
+        let branchs = await client
+            .db(DB)
+            .collection('Branchs')
+            .find({ business_id: Number(req.user.business_id) });
+        let _branchs = {};
+        branchs.map((branch) => {
+            _branchs[branch.name] = branch;
+        });
+        let stores = await client
+            .db(DB)
+            .collection('Stores')
+            .find({ business_id: Number(req.user.business_id) });
+        let _stores = {};
+        stores.map((store) => {
+            _stores[store.name] = store;
+        });
+        let _products = {};
+        excelProducts.map((product) => {
+            let _product = {
+                name: product['Tên sản phẩm'],
+                sku: product['Mã sản phẩm'],
+                category_id: (() => {
+                    if (_categories[product['Loại sản phẩm']]) {
+                        if (_categories[product['Loại sản phẩm']].category_id) {
+                            return _categories[product['Loại sản phẩm']].category_id;
+                        }
+                    }
+                    return '';
+                })(),
+                supplier_id: (() => {
+                    if (_suppliers[product['Nhà cung cấp']]) {
+                        if (_suppliers[product['Nhà cung cấp']].supplier_id) {
+                            return _suppliers[product['Nhà cung cấp']].supplier_id;
+                        }
+                    }
+                    return '';
+                })(),
+                image: product['Hình ảnh'],
+                length: product['Chiều dài'],
+                width: product['Chiều rộng'],
+                height: product['Chiều cao'],
+                weight: product['Cân nặng'],
+                unit: product['Đơn vị tính'],
+                description: product['Mô tả'],
+            };
+            let _attribute = {
+                option: product['Thuộc tính 1'],
+                values: product['Giá trị 1'],
+            };
+            let _variant = {
+                title: product['Tên phiên bản'],
+                sku: product['Mã phiên bản'],
+                image: product['Hình ảnh_1'],
+                options: product['Mã sản phẩm'],
+                supplier: product['Mã sản phẩm'],
+                import_price: product['Giá nhập hàng'],
+                base_price: product['Giá vốn'],
+                sale_price: product['Giá bán'],
+            };
+            let _location = {
+                type: product['Nơi nhập'],
+                name: (() => {
+                    if ('store') {
+                        return _stores[product['Tên nơi nhập']].name;
+                    }
+                    if ('branch') {
+                        return _branchs[product['Tên nơi nhập']].name;
+                    }
+                })(),
+                quantity: product['Số lượng nhập'],
+            };
+        });
         return;
     } catch (err) {
         next(err);

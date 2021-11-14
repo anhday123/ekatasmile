@@ -113,13 +113,13 @@ class Order {
         }
         this.employee_id = (() => {
             if (data.employee_id && data.employee_id != '') {
-                return Number(data.employee_id);
+                return String(data.employee_id);
             }
             return data.employee_id;
         })();
         this.customer_id = (() => {
             if (data.customer_id && data.customer_id != '') {
-                return Number(data.customer_id);
+                return String(data.customer_id);
             }
             return data.customer_id;
         })();
@@ -127,7 +127,7 @@ class Order {
         this.payments = data.payments || [];
         this.shipping_company_id = (() => {
             if (data.shipping_company_id && data.shipping_company_id != '') {
-                return Number(data.shipping_company_id);
+                return String(data.shipping_company_id);
             }
             return data.shipping_company_id;
         })();

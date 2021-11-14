@@ -16,7 +16,7 @@ class Topping {
         this.price = data.price || 0;
         this.limit = data.limit || 10;
         this.create_date = data.create_date;
-        this.creator_id = data.creator_id;
+        this.creator_id = Number(data.creator_id);
         this.active = data.active;
     }
     update(data) {

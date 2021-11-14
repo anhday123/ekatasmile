@@ -44,7 +44,7 @@ class User {
         this.otp_timelife = new Date(data.otp_timelife) || false;
         this.role_id = (() => {
             if (data.role_id && data.role_id != '') {
-                return Number(data.role_id);
+                return String(data.role_id);
             }
             return data.role_id;
         })();
@@ -65,7 +65,7 @@ class User {
         this.company_website = data.company_website || '';
         this.career_id = (() => {
             if (data.career_id && data.career_id != '') {
-                return Number(data.career_id);
+                return String(data.career_id);
             }
             return data.career_id;
         })();
@@ -73,13 +73,13 @@ class User {
         this.fax = data.fax || '';
         this.branch_id = (() => {
             if (data.branch_id && data.branch_id != '') {
-                return Number(data.branch_id);
+                return String(data.branch_id);
             }
             return data.branch_id;
         })();
         this.store_id = (() => {
             if (data.store_id && data.store_id != '') {
-                return Number(data.store_id);
+                return String(data.store_id);
             }
             return data.store_id;
         })();

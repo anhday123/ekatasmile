@@ -32,12 +32,12 @@ class Promotion {
             }
             if (this.limit.branchs) {
                 this.limit.branchs.map((branch) => {
-                    return Number(branch);
+                    return String(branch);
                 });
             }
             if (this.limit.stores) {
                 this.limit.stores.map((store) => {
-                    return Number(store);
+                    return String(store);
                 });
             }
         }

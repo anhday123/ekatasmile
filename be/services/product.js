@@ -155,6 +155,15 @@ let getProductS = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Taxes',
+                localField: 'taxes',
+                foreignField: 'tax_id',
+                as: '_taxes',
+            },
+        });
+        aggregateQuery.push({$addFields: {'variants._taxes': '$_taxes'}});
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
@@ -166,6 +175,12 @@ let getProductS = async (req, res, next) => {
                 as: 'feedbacks',
             },
         });
+        if(req.query.min_sale_price) {
+            aggregateQuery.push({ $match: { 'variants.sale_price': { $gte: Number(req.query.min_sale_price) }} });
+        }
+        if(req.query.max_sale_price) {
+            aggregateQuery.push({ $match: { 'variants.sale_price': { $lte: Number(req.query.max_sale_price) }} });
+        }
         aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
         if (req.query._business) {
             aggregateQuery.push(

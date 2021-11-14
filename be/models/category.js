@@ -14,7 +14,7 @@ class Category {
             if (isNaN(data.parent_id)) {
                 return -1;
             }
-            return Number(data.parent_id);
+            return String(data.parent_id);
         })();
         this.priority = Number(data.priority);
         this.name = String(data.name).trim().toUpperCase();

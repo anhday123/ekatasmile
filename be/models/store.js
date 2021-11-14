@@ -14,13 +14,13 @@ class Store {
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.branch_id = (() => {
             if (data.branch_id && data.branch_id != '') {
-                return Number(data.branch_id);
+                return String(data.branch_id);
             }
             return data.branch_id;
         })();
         this.label_id = (() => {
             if (data.label_id && data.label_id != '') {
-                return Number(data.label_id);
+                return String(data.label_id);
             }
             return data.label_id;
         })();
