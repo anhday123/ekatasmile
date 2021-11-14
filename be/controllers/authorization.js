@@ -62,8 +62,8 @@ let loginC = async (req, res, next) => {
         }
         delete user.password;
         // console.log(user);
-        user.branch_id = String(user.branch_id);
-        user.store_id = String(user.store_id);
+        // user.branch_id = String(user.branch_id);
+        // user.store_id = String(user.store_id);
         let [accessToken, refreshToken, _update] = await Promise.all([
             jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
             jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
