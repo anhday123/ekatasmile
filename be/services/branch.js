@@ -252,10 +252,7 @@ let addBranchS = async (req, res, next) => {
             ])
             .toArray();
         delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
-            jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
-        ]);
+        let [accessToken, refreshToken] = await Promise.all([jwt.createToken(user), jwt.createToken(user)]);
         res.send({ success: true, data: req._insert, accessToken, refreshToken });
     } catch (err) {
         next(err);
