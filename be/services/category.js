@@ -75,7 +75,25 @@ let getCategoryS = async (req, res, next) => {
             $lookup: {
                 from: 'Categories',
                 let: { category_id: '$category_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } }],
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } },
+                    ...(() => {
+                        if (req.query._creator) {
+                            return [
+                                {
+                                    $lookup: {
+                                        from: 'Users',
+                                        localField: 'creator_id',
+                                        foreignField: 'user_id',
+                                        as: '_creator',
+                                    },
+                                },
+                                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } },
+                            ];
+                        }
+                        return [];
+                    })(),
+                ],
                 as: 'children_category',
             },
         });
@@ -108,6 +126,7 @@ let getCategoryS = async (req, res, next) => {
         aggregateQuery.push({
             $project: {
                 sub_name: 0,
+                'children_category._creator.password': 0,
                 '_business.password': 0,
                 '_creator.password': 0,
             },
