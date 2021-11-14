@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { apiAllCategorySearch } from 'apis/category'
+import { getCategories } from 'apis/category'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { addProduct } from 'apis/product'
@@ -188,7 +188,7 @@ export default function ImportProducts({ reload }) {
 
   const _getCategories = async () => {
     try {
-      const res = await apiAllCategorySearch()
+      const res = await getCategories()
       if (res.status === 200) {
         setCategories(res.data.data)
       }

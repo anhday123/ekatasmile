@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import * as types from './../../consts/index'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
+import { Link, useLocation, useRouteMatch } from 'react-router-dom'
+import { Bell, CarretDown, Plus } from 'utils/icon'
+
 import {
   Layout,
   Menu,
@@ -20,6 +23,8 @@ import {
   Image,
   Badge,
   Empty,
+  Row,
+  Col,
 } from 'antd'
 
 import {
@@ -42,27 +47,17 @@ import {
   AccountBookOutlined,
   PartitionOutlined,
   FormOutlined,
-  ShoppingCartOutlined,
   UserOutlined,
-  EditOutlined,
   ExportOutlined,
+  SlidersOutlined,
 } from '@ant-design/icons'
-
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
-import styles from './../Layout/layout.module.scss'
-
 import GraphicEqIcon from '@material-ui/icons/GraphicEq'
 import ReplyAllIcon from '@material-ui/icons/ReplyAll'
 
 //components
 import Permission from 'components/permission'
-
-import { Link, useLocation, useRouteMatch } from 'react-router-dom'
-import { Row, Col } from 'antd'
-import { getStoreSelectValue } from './../../actions/store/index'
-import { PERMISSIONS } from 'consts'
-import { Bell, CarretDown, Plus } from 'utils/icon'
 
 //apis
 import { apiAllRole, updateUser, apiSearch } from 'apis/user'
@@ -75,7 +70,7 @@ const { Sider } = Layout
 const { Option } = Select
 const { Dragger } = Upload
 
-const UI = (props) => {
+const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
 
@@ -87,7 +82,6 @@ const UI = (props) => {
     ? decodeToken(localStorage.getItem('accessToken'))
     : {}
 
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
   const [modal1Visible, setModal1Visible] = useState(false)
@@ -145,6 +139,12 @@ const UI = (props) => {
       title: 'Danh sách đơn hàng',
       permissions: [PERMISSIONS.danh_sach_don_hang],
       icon: <NoteAddIcon />,
+    },
+    {
+      path: ROUTES.CATEGORIES,
+      title: 'Quản lý danh mục',
+      permissions: [],
+      icon: <SlidersOutlined />,
     },
     {
       path: 'product',
@@ -381,9 +381,6 @@ const UI = (props) => {
     setKey(data)
   }
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -794,75 +791,7 @@ const UI = (props) => {
           </div>
         </Form>
       </Modal>
-      <Modal
-        title="Thông tin cá nhân"
-        centered
-        footer={null}
-        visible={modal2Visible}
-        onOk={() => modal2VisibleModal(false)}
-        onCancel={() => modal2VisibleModal(false)}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            width: '100%',
-          }}
-        >
-          <div style={{ marginRight: '1.5rem' }}>
-            {(user && user.avatar === '') || user.avatar === ' ' ? (
-              <img
-                src={user.avatar}
-                style={{
-                  width: '7.5rem',
-                  height: '7.5rem',
-                  objectFit: 'contain',
-                }}
-                alt=""
-              />
-            ) : (
-              <img
-                src={user.avatar}
-                style={{
-                  width: '7.5rem',
-                  height: '7.5rem',
-                  objectFit: 'contain',
-                }}
-                alt=""
-              />
-            )}
-          </div>
-          {user ? (
-            <div className={styles['information_user_modal']}>
-              <div>{`Họ tên: ${user.first_name} ${user.last_name}`}</div>
-              <div>{`Liên hệ: ${user.phone}`}</div>
-              <div>{`Email: ${user.email}`}</div>
-              <div>{`Tên công ty: ${user.company_name}`}</div>
-              <div>{`Chức vụ: ${
-                user && user.role_id && user.role_id.name
-                  ? user.role_id.name
-                  : ''
-              }`}</div>
-              <div>{`Địa chỉ: ${user.address}`}</div>
-            </div>
-          ) : (
-            <div className={styles['information_user_modal']}>
-              <div>{`Họ tên: ${login.objectUsername.first_name} ${login.objectUsername.last_name}`}</div>
-              <div>{`Liên hệ: ${login.objectUsername.phone}`}</div>
-              <div>{`Email: ${login.objectUsername.email}`}</div>
-              <div>{`Tên công ty: ${login.objectUsername.company_name}`}</div>
-              <div>{`Chức vụ: ${
-                login.objectUsername &&
-                login.objectUsername.role_id &&
-                login.objectUsername.role_id.name
-                  ? login.objectUsername.role_id.name
-                  : ''
-              }`}</div>
-              <div>{`Địa chỉ: ${login.objectUsername.address}`}</div>
-            </div>
-          )}
-        </div>
-      </Modal>
+
       <Sider
         trigger={null}
         collapsible
@@ -1093,4 +1022,4 @@ const UI = (props) => {
   )
 }
 
-export default UI
+export default BaseLayout

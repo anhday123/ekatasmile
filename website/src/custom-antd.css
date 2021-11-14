@@ -78,6 +78,11 @@
   height: 65px !important;
 }
 
+.upload-category-image > .ant-upload {
+  width: 150px !important;
+  height: 150px !important;
+}
+
 /* custom upload antd */
 
 .ant-upload-select-picture-card {

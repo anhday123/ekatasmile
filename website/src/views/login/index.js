@@ -1,9 +1,9 @@
-import styles from './../login/login.module.scss'
+import styles from './login.module.scss'
 import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import store from './../../assets/img/store.png'
+import store from 'assets/img/store.png'
 import { Link, useHistory } from 'react-router-dom'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES } from 'consts'
 import {
   Row,
   Col,
@@ -20,14 +20,9 @@ import {
   MailOutlined,
   PhoneOutlined,
   HomeOutlined,
-  EnvironmentOutlined,
-  ShareAltOutlined,
 } from '@ant-design/icons'
-import { register } from '../../apis/register'
+import { register } from 'apis/register'
 import { login } from 'apis/login'
-import { loginAccessToken } from '../../actions/login'
-import { getAllStore } from '../../apis/store'
-import { getStore } from '../../actions/store'
 import { decodeToken } from 'react-jwt'
 
 export default function Login() {
@@ -44,16 +39,12 @@ export default function Login() {
       const res = await login(object)
       console.log(res)
       if (res.status === 200) {
-        const actions = loginAccessToken(res.data.data)
-        dispatch(actions)
+        dispatch({ type: ACTION.LOGIN, data: res.data.data })
 
         //luu branch id len redux
         const dataUser = decodeToken(res.data.data.accessToken)
         console.log(dataUser)
-        dispatch({
-          type: 'SET_BRANCH_ID',
-          data: dataUser.data.branch_id,
-        })
+        dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
         history.push(ROUTES.OVERVIEW)
       } else
@@ -235,41 +226,7 @@ export default function Login() {
 
     apiRegister(object)
   }
-  const openNotificationLoginSuccess = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: 'Đăng nhập thành công',
-    })
-  }
-  const openNotificationLoginErrorActive = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản của bạn chưa được kích hoạt',
-    })
-  }
-  const openNotificationLoginErrorActiveError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản không tồn tại.',
-    })
-  }
-  const openNotificationLoginErrorActiveErrorBanned = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản đã bị khóa bởi admin.',
-    })
-  }
-  const openNotificationLoginErrorActiveErrorPassword = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Sai mật khẩu.',
-    })
-  }
+
   const openNotificationRegisterUsername = () => {
     notification.error({
       message: 'Thất bại',
@@ -278,24 +235,6 @@ export default function Login() {
     })
   }
 
-  const getAllStoreData = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await getAllStore()
-      console.log(res)
-      if (res.status === 200) {
-        const action = getStore(res.data.data)
-        dispatch(action)
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
-  useEffect(() => {
-    getAllStoreData()
-  }, [])
   return (
     <Row
       style={{
@@ -307,7 +246,7 @@ export default function Login() {
       }}
     >
       <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
-        <div style={{}} className={styles['login_choose_parent']}>
+        <div className={styles['login_choose_parent']}>
           <div
             style={{ paddingTop: '1rem' }}
             className={styles['login_choose']}

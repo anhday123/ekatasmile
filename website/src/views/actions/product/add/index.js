@@ -44,7 +44,7 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { apiAllCategory } from 'apis/category'
+import { getCategories } from 'apis/category'
 import { apiAllSupplier } from 'apis/supplier'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
@@ -373,7 +373,7 @@ export default function ProductAdd() {
   const apiAllCategoryData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllCategory()
+      const res = await getCategories()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
           const category = res.data.data.find(

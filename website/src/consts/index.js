@@ -8,10 +8,6 @@ export const ACTION = {
   ERROR: 'ERROR',
   CHANGE_SIDER: 'CHANGE_SIDER',
 }
-export const authConstants = {
-  TOGGLE: 'TOGGLE',
-  KEY: 'KEY',
-}
 
 //co 6 role mac dinh
 export const ROLE_DEFAULT = {
@@ -112,6 +108,8 @@ export const ROUTES = {
   CUSTOMER_ORDER_LIST: '/customer/order-list',
   CUSTOMER_ORDER_DETAIL: '/customer/order/detail',
   POINT: '/point',
+  CATEGORY: '/category',
+  CATEGORIES: '/categories',
 }
 
 export const PERMISSIONS = {
@@ -187,3 +185,7 @@ export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
 export const IMAGE_DEFAULT =
   'https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/11/08/757a2f95-f144-4963-8e11-931bafdee356/image_default.jpg'
+
+export const PAGE_SIZE = 20
+export const PAGE_SIZE_OPTIONS = [20, 40, 50, 60, 80, 100]
+export const POSITION_TABLE = ['bottomLeft']

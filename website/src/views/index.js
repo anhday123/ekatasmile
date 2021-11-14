@@ -1,10 +1,10 @@
 import React from 'react'
 
 import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
-import { ROUTES } from './../consts/index'
+import { ROUTES } from 'consts/index'
 
 //base layout
-import UI from './../components/Layout/UI'
+import BaseLayout from 'components/layout'
 import Authentication from 'components/authentication'
 
 //views
@@ -41,6 +41,8 @@ import BranchView from './actions/branch/view'
 import ShippingProductAdd from './actions/shipping-product/add/index'
 import OrderCreateShipping from './order-create-shipping'
 import VertifyAccount from './vertify-account'
+import Categories from './categories'
+import Category from './category'
 import ImportExportFile from './import-export-file'
 
 import Inventory from './inventory'
@@ -342,6 +344,20 @@ const DEFINE_ROUTER = [
     path: ROUTES.SHIPPING_PRODUCT_UPDATE,
     Component: () => <DeliveryUpdate />,
     title: 'Xem thông tin chi tiết quản lý chuyển hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.CATEGORIES,
+    Component: () => <Categories />,
+    title: 'Quản lý danh mục',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.CATEGORY,
+    Component: () => <Category />,
+    title: 'Danh mục',
     permissions: [],
     exact: true,
   },
@@ -657,9 +673,9 @@ export default function Views() {
         {DEFINE_ROUTER.map(({ Component, ...rest }, index) => (
           <Route {...rest} key={index}>
             <Authentication {...rest}>
-              <UI>
+              <BaseLayout>
                 <Component />
-              </UI>
+              </BaseLayout>
             </Authentication>
           </Route>
         ))}

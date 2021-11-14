@@ -7,7 +7,7 @@ import { Drawer, Row, Button, Input, Checkbox, Space, Spin } from 'antd'
 import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllCategorySearch } from 'apis/category'
+import { getCategories } from 'apis/category'
 
 export default function FilterProductsByCategory({
   setParamsFilter,
@@ -23,7 +23,7 @@ export default function FilterProductsByCategory({
   const _getCategories = async (params) => {
     try {
       setLoading(true)
-      const res = await apiAllCategorySearch(params)
+      const res = await getCategories(params)
       if (res.status === 200) setCategories(res.data.data)
       setLoading(false)
     } catch (error) {

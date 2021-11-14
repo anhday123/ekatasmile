@@ -1,15 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import {
-  Modal,
-  Row,
-  Button,
-  Select,
-  InputNumber,
-  Space,
-  Popconfirm,
-  Input,
-} from 'antd'
+import { Modal, Row, Button, InputNumber, Space, Popconfirm, Input } from 'antd'
 import {
   IdcardOutlined,
   UsergroupDeleteOutlined,
@@ -20,12 +11,16 @@ import {
 
 import { formatCash } from 'utils'
 
-export default function PaymentMethods() {
+export default function PaymentMethods({
+  editInvoice,
+  invoices,
+  indexInvoice,
+  costMustPaid,
+}) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const COST = 1000000
-  const [payments, setPayments] = useState([{ name: 'Quẹt thẻ', value: '0' }])
+  const [payments, setPayments] = useState([])
   const [costPaid, setCostPaid] = useState('0')
   const [excessCash, setExcessCash] = useState('0')
 
@@ -36,7 +31,8 @@ export default function PaymentMethods() {
       (total, current) => total + +current.value.replaceAll(',', ''),
       0
     )
-    const excessCash = sumCostPaid > COST ? +sumCostPaid - COST : '0'
+    const excessCash =
+      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
 
     setExcessCash(excessCash)
     setCostPaid(sumCostPaid)
@@ -45,14 +41,14 @@ export default function PaymentMethods() {
 
   const _changePaymentMethod = (value, index) => {
     let paymentsNew = [...payments]
-    paymentsNew[index].name = value
+    paymentsNew[index].method = value
     setPayments([...paymentsNew])
   }
 
   const _addPaymentMethod = (payment) => {
     let paymentsNew = [...payments]
-    if (!paymentsNew.find((p) => p.name === payment)) {
-      paymentsNew.push({ name: payment, value: '0' })
+    if (!paymentsNew.find((p) => p.method === payment)) {
+      paymentsNew.push({ method: payment, value: '0' })
       setPayments([...paymentsNew])
     }
   }
@@ -64,18 +60,58 @@ export default function PaymentMethods() {
       (total, current) => total + +current.value.replaceAll(',', ''),
       0
     )
-    const excessCash = sumCostPaid > COST ? +sumCostPaid - COST : '0'
+    const excessCash =
+      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
 
     setExcessCash(excessCash)
     setCostPaid(sumCostPaid)
     setPayments([...paymentsNew])
   }
 
+  const _savePayments = () => {
+    const sumCostPaid = payments.reduce(
+      (total, current) => total + +current.value.replaceAll(',', ''),
+      0
+    )
+    const excessCash =
+      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
+
+    editInvoice('payments', payments)
+    if (invoices[indexInvoice].isDelivery) editInvoice('prepay', sumCostPaid)
+    else {
+      editInvoice('moneyGivenByCustomer', sumCostPaid)
+      editInvoice('excessCash', excessCash)
+    }
+
+    toggle()
+  }
+
+  const _exit = () => {
+    toggle()
+    setPayments(
+      invoices[indexInvoice].payments && invoices[indexInvoice].payments
+    )
+  }
+
+  useEffect(() => {
+    setPayments(invoices[indexInvoice].payments)
+
+    const sumCostPaid = invoices[indexInvoice].payments.reduce(
+      (total, current) => total + +current.value.replaceAll(',', ''),
+      0
+    )
+    const excessCash =
+      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
+
+    setCostPaid(sumCostPaid)
+    setExcessCash(excessCash)
+  }, [invoices])
+
   return (
     <>
       <p
-        onClick={toggle}
-        style={{ marginBottom: 10, color: '#1890ff', cursor: 'pointer' }}
+        onClick={_exit}
+        style={{ marginBottom: 0, color: '#1890ff', cursor: 'pointer' }}
       >
         Chọn hình thức thanh toán
       </p>
@@ -83,10 +119,11 @@ export default function PaymentMethods() {
         width={540}
         footer={
           <Row justify="end">
-            <Button style={{ width: 100, borderRadius: 5 }} onClick={toggle}>
+            <Button style={{ width: 100, borderRadius: 5 }} onClick={_exit}>
               Thoát
             </Button>
             <Button
+              onClick={_savePayments}
               style={{
                 width: 100,
                 backgroundColor: '#3579FE',
@@ -110,7 +147,7 @@ export default function PaymentMethods() {
         >
           <Row justify="space-between" style={{ fontWeight: 600 }}>
             <p>Khách phải trả</p>
-            <p>{formatCash(COST)}</p>
+            <p>{formatCash(costMustPaid)}</p>
           </Row>
 
           <Row wrap={false} justify="space-between" align="middle">
@@ -133,6 +170,7 @@ export default function PaymentMethods() {
                 color: '#3579FE',
                 borderColor: '#3579FE',
                 borderRadius: 5,
+                display: invoices[indexInvoice].isDelivery && 'none',
               }}
             >
               COD
@@ -165,7 +203,7 @@ export default function PaymentMethods() {
             {payments.map((payment, index) => {
               const SelectPayments = () => (
                 <Input
-                  value={payment.name}
+                  value={payment.method}
                   onChange={(value) => _changePaymentMethod(value, index)}
                   style={{ width: 150, pointerEvents: 'none' }}
                   bordered={false}

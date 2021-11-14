@@ -49,7 +49,7 @@ import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
-import { apiAddCategory, apiAllCategorySearch } from 'apis/category'
+import { apiAddCategory, getCategories } from 'apis/category'
 import {
   apiProductCategoryMerge,
   updateProductBranch,
@@ -147,7 +147,7 @@ export default function Product() {
 
   const apiAllCategoryData = async () => {
     try {
-      const res = await apiAllCategorySearch()
+      const res = await getCategories()
       if (res.status === 200)
         setCategories(res.data.data.filter((e) => e.active))
     } catch (error) {
@@ -427,7 +427,7 @@ export default function Product() {
     const getCategories = async (params) => {
       try {
         setLoading(true)
-        const res = await apiAllCategorySearch(params)
+        const res = await getCategories(params)
         if (res.status === 200)
           setCategories(res.data.data.filter((e) => e.active))
         setLoading(false)
