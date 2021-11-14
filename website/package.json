@@ -51,7 +51,7 @@
         "build": "craco build",
         "test": "craco test",
         "eject": "react-scripts eject",
-        "production": "react-scripts build && scp -r ./build root@viesoftware.vn:/var/www/quantribanhang/build"
+        "production": "react-scripts build && scp -r ./build root@quantribanhang.viesoftware.vn:/var/www/quantribanhang/build"
     },
     "eslintConfig": {
         "extends": [

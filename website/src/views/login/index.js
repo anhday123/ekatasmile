@@ -1,9 +1,9 @@
-import styles from './../login/login.module.scss'
+import styles from './login.module.scss'
 import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import store from './../../assets/img/store.png'
+import store from 'assets/img/store.png'
 import { Link, useHistory } from 'react-router-dom'
-import { ACTION, ROUTES } from './../../consts/index'
+import { ACTION, ROUTES } from 'consts'
 import {
   Row,
   Col,
@@ -20,14 +20,9 @@ import {
   MailOutlined,
   PhoneOutlined,
   HomeOutlined,
-  EnvironmentOutlined,
-  ShareAltOutlined,
 } from '@ant-design/icons'
-import { register } from '../../apis/register'
+import { register } from 'apis/register'
 import { login } from 'apis/login'
-import { loginAccessToken } from '../../actions/login'
-import { getAllStore } from '../../apis/store'
-import { getStore } from '../../actions/store'
 import { decodeToken } from 'react-jwt'
 
 export default function Login() {
@@ -44,16 +39,12 @@ export default function Login() {
       const res = await login(object)
       console.log(res)
       if (res.status === 200) {
-        const actions = loginAccessToken(res.data.data)
-        dispatch(actions)
+        dispatch({ type: ACTION.LOGIN, data: res.data.data })
 
         //luu branch id len redux
         const dataUser = decodeToken(res.data.data.accessToken)
         console.log(dataUser)
-        dispatch({
-          type: 'SET_BRANCH_ID',
-          data: dataUser.data.branch_id,
-        })
+        dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
         history.push(ROUTES.OVERVIEW)
       } else
@@ -244,20 +235,6 @@ export default function Login() {
     })
   }
 
-  const getAllStoreData = async () => {
-    try {
-      const res = await getAllStore()
-      console.log(res)
-      if (res.status === 200) {
-        const action = getStore(res.data.data)
-        dispatch(action)
-      }
-    } catch (error) {}
-  }
-
-  useEffect(() => {
-    getAllStoreData()
-  }, [])
   return (
     <Row
       style={{

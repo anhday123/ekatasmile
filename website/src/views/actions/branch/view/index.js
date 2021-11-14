@@ -27,7 +27,6 @@ import {
 import { FileImageOutlined, WarningOutlined } from '@ant-design/icons'
 
 //apis
-import { logoutAction } from 'actions/login'
 import { apiDistrict, apiProvince } from 'apis/information'
 import { apiFilterCity, getAllBranch } from 'apis/branch'
 import { apiAllRole, apiSearch, updateUser } from 'apis/user'
@@ -496,8 +495,7 @@ export default function BranchView(props) {
       if (res.status === 200) {
         if (slug2 && slug2 === '2') {
           openNotificationSuccessSell()
-          const actions = logoutAction('123')
-          dispatch(actions)
+
           history.push('/')
         } else {
           history.push(ROUTES.BRANCH)
