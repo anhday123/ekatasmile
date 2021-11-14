@@ -6,6 +6,8 @@ const DB = process.env.DATABASE;
 const productService = require(`../services/product`);
 const { Product, Attribute, Variant, Location, Feedback } = require('../models/product');
 
+const XLSX = require('xlsx');
+
 let getProductC = async (req, res, next) => {
     try {
         await productService.getProductS(req, res, next);
@@ -593,6 +595,11 @@ let importFileC = async (req, res, next) => {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
+        let excelData = XLSX.read(req.file.buffer, {
+            type: 'buffer',
+        });
+        let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
+        console.log(excelProducts);
         return;
     } catch (err) {
         next(err);
