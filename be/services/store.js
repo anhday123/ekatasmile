@@ -157,9 +157,11 @@ let getStoreS = async (req, res, next) => {
         });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
-        let page = Number(req.query.page) || 1;
-        let page_size = Number(req.query.page_size) || 50;
-        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
         // lấy data từ database
         let [stores, counts] = await Promise.all([
             client.db(DB).collection(`Stores`).aggregate(aggregateQuery).toArray(),
@@ -255,7 +257,10 @@ let addStoreS = async (req, res, next) => {
 let updateStoreS = async (req, res, next) => {
     try {
         await client.db(DB).collection(`Stores`).updateOne(req.params, { $set: req._update });
-        await client.db(DB).collection('Locations').updateMany({inventory_id: Number(req.params.store_id)},{name: req._update.name});
+        await client
+            .db(DB)
+            .collection('Locations')
+            .updateMany({ inventory_id: Number(req.params.store_id) }, { name: req._update.name });
         try {
             let _action = new Action();
             _action.create({

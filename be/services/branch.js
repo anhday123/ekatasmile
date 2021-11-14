@@ -165,9 +165,11 @@ let getBranchS = async (req, res, next) => {
         });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
-        let page = Number(req.query.page) || 1;
-        let page_size = Number(req.query.page_size) || 50;
-        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
         // lấy data từ database
         let [branchs, counts] = await Promise.all([
             client.db(DB).collection(`Branchs`).aggregate(aggregateQuery).toArray(),
@@ -263,7 +265,10 @@ let addBranchS = async (req, res, next) => {
 let updateBranchS = async (req, res, next) => {
     try {
         await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
-        await client.db(DB).collection('Locations').updateMany({inventory_id: Number(req.params.branch_id)},{name: req._update.name});
+        await client
+            .db(DB)
+            .collection('Locations')
+            .updateMany({ inventory_id: Number(req.params.branch_id) }, { name: req._update.name });
         try {
             let _action = new Action();
             _action.create({

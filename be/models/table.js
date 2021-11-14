@@ -1,11 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let tableForm = [
-    'store_id',
-    'position',
-    'name',
-];
+let tableForm = ['store_id', 'position', 'name'];
 
 class Table {
     validateInput(data) {

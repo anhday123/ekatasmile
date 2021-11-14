@@ -1,20 +1,22 @@
 const jwt = require(`jsonwebtoken`);
-const key = process.env.TOKEN_KEY;
+const key = require('./key');
+// const key = process.env.TOKEN_KEY;
 
-let createToken = (tokenData, tokenLife) => {
+let createToken = (data, timelife) => {
+    const payload = {
+        ...data,
+    };
     return new Promise((resolve, reject) => {
         jwt.sign(
-            { data: tokenData },
-            key,
             {
-                algorithm: `HS256`,
-                expiresIn: tokenLife,
+                ...payload,
+                exp: Math.floor(Date.now()) + timelife * 3600000,
             },
-            (error, token) => {
-                if (error) {
-                    return reject(error);
-                }
-                resolve(token);
+            key.PRIVATEKEY,
+            { algorithm: 'RS256' },
+            (error, encoded) => {
+                if (error) return reject(error);
+                return resolve(encoded);
             }
         );
     });
@@ -22,11 +24,9 @@ let createToken = (tokenData, tokenLife) => {
 
 let verifyToken = (token) => {
     return new Promise((resolve, reject) => {
-        jwt.verify(token, key, (error, decoded) => {
-            if (error) {
-                return reject(error);
-            }
-            resolve(decoded);
+        jwt.verify(token, key.PRIVATEKEY, { algorithms: 'RS256' }, (error, decoded) => {
+            if (error) return reject(error);
+            return resolve(decoded);
         });
     });
 };

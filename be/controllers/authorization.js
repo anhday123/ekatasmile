@@ -62,7 +62,7 @@ let loginC = async (req, res, next) => {
         }
         delete user.password;
         // user.branch_id = String(user.branch_id);
-        // user.store_id = String(user.store_id)
+        // user.store_id = String(user.store_id);
         let [accessToken, refreshToken, _update] = await Promise.all([
             jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
             jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
@@ -91,7 +91,7 @@ let refreshTokenC = async (req, res, next) => {
         try {
             let decoded = await jwt.verifyToken(req.body.refreshToken);
             let userData = decoded.data;
-            let accessToken = await jwt.createToken(userData, process.env.ACCESS_TOKEN_LIFE);
+            let accessToken = await jwt.createToken(userData);
             res.send({ success: true, accessToken });
         } catch (error) {
             throw new Error(`400: Refresh token không chính xác!`);

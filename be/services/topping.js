@@ -103,11 +103,13 @@ let getToppingS = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
-        console.log(aggregateQuery);
         let countQuery = [...aggregateQuery];
-        let page = Number(req.query.page) || 1;
-        let page_size = Number(req.query.page_size) || 50;
-        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
         // lấy data từ database
         let [toppings, counts] = await Promise.all([
             client.db(DB).collection(`Toppings`).aggregate(aggregateQuery).toArray(),

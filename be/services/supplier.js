@@ -138,9 +138,11 @@ let getSupplierS = async (req, res, next) => {
         });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
-        let page = Number(req.query.page) || 1;
-        let page_size = Number(req.query.page_size) || 50;
-        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
         // lấy data từ database
         let [suppliers, counts] = await Promise.all([
             client.db(DB).collection(`Suppliers`).aggregate(aggregateQuery).toArray(),

@@ -633,38 +633,50 @@ let importFileC = async (req, res, next) => {
             _stores[store.name] = store;
         });
         let _products = {};
+        let _attributes = {};
+        let _variants = {};
         excelProducts.map((product) => {
-            let _product = {
-                name: product['Tên sản phẩm'],
-                sku: product['Mã sản phẩm'],
-                category_id: (() => {
-                    if (_categories[product['Loại sản phẩm']]) {
-                        if (_categories[product['Loại sản phẩm']].category_id) {
-                            return _categories[product['Loại sản phẩm']].category_id;
+            if (!_products[product['Mã sản phẩm']]) {
+                _products[product['Mã sản phẩm']] = {
+                    name: product['Tên sản phẩm'],
+                    sku: product['Mã sản phẩm'],
+                    category_id: (() => {
+                        if (_categories[product['Loại sản phẩm']]) {
+                            if (_categories[product['Loại sản phẩm']].category_id) {
+                                return _categories[product['Loại sản phẩm']].category_id;
+                            }
                         }
-                    }
-                    return '';
-                })(),
-                supplier_id: (() => {
-                    if (_suppliers[product['Nhà cung cấp']]) {
-                        if (_suppliers[product['Nhà cung cấp']].supplier_id) {
-                            return _suppliers[product['Nhà cung cấp']].supplier_id;
+                        return '';
+                    })(),
+                    supplier_id: (() => {
+                        if (_suppliers[product['Nhà cung cấp']]) {
+                            if (_suppliers[product['Nhà cung cấp']].supplier_id) {
+                                return _suppliers[product['Nhà cung cấp']].supplier_id;
+                            }
                         }
-                    }
-                    return '';
-                })(),
-                image: product['Hình ảnh'],
-                length: product['Chiều dài'],
-                width: product['Chiều rộng'],
-                height: product['Chiều cao'],
-                weight: product['Cân nặng'],
-                unit: product['Đơn vị tính'],
-                description: product['Mô tả'],
-            };
-            let _attribute = {
-                option: product['Thuộc tính 1'],
-                values: product['Giá trị 1'],
-            };
+                        return '';
+                    })(),
+                    image: product['Hình ảnh'],
+                    length: product['Chiều dài'],
+                    width: product['Chiều rộng'],
+                    height: product['Chiều cao'],
+                    weight: product['Cân nặng'],
+                    unit: product['Đơn vị tính'],
+                    description: product['Mô tả'],
+                };
+            }
+            if (!_attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`]) {
+                _attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`] = {
+                    option: product['Thuộc tính 1'],
+                    values: [product['Giá trị 1']],
+                };
+            } else {
+                _attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`].values.push(
+                    product['Giá trị 1']
+                );
+            }
+            if (!_variants[product['Mã phiên bản']]) {
+            }
             let _variant = {
                 title: product['Tên phiên bản'],
                 sku: product['Mã phiên bản'],

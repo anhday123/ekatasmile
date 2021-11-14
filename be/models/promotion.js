@@ -1,14 +1,7 @@
 const { removeUnicode, getFirstLetter } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let promotionForm = [
-    'name',
-    'promotion_code',
-    'type',
-    'value',
-    'has_voucher',
-    'limit',
-];
+let promotionForm = ['name', 'promotion_code', 'type', 'value', 'has_voucher', 'limit'];
 
 class Promotion {
     validateInput(data) {

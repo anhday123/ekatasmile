@@ -101,7 +101,7 @@ let getProductS = async (req, res, next) => {
             if (req.query.store_id) {
                 return [
                     { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] } } },
-                    { $match: { $expr: { $eq: ['$type', 'STORE'] } } }
+                    { $match: { $expr: { $eq: ['$type', 'STORE'] } } },
                 ];
             }
             return [];
@@ -110,7 +110,7 @@ let getProductS = async (req, res, next) => {
             if (req.query.branch_id) {
                 return [
                     { $match: { $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] } } },
-                    { $match: { $expr: { $eq: ['$type', 'BRANCH'] } } }
+                    { $match: { $expr: { $eq: ['$type', 'BRANCH'] } } },
                 ];
             }
             return [];
@@ -163,7 +163,7 @@ let getProductS = async (req, res, next) => {
                 as: '_taxes',
             },
         });
-        aggregateQuery.push({$addFields: {'variants._taxes': '$_taxes'}});
+        aggregateQuery.push({ $addFields: { 'variants._taxes': '$_taxes' } });
         if (req.query.detach == 'true') {
             aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
@@ -175,11 +175,15 @@ let getProductS = async (req, res, next) => {
                 as: 'feedbacks',
             },
         });
-        if(req.query.min_sale_price) {
-            aggregateQuery.push({ $match: { 'variants.sale_price': { $gte: Number(req.query.min_sale_price) }} });
+        if (req.query.min_sale_price) {
+            aggregateQuery.push({
+                $match: { 'variants.sale_price': { $gte: Number(req.query.min_sale_price) } },
+            });
         }
-        if(req.query.max_sale_price) {
-            aggregateQuery.push({ $match: { 'variants.sale_price': { $lte: Number(req.query.max_sale_price) }} });
+        if (req.query.max_sale_price) {
+            aggregateQuery.push({
+                $match: { 'variants.sale_price': { $lte: Number(req.query.max_sale_price) } },
+            });
         }
         aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
         if (req.query._business) {
@@ -216,17 +220,17 @@ let getProductS = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
-        let sortQuery = (()=>{
-            if(req.query.sort) {
+        let sortQuery = (() => {
+            if (req.query.sort) {
                 let [field, option] = req.query.sort.split(':');
                 let productClass = ['name'];
                 let variantClass = ['sale_price'];
-                if(productClass.includes(field)) {
+                if (productClass.includes(field)) {
                     let result = {};
                     result[field] = Number(option);
                     return result;
                 }
-                if(variantClass.includes(field)) {
+                if (variantClass.includes(field)) {
                     let result = {};
                     result[`variants.${field}`] = Number(option);
                     return result;
@@ -234,7 +238,7 @@ let getProductS = async (req, res, next) => {
             }
             return { create_date: -1 };
         })();
-        aggregateQuery.push({$sort: sortQuery});
+        aggregateQuery.push({ $sort: sortQuery });
         let countQuery = [...aggregateQuery];
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
@@ -509,7 +513,7 @@ let addFeedbackS = async (req, res, next) => {
         if (!_insert.insertedId) {
             throw new Error('500: Thêm nhận xét thất bại!');
         }
-        res.send({ success: true, data: req._insert});
+        res.send({ success: true, data: req._insert });
     } catch (err) {
         next(err);
     }
@@ -520,5 +524,5 @@ module.exports = {
     addProductS,
     updateProductS,
     getAllAtttributeS,
-    addFeedbackS
+    addFeedbackS,
 };
