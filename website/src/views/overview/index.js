@@ -1,28 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import styles from './overview.module.scss'
-import ModalIntro from 'components/introduction'
 
 import { LineChart } from 'react-chartkick'
 import 'chartkick/chart.js'
-//components antd
-import { Select, DatePicker, Row, Col, Popover, Skeleton } from 'antd'
+import { formatCash } from 'utils'
+
+import ModalIntro from 'components/introduction'
+
+//antd
+import { Row, Col, Popover, Skeleton, Space } from 'antd'
 
 //icons antd
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
-import { getStatis } from '../../apis/statis'
+import { getStatistical } from 'apis/statis'
 
-const { RangePicker } = DatePicker
-function formatCash(str) {
-  return str
-    .toString()
-    .split('')
-    .reverse()
-    .reduce((prev, next, index) => {
-      return (index % 3 ? next : next + ',') + prev
-    })
-}
 const Overview = () => {
-  const [statis, setStatis] = useState({})
+  const [statistical, setStatistical] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -34,13 +27,37 @@ const Overview = () => {
   const contentOrder = (
     <div>Number of Orders in this app including line items in each</div>
   )
-  const getAllStatis = async () => {
+
+  const SALES = [
+    {
+      profitToday: '0 VND',
+      name: 'Tổng đơn hàng',
+      sumProfit: '0 VND',
+    },
+    {
+      profitToday: '0 VND',
+      name: 'Tổng giá vốn',
+      sumProfit: '0 VND',
+    },
+    {
+      profitToday: '0 VND',
+      name: 'Tổng doanh thu',
+      sumProfit: '0 VND',
+    },
+    {
+      profitToday: '0 VND',
+      name: 'Tổng lợi nhuận',
+      sumProfit: '0 VND',
+    },
+  ]
+
+  const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
-      const res = await getStatis()
-      if (res.status) {
-        setStatis(res.data.data)
-      }
+      const res = await getStatistical()
+      console.log(res)
+      if (res.status === 200) setStatistical(res.data.data)
+
       setLoadingSkeleton(false)
     } catch (e) {
       setLoadingSkeleton(false)
@@ -48,13 +65,11 @@ const Overview = () => {
     }
   }
   useEffect(() => {
-    getAllStatis()
+    _getStatistical()
   }, [])
 
   //get width device
   useEffect(() => {
-    console.log(window.innerWidth)
-
     if (window.innerWidth < 768) {
       setIsMobile(true)
     } else setIsMobile(false)
@@ -72,350 +87,55 @@ const Overview = () => {
           <div className={styles['dashboard_manager_balance_title']}>
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
-          <div className={styles['dashboard_manager_balance_parent']}>
-            <Row className={styles['dashboard_manager_balance_parent_row']}>
-              <Col
-                className={styles['dashboard_manager_balance_parent_row_col']}
-                xs={24}
-                sm={12}
-                md={12}
-                lg={12}
-                xl={12}
+          <Row justify="space-between" style={{ width: '100%' }}>
+            {SALES.map((e, index) => (
+              <div
+                style={{
+                  width: '50%',
+                  padding: 15,
+                  borderRight: (index === 0 || index === 2) && '1px solid gray',
+                  borderBottom:
+                    (index === 0 || index === 1) && '1px solid gray',
+                }}
               >
-                <div
-                  className={
-                    styles['dashboard_manager_balance_parent_row_col_parent']
-                  }
+                <Row wrap={false}>
+                  <p style={{ marginBottom: 0, fontSize: 17, marginRight: 7 }}>
+                    Hôm nay:
+                  </p>
+                  <p
+                    style={{ marginBottom: 0, fontSize: 17, color: '#5B6BE8' }}
+                  >
+                    {e.profitToday}
+                  </p>
+                </Row>
+                <Row
+                  justify="space-between"
+                  wrap={false}
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 18,
+                    marginBottom: 10,
+                    marginTop: 10,
+                  }}
                 >
-                  <div
-                    className={
-                      styles['dashboard_manager_balance_parent_row_col_top']
-                    }
-                  >
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_parent_bottom'
-                        ]
-                      }
-                    >
-                      <div>Hôm nay: </div>
-                      <div
-                        className={
-                          styles[
-                            'dashboard_manager_balance_parent_row_col_parent_bottom_today'
-                          ]
-                        }
-                      >
-                        {' '}
-                        0 VNĐ
-                      </div>
-                    </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_title'
-                        ]
-                      }
-                    >
-                      <div
-                        className={
-                          styles[
-                            'dashboard_manager_balance_parent_row_col_top_title_left'
-                          ]
-                        }
-                      >
-                        <div>
-                          <ShoppingCartOutlined />
-                        </div>
-                        <div className={styles['order']}>Tổng đơn hàng</div>
-                      </div>
-                      <Popover content={contentOrder}>
-                        <div
-                          className={
-                            styles[
-                              'orders_manager_header_bottom_col_parent_child_icon'
-                            ]
-                          }
-                        >
-                          <InfoCircleOutlined />
-                        </div>
-                      </Popover>
-                    </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_value'
-                        ]
-                      }
-                    >
-                      <div>{(statis && statis.order_amount) || 0}</div>
-                    </div>
+                  <div>
+                    <ShoppingCartOutlined /> {e.name}
                   </div>
-                </div>
-              </Col>
-
-              <Col
-                className={styles['dashboard_manager_balance_parent_row_col']}
-                xs={24}
-                sm={12}
-                md={12}
-                lg={12}
-                xl={12}
-              >
-                <div
-                  className={
-                    styles['dashboard_manager_balance_parent_row_col_parent']
-                  }
+                  <InfoCircleOutlined />
+                </Row>
+                <span
+                  style={{
+                    marginBottom: 0,
+                    fontWeight: 700,
+                    fontSize: 17,
+                    color: '#5B6BE8',
+                  }}
                 >
-                  <div
-                    className={
-                      styles[
-                        'dashboard_manager_balance_parent_row_col_parent_bottom'
-                      ]
-                    }
-                  >
-                    <div>Hôm nay: </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_parent_bottom_today'
-                        ]
-                      }
-                    >
-                      {' '}
-                      0 VNĐ
-                    </div>
-                  </div>
-                  <div
-                    className={
-                      styles['dashboard_manager_balance_parent_row_col_top']
-                    }
-                  >
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_title'
-                        ]
-                      }
-                    >
-                      <div
-                        className={
-                          styles[
-                            'dashboard_manager_balance_parent_row_col_top_title_left'
-                          ]
-                        }
-                      >
-                        <div>
-                          <ShoppingCartOutlined />
-                        </div>
-                        <div className={styles['order']}>Tổng giá vốn</div>
-                      </div>
-                      <Popover content={contentRevenue}>
-                        <div
-                          className={
-                            styles[
-                              'orders_manager_header_bottom_col_parent_child_icon'
-                            ]
-                          }
-                        >
-                          <InfoCircleOutlined />
-                        </div>
-                      </Popover>
-                    </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_value_balance'
-                        ]
-                      }
-                    >
-                      <div>
-                        {statis && statis.total_base_cost
-                          ? formatCash(statis.total_base_cost)
-                          : 0}{' '}
-                        VNĐ
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Col>
-
-              <Col
-                className={styles['dashboard_manager_balance_parent_row_col']}
-                xs={24}
-                sm={12}
-                md={12}
-                lg={12}
-                xl={12}
-              >
-                <div
-                  className={
-                    styles['dashboard_manager_balance_parent_row_col_parent']
-                  }
-                >
-                  <div
-                    className={
-                      styles[
-                        'dashboard_manager_balance_parent_row_col_parent_bottom'
-                      ]
-                    }
-                  >
-                    <div>Hôm nay: </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_parent_bottom_today'
-                        ]
-                      }
-                    >
-                      {' '}
-                      0 VNĐ
-                    </div>
-                  </div>
-
-                  <div
-                    className={
-                      styles['dashboard_manager_balance_parent_row_col_top']
-                    }
-                  >
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_title'
-                        ]
-                      }
-                    >
-                      <div
-                        className={
-                          styles[
-                            'dashboard_manager_balance_parent_row_col_top_title_left'
-                          ]
-                        }
-                      >
-                        <div>
-                          <ShoppingCartOutlined />
-                        </div>
-                        <div className={styles['order']}>Tổng doanh thu</div>
-                      </div>
-                      <Popover content={contentRevenue}>
-                        <div
-                          className={
-                            styles[
-                              'orders_manager_header_bottom_col_parent_child_icon'
-                            ]
-                          }
-                        >
-                          <InfoCircleOutlined />
-                        </div>
-                      </Popover>
-                    </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_value'
-                        ]
-                      }
-                    >
-                      <div>
-                        {statis && statis.total_sale
-                          ? formatCash(statis.total_sale)
-                          : 0}{' '}
-                        VNĐ
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Col>
-
-              <Col
-                className={styles['dashboard_manager_balance_parent_row_col']}
-                xs={24}
-                sm={12}
-                md={12}
-                lg={12}
-                xl={12}
-              >
-                <div
-                  className={
-                    styles['dashboard_manager_balance_parent_row_col_parent']
-                  }
-                >
-                  <div
-                    className={
-                      styles[
-                        'dashboard_manager_balance_parent_row_col_parent_bottom'
-                      ]
-                    }
-                  >
-                    <div>Hôm nay: </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_parent_bottom_today'
-                        ]
-                      }
-                    >
-                      {' '}
-                      0 VNĐ
-                    </div>
-                  </div>
-
-                  <div
-                    className={
-                      styles['dashboard_manager_balance_parent_row_col_top']
-                    }
-                  >
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_title'
-                        ]
-                      }
-                    >
-                      <div
-                        className={
-                          styles[
-                            'dashboard_manager_balance_parent_row_col_top_title_left'
-                          ]
-                        }
-                      >
-                        <div>
-                          <ShoppingCartOutlined />
-                        </div>
-                        <div className={styles['profit']}>Tổng lợi nhuận</div>
-                      </div>
-                      <Popover content={contentProfit}>
-                        <div
-                          className={
-                            styles[
-                              'orders_manager_header_bottom_col_parent_child_icon'
-                            ]
-                          }
-                        >
-                          <InfoCircleOutlined />
-                        </div>
-                      </Popover>
-                    </div>
-                    <div
-                      className={
-                        styles[
-                          'dashboard_manager_balance_parent_row_col_top_value_profit'
-                        ]
-                      }
-                    >
-                      <div>
-                        {statis && statis.gross_profit
-                          ? formatCash(statis.gross_profit)
-                          : 0}{' '}
-                        VNĐ
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </div>
+                  {e.sumProfit}
+                </span>
+              </div>
+            ))}
+          </Row>
         </div>
       )}
 
@@ -501,9 +221,9 @@ const Overview = () => {
                   <div>Sản phẩm bán chạy</div>
                 </div>
                 <div style={{ width: '100%' }}>
-                  {statis &&
-                    statis.product_rank &&
-                    statis.product_rank.slice(0, 5).map((e, index) => {
+                  {statistical &&
+                    statistical.product_rank &&
+                    statistical.product_rank.slice(0, 5).map((e, index) => {
                       return (
                         <Row
                           align="middle"
@@ -515,6 +235,7 @@ const Overview = () => {
                         >
                           <Col span={5}>
                             <img
+                              alt=""
                               src={e[0].image && e[0].image[0]}
                               width="50px"
                             />

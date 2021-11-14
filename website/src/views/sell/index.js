@@ -62,6 +62,7 @@ import {
   ExclamationCircleOutlined,
   EditOutlined,
   DeleteOutlined,
+  CheckOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -94,17 +95,20 @@ export default function Sell() {
     name: 'Đơn 1',
     type: 'default',
     customer: null,
-    order_details: [],
-    payments: [],
-    sumCostPaid: 0,
+    order_details: [], //danh sách sản phẩm trong hóa đơn
+    payments: [], //hình thức thanh toán
+    sumCostPaid: 0, // tổng tiền của tất cả sản phẩm
+    discount: 0,
+    VAT: 0,
     noteInvoice: '',
-    salesChannel: '',
+    salesChannel: '', //kênh bán hàng
     isDelivery: false,
-    deliveryCharges: 0,
+    deliveryCharges: 0, //phí giao hàng
     shippingMethod: '',
     billOfLadingCode: '',
-    prepay: 0,
-    moneyGivenByCustomer: 0,
+    prepay: 0, //tiền khách thanh toán trước
+    moneyGivenByCustomer: 0, //tiền khách hàng đưa
+    excessCash: 0, //tiền thừa
   }
   const [invoices, setInvoices] = useState([initInvoice])
   const [indexInvoice, setIndexInvoice] = useState(0)
@@ -132,12 +136,11 @@ export default function Sell() {
   const _addProductToCartInvoice = (product) => {
     if (product) {
       const invoicesNew = [...invoices]
+      const indexProduct = invoicesNew[indexInvoice].order_details.findIndex(
+        (e) => e._id === product._id
+      )
 
       if (product.total_quantity !== 0) {
-        const indexProduct = invoicesNew[indexInvoice].order_details.findIndex(
-          (e) => e._id === product._id
-        )
-
         if (indexProduct !== -1) {
           if (
             invoicesNew[indexInvoice].order_details[indexProduct].quantity <
@@ -175,6 +178,22 @@ export default function Sell() {
             'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
         })
 
+      if (indexProduct)
+        invoicesNew[indexInvoice].VAT =
+          product && product._taxes
+            ? product._taxes.reduce((total, current) => total + current.value) +
+              +invoicesNew[indexInvoice].order_details[indexProduct].quantity
+            : 0
+      console.log(invoicesNew[indexInvoice].VAT)
+      const excessCashNew =
+        invoicesNew[indexInvoice].sumCostPaid +
+        invoicesNew[indexInvoice].VAT -
+        invoicesNew[indexInvoice].discount -
+        invoicesNew[indexInvoice].deliveryCharges
+
+      invoicesNew[indexInvoice].excessCash =
+        excessCashNew >= 0 ? 0 : excessCashNew
+
       setInvoices([...invoicesNew])
     }
   }
@@ -187,6 +206,15 @@ export default function Sell() {
       invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
         indexInvoice
       ].order_details.reduce((total, current) => total + current.sumCost, 0)
+
+      const excessCashNew =
+        invoicesNew[indexInvoice].sumCostPaid +
+        invoicesNew[indexInvoice].VAT -
+        invoicesNew[indexInvoice].discount -
+        invoicesNew[indexInvoice].deliveryCharges
+
+      invoicesNew[indexInvoice].excessCash =
+        excessCashNew >= 0 ? 0 : excessCashNew
 
       setInvoices([...invoicesNew])
     }
@@ -202,6 +230,7 @@ export default function Sell() {
     if (index !== -1) {
       const invoicesNew = [...invoices]
       invoicesNew[indexInvoice].order_details[index][attribute] = value
+
       setInvoices([...invoicesNew])
     }
   }
@@ -542,8 +571,10 @@ export default function Sell() {
 
   useEffect(() => {
     //back to login
-    if (!localStorage.getItem('accessToken')) history.push(ROUTES.LOGIN)
-    else {
+    if (!localStorage.getItem('accessToken')) {
+      localStorage.clear()
+      history.push(ROUTES.LOGIN)
+    } else {
       const data = decodeToken(localStorage.getItem('accessToken'))
       console.log(data)
       if (!localStorage.getItem('storeSell')) {
@@ -557,11 +588,6 @@ export default function Sell() {
       }
     }
   }, [])
-
-  //init invoice
-  // useEffect(() => {
-  //   dispatch({ type: 'UPDATE_INVOICE', data: [initInvoice] })
-  // }, [])
 
   useEffect(() => {
     _getCustomers()
@@ -819,6 +845,15 @@ export default function Sell() {
                         0
                       )
 
+                      const excessCashNew =
+                        invoicesNew[indexInvoice].sumCostPaid +
+                        invoicesNew[indexInvoice].VAT -
+                        invoicesNew[indexInvoice].discount -
+                        invoicesNew[indexInvoice].deliveryCharges
+
+                      invoicesNew[indexInvoice].excessCash =
+                        excessCashNew >= 0 ? 0 : excessCashNew
+
                       setInvoices([...invoicesNew])
                       _editProductInInvoices('quantity', value, index)
                     }}
@@ -848,6 +883,15 @@ export default function Sell() {
                         (total, current) => total + current.sumCost,
                         0
                       )
+
+                      const excessCashNew =
+                        invoicesNew[indexInvoice].sumCostPaid +
+                        invoicesNew[indexInvoice].VAT -
+                        invoicesNew[indexInvoice].discount -
+                        invoicesNew[indexInvoice].deliveryCharges
+
+                      invoicesNew[indexInvoice].excessCash =
+                        excessCashNew >= 0 ? 0 : excessCashNew
 
                       setInvoices([...invoicesNew])
                       _editProductInInvoices('sale_price', +value, index)
@@ -1117,23 +1161,40 @@ export default function Sell() {
                   value={customer.first_name + ' ' + customer.last_name}
                   key={index}
                 >
-                  <div
+                  <Row
                     style={{ padding: '7px 13px' }}
+                    align="middle"
+                    justify="space-between"
+                    wrap={false}
                     onClick={(e) => {
                       _editInvoice('customer', customer)
                       _editInvoice(
                         'name',
                         `${customer.first_name} 
-                      ${customer.last_name} - ${customer.phone}`
+                    ${customer.last_name} - ${customer.phone}`
                       )
                       e.stopPropagation()
                     }}
                   >
-                    <p style={{ fontWeight: 600, marginBottom: 0 }}>
-                      {customer.first_name + ' ' + customer.last_name}
-                    </p>
-                    <p style={{ marginBottom: 0 }}>{customer.phone}</p>
-                  </div>
+                    <div>
+                      <p style={{ fontWeight: 600, marginBottom: 0 }}>
+                        {customer.first_name + ' ' + customer.last_name}
+                      </p>
+                      <p style={{ marginBottom: 0 }}>{customer.phone}</p>
+                    </div>
+                    <CheckOutlined
+                      style={{
+                        color: 'green',
+                        fontSize: 18,
+                        display:
+                          invoices[indexInvoice] &&
+                          invoices[indexInvoice].customer &&
+                          invoices[indexInvoice].customer._id === customer._id
+                            ? ''
+                            : 'none',
+                      }}
+                    />
+                  </Row>
                 </Select.Option>
               ))}
             </Select>
@@ -1227,7 +1288,14 @@ export default function Sell() {
               <Switch
                 checked={invoices[indexInvoice].isDelivery}
                 style={{ marginRight: 10 }}
-                onChange={(checked) => _editInvoice('isDelivery', checked)}
+                onChange={(checked) => {
+                  _editInvoice('isDelivery', checked)
+                  _editInvoice('deliveryCharges', 0)
+                  _editInvoice('prepay', 0)
+                  _editInvoice('moneyGivenByCustomer', 0)
+                  _editInvoice('payments', [])
+                  _editInvoice('excessCash', 0)
+                }}
               />
               Giao hàng
             </div>
@@ -1296,7 +1364,7 @@ export default function Sell() {
             </Row>
             <Row justify="space-between" wrap={false} align="middle">
               <p>VAT</p>
-              <p>0</p>
+              <p>{formatCash(invoices[indexInvoice].VAT || 0)}</p>
             </Row>
             <Row justify="space-between" wrap={false} align="middle">
               <p>Chiết khấu</p>
@@ -1392,62 +1460,132 @@ export default function Sell() {
               }}
             >
               <p style={{ color: 'black', fontWeight: 600 }}>Khách phải trả</p>
-              <p>{formatCash(350000)}</p>
+              <p>
+                {formatCash(
+                  invoices[indexInvoice].sumCostPaid +
+                    invoices[indexInvoice].VAT -
+                    invoices[indexInvoice].discount -
+                    invoices[indexInvoice].deliveryCharges
+                )}
+              </p>
             </Row>
             {invoices[indexInvoice].isDelivery ? (
               <Row justify="space-between" wrap={false} align="middle">
                 <p style={{ marginBottom: 0 }}>Tiền thanh toán trước (F2)</p>
-                <div
-                  style={{
-                    borderBottom: '0.75px solid #C9C8C8',
-                    width: '40%',
-                  }}
-                >
-                  <InputNumber
-                    ref={inputRef}
-                    value={invoices[indexInvoice].prepay}
-                    onChange={(value) => _editInvoice('prepay', value)}
-                    placeholder="Nhập tiền thanh toán trước"
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    min={0}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                  />
-                </div>
+                {invoices[indexInvoice].payments.length === 1 ? (
+                  <div
+                    style={{
+                      borderBottom: '0.75px solid #C9C8C8',
+                      width: '40%',
+                    }}
+                  >
+                    <InputNumber
+                      ref={inputRef}
+                      value={invoices[indexInvoice].prepay}
+                      onChange={(value) => _editInvoice('prepay', value)}
+                      onBlur={(e) => {
+                        const valueNew = e.target.value.replaceAll(',', '')
+                        const excessCash =
+                          +valueNew -
+                          (invoices[indexInvoice].sumCostPaid +
+                            invoices[indexInvoice].VAT -
+                            invoices[indexInvoice].discount -
+                            invoices[indexInvoice].deliveryCharges)
+                        if (excessCash >= 0)
+                          _editInvoice('excessCash', excessCash)
+                        else _editInvoice('excessCash', 0)
+
+                        _editInvoice('payments', [
+                          {
+                            ...invoices[indexInvoice].payments[0],
+                            value: +valueNew,
+                          },
+                        ])
+                      }}
+                      placeholder="Nhập tiền thanh toán trước"
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      min={0}
+                      bordered={false}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                ) : (
+                  formatCash(invoices[indexInvoice].prepay)
+                )}
               </Row>
             ) : (
               <Row justify="space-between" wrap={false} align="middle">
                 <p style={{ marginBottom: 0 }}>Tiền khách đưa (F2)</p>
-                <div
-                  style={{
-                    borderBottom: '0.75px solid #C9C8C8',
-                    width: '40%',
-                  }}
-                >
-                  <InputNumber
-                    placeholder="Nhập tiền tiền khách đưa"
-                    ref={inputRef}
-                    value={invoices[indexInvoice].moneyGivenByCustomer}
-                    onChange={(value) =>
-                      _editInvoice('moneyGivenByCustomer', value)
-                    }
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    min={0}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                  />
-                </div>
+                {invoices[indexInvoice].payments.length === 1 ? (
+                  <div
+                    style={{
+                      borderBottom: '0.75px solid #C9C8C8',
+                      width: '40%',
+                    }}
+                  >
+                    <InputNumber
+                      placeholder="Nhập tiền tiền khách đưa"
+                      ref={inputRef}
+                      value={invoices[indexInvoice].moneyGivenByCustomer}
+                      onChange={(value) =>
+                        _editInvoice('moneyGivenByCustomer', value)
+                      }
+                      onBlur={(e) => {
+                        const valueNew = e.target.value.replaceAll(',', '')
+                        const excessCash =
+                          +valueNew -
+                          (invoices[indexInvoice].sumCostPaid +
+                            invoices[indexInvoice].VAT -
+                            invoices[indexInvoice].discount -
+                            invoices[indexInvoice].deliveryCharges)
+                        if (excessCash >= 0)
+                          _editInvoice('excessCash', excessCash)
+                        else _editInvoice('excessCash', 0)
+
+                        _editInvoice('payments', [
+                          {
+                            ...invoices[indexInvoice].payments[0],
+                            value: +valueNew,
+                          },
+                        ])
+                      }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                      }
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      min={0}
+                      bordered={false}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                ) : (
+                  formatCash(invoices[indexInvoice].moneyGivenByCustomer)
+                )}
               </Row>
             )}
             <Row>
-              <PaymentMethods />
+              <PaymentMethods
+                costMustPaid={
+                  invoices[indexInvoice].sumCostPaid +
+                  invoices[indexInvoice].VAT -
+                  invoices[indexInvoice].discount -
+                  invoices[indexInvoice].deliveryCharges
+                }
+                indexInvoice={indexInvoice}
+                invoices={invoices}
+                editInvoice={_editInvoice}
+              />
             </Row>
+            <div style={{ marginBottom: 20 }}>
+              <Space size="middle">
+                {invoices[indexInvoice].payments.map((payment, index) => (
+                  <i style={{ color: '#637381' }}>{payment.method}</i>
+                ))}
+              </Space>
+            </div>
           </div>
           <Row
             wrap={false}
@@ -1457,7 +1595,7 @@ export default function Sell() {
           >
             <span>Tiền thừa: </span>
             <span style={{ fontWeight: 600, color: 'red' }}>
-              {formatCash(10000)}
+              {formatCash(invoices[indexInvoice].excessCash)}
             </span>
           </Row>
           <div style={{ marginBottom: 15, marginTop: 10 }}>
@@ -1472,6 +1610,7 @@ export default function Sell() {
           >
             <Space>
               <Button
+                size="large"
                 type="primary"
                 style={{
                   width: 150,
@@ -1482,14 +1621,17 @@ export default function Sell() {
                 In báo giá
               </Button>
               <Button
+                size="large"
                 type="primary"
                 style={{
-                  width: 150,
+                  minWidth: 150,
                   backgroundColor: '#0877DE',
                   borderColor: '#0877DE',
                 }}
               >
-                Thanh toán
+                {invoices[indexInvoice].isDelivery
+                  ? 'Tạo đơn giao hàng'
+                  : 'Thanh toán'}
               </Button>
             </Space>
           </Row>

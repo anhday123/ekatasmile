@@ -235,41 +235,7 @@ export default function Login() {
 
     apiRegister(object)
   }
-  const openNotificationLoginSuccess = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: 'Đăng nhập thành công',
-    })
-  }
-  const openNotificationLoginErrorActive = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản của bạn chưa được kích hoạt',
-    })
-  }
-  const openNotificationLoginErrorActiveError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản không tồn tại.',
-    })
-  }
-  const openNotificationLoginErrorActiveErrorBanned = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tài khoản đã bị khóa bởi admin.',
-    })
-  }
-  const openNotificationLoginErrorActiveErrorPassword = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Sai mật khẩu.',
-    })
-  }
+
   const openNotificationRegisterUsername = () => {
     notification.error({
       message: 'Thất bại',
@@ -280,17 +246,13 @@ export default function Login() {
 
   const getAllStoreData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
       const res = await getAllStore()
       console.log(res)
       if (res.status === 200) {
         const action = getStore(res.data.data)
         dispatch(action)
       }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
+    } catch (error) {}
   }
 
   useEffect(() => {
@@ -307,7 +269,7 @@ export default function Login() {
       }}
     >
       <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
-        <div style={{}} className={styles['login_choose_parent']}>
+        <div className={styles['login_choose_parent']}>
           <div
             style={{ paddingTop: '1rem' }}
             className={styles['login_choose']}
