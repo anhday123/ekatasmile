@@ -217,8 +217,36 @@ let updateCategoryS = async (req, res, next) => {
     }
 };
 
+let deleteCategoryS = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Categories`)
+            .deleteMany({ category_id: { $in: req._delete } });
+        try {
+            let _action = new Action();
+            _action.create({
+                business_id: Number(req.user.business_id),
+                type: 'Delete',
+                properties: 'Category',
+                name: 'Xóa phân loại sản phẩm',
+                data: req._delete,
+                performer_id: Number(req.user.user_id),
+                date: new Date(),
+            });
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, message: 'Xóa phân loại sản phẩm thành công!', data: req._delete });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     addCategoryS,
     getCategoryS,
     updateCategoryS,
+    deleteCategoryS,
 };

@@ -96,8 +96,33 @@ let updateCategoryC = async (req, res, next) => {
     }
 };
 
+let deleteCategoryC = async (req, res, next) => {
+    try {
+        let category_ids = req.query.category_id.split('---').map((id) => {
+            return Number(id);
+        });
+        let categories = await client
+            .db(DB)
+            .collection('Categories')
+            .find({ $or: [{ category_id: { $in: category_ids } }, { parent_id: { $in: category_ids } }] })
+            .toArray();
+        req['_delete'] = categories.map((category) => {
+            if (category) {
+                if (category.category_id) {
+                    return Number(category.category_id);
+                }
+            }
+            return 0;
+        });
+        await categoryService.deleteCategoryS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getCategoryC,
     addCategoryC,
     updateCategoryC,
+    deleteCategoryC,
 };
