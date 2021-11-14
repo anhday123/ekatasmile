@@ -38,6 +38,7 @@ class User {
     create(data) {
         this.business_id = Number(data.business_id);
         this.user_id = Number(data.user_id);
+        this.code = Number(this.user_id) + 1000000;
         this.username = String(data.username).replace(/\s/g, '').toLowerCase();
         this.password = String(data.password);
         this.otp_code = String(data.otp_code) || false;

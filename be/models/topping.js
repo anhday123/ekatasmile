@@ -11,6 +11,7 @@ class Topping {
         this.business_id = Number(data.business_id);
         this.category_id = Number(data.category_id);
         this.topping_id = Number(data.topping_id);
+        this.code = Number(this.topping_id) + 1000000;
         this.name = data.name.trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.price = data.price || 0;

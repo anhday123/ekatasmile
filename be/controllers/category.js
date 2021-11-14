@@ -26,6 +26,7 @@ let addCategoryC = async (req, res, next) => {
                 business_id: Number(req.user.business_id),
                 name: req.body.name,
             });
+        console.log(category);
         let categoryMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Categories' });
         if (category) {
             throw new Error(`400: Nhóm sản phẩm đã tồn tại!`);

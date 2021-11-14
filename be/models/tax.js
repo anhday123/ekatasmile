@@ -9,6 +9,7 @@ class Tax {
     }
     create(data) {
         this.tax_id = Number(data.tax_id);
+        this.code = Number(this.tax_id) + 1000000;
         this.business_id = Number(data.business_id);
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();

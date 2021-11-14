@@ -10,6 +10,7 @@ class Store {
     create(data) {
         this.business_id = Number(data.business_id);
         this.store_id = Number(data.store_id);
+        this.code = Number(this.store_id) + 1000000;
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.branch_id = (() => {

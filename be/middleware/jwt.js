@@ -6,7 +6,7 @@ let auth = async (req, res, next) => {
         if (token) {
             try {
                 const decoded = await jwt.verifyToken(token);
-                req[`user`] = decoded.data;
+                req[`user`] = decoded;
                 next();
             } catch (error) {
                 throw new Error(`400: Unauthorized!`);

@@ -10,11 +10,12 @@ class Category {
     create(data) {
         this.category_id = Number(data.category_id);
         this.business_id = Number(data.business_id);
+        this.code = Number(this.category_id) + 1000000;
         this.parent_id = (() => {
             if (isNaN(data.parent_id)) {
                 return -1;
             }
-            return String(data.parent_id);
+            return Number(data.parent_id);
         })();
         this.priority = Number(data.priority);
         this.name = String(data.name).trim().toUpperCase();

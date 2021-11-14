@@ -13,6 +13,7 @@ class Table {
         this.position = String(data.position);
         this.sub_position = removeUnicode(this.position, true).toLowerCase();
         this.table_id = Number(data.table_id);
+        this.code = Number(this.table_id) + 1000000;
         this.name = String(data.name);
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.current_people = Number(data.current_people) || 0;

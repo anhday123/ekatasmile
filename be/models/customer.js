@@ -1,9 +1,7 @@
 const { removeUnicode } = require('../utils/string-handle');
 const { softValidate } = require('../utils/validate');
 
-let customerForm = [
-    'phone'
-];
+let customerForm = ['phone'];
 
 class Customer {
     validateInput(data) {
@@ -12,6 +10,7 @@ class Customer {
     create(data) {
         this.customer_id = Number(data.customer_id);
         this.business_id = Number(data.business_id);
+        this.code = Number(this.customer_id) + 1000000;
         this.phone = String(data.phone);
         this.type = String(data.type || 'Tiềm năng');
         this.sub_type = removeUnicode(this.type, true).toLowerCase();

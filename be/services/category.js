@@ -113,7 +113,7 @@ let getCategoryS = async (req, res, next) => {
             },
         });
         let countQuery = [...aggregateQuery];
-        aggregateQuery.push({ $sort: { create_date: -1 } });
+        aggregateQuery.push({ $sort: { priority: -1 } });
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
             let page_size = Number(req.query.page_size) || 50;

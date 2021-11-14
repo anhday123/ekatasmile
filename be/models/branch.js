@@ -10,6 +10,7 @@ class Branch {
     create(data) {
         this.business_id = Number(data.business_id);
         this.branch_id = Number(data.branch_id);
+        this.code = Number(this.branch_id) + 1000000;
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.logo = String(data.logo);
