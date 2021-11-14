@@ -9,7 +9,7 @@ let createToken = (data, timelife) => {
     return new Promise((resolve, reject) => {
         jwt.sign(
             {
-                ...payload,
+                data: payload,
                 exp: Math.floor(Date.now()) + timelife * 3600000,
             },
             key.PRIVATEKEY,
