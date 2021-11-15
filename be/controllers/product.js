@@ -793,7 +793,7 @@ let importFileC = async (req, res, next) => {
                     image: [product['Hình ảnh_1']],
                     options: (() => {
                         let result = [];
-                        for (let i = 1; i <= 3; i++) {
+                        for (let i = 1; i <= 2; i++) {
                             if (product[`Giá trị ${i}`]) {
                                 result.push(product[`Giá trị ${i}`]);
                             }
