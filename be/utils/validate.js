@@ -90,7 +90,7 @@ let softValidate = (dataValidated, propertiesForm, HTTPStatusCode) => {
         throw new Error(`${HTTPStatusCode} Kiểu dữ liệu của propertiesForm phải là array!`);
     }
     propertiesForm.map((property) => {
-        if (!dataValidated[property]) {
+        if (dataValidated[property] == undefined) {
             throw new Error(`${HTTPStatusCode} ${property} không được để trống!`);
         }
     });

@@ -5,6 +5,8 @@ const DB = process.env.DATABASE;
 
 const productService = require(`../services/product`);
 const { Product, Attribute, Variant, Location, Feedback } = require('../models/product');
+const { Category } = require('../models/category');
+const { Supplier } = require('../models/supplier');
 
 const XLSX = require('xlsx');
 
@@ -545,13 +547,9 @@ let updateProductC = async (req, res, next) => {
 
 let deleteProductC = async (req, res, next) => {
     try {
-        let product = await client
-            .db(DB)
-            .collection('Products')
-            .findOne({ product_id: Number(req.params.product_id) });
-        if (!product) {
-            throw new Error('400: Sản phẩm không tồn tại!');
-        }
+        req['_delete'] = req.query.product_id.split('---').map((id) => {
+            return Number(id);
+        });
         await productService.deleteProductS(req, res, next);
     } catch (err) {
         next(err);
@@ -599,42 +597,128 @@ let importFileC = async (req, res, next) => {
             type: 'buffer',
         });
         let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
-        console.log(excelProducts);
+        // console.log(excelProducts);
         let suppliers = await client
             .db(DB)
             .collection('Suppliers')
-            .find({ business_id: Number(req.user.business_id) });
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
         let _suppliers = {};
         suppliers.map((supplier) => {
             _suppliers[supplier.name] = supplier;
         });
+        let excelSupplier = [];
+        for (let i in excelProducts) {
+            if (excelProducts[i]['Nhà cung cấp']) {
+                excelSupplier.push(excelProducts[i]['Nhà cung cấp']);
+            }
+        }
+        let newSuppliers = await new Promise(async (resolve, reject) => {
+            let result = [];
+            let supplier_id = await client
+                .db(DB)
+                .collection('Suplliers')
+                .findOne({ name: 'Suplliers' })
+                .then((maxSupplierId) => {
+                    if (maxSupplierId.values) {
+                        return maxSupplierId.values;
+                    }
+                    return 0;
+                });
+            for (let i in excelSupplier) {
+                if (!_suppliers[excelSupplier[i]]) {
+                    supplier_id++;
+                    let _supplier = new Supplier();
+                    _supplier.create({
+                        supplier_id: Number(supplier_id),
+                        business_id: Number(req.user.business_id),
+                        name: excelSupplier[i],
+                        create_date: new Date(),
+                        creator_id: Number(req.user.user_id),
+                        active: true,
+                    });
+                    await client.db(DB).collection('Suplliers').insertOne(_supplier);
+                    result.push({ ..._supplier });
+                }
+            }
+            resolve(result);
+        });
+        newSuppliers.map((supplier) => {
+            _suppliers[supplier.name] = supplier;
+        });
+
         let categories = await client
             .db(DB)
             .collection('Categories')
-            .find({ business_id: Number(req.user.business_id) });
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
         let _categories = {};
         categories.map((category) => {
             _categories[category.name] = category;
         });
+        let excelCategory = [];
+        for (let i in excelProducts) {
+            if (excelProducts[i]['Loại sản phẩm']) {
+                excelCategory.push(excelProducts[i]['Loại sản phẩm']);
+            }
+        }
+        let newCategories = await new Promise(async (resolve, reject) => {
+            let result = [];
+            let category_id = await client
+                .db(DB)
+                .collection('Categories')
+                .findOne({ name: 'Categories' })
+                .then((data) => {
+                    if (data.values) {
+                        return data.values;
+                    }
+                    return 0;
+                });
+            for (let i in excelCategory) {
+                if (!_categories[excelCategory[i]]) {
+                    category_id++;
+                    let _category = new Category();
+                    _category.create({
+                        category_id: Number(category_id),
+                        business_id: Number(req.user.business_id),
+                        name: excelCategory[i],
+                        create_date: new Date(),
+                        creator_id: Number(req.user.user_id),
+                        active: true,
+                    });
+                    await client.db(DB).collection('Categories').insertOne(_category);
+                    result.push({ ..._category });
+                }
+            }
+            resolve(result);
+        });
+        newCategories.map((category) => {
+            _categories[category.name] = category;
+        });
+
         let branchs = await client
             .db(DB)
             .collection('Branchs')
-            .find({ business_id: Number(req.user.business_id) });
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
         let _branchs = {};
         branchs.map((branch) => {
             _branchs[branch.name] = branch;
         });
+        let excelBranch = [];
+        for (let i in excelProducts) {
+        }
+
         let stores = await client
             .db(DB)
             .collection('Stores')
-            .find({ business_id: Number(req.user.business_id) });
+            .find({ business_id: Number(req.user.business_id) })
+            .toArray();
         let _stores = {};
         stores.map((store) => {
             _stores[store.name] = store;
         });
         let _products = {};
-        let _attributes = {};
-        let _variants = {};
         excelProducts.map((product) => {
             if (!_products[product['Mã sản phẩm']]) {
                 _products[product['Mã sản phẩm']] = {
@@ -665,42 +749,159 @@ let importFileC = async (req, res, next) => {
                     description: product['Mô tả'],
                 };
             }
-            if (!_attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`]) {
-                _attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`] = {
-                    option: product['Thuộc tính 1'],
-                    values: [product['Giá trị 1']],
-                };
-            } else {
-                _attributes[`${product['Mã sản phẩm']}-${product['Thuộc tính 1']}`].values.push(
-                    product['Giá trị 1']
-                );
+            if (!_products[product['Mã sản phẩm']]['attributes']) {
+                _products[product['Mã sản phẩm']]['attributes'] = [];
             }
-            if (!_variants[product['Mã phiên bản']]) {
+            if (_products[product['Mã sản phẩm']]['attributes']) {
+                for (let i = 1; i <= 3; i++) {
+                    if (product[`Thuộc tính ${i}`]) {
+                        let index = -1;
+                        for (let j in _products[product['Mã sản phẩm']].attributes) {
+                            if (
+                                _products[product['Mã sản phẩm']].attributes[j].option ==
+                                product[`Thuộc tính ${i}`].toUpperCase()
+                            ) {
+                                index = j;
+                            }
+                        }
+                        if (index != -1) {
+                            if (
+                                !_products[product['Mã sản phẩm']].attributes[index].values.includes(
+                                    product[`Giá trị ${i}`].toUpperCase()
+                                )
+                            ) {
+                                _products[product['Mã sản phẩm']].attributes[index].values.push(
+                                    product[`Giá trị ${i}`].toUpperCase()
+                                );
+                            }
+                        } else {
+                            _products[product['Mã sản phẩm']].attributes.push({
+                                option: product[`Thuộc tính ${i}`].toUpperCase(),
+                                values: [product[`Giá trị ${i}`].toUpperCase()],
+                            });
+                        }
+                    }
+                }
             }
-            let _variant = {
-                title: product['Tên phiên bản'],
-                sku: product['Mã phiên bản'],
-                image: product['Hình ảnh_1'],
-                options: product['Mã sản phẩm'],
-                supplier: product['Mã sản phẩm'],
-                import_price: product['Giá nhập hàng'],
-                base_price: product['Giá vốn'],
-                sale_price: product['Giá bán'],
-            };
-            let _location = {
-                type: product['Nơi nhập'],
-                name: (() => {
-                    if ('store') {
-                        return _stores[product['Tên nơi nhập']].name;
-                    }
-                    if ('branch') {
-                        return _branchs[product['Tên nơi nhập']].name;
-                    }
-                })(),
-                quantity: product['Số lượng nhập'],
-            };
+            if (!_products[product['Mã sản phẩm']]['variants']) {
+                _products[product['Mã sản phẩm']]['variants'] = [];
+            }
+            if (_products[product['Mã sản phẩm']]['variants']) {
+                _products[product['Mã sản phẩm']]['variants'].push({
+                    title: product['Tên phiên bản'],
+                    sku: product['Mã phiên bản'],
+                    image: product['Hình ảnh_1'],
+                    options: (() => {
+                        let result = [];
+                        for (let i = 1; i <= 3; i++) {
+                            if (product[`Giá trị ${i}`]) {
+                                result.push(product[`Giá trị ${i}`]);
+                            }
+                        }
+                        return result;
+                    })(),
+                    supplier: product['Mã sản phẩm'],
+                    import_price: product['Giá nhập hàng'],
+                    base_price: product['Giá vốn'],
+                    sale_price: product['Giá bán lẻ'],
+                    wholesale_price: product['Giá bán sỉ'],
+                    wholesale_quantity: product['Số lượng sỉ'],
+                    locations: (() => {
+                        if (product['Số địa điểm nhập']) {
+                            let _locations = [];
+                            for (let i = 0; i < product['Số địa điểm nhập']; i++) {
+                                let _location = (() => {
+                                    if (i == 0) {
+                                        return {
+                                            type: (() => {
+                                                if (
+                                                    product['Nơi nhập'].toLowerCase() == 'store' ||
+                                                    product['Nơi nhập'].toLowerCase() == 'cửa hàng'
+                                                ) {
+                                                    return 'store';
+                                                }
+                                                return 'branch';
+                                            })(),
+                                            inventory_id: (() => {
+                                                if (_stores[`${product['Tên nơi nhập'].toUpperCase()}`]) {
+                                                    if (
+                                                        _stores[`${product['Tên nơi nhập'].toUpperCase()}`]
+                                                            .name
+                                                    ) {
+                                                        return _stores[
+                                                            `${product['Tên nơi nhập'].toUpperCase()}`
+                                                        ].store_id;
+                                                    }
+                                                }
+                                                if (_branchs[`${product['Tên nơi nhập'].toUpperCase()}`]) {
+                                                    if (
+                                                        _branchs[`${product['Tên nơi nhập'].toUpperCase()}`]
+                                                            .name
+                                                    ) {
+                                                        return _branchs[
+                                                            `${product['Tên nơi nhập'].toUpperCase()}`
+                                                        ].branch_id;
+                                                    }
+                                                }
+                                                return '';
+                                            })(),
+                                            quantity: product['Số lượng nhập'],
+                                        };
+                                    } else {
+                                        return {
+                                            type: (() => {
+                                                if (
+                                                    product[`Nơi nhập_${i}`].toLowerCase() == 'store' ||
+                                                    product[`Nơi nhập_${i}`].toLowerCase() == 'cửa hàng'
+                                                ) {
+                                                    return 'store';
+                                                }
+                                                return 'branch';
+                                            })(),
+                                            inventory_id: (() => {
+                                                if (
+                                                    _stores[`${product[`Tên nơi nhập_${i}`].toUpperCase()}`]
+                                                ) {
+                                                    if (
+                                                        _stores[
+                                                            `${product[`Tên nơi nhập_${i}`].toUpperCase()}`
+                                                        ].name
+                                                    ) {
+                                                        return _stores[
+                                                            `${product[`Tên nơi nhập_${i}`].toUpperCase()}`
+                                                        ].store_id;
+                                                    }
+                                                }
+                                                if (
+                                                    _branchs[`${product[`Tên nơi nhập_${i}`].toUpperCase()}`]
+                                                ) {
+                                                    if (
+                                                        _branchs[
+                                                            `${product[`Tên nơi nhập_${i}`].toUpperCase()}`
+                                                        ].name
+                                                    ) {
+                                                        return _branchs[
+                                                            `${product[`Tên nơi nhập_${i}`].toUpperCase()}`
+                                                        ].branch_id;
+                                                    }
+                                                }
+                                                return '';
+                                            })(),
+                                            quantity: product[`Số lượng nhập_${i}`],
+                                        };
+                                    }
+                                })();
+                                _locations.push(_location);
+                            }
+                            return _locations;
+                        }
+                    })(),
+                });
+            }
         });
-        return;
+        _products = Object.values(_products);
+        req.body = { products: _products };
+        await addProductC(req, res, next);
     } catch (err) {
         next(err);
     }

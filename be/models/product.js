@@ -85,6 +85,8 @@ class Variant {
         this.import_price = Number(data.import_price || 0);
         this.base_price = Number(data.base_price || 0);
         this.sale_price = Number(data.sale_price || 0);
+        this.wholesale_price = Number(data.wholesale_price) || 0;
+        this.wholesale_quantity = Number(data.wholesale_quantity) || 0;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;

@@ -444,19 +444,19 @@ let deleteProductS = async (req, res, next) => {
         await client
             .db(DB)
             .collection('Products')
-            .deleteMany({ product_id: Number(req.params.product_id) });
+            .deleteMany({ product_id: { $in: req._delete } });
         await client
             .db(DB)
             .collection('Attributes')
-            .deleteMany({ product_id: Number(req.params.product_id) });
+            .deleteMany({ product_id: { $in: req._delete } });
         await client
             .db(DB)
             .collection('Variants')
-            .deleteMany({ product_id: Number(req.params.product_id) });
+            .deleteMany({ product_id: { $in: req._delete } });
         await client
             .db(DB)
             .collection('Locations')
-            .deleteMany({ product_id: Number(req.params.product_id) });
+            .deleteMany({ product_id: { $in: req._delete } });
         res.send({ success: true, message: 'Xoá sản phẩm thành công!' });
     } catch (err) {
         next(err);
@@ -523,6 +523,7 @@ module.exports = {
     getProductS,
     addProductS,
     updateProductS,
+    deleteProductS,
     getAllAtttributeS,
     addFeedbackS,
 };

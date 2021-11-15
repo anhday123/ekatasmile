@@ -11,6 +11,7 @@ const upload = multer({ storage: _storage });
 router.route(`/getproduct`).get(auth, product.getProductC);
 router.route(`/addproduct`).post(auth, product.addProductC);
 router.route(`/updateproduct/:product_id`).patch(auth, product.updateProductC);
+router.route(`/deleteproduct`).delete(auth, product.deleteProductC);
 router.route(`/getattribute`).get(auth, product.getAllAtttributeC);
 router.route(`/addfeedback`).post(auth, product.addFeedbackC);
 router.route(`/importfile`).post(auth, upload.single('file'), product.importFileC);
