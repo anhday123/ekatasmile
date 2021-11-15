@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import styles from './overview.module.scss'
-
 import { LineChart } from 'react-chartkick'
-import 'chartkick/chart.js'
 import { formatCash } from 'utils'
 
 import ModalIntro from 'components/introduction'

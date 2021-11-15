@@ -21,8 +21,8 @@ import moment from 'moment'
 import { getDelivery, UpdateDelivery } from '../../apis/delivery'
 
 //components
-import ImportModal from '../../components/ExportCSV/importModal'
-import exportToCSV from '../../components/ExportCSV/export'
+import ImportModal from 'components/ExportCSV/importModal'
+import exportToCSV from 'components/ExportCSV/export'
 import ChangeStatusModal from 'components/shipping-product/changeStatus'
 import Permission from 'components/permission'
 import ShippingProductAdd from 'views/actions/shipping-product/add'
@@ -193,6 +193,8 @@ export default function ShippingProduct() {
               </div>
             )
           }
+          default:
+            break
         }
       },
       sorter: (a, b) => compare(a, b, 'status'),

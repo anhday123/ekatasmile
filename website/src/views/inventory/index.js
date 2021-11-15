@@ -1,15 +1,17 @@
-import styles from './../product/product.module.scss'
-import { Link, useHistory } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+
+import styles from './product.module.scss'
+import { Link } from 'react-router-dom'
+import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
+import { formatCash } from 'utils'
+import moment from 'moment'
 
 import {
   Switch,
-  Drawer,
   Slider,
   Upload,
   Select,
-  Form,
   notification,
-  Checkbox,
   Button,
   Modal,
   Table,
@@ -20,25 +22,14 @@ import {
   Popover,
   Space,
   Popconfirm,
-  Tabs,
-  Badge,
 } from 'antd'
-import React, { useState, useEffect, useRef } from 'react'
-import {
-  ACTION,
-  ROUTES,
-  PERMISSIONS,
-  STATUS_PRODUCT,
-  IMAGE_DEFAULT,
-} from 'consts'
-import { formatCash } from 'utils'
-import { useDispatch, useSelector } from 'react-redux'
-import moment from 'moment'
 
 //components
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
-import columnsProduct from 'views/product/columns'
+import columnsProduct from './columns'
+import ExportProduct from 'components/ExportCSV/ExportProduct'
+import ImportProducts from 'components/import-products'
 
 //icons
 import { PlusCircleOutlined } from '@ant-design/icons'
@@ -47,26 +38,13 @@ import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
-import { apiAddCategory, getCategories } from 'apis/category'
-import {
-  apiProductCategoryMerge,
-  getProductsBranch,
-  updateProductBranch,
-  updateProductStore,
-  getProductsStore,
-  deleteProductStore,
-  deleteProductBranch,
-} from 'apis/product'
-import { uploadFile } from 'apis/upload'
+import { getCategories } from 'apis/category'
+import { getProducts, updateProduct, deleteProducts } from 'apis/product'
 import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
-  const dispatch = useDispatch()
-  const history = useHistory()
-  const branchId = useSelector((state) => state.branch.branchId)
-
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
@@ -76,7 +54,7 @@ export default function Product() {
     this_week: true,
   })
 
-  const [supplier, setSupplier] = useState([])
+  const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
   const [warranty, setWarranty] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
@@ -89,85 +67,9 @@ export default function Product() {
   })
   const [stores, setStores] = useState([]) //list store in filter
   const [storeId, setStoreId] = useState() //filter product by store
-  const [columns, setColumns] = useState(
-    localStorage.getItem('columnsProductInventory')
-      ? JSON.parse(localStorage.getItem('columnsProductInventory'))
-      : [...columnsProduct]
-  )
-  const [countProductByStatus, setCountProductByStatus] = useState({
-    all_count: 0,
-    available_count: 0,
-    low_count: 0,
-    out_count: 0,
-    shipping_count: 0,
-  })
+  const [columns, setColumns] = useState([])
+
   const [countProduct, setCountProduct] = useState(0)
-
-  const COLOR_STATUS = {
-    colorAll: '#ffcc01',
-    colorShipping: '#2badea',
-    colorAvailable: '#15a904',
-    colorLow: '#886464',
-    colorOut: 'red',
-  }
-
-  const columnsCategory = [
-    {
-      title: 'Tên nhóm',
-      dataIndex: 'name',
-      sorter: (a, b) => compare(a, b, 'name'),
-    },
-    {
-      title: 'Mã nhóm',
-      dataIndex: 'category_id',
-      sorter: (a, b) => compare(a, b, 'category_id'),
-    },
-    {
-      title: 'Người tạo',
-      render: (text, record) =>
-        record._creator &&
-        `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      render: (text, record) =>
-        text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-  ]
-
-  const apiAddCategoryDataMain = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiAddCategory(object)
-      console.log(res)
-      if (res.status === 200) {
-        notification.success({ message: 'Tạo danh mục thành công' })
-      } else
-        notification.error({
-          message: res.data.mess || 'Tạo danh mục thất bại',
-        })
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
-
-  const openNotificationSuccessStoreUpdate = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Cập nhật thông tin danh mục <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
 
   const apiAllCategoryData = async () => {
     try {
@@ -193,13 +95,22 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Danh mục',
-      key: 'category',
+      title: 'Số lượng',
+      dataIndex: 'total_quantity',
+      render: (text, record) => (
+        <div>
+          {record.locations.map((location) => (
+            <div>
+              {location.name} - {location.quantity}
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
-      title: 'Số lượng',
-      render: (text, record) =>
-        +record.available_stock_quantity + +record.low_stock_quantity,
+      title: 'Giá cơ bản',
+      dataIndex: 'base_price',
+      render: (text) => text && formatCash(text),
     },
     {
       title: 'Giá nhập',
@@ -218,7 +129,7 @@ export default function Product() {
       setLoading(true)
       const res = await apiAllSupplier()
       if (res.status === 200) {
-        setSupplier(res.data.data)
+        setSuppliers(res.data.data)
       }
 
       setLoading(false)
@@ -231,9 +142,9 @@ export default function Product() {
     setSelectedRowKeys(selectedRowKeys)
 
     const productsUpdateShipping = products.filter((product) =>
-      selectedRowKeys.includes(product._id)
+      selectedRowKeys.includes(product.product_id)
     )
-    console.log(productsUpdateShipping)
+
     setArrayProductShipping([...productsUpdateShipping])
   }
 
@@ -256,52 +167,52 @@ export default function Product() {
     }, 750)
   }
 
-  const apiProductCategoryMergeData = async () => {
-    setLoading(true)
+  const _getProductsToExport = async () => {
     try {
-      const res = await apiProductCategoryMerge({ page: 1, page_size: 10 })
-
-      if (res.status === 200) {
-      }
-      setLoading(false)
+      const res = await getProducts({ branch: true })
+      console.log(res)
+      if (res.status === 200) return res.data.data
+      return []
     } catch (error) {
-      setLoading(false)
+      console.log(error)
+      return []
     }
   }
+
   const getAllProduct = async (params) => {
     setLoading(true)
     setSelectedRowKeys([])
     setProducts([])
 
     try {
-      let res
-      //Nếu có filter cửa hàng thì gọi api product store
-      if (params.store_id) res = await getProductsStore({ ...params })
-      else res = await getProductsBranch({ ...params, branch_id: branchId })
+      const res = await getProducts({ ...params, branch: true })
+
       console.log(res)
       if (res.status === 200) {
         //tính tổng số lượng nếu có variant
         const dataNew = res.data.data.map((e) => {
-          let sumCount = 0
-          if (e.has_variable)
-            e.variants.map(
-              (v) =>
-                (sumCount += v.available_stock_quantity + v.low_stock_quantity)
-            )
-          else sumCount = -1
+          let sumQuantity = 0
+          let sumBasePrice = 0
+          let sumSalePrice = 0
+          let sumImportPrice = 0
 
-          return { ...e, sumCountVariant: sumCount }
+          e.variants.map((v) => {
+            sumQuantity += v.total_quantity
+            sumBasePrice += v.base_price
+            sumSalePrice += v.sale_price
+            sumImportPrice += v.import_price
+          })
+          return {
+            ...e,
+            sumQuantity: sumQuantity,
+            sumBasePrice: sumBasePrice,
+            sumSalePrice: sumSalePrice,
+            sumImportPrice: sumImportPrice,
+          }
         })
 
         setProducts([...dataNew])
         setCountProduct(res.data.count)
-        setCountProductByStatus({
-          all_count: res.data.all_count,
-          available_count: res.data.available_count,
-          low_count: res.data.low_count,
-          out_count: res.data.out_count,
-          shipping_count: res.data.shipping_count,
-        })
       }
 
       setLoading(false)
@@ -309,262 +220,17 @@ export default function Product() {
       setLoading(false)
     }
   }
-
-  const loadingAll = async () => {
-    try {
-      setLoading(true)
-      await apiAllSupplierData()
-      await apiProductCategoryMergeData()
-      await apiAllCategoryData()
-      await apiAllWarrantyData()
-      await getStores()
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    delete paramsFilter.store_id
-    if (branchId) getAllProduct({ ...paramsFilter })
-  }, [branchId])
 
   useEffect(() => {
     getAllProduct({ ...paramsFilter })
   }, [paramsFilter])
 
   useEffect(() => {
-    loadingAll()
-
-    if (!localStorage.getItem('columnsProductInventory'))
-      localStorage.setItem(
-        'columnsProductInventory',
-        JSON.stringify(columnsProduct)
-      )
+    apiAllSupplierData()
+    apiAllCategoryData()
+    apiAllWarrantyData()
+    getStores()
   }, [])
-
-  const ModalCreateCategory = ({ reload }) => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [formCategory] = Form.useForm()
-
-    return (
-      <>
-        <Permission permissions={[PERMISSIONS.tao_nhom_san_pham]}>
-          <Button size="large" onClick={toggle} type="primary">
-            Tạo danh mục
-          </Button>
-        </Permission>
-        <Modal
-          title="Tạo danh mục"
-          centered
-          width={500}
-          footer={null}
-          visible={visible}
-          onCancel={toggle}
-        >
-          <Form layout="vertical" form={formCategory}>
-            <Form.Item
-              label={
-                <div style={{ color: 'black', fontWeight: '600' }}>
-                  Tên danh mục:
-                </div>
-              }
-              name="name"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-            >
-              <Input
-                size="large"
-                placeholder="Nhập tên danh mục"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={
-                <div style={{ color: 'black', fontWeight: '600' }}>Mô tả:</div>
-              }
-              name="description"
-            >
-              <Input.TextArea
-                rows={4}
-                placeholder="Nhập mô tả"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Form.Item name="default" valuePropName="checked">
-                <Checkbox>Chọn làm mặc định</Checkbox>
-              </Form.Item>
-
-              <Button
-                size="large"
-                type="primary"
-                onClick={async () => {
-                  let isValidated = true
-                  try {
-                    await formCategory.validateFields()
-                    isValidated = true
-                  } catch (error) {
-                    isValidated = false
-                  }
-
-                  if (!isValidated) return
-                  const data = formCategory.getFieldsValue()
-                  const body = {
-                    name: data.name,
-                    default: data.default,
-                    description: data.description || '',
-                  }
-                  await apiAddCategoryDataMain(body)
-                  await reload()
-                  toggle()
-                }}
-              >
-                Tạo
-              </Button>
-            </Row>
-          </Form>
-        </Modal>
-      </>
-    )
-  }
-
-  const ViewCategories = () => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [categories, setCategories] = useState([])
-    const [loading, setLoading] = useState(false)
-
-    const getCategories = async (params) => {
-      try {
-        setLoading(true)
-        const res = await getCategories(params)
-        if (res.status === 200)
-          setCategories(res.data.data.filter((e) => e.active))
-        setLoading(false)
-      } catch (error) {
-        setLoading(false)
-        console.log(error)
-      }
-    }
-
-    const onSearchProductGroup = (e) => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-      typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value
-        if (value) getCategories({ search: value })
-        else getCategories()
-      }, 750)
-    }
-
-    useEffect(() => {
-      getCategories()
-    }, [])
-
-    return (
-      <>
-        <Permission permissions={[PERMISSIONS.nhom_san_pham]}>
-          <Button size="large" onClick={toggle} type="primary">
-            Xem danh mục
-          </Button>
-        </Permission>
-        <Drawer
-          title="Danh mục"
-          width={1000}
-          onClose={toggle}
-          visible={visible}
-          bodyStyle={{ paddingBottom: 80 }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'column',
-            }}
-          >
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={11}
-                xl={11}
-              >
-                <Input
-                  size="large"
-                  style={{ width: '100%' }}
-                  name="name"
-                  enterButton
-                  onChange={onSearchProductGroup}
-                  className={styles['orders_manager_content_row_col_search']}
-                  placeholder="Tìm kiếm theo mã, theo tên"
-                  allowClear
-                  autocomplete="off"
-                />
-              </Col>
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={11}
-                xl={11}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  <ModalCreateCategory reload={getCategories} />
-                </div>
-              </Col>
-            </Row>
-
-            <div
-              style={{
-                width: '100%',
-                marginTop: '1.25rem',
-                border: '1px solid rgb(243, 234, 234)',
-              }}
-            >
-              <Table
-                size="small"
-                columns={columnsCategory}
-                dataSource={categories}
-                scroll={{ x: 'max-content' }}
-                pagination={false}
-                loading={loading}
-              />
-            </div>
-          </div>
-        </Drawer>
-      </>
-    )
-  }
 
   const UpdateCategoryProducts = () => {
     const [visible, setVisible] = useState(false)
@@ -621,19 +287,16 @@ export default function Product() {
               onClick={async () => {
                 try {
                   setLoading(true)
-                  const productsSelect = products.filter((product) =>
-                    selectedRowKeys.includes(product._id)
+
+                  const listPromise = selectedRowKeys.map(
+                    async (product_id) => {
+                      const res = await updateProduct(
+                        { category_id: categoryId },
+                        product_id
+                      )
+                      return res
+                    }
                   )
-
-                  const listPromise = productsSelect.map(async (e) => {
-                    let res
-                    const body = { category_id: categoryId }
-                    if (paramsFilter.store_id)
-                      res = await updateProductStore(body, e._id)
-                    else res = await updateProductBranch(body, e._id)
-
-                    return res
-                  })
 
                   await Promise.all(listPromise)
                   setLoading(false)
@@ -650,6 +313,7 @@ export default function Product() {
               }}
               type="primary"
               size="large"
+              disabled={categoryId ? false : true}
             >
               Cập nhật
             </Button>
@@ -659,30 +323,16 @@ export default function Product() {
     )
   }
 
-  const deleteProducts = async () => {
+  const _deleteProducts = async () => {
     try {
       setLoading(true)
-      let res
-      if (paramsFilter.store_id) {
-        const body = {
-          store_id: paramsFilter.store_id,
-          products: selectedRowKeys,
-        }
-        res = await deleteProductStore(body)
-      } else {
-        const body = {
-          branch_id: branchId,
-          products: selectedRowKeys,
-        }
-        res = await deleteProductBranch(body)
-      }
-
-      if (res.status === 200) {
-        await getAllProduct({ ...paramsFilter })
-        setSelectedRowKeys([])
+      const res = await deleteProducts(selectedRowKeys.join('---'))
+      console.log(res)
+      if (res.status === 200)
         notification.success({ message: 'Xoá sản phẩm thành công!' })
-      } else notification.error({ message: 'Xoá sản phẩm thất bại!' })
-
+      else notification.error({ message: 'Xoá sản phẩm thất bại!' })
+      await getAllProduct({ ...paramsFilter })
+      setSelectedRowKeys([])
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -720,50 +370,20 @@ export default function Product() {
         className="avatar-uploader"
         showUploadList={false}
         action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-        onChange={(info) => {
-          if (info.file.status !== 'done') info.file.status = 'done'
-        }}
         disabled
       >
-        {record.image ? (
+        {record.image && record.image.length ? (
           <Popover
             style={{ top: 300 }}
             placement="top"
-            content={ContentZoomImage(record.image)}
+            content={ContentZoomImage(record.image[0])}
           >
-            <img src={record.image} alt="avatar" style={{ width: '100%' }} />
+            <img src={record.image[0]} alt="" style={{ width: '100%' }} />
           </Popover>
         ) : (
-          <img src={IMAGE_DEFAULT} alt="avatar" style={{ width: '100%' }} />
+          <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
         )}
       </Upload>
-    )
-  }
-
-  const ImageProductNotVariable = ({ record }) => {
-    return (
-      <Space>
-        {record.image.map((url) => (
-          <Popover content={ContentZoomImage(url)}>
-            <div
-              style={{
-                width: 85,
-                maxWidth: 85,
-                height: 85,
-                maxHeight: 85,
-                padding: 8,
-                border: '1px solid #d9d9d9',
-              }}
-            >
-              <img
-                alt=""
-                src={url}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-              />
-            </div>
-          </Popover>
-        ))}
-      </Space>
     )
   }
   /*image product */
@@ -782,20 +402,17 @@ export default function Product() {
     setValueTime()
   }
 
-  const updateActiveProduct = async (body, _id) => {
+  const _updateProduct = async (body, id) => {
     try {
       setLoading(true)
-      let res
-      if (paramsFilter.store_id) res = await updateProductStore(body, _id)
-      else res = await updateProductBranch(body, _id)
-
-      if (res.status === 200) {
-        await getAllProduct({ ...paramsFilter })
+      let res = await updateProduct(body, id)
+      console.log(res)
+      if (res.status === 200)
         notification.success({ message: 'Cập nhật thành công!' })
-      } else {
-        await getAllProduct({ ...paramsFilter })
+      else
         notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
-      }
+
+      await getAllProduct({ ...paramsFilter })
 
       setLoading(false)
     } catch (error) {
@@ -893,10 +510,17 @@ export default function Product() {
                 width: '100%',
               }}
             >
-              <Space size="large">
-                <ViewCategories />
+              <Space>
+                <ImportProducts
+                  reload={() => getAllProduct({ ...paramsFilter })}
+                />
+                <ExportProduct
+                  fileName="Products"
+                  name="Export Sản Phẩm"
+                  getProductsExport={_getProductsToExport}
+                />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
-                  <Link to={ROUTES.PRODUCT_ADD}>
+                  <Link to={ROUTES.INVENTORY_ADD}>
                     <Button
                       size="large"
                       type="primary"
@@ -919,38 +543,6 @@ export default function Product() {
             width: '100%',
           }}
         >
-          {/* <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
-            <Select
-              size="large"
-              value={paramsFilter.store_id}
-              showSearch
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo cửa hàng"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              onChange={onChangeStore}
-            >
-              {stores.map((store, index) => (
-                <Option value={store.store_id} key={index}>
-                  {store.name}
-                </Option>
-              ))}
-            </Select>
-          </Col> */}
-
           <Col
             style={{ width: '100%', marginTop: '1rem' }}
             xs={24}
@@ -998,7 +590,6 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-
           <Col
             style={{
               width: '100%',
@@ -1024,7 +615,11 @@ export default function Product() {
               onChange={onChangeCategoryValue}
             >
               {categories.map((values, index) => {
-                return <Option value={values.category_id}>{values.name}</Option>
+                return (
+                  <Option value={values.category_id} key={index}>
+                    {values.name}
+                  </Option>
+                )
               })}
             </Select>
           </Col>
@@ -1152,6 +747,39 @@ export default function Product() {
               </Select>
             </div>
           </Col>
+          {/* <Col
+            style={{
+              width: '100%',
+              marginTop: '1rem',
+            }}
+            xs={24}
+            sm={24}
+            md={24}
+            lg={11}
+            xl={11}
+          >
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo cửa hàng"
+              allowClear
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.store_id}
+              onChange={onChangeStore}
+            >
+              {stores.map((store, index) => {
+                return (
+                  <Option value={store.store_id} key={index}>
+                    {store.name}
+                  </Option>
+                )
+              })}
+            </Select>
+          </Col> */}
         </Row>
 
         <Row
@@ -1163,21 +791,28 @@ export default function Product() {
           }}
         >
           <Space>
-            <Button size="large" onClick={onClickClear} type="primary">
+            <Button
+              style={{
+                display: Object.keys(paramsFilter).length <= 2 && 'none',
+              }}
+              size="large"
+              onClick={onClickClear}
+              type="primary"
+            >
               Xóa tất cả lọc
             </Button>
             <SettingColumns
-              columnsDefault={columnsProduct}
-              nameColumn="columnsProductInventory"
               columns={columns}
               setColumns={setColumns}
+              columnsDefault={columnsProduct}
+              nameColumn="columnsProductInventory"
             />
           </Space>
         </Row>
         {selectedRowKeys && selectedRowKeys.length > 0 ? (
           <Row style={{ width: '100%', marginBottom: 10 }}>
             <Space size="middle">
-              <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+              {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
                 <Button
                   size="large"
                   onClick={() => {
@@ -1190,14 +825,14 @@ export default function Product() {
                 >
                   Chuyển hàng
                 </Button>
-              </Permission>
+              </Permission> */}
               <UpdateCategoryProducts />
               <Permission permission={[PERMISSIONS.xoa_san_pham]}>
                 <Popconfirm
-                  title="Bạn có muốn xoá các sản phẩm này!"
+                  title="Bạn có muốn xoá các sản phẩm này?"
                   okText="Đồng ý"
                   cancelText="Từ chối"
-                  onConfirm={deleteProducts}
+                  onConfirm={_deleteProducts}
                 >
                   <Button size="large" type="primary" danger>
                     Xoá
@@ -1210,82 +845,6 @@ export default function Product() {
           ''
         )}
 
-        <Tabs
-          defaultActiveKey="all"
-          style={{ width: '100%' }}
-          onChange={filterProductByStatus}
-        >
-          <Tabs.TabPane
-            tab={
-              <Badge
-                offset={[0, -10]}
-                count={countProductByStatus.all_count}
-                showZero
-                overflowCount={10000}
-                style={{ backgroundColor: COLOR_STATUS.colorAll }}
-              >
-                Tất Cả
-              </Badge>
-            }
-            key={STATUS_PRODUCT.all}
-          />
-          <Tabs.TabPane
-            tab={
-              <Badge
-                offset={[0, -10]}
-                count={countProductByStatus.shipping_count}
-                showZero
-                overflowCount={10000}
-                style={{ backgroundColor: COLOR_STATUS.colorShipping }}
-              >
-                Hàng Vận Chuyển
-              </Badge>
-            }
-            key={STATUS_PRODUCT.shipping_stock}
-          />
-          <Tabs.TabPane
-            tab={
-              <Badge
-                offset={[0, -10]}
-                count={countProductByStatus.available_count}
-                showZero
-                overflowCount={10000}
-                style={{ backgroundColor: COLOR_STATUS.colorAvailable }}
-              >
-                Hàng Khả Dụng
-              </Badge>
-            }
-            key={STATUS_PRODUCT.available_stock}
-          />
-          <Tabs.TabPane
-            tab={
-              <Badge
-                offset={[0, -10]}
-                count={countProductByStatus.low_count}
-                showZero
-                overflowCount={10000}
-                style={{ backgroundColor: COLOR_STATUS.colorLow }}
-              >
-                Hàng Số Lượng Thấp
-              </Badge>
-            }
-            key={STATUS_PRODUCT.low_stock}
-          />
-          <Tabs.TabPane
-            tab={
-              <Badge
-                offset={[0, -10]}
-                count={countProductByStatus.out_count}
-                showZero
-                overflowCount={10000}
-                style={{ backgroundColor: COLOR_STATUS.colorOut }}
-              >
-                Hết Hàng
-              </Badge>
-            }
-            key={STATUS_PRODUCT.out_stock}
-          />
-        </Tabs>
         <div className={styles['view_product_table']}>
           <Table
             style={{ width: '100%' }}
@@ -1293,56 +852,37 @@ export default function Product() {
               selectedRowKeys,
               onChange: onSelectChange,
             }}
-            rowKey="_id"
+            rowKey="product_id"
             expandable={{
               expandedRowRender: (record) => {
-                if (record.variants && record.variants.length)
-                  return (
-                    <div
-                      style={{
-                        marginTop: 25,
-                        marginBottom: 25,
-                      }}
-                    >
-                      <Table
-                        style={{ width: '100%' }}
-                        pagination={false}
-                        columns={columnsVariant.map((column) => {
-                          if (column.key === 'category')
-                            return {
-                              ...column,
-                              render: () =>
-                                record._category && record._category.name,
-                            }
-
-                          return column
-                        })}
-                        dataSource={record.variants}
-                        size="small"
-                      />
-                    </div>
-                  )
+                return (
+                  <div
+                    style={{
+                      marginTop: 25,
+                      marginBottom: 25,
+                    }}
+                  >
+                    <Table
+                      style={{ width: '100%' }}
+                      pagination={false}
+                      columns={columnsVariant}
+                      dataSource={record.variants}
+                      size="small"
+                    />
+                  </div>
+                )
               },
               expandedRowKeys: selectedRowKeys,
               expandIconColumnIndex: -1,
             }}
             columns={columns.map((column) => {
-              if (column.key === 'image')
-                return {
-                  ...column,
-                  render: (text, record) =>
-                    !record.has_variable && (
-                      <ImageProductNotVariable record={record} />
-                    ),
-                }
-
               if (column.key === 'name-product')
                 return {
                   ...column,
                   render: (text, record) =>
                     record.active ? (
                       <Link
-                        to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
+                        to={{ pathname: ROUTES.INVENTORY_ADD, state: record }}
                       >
                         {text}
                       </Link>
@@ -1361,36 +901,61 @@ export default function Product() {
               if (column.key === 'category')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record._category && record._category.name,
+                  render: (text, record) => {
+                    const category = categories.find(
+                      (c) => c.category_id === record.category_id
+                    )
+                    if (category) return category.name
+                    else return ''
+                  },
+                }
+
+              if (column.key === 'supplier')
+                return {
+                  ...column,
+                  render: (text, record) => {
+                    const supplier = suppliers.find(
+                      (c) => c.supplier_id === record.supplier_id
+                    )
+                    if (supplier) return supplier.name
+                    else return ''
+                  },
                 }
 
               if (column.key === 'sum-count')
                 return {
                   ...column,
                   render: (text, record) =>
-                    record.has_variable
-                      ? record.sumCountVariant
-                      : +record.available_stock_quantity +
-                        +record.low_stock_quantity,
+                    record.sumQuantity && formatCash(record.sumQuantity),
+                }
+
+              if (column.key === 'base-price')
+                return {
+                  ...column,
+                  render: (text, record) =>
+                    record.sumBasePrice && formatCash(record.sumBasePrice),
                 }
 
               if (column.key === 'sale-price')
                 return {
                   ...column,
                   render: (text, record) =>
-                    record.has_variable
-                      ? 'Nhiều'
-                      : formatCash(record.sale_price),
+                    record.sumSalePrice && formatCash(record.sumSalePrice),
                 }
 
               if (column.key === 'import-price')
                 return {
                   ...column,
                   render: (text, record) =>
-                    record.has_variable
-                      ? 'Nhiều'
-                      : formatCash(record.import_price),
+                    record.sumImportPrice && formatCash(record.sumImportPrice),
+                }
+
+              if (column.key === 'create_date')
+                return {
+                  ...column,
+                  render: (text, record) =>
+                    record.create_date &&
+                    moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
                 }
 
               if (column.key === 'active')
@@ -1400,9 +965,9 @@ export default function Product() {
                     <Switch
                       defaultChecked={record.active}
                       onClick={() =>
-                        updateActiveProduct(
+                        _updateProduct(
                           { active: !record.active },
-                          record._id
+                          record.product_id
                         )
                       }
                     />

@@ -1,15 +1,17 @@
-import styles from './../product/product.module.scss'
-import { Link, useHistory } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+
+import styles from './product.module.scss'
+import { Link } from 'react-router-dom'
+import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
+import { formatCash } from 'utils'
+import moment from 'moment'
 
 import {
   Switch,
-  Drawer,
   Slider,
   Upload,
   Select,
-  Form,
   notification,
-  Checkbox,
   Button,
   Modal,
   Table,
@@ -20,25 +22,12 @@ import {
   Popover,
   Space,
   Popconfirm,
-  Tabs,
-  Badge,
 } from 'antd'
-import React, { useState, useEffect, useRef } from 'react'
-import {
-  ACTION,
-  ROUTES,
-  PERMISSIONS,
-  STATUS_PRODUCT,
-  IMAGE_DEFAULT,
-} from 'consts'
-import { formatCash } from 'utils'
-import { useDispatch, useSelector } from 'react-redux'
-import moment from 'moment'
 
 //components
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
-import columnsProduct from 'views/product/columns'
+import columnsProduct from './columns'
 import ExportProduct from 'components/ExportCSV/ExportProduct'
 import ImportProducts from 'components/import-products'
 
@@ -49,26 +38,13 @@ import { PlusCircleOutlined } from '@ant-design/icons'
 import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
-import { apiAddCategory, getCategories } from 'apis/category'
-import {
-  apiProductCategoryMerge,
-  updateProductBranch,
-  updateProductStore,
-  deleteProductStore,
-  deleteProductBranch,
-  getProducts,
-  updateProduct,
-} from 'apis/product'
-import { uploadFile } from 'apis/upload'
+import { getCategories } from 'apis/category'
+import { getProducts, updateProduct, deleteProducts } from 'apis/product'
 import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
-  const dispatch = useDispatch()
-  const history = useHistory()
-  const branchId = useSelector((state) => state.branch.branchId)
-
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
@@ -91,59 +67,9 @@ export default function Product() {
   })
   const [stores, setStores] = useState([]) //list store in filter
   const [storeId, setStoreId] = useState() //filter product by store
-  const [columns, setColumns] = useState(
-    localStorage.getItem('columnsProduct')
-      ? JSON.parse(localStorage.getItem('columnsProduct'))
-      : [...columnsProduct]
-  )
+  const [columns, setColumns] = useState([])
 
   const [countProduct, setCountProduct] = useState(0)
-
-  const columnsCategory = [
-    {
-      title: 'Tên nhóm',
-      dataIndex: 'name',
-      sorter: (a, b) => compare(a, b, 'name'),
-    },
-    {
-      title: 'Mã nhóm',
-      dataIndex: 'category_id',
-      sorter: (a, b) => compare(a, b, 'category_id'),
-    },
-    {
-      title: 'Người tạo',
-      render: (text, record) =>
-        record._creator &&
-        `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      render: (text, record) =>
-        text ? moment(text).format('YYYY-MM-DD, HH:mm:ss') : '',
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-  ]
-
-  const apiAddCategoryDataMain = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiAddCategory(object)
-      console.log(res)
-      if (res.status === 200) {
-        notification.success({ message: 'Tạo danh mục thành công' })
-      } else
-        notification.error({
-          message: res.data.mess || res.data.message || 'Tạo danh mục thất bại',
-        })
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
 
   const apiAllCategoryData = async () => {
     try {
@@ -241,19 +167,6 @@ export default function Product() {
     }, 750)
   }
 
-  const apiProductCategoryMergeData = async () => {
-    setLoading(true)
-    try {
-      const res = await apiProductCategoryMerge({ page: 1, page_size: 10 })
-
-      if (res.status === 200) {
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
   const _getProductsToExport = async () => {
     try {
       const res = await getProducts({ store: true })
@@ -314,237 +227,10 @@ export default function Product() {
 
   useEffect(() => {
     apiAllSupplierData()
-    apiProductCategoryMergeData()
     apiAllCategoryData()
     apiAllWarrantyData()
     getStores()
-
-    if (!localStorage.getItem('columnsProduct'))
-      localStorage.setItem('columnsProduct', JSON.stringify(columnsProduct))
   }, [])
-
-  const ModalCreateCategory = ({ reload }) => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [formCategory] = Form.useForm()
-
-    return (
-      <>
-        <Permission permissions={[PERMISSIONS.tao_nhom_san_pham]}>
-          <Button size="large" onClick={toggle} type="primary">
-            Tạo danh mục
-          </Button>
-        </Permission>
-        <Modal
-          title="Tạo danh mục"
-          centered
-          width={500}
-          footer={null}
-          visible={visible}
-          onCancel={toggle}
-        >
-          <Form layout="vertical" form={formCategory}>
-            <Form.Item
-              label={
-                <div style={{ color: 'black', fontWeight: '600' }}>
-                  Tên danh mục:
-                </div>
-              }
-              name="name"
-              rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-            >
-              <Input
-                size="large"
-                placeholder="Nhập tên danh mục"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={
-                <div style={{ color: 'black', fontWeight: '600' }}>Mô tả:</div>
-              }
-              name="description"
-            >
-              <Input.TextArea
-                rows={4}
-                placeholder="Nhập mô tả"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Form.Item name="default" valuePropName="checked">
-                <Checkbox>Chọn làm mặc định</Checkbox>
-              </Form.Item>
-
-              <Button
-                size="large"
-                type="primary"
-                onClick={async () => {
-                  let isValidated = true
-                  try {
-                    await formCategory.validateFields()
-                    isValidated = true
-                  } catch (error) {
-                    isValidated = false
-                  }
-
-                  if (!isValidated) return
-                  const data = formCategory.getFieldsValue()
-                  const body = {
-                    name: data.name,
-                    default: data.default,
-                    description: data.description || '',
-                  }
-                  await apiAddCategoryDataMain(body)
-                  await reload()
-                  toggle()
-                }}
-              >
-                Tạo
-              </Button>
-            </Row>
-          </Form>
-        </Modal>
-      </>
-    )
-  }
-
-  const ViewCategories = () => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [categories, setCategories] = useState([])
-    const [loading, setLoading] = useState(false)
-
-    const getCategories = async (params) => {
-      try {
-        setLoading(true)
-        const res = await getCategories(params)
-        if (res.status === 200)
-          setCategories(res.data.data.filter((e) => e.active))
-        setLoading(false)
-      } catch (error) {
-        setLoading(false)
-        console.log(error)
-      }
-    }
-
-    const onSearchProductGroup = (e) => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-      typingTimeoutRef.current = setTimeout(() => {
-        const value = e.target.value
-        if (value) getCategories({ search: value })
-        else getCategories()
-      }, 750)
-    }
-
-    useEffect(() => {
-      getCategories()
-    }, [])
-
-    return (
-      <>
-        <Permission permissions={[PERMISSIONS.nhom_san_pham]}>
-          <Button size="large" onClick={toggle} type="primary">
-            Xem danh mục
-          </Button>
-        </Permission>
-        <Drawer
-          title="Danh mục"
-          width={1000}
-          onClose={toggle}
-          visible={visible}
-          bodyStyle={{ paddingBottom: 80 }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'column',
-            }}
-          >
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={11}
-                xl={11}
-              >
-                <Input
-                  size="large"
-                  style={{ width: '100%' }}
-                  name="name"
-                  enterButton
-                  onChange={onSearchProductGroup}
-                  className={styles['orders_manager_content_row_col_search']}
-                  placeholder="Tìm kiếm theo mã, theo tên"
-                  allowClear
-                  autocomplete="off"
-                />
-              </Col>
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={11}
-                xl={11}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  <ModalCreateCategory reload={getCategories} />
-                </div>
-              </Col>
-            </Row>
-
-            <div
-              style={{
-                width: '100%',
-                marginTop: '1.25rem',
-                border: '1px solid rgb(243, 234, 234)',
-              }}
-            >
-              <Table
-                size="small"
-                columns={columnsCategory}
-                dataSource={categories}
-                scroll={{ x: 'max-content' }}
-                pagination={false}
-                loading={loading}
-              />
-            </div>
-          </div>
-        </Drawer>
-      </>
-    )
-  }
 
   const UpdateCategoryProducts = () => {
     const [visible, setVisible] = useState(false)
@@ -637,16 +323,14 @@ export default function Product() {
     )
   }
 
-  const deleteProducts = async () => {
+  const _deleteProducts = async () => {
     try {
       setLoading(true)
-      const listPromise = selectedRowKeys.map(async (product_id) => {
-        const res = await updateProduct({ delete: true }, product_id)
-        return res
-      })
-
-      await Promise.all(listPromise)
-      notification.success({ message: 'Xoá sản phẩm thành công!' })
+      const res = await deleteProducts(selectedRowKeys.join('---'))
+      console.log(res)
+      if (res.status === 200)
+        notification.success({ message: 'Xoá sản phẩm thành công!' })
+      else notification.error({ message: 'Xoá sản phẩm thất bại!' })
       await getAllProduct({ ...paramsFilter })
       setSelectedRowKeys([])
       setLoading(false)
@@ -688,7 +372,7 @@ export default function Product() {
         action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
         disabled
       >
-        {record.image && record.image[0] ? (
+        {record.image && record.image.length ? (
           <Popover
             style={{ top: 300 }}
             placement="top"
@@ -835,7 +519,6 @@ export default function Product() {
                   name="Export Sản Phẩm"
                   getProductsExport={_getProductsToExport}
                 />
-                <ViewCategories />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
                   <Link to={ROUTES.PRODUCT_ADD}>
                     <Button
@@ -1108,14 +791,21 @@ export default function Product() {
           }}
         >
           <Space>
-            <Button size="large" onClick={onClickClear} type="primary">
+            <Button
+              style={{
+                display: Object.keys(paramsFilter).length <= 2 && 'none',
+              }}
+              size="large"
+              onClick={onClickClear}
+              type="primary"
+            >
               Xóa tất cả lọc
             </Button>
             <SettingColumns
               columns={columns}
               setColumns={setColumns}
               columnsDefault={columnsProduct}
-              nameColumn="columnsProduct"
+              nameColumn="columnsProductStore"
             />
           </Space>
         </Row>
@@ -1142,7 +832,7 @@ export default function Product() {
                   title="Bạn có muốn xoá các sản phẩm này?"
                   okText="Đồng ý"
                   cancelText="Từ chối"
-                  onConfirm={deleteProducts}
+                  onConfirm={_deleteProducts}
                 >
                   <Button size="large" type="primary" danger>
                     Xoá

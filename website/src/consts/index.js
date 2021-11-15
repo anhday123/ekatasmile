@@ -181,6 +181,8 @@ export const PERMISSIONS = {
   tao_quyen: 'tao_quyen',
 }
 
+export const VERSION_APP = '1.0.0'
+
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
 export const IMAGE_DEFAULT =

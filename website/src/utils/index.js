@@ -1,3 +1,5 @@
+import { VERSION_APP } from 'consts'
+
 export const compare = (a, b, key, convert) => {
   if (convert)
     return convert(a[key]) > convert(b[key])
@@ -74,16 +76,22 @@ export function removeAccents(str) {
   return str
 }
 
-export function emptyCache() {
-  if ('caches' in window) {
-    caches.keys().then((names) => {
-      // Delete all the cache files
-      names.forEach((name) => {
-        caches.delete(name)
+export const clearBrowserCache = () => {
+  let version = localStorage.getItem('version_app')
+  if (version !== VERSION_APP) {
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        // Delete all the cache files
+        names.forEach((name) => {
+          caches.delete(name)
+        })
       })
-    })
 
-    // Makes sure the page reloads. Changes are only visible after you refresh.
-    window.location.reload(true)
+      // Makes sure the page reloads. Changes are only visible after you refresh.
+      window.location.reload(true)
+    }
+
+    localStorage.clear()
+    localStorage.setItem('version_app', VERSION_APP)
   }
 }

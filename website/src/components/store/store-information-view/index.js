@@ -1,6 +1,5 @@
-import styles from './../store-information-update/store-information-update.module.scss'
 import React, { useState } from 'react'
-import noimage from './../../../assets/img/noimage.jpg'
+import noimage from 'assets/img/noimage.jpg'
 import { Row, Col, Modal } from 'antd'
 import moment from 'moment'
 export default function StoreInformationView(recordData) {
@@ -80,7 +79,7 @@ export default function StoreInformationView(recordData) {
           </Col>
 
           <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-            <div className={styles['information_store_modal']}>
+            <div>
               <div>
                 <b style={{ marginRight: '0.25rem' }}>Địa chỉ:</b>{' '}
                 {record.address}
@@ -97,7 +96,7 @@ export default function StoreInformationView(recordData) {
           </Col>
 
           <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={7} xl={7}>
-            <div className={styles['information_store_modal']}>
+            <div>
               <div>
                 <b style={{ marginRight: '0.25rem' }}>Liên hệ:</b>{' '}
                 {record.phone}

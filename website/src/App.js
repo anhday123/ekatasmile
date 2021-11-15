@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ACTION } from './consts/index'
+import { ACTION } from './consts'
 import { decodeToken } from 'react-jwt'
+import { clearBrowserCache } from 'utils'
 
 import Loading from 'components/loading/Loading'
 
@@ -10,6 +11,10 @@ import Views from 'views'
 
 function App() {
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    clearBrowserCache()
+  }, [])
 
   useEffect(() => {
     if (
