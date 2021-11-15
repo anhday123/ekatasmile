@@ -620,8 +620,8 @@ let importFileC = async (req, res, next) => {
                 .collection('Suplliers')
                 .findOne({ name: 'Suplliers' })
                 .then((maxSupplierId) => {
-                    if (maxSupplierId.values) {
-                        return maxSupplierId.values;
+                    if (maxSupplierId.value) {
+                        return maxSupplierId.value;
                     }
                     return 0;
                 });
@@ -669,8 +669,8 @@ let importFileC = async (req, res, next) => {
                 .collection('Categories')
                 .findOne({ name: 'Categories' })
                 .then((data) => {
-                    if (data.values) {
-                        return data.values;
+                    if (data.value) {
+                        return data.value;
                     }
                     return 0;
                 });
