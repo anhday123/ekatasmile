@@ -52,6 +52,16 @@ let getProductS = async (req, res, next) => {
                 },
             });
         }
+        if (req.query.sku) {
+            aggregateQuery.push({
+                $match: {
+                    sku: new RegExp(
+                        `${removeUnicode(req.query.sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
@@ -214,8 +224,8 @@ let getProductS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                'attributes.option': 0,
-                'attributes.values': 0,
+                'attributes.sub_option': 0,
+                'attributes.sub_values': 0,
                 '_business.password': 0,
                 '_creator.password': 0,
             },
