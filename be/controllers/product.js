@@ -740,7 +740,7 @@ let importFileC = async (req, res, next) => {
                         }
                         return '';
                     })(),
-                    image: product['Hình ảnh'],
+                    image: [product['Hình ảnh']],
                     length: product['Chiều dài'],
                     width: product['Chiều rộng'],
                     height: product['Chiều cao'],
@@ -790,7 +790,7 @@ let importFileC = async (req, res, next) => {
                 _products[product['Mã sản phẩm']]['variants'].push({
                     title: product['Tên phiên bản'],
                     sku: product['Mã phiên bản'],
-                    image: product['Hình ảnh_1'],
+                    image: [product['Hình ảnh_1']],
                     options: (() => {
                         let result = [];
                         for (let i = 1; i <= 3; i++) {
