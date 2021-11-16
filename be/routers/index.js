@@ -26,5 +26,6 @@ router.use(`/order`, require(`./order`));
 router.use(`/delivery`, require(`./delivery`));
 router.use(`/statis`, require(`./statis`));
 router.use(`/compare`, require(`./compare`));
+router.use(`/upload`, require(`./upload`));
 
 module.exports = router;
