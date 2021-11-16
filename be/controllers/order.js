@@ -115,30 +115,30 @@ let addOrderC = async (req, res, next) => {
             });
             return _detail;
         });
-        req.body.promotion = (() => {
-            if (
-                (req.query.voucher && req.query.voucher != '') ||
-                (req.body.promotion_id && req.body.promotion_id != '')
-            ) {
-                if (req.query.voucher && req.query.voucher != '') {
-                    let promotion = await client
-                        .db(DB)
-                        .collection('Promotions')
-                        .findOne({ promotion_code: req.query.voucher.split('_')[1] });
-                    if (!promotion) {
-                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
-                    }
-                    if (promotion.vouchers) {
-                        promotion.vouchers.map((voucher) => {
-                            if (voucher.voucher == req.query.voucher) {
-                                voucher.active = false;
-                            }
-                        });
-                    }
-                }
-            }
-            return;
-        })();
+        // req.body.promotion = (() => {
+        //     if (
+        //         (req.query.voucher && req.query.voucher != '') ||
+        //         (req.body.promotion_id && req.body.promotion_id != '')
+        //     ) {
+        //         if (req.query.voucher && req.query.voucher != '') {
+        //             let promotion = await client
+        //                 .db(DB)
+        //                 .collection('Promotions')
+        //                 .findOne({ promotion_code: req.query.voucher.split('_')[1] });
+        //             if (!promotion) {
+        //                 throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+        //             }
+        //             if (promotion.vouchers) {
+        //                 promotion.vouchers.map((voucher) => {
+        //                     if (voucher.voucher == req.query.voucher) {
+        //                         voucher.active = false;
+        //                     }
+        //                 });
+        //             }
+        //         }
+        //     }
+        //     return;
+        // })();
         let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
         let order_id = (() => {
             if (maxOrderId) {
