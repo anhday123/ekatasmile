@@ -31,9 +31,7 @@ export default function ConfigurationStore() {
           Cấu hình
         </div>
         <div className={`${styles['configuration_content']} ${styles['card']}`}>
-          <div
-            style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
-          >
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>
             Thông tin về cửa hàng
           </div>
           <Row
@@ -75,9 +73,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <HomeOutlined
-                    style={{ color: 'green', fontSize: '1.5rem' }}
-                  />
+                  <HomeOutlined style={{ color: 'green', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{
@@ -146,9 +142,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <TeamOutlined
-                    style={{ color: '#F060AE', fontSize: '1.5rem' }}
-                  />
+                  <TeamOutlined style={{ color: '#F060AE', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{
@@ -190,9 +184,7 @@ export default function ConfigurationStore() {
         </div>
 
         <div className={`${styles['configuration_content']} ${styles['card']}`}>
-          <div
-            style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
-          >
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>
             Thông tin bán hàng
           </div>
           <Row
@@ -234,9 +226,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <DollarOutlined
-                    style={{ color: '#EFC76E', fontSize: '1.5rem' }}
-                  />
+                  <DollarOutlined style={{ color: '#EFC76E', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{
@@ -305,9 +295,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <CreditCardOutlined
-                    style={{ color: '#B6DE62', fontSize: '1.5rem' }}
-                  />
+                  <CreditCardOutlined style={{ color: '#B6DE62', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{
@@ -349,11 +337,7 @@ export default function ConfigurationStore() {
         </div>
 
         <div className={`${styles['configuration_content']} ${styles['card']}`}>
-          <div
-            style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}
-          >
-            Nhật ký
-          </div>
+          <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Nhật ký</div>
           <Row
             style={{
               display: 'flex',
@@ -393,9 +377,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <FileExcelOutlined
-                    style={{ color: '#388F4D', fontSize: '1.5rem' }}
-                  />
+                  <FileExcelOutlined style={{ color: '#388F4D', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{
@@ -464,9 +446,7 @@ export default function ConfigurationStore() {
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <FormOutlined
-                    style={{ color: '#8F292F', fontSize: '1.5rem' }}
-                  />
+                  <FormOutlined style={{ color: '#8F292F', fontSize: '1.5rem' }} />
                 </div>
                 <div
                   style={{

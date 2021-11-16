@@ -57,9 +57,7 @@ export default function User() {
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
-
       const res = await apiSearch({ search: value })
-
       if (res.status === 200) setUser(res.data.data)
       setLoading(false)
     } catch (error) {

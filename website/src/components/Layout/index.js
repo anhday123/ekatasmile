@@ -41,6 +41,7 @@ import {
   RotateLeftOutlined,
   TagsOutlined,
   SettingOutlined,
+  ControlOutlined,
   ClusterOutlined,
   PlusOutlined,
   AlertOutlined,
@@ -86,9 +87,7 @@ const BaseLayout = (props) => {
   const [role, setRole] = useState([])
   const [modal1Visible, setModal1Visible] = useState(false)
   const dispatch = useDispatch()
-  const [collapsed, setCollapsed] = useState(
-    location.pathname === ROUTES.SELL ? true : false
-  ) //nếu nhấn vào menu bán hàng thì thu gọn menu
+  const [collapsed, setCollapsed] = useState(location.pathname === ROUTES.SELL ? true : false) //nếu nhấn vào menu bán hàng thì thu gọn menu
   const [isMobile, setIsMobile] = useState(false)
 
   const getInfoUser = async () => {
@@ -158,12 +157,12 @@ const BaseLayout = (props) => {
           title: 'Sản phẩm cửa hàng',
           permissions: [PERMISSIONS.quan_li_san_pham],
         },
-        {
-          icon: <BankOutlined />,
-          path: ROUTES.INVENTORY,
-          title: 'Sản phẩm ở kho',
-          permissions: [PERMISSIONS.quan_li_kho],
-        },
+        // {
+        //   icon: <BankOutlined />,
+        //   path: ROUTES.INVENTORY,
+        //   title: 'Sản phẩm ở kho',
+        //   permissions: [PERMISSIONS.quan_li_kho],
+        // },
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
@@ -270,6 +269,12 @@ const BaseLayout = (props) => {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
       permissions: [PERMISSIONS.cau_hinh_thong_tin],
+      icon: <ControlOutlined />,
+    },
+    {
+      path: ROUTES.SETTING,
+      title: 'Cài đặt',
+      permissions: [],
       icon: <SettingOutlined />,
     },
     {
@@ -334,8 +339,7 @@ const BaseLayout = (props) => {
                     key={e.path}
                     style={{
                       fontSize: '0.8rem',
-                      backgroundColor:
-                        location.pathname === e.path && '#e7e9fb',
+                      backgroundColor: location.pathname === e.path && '#e7e9fb',
                       color: 'black',
                     }}
                     icon={collapsed && e.icon}
@@ -415,9 +419,7 @@ const BaseLayout = (props) => {
     <div className={styles['user_information']}>
       <div onClick={() => modal1VisibleModal(true)}>
         <div style={{ color: '#565656', paddingLeft: 10 }}>
-          <UserOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }}
-          />
+          <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
           Tài khoản của tôi
         </div>
       </div>
@@ -428,9 +430,7 @@ const BaseLayout = (props) => {
         style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
       >
         <div>
-          <ExportOutlined
-            style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }}
-          />
+          <ExportOutlined style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }} />
           Đăng xuất
         </div>
       </Link>
@@ -663,10 +663,7 @@ const BaseLayout = (props) => {
               <div>
                 <Dragger {...propsMain}>
                   {list ? (
-                    <p
-                      style={{ marginTop: '1.25rem' }}
-                      className="ant-upload-drag-icon"
-                    >
+                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
                       <img
                         src={list}
                         style={{
@@ -678,10 +675,7 @@ const BaseLayout = (props) => {
                       />
                     </p>
                   ) : user && user.avatar !== ' ' ? (
-                    <p
-                      style={{ marginTop: '1.25rem' }}
-                      className="ant-upload-drag-icon"
-                    >
+                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
                       <img
                         src={user.avatar}
                         style={{
@@ -693,10 +687,7 @@ const BaseLayout = (props) => {
                       />
                     </p>
                   ) : (
-                    <p
-                      style={{ marginTop: '1.25rem' }}
-                      className="ant-upload-drag-icon"
-                    >
+                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
                       <PlusOutlined />
 
                       <div>Thêm ảnh</div>
@@ -721,28 +712,19 @@ const BaseLayout = (props) => {
             </div>
             <div className={styles['information_user_modal']}>
               <div>Liên hệ</div>
-              <Form.Item
-                name="phoneNumber"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
+              <Form.Item name="phoneNumber" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
                 <Input placeholder="Nhập liên hệ" />
               </Form.Item>
             </div>
             <div className={styles['information_user_modal']}>
               <div>Email</div>
-              <Form.Item
-                name="email"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
+              <Form.Item name="email" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
                 <Input placeholder="Nhập email" />
               </Form.Item>
             </div>
             <div className={styles['information_user_modal']}>
               <div>Tên công ty</div>
-              <Form.Item
-                name="workPlace"
-                rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-              >
+              <Form.Item name="workPlace" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
                 <Input placeholder="Nhập tên công ty" />
               </Form.Item>
             </div>
@@ -780,11 +762,7 @@ const BaseLayout = (props) => {
               </Form.Item>
             </div>
             <Form.Item style={{ width: '100%', marginTop: '1rem' }}>
-              <Button
-                style={{ width: '100%' }}
-                type="primary"
-                htmlType="submit"
-              >
+              <Button style={{ width: '100%' }} type="primary" htmlType="submit">
                 Cập nhật
               </Button>
             </Form.Item>
@@ -850,11 +828,7 @@ const BaseLayout = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item
-            onClick={onClickSignout}
-            key="9"
-            icon={!collapsed && <LogoutOutlined />}
-          >
+          <Menu.Item onClick={onClickSignout} key="9" icon={!collapsed && <LogoutOutlined />}>
             <Link
               to={ROUTES.LOGIN}
               style={{
@@ -876,11 +850,7 @@ const BaseLayout = (props) => {
         <Affix offsetTop={0}>
           <Row className={styles['background_right_top']}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <Row
-                wrap={isMobile}
-                justify="space-between"
-                className={styles['navbar']}
-              >
+              <Row wrap={isMobile} justify="space-between" className={styles['navbar']}>
                 <Row
                   align="middle"
                   wrap={false}
@@ -894,10 +864,7 @@ const BaseLayout = (props) => {
                   justify={isMobile && 'space-between'}
                 >
                   <div className={styles['navbar_left_parent']}>
-                    <MenuOutlined
-                      onClick={toggle}
-                      className={styles['header_navbar_left_icon']}
-                    />
+                    <MenuOutlined onClick={toggle} className={styles['header_navbar_left_icon']} />
                   </div>
                   <Permission permissions={[PERMISSIONS.them_cua_hang]}>
                     <Link
@@ -939,11 +906,7 @@ const BaseLayout = (props) => {
                 </Row>
                 <div className={styles['navbar_right']}>
                   <div className={styles['navbar_notification']}>
-                    <Dropdown
-                      overlay={<NotifyContent />}
-                      placement="bottomCenter"
-                      trigger="click"
-                    >
+                    <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
                       <Badge count={0} showZero size="small" offset={[-3, 3]}>
                         <Bell style={{ color: 'rgb(253, 170, 62)' }} />
                       </Badge>
@@ -966,9 +929,7 @@ const BaseLayout = (props) => {
                             }}
                           >
                             {username ? (
-                              <span style={{ textTransform: 'capitalize' }}>
-                                {username[0]}
-                              </span>
+                              <span style={{ textTransform: 'capitalize' }}>{username[0]}</span>
                             ) : (
                               <span style={{ textTransform: 'capitalize' }}>
                                 {login.username[0]}
@@ -988,13 +949,9 @@ const BaseLayout = (props) => {
                           }}
                         >
                           {username ? (
-                            <span style={{ textTransform: 'capitalize' }}>
-                              {username}
-                            </span>
+                            <span style={{ textTransform: 'capitalize' }}>{username}</span>
                           ) : (
-                            <span style={{ textTransform: 'capitalize' }}>
-                              {login.username}
-                            </span>
+                            <span style={{ textTransform: 'capitalize' }}>{login.username}</span>
                           )}{' '}
                           &nbsp; <CarretDown />
                         </div>

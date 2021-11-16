@@ -22,6 +22,7 @@ import Business from './business'
 import Branch from './branch'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
+import Setting from './setting'
 import ReceiptsAndPayment from './receipts-and-payment'
 import PaymentType from './receipts-and-payment/payment-type'
 import ReceiptsType from './receipts-and-payment/receipts-type'
@@ -365,6 +366,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.CATEGORY,
     Component: () => <Category />,
     title: 'Danh mục',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SETTING,
+    Component: () => <Setting />,
+    title: 'Cài đặt',
     permissions: [],
     exact: true,
   },

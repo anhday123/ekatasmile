@@ -107,9 +107,7 @@ export default function BranchView(props) {
                     width: '100%',
                   }}
                 >
-                  <WarningOutlined
-                    style={{ fontSize: '1.75rem', color: 'black' }}
-                  />
+                  <WarningOutlined style={{ fontSize: '1.75rem', color: 'black' }} />
                 </div>
               </Popover>
             </div>
@@ -133,9 +131,7 @@ export default function BranchView(props) {
                     width: '100%',
                   }}
                 >
-                  <WarningOutlined
-                    style={{ fontSize: '1.75rem', color: 'red' }}
-                  />
+                  <WarningOutlined style={{ fontSize: '1.75rem', color: 'red' }} />
                 </div>
               </Popover>
             </div>
@@ -160,11 +156,7 @@ export default function BranchView(props) {
   const [record, setRecord] = useState({})
 
   function onChangeSwitch(checked, record) {
-    updateUserData(
-      { ...record, active: checked },
-      record.user_id,
-      checked ? 1 : 2
-    )
+    updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
 
   const apiSearchData = async (value) => {
@@ -267,15 +259,11 @@ export default function BranchView(props) {
     {
       title: 'Tên nhân sự',
       dataIndex: 'name',
-      render: (text, record) => (
-        <div>{`${record.first_name} ${record.last_name}`}</div>
-      ),
+      render: (text, record) => <div>{`${record.first_name} ${record.last_name}`}</div>,
       sorter: (a, b) => {
-        return `${a.first_name} ${a.last_name}` >
-          `${b.first_name} ${b.last_name}`
+        return `${a.first_name} ${a.last_name}` > `${b.first_name} ${b.last_name}`
           ? 1
-          : `${a.first_name} ${a.last_name}` ===
-            `${b.first_name} ${b.last_name}`
+          : `${a.first_name} ${a.last_name}` === `${b.first_name} ${b.last_name}`
           ? 0
           : -1
       },
@@ -284,8 +272,7 @@ export default function BranchView(props) {
       title: 'Ngày gia nhập',
       dataIndex: 'create_date',
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Email',
@@ -365,10 +352,7 @@ export default function BranchView(props) {
   const openNotificationUpdate = (data) => {
     notification.success({
       message: 'Thành công',
-      description:
-        data === 2
-          ? 'Vô hiệu hóa nhân sự thành công.'
-          : 'Kích hoạt nhân sự thành công.',
+      description: data === 2 ? 'Vô hiệu hóa nhân sự thành công.' : 'Kích hoạt nhân sự thành công.',
     })
   }
 
@@ -442,8 +426,7 @@ export default function BranchView(props) {
     notification.error({
       message: 'Thất bại',
       duration: 3,
-      description:
-        'Nhân viên đang hoạt động. Không thể thực hiện chức năng này.',
+      description: 'Nhân viên đang hoạt động. Không thể thực hiện chức năng này.',
     })
   }
   const onClose = () => {
@@ -501,9 +484,7 @@ export default function BranchView(props) {
           history.push(ROUTES.BRANCH)
         }
 
-        openNotificationErrorMoveSuccess(
-          `${object.first_name} ${object.last_name}`
-        )
+        openNotificationErrorMoveSuccess(`${object.first_name} ${object.last_name}`)
       } else {
         openNotificationErrorMove()
       }
@@ -526,9 +507,7 @@ export default function BranchView(props) {
           if (validateEmail(values.email)) {
             const object = {
               role:
-                values && values.role && values.role.role_id
-                  ? values.role.role_id
-                  : values.role_id, //
+                values && values.role && values.role.role_id ? values.role.role_id : values.role_id, //
               branch:
                 values && values.branch && values.branch.branch_id
                   ? values.branch.branch_id
@@ -560,15 +539,11 @@ export default function BranchView(props) {
           if (validateEmail(values.email)) {
             const object = {
               role:
-                arrayUpdate[0] &&
-                arrayUpdate[0].role &&
-                arrayUpdate[0].role.role_id
+                arrayUpdate[0] && arrayUpdate[0].role && arrayUpdate[0].role.role_id
                   ? arrayUpdate[0].role.role_id
                   : arrayUpdate[0].role_id, //
               branch:
-                arrayUpdate[0] &&
-                arrayUpdate[0].branch &&
-                arrayUpdate[0].branch.branch_id
+                arrayUpdate[0] && arrayUpdate[0].branch && arrayUpdate[0].branch.branch_id
                   ? arrayUpdate[0].branch.branch_id
                   : arrayUpdate[0].branch_id, //
               phone: '',
@@ -578,19 +553,10 @@ export default function BranchView(props) {
               first_name: values && values.first_name ? values.first_name : '',
               last_name: values && values.last_name ? values.last_name : '',
               birthday: '',
-              address:
-                arrayUpdate[0] && arrayUpdate[0].address
-                  ? arrayUpdate[0].address
-                  : '',
+              address: arrayUpdate[0] && arrayUpdate[0].address ? arrayUpdate[0].address : '',
               ward: ' ',
-              district:
-                arrayUpdate[0] && arrayUpdate[0].district
-                  ? arrayUpdate[0].district
-                  : '',
-              province:
-                arrayUpdate[0] && arrayUpdate[0].province
-                  ? arrayUpdate[0].province
-                  : '',
+              district: arrayUpdate[0] && arrayUpdate[0].district ? arrayUpdate[0].district : '',
+              province: arrayUpdate[0] && arrayUpdate[0].province ? arrayUpdate[0].province : '',
               company_name: ' ',
               company_website: ' ',
               tax_code: ' ',
@@ -653,15 +619,10 @@ export default function BranchView(props) {
               values.branch.name
             )
           } else {
-            updateUserDataMove(
-              { ...values, branch: props.data.branch_id },
-              values.user_id
-            )
+            updateUserDataMove({ ...values, branch: props.data.branch_id }, values.user_id)
           }
         } else {
-          openNotificationErrorNotEmployee(
-            `${values.first_name} ${values.last_name}`
-          )
+          openNotificationErrorNotEmployee(`${values.first_name} ${values.last_name}`)
         }
       })
   }
@@ -782,10 +743,7 @@ export default function BranchView(props) {
     })
   return (
     <>
-      <div
-        style={{ paddingBottom: '1rem' }}
-        className={styles['supplier_information']}
-      >
+      <div style={{ paddingBottom: '1rem' }} className={styles['supplier_information']}>
         <div
           style={{
             display: 'flex',
@@ -831,9 +789,7 @@ export default function BranchView(props) {
                       value={valueSearch}
                       enterButton
                       onChange={onSearch}
-                      className={
-                        styles['orders_manager_content_row_col_search']
-                      }
+                      className={styles['orders_manager_content_row_col_search']}
                       placeholder="Tìm kiếm theo mã, tên đăng nhập"
                       allowClear
                     />
@@ -862,10 +818,7 @@ export default function BranchView(props) {
                       style={{ width: '100%' }}
                       ranges={{
                         Today: [moment(), moment()],
-                        'This Month': [
-                          moment().startOf('month'),
-                          moment().endOf('month'),
-                        ],
+                        'This Month': [moment().startOf('month'), moment().endOf('month')],
                       }}
                       onChange={onChange}
                     />
@@ -888,9 +841,7 @@ export default function BranchView(props) {
                       placeholder="Select a person"
                       optionFilterProp="children"
                       filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       value={roleSelect ? roleSelect : 'default'}
                       onChange={(event) => {
@@ -902,9 +853,7 @@ export default function BranchView(props) {
                       {permission &&
                         permission.length > 0 &&
                         permission.map((values, index) => {
-                          return (
-                            <Option value={values.name}>{values.name}</Option>
-                          )
+                          return <Option value={values.name}>{values.name}</Option>
                         })}
                     </Select>
                   </div>
@@ -989,14 +938,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Tên nhân sự:</b>
                         {`${record.first_name} ${record.last_name}`}
@@ -1020,14 +962,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Email:</b> {record.email}
                       </div>
@@ -1052,14 +987,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Chức vụ:</b>
                         {record && record.role ? record.role.name : ''}
@@ -1083,14 +1011,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Liên hệ:</b> {record.username}
                       </div>
@@ -1116,14 +1037,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Ngày tạo:</b>
                         {moment(record.create_date).format('YYYY-MM-DD')}
@@ -1149,14 +1063,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Địa chỉ:</b> {record.address}
                       </div>
@@ -1182,14 +1089,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Quận/huyện:</b> {record.district}
                       </div>
@@ -1212,14 +1112,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Chi nhánh làm việc:</b> {record.branch_id}
                       </div>
@@ -1245,14 +1138,7 @@ export default function BranchView(props) {
                       width: '100%',
                     }}
                   >
-                    <Col
-                      style={{ width: '100%' }}
-                      xs={24}
-                      sm={24}
-                      md={24}
-                      lg={24}
-                      xl={24}
-                    >
+                    <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={24}>
                       <div>
                         <b>Tỉnh/thành phố:</b> {record.province}
                       </div>
@@ -1319,14 +1205,7 @@ export default function BranchView(props) {
                             />
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1354,14 +1233,7 @@ export default function BranchView(props) {
                             />
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1387,9 +1259,7 @@ export default function BranchView(props) {
                               placeholder="Chọn chi nhánh"
                               optionFilterProp="children"
                               filterOption={(input, option) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(input.toLowerCase()) >= 0
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
                                 arrayUpdate[index][data] = event
@@ -1398,23 +1268,12 @@ export default function BranchView(props) {
                               {branch &&
                                 branch.length > 0 &&
                                 branch.map((values, index) => {
-                                  return (
-                                    <Option value={values.branch_id}>
-                                      {values.name}
-                                    </Option>
-                                  )
+                                  return <Option value={values.branch_id}>{values.name}</Option>
                                 })}
                             </Select>
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1440,9 +1299,7 @@ export default function BranchView(props) {
                               placeholder="Chọn vai trò"
                               optionFilterProp="children"
                               filterOption={(input, option) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(input.toLowerCase()) >= 0
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
                                 arrayUpdate[index][data] = event
@@ -1451,23 +1308,12 @@ export default function BranchView(props) {
                               {permission &&
                                 permission.length > 0 &&
                                 permission.map((values, index) => {
-                                  return (
-                                    <Option value={values.role_id}>
-                                      {values.name}
-                                    </Option>
-                                  )
+                                  return <Option value={values.role_id}>{values.name}</Option>
                                 })}
                             </Select>
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1496,14 +1342,7 @@ export default function BranchView(props) {
                             />
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1531,14 +1370,7 @@ export default function BranchView(props) {
                             />
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1566,14 +1398,7 @@ export default function BranchView(props) {
                             />
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1599,9 +1424,7 @@ export default function BranchView(props) {
                               placeholder="Select a person"
                               optionFilterProp="children"
                               filterOption={(input, option) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(input.toLowerCase()) >= 0
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
                                 arrayUpdate[index][data] = event
@@ -1620,14 +1443,7 @@ export default function BranchView(props) {
                             </Select>
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1653,9 +1469,7 @@ export default function BranchView(props) {
                               placeholder="Select a person"
                               optionFilterProp="children"
                               filterOption={(input, option) =>
-                                option.children
-                                  .toLowerCase()
-                                  .indexOf(input.toLowerCase()) >= 0
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
                               onChange={(event) => {
                                 arrayUpdate[index][data] = event
@@ -1683,14 +1497,7 @@ export default function BranchView(props) {
                             </Select>
                           )
                           return (
-                            <Col
-                              style={{ width: '100%' }}
-                              xs={24}
-                              sm={24}
-                              md={11}
-                              lg={11}
-                              xl={11}
-                            >
+                            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                               <div>
                                 <div
                                   style={{
@@ -1841,9 +1648,7 @@ export default function BranchView(props) {
                                 placeholder="Chọn chi nhánh"
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
-                                  option.children
-                                    .toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
                                   arrayUpdate[index][data] = event
@@ -1852,11 +1657,7 @@ export default function BranchView(props) {
                                 {branch &&
                                   branch.length > 0 &&
                                   branch.map((values, index) => {
-                                    return (
-                                      <Option value={values.branch_id}>
-                                        {values.name}
-                                      </Option>
-                                    )
+                                    return <Option value={values.branch_id}>{values.name}</Option>
                                   })}
                               </Select>
                             )
@@ -1894,9 +1695,7 @@ export default function BranchView(props) {
                                 placeholder="Chọn vai trò"
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
-                                  option.children
-                                    .toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
                                   arrayUpdate[index][data] = event
@@ -1905,11 +1704,7 @@ export default function BranchView(props) {
                                 {permission &&
                                   permission.length > 0 &&
                                   permission.map((values, index) => {
-                                    return (
-                                      <Option value={values.role_id}>
-                                        {values.name}
-                                      </Option>
-                                    )
+                                    return <Option value={values.role_id}>{values.name}</Option>
                                   })}
                               </Select>
                             )
@@ -2055,9 +1850,7 @@ export default function BranchView(props) {
                                 placeholder="Select a person"
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
-                                  option.children
-                                    .toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
                                   arrayUpdate[index][data] = event
@@ -2109,9 +1902,7 @@ export default function BranchView(props) {
                                 placeholder="Select a person"
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
-                                  option.children
-                                    .toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
                                 onChange={(event) => {
                                   arrayUpdate[index][data] = event
