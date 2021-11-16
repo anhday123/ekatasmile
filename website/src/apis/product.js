@@ -10,7 +10,6 @@ export const apiProductSeller = (params) =>
 export const apiUpdateProductStore = (object, id) =>
   patch(`/saleproduct/updatesaleproduct/${id}`, object)
 export const apiProductCategory = () => get('/category/getproductincategory')
-
 export const getProducts = (params) => get('/product/getproduct', params)
 export const getAttributes = (params) => get('/product/getattribute', params)
 export const addProduct = (body) => post('/product/addproduct', body)

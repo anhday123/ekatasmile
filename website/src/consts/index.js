@@ -110,6 +110,7 @@ export const ROUTES = {
   POINT: '/point',
   CATEGORY: '/category',
   CATEGORIES: '/categories',
+  SETTING: '/setting',
 }
 
 export const PERMISSIONS = {
@@ -151,8 +152,7 @@ export const PERMISSIONS = {
   tao_phieu_chuyen_hang: 'tao_phieu_chuyen_hang',
   them_kho: 'them_kho',
   cap_nhat_kho: 'cap_nhat_kho',
-  cap_nhat_trang_thai_phieu_chuyen_hang:
-    'cap_nhat_trang_thai_phieu_chuyen_hang',
+  cap_nhat_trang_thai_phieu_chuyen_hang: 'cap_nhat_trang_thai_phieu_chuyen_hang',
   them_nha_cung_cap: 'them_nha_cung_cap',
   cap_nhat_nha_cung_cap: 'cap_nhat_nha_cung_cap',
   them_phieu_bao_hanh: 'them_phieu_bao_hanh',

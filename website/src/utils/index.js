@@ -1,12 +1,9 @@
 import { VERSION_APP } from 'consts'
+import { message } from 'antd'
 
 export const compare = (a, b, key, convert) => {
   if (convert)
-    return convert(a[key]) > convert(b[key])
-      ? 1
-      : convert(a[key]) === convert(b[key])
-      ? 0
-      : -1
+    return convert(a[key]) > convert(b[key]) ? 1 : convert(a[key]) === convert(b[key]) ? 0 : -1
   return a[key] > b[key] ? 1 : a[key] === b[key] ? 0 : -1
 }
 
@@ -94,4 +91,9 @@ export const clearBrowserCache = () => {
     localStorage.clear()
     localStorage.setItem('version_app', VERSION_APP)
   }
+}
+
+export const copyText = (text) => {
+  navigator.clipboard.writeText(text)
+  message.success('Copied the text')
 }
