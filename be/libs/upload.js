@@ -50,7 +50,7 @@ let uploadWSB = async (file) => {
                     if (err) {
                         console.log(err);
                     }
-                    resolve('https://s3.ap-northeast-1.wasabisys.com/wadi-app/' + file.originalname);
+                    resolve('https://s3.ap-northeast-1.wasabisys.com/admin-order/' + file.originalname);
                 }
             );
         });
