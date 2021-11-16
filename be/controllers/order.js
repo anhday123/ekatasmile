@@ -6,6 +6,8 @@ const DB = process.env.DATABASE;
 const orderService = require(`../services/order`);
 const { Order, OrderDetail } = require('../models/order');
 
+var CryptoJS = require('crypto-js');
+
 let getOrderC = async (req, res, next) => {
     try {
         await orderService.getOrderS(req, res, next);
@@ -16,6 +18,10 @@ let getOrderC = async (req, res, next) => {
 
 let addOrderC = async (req, res, next) => {
     try {
+        let hmac = req.body;
+        // let bytes = CryptoJS.AES.decrypt(hmac, 'viesofwarethanhcong');
+        // let orderContent = bytes.toString(CryptoJS.enc.Utf8);
+        // req.body = JSON.parse(orderContent);
         let _order = new Order();
         // _order.validateInput(req.body);
         const _saleAt = (() => {
@@ -36,40 +42,126 @@ let addOrderC = async (req, res, next) => {
                         },
                     };
                 }
-                throw new Error('400: Địa điểm bán hàng không chính xác!');
+                throw new Error('400: Địa điểm bán hàng không xác định được!');
             }
-            throw new Error('400: Đơn hàng phải có địa điểm bán hàng!');
+            return false;
         })();
-        let variant_ids = (() => {
+        req.body.sale_location = await (async () => {
+            if (_saleAt) {
+                let result = await client.db(DB).collection(_saleAt.collection).findOne(_saleAt.location);
+                return result;
+            }
+            return {};
+        })();
+        let productIds = (() => {
             return req.body.order_details.map((detail) => {
-                return detail.variant_id;
+                return Number(detail.product_id);
             });
         })();
-        let saleLocation = await client.db(DB).collection(_saleAt.collection).findOne(_saleAt.location);
+        let products = await client
+            .db(DB)
+            .collection('Products')
+            .aggregate([
+                { $match: { product_id: { $in: productIds } } },
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                        as: 'variants',
+                    },
+                },
+            ])
+            .toArray();
+        let _products = {};
+        products.map((product) => {
+            _products[String(product.product_id)] = product;
+        });
+        let varianIds = (() => {
+            return req.body.order_details.map((detail) => {
+                return Number(detail.variant_id);
+            });
+        })();
         let variants = await client
             .db(DB)
             .collection('Variants')
-            .aggregate([{ $match: { variant_id: { $in: variant_ids } } }])
+            .aggregate([{ $match: { variant_id: { $in: varianIds } } }])
             .toArray();
         let _variants = {};
         variants.map((variant) => {
-            return (_variants[String(variant.variant_id)] = variant);
+            _variants[String(variant.variant_id)] = variant;
         });
-        if (!saleLocation) {
-            throw new Error('400: Địa điểm bán hàng không tồn tại!');
+        req.body['customer'] = await client
+            .db(DB)
+            .collection('Customers')
+            .findOne({ customer_id: Number(req.body.customer_id) });
+        if (req.body.customer) {
+            delete req.body.customer.password;
         }
-        req.body.sale_location = saleLocation;
-        req.body.order_details.map((detail) => {
+        req.body['employee'] = await client
+            .db(DB)
+            .collection('Users')
+            .findOne({ user_id: Number(req.body.employee_id) });
+        if (req.body.employee) {
+            delete req.body.employee.password;
+        }
+        req.body.order_details = req.body.order_details.map((detail) => {
             let _detail = new OrderDetail();
-            _detail.create({ ...detail });
+            _detail.create({
+                ..._variants[String(detail.variant_id)],
+                ..._products[String(detail.product_id)],
+                ...detail,
+                properties: _variants[String(detail.variant_id)].options,
+            });
             return _detail;
         });
+        req.body.promotion = (() => {
+            if (
+                (req.query.voucher && req.query.voucher != '') ||
+                (req.body.promotion_id && req.body.promotion_id != '')
+            ) {
+                if (req.query.voucher && req.query.voucher != '') {
+                    let promotion = await client
+                        .db(DB)
+                        .collection('Promotions')
+                        .findOne({ promotion_code: req.query.voucher.split('_')[1] });
+                    if (!promotion) {
+                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+                    }
+                    if (promotion.vouchers) {
+                        promotion.vouchers.map((voucher) => {
+                            if (voucher.voucher == req.query.voucher) {
+                                voucher.active = false;
+                            }
+                        });
+                    }
+                }
+            }
+            return;
+        })();
+        let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
+        let order_id = (() => {
+            if (maxOrderId) {
+                if (maxOrderId.value) {
+                    return maxOrderId.value;
+                }
+            }
+            return 0;
+        })();
+        order_id++;
         _order.create({
             ...req.body,
-            ...{ business_id: Number(req.user.business_id), create_date: new Date() },
+            ...{
+                business_id: Number(req.user.business_id),
+                order_id: Number(order_id),
+                create_date: new Date(),
+            },
         });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: order_id } }, { upsert: true });
         req[`_insert`] = _order;
-        // console.log(_order);
         await orderService.addOrderS(req, res, next);
     } catch (err) {
         next(err);
