@@ -1,9 +1,5 @@
 const columnsProduct = [
   {
-    title: 'Hình ảnh',
-    key: 'image',
-  },
-  {
     title: 'Tên sản phẩm',
     dataIndex: 'name',
     key: 'name-product',
@@ -18,18 +14,31 @@ const columnsProduct = [
     key: 'category',
   },
   {
+    title: 'Nhà cung cấp',
+    key: 'supplier',
+  },
+  {
     title: 'Tổng số lượng',
     key: 'sum-count',
   },
   {
-    title: 'Giá nhập',
+    title: 'Tổng giá cơ bản',
+    dataIndex: 'base_price',
+    key: 'base-price',
+  },
+  {
+    title: 'Tổng giá nhập',
     dataIndex: 'import_price',
     key: 'import-price',
   },
   {
-    title: 'Giá bán',
+    title: 'Tổng giá bán',
     dataIndex: 'sale_price',
     key: 'sale-price',
+  },
+  {
+    title: 'Ngày tạo',
+    key: 'create_date',
   },
   {
     title: 'Mở bán',

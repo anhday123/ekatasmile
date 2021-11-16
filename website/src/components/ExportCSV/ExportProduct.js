@@ -63,35 +63,48 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
             (s) => s.supplier_id === e.supplier_id
           )
 
-          const objProduct = {
-            'Tên sản phẩm': e.name,
+          let objProduct = {
+            'Tên sản phẩm': e.name || '',
+            'Mã sản phẩm': e.sku || '',
+            'Loại sản phẩm': findCategory ? findCategory.name : '',
+            'Nhà cung cấp': findSupplier ? findSupplier.name : '',
+            'Chiều dài': e.length,
             'Chiều rộng': e.width,
+            'Chiều cao': e.height,
             'Cân nặng': e.weight,
             'Đơn vị': e.unit,
-            'Chiều dài': e.length,
-            'Chiều cao': e.height,
-            'Danh mục': findCategory ? findCategory.name : '',
-            'Nhà cung cấp': findSupplier ? findSupplier.name : '',
-            'Sku sản phẩm': e.sku,
+            Thuế: 'Có',
+            'Bảo hành': e.waranties && e.waranties.length ? 'Có' : 'Không',
+            'Thương hiệu': '',
+            'Xuất xứ': '',
+            'Tình trạng': 'Mới',
             'Mô tả': e.description,
           }
+          e.attributes.map(
+            (attribute, index) =>
+              (objProduct[`Thuộc tính ${index + 1}`] = attribute.option)
+          )
           if (e.active)
             e.variants.map((v) => {
+              let locationImport = {}
+              v.locations.map((k) => {
+                locationImport['Nơi nhập'] = k.type
+                locationImport['Tên nơi nhập'] = k.name
+                locationImport['Số lượng nhập'] = k.quantity
+              })
+
               dataExport.push({
                 ...objProduct,
-                'Hình ảnh': v.image.join(', '),
-                'Giá nhập': v.import_price || '',
-                'Giá bán': v.base_price || '',
-                'Giá cơ bản': v.sale_price || '',
-                sku: v.sku || '',
                 'Tên phiên bản': v.title || '',
-                'Số lượng sản phẩm ở các cửa hàng': v.locations
-                  .map((k) => `${k.name}:${k.quantity}`)
-                  .join('|'),
-                options: v.options.map((k) => `${k.name}:${k.value}`).join('|'),
-                'Thuộc tính': e.attributes
-                  .map((a) => `${a.option}:${a.values.join(',')}`)
-                  .join('|'),
+                'Mã phiên bản': v.sku || '',
+                'Hình ảnh': v.image.join(', '),
+                'Giá nhập hàng': v.import_price || '',
+                'Giá vốn': v.base_price || '',
+                'Giá bán lẻ': v.sale_price || '',
+                'Giá bán sỉ': '',
+                'Số lượng sỉ': v.total_quantity || '',
+                'Số địa điểm nhập': v.locations.length || 0,
+                ...locationImport,
               })
             })
         })
@@ -100,13 +113,8 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
       }}
       icon={<ToTopOutlined />}
       size="large"
-      style={{
-        backgroundColor: '#2A53CD',
-        borderColor: '#2A53CD',
-        borderRadius: 5,
-        minWidth: 130,
-        color: 'white',
-      }}
+      type="primary"
+      style={{ minWidth: 130 }}
     >
       {name}
     </Button>

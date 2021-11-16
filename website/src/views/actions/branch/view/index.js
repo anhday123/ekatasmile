@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import styles from './../view/view.module.scss'
+import styles from './view.module.scss'
 import { ACTION, ROUTES } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'

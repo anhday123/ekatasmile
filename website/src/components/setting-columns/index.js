@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 //components antd
 import { Modal, Button, Checkbox } from 'antd'
+
+import { SettingOutlined } from '@ant-design/icons'
 
 export default function SettingColumns({
   columns,
@@ -9,7 +11,7 @@ export default function SettingColumns({
   columnsDefault,
   nameColumn,
   btn = (
-    <Button type="primary" size="large">
+    <Button icon={<SettingOutlined />} type="primary" size="large">
       Điều chỉnh cột
     </Button>
   ),
@@ -17,6 +19,13 @@ export default function SettingColumns({
   const [visible, setVisible] = useState(false)
 
   const toggle = () => setVisible(!visible)
+
+  useEffect(() => {
+    if (!localStorage.getItem(nameColumn)) {
+      localStorage.setItem(nameColumn, JSON.stringify(columnsDefault))
+      setColumns([...columnsDefault])
+    } else setColumns(JSON.parse(localStorage.getItem(nameColumn)))
+  }, [])
 
   return (
     <>

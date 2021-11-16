@@ -83,6 +83,7 @@ export default function ProductAdd() {
   const [supplier, setSupplier] = useState('') // dung o variant
   const [isGeneratedSku, setIsGeneratedSku] = useState(false)
   const [valueGeneratedSku, setValueGeneratedSku] = useState('')
+  const [skuProductWithEdit, setSkuProductWithEdit] = useState('')
   const typingTimeoutRef = useRef(null)
 
   const addAttribute = () => {
@@ -331,7 +332,11 @@ export default function ProductAdd() {
         body.attributes = []
         const bodyOneVariant = {
           title: formProduct.name,
-          sku: !isGeneratedSku ? formProduct.sku : valueGeneratedSku,
+          sku: location.state
+            ? skuProductWithEdit
+            : !isGeneratedSku
+            ? formProduct.sku
+            : valueGeneratedSku,
           options: [],
           image: images || [],
           supplier: supplier || '',
@@ -502,6 +507,7 @@ export default function ProductAdd() {
 
     return (
       <Input
+        disabled={location.state ? true : false}
         placeholder="Nhập sku"
         size="large"
         defaultValue={value}
@@ -1138,6 +1144,7 @@ export default function ProductAdd() {
         setImagesPreviewProduct(product.variants[0].image || [])
         setLocations([...product.variants[0].locations])
         form.setFieldsValue({ ...product.variants[0] })
+        setSkuProductWithEdit(product.variants[0].sku)
       } else {
         setIsProductHasVariants(true)
         setAttributes([
@@ -1679,7 +1686,7 @@ export default function ProductAdd() {
                 <Space wrap>
                   <UploadAllVariant />
                   <EditQuantityStores />
-                  <EditSku />
+                  {!location.state && <EditSku />}
                   <EditPrice />
                 </Space>
               </div>

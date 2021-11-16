@@ -271,6 +271,13 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
+    path: ROUTES.INVENTORY_ADD,
+    Component: () => <InventoryAdd />,
+    title: 'Thêm kho',
+    permissions: [],
+    exact: true,
+  },
+  {
     path: ROUTES.PRODUCT,
     Component: () => <Product />,
     title: 'Quản lý sản phẩm',
@@ -559,13 +566,6 @@ const AUTH_ROUTER = [
     path: ROUTES.SUPPLIER_UPDATE,
     Component: () => <SupplierUpdate />,
     title: 'Cập nhật thông tin nhà cung cấp',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.INVENTORY_ADD,
-    Component: () => <InventoryAdd />,
-    title: 'Thêm kho',
     permissions: [],
     exact: true,
   },
