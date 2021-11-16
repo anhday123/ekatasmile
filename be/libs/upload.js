@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 var S3 = require('aws-sdk/clients/s3');
-const bucketName = 'wadi-app';
+const bucketName = 'admin-order';
 require('dotenv').config();
 const wasabiEndpoint = new AWS.Endpoint('s3.ap-northeast-1.wasabisys.com');
 
