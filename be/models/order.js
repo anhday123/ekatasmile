@@ -44,6 +44,7 @@ class OrderDetail {
 }
 
 let orderForm = [
+    'chanel',
     'sale_location',
     'employee_id',
     'customer_id',
@@ -72,6 +73,8 @@ class Order {
     create(data) {
         this.order_id = Number(data.order_id);
         this.business_id = Number(data.business_id);
+        this.chanel = String(data.chanel).trim().toUpperCase();
+        this.sub_chanel = removeUnicode(this.chanel, true).toLowerCase();
         this.sale_location = data.sale_location;
         this.customer_id = data.customer_id;
         this.customer = data.customer;
@@ -92,8 +95,14 @@ class Order {
         this.total_tax = data.total_tax || 0;
         this.total_discount = data.total_discount || 0;
         this.final_cost = data.final_cost || 0;
-        this.customer_paid = data.customer_paid;
+        this.customer_paid = data.customer_paid || 0;
         this.customer_debt = data.customer_debt || 0;
+        this.payment_status = data.payment_status || (()=>{
+            if(this.customer_debt == 0) {
+                return 'PAID';
+            }
+            return 'UNPAID';
+        })();
         // DRAFT - PROCESSING - COMPLETE - CANCEL - REFUND
         this.bill_status = data.bill_status || 'DRAFT';
         // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
