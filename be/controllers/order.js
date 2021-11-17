@@ -115,7 +115,7 @@ let addOrderC = async (req, res, next) => {
             });
             return _detail;
         });
-        req.body.promotion = (() => {
+        req.body.promotion = (async() => {
             if (
                 (req.body.voucher && req.body.voucher != '') ||
                 (req.body.promotion_id && req.body.promotion_id != '')
