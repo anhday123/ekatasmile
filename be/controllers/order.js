@@ -18,17 +18,23 @@ let getOrderC = async (req, res, next) => {
 
 let addOrderC = async (req, res, next) => {
     try {
-        let hmac = req.body;
-        // let bytes = CryptoJS.AES.decrypt(hmac, 'viesofwarethanhcong');
-        // let orderContent = bytes.toString(CryptoJS.enc.Utf8);
-        // req.body = JSON.parse(orderContent);
+        try{
+            let hmac = req.body.order;
+            let bytes  = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
+            let orderContent = bytes.toString(CryptoJS.enc.Utf8);
+            req.body = JSON.parse(orderContent);
+        }catch(err){
+            throw new Error('400: Đơn hàng không chính xác!')
+        }
         let _order = new Order();
         // _order.validateInput(req.body);
-        const _saleAt = (() => {
+        const saleAt = (() => {
             if (req.body.sale_location) {
                 if (req.body.sale_location.branch_id) {
                     return {
                         collection: 'Branchs',
+                        type: 'BRANCH',
+                        inventory_id: req.body.sale_location.branch_id,
                         location: {
                             branch_id: Number(req.body.sale_location.branch_id),
                         },
@@ -37,6 +43,8 @@ let addOrderC = async (req, res, next) => {
                 if (req.body.sale_location.store_id) {
                     return {
                         collection: 'Stores',
+                        type: 'STORE',
+                        inventory_id: req.body.sale_location.store_id,
                         location: {
                             store_id: Number(req.body.sale_location.store_id),
                         },
@@ -46,9 +54,10 @@ let addOrderC = async (req, res, next) => {
             }
             return false;
         })();
+        req['saleAt'] = saleAt;
         req.body['sale_location'] = await (async () => {
-            if (_saleAt) {
-                let result = await client.db(DB).collection(_saleAt.collection).findOne(_saleAt.location);
+            if (saleAt) {
+                let result = await client.db(DB).collection(saleAt.collection).findOne(saleAt.location);
                 return result;
             }
             return {};
@@ -77,15 +86,16 @@ let addOrderC = async (req, res, next) => {
         products.map((product) => {
             _products[String(product.product_id)] = product;
         });
-        let varianIds = (() => {
+        let variantIds = (() => {
             return req.body.order_details.map((detail) => {
                 return Number(detail.variant_id);
             });
         })();
+        req['variantIds'] = variantIds;
         let variants = await client
             .db(DB)
             .collection('Variants')
-            .aggregate([{ $match: { variant_id: { $in: varianIds } } }])
+            .aggregate([{ $match: { variant_id: { $in: variantIds } } }])
             .toArray();
         let _variants = {};
         variants.map((variant) => {
@@ -115,51 +125,51 @@ let addOrderC = async (req, res, next) => {
             });
             return _detail;
         });
-        req.body.promotion = (async() => {
-            if (
-                (req.body.voucher && req.body.voucher != '') ||
-                (req.body.promotion_id && req.body.promotion_id != '')
-            ) {
-                if (req.body.voucher && req.body.voucher != '') {
-                    let promotion = await client
-                        .db(DB)
-                        .collection('Promotions')
-                        .findOne({ promotion_code: req.body.voucher.split('_')[1] });
-                    if (!promotion) {
-                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
-                    }
-                    if (promotion.vouchers) {
-                        let checkVoucher = false;
-                        promotion.vouchers = promotion.vouchers.map((voucher) => {
-                            if (voucher.voucher == req.body.voucher) {
-                                voucher.active = false;
-                                checkVoucher = true;
-                            }
-                        });
-                        if (checkVoucher) {
-                            await client
-                                .db(DB)
-                                .collection('Promotion')
-                                .updateOne({ promotion_id: promotion.promotion_id }, { $set: promotion });
-                            // delete promotion.vouchers;
-                            return promotion;
+        if (
+            (req.body.voucher && req.body.voucher != '') ||
+            (req.body.promotion_id && req.body.promotion_id != '')
+        ) {
+            if (req.body.voucher && req.body.voucher != '') {
+                let promotion = await client
+                    .db(DB)
+                    .collection('Promotions')
+                    .findOne({ promotion_code: req.body.voucher.split('_')[0] });
+                if (!promotion) {
+                    throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+                }
+                if (promotion.vouchers) {
+                    let checkVoucher = false;
+                    promotion.vouchers = promotion.vouchers.map((voucher) => {
+                        if (voucher.voucher == req.body.voucher) {
+                            voucher.active = false;
+                            checkVoucher = true;
                         }
+                    });
+                    if (checkVoucher) {
+                        await client
+                            .db(DB)
+                            .collection('Promotion')
+                            .updateOne({ promotion_id: promotion.promotion_id }, { $set: promotion });
+                        // delete promotion.vouchers;
+                        req.body.promotion = promotion;
+                    } else {
+                        req.body.promotion = {}
                     }
                 }
-                if (req.body.promotion_id) {
-                    let promotion = await client
-                        .db(DB)
-                        .collection('Promotions')
-                        .findOne({ promotion_id: Number(req.body.promotion_id) });
-                    if (!promotion) {
-                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
-                    }
-                    return promotion;
-                }
-                return {};
             }
-            return {};
-        })();
+            if (req.body.promotion_id) {
+                let promotion = await client
+                    .db(DB)
+                    .collection('Promotions')
+                    .findOne({ promotion_id: Number(req.body.promotion_id) });
+                if (!promotion) {
+                    throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+                }
+                req.body.promotion = promotion;
+            }
+        } else {
+            req.body.promotion = {}
+        }
         let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
         let order_id = (() => {
             if (maxOrderId) {

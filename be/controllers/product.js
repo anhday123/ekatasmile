@@ -580,6 +580,7 @@ let addFeedbackC = async (req, res, next) => {
         _feedback.create({
             ...req.body,
             feedback_id: Number(feedback_id),
+            create_date: new Date()
         });
         req['_insert'] = _feedback;
         await productService.addFeedbackS(req, res, next);
