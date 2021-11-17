@@ -97,7 +97,7 @@ class Order {
         // DRAFT - PROCESSING - COMPLETE - CANCEL - REFUND
         this.bill_status = data.bill_status || 'DRAFT';
         // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
-        this.ship_status = data.ship_status || 'WATTING_FOR_SHIPPING';
+        this.ship_status = data.ship_status || 'DRAFT';
         this.note = data.note;
         this.tags = data.tags;
         this.create_date = data.create_date;

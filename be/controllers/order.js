@@ -46,7 +46,7 @@ let addOrderC = async (req, res, next) => {
             }
             return false;
         })();
-        req.body.sale_location = await (async () => {
+        req.body['sale_location'] = await (async () => {
             if (_saleAt) {
                 let result = await client.db(DB).collection(_saleAt.collection).findOne(_saleAt.location);
                 return result;
@@ -115,30 +115,51 @@ let addOrderC = async (req, res, next) => {
             });
             return _detail;
         });
-        // req.body.promotion = (() => {
-        //     if (
-        //         (req.query.voucher && req.query.voucher != '') ||
-        //         (req.body.promotion_id && req.body.promotion_id != '')
-        //     ) {
-        //         if (req.query.voucher && req.query.voucher != '') {
-        //             let promotion = await client
-        //                 .db(DB)
-        //                 .collection('Promotions')
-        //                 .findOne({ promotion_code: req.query.voucher.split('_')[1] });
-        //             if (!promotion) {
-        //                 throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
-        //             }
-        //             if (promotion.vouchers) {
-        //                 promotion.vouchers.map((voucher) => {
-        //                     if (voucher.voucher == req.query.voucher) {
-        //                         voucher.active = false;
-        //                     }
-        //                 });
-        //             }
-        //         }
-        //     }
-        //     return;
-        // })();
+        req.body.promotion = (() => {
+            if (
+                (req.body.voucher && req.body.voucher != '') ||
+                (req.body.promotion_id && req.body.promotion_id != '')
+            ) {
+                if (req.body.voucher && req.body.voucher != '') {
+                    let promotion = await client
+                        .db(DB)
+                        .collection('Promotions')
+                        .findOne({ promotion_code: req.body.voucher.split('_')[1] });
+                    if (!promotion) {
+                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+                    }
+                    if (promotion.vouchers) {
+                        let checkVoucher = false;
+                        promotion.vouchers = promotion.vouchers.map((voucher) => {
+                            if (voucher.voucher == req.body.voucher) {
+                                voucher.active = false;
+                                checkVoucher = true;
+                            }
+                        });
+                        if (checkVoucher) {
+                            await client
+                                .db(DB)
+                                .collection('Promotion')
+                                .updateOne({ promotion_id: promotion.promotion_id }, { $set: promotion });
+                            // delete promotion.vouchers;
+                            return promotion;
+                        }
+                    }
+                }
+                if (req.body.promotion_id) {
+                    let promotion = await client
+                        .db(DB)
+                        .collection('Promotions')
+                        .findOne({ promotion_id: Number(req.body.promotion_id) });
+                    if (!promotion) {
+                        throw new Error('400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!');
+                    }
+                    return promotion;
+                }
+                return {};
+            }
+            return {};
+        })();
         let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
         let order_id = (() => {
             if (maxOrderId) {
@@ -155,6 +176,7 @@ let addOrderC = async (req, res, next) => {
                 business_id: Number(req.user.business_id),
                 order_id: Number(order_id),
                 create_date: new Date(),
+                hmac: hmac,
             },
         });
         await client
