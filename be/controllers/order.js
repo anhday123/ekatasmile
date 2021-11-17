@@ -18,11 +18,11 @@ let getOrderC = async (req, res, next) => {
 
 let addOrderC = async (req, res, next) => {
     try {
+        let hmac = req.body.order;
         try{
-            let hmac = req.body.order;
             let bytes  = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
-            let orderContent = bytes.toString(CryptoJS.enc.Utf8);
-            req.body = JSON.parse(orderContent);
+            let decryptedData  = bytes.toString(CryptoJS.enc.Utf8);
+            req.body = JSON.parse(decryptedData);
         }catch(err){
             throw new Error('400: Đơn hàng không chính xác!')
         }
