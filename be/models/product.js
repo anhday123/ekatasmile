@@ -134,6 +134,7 @@ class Feedback {
         this.user_id = Number(data.user_id);
         this.rate = Number(data.rate);
         this.content = String(data.content);
+        this.files = data.files;
         this.create_date = new Date(data.create_date);
     }
 }

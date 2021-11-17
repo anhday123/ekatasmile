@@ -589,6 +589,18 @@ let addFeedbackC = async (req, res, next) => {
     }
 };
 
+let deleteFeedbackC = async (req, res, next) => {
+    try{
+        let feedback_ids = req.query.feedback_id.split('---').map((id)=>{
+            return Number(id);
+        });
+        await client.db(DB).collection('Feedbacks').deleteMany({feedback_id: {$in: feedback_ids }});
+        res.send({success: true, message: "Xóa phản hồi thành công!"});
+    }catch(err){
+        next(err)
+    }
+}
+
 let importFileC = async (req, res, next) => {
     try {
         if (req.file == undefined) {
@@ -915,5 +927,6 @@ module.exports = {
     deleteProductC,
     getAllAtttributeC,
     addFeedbackC,
+    deleteFeedbackC,
     importFileC,
 };
