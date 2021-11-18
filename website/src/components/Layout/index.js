@@ -266,6 +266,12 @@ const BaseLayout = (props) => {
       icon: <ApartmentOutlined />,
     },
     {
+      path: ROUTES.OFFER_LIST,
+      title: 'Quản lý ưu đãi',
+      permissions: [],
+      icon: <ControlOutlined />,
+    },
+    {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
       permissions: [PERMISSIONS.cau_hinh_thong_tin],
