@@ -1,19 +1,19 @@
 import React from 'react'
 
 import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
-import { ROUTES } from 'consts/index'
+import { ROUTES } from 'consts'
 
 //base layout
-import BaseLayout from 'components/layout'
+import BaseLayout from 'components/Layout'
 import Authentication from 'components/authentication'
 
 //views
-import Login from './login/index'
-import ReportImport from './report-import/index'
-import User from './user/index'
-import ProductCheck from './product-check/index'
-import OrderList from './order-list/index'
-import ReportFinancial from './report-financial/index'
+import Login from './login'
+import ReportImport from './report-import'
+import User from './user'
+import ProductCheck from './product-check'
+import OrderList from './order-list'
+import ReportFinancial from './report-financial'
 import ReportInventory from './report-inventory'
 import ShippingControl from './shipping-control'
 import Guarantee from './guarantee'
@@ -39,7 +39,7 @@ import NotFound from './not-found/404'
 import TaxAdd from './actions/tax/add'
 import TaxUpdate from './actions/tax/update'
 import BranchView from './actions/branch/view'
-import ShippingProductAdd from './actions/shipping-product/add/index'
+import ShippingProductAdd from './actions/shipping-product/add'
 import OrderCreateShipping from './order-create-shipping'
 import VertifyAccount from './vertify-account'
 import Categories from './categories'
@@ -57,7 +57,7 @@ import Customer from './customer'
 import Supplier from './supplier'
 import Promotion from './promotion'
 import Role from './role'
-import ShippingProductView from './actions/shipping-product/view/index'
+import ShippingProductView from './actions/shipping-product/view'
 import ShippingControlAdd from './actions/shipping-control/add'
 import ShippingControlView from './actions/shipping-control/view'
 import ProductUpdate from './actions/product/update'
@@ -95,6 +95,7 @@ import DeliveryUpdate from './actions/shipping-product/update'
 import CustomerOrderList from './customerOrderList'
 import CustoemrOrderDetail from './customerOrderList/components/orderDetail'
 import Point from './point'
+import OfferListCreate from './offer-list-create'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -384,6 +385,15 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.OFFER_LIST_CREATE,
+    Component: () => <OfferListCreate />,
+    title: 'Tạo ưu đãi',
+    permissions: [],
+    exact: true,
+  },
+  
+  
 ]
 
 const AUTH_ROUTER = [
@@ -676,6 +686,8 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
+ 
+  
 ]
 
 export default function Views() {

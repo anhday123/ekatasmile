@@ -1,0 +1,27 @@
+.body_offer{
+    background-color: white;
+    padding: 20px 30px;
+    margin: 15px 15px;
+    border-radius: 5px;
+}
+.offer_header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+}
+.offer_title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.offer_list_text{
+    font-size: 20px;
+    padding-right: 10px;
+    display: block;
+}
+.offer_content{
+    padding: 20px 0;
+}
+
+

@@ -184,6 +184,12 @@ const BaseLayout = (props) => {
       ],
     },
     {
+      path: ROUTES.OFFER_LIST,
+      title: 'Quản lý ưu đãi',
+      permissions: [],
+      icon: <ControlOutlined />,
+    },
+    {
       icon: <BankOutlined />,
       path: ROUTES.BRANCH,
       title: 'Quản lý chi nhánh',
@@ -265,12 +271,7 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
-    {
-      path: ROUTES.OFFER_LIST,
-      title: 'Quản lý ưu đãi',
-      permissions: [],
-      icon: <ControlOutlined />,
-    },
+   
     {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -985,4 +986,4 @@ const BaseLayout = (props) => {
   )
 }
 
-export default BaseLayout
+export default BaseLayout;
