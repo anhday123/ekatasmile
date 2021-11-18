@@ -1,5 +1,11 @@
-import styles from './../order-list/order-list.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
+import styles from './order-list.module.scss'
+import { Link } from 'react-router-dom'
+import moment from 'moment'
+import { ROUTES, PERMISSIONS } from 'consts'
+import { compare, compareCustom, tableSum, formatCash, decryptText } from 'utils'
+
+//antd
 import {
   Input,
   Button,
@@ -14,13 +20,15 @@ import {
   Select,
   Form,
 } from 'antd'
-import { Link } from 'react-router-dom'
+
+//antd
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons'
-import moment from 'moment'
-import { apiAllOrder } from './../../apis/order'
-import { ROUTES, PERMISSIONS } from 'consts'
+
+//components
 import Permissions from 'components/permission'
-import { compare, compareCustom, tableSum, formatCash } from 'utils'
+
+//apis
+import { apiAllOrder } from 'apis/order'
 
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -30,6 +38,14 @@ export default function OrderList() {
   const [loading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [showUpdate, setShowUpdate] = useState(false)
+
+  useEffect(() => {
+    console.log(
+      decryptText(
+        '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'
+      )
+    )
+  }, [])
 
   const dataTmp = [
     {
@@ -282,10 +298,8 @@ export default function OrderList() {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: 200,
-      render: (text, record) =>
-        text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (text, record) => text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Khách hàng',
@@ -306,10 +320,7 @@ export default function OrderList() {
       dataIndex: 'employeeMain',
       width: 150,
       render: (text, record) =>
-        record &&
-        record.employee &&
-        record.employee.first_name &&
-        record.employee.last_name
+        record && record.employee && record.employee.first_name && record.employee.last_name
           ? `${record.employee.first_name} ${record.employee.last_name}`
           : '',
     },
@@ -552,11 +563,7 @@ export default function OrderList() {
                   width: '100%',
                 }}
               >
-                <Button
-                  size="large"
-                  type="primary"
-                  icon={<PlusCircleOutlined />}
-                >
+                <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
                   Tạo đơn hàng
                 </Button>
               </Link>
@@ -566,27 +573,15 @@ export default function OrderList() {
 
         <Tabs style={{ width: '100%' }} defaultActiveKey="1">
           <TabPane
-            tab={
-              <span style={{ fontSize: 16, fontWeight: 600 }}>
-                Tất cả đơn hàng
-              </span>
-            }
+            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Tất cả đơn hàng</span>}
             key="1"
           ></TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 16, fontWeight: 600 }}>
-                Đơn hàng Hủy
-              </span>
-            }
+            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Đơn hàng Hủy</span>}
             key="2"
           ></TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 16, fontWeight: 600 }}>
-                Đơn hàng hoàn tiền
-              </span>
-            }
+            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Đơn hàng hoàn tiền</span>}
             key="3"
           ></TabPane>
         </Tabs>
@@ -624,14 +619,7 @@ export default function OrderList() {
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -646,10 +634,7 @@ export default function OrderList() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 onChange={onChangeDate}
               />
@@ -679,24 +664,16 @@ export default function OrderList() {
                       background: '#fff',
                     }}
                   >
-                    <Row
-                      justify="space-between"
-                      style={{ width: '1000px', padding: 10 }}
-                    >
+                    <Row justify="space-between" style={{ width: '1000px', padding: 10 }}>
                       <Col span={5}>
                         <Row>Mã hóa đơn: {record.order_id}</Row>
-                        <Row>
-                          Thời gian: {moment(record.create_date).format('L')}
-                        </Row>
+                        <Row>Thời gian: {moment(record.create_date).format('L')}</Row>
                         <Row>Khách hàng: {record._customer}</Row>
                         <Row>Cửa hàng: {record._bussiness}</Row>
                       </Col>
                       <Col span={5}>
                         <Row>
-                          <b
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowUpdate(true)}
-                          >
+                          <b style={{ cursor: 'pointer' }} onClick={() => setShowUpdate(true)}>
                             Thông tin giao hàng <EditOutlined />
                           </b>
                         </Row>
@@ -706,11 +683,7 @@ export default function OrderList() {
                       </Col>
                       <Col span={5}>
                         <Row>
-                          Tổng số lượng:{' '}
-                          {record.order_details.reduce(
-                            (a, b) => a + b.quantity,
-                            0
-                          )}
+                          Tổng số lượng: {record.order_details.reduce((a, b) => a + b.quantity, 0)}
                         </Row>
                         <Row>Tổng tiền: {record.total_cost}</Row>
                         <Row>Chiết khấu: {record.discount}</Row>
@@ -723,10 +696,7 @@ export default function OrderList() {
                         </Row>
                         <Row>Nhãn</Row>
                         <Row>
-                          <Select
-                            mode="tags"
-                            style={{ width: '100%' }}
-                          ></Select>
+                          <Select mode="tags" style={{ width: '100%' }}></Select>
                         </Row>
                         <Row justify="end" style={{ margin: '1em 0' }}>
                           <Button type="primary">Lưu</Button>
@@ -739,9 +709,7 @@ export default function OrderList() {
                       style={{ width: '100%' }}
                       columns={columnsDetailOrder}
                       dataSource={
-                        record &&
-                        record.order_details &&
-                        record.order_details.length > 0
+                        record && record.order_details && record.order_details.length > 0
                           ? record.order_details
                           : []
                       }
@@ -787,9 +755,7 @@ export default function OrderList() {
                       <Text></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>
-                        {formatCash(tableSum(pageData, 'final_cost'))} VND
-                      </Text>
+                      <Text>{formatCash(tableSum(pageData, 'final_cost'))} VND</Text>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </Table.Summary>
@@ -857,11 +823,7 @@ export default function OrderList() {
             </Col>
             <Col span={12}>
               <Form.Item label="Quốc gia">
-                <Select
-                  placeholder="Chọn Quốc gia"
-                  style={{ width: '100%' }}
-                  size="large"
-                ></Select>
+                <Select placeholder="Chọn Quốc gia" style={{ width: '100%' }} size="large"></Select>
               </Form.Item>
             </Col>
             <Col span={12}>

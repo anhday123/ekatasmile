@@ -111,6 +111,7 @@ export const ROUTES = {
   CATEGORY: '/category',
   CATEGORIES: '/categories',
   SETTING: '/setting',
+  OFFER_LIST: '/offer-list',
 }
 
 export const PERMISSIONS = {

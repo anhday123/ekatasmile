@@ -47,6 +47,7 @@ import Category from './category'
 import ImportExportFile from './import-export-file'
 
 import Inventory from './inventory'
+import OfferList from './offer-list'
 import Product from './product'
 import Payment from './payment'
 import Tax from './tax'
@@ -373,6 +374,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.SETTING,
     Component: () => <Setting />,
     title: 'Cài đặt',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.OFFER_LIST,
+    Component: () => <OfferList />,
+    title: 'Danh sách ưu đãi',
     permissions: [],
     exact: true,
   },
