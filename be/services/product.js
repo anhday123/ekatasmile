@@ -28,6 +28,13 @@ let getProductS = async (req, res, next) => {
             });
             aggregateQuery.push({ $match: { category_id: { $in: ids } } });
         }
+        if (req.query.deal_id) {
+            let ids = req.query.deal_id.split('---');
+            ids = ids.map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ $match: { deal_id: { $in: ids } } });
+        }
         if (req.query.supplier_id) {
             aggregateQuery.push({ $match: { supplier_id: Number(req.query.supplier_id) } });
         }

@@ -11,6 +11,7 @@ router.use(`/customer`, require(`./customer`));
 router.use(`/branch`, require(`./branch`));
 router.use(`/point-setting`, require(`./point-setting`));
 router.use(`/store`, require(`./store`));
+router.use(`/deal`, require(`./deal`));
 router.use(`/label`, require(`./label`));
 router.use(`/table`, require(`.//table`));
 router.use(`/supplier`, require(`./supplier`));

@@ -15,8 +15,12 @@ class Deal {
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.type = String(data.type).trim().toUpperCase();
         this.sub_type = removeUnicode(this.type, true).toLowerCase();
-        this.image = data.image;
-        this.list = data.list;
+        this.saleoff_type = String(data.saleoff_type).trim().toUpperCase();
+        this.sub_saleoff_type = removeUnicode(this.saleoff_type, true).toLowerCase();
+        this.saleoff_value = Number(data.saleoff_value || 0);
+        this.max_saleoff_value = Number(data.max_saleoff_value || 0);
+        this.image = data.image || '';
+        this.list = data.list || [];
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
         this.create_date = new Date(data.create_date);
