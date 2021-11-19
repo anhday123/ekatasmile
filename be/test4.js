@@ -11,7 +11,7 @@ const DB = process.env.DATABASE;
     // await client.db(DB).collection('Customers').deleteMany();
     // await client.db(DB).collection('Labels').deleteMany();
     // await client.db(DB).collection('Locations').deleteMany();
-    await client.db(DB).collection('Orders').deleteMany();
+    await client.db(DB).collection('Deals').deleteMany();
     // await client.db(DB).collection('PointSettings').deleteMany();
     // await client.db(DB).collection('Products').deleteMany();
     // await client.db(DB).collection('Promotions').deleteMany();

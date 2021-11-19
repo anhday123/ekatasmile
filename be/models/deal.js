@@ -23,6 +23,7 @@ class Deal {
         this.list = data.list || [];
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
+        this.description = data.description;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
