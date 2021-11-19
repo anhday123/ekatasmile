@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { PAGE_SIZE, POSITION_TABLE, ROUTES, ACTION } from 'consts'
+import { PAGE_SIZE, POSITION_TABLE, ROUTES, ACTION, PAGE_SIZE_OPTIONS } from 'consts'
 import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
@@ -243,6 +243,7 @@ export default function Category() {
       setLoading(true)
       setSelectedRowKeys([])
       const res = await getCategories({ ...params, _creator: true })
+      console.log(res)
       if (res.status === 200) {
         setCategories(res.data.data)
         setCountCategories(res.data.count)
@@ -441,7 +442,7 @@ export default function Category() {
           position: POSITION_TABLE,
           current: paramsFilter.page,
           pageSize: paramsFilter.page_size,
-          pageSizeOptions: PAGE_SIZE,
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
           showQuickJumper: true,
           onChange: (page, pageSize) => {
             paramsFilter.page = page

@@ -1,6 +1,8 @@
 import { VERSION_APP } from 'consts'
 import { message } from 'antd'
 
+import CryptoJS from 'crypto-js'
+
 export const compare = (a, b, key, convert) => {
   if (convert)
     return convert(a[key]) > convert(b[key]) ? 1 : convert(a[key]) === convert(b[key]) ? 0 : -1
@@ -96,4 +98,13 @@ export const clearBrowserCache = () => {
 export const copyText = (text) => {
   navigator.clipboard.writeText(text)
   message.success('Copied the text')
+}
+
+export const encryptText = (text) =>
+  CryptoJS.AES.encrypt(text, process.env.REACT_APP_SECRET_KEY_CRYPTO).toString()
+
+export const decryptText = (cipherText) => {
+  var bytes = CryptoJS.AES.decrypt(cipherText, process.env.REACT_APP_SECRET_KEY_CRYPTO)
+  var originalText = bytes.toString(CryptoJS.enc.Utf8)
+  return originalText || ''
 }
