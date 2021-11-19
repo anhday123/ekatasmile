@@ -10,7 +10,7 @@ class Deal {
     create(data) {
         this.business_id = Number(data.business_id);
         this.deal_id = Number(data.deal_id);
-        this.code = Number(this.customer_id) + 1000000;
+        this.code = Number(this.deal_id) + 1000000;
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.type = String(data.type).trim().toUpperCase();
