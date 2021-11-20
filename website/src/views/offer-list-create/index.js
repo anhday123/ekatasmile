@@ -1,52 +1,93 @@
 import React, { useState } from 'react'
 import styles from './../offer-list-create/offer-create.module.scss'
 // antd
-import { ArrowLeftOutlined, InfoCircleOutlined,InboxOutlined } from '@ant-design/icons'
-import { Button, Input, Select, Table,Upload,message } from 'antd'
+import { ArrowLeftOutlined, InfoCircleOutlined, InboxOutlined } from '@ant-design/icons'
+import { Button, Input, Select, Table, Upload, message, InputNumber, notification } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 // ckeditor
 import { CKEditor } from 'ckeditor4-react'
+import { addDeal, updateDeal } from 'apis/deal'
 
 const { Option } = Select
 const { Search } = Input
-const {Dragger} = Upload
+const { Dragger } = Upload
 
 export default function OfferListCreate() {
   const history = useHistory()
 
   const [filter, setFilter] = useState('')
+  const [searchStatus, setSearchStatus] = useState(false)
+  const [dealName,setDealName]=useState('')
+  const [description,setDescription]=useState('')
+  const [dealPrice,setDealPrice]=useState('')
+  
 
   const handleChangeMoTa = (e) => {
     const value = e.editor.getData()
-    console.log(value)
+    setDescription(value)
   }
 
   const handleChangeFilter = (value) => {
     // console.log(value)
     setFilter(value)
+    if (value === 'banner') {
+      setSearchStatus(true)
+    } else {
+      setSearchStatus(false)
+    }
   }
   const props = {
     name: 'file',
     multiple: true,
     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
     onChange(info) {
-      const { status } = info.file;
+      const { status } = info.file
       if (status !== 'uploading') {
-        console.log(info);
+        console.log(info)
+        // status = 'done'
       }
       if (status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully.`);
+        message.success(`${info.file.name} file uploaded successfully.`)
       } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+        
+        message.error(`${info.file.name} file upload failed.`)
       }
     },
     onDrop(e) {
-      console.log('Dropped files', e.dataTransfer.files);
+      console.log('Dropped files', e.dataTransfer.files)
     },
-  };
+  }
 
+  const _actionDeal=async()=>{
+    const body={
+      name:dealName,
+      type:filter,
+      saleoff_type:"value",
+      saleoff_value:dealPrice,
+      list:[],
+      description:description,
+    }
+    console.log(body)
+    try{
+      const res=await addDeal(body)
+      console.log(res)
+      if(res.status===200){
+        if(res.data.success){
+          history.goBack();
+          notification.success({message:"Tạo ưu đãi thành công"})
+        }
+        else{
+          notification.success({message:res.data.message || "Tạo ưu đãi thất bại"})
+        }
+      }
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
+  
   const data = []
   const data1 = []
   const columns = [
@@ -99,7 +140,7 @@ export default function OfferListCreate() {
       align: 'center',
     },
   ]
-  const columns1=[
+  const columns1 = [
     {
       title: 'Hình ảnh',
       dataIndex: '',
@@ -151,14 +192,22 @@ export default function OfferListCreate() {
             <InfoCircleOutlined />
           </a>
         </div>
-        <Button style={{ width: '90px' }} type="primary">
+        <Button onClick={_actionDeal} style={{ width: '90px' }} type="primary">
           Tạo
         </Button>
       </div>
       <hr />
-      <div>
+      <div className={styles['body_offer_content']}>
+        <div className={styles['body_offer_content_header']}>
+        <div className={styles['body_offer_content_header_item_1']}>
         <h3>Tên ưu đãi</h3>
-        <Input style={{ width: '30%' }} placeholder="Nhập tên ưu đãi"></Input>
+        <Input onChange={(e)=>setDealName(e.target.value)} style={{ width: '80%' }} placeholder="Nhập tên ưu đãi"></Input>
+        </div>
+        <div className={styles['body_offer_content_header_item_2']}>
+        <h3>Gía ưu đãi</h3>
+        <InputNumber onChange={(value)=>setDealPrice(value)} defaultValue={0} min={0} max={100000000000} style={{ width: '80%' }} placeholder="Nhập giá ưu đãi"></InputNumber>
+        </div>
+        </div>
         <h3 style={{ padding: '20px 0' }}>Mô tả</h3>
         <CKEditor initData={'Nhập mô tả tại đây'} onChange={handleChangeMoTa} />
         <h3 style={{ padding: '20px 0' }}>Loại ưu đãi</h3>
@@ -169,8 +218,8 @@ export default function OfferListCreate() {
             placeholder="Chọn loại ưu đãi"
             allowClear
           >
-            <Option value="sanpham">Sản phẩm</Option>
-            <Option value="nhomsanpham">Nhóm sản phẩm</Option>
+            <Option value="product">Sản phẩm</Option>
+            <Option value="category">Nhóm sản phẩm</Option>
             <Option value="banner">Banner</Option>
           </Select>
           <Search
@@ -180,33 +229,24 @@ export default function OfferListCreate() {
             enterButton
             size="medium"
             onSearch
+            disabled={searchStatus}
           />
         </Input.Group>
         <div className={styles['body_offer_create_content']}>
-        {filter === 'sanpham' ? (
-          <Table columns={columns} dataSource={data} />
-        ) : (
-          ''
-        )}
-        {filter === 'nhomsanpham' ? (
-          <Table columns={columns1} dataSource={data1} />
-        ) : (
-          ''
-        )}
-        {filter === 'banner' ? (
-          <Dragger listType="picture" {...props}>
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-          <p className="ant-upload-hint">
-            Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS
-          </p>
-        </Dragger>
-        ) : (
-          ''
-        )}
-      </div>
+          {filter === 'product' ? <Table columns={columns} dataSource={data} /> : ''}
+          {filter === 'category' ? <Table columns={columns1} dataSource={data1} /> : ''}
+          {filter === 'banner' ? (
+            <Dragger  listType="picture" {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
+              <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
+            </Dragger>
+          ) : (
+            ''
+          )}
+        </div>
       </div>
     </div>
   )

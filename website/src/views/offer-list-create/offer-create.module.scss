@@ -22,5 +22,12 @@
 .body_offer_create_content{
     padding: 20px 0 ;
 }
-
-
+.body_offer_content_header{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 20px;
+}
+.body_offer_content_header_item_1,.body_offer_content_header_item_2{
+    width: 40%;
+}
