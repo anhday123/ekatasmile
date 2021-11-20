@@ -92,7 +92,7 @@ let updateDealC = async (req, res, next) => {
 
 let deleteDealC = async (req, res, next) => {
     try {
-        req['_delete'] = req.query.query.split('---');
+        req['_delete'] = req.query.query.split(',');
         await client.db(DB).collection(`Deals`).deleteMany({ $in: req._delete });
         
         res.send({
