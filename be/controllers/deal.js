@@ -63,11 +63,11 @@ let updateDealC = async (req, res, next) => {
     try {
         req.params.deal_id = Number(req.params.deal_id);
         let _deal = new Deal();
-        req.body.name = String(req.body.name).trim().toUpperCase();
         let deal = await client.db(DB).collection(`Deals`).findOne(req.params);
         if (!deal) {
             throw new Error(`400: Chương trình giảm giá không tồn tại!`);
         }
+        req.body.name = String(req.body.name || deal.name).trim().toUpperCase();
         if (req.body.name) {
             let check = await client
                 .db(DB)
@@ -92,9 +92,13 @@ let updateDealC = async (req, res, next) => {
 
 let deleteDealC = async (req, res, next) => {
     try {
-        req['_delete'] = req.query.query.split(',');
-        await client.db(DB).collection(`Deals`).deleteMany({ $in: req._delete });
-        
+        req['_delete'] = req.query.deal_id.split(',');
+        if(req._delete.length > 0) {
+            req._delete = req._delete.map((id)=>{
+                return Number(id);
+            })
+        }
+        await client.db(DB).collection(`Deals`).deleteMany({ deal_id: { $in: req._delete } });
         res.send({
             success: true,
             message: 'Xóa ưu đãi thành công!',

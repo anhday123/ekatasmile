@@ -49,6 +49,16 @@ let getDealS = async (req, res, next) => {
                 },
             });
         }
+        if (req.query.type) {
+            aggregateQuery.push({
+                $match: {
+                    sub_type: new RegExp(
+                        `${removeUnicode(req.query.type, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
         if (req.query.search) {
             aggregateQuery.push({
                 $match: {
