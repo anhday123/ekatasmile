@@ -51,6 +51,7 @@ import {
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -66,11 +67,11 @@ import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
+
 const { Sider } = Layout
 const { Option } = Select
 const { Dragger } = Upload
-
 const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
@@ -80,7 +81,7 @@ const BaseLayout = (props) => {
   const login = useSelector((state) => state.login)
   const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
-    ? decodeToken(localStorage.getItem('accessToken'))
+    ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
 
   const [form] = Form.useForm()
@@ -127,12 +128,12 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined />,
     },
-    // {
-    //   path: ROUTES.SELL,
-    //   title: 'Bán hàng',
-    //   permissions: [PERMISSIONS.ban_hang],
-    //   icon: <ShoppingCartOutlined />,
-    // },
+    {
+      path: ROUTES.SELL,
+      title: 'Bán hàng',
+      permissions: [],
+      icon: <ShoppingCartOutlined />,
+    },
     {
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',
