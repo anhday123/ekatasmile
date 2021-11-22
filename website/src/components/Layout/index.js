@@ -51,6 +51,7 @@ import {
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
+  FileDoneOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -188,6 +189,12 @@ const BaseLayout = (props) => {
       title: 'Quản lý ưu đãi',
       permissions: [],
       icon: <ControlOutlined />,
+    },
+    {
+      path: ROUTES.BLOG,
+      title: 'Quản lý bài viết',
+      permissions: [],
+      icon: <FileDoneOutlined />,
     },
     {
       icon: <BankOutlined />,

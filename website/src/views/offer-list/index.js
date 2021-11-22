@@ -7,7 +7,7 @@ import styles from './../offer-list/offer.module.scss'
 import moment from 'moment'
 
 // antd
-import { DeleteOutlined, EditOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, FilterOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
 import { Button, Input, message, Modal, Select, Table, Popconfirm } from 'antd'
 import { Link } from 'react-router-dom'
 import { PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
@@ -33,9 +33,8 @@ export default function OfferList() {
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, pageSize: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
-  const [valueSearch,setValueSearch]=useState("")
-  const typingTimeoutRef=useRef(null)
-  
+  const [valueSearch, setValueSearch] = useState('')
+  const typingTimeoutRef = useRef(null)
 
   const toggleModalName = () => {
     setModalVisibleName(!modalVisibleName)
@@ -293,7 +292,7 @@ export default function OfferList() {
     }
   }
 
-  const onChangeOptionSearch = (value) => {
+  const onChangeOptionSearchType = (value) => {
     if (value) paramsFilter.type = value
     else delete paramsFilter.type
     setParamsFilter({ ...paramsFilter })
@@ -325,10 +324,10 @@ export default function OfferList() {
     }, 450)
   }
 
-  const _resetFilter=()=>{
+  const _resetFilter = () => {
     setAttributeDate(undefined)
-    setValueSearch("")
-    setParamsFilter({page:1,pageSize:5})
+    setValueSearch('')
+    setParamsFilter({ page: 1, pageSize: 5 })
   }
 
   useEffect(() => {
@@ -399,7 +398,7 @@ export default function OfferList() {
             value={valueSearch}
           />
           <Select
-            onChange={onChangeOptionSearch}
+            onChange={onChangeOptionSearchType}
             value={paramsFilter.type}
             style={{ width: '16%' }}
             placeholder="Tất cả loại ưu đãi"
@@ -454,7 +453,7 @@ export default function OfferList() {
             <div></div>
           )}
         </div>
-        <Button onClick={_resetFilter} type="danger" icon={<EditOutlined />}>
+        <Button onClick={_resetFilter} type="danger" icon={<FilterOutlined />}>
           Xóa bộ lọc
         </Button>
       </div>
@@ -483,6 +482,7 @@ export default function OfferList() {
           pageSize: paramsFilter.pageSize,
           onChange(page, pageSize) {
             setParamsFilter({
+              ...paramsFilter,
               page: page,
               pageSize: pageSize,
             })

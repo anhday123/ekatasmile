@@ -96,6 +96,8 @@ import CustomerOrderList from './customerOrderList'
 import CustoemrOrderDetail from './customerOrderList/components/orderDetail'
 import Point from './point'
 import OfferListCreate from './offer-list-create'
+import Blog from './blog'
+import BlogCreate from './blog-create'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -392,7 +394,20 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  
+  {
+    path: ROUTES.BLOG,
+    Component: () => <Blog />,
+    title: 'Danh sách bài viết',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.BLOG_CREATE,
+    Component: () => <BlogCreate />,
+    title: 'Tạo bài viết',
+    permissions: [],
+    exact: true,
+  },
   
 ]
 
