@@ -89,7 +89,7 @@ let updateBlogC = async (req, res, next) => {
 
 let deleteBlogC = async (req, res, next) => {
     try {
-        let blogIds = req.query.blog_id;
+        let blogIds = req.body.blog_id;
         await client
             .db(DB)
             .collection('Blogs')
