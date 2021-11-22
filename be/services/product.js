@@ -180,6 +180,7 @@ let getProductS = async (req, res, next) => {
                 as: '_categories',
             },
         });
+        aggregateQuery.push({ $addFields: { 'variants._categories': '$_categories' } });
         aggregateQuery.push({
             $lookup: {
                 from: 'Taxes',
