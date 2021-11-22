@@ -174,8 +174,16 @@ let getProductS = async (req, res, next) => {
         });
         aggregateQuery.push({
             $lookup: {
+                from: 'Categories',
+                localField: 'category_id',
+                foreignField: 'category_id',
+                as: '_categories',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
                 from: 'Taxes',
-                localField: 'taxes',
+                localField: 'tax_id',
                 foreignField: 'tax_id',
                 as: '_taxes',
             },
@@ -192,14 +200,14 @@ let getProductS = async (req, res, next) => {
                 as: 'feedbacks',
             },
         });
-        if (req.query.min_sale_price) {
+        if (req.query.min_price) {
             aggregateQuery.push({
-                $match: { 'variants.sale_price': { $gte: Number(req.query.min_sale_price) } },
+                $match: { 'variants.price': { $gte: Number(req.query.min_price) } },
             });
         }
-        if (req.query.max_sale_price) {
+        if (req.query.max_price) {
             aggregateQuery.push({
-                $match: { 'variants.sale_price': { $lte: Number(req.query.max_sale_price) } },
+                $match: { 'variants.price': { $lte: Number(req.query.max_price) } },
             });
         }
         aggregateQuery.push({ $addFields: { avg_rate: { $avg: '$feedbacks.rate' } } });
@@ -241,7 +249,7 @@ let getProductS = async (req, res, next) => {
             if (req.query.sort) {
                 let [field, option] = req.query.sort.split(':');
                 let productClass = ['name'];
-                let variantClass = ['sale_price'];
+                let variantClass = ['price'];
                 if (productClass.includes(field)) {
                     let result = {};
                     result[field] = Number(option);
