@@ -14,7 +14,7 @@ let getBlogC = async (req, res, next) => {
     }
 };
 
-let addBlogC = async (req, res, next) => {
+let createBlogC = async (req, res, next) => {
     try {
         let _blog = new Blog();
         _blog.validateInput(req.body);
@@ -50,7 +50,7 @@ let addBlogC = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Blogs' }, { $set: { name: 'Blogs', value: blog_id } }, { upsert: true });
         req[`_insert`] = _blog;
-        await blogService.addBlogS(req, res, next);
+        await blogService.createBlogS(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -105,7 +105,7 @@ let deleteBlogC = async (req, res, next) => {
 
 module.exports = {
     getBlogC,
-    addBlogC,
+    createBlogC,
     updateBlogC,
     deleteBlogC,
 };

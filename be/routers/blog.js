@@ -4,9 +4,9 @@ const router = express.Router();
 const blog = require(`../controllers/blog`);
 const { auth } = require(`../middleware/jwt`);
 
-router.route(`/getblog`).get(auth, blog.getBlogC);
-router.route(`/addblog`).post(auth, blog.addBlogC);
-router.route(`/updateblog/:blog_id`).patch(auth, blog.updateBlogC);
-router.route(`/deleteblog/:blog_id`).delete(auth, blog.deleteBlogC);
+router.route(`/create`).post(auth, blog.createBlogC);
+router.route(`/update/:blog_id`).patch(auth, blog.updateBlogC);
+router.route(`/`).get(auth, blog.getBlogC);
+router.route(`/delete`).delete(auth, blog.deleteBlogC);
 
 module.exports = router;

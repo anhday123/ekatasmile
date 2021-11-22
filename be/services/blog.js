@@ -117,7 +117,7 @@ let getBlogS = async (req, res, next) => {
     }
 };
 
-let addBlogS = async (req, res, next) => {
+let createBlogS = async (req, res, next) => {
     try {
         let blog = await client.db(DB).collection(`Blogs`).insertOne(req._insert);
         if (!blog.insertedId) {
@@ -139,7 +139,7 @@ let updateBlogS = async (req, res, next) => {
 };
 
 module.exports = {
-    addBlogS,
+    createBlogS,
     getBlogS,
     updateBlogS,
 };
