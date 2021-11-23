@@ -4,7 +4,7 @@ import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //base layout
-import BaseLayout from 'components/Layout'
+import BaseLayout from 'components/layout'
 import Authentication from 'components/authentication'
 
 //views
@@ -98,6 +98,8 @@ import Point from './point'
 import OfferListCreate from './offer-list-create'
 import Blog from './blog'
 import BlogCreate from './blog-create'
+import Brand from './brand'
+import BrandCreate from './brand-create'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -405,6 +407,20 @@ const DEFINE_ROUTER = [
     path: ROUTES.BLOG_CREATE,
     Component: () => <BlogCreate />,
     title: 'Tạo bài viết',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.BRAND,
+    Component: () => <Brand />,
+    title: 'Danh sách thương hiệu',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.BRAND_CREATE,
+    Component: () => <BrandCreate />,
+    title: 'Tạo thương hiệu',
     permissions: [],
     exact: true,
   },

@@ -1,6 +1,7 @@
 import { get, patch, post, destroy } from './httpClient'
 
 export const getCategories = (params) => get('/category/getcategory', params)
+export const getCategoriesWithCreator = (params) => get('/category/getcategory?_creator=true', params)
 export const apiAddCategory = (object) => post('/category/addcategory', object)
 export const apiUpdateCategory = (body, id) =>
   patch(`/category/updatecategory/${id}`, body)

@@ -115,6 +115,8 @@ export const ROUTES = {
   OFFER_LIST_CREATE: '/offer-list/create',
   BLOG:'/blog',
   BLOG_CREATE:'/blog/create',
+  BRAND:'/brand',
+  BRAND_CREATE:'/brand/create',
 }
 
 export const PERMISSIONS = {
@@ -185,9 +187,10 @@ export const PERMISSIONS = {
   tao_quyen: 'tao_quyen',
   tao_uu_dai: 'tao_uu_dai',
   tao_bai_viet:'tao_bai_viet',
+  tao_thuong_hieu:'tao_thuong_hieu',
 }
 
-export const VERSION_APP = '1.0.1'
+export const VERSION_APP = '1.0.3'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
