@@ -13,7 +13,7 @@ let configEnv = () => {
             return 'mongodb://dangluu%40:%40Luu123456@194.233.82.28:27017/';
         }
         if (IPs[0] == '103.170.123.182' || IPs.includes('103.170.123.182')) {
-            return 'mongodb://dangluu:d%40ngluu123456@103.170.123.182:27017';
+            return 'mongodb://dangluu:d%40ngluu123456@103.170.123.182:27017/';
         }
         return process.env.MONGO_DATABASE_URI;
     })();

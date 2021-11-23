@@ -1,7 +1,7 @@
 const moment = require('moment-timezone');
 const { MongoClient } = require('mongodb');
-const uri = 'mongodb://dangluu%40:%40Luu123456@103.81.87.65:27017/';
-const database = 'TestCrontab';
+const uri = 'mongodb://dangluu%40:%40Luu123456@194.233.82.28:27017/';
+const database = 'B2B';
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -21,8 +21,8 @@ _connect.then(async (message) => {
 
     await client
         .db(database)
-        .collection('Inserts')
-        .insertOne({ timeInsert: moment().utcOffset(7).format() });
+        .collection('Variants')
+        .updateMany({}, { $set: { price: 100000, regular_price: 100000 } });
     // await client.db('SGL').collection('Buckets').deleteMany({});
     // await client.db('SGL').collection('Categories').deleteMany({});
     // await client.db('SGL').collection('Customers').deleteMany({});

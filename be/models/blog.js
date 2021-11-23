@@ -16,9 +16,14 @@ class Blog {
         this.sub_title = removeUnicode(this.title, true).toLowerCase();
         this.content = data.content;
         this.tags = data.tags;
-        this.sub_tags = this.tags.map((tag) => {
-            return removeUnicode(tag, true).toLowerCase();
-        });
+        this.sub_tags = (() => {
+            if (Array.isArray(this.tags)) {
+                this.tags.map((tag) => {
+                    return removeUnicode(tag, true).toLowerCase();
+                });
+            }
+            return [];
+        })();
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
