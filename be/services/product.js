@@ -172,11 +172,27 @@ let getProductS = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        // aggregateQuery.push({
+        //     $lookup: {
+        //         from: 'Deals',
+        //         localField: 'deal_id',
+        //         foreignField: 'deal_id',
+        //         as: '_deals',
+        //     },
+        // });
         aggregateQuery.push({
             $lookup: {
                 from: 'Deals',
-                localField: 'deal_id',
-                foreignField: 'deal_id',
+                let: { productId: '$product_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [{ $in: ['$$productId', '$list'] }, { $eq: ['$type', /product/i] }],
+                            },
+                        },
+                    },
+                ],
                 as: '_deals',
             },
         });

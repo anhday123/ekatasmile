@@ -117,6 +117,24 @@ let getCategoryS = async (req, res, next) => {
                 as: 'children_category',
             },
         });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Deals',
+                let: { categoryId: '$category_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [{ $in: ['$$categoryId', '$list'] }, { $eq: ['$type', /category/i] }],
+                            },
+                        },
+                    },
+                ],
+                as: '_deals',
+            },
+        });
+        aggregateQuery.push({ $addFields: { 'children_category._deals': '$_deals' } });
+        aggregateQuery.push({ $addFields: { 'children_category.children_category._deals': '$_deals' } });
         if (req.query._business) {
             aggregateQuery.push(
                 {

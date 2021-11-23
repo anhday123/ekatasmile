@@ -17,7 +17,6 @@ let configEnv = () => {
         }
         return process.env.MONGO_DATABASE_URI;
     })();
-
     process.env.DATABASE = (() => {
         let IPs = getMyIP();
         if (IPs[0] == '103.81.87.65' || IPs.includes('103.81.87.65')) {
