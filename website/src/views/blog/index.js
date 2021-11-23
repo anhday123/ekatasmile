@@ -15,11 +15,11 @@ import {
 } from '@ant-design/icons'
 import { Button, Input, message, Select, Table, Popconfirm } from 'antd'
 import { Link } from 'react-router-dom'
-import { PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
+import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteDeal, getDeal, updateDeal } from '../../apis/deal'
+import { deleteBlog, getBlog } from 'apis/blog'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -31,7 +31,7 @@ export default function Blog() {
   const [loadingTable, setLoadingTable] = useState(false)
   const [blogList, setBlogList] = useState([])
   const [countPage, setCountPage] = useState('')
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, pageSize: 5 })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
   const typingTimeoutRef = useRef(null)
@@ -42,14 +42,18 @@ export default function Blog() {
       dataIndex: 'image',
       width: '20%',
       align: 'center',
-      render: (text) => <img src={text} alt="" style={{ width: 80, height: 80 }} />,
+      render: (text, record) => (
+        <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
+      ),
     },
     {
       title: 'Tiêu đề',
       dataIndex: 'title',
       width: '25%',
       align: 'center',
-      render:(text,record)=><Link to={{pathname:ROUTES.BLOG_CREATE,state:record}}>{text}</Link>
+      render: (text, record) => (
+        <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
+      ),
     },
     {
       title: 'Nội dung',
@@ -68,82 +72,41 @@ export default function Blog() {
     },
   ]
 
-  const data = [
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì hảo hảo',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì gấu đỏ',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì omachi',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì 3 miền',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì 4 miền',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-    {
-      image:
-        'https://vietmartjp.com/wp-content/uploads/2020/09/mi-hao-hao-bun-mi-pho-viet-o-nhat-vietmart.jpg',
-      title: 'Mì giấy',
-      content: 'Mì omachi ngon hơn',
-      create_date: '2021-11-22T02:14:43.371Z',
-    },
-  ]
+  const _getBlog = async () => {
+    try {
+      setLoadingTable(true)
+      const res = await getBlog(paramsFilter)
+      setBlogList(res.data.data)
+      setCountPage(res.data.count)
+      // console.log(res)
+      setLoadingTable(false)
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
-  //   const _getDeal = async () => {
-  //     try {
-  //       setLoadingTable(true)
-  //       const res = await getDeal(paramsFilter)
-  //       setDealList(res.data.data)
-  //       setCountPage(res.data.count)
-  //       console.log(res)
-  //       setLoadingTable(false)
-  //     } catch (err) {
-  //       console.log(err)
-  //     }
-  //   }
-
-  //   const _delelteDeal = async () => {
-  //     try {
-  //       const res = await deleteDeal(selectKeys)
-  //       // console.log(res)
-  //       if (res.status === 200) {
-  //         if (res.data.success) {
-  //           message.success('Xóa ưu đãi thành công')
-  //           _getDeal(paramsFilter)
-  //         } else {
-  //           message.error(res.data.message || 'Xóa ưu đãi không thành công')
-  //         }
-  //       } else {
-  //         message.error('Xóa ưu đãi không thành công')
-  //       }
-  //     } catch (err) {
-  //       console.log(err)
-  //     }
-  //   }
+  const _delelteBlog = async () => {
+    const id = {
+      blog_id: selectKeys,
+    }
+    // console.log(id)
+    try {
+      const res = await deleteBlog(id)
+      // console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          message.success('Xóa bài viết thành công')
+          _getBlog(paramsFilter)
+        } else {
+          message.error(res.data.message || 'Xóa bài viết không thành công')
+        }
+      } else {
+        message.error('Xóa bài viết không thành công')
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const onChangeOptionSearchDate = (value) => {
     delete paramsFilter[attributeDate]
@@ -161,11 +124,11 @@ export default function Blog() {
     typingTimeoutRef.current = setTimeout(async () => {
       const value = e.target.value
 
-      //khi search hoac filter thi reset page ve 1
+      //khi search hoặc filter thi reset page ve 1
       paramsFilter.page = 1
 
-      if (value) paramsFilter.name = value
-      else delete paramsFilter.name
+      if (value) paramsFilter.title = value
+      else delete paramsFilter.title
 
       setParamsFilter({ ...paramsFilter })
     }, 450)
@@ -174,12 +137,12 @@ export default function Blog() {
   const _resetFilter = () => {
     setAttributeDate(undefined)
     setValueSearch('')
-    setParamsFilter({ page: 1, pageSize: 5 })
+    setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  //   useEffect(() => {
-  //     _getDeal(paramsFilter)
-  //   }, [paramsFilter])
+  useEffect(() => {
+    _getBlog(paramsFilter)
+  }, [paramsFilter])
 
   return (
     <div className={styles['body_blog']}>
@@ -191,9 +154,9 @@ export default function Blog() {
           </a>
         </div>
         <Permission permissions={[PERMISSIONS.tao_bai_viet]}>
-        <Link to={ROUTES.BLOG_CREATE}>
-          <Button type="primary">Tạo bài viết</Button>
-        </Link>
+          <Link to={ROUTES.BLOG_CREATE}>
+            <Button type="primary">Tạo bài viết</Button>
+          </Link>
         </Permission>
       </div>
       <hr />
@@ -234,6 +197,7 @@ export default function Blog() {
                 title={'Bạn có chắc chắn muốn xóa bài viết này không ?'}
                 okText="Yes"
                 cancelText="No"
+                onConfirm={_delelteBlog}
               >
                 <Button type="danger" icon={<DeleteOutlined />}>
                   Xóa
@@ -253,7 +217,7 @@ export default function Blog() {
         size="small"
         loading={loadingTable}
         columns={columns}
-        dataSource={data}
+        dataSource={blogList}
         rowSelection={{
           selectedRowKeys: selectKeys,
           onChange: (keys, records) => {
@@ -265,12 +229,12 @@ export default function Blog() {
           position: POSITION_TABLE,
           total: countPage,
           current: paramsFilter.page,
-          pageSize: paramsFilter.pageSize,
+          pageSize: paramsFilter.page_size,
           onChange(page, pageSize) {
             setParamsFilter({
               ...paramsFilter,
               page: page,
-              pageSize: pageSize,
+              page_size: pageSize,
             })
           },
         }}

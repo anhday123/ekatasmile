@@ -31,7 +31,7 @@ export default function OfferList() {
   const [price, setPrice] = useState('')
   const [idChange, setIdChange] = useState('')
   const [countPage, setCountPage] = useState('')
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, pageSize: 5 })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
   const typingTimeoutRef = useRef(null)
@@ -479,12 +479,12 @@ export default function OfferList() {
           position: POSITION_TABLE,
           total: countPage,
           current: paramsFilter.page,
-          pageSize: paramsFilter.pageSize,
+          pageSize: paramsFilter.page_size,
           onChange(page, pageSize) {
             setParamsFilter({
               ...paramsFilter,
               page: page,
-              pageSize: pageSize,
+              page_size: pageSize,
             })
           },
         }}
