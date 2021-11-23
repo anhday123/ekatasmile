@@ -112,6 +112,9 @@ export const ROUTES = {
   CATEGORIES: '/categories',
   SETTING: '/setting',
   OFFER_LIST: '/offer-list',
+  OFFER_LIST_CREATE: '/offer-list/create',
+  BLOG:'/blog',
+  BLOG_CREATE:'/blog/create',
 }
 
 export const PERMISSIONS = {
@@ -180,6 +183,8 @@ export const PERMISSIONS = {
   nhap_xuat_file: 'nhap_xuat_file',
   nhat_ki_hoat_dong: 'nhat_ki_hoat_dong',
   tao_quyen: 'tao_quyen',
+  tao_uu_dai: 'tao_uu_dai',
+  tao_bai_viet:'tao_bai_viet',
 }
 
 export const VERSION_APP = '1.0.1'
