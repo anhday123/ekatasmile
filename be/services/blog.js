@@ -35,11 +35,11 @@ let getBlogS = async (req, res, next) => {
                 },
             });
         }
-        if (req.query.name) {
+        if (req.query.title) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                    sub_title: new RegExp(
+                        `${removeUnicode(req.query.title, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
                 },
