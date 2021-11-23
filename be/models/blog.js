@@ -12,6 +12,7 @@ class Blog {
         this.business_id = Number(data.business_id);
         this.code = Number(this.blog_id) + 1000000;
         this.title = String(data.title).trim().toUpperCase();
+        this.image = data.image;
         this.sub_title = removeUnicode(this.title, true).toLowerCase();
         this.content = data.content;
         this.tags = data.tags;
