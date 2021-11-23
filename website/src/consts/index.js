@@ -190,7 +190,7 @@ export const PERMISSIONS = {
   tao_thuong_hieu:'tao_thuong_hieu',
 }
 
-export const VERSION_APP = '1.0.1'
+export const VERSION_APP = '1.0.3'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
