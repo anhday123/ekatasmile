@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 // style
-import styles from './../blog/blog.module.scss'
+import styles from './../brand/brand.module.scss'
 
 // moment
 import moment from 'moment'
@@ -26,10 +26,10 @@ import parse from 'html-react-parser'
 
 const { Option } = Select
 
-export default function Blog() {
+export default function Brand() {
   const [selectKeys, setSelectKeys] = useState([])
   const [loadingTable, setLoadingTable] = useState(false)
-  const [blogList, setBlogList] = useState([])
+  const [brandList, setBrandList] = useState([])
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
@@ -40,73 +40,93 @@ export default function Blog() {
     {
       title: 'Hình ảnh',
       dataIndex: 'image',
+      width: '10%',
+      align: 'center',
+      // render: (text, record) => (
+      //   <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
+      // ),
+    },
+    {
+      title: 'Tên thương hiệu',
+      dataIndex: 'name',
       width: '20%',
       align: 'center',
-      render: (text, record) => (
-        <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
-      ),
+      sorter: (a, b) => a.title.length - b.title.length,
+      // render: (text, record) => (
+      //   <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
+      // ),
     },
     {
-      title: 'Tiêu đề',
-      dataIndex: 'title',
-      width: '25%',
-      align: 'center',
-      render: (text, record) => (
-        <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
-      ),
-    },
-    {
-      title: 'Nội dung',
-      dataIndex: 'content',
-      width: '40%',
+      title: 'Quốc gia',
+      dataIndex: 'country',
+      width: '15%',
       align: 'center',
       sorter: (a, b) => a.content.length - b.content.length,
-      render: (text, record) => (!text ? '' : parse(text)),
+      // render: (text, record) => (!text ? '' : parse(text)),
+    },
+    {
+      title: 'Năm thành lập',
+      dataIndex: 'create_date',
+      width: '10%',
+      align: 'center',
+      // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+    },
+    {
+      title: 'Độ ưu tiên',
+      dataIndex: 'priority',
+      width: '10%',
+      align: 'center',
+    },
+    {
+      title: 'Mô tả',
+      dataIndex: 'description',
+      width: '25%',
+      align: 'center',
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      width: '15%',
+      width: '10%',
       align: 'center',
-      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
   ]
 
-  const _getBlog = async () => {
-    try {
-      setLoadingTable(true)
-      const res = await getBlog(paramsFilter)
-      setBlogList(res.data.data)
-      setCountPage(res.data.count)
-      // console.log(res)
-      setLoadingTable(false)
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const _getBlog = async () => {
+  //   try {
+  //     setLoadingTable(true)
+  //     const res = await getBlog(paramsFilter)
+  //     setBlogList(res.data.data)
+  //     setCountPage(res.data.count)
+  //     // console.log(res)
+  //     setLoadingTable(false)
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
-  const _delelteBlog = async () => {
-    const id = {
-      blog_id: selectKeys,
-    }
-    // console.log(id)
-    try {
-      const res = await deleteBlog(id)
-      // console.log(res)
-      if (res.status === 200) {
-        if (res.data.success) {
-          message.success('Xóa bài viết thành công')
-          _getBlog(paramsFilter)
-        } else {
-          message.error(res.data.message || 'Xóa bài viết không thành công')
-        }
-      } else {
-        message.error('Xóa bài viết không thành công')
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const _delelteBlog = async () => {
+  //   const id = {
+  //     blog_id: selectKeys,
+  //   }
+  //   // console.log(id)
+  //   try {
+  //     const res = await deleteBlog(id)
+  //     // console.log(res)
+  //     if (res.status === 200) {
+  //       if (res.data.success) {
+  //         message.success('Xóa bài viết thành công')
+  //         _getBlog(paramsFilter)
+  //       } else {
+  //         message.error(res.data.message || 'Xóa bài viết không thành công')
+  //       }
+  //     } else {
+  //       message.error('Xóa bài viết không thành công')
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
   const onChangeOptionSearchDate = (value) => {
     delete paramsFilter[attributeDate]
@@ -140,27 +160,27 @@ export default function Blog() {
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  useEffect(() => {
-    _getBlog(paramsFilter)
-  }, [paramsFilter])
+  // useEffect(() => {
+  //   _getBlog(paramsFilter)
+  // }, [paramsFilter])
 
   return (
-    <div className={styles['body_blog']}>
-      <div className={styles['body_blog_header']}>
-        <div className={styles['body_blog_header_title']}>
-          <span className={styles['body_blog_header_list_text']}>Quản lý bài viết</span>
+    <div className={styles['body_brand']}>
+      <div className={styles['body_brand_header']}>
+        <div className={styles['body_brand_header_title']}>
+          <span className={styles['body_brand_header_list_text']}>Quản lý thương hiệu</span>
           <a>
             <InfoCircleOutlined />
           </a>
         </div>
-        <Permission permissions={[PERMISSIONS.tao_bai_viet]}>
-          <Link to={ROUTES.BLOG_CREATE}>
-            <Button type="primary">Tạo bài viết</Button>
+        {/* <Permission permissions={[PERMISSIONS.tao_thuong_hieu]}></Permission> */}
+          <Link to={ROUTES.BRAND_CREATE}>
+            <Button type="primary">Tạo thương hiệu</Button>
           </Link>
-        </Permission>
+        
       </div>
       <hr />
-      <div className={styles['body_blog_filter']}>
+      <div className={styles['body_brand_filter']}>
         <Input.Group compact>
           <Input
             style={{ width: '20%' }}
@@ -188,7 +208,7 @@ export default function Blog() {
           </Select>
         </Input.Group>
       </div>
-      <div className={styles['body_blog_delete_filter']}>
+      <div className={styles['body_brand_delete_filter']}>
         <div>
           {selectKeys.length !== 0 ? (
             <>
@@ -197,7 +217,6 @@ export default function Blog() {
                 title={'Bạn có chắc chắn muốn xóa bài viết này không ?'}
                 okText="Yes"
                 cancelText="No"
-                onConfirm={_delelteBlog}
               >
                 <Button type="danger" icon={<DeleteOutlined />}>
                   Xóa
@@ -217,7 +236,7 @@ export default function Blog() {
         size="small"
         loading={loadingTable}
         columns={columns}
-        dataSource={blogList}
+        dataSource={brandList}
         rowSelection={{
           selectedRowKeys: selectKeys,
           onChange: (keys, records) => {
