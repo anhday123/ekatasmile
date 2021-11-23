@@ -1,5 +1,6 @@
 import { ACTION } from 'consts'
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
+
 // nhận data từ server
 const initialState = {
   dataUser: {},
@@ -12,7 +13,7 @@ const initialState = {
 let login = (state = initialState, action) => {
   switch (action.type) {
     case ACTION.LOGIN: {
-      var data = decodeToken(action.data.accessToken)
+      var data = jwt_decode(action.data.accessToken)
       console.log('data user', data)
       if (data) {
         localStorage.setItem('accessToken', action.data.accessToken)
@@ -22,10 +23,7 @@ let login = (state = initialState, action) => {
           'permission_list',
           JSON.stringify(data.data._role.permission_list || [])
         )
-        localStorage.setItem(
-          'menu_list',
-          JSON.stringify(data.data._role.menu_list || [])
-        )
+        localStorage.setItem('menu_list', JSON.stringify(data.data._role.menu_list || []))
         return {
           ...state,
           dataUser: data,
