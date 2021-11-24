@@ -90,9 +90,10 @@ let updateBrandC = async (req, res, next) => {
 let deleteBrandC = async (req, res, next) => {
     try {
         let brandIds = req.body.brand_id;
+        console.log(brandIds);
         await client
             .db(DB)
-            .collection('Blogs')
+            .collection('Brands')
             .deleteMany({ brand_id: { $in: brandIds } });
         res.send({
             success: true,
