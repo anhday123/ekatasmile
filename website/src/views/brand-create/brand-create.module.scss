@@ -1,0 +1,31 @@
+.body_brand{
+    background-color: white;
+    padding: 16px;
+    margin: 15px 15px;
+    border-radius: 5px;
+}
+.body_brand_header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+}
+.body_brand_header_title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.body_brand_header_list_text{
+    font-size: 20px;
+    padding-right: 10px;
+}
+.body_brand_create_content{
+    padding: 20px 0 ;
+}
+.body_brand_content_header{
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    grid-gap: 10px;
+}
+

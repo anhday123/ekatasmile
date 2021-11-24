@@ -1,4 +1,4 @@
-import { ACTION } from '../../consts/index'
+import { ACTION } from 'consts/index'
 
 const initialState = []
 var store = (state = initialState, action) => {

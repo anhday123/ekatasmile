@@ -1,20 +1,16 @@
 import React from 'react'
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
 
 const Permission = ({ permissions, children, ...props }) => {
   try {
     const context =
-      localStorage.getItem('accessToken') &&
-      decodeToken(localStorage.getItem('accessToken'))
+      localStorage.getItem('accessToken') && jwt_decode(localStorage.getItem('accessToken'))
 
     if (!context) {
       return null
     }
 
-    const allPermission = [
-      ...context.data._role.menu_list,
-      ...context.data._role.permission_list,
-    ]
+    const allPermission = [...context.data._role.menu_list, ...context.data._role.permission_list]
 
     if (
       !permissions ||

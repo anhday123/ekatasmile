@@ -7,8 +7,7 @@ import { useDispatch } from 'react-redux'
 import { formatCash } from 'utils'
 import { IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
 import noData from 'assets/icons/no-data.png'
-import { decodeToken } from 'react-jwt'
-import delay from 'delay'
+import jwt_decode from 'jwt-decode'
 import KeyboardEventHandler from 'react-keyboard-event-handler'
 
 //components
@@ -575,7 +574,7 @@ export default function Sell() {
       localStorage.clear()
       history.push(ROUTES.LOGIN)
     } else {
-      const data = decodeToken(localStorage.getItem('accessToken'))
+      const data = jwt_decode(localStorage.getItem('accessToken'))
       console.log(data)
       if (!localStorage.getItem('storeSell')) {
         if (data.data._store) {

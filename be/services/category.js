@@ -71,6 +71,17 @@ let getCategoryS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Products',
+                    localField: 'category_id',
+                    foreignField: 'category_id',
+                    as: '_products',
+                },
+            },
+            { $addFields: { product_quantity: { $size: '$_products' } } }
+        );
         aggregateQuery.push({
             $lookup: {
                 from: 'Categories',
@@ -93,10 +104,37 @@ let getCategoryS = async (req, res, next) => {
                         }
                         return [];
                     })(),
+                    {
+                        $lookup: {
+                            from: 'Products',
+                            localField: 'category_id',
+                            foreignField: 'category_id',
+                            as: '_products',
+                        },
+                    },
+                    { $addFields: { product_quantity: { $size: '$_products' } } },
                 ],
                 as: 'children_category',
             },
         });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Deals',
+                let: { categoryId: '$category_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [{ $in: ['$$categoryId', '$list'] }, { $eq: ['$type', /category/i] }],
+                            },
+                        },
+                    },
+                ],
+                as: '_deals',
+            },
+        });
+        aggregateQuery.push({ $addFields: { 'children_category._deals': '$_deals' } });
+        aggregateQuery.push({ $addFields: { 'children_category.children_category._deals': '$_deals' } });
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -126,6 +164,9 @@ let getCategoryS = async (req, res, next) => {
         aggregateQuery.push({
             $project: {
                 sub_name: 0,
+                _products: 0,
+                'children_category._products': 0,
+                'children_category._business.password': 0,
                 'children_category._creator.password': 0,
                 '_business.password': 0,
                 '_creator.password': 0,

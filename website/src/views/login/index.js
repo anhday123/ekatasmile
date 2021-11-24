@@ -4,16 +4,7 @@ import { useDispatch } from 'react-redux'
 import store from 'assets/img/store.png'
 import { Link, useHistory } from 'react-router-dom'
 import { ACTION, ROUTES } from 'consts'
-import {
-  Row,
-  Col,
-  Form,
-  Input,
-  Button,
-  notification,
-  Checkbox,
-  Select,
-} from 'antd'
+import { Row, Col, Form, Input, Button, notification, Checkbox, Select } from 'antd'
 import {
   UserOutlined,
   LockOutlined,
@@ -23,7 +14,7 @@ import {
 } from '@ant-design/icons'
 import { register } from 'apis/register'
 import { login } from 'apis/login'
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
 
 export default function Login() {
   const dispatch = useDispatch()
@@ -42,7 +33,7 @@ export default function Login() {
         dispatch({ type: ACTION.LOGIN, data: res.data.data })
 
         //luu branch id len redux
-        const dataUser = decodeToken(res.data.data.accessToken)
+        const dataUser = jwt_decode(res.data.data.accessToken)
         console.log(dataUser)
         dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
@@ -92,8 +83,7 @@ export default function Login() {
     notification.error({
       message: 'Thất bại',
       duration: 3,
-      description:
-        'Tài khoản không có khoảng trắng, không dấu, độ dài từ 6 đến 20 ký tự.',
+      description: 'Tài khoản không có khoảng trắng, không dấu, độ dài từ 6 đến 20 ký tự.',
     })
   }
 
@@ -247,16 +237,11 @@ export default function Login() {
     >
       <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
         <div className={styles['login_choose_parent']}>
-          <div
-            style={{ paddingTop: '1rem' }}
-            className={styles['login_choose']}
-          >
+          <div style={{ paddingTop: '1rem' }} className={styles['login_choose']}>
             <div
               onClick={() => onClickStatus(1)}
               className={
-                status === 1
-                  ? styles['login_choose_status_active']
-                  : styles['login_choose_status']
+                status === 1 ? styles['login_choose_status_active'] : styles['login_choose_status']
               }
               style={{
                 color: 'white',
@@ -275,9 +260,7 @@ export default function Login() {
             <div
               onClick={() => onClickStatus(2)}
               className={
-                status === 2
-                  ? styles['login_choose_status_active']
-                  : styles['login_choose_status']
+                status === 2 ? styles['login_choose_status_active'] : styles['login_choose_status']
               }
               style={{
                 color: 'white',
@@ -296,11 +279,7 @@ export default function Login() {
         </div>
 
         {status === 1 ? (
-          <Form
-            className={styles['login_bottom']}
-            form={form}
-            onFinish={onFinish}
-          >
+          <Form className={styles['login_bottom']} form={form} onFinish={onFinish}>
             <Form.Item
               className={styles['login_bottom_email']}
               name="emailLogin"
@@ -335,10 +314,7 @@ export default function Login() {
                   Nhớ mật khẩu
                 </Checkbox>
               </Form.Item>
-              <Link
-                to={ROUTES.FORGET_PASSWORD}
-                style={{ paddingTop: '0.25rem', color: 'white' }}
-              >
+              <Link to={ROUTES.FORGET_PASSWORD} style={{ paddingTop: '0.25rem', color: 'white' }}>
                 Quên mật khẩu?
               </Link>
             </div>
@@ -406,10 +382,7 @@ export default function Login() {
                 placeholder="*Nhập lại mật khẩu"
               />
             </Form.Item>
-            <Form.Item
-              className={styles['login_bottom_email']}
-              name="firstname"
-            >
+            <Form.Item className={styles['login_bottom_email']} name="firstname">
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
@@ -425,10 +398,7 @@ export default function Login() {
                 placeholder="Họ"
               />
             </Form.Item>
-            <Form.Item
-              className={styles['login_bottom_email']}
-              name="addressRegister"
-            >
+            <Form.Item className={styles['login_bottom_email']} name="addressRegister">
               <Input
                 size="large"
                 style={{ borderRadius: '2rem' }}
@@ -436,10 +406,7 @@ export default function Login() {
                 placeholder="Địa chỉ"
               />
             </Form.Item>
-            <Form.Item
-              className={styles['login_bottom_email']}
-              name="business_areas"
-            >
+            <Form.Item className={styles['login_bottom_email']} name="business_areas">
               <Select size="large" placeholder="Lĩnh vực kinh doanh"></Select>
             </Form.Item>
             <Form.Item

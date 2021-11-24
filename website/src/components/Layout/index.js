@@ -51,6 +51,9 @@ import {
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
+  ShoppingCartOutlined,
+  FileDoneOutlined,
+  SketchOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -66,11 +69,11 @@ import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
+
 const { Sider } = Layout
 const { Option } = Select
 const { Dragger } = Upload
-
 const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
@@ -80,7 +83,7 @@ const BaseLayout = (props) => {
   const login = useSelector((state) => state.login)
   const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
-    ? decodeToken(localStorage.getItem('accessToken'))
+    ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
 
   const [form] = Form.useForm()
@@ -127,12 +130,12 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined />,
     },
-    // {
-    //   path: ROUTES.SELL,
-    //   title: 'Bán hàng',
-    //   permissions: [PERMISSIONS.ban_hang],
-    //   icon: <ShoppingCartOutlined />,
-    // },
+    {
+      path: ROUTES.SELL,
+      title: 'Bán hàng',
+      permissions: [],
+      icon: <ShoppingCartOutlined />,
+    },
     {
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',
@@ -182,6 +185,24 @@ const BaseLayout = (props) => {
           permissions: [PERMISSIONS.quan_li_bao_hanh],
         },
       ],
+    },
+    {
+      path: ROUTES.OFFER_LIST,
+      title: 'Quản lý ưu đãi',
+      permissions: [],
+      icon: <ControlOutlined />,
+    },
+    {
+      path: ROUTES.BLOG,
+      title: 'Quản lý bài viết',
+      permissions: [],
+      icon: <FileDoneOutlined />,
+    },
+    {
+      path: ROUTES.BRAND,
+      title: 'Quản lý thương hiệu',
+      permissions: [],
+      icon: <SketchOutlined />,
     },
     {
       icon: <BankOutlined />,
@@ -265,12 +286,7 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
-    {
-      path: ROUTES.OFFER_LIST,
-      title: 'Quản lý ưu đãi',
-      permissions: [],
-      icon: <ControlOutlined />,
-    },
+   
     {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -985,4 +1001,4 @@ const BaseLayout = (props) => {
   )
 }
 
-export default BaseLayout
+export default BaseLayout;
