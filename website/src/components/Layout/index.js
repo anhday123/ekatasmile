@@ -54,6 +54,7 @@ import {
   ShoppingCartOutlined,
   FileDoneOutlined,
   SketchOutlined,
+  ForkOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -203,6 +204,12 @@ const BaseLayout = (props) => {
       title: 'Quản lý thương hiệu',
       permissions: [],
       icon: <SketchOutlined />,
+    },
+    {
+      path: ROUTES.CHANNEL,
+      title: 'Quản lý kênh',
+      permissions: [],
+      icon: <ForkOutlined />,
     },
     {
       icon: <BankOutlined />,

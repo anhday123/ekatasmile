@@ -74,6 +74,52 @@ export default function BlogCreate() {
     }
   }
 
+  const UploadImageWithEditBlog = () => (
+    <Dragger
+      listType="picture"
+      name="file"
+      multiple
+      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+      onChange={(info) => {
+        if (info.file.status !== 'done') info.file.status = 'done'
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+        typingTimeoutRef.current = setTimeout(async () => {
+          let listUrl=[]
+          let listFile=[]
+          info.fileList.map((item)=>{
+            if(item.url){
+              listUrl.push(item.url)
+            }
+            else {
+              listFile.push(item.originFileObj)
+            }
+          })
+           const imgUrls = await uploadFiles(listFile)
+           setImage([...listUrl,...imgUrls])
+          console.log(info.fileList)
+        }, 350)
+        console.log(info)
+      }}
+      fileList={image?.map((item, index) => {
+        return {
+          uid: index,
+          name: 'image',
+          status: 'done',
+          url: item,
+          thumbUrl: item,
+        }
+      })}
+    >
+      <p className="ant-upload-drag-icon">
+        <InboxOutlined />
+      </p>
+      <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
+      <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
+    </Dragger>
+  )
+
   useEffect(() => {
     if (location.state) {
       setIdBlog(location.state.blog_id)
@@ -107,43 +153,7 @@ export default function BlogCreate() {
         <div style={{ marginTop: 20 }}>
           <h3>Hình ảnh</h3>
           {location.state ? (
-            <Dragger
-              listType="picture"
-              name="file"
-              multiple
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              onChange={(info) => {
-                if (info.file.status !== 'done') info.file.status = 'done'
-                if (typingTimeoutRef.current) {
-                  clearTimeout(typingTimeoutRef.current)
-                }
-                typingTimeoutRef.current = setTimeout(async () => {
-                  let imageBlog = []
-                  info.fileList.map((item) => imageBlog.push(item.originFileObj))
-                  // const imgUrl=await uploadFile(info.file.originFileObj)
-                  const imgUrl = await uploadFiles(imageBlog)
-                  setImage(imgUrl)
-                  console.log(imgUrl)
-                }, 350)
-                console.log(info)
-              }}
-              fileList={image?.map((item, index) => {
-                return {
-                  uid: index,
-                  name: 'image',
-                  status: 'done',
-                  url: item,
-                  thumbUrl: item,
-                }
-                
-              })}
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-              <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
-            </Dragger>
+            <UploadImageWithEditBlog />
           ) : (
             <Dragger
               listType="picture"

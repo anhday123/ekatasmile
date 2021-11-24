@@ -492,41 +492,42 @@ export default function OfferListCreate() {
                 className={styles['search-product']}
                 placeholder="Tìm kiếm theo nhóm sản phẩm"
                 dropdownRender={(menu) => (
-                  <div>
-                    <Row
-                      wrap={false}
-                      align="middle"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => window.open(ROUTES.CATEGORY, '_blank')}
-                    >
-                      <div
-                        style={{
-                          paddingLeft: 15,
-                          width: 45,
-                          height: 50,
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <PlusSquareOutlined
-                          style={{
-                            fontSize: 19,
-                          }}
-                        />
-                      </div>
-                      <p
-                        style={{
-                          marginLeft: 20,
-                          marginBottom: 0,
-                          fontSize: 16,
-                        }}
-                      >
-                        Thêm mới nhóm sản phẩm
-                      </p>
-                    </Row>
-                    {menu}
-                  </div>
+                  // <div>
+                  //   <Row
+                  //     wrap={false}
+                  //     align="middle"
+                  //     style={{ cursor: 'pointer' }}
+                  //     onClick={() => window.open(ROUTES.CATEGORY, '_blank')}
+                  //   >
+                  //     <div
+                  //       style={{
+                  //         paddingLeft: 15,
+                  //         width: 45,
+                  //         height: 50,
+                  //         display: 'flex',
+                  //         justifyContent: 'center',
+                  //         alignItems: 'center',
+                  //       }}
+                  //     >
+                  //       <PlusSquareOutlined
+                  //         style={{
+                  //           fontSize: 19,
+                  //         }}
+                  //       />
+                  //     </div>
+                  //     <p
+                  //       style={{
+                  //         marginLeft: 20,
+                  //         marginBottom: 0,
+                  //         fontSize: 16,
+                  //       }}
+                  //     >
+                  //       Thêm mới nhóm sản phẩm
+                  //     </p>
+                  //   </Row>
+                  //   {menu}
+                  // </div>
+                  console.log(menu)
                 )}
               >
                 {category?.map((data) => (

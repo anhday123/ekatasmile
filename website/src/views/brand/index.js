@@ -19,7 +19,7 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteBlog, getBlog } from 'apis/blog'
+import { deleteBrand, getBrand } from 'apis/brand'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -39,37 +39,35 @@ export default function Brand() {
   const columns = [
     {
       title: 'Hình ảnh',
-      dataIndex: 'image',
+      dataIndex: 'images',
       width: '10%',
       align: 'center',
-      // render: (text, record) => (
-      //   <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
-      // ),
+      render: (text, record) => (
+        <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
+      ),
     },
     {
       title: 'Tên thương hiệu',
       dataIndex: 'name',
       width: '20%',
       align: 'center',
-      sorter: (a, b) => a.title.length - b.title.length,
-      // render: (text, record) => (
-      //   <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
-      // ),
+      sorter: (a, b) => a.name.length - b.name.length,
+      render: (text, record) => (
+        <Link to={{ pathname: ROUTES.BRAND_CREATE, state: record }}>{text}</Link>
+      ),
     },
     {
       title: 'Quốc gia',
-      dataIndex: 'country',
+      dataIndex: '_country',
       width: '15%',
       align: 'center',
-      sorter: (a, b) => a.content.length - b.content.length,
-      // render: (text, record) => (!text ? '' : parse(text)),
+      render: (text, record) => (text && text[0]?.name ? text[0].name : 'Chưa cập nhật quốc gia'),
     },
     {
       title: 'Năm thành lập',
-      dataIndex: 'create_date',
+      dataIndex: 'founded_year',
       width: '10%',
       align: 'center',
-      // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
     {
       title: 'Độ ưu tiên',
@@ -79,54 +77,55 @@ export default function Brand() {
     },
     {
       title: 'Mô tả',
-      dataIndex: 'description',
+      dataIndex: 'content',
       width: '25%',
       align: 'center',
+      render: (text) => parse(text),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: '10%',
       align: 'center',
-      // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
   ]
 
-  // const _getBlog = async () => {
-  //   try {
-  //     setLoadingTable(true)
-  //     const res = await getBlog(paramsFilter)
-  //     setBlogList(res.data.data)
-  //     setCountPage(res.data.count)
-  //     // console.log(res)
-  //     setLoadingTable(false)
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
+  const _getBrand = async () => {
+    try {
+      setLoadingTable(true)
+      const res = await getBrand(paramsFilter)
+      setBrandList(res.data.data)
+      setCountPage(res.data.count)
+      // console.log(res)
+      setLoadingTable(false)
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
-  // const _delelteBlog = async () => {
-  //   const id = {
-  //     blog_id: selectKeys,
-  //   }
-  //   // console.log(id)
-  //   try {
-  //     const res = await deleteBlog(id)
-  //     // console.log(res)
-  //     if (res.status === 200) {
-  //       if (res.data.success) {
-  //         message.success('Xóa bài viết thành công')
-  //         _getBlog(paramsFilter)
-  //       } else {
-  //         message.error(res.data.message || 'Xóa bài viết không thành công')
-  //       }
-  //     } else {
-  //       message.error('Xóa bài viết không thành công')
-  //     }
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
+  const _delelteBrand = async () => {
+    const id = {
+      brand_id: selectKeys,
+    }
+    // console.log(id)
+    try {
+      const res = await deleteBrand(id)
+      // console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          message.success('Xóa thương hiệu thành công')
+          _getBrand(paramsFilter)
+        } else {
+          message.error(res.data.message || 'Xóa thương hiệu không thành công')
+        }
+      } else {
+        message.error('Xóa thương hiệu không thành công')
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const onChangeOptionSearchDate = (value) => {
     delete paramsFilter[attributeDate]
@@ -147,8 +146,8 @@ export default function Brand() {
       //khi search hoặc filter thi reset page ve 1
       paramsFilter.page = 1
 
-      if (value) paramsFilter.title = value
-      else delete paramsFilter.title
+      if (value) paramsFilter.name = value
+      else delete paramsFilter.name
 
       setParamsFilter({ ...paramsFilter })
     }, 450)
@@ -160,9 +159,9 @@ export default function Brand() {
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  // useEffect(() => {
-  //   _getBlog(paramsFilter)
-  // }, [paramsFilter])
+  useEffect(() => {
+    _getBrand(paramsFilter)
+  }, [paramsFilter])
 
   return (
     <div className={styles['body_brand']}>
@@ -173,11 +172,11 @@ export default function Brand() {
             <InfoCircleOutlined />
           </a>
         </div>
-        {/* <Permission permissions={[PERMISSIONS.tao_thuong_hieu]}></Permission> */}
+        <Permission permissions={[PERMISSIONS.tao_thuong_hieu]}>
           <Link to={ROUTES.BRAND_CREATE}>
             <Button type="primary">Tạo thương hiệu</Button>
           </Link>
-        
+        </Permission>
       </div>
       <hr />
       <div className={styles['body_brand_filter']}>
@@ -217,6 +216,7 @@ export default function Brand() {
                 title={'Bạn có chắc chắn muốn xóa bài viết này không ?'}
                 okText="Yes"
                 cancelText="No"
+                onConfirm={_delelteBrand}
               >
                 <Button type="danger" icon={<DeleteOutlined />}>
                   Xóa
@@ -232,7 +232,7 @@ export default function Brand() {
         </Button>
       </div>
       <Table
-        rowKey="blog_id"
+        rowKey="brand_id"
         size="small"
         loading={loadingTable}
         columns={columns}
