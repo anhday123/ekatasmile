@@ -16,6 +16,7 @@ class Brand {
         this.images = data.images;
         this.priority = Number(data.priority);
         this.country_code = String(data.country_code);
+        this.founded_year = String(data.founded_year);
         this.content = data.content;
         this.tags = data.tags;
         this.sub_tags = (() => {
