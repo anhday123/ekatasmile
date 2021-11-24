@@ -10,13 +10,13 @@ let getWardC = async (req, res, next) => {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.ward_code) {
-            matchQuery['ward_code'] = req.query.ward_code;
+            matchQuery['ward_code'] = String(req.query.ward_code);
         }
         if (req.query.district_id) {
-            matchQuery['district_id'] = parseInt(req.query.district_id);
+            matchQuery['district_id'] = Number(req.query.district_id);
         }
         if (req.query.province_id) {
-            matchQuery['province_id'] = parseInt(req.query.province_id);
+            matchQuery['province_id'] = Number(req.query.province_id);
         }
         aggregateQuery.push({ $match: matchQuery });
         // lấy data từ database
@@ -48,14 +48,13 @@ let getWardC = async (req, res, next) => {
 let getDistrictC = async (req, res, next) => {
     try {
         let matchQuery = {};
-        let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.district_id) {
-            matchQuery['district_id'] = parseInt(req.query.district_id);
+            matchQuery['district_id'] = Number(req.query.district_id);
         }
         if (req.query.province_id) {
-            matchQuery['province_id'] = parseInt(req.query.province_id);
+            matchQuery['province_id'] = Number(req.query.province_id);
         }
         aggregateQuery.push({ $match: matchQuery });
         // lấy data từ database
@@ -85,11 +84,10 @@ let getDistrictC = async (req, res, next) => {
 let getProvinceC = async (req, res, next) => {
     try {
         let matchQuery = {};
-        let projectQuery = {};
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.province_id) {
-            matchQuery['province_id'] = parseInt(req.query.province_id);
+            matchQuery['province_id'] = Number(req.query.province_id);
         }
         aggregateQuery.push({ $match: matchQuery });
         // lấy data từ database
@@ -112,8 +110,39 @@ let getProvinceC = async (req, res, next) => {
     }
 };
 
+let getCountryC = async (req, res, next) => {
+    try {
+        let matchQuery = {};
+        let aggregateQuery = [];
+        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        if (req.query.code) {
+            matchQuery['code'] = String(req.query.code).trim().toUpperCase();
+        }
+        aggregateQuery.push({ $match: matchQuery });
+        aggregateQuery.push({ $sort: { priority: -1 } })
+        // lấy data từ database
+        let countries = await client.db(DB).collection(`Countries`).aggregate(aggregateQuery).toArray();
+        countries = relative(
+            {
+                ...(() => {
+                    let result = {};
+                    if (req.query.name) {
+                        result = { ...result, ...{ name: req.query.name } };
+                    }
+                    return result;
+                })(),
+            },
+            countries
+        );
+        res.send({ success: true, data: countries });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getWardC,
     getDistrictC,
     getProvinceC,
+    getCountryC,
 };
