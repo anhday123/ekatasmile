@@ -20,7 +20,24 @@ class Deal {
         this.saleoff_value = Number(data.saleoff_value || 0);
         this.max_saleoff_value = Number(data.max_saleoff_value || 0);
         this.image = data.image || '';
-        this.list = data.list || [];
+        this.image_list = (()=>{
+            if (this.sub_type == 'banner') {
+                return data.image_list || [];
+            }
+            return [];
+        })();
+        this.category_list = (()=>{
+            if (this.sub_type == 'category') {
+                return data.category_list || [];
+            }
+            return [];
+        })();
+        this.product_list = (()=>{
+            if (this.sub_type == 'product') {
+                return data.product_list || [];
+            }
+            return [];
+        })();
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
         this.description = data.description;

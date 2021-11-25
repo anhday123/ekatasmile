@@ -80,6 +80,46 @@ let getDealS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Categories',
+                let: { categoryIds: '$category_list' },
+                pipeline: [
+                    { $match: { $expr: { $in: ['$category_id', '$$categoryIds'] } } },
+                    {
+                        $lookup: {
+                            from: 'Categories',
+                            let: { categoryId: '$category_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
+                            ],
+                            as: 'children_category',
+                        }
+                    }
+                ],
+                as: '_categories',
+            }
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Products',
+                let: { productIds: '$product_list' },
+                pipeline: [
+                    { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
+                    {
+                        $lookup: {
+                            from: 'Variants',
+                            let: { productId: '$product_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                            ],
+                            as: 'variants',
+                        },
+                    }
+                ],
+                as: '_products',
+            }
+        });
         if (req.query._business) {
             aggregateQuery.push(
                 {
