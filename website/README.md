@@ -1,4 +1,4 @@
 deploy:
-ssh root@pos.erps.vn
-rm -r /var/www/erps/build
+ssh root@quantribanhang.viesoftware.vn
+rm -r /var/www/quantribanhang/build
 viesoftware

@@ -100,6 +100,7 @@ import Blog from './blog'
 import BlogCreate from './blog-create'
 import Brand from './brand'
 import BrandCreate from './brand-create'
+import Channel from './channel'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -424,7 +425,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  
+  {
+    path: ROUTES.CHANNEL,
+    Component: () => <Channel />,
+    title: 'Danh sách kênh',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [

@@ -49,6 +49,9 @@
 .ant-input {
   border-radius: 5px !important;
 }
+.ant-input-number{
+  border-radius: 5px !important;
+}
 .ant-input-affix-wrapper {
   border-radius: 5px !important;
 }
