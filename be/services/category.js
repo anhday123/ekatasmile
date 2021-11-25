@@ -85,9 +85,9 @@ let getCategoryS = async (req, res, next) => {
         aggregateQuery.push({
             $lookup: {
                 from: 'Categories',
-                let: { category_id: '$category_id' },
+                let: { categoryId: '$category_id' },
                 pipeline: [
-                    { $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } },
+                    { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
                     ...(() => {
                         if (req.query._creator) {
                             return [
@@ -125,7 +125,7 @@ let getCategoryS = async (req, res, next) => {
                     {
                         $match: {
                             $expr: {
-                                $and: [{ $in: ['$$categoryId', '$list'] }, { $eq: ['$type', /category/i] }],
+                                $and: [{ $in: ['$$categoryId', '$category_list'] }, { $eq: ['$type', 'category'] }],
                             },
                         },
                     },
