@@ -102,7 +102,7 @@ export default function OfferListCreate() {
         type: filter,
         saleoff_type: 'value',
         saleoff_value: dealPrice,
-        list: dataTableProduct.map((item) => item.product_id),
+        product_list: dataTableProduct.map((item) => item.product_id),
         description: description,
       }
     } else if (filter === 'category') {
@@ -111,7 +111,7 @@ export default function OfferListCreate() {
         type: filter,
         saleoff_type: 'value',
         saleoff_value: dealPrice,
-        list: dataTableCategory.map((item) => item.category_id),
+        category_list: dataTableCategory.map((item) => item.category_id),
         description: description,
       }
     } else {
@@ -120,11 +120,11 @@ export default function OfferListCreate() {
         type: filter,
         saleoff_type: 'value',
         saleoff_value: dealPrice,
-        list: imgUpload,
+        image_list: imgUpload,
         description: description,
       }
     }
-    console.log(body)
+    // console.log(body)
     try {
       const res = await addDeal(body)
       console.log(res)
@@ -330,6 +330,7 @@ export default function OfferListCreate() {
             <h3>Gía ưu đãi</h3>
             <InputNumber
               onChange={(value) => setDealPrice(value)}
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               defaultValue={0}
               min={0}
               max={100000000000}
@@ -492,42 +493,41 @@ export default function OfferListCreate() {
                 className={styles['search-product']}
                 placeholder="Tìm kiếm theo nhóm sản phẩm"
                 dropdownRender={(menu) => (
-                  // <div>
-                  //   <Row
-                  //     wrap={false}
-                  //     align="middle"
-                  //     style={{ cursor: 'pointer' }}
-                  //     onClick={() => window.open(ROUTES.CATEGORY, '_blank')}
-                  //   >
-                  //     <div
-                  //       style={{
-                  //         paddingLeft: 15,
-                  //         width: 45,
-                  //         height: 50,
-                  //         display: 'flex',
-                  //         justifyContent: 'center',
-                  //         alignItems: 'center',
-                  //       }}
-                  //     >
-                  //       <PlusSquareOutlined
-                  //         style={{
-                  //           fontSize: 19,
-                  //         }}
-                  //       />
-                  //     </div>
-                  //     <p
-                  //       style={{
-                  //         marginLeft: 20,
-                  //         marginBottom: 0,
-                  //         fontSize: 16,
-                  //       }}
-                  //     >
-                  //       Thêm mới nhóm sản phẩm
-                  //     </p>
-                  //   </Row>
-                  //   {menu}
-                  // </div>
-                  console.log(menu)
+                  <div>
+                    <Row
+                      wrap={false}
+                      align="middle"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => window.open(ROUTES.CATEGORY, '_blank')}
+                    >
+                      <div
+                        style={{
+                          paddingLeft: 15,
+                          width: 45,
+                          height: 50,
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <PlusSquareOutlined
+                          style={{
+                            fontSize: 19,
+                          }}
+                        />
+                      </div>
+                      <p
+                        style={{
+                          marginLeft: 20,
+                          marginBottom: 0,
+                          fontSize: 16,
+                        }}
+                      >
+                        Thêm mới nhóm sản phẩm
+                      </p>
+                    </Row>
+                    {menu}
+                  </div>
                 )}
               >
                 {category?.map((data) => (
@@ -671,7 +671,7 @@ export default function OfferListCreate() {
                   let imagesBanner = []
                   info.fileList.map((e) => imagesBanner.push(e.originFileObj))
                   const imgUrl = await uploadFiles(imagesBanner)
-                  console.log(imgUrl)
+                  // console.log(imgUrl)
                   setImgUpload(imgUrl)
                 }, 450)
               }}

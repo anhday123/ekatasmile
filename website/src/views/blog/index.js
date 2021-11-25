@@ -13,7 +13,7 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
-import { Button, Input, message, Select, Table, Popconfirm } from 'antd'
+import { Button, Input, message, Select, Table, Popconfirm ,DatePicker } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
@@ -25,6 +25,7 @@ import { deleteBlog, getBlog } from 'apis/blog'
 import parse from 'html-react-parser'
 
 const { Option } = Select
+const {RangePicker} = DatePicker
 
 export default function Blog() {
   const [selectKeys, setSelectKeys] = useState([])
@@ -33,8 +34,14 @@ export default function Blog() {
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
+  const [valueDateSearch,setValueDateSearch]=useState(null)
   const [valueSearch, setValueSearch] = useState('')
+  const [openSelect,setOpenSelect]=useState(false)
   const typingTimeoutRef = useRef(null)
+
+  const toggleOpenSelect=()=>{
+    setOpenSelect(!openSelect)
+  }
 
   const columns = [
     {
@@ -78,7 +85,7 @@ export default function Blog() {
       const res = await getBlog(paramsFilter)
       setBlogList(res.data.data)
       setCountPage(res.data.count)
-      // console.log(res)
+      console.log(res)
       setLoadingTable(false)
     } catch (err) {
       console.log(err)
@@ -97,6 +104,7 @@ export default function Blog() {
         if (res.data.success) {
           message.success('Xóa bài viết thành công')
           _getBlog(paramsFilter)
+          setSelectKeys([])
         } else {
           message.error(res.data.message || 'Xóa bài viết không thành công')
         }
@@ -137,6 +145,7 @@ export default function Blog() {
   const _resetFilter = () => {
     setAttributeDate(undefined)
     setValueSearch('')
+    setValueDateSearch(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
@@ -171,11 +180,73 @@ export default function Blog() {
             value={valueSearch}
           />
           <Select
-            style={{ width: '16%' }}
+            style={{ width: '25%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
             allowClear
+            open={openSelect}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                 style={{width:"100%"}} 
+                 onFocus={() => {
+                  if (!openSelect) toggleOpenSelect()
+                }}
+                onBlur={() => {
+                  if (openSelect) toggleOpenSelect()
+                }}
+                value={valueDateSearch}
+                onChange={(dates, dateStrings) => {
+                  //khi search hoac filter thi reset page ve 1
+                  paramsFilter.page = 1
+
+                  if (openSelect) toggleOpenSelect()
+
+                  //nếu search date thì xoá các params date
+                  delete paramsFilter.to_day
+                  delete paramsFilter.yesterday
+                  delete paramsFilter.this_week
+                  delete paramsFilter.last_week
+                  delete paramsFilter.last_month
+                  delete paramsFilter.this_month
+                  delete paramsFilter.this_year
+                  delete paramsFilter.last_year
+
+                  //Kiểm tra xem date có được chọn ko
+                  //Nếu ko thì thoát khỏi hàm, tránh cash app
+                  //và get danh sách order
+                  if (!dateStrings[0] && !dateStrings[1]) {
+                    delete paramsFilter.from_date
+                    delete paramsFilter.to_date
+
+                    setValueDateSearch(null)
+                    setAttributeDate()
+                  } else {
+                    const dateFirst = dateStrings[0]
+                    const dateLast = dateStrings[1]
+                    setValueDateSearch(dates)
+                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+
+                    dateFirst.replace(/-/g, '/')
+                    dateLast.replace(/-/g, '/')
+
+                    paramsFilter.from_date = dateFirst
+                    paramsFilter.to_date = dateLast
+                  }
+
+                  setParamsFilter({ ...paramsFilter })
+                }}
+                 />
+                {menu}
+              </>
+            )}
           >
             <Option value="today">Hôm nay</Option>
             <Option value="yesterday">Hôm qua</Option>

@@ -36,19 +36,28 @@ export default function Channel() {
   const [attributeStatus, setAttributeStatus] = useState(undefined)
   const [attributeBase, setAttributeBase] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
-  const [connect,setConnect]=useState(false)
-  const [modalVisible,setModalVisible]=useState(false)
-  const [dataUpdate,setDataUpdate]=useState({})
-  const [channelName,setChannelName]=useState('')
+  const [connect, setConnect] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [dataUpdate, setDataUpdate] = useState({
+    name: '',
+    url: '',
+    base: '',
+  })
+  const [channelName, setChannelName] = useState('')
   const typingTimeoutRef = useRef(null)
 
-  const handleChange=(checked)=>{
-      console.log(checked)
-      setConnect(checked)
+  const handleChange = (checked) => {
+    console.log(checked)
+    setConnect(checked)
   }
-  const toggleModal=()=>{
-      setModalVisible(!modalVisible)
-      setDataUpdate(null)
+  const toggleModal = () => {
+    setModalVisible(!modalVisible)
+    setDataUpdate({
+      name: '',
+      url: '',
+      base: '',
+    })
+    console.log(dataUpdate)
   }
 
   const columns = [
@@ -67,7 +76,11 @@ export default function Channel() {
       dataIndex: 'url',
       width: '15%',
       align: 'center',
-      render: (text) => <a target="_blank" href={text}>{text}</a>,
+      render: (text) => (
+        <a target="_blank" href={text}>
+          {text}
+        </a>
+      ),
     },
     {
       title: 'Nền tảng',
@@ -94,21 +107,31 @@ export default function Channel() {
       dataIndex: '',
       width: '15%',
       align: 'center',
-      render:(text,record)=><div className={styles['body_channel_table_action']}>
-          <Button type="primary" onClick={()=>_updateChannel(record)} style={{width:100}}>Cập nhật</Button>
-          <Button type="danger" style={{width:100,margin:'10px 0'}}>Xóa</Button>
-          <Button type="primary" style={{width:100,backgroundColor:"#70BE4B",border:"none"}}>Kết nối lại</Button>
-      </div>
+      render: (text, record) => (
+        <div className={styles['body_channel_table_action']}>
+          <Button type="primary" onClick={() => _updateChannel(record)} style={{ width: 100 }}>
+            Cập nhật
+          </Button>
+          <Button type="danger" style={{ width: 100, margin: '10px 0' }}>
+            Xóa
+          </Button>
+          <Button type="primary" style={{ width: 100, backgroundColor: '#70BE4B', border: 'none' }}>
+            Kết nối lại
+          </Button>
+        </div>
+      ),
     },
     {
       title: 'Kết nối',
       dataIndex: '',
       width: '20%',
       align: 'center',
-      render:(text)=> <div>
+      render: (text) => (
+        <div>
           <Switch onChange={handleChange} />
           {/* <span>{connect ? 'Đang kết nối' : 'Kết nối'}</span> */}
-      </div>
+        </div>
+      ),
     },
   ]
 
@@ -129,14 +152,20 @@ export default function Channel() {
     },
   ]
 
-  const _updateChannel=(record)=>{
-      console.log(record)
-      setChannelName(record.name)
-      setModalVisible(!modalVisible)
+  const _updateChannel = (record) => {
+    console.log(record)
+    setDataUpdate({ ...dataUpdate, name: record.name, url: record.url, base: record.base })
+    setModalVisible(!modalVisible)
   }
 
-  const handleChangChannelName=(e)=>{
-      setChannelName(e.target.value)
+  const handleChangeChannelName = (e) => {
+    setDataUpdate({ ...dataUpdate, name: e.target.value })
+    console.log(dataUpdate)
+  }
+
+  const handleChangeChannelUrl = (e) => {
+    setDataUpdate({ ...dataUpdate, url: e.target.value })
+    console.log(dataUpdate)
   }
 
   // const _getBlog = async () => {
@@ -226,7 +255,7 @@ export default function Channel() {
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  const title=`${dataUpdate? "Cập nhật" : "Thêm mới"}  kênh bán hàng`
+  const title = `${dataUpdate ? 'Cập nhật' : 'Thêm mới'}  kênh bán hàng`
 
   // useEffect(() => {
   //   _getBlog(paramsFilter)
@@ -234,7 +263,7 @@ export default function Channel() {
 
   return (
     <div className={styles['body_channel']}>
-        <Modal
+      <Modal
         title={title}
         visible={modalVisible}
         centered={true}
@@ -247,31 +276,33 @@ export default function Channel() {
       >
         <h3>Tên hiển thị</h3>
         <Input
-          value={channelName? channelName : ''}
-          onChange={handleChangChannelName}
+          value={dataUpdate.name ? dataUpdate.name : ''}
+          onChange={handleChangeChannelName}
           placeholder="Nhập tên hiển thị"
         />
-        <h3 style={{paddingTop:20}}>Url trang web</h3>
+        <h3 style={{ paddingTop: 20 }}>Url trang web</h3>
         <Input
+          value={dataUpdate.url ? dataUpdate.url : ''}
+          onChange={handleChangeChannelUrl}
           placeholder="Nhập url trang web"
         />
-        <h3 style={{paddingTop:20}}>Nền tảng</h3>
+        <h3 style={{ paddingTop: 20 }}>Nền tảng</h3>
         <Select
-            style={{ width: '100%' }}
-            value={attributeBase}
-            onChange={onChangeOptionSearchBase}
-            placeholder="Chọn nền tảng"
-            allowClear
-          >
-            <Option value="shopify">Shopify</Option>
-            <Option value="amazon">Amazon</Option>
-            <Option value="shopbase">Shopbase</Option>
-            <Option value="wordpress">Woocommerce (wordpress)</Option>
-            <Option value="esty">Esty</Option>
-            <Option value="tiki">Tiki</Option>
-            <Option value="lazada">Lazada</Option>
-            <Option value="shopee">Shopee</Option>
-          </Select>
+          style={{ width: '100%' }}
+          value={attributeBase}
+          onChange={onChangeOptionSearchBase}
+          placeholder="Chọn nền tảng"
+          allowClear
+        >
+          <Option value="shopify">Shopify</Option>
+          <Option value="amazon">Amazon</Option>
+          <Option value="shopbase">Shopbase</Option>
+          <Option value="wordpress">Woocommerce (wordpress)</Option>
+          <Option value="esty">Esty</Option>
+          <Option value="tiki">Tiki</Option>
+          <Option value="lazada">Lazada</Option>
+          <Option value="shopee">Shopee</Option>
+        </Select>
       </Modal>
       <div className={styles['body_channel_header']}>
         <div className={styles['body_channel_header_title']}>
@@ -281,7 +312,9 @@ export default function Channel() {
           </a>
         </div>
         <Permission permissions={[PERMISSIONS.tao_kenh_ban_hang]}>
-          <Button onClick={toggleModal} type="primary">Thêm kênh bán hàng</Button>
+          <Button onClick={toggleModal} type="primary">
+            Thêm kênh bán hàng
+          </Button>
         </Permission>
       </div>
       <hr />
