@@ -34,6 +34,7 @@ let getWardC = async (req, res, next) => {
                     if (req.query.province_name) {
                         result = { ...result, ...{ province_name: req.query.province_name } };
                     }
+                    console.log(result);
                     return result;
                 })(),
             },
