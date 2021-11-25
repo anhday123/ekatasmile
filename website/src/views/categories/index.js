@@ -21,12 +21,7 @@ import {
 } from 'antd'
 
 //icons
-import {
-  DeleteOutlined,
-  SearchOutlined,
-  PlusCircleOutlined,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { DeleteOutlined, SearchOutlined, PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { getCategories, apiAddCategory, deleteCategories } from 'apis/category'
@@ -81,13 +76,11 @@ export default function Category() {
           _getCategories(paramsFilter)
         } else
           notification.error({
-            message:
-              res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
+            message: res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
           })
       } else
         notification.error({
-          message:
-            res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
+          message: res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
         })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -106,13 +99,11 @@ export default function Category() {
           _getCategories(paramsFilter)
         } else
           notification.error({
-            message:
-              res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
+            message: res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
           })
       } else
         notification.error({
-          message:
-            res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
+          message: res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
         })
     } catch (error) {
       console.log(error)
@@ -122,7 +113,10 @@ export default function Category() {
 
   const ModalCreateCategoryChild = ({ record }) => {
     const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
+    const toggle = () => {
+      setVisible(!visible)
+      // console.log(record)
+    }
     const [imageView, setImageView] = useState('')
     const [fileUpload, setFileUpload] = useState(null)
     const [loading, setLoading] = useState(false)
@@ -136,9 +130,19 @@ export default function Category() {
 
     return (
       <>
-        <Button type="primary" onClick={toggle}>
-          Tạo danh mục con
-        </Button>
+        {record.parent_id !== -1 ? (
+          <Button
+            type="primary"
+            style={{ backgroundColor: 'rgb(253 170 62)', border: 'none' }}
+            onClick={toggle}
+          >
+            Tạo danh mục con
+          </Button>
+        ) : (
+          <Button type="primary" onClick={toggle}>
+            Tạo danh mục con
+          </Button>
+        )}
         <Modal
           footer={
             <Row justify="end">
@@ -159,6 +163,7 @@ export default function Category() {
                     default: dataForm.default || '',
                     description: dataForm.description || '',
                   }
+                  console.log(body)
 
                   reset()
                   _addCategory(body)
@@ -182,9 +187,7 @@ export default function Category() {
               action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
               onChange={(info) => {
                 if (info.file.status !== 'done') info.file.status = 'done'
-                getBase64(info.file.originFileObj, (imageUrl) =>
-                  setImageView(imageUrl)
-                )
+                getBase64(info.file.originFileObj, (imageUrl) => setImageView(imageUrl))
                 setFileUpload(info.file.originFileObj)
               }}
             >
@@ -200,26 +203,18 @@ export default function Category() {
           </div>
           <Form layout="vertical" form={formCategoryChild}>
             <Form.Item
-              rules={[
-                { required: true, message: 'Vui lòng nhập tên danh mục' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
               name="name"
               label="Tên danh mục"
             >
-              <Input
-                placeholder="Nhập tên danh mục"
-                style={{ width: '100%' }}
-              />
+              <Input placeholder="Nhập tên danh mục" style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item
               rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}
               name="priority"
               label="Độ ưu tiên"
             >
-              <InputNumber
-                placeholder="Nhập độ ưu tiên"
-                style={{ width: '100%' }}
-              />
+              <InputNumber placeholder="Nhập độ ưu tiên" style={{ width: '100%' }} />
             </Form.Item>
           </Form>
         </Modal>
@@ -243,7 +238,7 @@ export default function Category() {
       setLoading(true)
       setSelectedRowKeys([])
       const res = await getCategories({ ...params, _creator: true })
-      console.log(res)
+      // console.log(res)
       if (res.status === 200) {
         setCategories(res.data.data)
         setCountCategories(res.data.count)
@@ -259,65 +254,39 @@ export default function Category() {
   const columnsParent = [
     {
       title: 'Hình ảnh',
+      align: 'center',
       render: (text, record) =>
-        record.image && (
-          <img src={record.image} alt="" style={{ width: 70, height: 70 }} />
-        ),
+        record.image && <img src={record.image} alt="" style={{ width: 70, height: 70 }} />,
     },
     {
       title: 'Tên danh mục',
+      align: 'center',
       render: (text, record) => (
-        <Link to={{ pathname: ROUTES.CATEGORY, state: record }}>
-          {record.name || ''}
-        </Link>
+        <Link to={{ pathname: ROUTES.CATEGORY, state: record }}>{record.name || ''}</Link>
       ),
     },
-    { title: 'Mã danh mục', dataIndex: 'code' },
+    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
     {
       title: 'Người tạo',
+      align: 'center',
       render: (text, record) =>
-        record._creator &&
-        `${record._creator.first_name} ${record._creator.last_name}`,
+        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
     },
     {
       title: 'Ngày tạo',
+      align: 'center',
       render: (text, record) =>
-        record.create_date &&
-        moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
+        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
     },
-    { title: 'Độ ưu tiên', dataIndex: 'priority' },
+    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
     {
-      width: 160,
+      width: 100,
+      align: 'center',
       render: (text, record) => <ModalCreateCategoryChild record={record} />,
     },
   ]
 
   const columnsChildren = [
-    {
-      title: 'Hình ảnh',
-      render: (text, record) =>
-        record.image && (
-          <img src={record.image} alt="" style={{ width: 45, height: 45 }} />
-        ),
-    },
-    {
-      title: 'Tên danh mục',
-      render: (text, record) => record.name || '',
-    },
-    { title: 'Mã danh mục', dataIndex: 'code' },
-    {
-      title: 'Người tạo',
-      render: (text, record) =>
-        record._creator &&
-        `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      render: (text, record) =>
-        record.create_date &&
-        moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
-    },
-    { title: 'Độ ưu tiên', dataIndex: 'priority' },
     {
       render: (text, record) => (
         <Popconfirm
@@ -326,12 +295,80 @@ export default function Category() {
           okText="Đồng ý"
           cancelText="Từ chối"
         >
-          <DeleteOutlined
-            style={{ color: 'red', fontSize: 22, cursor: 'pointer' }}
-          />
+          <DeleteOutlined style={{ color: 'red', fontSize: 22, cursor: 'pointer' }} />
         </Popconfirm>
       ),
     },
+    {
+      title: 'Hình ảnh',
+      align: 'center',
+      render: (text, record) =>
+        record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
+    },
+    {
+      title: 'Tên danh mục',
+      align: 'center',
+      render: (text, record) => record.name || '',
+    },
+    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
+    {
+      title: 'Người tạo',
+      align: 'center',
+      render: (text, record) =>
+        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
+    },
+    {
+      title: 'Ngày tạo',
+      align: 'center',
+      render: (text, record) =>
+        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
+    },
+    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
+    {
+      width: 120,
+      align: 'center',
+      render: (text, record) => <ModalCreateCategoryChild color={'orange'} record={record} />,
+    },
+  ]
+
+  const columnsChildrenSmall = [
+    {
+      render: (text, record) => (
+        <Popconfirm
+          onConfirm={() => _deleteCategories(record.category_id)}
+          title="Bạn có muốn xóa danh mục con này?"
+          okText="Đồng ý"
+          cancelText="Từ chối"
+        >
+          <DeleteOutlined style={{ color: 'red', fontSize: 22, cursor: 'pointer' }} />
+        </Popconfirm>
+      ),
+    },
+    {
+      title: 'Hình ảnh',
+      align: 'center',
+      render: (text, record) =>
+        record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
+    },
+    {
+      title: 'Tên danh mục',
+      align: 'center',
+      render: (text, record) => record.name || '',
+    },
+    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
+    {
+      title: 'Người tạo',
+      align: 'center',
+      render: (text, record) =>
+        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
+    },
+    {
+      title: 'Ngày tạo',
+      align: 'center',
+      render: (text, record) =>
+        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
+    },
+    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
   ]
 
   useEffect(() => {
@@ -345,14 +382,8 @@ export default function Category() {
         justify="space-between"
         style={{ borderBottom: '0.75px solid #BBBCBD', paddingBottom: 15 }}
       >
-        <h3 style={{ marginBottom: 0, fontWeight: 700, marginRight: 7 }}>
-          Quản lý danh mục
-        </h3>
-        <Button
-          size="large"
-          type="primary"
-          onClick={() => history.push(ROUTES.CATEGORY)}
-        >
+        <h3 style={{ marginBottom: 0, fontWeight: 700, marginRight: 7 }}>Quản lý danh mục</h3>
+        <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
           Tạo danh mục
         </Button>
       </Row>
@@ -371,12 +402,12 @@ export default function Category() {
             allowClear
             style={{ width: 250 }}
             placeholder="Lọc theo thời gian"
+            showSearch
             onChange={(value) => {
               setValueFilterTime(value)
               delete paramsFilter[valueFilterTime]
               if (value) paramsFilter[value] = true
               else delete paramsFilter[value]
-
               setParamsFilter({ ...paramsFilter })
             }}
           >
@@ -420,20 +451,40 @@ export default function Category() {
       <Table
         expandable={{
           expandedRowRender: (record) => {
-            return record.children_category &&
-              record.children_category.length ? (
+            return record.children_category && record.children_category.length ? (
               <div style={{ margin: 25 }}>
                 <Table
+                  rowKey="category_id"
                   style={{ width: '100%' }}
                   pagination={false}
                   columns={columnsChildren}
                   dataSource={record.children_category}
                   size="small"
+                  expandable={{
+                    expandedRowRender: (record) => {
+                      return record.children_category || record.children_category.length ? (
+                        <Table
+                          rowKey="category_id"
+                          style={{ width: '100%' }}
+                          pagination={false}
+                          columns={columnsChildrenSmall}
+                          dataSource={record.children_category}
+                          size="small"
+                        />
+                      ) : (
+                        ''
+                      )
+                      // console.log(record)
+                    },
+                    expandedRowKeys: record.children_category.map((item) => item.category_id),
+                    expandIconColumnIndex: -1,
+                  }}
                 />
               </div>
             ) : (
               ''
             )
+            // console.log(record)
           },
           expandedRowKeys: selectedRowKeys,
           expandIconColumnIndex: -1,

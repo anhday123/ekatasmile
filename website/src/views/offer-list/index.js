@@ -7,8 +7,24 @@ import styles from './../offer-list/offer.module.scss'
 import moment from 'moment'
 
 // antd
-import { DeleteOutlined, EditOutlined, FilterOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Input, message, Modal, Select, Table, Popconfirm } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  FilterOutlined,
+  InfoCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Select,
+  Table,
+  Popconfirm,
+  InputNumber,
+  DatePicker,
+} from 'antd'
 import { Link } from 'react-router-dom'
 import { PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
@@ -20,6 +36,7 @@ import { deleteDeal, getDeal, updateDeal } from '../../apis/deal'
 import parse from 'html-react-parser'
 
 const { Option } = Select
+const { RangePicker } = DatePicker
 
 export default function OfferList() {
   const [selectKeys, setSelectKeys] = useState([])
@@ -34,6 +51,8 @@ export default function OfferList() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
+  const [openSelect,setOpenSelect]=useState(false)
+  const [valueDateSearch,setValueDateSearch]=useState(null)
   const typingTimeoutRef = useRef(null)
 
   const toggleModalName = () => {
@@ -42,6 +61,10 @@ export default function OfferList() {
 
   const toggleModalPrice = () => {
     setModalVisiblePrice(!modalVisiblePrice)
+  }
+  
+  const toggleOpenSelect=()=>{
+    setOpenSelect(!openSelect)
   }
 
   const infoName = (record) => {
@@ -161,8 +184,54 @@ export default function OfferList() {
         render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
       },
     ]
+    const columnsProduct = [
+      {
+        title: 'Hình ảnh',
+        align: 'center',
+        dataIndex: 'image',
+        render: (text, record, index) =>
+          record ? (
+            <img src={record.image} alt="" style={{ width: '100px', height: '100px' }} />
+          ) : (
+            ''
+          ),
+      },
+      {
+        title: 'Tên sản phẩm',
+        dataIndex: 'title',
+        align: 'center',
+        children: [],
+      },
+
+      {
+        title: 'SKU',
+        dataIndex: 'sku',
+        align: 'center',
+      },
+      {
+        title: 'Danh mục',
+        dataIndex: 'category',
+        align: 'center',
+      },
+      {
+        title: 'Gía áp dụng',
+        dataIndex: 'price',
+        align: 'center',
+      },
+      {
+        title: 'Nhà cung cấp',
+        dataIndex: 'supplier',
+        align: 'center',
+      },
+      {
+        title: 'Ngày tạo',
+        dataIndex: 'create_date',
+        align: 'center',
+        render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      },
+    ]
     const expandedRowRenderChild = (record) => {
-      console.log(record)
+      // console.log(record)
       const columnsChild = [
         {
           title: 'Tên sản phẩm',
@@ -207,15 +276,26 @@ export default function OfferList() {
       return (
         <Table
           rowKey="category_id"
-          expandable={{ expandedRowRender: expandedRowRenderChild }}
+          expandable={{
+            expandedRowRender: expandedRowRenderChild,
+            rowExpandable: (record) => (record.children_category.length ? true : false),
+          }}
           columns={columnsCategory}
-          dataSource={record.list}
+          dataSource={record._categories}
           pagination={false}
         />
       )
     }
     if (record.type === 'BANNER') {
-      return <Table columns={columnsBanner} dataSource={record.list} pagination={false} />
+      return <Table columns={columnsBanner} dataSource={record.image_list} pagination={false} />
+    }
+    if (record.type === 'PRODUCT') {
+      const dataProductVariant = []
+      record._products.map((product) =>
+        product.variants.map((item) => dataProductVariant.push(item))
+      )
+      // console.log(dataProductVariant)
+      return <Table columns={columnsProduct} dataSource={dataProductVariant} pagination={false} />
     }
 
     return ''
@@ -225,7 +305,7 @@ export default function OfferList() {
     const body = {
       name: name,
     }
-    console.log(body)
+    // console.log(body)
     try {
       const res = await updateDeal(body, idChange)
       console.log(res)
@@ -281,6 +361,7 @@ export default function OfferList() {
         if (res.data.success) {
           message.success('Xóa ưu đãi thành công')
           _getDeal(paramsFilter)
+          setSelectKeys([])
         } else {
           message.error(res.data.message || 'Xóa ưu đãi không thành công')
         }
@@ -326,6 +407,7 @@ export default function OfferList() {
 
   const _resetFilter = () => {
     setAttributeDate(undefined)
+    setValueDateSearch(null)
     setValueSearch('')
     setParamsFilter({ page: 1, pageSize: 5 })
   }
@@ -366,9 +448,11 @@ export default function OfferList() {
         ]}
       >
         <h3>Gía ưu đãi</h3>
-        <Input
-          onChange={(e) => setPrice(e.target.value)}
+        <InputNumber
+          style={{ width: '100%' }}
+          onChange={(value) => setPrice(value)}
           value={price}
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           placeholder="Nhập giá ưu đãi"
         />
       </Modal>
@@ -409,11 +493,73 @@ export default function OfferList() {
             <Option value="banner">Banner</Option>
           </Select>
           <Select
-            style={{ width: '16%' }}
+            style={{ width: '25%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
             allowClear
+            open={openSelect}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                 style={{width:"100%"}} 
+                 onFocus={() => {
+                  if (!openSelect) toggleOpenSelect()
+                }}
+                onBlur={() => {
+                  if (openSelect) toggleOpenSelect()
+                }}
+                value={valueDateSearch}
+                onChange={(dates, dateStrings) => {
+                  //khi search hoac filter thi reset page ve 1
+                  paramsFilter.page = 1
+
+                  if (openSelect) toggleOpenSelect()
+
+                  //nếu search date thì xoá các params date
+                  delete paramsFilter.to_day
+                  delete paramsFilter.yesterday
+                  delete paramsFilter.this_week
+                  delete paramsFilter.last_week
+                  delete paramsFilter.last_month
+                  delete paramsFilter.this_month
+                  delete paramsFilter.this_year
+                  delete paramsFilter.last_year
+
+                  //Kiểm tra xem date có được chọn ko
+                  //Nếu ko thì thoát khỏi hàm, tránh cash app
+                  //và get danh sách order
+                  if (!dateStrings[0] && !dateStrings[1]) {
+                    delete paramsFilter.from_date
+                    delete paramsFilter.to_date
+
+                    setValueDateSearch(null)
+                    setAttributeDate()
+                  } else {
+                    const dateFirst = dateStrings[0]
+                    const dateLast = dateStrings[1]
+                    setValueDateSearch(dates)
+                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+
+                    dateFirst.replace(/-/g, '/')
+                    dateLast.replace(/-/g, '/')
+
+                    paramsFilter.from_date = dateFirst
+                    paramsFilter.to_date = dateLast
+                  }
+
+                  setParamsFilter({ ...paramsFilter })
+                }}
+                 />
+                {menu}
+              </>
+            )}
           >
             <Option value="today">Hôm nay</Option>
             <Option value="yesterday">Hôm qua</Option>
