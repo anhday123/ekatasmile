@@ -113,6 +113,41 @@ let getCategoryS = async (req, res, next) => {
                         },
                     },
                     { $addFields: { product_quantity: { $size: '$_products' } } },
+                    {
+                        $lookup: {
+                            from: 'Categories',
+                            let: { categoryId: '$category_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
+                                ...(() => {
+                                    if (req.query._creator) {
+                                        return [
+                                            {
+                                                $lookup: {
+                                                    from: 'Users',
+                                                    localField: 'creator_id',
+                                                    foreignField: 'user_id',
+                                                    as: '_creator',
+                                                },
+                                            },
+                                            { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } },
+                                        ];
+                                    }
+                                    return [];
+                                })(),
+                                {
+                                    $lookup: {
+                                        from: 'Products',
+                                        localField: 'category_id',
+                                        foreignField: 'category_id',
+                                        as: '_products',
+                                    },
+                                },
+                                { $addFields: { product_quantity: { $size: '$_products' } } },
+                            ],
+                            as: 'children_category',
+                        },
+                    }
                 ],
                 as: 'children_category',
             },
