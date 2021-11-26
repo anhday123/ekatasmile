@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { formatCash } from 'utils'
 
 // style
 import styles from './../offer-list/offer.module.scss'
@@ -100,7 +101,7 @@ export default function OfferList() {
       width: '10%',
       align: 'center',
       sorter: (a, b) => a.saleoff_value - b.saleoff_value,
-      render: (text, record, index) => <a onClick={() => infoPrice(record)}>{text}</a>,
+      render: (text, record, index) => text ? <a onClick={() => infoPrice(record)}>{formatCash(text)}</a> : '',
     },
     {
       title: 'Giảm giá tối đa',

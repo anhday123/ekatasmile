@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import styles from './../blog-create/blog-create.module.scss'
 // antd
 import { ArrowLeftOutlined, InfoCircleOutlined, InboxOutlined } from '@ant-design/icons'
-import { Button, Input, Select, Table, Upload, message, notification } from 'antd'
+import { Button, Input, Select, Table, Upload, message, notification, Form } from 'antd'
 import { useLocation, useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
@@ -24,15 +24,16 @@ export default function BlogCreate() {
   const [content, setContent] = useState('')
   const [image, setImage] = useState([])
   const [idBlog, setIdBlog] = useState('')
+  const [form] = Form.useForm()
   const typingTimeoutRef = useRef()
 
   const handleChangeNoiDung = (e) => {
     const value = e.editor.getData()
     setContent(value)
   }
-  const handleChangeTitle = (e) => {
-    setTitle(e.target.value)
-  }
+  // const handleChangeTitle = (e) => {
+  //   setTitle(e.target.value)
+  // }
 
   const props = {
     name: 'file',
@@ -42,13 +43,15 @@ export default function BlogCreate() {
   }
 
   const _actionBlog = async () => {
-    const body = {
-      title: title,
-      content: content,
-      image: image,
-    }
-    console.log(body)
     try {
+      await form.validateFields()
+      const formData=form.getFieldsValue()
+      const body = {
+        title: formData.title,
+        content: content,
+        image: image,
+      }
+      // console.log(body)
       let res
       if (location.state) {
         res = await updateBlog(idBlog, body)
@@ -86,18 +89,17 @@ export default function BlogCreate() {
           clearTimeout(typingTimeoutRef.current)
         }
         typingTimeoutRef.current = setTimeout(async () => {
-          let listUrl=[]
-          let listFile=[]
-          info.fileList.map((item)=>{
-            if(item.url){
+          let listUrl = []
+          let listFile = []
+          info.fileList.map((item) => {
+            if (item.url) {
               listUrl.push(item.url)
-            }
-            else {
+            } else {
               listFile.push(item.originFileObj)
             }
           })
-           const imgUrls = await uploadFiles(listFile)
-           setImage([...listUrl,...imgUrls])
+          const imgUrls = await uploadFiles(listFile)
+          setImage([...listUrl, ...imgUrls])
           console.log(info.fileList)
         }, 350)
         console.log(info)
@@ -126,7 +128,10 @@ export default function BlogCreate() {
       setContent(location.state.content)
       setTitle(location.state.title)
       setImage(location.state.image || [])
+      console.log(location.state)
+      form.setFieldsValue({title:location.state.title})
     }
+    
   }, [])
 
   return (
@@ -184,15 +189,17 @@ export default function BlogCreate() {
             </Dragger>
           )}
         </div>
-        <div className={styles['body_blog_content_header']}>
+        <Form form={form} className={styles['body_blog_content_header']}>
           <h3>Tiêu đề</h3>
-          <Input
-            value={title}
-            onChange={handleChangeTitle}
-            style={{ width: '100%' }}
-            placeholder="Nhập tiêu đề"
-          ></Input>
-        </div>
+          <Form.Item name="title" rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}>
+            <Input
+              // value={title}
+              // onChange={handleChangeTitle}
+              style={{ width: '100%' }}
+              placeholder="Nhập tiêu đề"
+            ></Input>
+          </Form.Item>
+        </Form>
         <h3 style={{ padding: '20px 0' }}>Nội dung</h3>
         <CKEditor
           initData={location.state ? parse(location.state.content) : ''}
