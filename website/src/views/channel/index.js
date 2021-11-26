@@ -13,7 +13,19 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
-import { Button, Input, message, Select, Table, Popconfirm, Switch, Modal } from 'antd'
+import {
+  Button,
+  Input,
+  message,
+  Select,
+  Table,
+  Popconfirm,
+  Switch,
+  Modal,
+  DatePicker,
+  Form,
+  Badge
+} from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
@@ -25,8 +37,10 @@ import { deleteBlog, getBlog } from 'apis/blog'
 import parse from 'html-react-parser'
 
 const { Option } = Select
+const { RangePicker } = DatePicker
 
 export default function Channel() {
+  const [form] = Form.useForm()
   const [selectKeys, setSelectKeys] = useState([])
   const [loadingTable, setLoadingTable] = useState(false)
   const [channelList, setChannelList] = useState([])
@@ -36,8 +50,10 @@ export default function Channel() {
   const [attributeStatus, setAttributeStatus] = useState(undefined)
   const [attributeBase, setAttributeBase] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const [connect, setConnect] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const [dataUpdate, setDataUpdate] = useState({
     name: '',
     url: '',
@@ -52,12 +68,16 @@ export default function Channel() {
   }
   const toggleModal = () => {
     setModalVisible(!modalVisible)
-    setDataUpdate({
-      name: '',
-      url: '',
-      base: '',
-    })
-    console.log(dataUpdate)
+    // setDataUpdate({
+    //   name: '',
+    //   url: '',
+    //   base: '',
+    // })
+    form.resetFields()
+  }
+
+  const toggleOpenSelect = () => {
+    setOpenSelect(!openSelect)
   }
 
   const columns = [
@@ -84,7 +104,7 @@ export default function Channel() {
     },
     {
       title: 'Nền tảng',
-      dataIndex: '',
+      dataIndex: 'base',
       width: '15%',
       align: 'center',
     },
@@ -93,7 +113,7 @@ export default function Channel() {
       dataIndex: 'active',
       width: '15%',
       align: 'center',
-      render: (text) => (text ? 'Hoạt động' : 'Không hoạt động'),
+      render: (text) => (text ? <Badge status="success" text="Hoạt động" /> : <Badge status="error" text="Không hoạt động" />),
     },
     {
       title: 'Ngày tạo',
@@ -123,13 +143,12 @@ export default function Channel() {
     },
     {
       title: 'Kết nối',
-      dataIndex: '',
+      dataIndex: 'active',
       width: '20%',
       align: 'center',
       render: (text) => (
         <div>
-          <Switch onChange={handleChange} />
-          {/* <span>{connect ? 'Đang kết nối' : 'Kết nối'}</span> */}
+          <Switch defaultChecked={text}  onChange={handleChange} />
         </div>
       ),
     },
@@ -142,6 +161,7 @@ export default function Channel() {
       base: 'Shopee',
       active: true,
       create_date: '24/11/2021',
+      active:true,
     },
     {
       name: 'Tiki sale',
@@ -149,12 +169,14 @@ export default function Channel() {
       base: 'Tiki',
       active: false,
       create_date: '24/11/2021',
+      active:false,
     },
   ]
 
   const _updateChannel = (record) => {
     console.log(record)
-    setDataUpdate({ ...dataUpdate, name: record.name, url: record.url, base: record.base })
+    // setDataUpdate({ ...dataUpdate, name: record.name, url: record.url, base: record.base })
+    form.setFieldsValue({ name: record.name, url: record.url, base: record.base })
     setModalVisible(!modalVisible)
   }
 
@@ -180,6 +202,23 @@ export default function Channel() {
   //     console.log(err)
   //   }
   // }
+
+  const _addChannel = async () => {
+    try {
+      await form.validateFields()
+      const formData = form.getFieldsValue()
+      const body = {
+        name: formData.name,
+        url: formData.url,
+        base: formData.base,
+      }
+      console.log(body)
+      // const res = await getBlog(paramsFilter)
+      // console.log(res)
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   // const _delelteBlog = async () => {
   //   const id = {
@@ -252,6 +291,7 @@ export default function Channel() {
     setAttributeStatus(undefined)
     setAttributeBase(undefined)
     setValueSearch('')
+    setValueDateSearch(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
@@ -269,40 +309,48 @@ export default function Channel() {
         centered={true}
         onCancel={toggleModal}
         footer={[
-          <Button onClick={toggleModal} style={{ textAlign: 'center' }} type="primary">
+          <Button onClick={_addChannel} style={{ textAlign: 'center' }} type="primary">
             Kết nối
           </Button>,
         ]}
       >
-        <h3>Tên hiển thị</h3>
-        <Input
-          value={dataUpdate.name ? dataUpdate.name : ''}
-          onChange={handleChangeChannelName}
-          placeholder="Nhập tên hiển thị"
-        />
-        <h3 style={{ paddingTop: 20 }}>Url trang web</h3>
-        <Input
-          value={dataUpdate.url ? dataUpdate.url : ''}
-          onChange={handleChangeChannelUrl}
-          placeholder="Nhập url trang web"
-        />
-        <h3 style={{ paddingTop: 20 }}>Nền tảng</h3>
-        <Select
-          style={{ width: '100%' }}
-          value={attributeBase}
-          onChange={onChangeOptionSearchBase}
-          placeholder="Chọn nền tảng"
-          allowClear
-        >
-          <Option value="shopify">Shopify</Option>
-          <Option value="amazon">Amazon</Option>
-          <Option value="shopbase">Shopbase</Option>
-          <Option value="wordpress">Woocommerce (wordpress)</Option>
-          <Option value="esty">Esty</Option>
-          <Option value="tiki">Tiki</Option>
-          <Option value="lazada">Lazada</Option>
-          <Option value="shopee">Shopee</Option>
-        </Select>
+        <Form form={form}>
+          <h3>Tên hiển thị</h3>
+          <Form.Item name="name" rules={[{ required: true, message: 'Vui lòng nhập tên kênh' }]}>
+            <Input
+              // value={dataUpdate.name ? dataUpdate.name : ''}
+              // onChange={handleChangeChannelName}
+              placeholder="Nhập tên hiển thị"
+            />
+          </Form.Item>
+          <h3>Url trang web</h3>
+          <Form.Item name="url" rules={[{ required: true, message: 'Vui lòng nhập url kênh' }]}>
+            <Input
+              // value={dataUpdate.url ? dataUpdate.url : ''}
+              // onChange={handleChangeChannelUrl}
+              placeholder="Nhập url trang web"
+            />
+          </Form.Item>
+          <h3>Nền tảng</h3>
+          <Form.Item name="base" rules={[{ required: true, message: 'Vui lòng chọn nền tảng' }]}>
+            <Select
+              style={{ width: '100%' }}
+              value={attributeBase}
+              onChange={onChangeOptionSearchBase}
+              placeholder="Chọn nền tảng"
+              allowClear
+            >
+              <Option value="shopify">Shopify</Option>
+              <Option value="amazon">Amazon</Option>
+              <Option value="shopbase">Shopbase</Option>
+              <Option value="wordpress">Woocommerce (wordpress)</Option>
+              <Option value="esty">Esty</Option>
+              <Option value="tiki">Tiki</Option>
+              <Option value="lazada">Lazada</Option>
+              <Option value="shopee">Shopee</Option>
+            </Select>
+          </Form.Item>
+        </Form>
       </Modal>
       <div className={styles['body_channel_header']}>
         <div className={styles['body_channel_header_title']}>
@@ -355,11 +403,73 @@ export default function Channel() {
             <Option value="shopee">Shopee</Option>
           </Select>
           <Select
-            style={{ width: '16%' }}
+            style={{ width: '25%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
             allowClear
+            open={openSelect}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
+
+                    if (openSelect) toggleOpenSelect()
+
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
+
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
+
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
+
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
+
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
+
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
+                {menu}
+              </>
+            )}
           >
             <Option value="today">Hôm nay</Option>
             <Option value="yesterday">Hôm qua</Option>

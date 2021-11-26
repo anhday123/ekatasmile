@@ -54,6 +54,8 @@ import {
   FileDoneOutlined,
   SketchOutlined,
   ForkOutlined,
+  BarChartOutlined,
+  TransactionOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -238,7 +240,7 @@ const BaseLayout = (props) => {
       path: 'report',
       title: 'Báo cáo',
       permissions: [PERMISSIONS.bao_cao_don_hang],
-      icon: <DollarCircleOutlined />,
+      icon: <BarChartOutlined />,
       menuItems: [
         {
           icon: <GraphicEqIcon />,
@@ -270,7 +272,7 @@ const BaseLayout = (props) => {
       path: 'transport',
       title: 'Vận chuyển',
       permissions: [PERMISSIONS.van_chuyen],
-      icon: <DollarCircleOutlined />,
+      icon: <TransactionOutlined/>,
       menuItems: [
         {
           icon: <ClusterOutlined />,

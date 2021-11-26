@@ -21,6 +21,7 @@ import {
   notification,
   Row,
   Spin,
+  Form,
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { IMAGE_DEFAULT, POSITION_TABLE, ROUTES } from 'consts'
@@ -38,6 +39,7 @@ import { apiAllProduct, getProducts } from 'apis/product'
 import { getCategories, getCategoriesWithCreator } from 'apis/category'
 import { uploadFiles } from 'apis/upload'
 import { addDeal, updateDeal } from 'apis/deal'
+import { useForm } from 'antd/lib/form/Form'
 
 const { Option } = Select
 const { Search } = Input
@@ -45,12 +47,12 @@ const { Dragger } = Upload
 
 export default function OfferListCreate() {
   const history = useHistory()
-
+  const [form] = Form.useForm()
   const [filter, setFilter] = useState('')
   const [searchStatus, setSearchStatus] = useState(false)
-  const [dealName, setDealName] = useState('')
+  // const [dealName, setDealName] = useState('')
+  // const [dealPrice, setDealPrice] = useState('')
   const [description, setDescription] = useState('')
-  const [dealPrice, setDealPrice] = useState('')
   const [products, setProducts] = useState([])
   const [category, setCategory] = useState([])
   const [loadingSelect, setLoadingSelect] = useState(false)
@@ -95,37 +97,38 @@ export default function OfferListCreate() {
   // }
 
   const _actionDeal = async () => {
-    let body = {}
-    if (filter === 'product') {
-      body = {
-        name: dealName,
-        type: filter,
-        saleoff_type: 'value',
-        saleoff_value: dealPrice,
-        product_list: dataTableProduct.map((item) => item.product_id),
-        description: description,
-      }
-    } else if (filter === 'category') {
-      body = {
-        name: dealName,
-        type: filter,
-        saleoff_type: 'value',
-        saleoff_value: dealPrice,
-        category_list: dataTableCategory.map((item) => item.category_id),
-        description: description,
-      }
-    } else {
-      body = {
-        name: dealName,
-        type: filter,
-        saleoff_type: 'value',
-        saleoff_value: dealPrice,
-        image_list: imgUpload,
-        description: description,
-      }
-    }
-    // console.log(body)
     try {
+      await form.validateFields()
+      const formData = form.getFieldsValue()
+      let body = {}
+      if (filter === 'product') {
+        body = {
+          name: formData.deal_name,
+          type: filter,
+          saleoff_type: 'value',
+          saleoff_value: formData.deal_price,
+          product_list: dataTableProduct.map((item) => item.product_id),
+          description: description,
+        }
+      } else if (filter === 'category') {
+        body = {
+          name: formData.deal_name,
+          type: filter,
+          saleoff_type: 'value',
+          saleoff_value: formData.deal_price,
+          category_list: dataTableCategory.map((item) => item.category_id),
+          description: description,
+        }
+      } else {
+        body = {
+          name: formData.deal_name,
+          type: filter,
+          saleoff_type: 'value',
+          saleoff_value: formData.deal_price,
+          image_list: imgUpload,
+          description: description,
+        }
+      }
       const res = await addDeal(body)
       console.log(res)
       if (res.status === 200) {
@@ -283,6 +286,7 @@ export default function OfferListCreate() {
     // console.log(dataNew)
     setDataTableProduct(dataNew)
     setSelectKeyProduct([])
+    message.success("Xóa sản phẩm được chọn thành công")
   }
 
   const _deleteCategoryTable = () => {
@@ -291,6 +295,7 @@ export default function OfferListCreate() {
     )
     setDataTableCategory(dataNew)
     setSelectKeyCategory([])
+    message.success("Xóa danh mục được chọn thành công")
   }
 
   useEffect(() => {
@@ -316,36 +321,49 @@ export default function OfferListCreate() {
         </Button>
       </div>
       <hr />
-      <div className={styles['body_offer_content']}>
+      <Form autoComplete="off" form={form}  className={styles['body_offer_content']}>
         <div className={styles['body_offer_content_header']}>
-          <div className={styles['body_offer_content_header_item_1']}>
-            <h3>Tên ưu đãi</h3>
-            <Input
-              onChange={(e) => setDealName(e.target.value)}
-              style={{ width: '80%' }}
-              placeholder="Nhập tên ưu đãi"
-            ></Input>
-          </div>
-          <div className={styles['body_offer_content_header_item_2']}>
-            <h3>Gía ưu đãi</h3>
-            <InputNumber
-              onChange={(value) => setDealPrice(value)}
-              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              defaultValue={0}
-              min={0}
-              max={100000000000}
-              style={{ width: '80%' }}
-              placeholder="Nhập giá ưu đãi"
-            ></InputNumber>
-          </div>
+          
+            <div className={styles['body_offer_content_header_item_1']}>
+              <h3>Tên ưu đãi</h3>
+              <Form.Item
+                name="deal_name"
+                rules={[{ required: true, message: 'Vui lòng nhập tên ưu đãi' }]}
+              >
+                <Input
+                  // onChange={(e) => setDealName(e.target.value)}
+                  style={{ width: '80%' }}
+                  placeholder="Nhập tên ưu đãi"
+                ></Input>
+              </Form.Item>
+            </div>
+            <div className={styles['body_offer_content_header_item_2']}>
+              <h3>Gía ưu đãi</h3>
+              <Form.Item
+                name="deal_price"
+                rules={[{ required: true, message: 'Vui lòng nhập giá ưu đãi' }]}
+              >
+                <InputNumber
+                  // onChange={(value) => setDealPrice(value)}
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  defaultValue={0}
+                  min={0}
+                  max={100000000000}
+                  style={{ width: '80%' }}
+                  placeholder="Nhập giá ưu đãi"
+                ></InputNumber>
+              </Form.Item>
+            </div>
+          
         </div>
         <h3 style={{ padding: '20px 0' }}>Mô tả</h3>
         <CKEditor initData={'Nhập mô tả tại đây'} onChange={handleChangeMoTa} />
         <h3 style={{ padding: '20px 0' }}>Loại ưu đãi</h3>
         <Input.Group compact>
+          <Form.Item name="type" rules={[{required:true,message:"Vui lòng chọn loại ưu đãi"}]}>
           <Select
             onChange={handleChangeFilter}
-            style={{ width: '16%' }}
+            style={{ width: '100%' }}
             placeholder="Chọn loại ưu đãi"
             allowClear
           >
@@ -353,6 +371,7 @@ export default function OfferListCreate() {
             <Option value="category">Nhóm sản phẩm</Option>
             <Option value="banner">Banner</Option>
           </Select>
+          </Form.Item>
           {filter === 'product' ? (
             <div className="select-product-sell">
               <Select
@@ -416,7 +435,7 @@ export default function OfferListCreate() {
                           (item) => item.product_id === data.product_id
                         )
                         if (findProduct) {
-                          notification.error({ message: 'Chỉ được chọn sản phẩm khác phân loại' })
+                          message.error('Chỉ được chọn sản phẩm khác phân loại')
                           return
                         }
                         const dataIndex = {
@@ -542,7 +561,7 @@ export default function OfferListCreate() {
                           (item) => item.category_id === data.category_id
                         )
                         if (findProduct) {
-                          notification.error({ message: 'Chỉ được chọn nhóm sản phẩm khác loại' })
+                          message.error('Chỉ được chọn nhóm sản phẩm khác loại')
                           return
                         }
                         const dataIndex = {
@@ -686,7 +705,7 @@ export default function OfferListCreate() {
             ''
           )}
         </div>
-      </div>
+        </Form>
     </div>
   )
 }

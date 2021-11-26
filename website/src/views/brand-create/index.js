@@ -1,24 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styles from './../brand-create/brand-create.module.scss'
 // antd
-import {
-  ArrowLeftOutlined,
-  InfoCircleOutlined,
-  InboxOutlined,
-  CloseOutlined,
-  SearchOutlined,
-} from '@ant-design/icons'
+import { ArrowLeftOutlined, InfoCircleOutlined, InboxOutlined } from '@ant-design/icons'
 import {
   Button,
   Input,
   Select,
   Upload,
-  message,
   notification,
   InputNumber,
   DatePicker,
-  Row,
   Spin,
+  Form,
 } from 'antd'
 import { useLocation, useHistory } from 'react-router-dom'
 
@@ -41,12 +34,14 @@ const { Dragger } = Upload
 export default function BrandCreate() {
   const history = useHistory()
   const location = useLocation()
+  const [form] = Form.useForm()
   const [name, setName] = useState('')
   const [loadingSelect, setLoadingSelect] = useState(true)
   const [content, setContent] = useState('')
   const [image, setImage] = useState([])
   const [idBrand, setIdBrand] = useState('')
   const [country, setCountry] = useState('')
+  const [viewCountry, setViewCountry] = useState('')
   const [foundedYear, setFoundedYear] = useState('')
   const [priority, setPriority] = useState('')
   const [countryList, setCountryList] = useState([])
@@ -56,19 +51,21 @@ export default function BrandCreate() {
     const value = e.editor.getData()
     setContent(value)
   }
-  const handleChangeName = (e) => {
-    setName(e.target.value)
-  }
+  // const handleChangeName = (e) => {
+  //   setName(e.target.value)
+  // }
 
-  const handleChangeCountry = (value) => {
+  const handleChangeCountry = (code, name) => {
     // console.log(value)
-    setCountry(value)
+    setCountry(code)
+    setViewCountry(name)
   }
 
   const handleChangeYear = (info) => {
     const year = moment(info._d).format('YYYY')
-    // console.log(year)
+    console.log(year)
     setFoundedYear(year)
+    console.log(info)
   }
 
   const handleChangePrio = (value) => {
@@ -88,21 +85,20 @@ export default function BrandCreate() {
           clearTimeout(typingTimeoutRef.current)
         }
         typingTimeoutRef.current = setTimeout(async () => {
-          let listUrl=[]
-          let listFile=[]
-          info.fileList.map((item)=>{
-            if(item.url){
+          let listUrl = []
+          let listFile = []
+          info.fileList.map((item) => {
+            if (item.url) {
               listUrl.push(item.url)
-            }
-            else {
+            } else {
               listFile.push(item.originFileObj)
             }
           })
-           const imgUrls = await uploadFiles(listFile)
-           setImage([...listUrl,...imgUrls])
-          console.log(info.fileList)
+          const imgUrls = await uploadFiles(listFile)
+          setImage([...listUrl, ...imgUrls])
+          // console.log(info.fileList)
         }, 350)
-        console.log(info)
+        // console.log(info)
       }}
       fileList={image?.map((item, index) => {
         return {
@@ -123,16 +119,18 @@ export default function BrandCreate() {
   )
 
   const _actionBrand = async () => {
-    const body = {
-      name: name,
-      content: content,
-      images: image,
-      country_code: country,
-      founded_year: foundedYear,
-      priority: priority,
-    }
-    console.log(body)
     try {
+      await form.validateFields()
+      const formData = form.getFieldsValue()
+      const body = {
+        name: formData.name,
+        content: content,
+        images: image,
+        country_code: country,
+        founded_year: foundedYear,
+        priority: priority,
+      }
+      // console.log(body)
       let res
       if (location.state) {
         res = await updateBrand(idBrand, body)
@@ -162,20 +160,37 @@ export default function BrandCreate() {
     try {
       setLoadingSelect(true)
       const res = await apiCountry()
-      console.log(res)
+      // console.log(res)
       setCountryList(res.data.data)
     } catch (err) {
       console.log(err)
     }
   }
 
+  const DatePickerData = () => {
+    return (
+      <DatePicker
+        onChange={handleChangeYear}
+        placeholder="Chọn năm thành lập"
+        style={{ width: '85%' }}
+        picker="year"
+        defaultValue={moment(foundedYear ? foundedYear : '2021')}
+      />
+    )
+  }
+
   useEffect(() => {
     if (location.state) {
       setIdBrand(location.state.brand_id)
       setContent(location.state.content)
-      setName(location.state.name)
+      // setName(location.state.name)
       setImage(location.state.images)
-      console.log(location.state)
+      setCountry(location.state.country_code)
+      setViewCountry(location.state._country[0]?.name)
+      setPriority(location.state.priority)
+      setFoundedYear(location.state.founded_year)
+      form.setFieldsValue({ name: location.state.name })
+      // console.log(location.state.founded_year)
     }
     _getCountry()
   }, [])
@@ -204,7 +219,7 @@ export default function BrandCreate() {
         <div style={{ marginTop: 20 }}>
           <h3>Hình ảnh</h3>
           {location.state ? (
-            <UploadImageWithEditBrand/>
+            <UploadImageWithEditBrand />
           ) : (
             <Dragger
               listType="picture"
@@ -222,9 +237,9 @@ export default function BrandCreate() {
                   // const imgUrl=await uploadFile(info.file.originFileObj)
                   const imgUrl = await uploadFiles(imageBlog)
                   setImage(imgUrl)
-                  console.log(imgUrl)
+                  // console.log(imgUrl)
                 }, 350)
-                console.log(info)
+                // console.log(info)
               }}
             >
               <p className="ant-upload-drag-icon">
@@ -236,42 +251,41 @@ export default function BrandCreate() {
           )}
         </div>
         <div className={styles['body_brand_content_header']}>
-          <div>
+          <Form form={form}>
             <h3>Tên thương hiệu</h3>
-            <Input
-              value={name}
-              onChange={handleChangeName}
-              style={{ width: '85%' }}
-              placeholder="Nhập tên thương hiệu"
-            ></Input>
-          </div>
+            <Form.Item
+              name="name"
+              rules={[{ required: true, message: 'Vui lòng nhập tên thương hiệu' }]}
+            >
+              <Input
+                // value={name}
+                // onChange={handleChangeName}
+                style={{ width: '85%' }}
+                placeholder="Nhập tên thương hiệu"
+              ></Input>
+            </Form.Item>
+          </Form>
 
           <div className="select-product-sell">
             <h3>Quốc gia</h3>
             <Select
               notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
-              allowClear
               showSearch
-              // value={country}
+              value={viewCountry}
               // onChange={handleChangeCountry}
               style={{ width: '85%' }}
               placeholder="Chọn quốc gia"
             >
               {countryList?.map((data) => (
                 <Select.Option value={data.name} key={data.code}>
-                  <p onClick={() => handleChangeCountry(data.code)}>{data.name}</p>
+                  <p onClick={() => handleChangeCountry(data.code, data.name)}>{data.name}</p>
                 </Select.Option>
               ))}
             </Select>
           </div>
           <div>
             <h3>Năm thành lập</h3>
-            <DatePicker
-              onChange={handleChangeYear}
-              placeholder="Chọn năm thành lập"
-              style={{ width: '85%' }}
-              picker="year"
-            />
+            <DatePickerData/>
           </div>
           <div>
             <h3>Độ ưu tiên</h3>
@@ -281,6 +295,7 @@ export default function BrandCreate() {
               style={{ width: '85%' }}
               placeholder="Nhập độ ưu tiên"
               onChange={handleChangePrio}
+              value={priority}
             ></InputNumber>
           </div>
         </div>
