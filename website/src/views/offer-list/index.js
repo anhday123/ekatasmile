@@ -427,9 +427,11 @@ export default function OfferList() {
         centered={true}
         onCancel={toggleModalName}
         footer={[
-          <Button onClick={_changeDealName} style={{ textAlign: 'center' }} type="primary">
+          <div style={{textAlign:"center"}}>
+          <Button onClick={_changeDealName} style={{textAlign:"center"}} type="primary">
             Cập nhật
-          </Button>,
+          </Button>
+          </div>
         ]}
       >
         <h3>Tên ưu đãi</h3>
@@ -445,9 +447,11 @@ export default function OfferList() {
         centered={true}
         onCancel={toggleModalPrice}
         footer={[
+          <div style={{textAlign:"center"}}>
           <Button onClick={_changePrice} style={{ textAlign: 'center' }} type="primary">
             Cập nhật
-          </Button>,
+          </Button>
+          </div>
         ]}
       >
         <h3>Gía ưu đãi</h3>

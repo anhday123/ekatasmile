@@ -462,7 +462,7 @@ export default function Category() {
                   size="small"
                   expandable={{
                     expandedRowRender: (record) => {
-                      return record.children_category || record.children_category.length ? (
+                      return record.children_category && record.children_category.length ? (
                         <Table
                           rowKey="category_id"
                           style={{ width: '100%' }}
