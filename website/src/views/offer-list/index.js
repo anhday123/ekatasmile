@@ -52,8 +52,8 @@ export default function OfferList() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
-  const [openSelect,setOpenSelect]=useState(false)
-  const [valueDateSearch,setValueDateSearch]=useState(null)
+  const [openSelect, setOpenSelect] = useState(false)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const typingTimeoutRef = useRef(null)
 
   const toggleModalName = () => {
@@ -63,8 +63,8 @@ export default function OfferList() {
   const toggleModalPrice = () => {
     setModalVisiblePrice(!modalVisiblePrice)
   }
-  
-  const toggleOpenSelect=()=>{
+
+  const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
   }
 
@@ -92,36 +92,38 @@ export default function OfferList() {
     {
       title: 'Loại ưu đãi',
       dataIndex: 'type',
-      width: '10%',
+      width: '15%',
       align: 'center',
+      render: (text) => <b>{text}</b>,
     },
     {
       title: 'Giảm giá',
       dataIndex: 'saleoff_value',
-      width: '10%',
+      width: '15%',
       align: 'center',
       sorter: (a, b) => a.saleoff_value - b.saleoff_value,
-      render: (text, record, index) => text ? <a onClick={() => infoPrice(record)}>{formatCash(text)}</a> : '',
+      render: (text, record, index) =>
+        text ? <a onClick={() => infoPrice(record)}>{formatCash(text)}</a> : '',
     },
     {
       title: 'Giảm giá tối đa',
       dataIndex: 'max_saleoff_value',
-      width: '10%',
+      width: '15%',
       align: 'center',
     },
-    {
-      title: 'Danh mục áp dụng',
-      dataIndex: 'sub_type',
-      width: '10%',
-      align: 'center',
-    },
-    {
-      title: 'Banner',
-      dataIndex: 'type',
-      width: '10%',
-      align: 'center',
-      render: (item, record) => (item !== 'BANNER' ? <span>Không có</span> : <span>Có</span>),
-    },
+    // {
+    //   title: 'Danh mục áp dụng',
+    //   dataIndex: 'sub_type',
+    //   width: '10%',
+    //   align: 'center',
+    // },
+    // {
+    //   title: 'Banner',
+    //   dataIndex: 'type',
+    //   width: '10%',
+    //   align: 'center',
+    //   render: (item, record) => (item !== 'BANNER' ? <span>Không có</span> : <span>Có</span>),
+    // },
     {
       title: 'Mô tả',
       dataIndex: 'description',
@@ -347,7 +349,7 @@ export default function OfferList() {
       const res = await getDeal(paramsFilter)
       setDealList(res.data.data)
       setCountPage(res.data.count)
-      console.log(res)
+      // console.log(res)
       setLoadingTable(false)
     } catch (err) {
       console.log(err)
@@ -509,55 +511,55 @@ export default function OfferList() {
             dropdownRender={(menu) => (
               <>
                 <RangePicker
-                 style={{width:"100%"}} 
-                 onFocus={() => {
-                  if (!openSelect) toggleOpenSelect()
-                }}
-                onBlur={() => {
-                  if (openSelect) toggleOpenSelect()
-                }}
-                value={valueDateSearch}
-                onChange={(dates, dateStrings) => {
-                  //khi search hoac filter thi reset page ve 1
-                  paramsFilter.page = 1
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-                  if (openSelect) toggleOpenSelect()
+                    if (openSelect) toggleOpenSelect()
 
-                  //nếu search date thì xoá các params date
-                  delete paramsFilter.to_day
-                  delete paramsFilter.yesterday
-                  delete paramsFilter.this_week
-                  delete paramsFilter.last_week
-                  delete paramsFilter.last_month
-                  delete paramsFilter.this_month
-                  delete paramsFilter.this_year
-                  delete paramsFilter.last_year
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                  //Kiểm tra xem date có được chọn ko
-                  //Nếu ko thì thoát khỏi hàm, tránh cash app
-                  //và get danh sách order
-                  if (!dateStrings[0] && !dateStrings[1]) {
-                    delete paramsFilter.from_date
-                    delete paramsFilter.to_date
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                    setValueDateSearch(null)
-                    setAttributeDate()
-                  } else {
-                    const dateFirst = dateStrings[0]
-                    const dateLast = dateStrings[1]
-                    setValueDateSearch(dates)
-                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
 
-                    dateFirst.replace(/-/g, '/')
-                    dateLast.replace(/-/g, '/')
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                    paramsFilter.from_date = dateFirst
-                    paramsFilter.to_date = dateLast
-                  }
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                  setParamsFilter({ ...paramsFilter })
-                }}
-                 />
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
                 {menu}
               </>
             )}
