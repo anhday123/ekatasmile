@@ -74,8 +74,7 @@ export default function Product() {
   const apiAllCategoryData = async () => {
     try {
       const res = await getCategories()
-      if (res.status === 200)
-        setCategories(res.data.data.filter((e) => e.active))
+      if (res.status === 200) setCategories(res.data.data.filter((e) => e.active))
     } catch (error) {
       console.log(error)
     }
@@ -119,7 +118,7 @@ export default function Product() {
     },
     {
       title: 'Giá bán',
-      dataIndex: 'sale_price',
+      dataIndex: 'price',
       render: (text) => text && formatCash(text),
     },
   ]
@@ -199,7 +198,7 @@ export default function Product() {
           e.variants.map((v) => {
             sumQuantity += v.total_quantity
             sumBasePrice += v.base_price
-            sumSalePrice += v.sale_price
+            sumSalePrice += v.price
             sumImportPrice += v.import_price
           })
           return {
@@ -288,15 +287,10 @@ export default function Product() {
                 try {
                   setLoading(true)
 
-                  const listPromise = selectedRowKeys.map(
-                    async (product_id) => {
-                      const res = await updateProduct(
-                        { category_id: categoryId },
-                        product_id
-                      )
-                      return res
-                    }
-                  )
+                  const listPromise = selectedRowKeys.map(async (product_id) => {
+                    const res = await updateProduct({ category_id: categoryId }, product_id)
+                    return res
+                  })
 
                   await Promise.all(listPromise)
                   setLoading(false)
@@ -328,8 +322,7 @@ export default function Product() {
       setLoading(true)
       const res = await deleteProducts(selectedRowKeys.join('---'))
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Xoá sản phẩm thành công!' })
+      if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
       else notification.error({ message: 'Xoá sản phẩm thất bại!' })
       await getAllProduct({ ...paramsFilter })
       setSelectedRowKeys([])
@@ -373,11 +366,7 @@ export default function Product() {
         disabled
       >
         {record.image && record.image.length ? (
-          <Popover
-            style={{ top: 300 }}
-            placement="top"
-            content={ContentZoomImage(record.image[0])}
-          >
+          <Popover style={{ top: 300 }} placement="top" content={ContentZoomImage(record.image[0])}>
             <img src={record.image[0]} alt="" style={{ width: '100%' }} />
           </Popover>
         ) : (
@@ -407,10 +396,8 @@ export default function Product() {
       setLoading(true)
       let res = await updateProduct(body, id)
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Cập nhật thành công!' })
-      else
-        notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
+      if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
+      else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
 
       await getAllProduct({ ...paramsFilter })
 
@@ -484,24 +471,10 @@ export default function Product() {
             alignItems: 'center',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <h3 style={{ marginBottom: 0 }}>Danh sách sản phẩm</h3>
           </Col>
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <div
               style={{
                 display: 'flex',
@@ -511,9 +484,7 @@ export default function Product() {
               }}
             >
               <Space>
-                <ImportProducts
-                  reload={() => getAllProduct({ ...paramsFilter })}
-                />
+                <ImportProducts reload={() => getAllProduct({ ...paramsFilter })} />
                 <ExportProduct
                   fileName="Products"
                   name="Export Sản Phẩm"
@@ -521,11 +492,7 @@ export default function Product() {
                 />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
                   <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button
-                      size="large"
-                      type="primary"
-                      icon={<PlusCircleOutlined />}
-                    >
+                    <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
                       Thêm sản phẩm
                     </Button>
                   </Link>
@@ -543,14 +510,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={14}>
@@ -578,9 +538,7 @@ export default function Product() {
                       setOptionSearchName(value)
                     }}
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     <Option value="name">Tên sản phẩm</Option>
@@ -651,8 +609,7 @@ export default function Product() {
                 placeholder="Tìm kiếm theo thời gian"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 value={valueTime}
                 onChange={async (value) => {
@@ -881,11 +838,7 @@ export default function Product() {
                   ...column,
                   render: (text, record) =>
                     record.active ? (
-                      <Link
-                        to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
-                      >
-                        {text}
-                      </Link>
+                      <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
                     ) : (
                       text
                     ),
@@ -902,9 +855,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) => {
-                    const category = categories.find(
-                      (c) => c.category_id === record.category_id
-                    )
+                    const category = categories.find((c) => c.category_id === record.category_id)
                     if (category) return category.name
                     else return ''
                   },
@@ -914,9 +865,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) => {
-                    const supplier = suppliers.find(
-                      (c) => c.supplier_id === record.supplier_id
-                    )
+                    const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
                     if (supplier) return supplier.name
                     else return ''
                   },
@@ -925,22 +874,19 @@ export default function Product() {
               if (column.key === 'sum-count')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumQuantity && formatCash(record.sumQuantity),
+                  render: (text, record) => record.sumQuantity && formatCash(record.sumQuantity),
                 }
 
               if (column.key === 'base-price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumBasePrice && formatCash(record.sumBasePrice),
+                  render: (text, record) => record.sumBasePrice && formatCash(record.sumBasePrice),
                 }
 
-              if (column.key === 'sale-price')
+              if (column.key === 'price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumSalePrice && formatCash(record.sumSalePrice),
+                  render: (text, record) => record.sumSalePrice && formatCash(record.sumSalePrice),
                 }
 
               if (column.key === 'import-price')
@@ -954,8 +900,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) =>
-                    record.create_date &&
-                    moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
+                    record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
                 }
 
               if (column.key === 'active')
@@ -964,12 +909,7 @@ export default function Product() {
                   render: (text, record) => (
                     <Switch
                       defaultChecked={record.active}
-                      onClick={() =>
-                        _updateProduct(
-                          { active: !record.active },
-                          record.product_id
-                        )
-                      }
+                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
                     />
                   ),
                 }

@@ -12,8 +12,8 @@ import {
   Space,
 } from 'antd'
 import React, { useEffect, useState } from 'react'
-import styles from './../add/add.module.scss'
-import { addPromotion } from '../../../../apis/promotion'
+import styles from './add.module.scss'
+import { addPromotion } from 'apis/promotion'
 import { getAllStore } from 'apis/store'
 import { removeAccents } from 'utils'
 const { Option } = Select
@@ -21,7 +21,8 @@ const { Option } = Select
 export default function PromotionAdd(props) {
   const [storeList, setStoreList] = useState([])
   const [showVoucher, setShowVoucher] = useState('show')
-  const [promotionCode, setPromotionCode] = useState('')
+  const [isChooseAllStore, setIsChooseAllStore] = useState(false)
+
   const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
@@ -34,13 +35,15 @@ export default function PromotionAdd(props) {
       const obj = {
         name: values.name,
         promotion_code: values.promotion_code,
-        type: values.type ? values.type : 'percent',
+        type: values.type,
         value: values.value,
         has_voucher: showVoucher === 'show',
         limit: {
           amount: values.amount ? parseInt(values.amount) : 0,
           stores: values.store ? values.store : [],
         },
+        discount_condition: values.discount_condition || '',
+        max_discount: values.max_discount || '',
         description: values.description || ' ',
       }
       const res = await addPromotion(obj)
@@ -48,17 +51,8 @@ export default function PromotionAdd(props) {
         openNotification()
         props.reload()
         props.close()
-        form.setFieldsValue({
-          name: '',
-          promotion_code: '',
-          type: 'value',
-          value: '',
-          amount: '',
-          store: [],
-          description: '',
-          low: '',
-          hight: '',
-        })
+        form.resetFields()
+        setIsChooseAllStore(false)
       } else throw res
     } catch (e) {
       console.log(e)
@@ -77,6 +71,7 @@ export default function PromotionAdd(props) {
   }
 
   const selectAllStore = (value) => {
+    setIsChooseAllStore(value)
     value
       ? form.setFieldsValue({
           store: storeList.map((e) => {
@@ -108,8 +103,7 @@ export default function PromotionAdd(props) {
           <Col span={12}>
             <div className={styles['promotion-add__box']}>
               <div className={styles['promotion-add__title']}>
-                Tên chương trình khuyến mãi{' '}
-                <span style={{ color: 'red' }}>*</span>
+                Tên chương trình khuyến mãi <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="name">
                 <Input
@@ -123,14 +117,10 @@ export default function PromotionAdd(props) {
                 />
               </Form.Item>
               <div className={styles['promotion-add__title']}>
-                Mã chương trình khuyến mãi{' '}
-                <span style={{ color: 'red' }}>*</span>
+                Mã chương trình khuyến mãi <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="promotion_code">
-                <Input
-                  placeholder="Nhập mã chương trình khuyến mãi"
-                  size="large"
-                />
+                <Input placeholder="Nhập mã chương trình khuyến mãi" size="large" />
               </Form.Item>
               <Radio.Group
                 value={showVoucher}
@@ -177,23 +167,20 @@ export default function PromotionAdd(props) {
                   ))}
                 </Select>
               </Form.Item>
-              <Checkbox onChange={(e) => selectAllStore(e.target.checked)}>
+              <Checkbox
+                checked={isChooseAllStore}
+                onChange={(e) => selectAllStore(e.target.checked)}
+              >
                 Chọn tất cả cửa hàng
               </Checkbox>
             </div>
           </Col>
           <Col span={12}>
             <div className={styles['promotion-add__box']}>
-              <div className={styles['promotion-add__title']}>
-                Tùy chọn khuyến mãi
-              </div>
+              <div className={styles['promotion-add__title']}>Tùy chọn khuyến mãi</div>
               <Row gutter={20}>
                 <Col span={12}>
-                  <Form.Item
-                    name="type"
-                    initialValue="value"
-                    label="Loại khuyến mãi"
-                  >
+                  <Form.Item name="type" initialValue="value" label="Loại khuyến mãi">
                     <Select placeholder="Loại khuyến mãi" size="large">
                       <Option value="value">Giá trị</Option>
                       <Option value="percent">Phần trăm</Option>
@@ -206,9 +193,7 @@ export default function PromotionAdd(props) {
                       placeholder="Giá trị Khuyến mãi"
                       size="large"
                       style={{ width: '100%', borderRadius: '15px' }}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
@@ -216,25 +201,21 @@ export default function PromotionAdd(props) {
               </Row>
               <Row style={{ margin: '1rem 0 0' }} gutter={20}>
                 <Col span={12}>
-                  <Form.Item name="low" label="Hạn mức áp dụng">
+                  <Form.Item name="discount_condition" label="Hạn mức áp dụng">
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="hight" label="Giới hạn khuyến mãi">
+                  <Form.Item name="max_discount" label="Giới hạn khuyến mãi">
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
@@ -251,12 +232,7 @@ export default function PromotionAdd(props) {
         </Row>
         <div className={styles['promotion_add_button']}>
           <Form.Item>
-            <Button
-              size="large"
-              type="primary"
-              htmlType="submit"
-              style={{ width: 120 }}
-            >
+            <Button size="large" type="primary" htmlType="submit" style={{ width: 120 }}>
               Tạo
             </Button>
           </Form.Item>
