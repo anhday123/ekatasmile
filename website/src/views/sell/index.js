@@ -3,9 +3,9 @@ import styles from './sell.module.scss'
 
 import { v4 as uuidv4 } from 'uuid'
 import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { formatCash } from 'utils'
-import { IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
+import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
 import noData from 'assets/icons/no-data.png'
 import jwt_decode from 'jwt-decode'
 import KeyboardEventHandler from 'react-keyboard-event-handler'
@@ -68,11 +68,16 @@ import {
 import { getAllCustomer } from 'apis/customer'
 import { apiAllShipping } from 'apis/shipping'
 import { getProducts } from 'apis/product'
+import { addOrder } from 'apis/order'
 
 export default function Sell() {
   const inputRef = useRef(null)
   const history = useHistory()
   const dispatch = useDispatch()
+  const dataUser = useSelector((state) => state.login.dataUser)
+
+  const [visibleConfirmCreateOrder, setVisibleConfirmCreateOrder] = useState(false)
+  const [isConfirm, setIsConfirm] = useState(false)
 
   const [shippingsMethod, setShippingsMethod] = useState([])
   const [visibleCustomerUpdate, setVisibleCustomerUpdate] = useState(false)
@@ -97,14 +102,15 @@ export default function Sell() {
     order_details: [], //danh sách sản phẩm trong hóa đơn
     payments: [], //hình thức thanh toán
     sumCostPaid: 0, // tổng tiền của tất cả sản phẩm
-    discount: 0,
+    discount: null,
     VAT: 0,
     noteInvoice: '',
     salesChannel: '', //kênh bán hàng
     isDelivery: false,
     deliveryCharges: 0, //phí giao hàng
-    shippingMethod: '',
+    shipping: null, //đơn vị vận chuyển
     billOfLadingCode: '',
+    moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả
     prepay: 0, //tiền khách thanh toán trước
     moneyGivenByCustomer: 0, //tiền khách hàng đưa
     excessCash: 0, //tiền thừa
@@ -133,87 +139,151 @@ export default function Sell() {
   ]
 
   const _addProductToCartInvoice = (product) => {
+    console.log(product)
     if (product) {
-      const invoicesNew = [...invoices]
-      const indexProduct = invoicesNew[indexInvoice].order_details.findIndex(
-        (e) => e._id === product._id
-      )
-
+      //check product có đủ số lượng
       if (product.total_quantity !== 0) {
+        const invoicesNew = [...invoices]
+        const indexProduct = invoicesNew[indexInvoice].order_details.findIndex(
+          (e) => e._id === product._id
+        )
+
+        //nếu đã có sẵn trong cart rồi thì tăng số lượng và tổng tiền của sản phẩm đó lên
+        //nếu chưa có thì push vào giỏ hàng
         if (indexProduct !== -1) {
           if (
-            invoicesNew[indexInvoice].order_details[indexProduct].quantity <
-            product.total_quantity
+            invoicesNew[indexInvoice].order_details[indexProduct].quantity < product.total_quantity
           ) {
             invoicesNew[indexInvoice].order_details[indexProduct].quantity++
+
             invoicesNew[indexInvoice].order_details[indexProduct].sumCost =
               +invoicesNew[indexInvoice].order_details[indexProduct].quantity *
-              +invoicesNew[indexInvoice].order_details[indexProduct].sale_price
-            invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
-              indexInvoice
-            ].order_details.reduce(
-              (total, current) => total + current.sumCost,
-              0
-            )
+              +invoicesNew[indexInvoice].order_details[indexProduct].price
+
+            //thuế VAT của mỗi sản phẩm
+            invoicesNew[indexInvoice].order_details[indexProduct].VAT_Product =
+              invoicesNew[indexInvoice].order_details[indexProduct]._taxes &&
+              invoicesNew[indexInvoice].order_details[indexProduct]._taxes.length
+                ? (
+                    (invoicesNew[indexInvoice].order_details[indexProduct]._taxes.reduce(
+                      (total, current) => total + current.value,
+                      0
+                    ) /
+                      100) *
+                    invoicesNew[indexInvoice].order_details[indexProduct].sumCost
+                  ).toFixed(0)
+                : 0
           } else
             notification.warning({
-              message:
-                'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
+              message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
             })
-        } else {
+        } else
           invoicesNew[indexInvoice].order_details.push({
             ...product,
-            quantity: 1,
-            sumCost: product.sale_price,
+            unit: '', //đơn vị
+            quantity: 1, //số lượng sản phẩm
+            sumCost: product.price, // tổng giá tiền
+            VAT_Product:
+              product._taxes && product._taxes.length
+                ? (
+                    (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                    product.price
+                  ).toFixed(0)
+                : 0,
           })
 
-          invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
-            indexInvoice
-          ].order_details.reduce((total, current) => total + current.sumCost, 0)
+        // tổng tiền của tất cả sản phẩm
+        invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
+          (total, current) => total + current.sumCost,
+          0
+        )
+
+        //tổng thuế VAT của tất cả sản phẩm
+        invoicesNew[indexInvoice].VAT = invoicesNew[indexInvoice].order_details.reduce(
+          (total, current) => total + +current.VAT_Product,
+          0
+        )
+
+        //tổng tiền khách hàng phải trả
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer =
+          invoicesNew[indexInvoice].sumCostPaid +
+          invoicesNew[indexInvoice].VAT +
+          (invoicesNew[indexInvoice].isDelivery ? invoicesNew[indexInvoice].deliveryCharges : 0)
+
+        //discount có 2 loại
+        //nếu type = value thì cộng
+        // nếu type = percent thì nhân
+        if (invoicesNew[indexInvoice].discount) {
+          if (invoicesNew[indexInvoice].discount.type === 'VALUE')
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+              +invoicesNew[indexInvoice].discount.value
+          else
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+              (+invoicesNew[indexInvoice].discount.value / 100) *
+              invoicesNew[indexInvoice].moneyToBePaidByCustomer
         }
+
+        //tiền thừa
+        const excessCashNew =
+          (invoicesNew[indexInvoice].isDelivery
+            ? invoicesNew[indexInvoice].prepay
+            : invoicesNew[indexInvoice].moneyGivenByCustomer) -
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+        invoicesNew[indexInvoice].excessCash = excessCashNew >= 0 ? excessCashNew : 0
+
+        setInvoices([...invoicesNew])
       } else
         notification.warning({
-          message:
-            'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
+          message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
         })
-
-      if (indexProduct)
-        invoicesNew[indexInvoice].VAT =
-          product && product._taxes
-            ? product._taxes.reduce((total, current) => total + current.value) +
-              +invoicesNew[indexInvoice].order_details[indexProduct].quantity
-            : 0
-      console.log(invoicesNew[indexInvoice].VAT)
-      const excessCashNew =
-        invoicesNew[indexInvoice].sumCostPaid +
-        invoicesNew[indexInvoice].VAT -
-        invoicesNew[indexInvoice].discount -
-        invoicesNew[indexInvoice].deliveryCharges
-
-      invoicesNew[indexInvoice].excessCash =
-        excessCashNew >= 0 ? 0 : excessCashNew
-
-      setInvoices([...invoicesNew])
     }
   }
 
-  const _removeProductToCartInvoice = (index) => {
-    if (index !== -1) {
+  const _removeProductToCartInvoice = (indexProduct) => {
+    if (indexProduct !== -1) {
       const invoicesNew = [...invoices]
-      invoicesNew[indexInvoice].order_details.splice(index, 1)
+      invoicesNew[indexInvoice].order_details.splice(indexProduct, 1)
 
-      invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
-        indexInvoice
-      ].order_details.reduce((total, current) => total + current.sumCost, 0)
+      //tổng thuế VAT của tất cả các sản phẩm
+      invoicesNew[indexInvoice].VAT = invoicesNew[indexInvoice].order_details.reduce(
+        (total, current) => total + +current.VAT_Product,
+        0
+      )
 
-      const excessCashNew =
+      // tổng tiền của tất cả sản phẩm
+      invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
+        (total, current) => total + current.sumCost,
+        0
+      )
+
+      //tổng tiền khách hàng phải trả
+      invoicesNew[indexInvoice].moneyToBePaidByCustomer =
         invoicesNew[indexInvoice].sumCostPaid +
-        invoicesNew[indexInvoice].VAT -
-        invoicesNew[indexInvoice].discount -
-        invoicesNew[indexInvoice].deliveryCharges
+        invoicesNew[indexInvoice].VAT +
+        (invoicesNew[indexInvoice].isDelivery ? invoicesNew[indexInvoice].deliveryCharges : 0)
 
-      invoicesNew[indexInvoice].excessCash =
-        excessCashNew >= 0 ? 0 : excessCashNew
+      //discount có 2 loại
+      //nếu type = value thì cộng
+      // nếu type = percent thì nhân
+      if (invoicesNew[indexInvoice].discount) {
+        if (invoicesNew[indexInvoice].discount.type === 'VALUE')
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+            +invoicesNew[indexInvoice].discount.value
+        else
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+            (+invoicesNew[indexInvoice].discount.value / 100) *
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer
+      }
+
+      //tiền thừa
+      const excessCashNew =
+        (invoicesNew[indexInvoice].isDelivery
+          ? invoicesNew[indexInvoice].prepay
+          : invoicesNew[indexInvoice].moneyGivenByCustomer) -
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+      invoicesNew[indexInvoice].excessCash = excessCashNew >= 0 ? excessCashNew : 0
 
       setInvoices([...invoicesNew])
     }
@@ -222,6 +292,35 @@ export default function Sell() {
   const _editInvoice = (attribute, value) => {
     const invoicesNew = [...invoices]
     invoicesNew[indexInvoice][attribute] = value
+
+    //tổng tiền khách hàng phải trả
+    invoicesNew[indexInvoice].moneyToBePaidByCustomer =
+      invoicesNew[indexInvoice].sumCostPaid +
+      invoicesNew[indexInvoice].VAT +
+      (invoicesNew[indexInvoice].isDelivery ? invoicesNew[indexInvoice].deliveryCharges : 0)
+
+    //discount có 2 loại
+    //nếu type = value thì cộng
+    // nếu type = percent thì nhân
+    if (invoicesNew[indexInvoice].discount) {
+      if (invoicesNew[indexInvoice].discount.type === 'VALUE')
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+          +invoicesNew[indexInvoice].discount.value
+      else
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+          (+invoicesNew[indexInvoice].discount.value / 100) *
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer
+    }
+
+    //tiền thừa
+    const excessCashNew =
+      (invoicesNew[indexInvoice].isDelivery
+        ? invoicesNew[indexInvoice].prepay
+        : invoicesNew[indexInvoice].moneyGivenByCustomer) -
+      invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+    invoicesNew[indexInvoice].excessCash = excessCashNew >= 0 ? excessCashNew : 0
+
     setInvoices([...invoicesNew])
   }
 
@@ -230,14 +329,67 @@ export default function Sell() {
       const invoicesNew = [...invoices]
       invoicesNew[indexInvoice].order_details[index][attribute] = value
 
+      //tổng tiền của 1 sản phẩm
+      invoicesNew[indexInvoice].order_details[index].sumCost =
+        +invoicesNew[indexInvoice].order_details[index].quantity *
+        +invoicesNew[indexInvoice].order_details[index].price
+
+      //thuế VAT của mỗi sản phẩm
+      invoicesNew[indexInvoice].order_details[index].VAT_Product =
+        invoicesNew[indexInvoice].order_details[index]._taxes &&
+        invoicesNew[indexInvoice].order_details[index]._taxes.length
+          ? (
+              (invoicesNew[indexInvoice].order_details[index]._taxes.reduce(
+                (total, current) => total + current.value,
+                0
+              ) /
+                100) *
+              invoicesNew[indexInvoice].order_details[index].sumCost
+            ).toFixed(0)
+          : 0
+
+      //tổng thuế VAT của tất cả các sản phẩm
+      invoicesNew[indexInvoice].VAT = invoicesNew[indexInvoice].order_details.reduce(
+        (total, current) => total + +current.VAT_Product,
+        0
+      )
+
+      // tổng tiền của tất cả sản phẩm
+      invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
+        (total, current) => total + current.sumCost,
+        0
+      )
+
+      //tổng tiền khách hàng phải trả
+      invoicesNew[indexInvoice].moneyToBePaidByCustomer =
+        invoicesNew[indexInvoice].sumCostPaid +
+        invoicesNew[indexInvoice].VAT +
+        (invoicesNew[indexInvoice].isDelivery ? invoicesNew[indexInvoice].deliveryCharges : 0)
+
+      //discount có 2 loại
+      //nếu type = value thì cộng
+      // nếu type = percent thì nhân
+      if (invoicesNew[indexInvoice].discount) {
+        if (invoicesNew[indexInvoice].discount.type === 'VALUE')
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+            +invoicesNew[indexInvoice].discount.value
+        else
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+            (+invoicesNew[indexInvoice].discount.value / 100) *
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer
+      }
+
+      //tiền thừa
+      const excessCashNew =
+        (invoicesNew[indexInvoice].isDelivery
+          ? invoicesNew[indexInvoice].prepay
+          : invoicesNew[indexInvoice].moneyGivenByCustomer) -
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+      invoicesNew[indexInvoice].excessCash = excessCashNew >= 0 ? excessCashNew : 0
+
       setInvoices([...invoicesNew])
     }
-  }
-
-  const _resetInvoices = () => {
-    setInvoices([initInvoice])
-    setIndexInvoice(0)
-    setActiveKeyTab(initInvoice.id)
   }
 
   const ModalQuantityProductInStores = ({ product }) => {
@@ -266,7 +418,7 @@ export default function Sell() {
         </Row>
         <Row justify="space-between">
           <span>Giá bán</span>
-          <span>{formatCash(product ? product.sale_price : 0)}</span>
+          <span>{formatCash(product ? product.price : 0)}</span>
         </Row>
         <Row justify="space-between">
           <span>Có thể bán</span>
@@ -286,17 +438,13 @@ export default function Sell() {
     useEffect(() => {
       for (let i = 0; i < productsAllStore.length; i++) {
         for (let j = 0; j < productsAllStore[i].variants.length; j++) {
-          const findVariant = productsAllStore[i].variants.find(
-            (e) => e._id === product._id
-          )
+          const findVariant = productsAllStore[i].variants.find((e) => e._id === product._id)
           if (findVariant) {
             setLocations([...findVariant.locations])
             break
           }
         }
       }
-
-      // setLocations(productsAllStore)
     }, [])
 
     return (
@@ -368,11 +516,7 @@ export default function Sell() {
 
   const NoteInvoice = () => (
     <Input.TextArea
-      onBlur={(e) => {
-        const invoicesNew = [...invoices]
-        invoicesNew[indexInvoice].noteInvoice = e.target.value
-        setInvoices([...invoicesNew])
-      }}
+      onBlur={(e) => _editInvoice('noteInvoice', e.target.value)}
       defaultValue={invoices[indexInvoice].noteInvoice || ''}
       rows={2}
       placeholder="Nhập ghi chú đơn hàng"
@@ -398,9 +542,7 @@ export default function Sell() {
             cursor: 'pointer',
           }}
         >
-          <p className={styles['sell-product__item-note']}>
-            {note || 'Ghi chú'}
-          </p>
+          <p className={styles['sell-product__item-note']}>{note || 'Ghi chú'}</p>
           <EditOutlined style={{ marginLeft: 5 }} />
         </div>
         <Modal
@@ -474,11 +616,165 @@ export default function Sell() {
     )
   }
 
+  const ModalConfirmCreateOrderOrPay = () => {
+    return (
+      <Modal
+        onOk={() => {
+          setVisibleConfirmCreateOrder(false)
+          setIsConfirm(true)
+          setTimeout(() => {
+            _createOrderOrPay()
+          }, 500)
+        }}
+        cancelText="Thoát"
+        okText="Đồng ý"
+        visible={visibleConfirmCreateOrder}
+        onCancel={() => setVisibleConfirmCreateOrder(false)}
+        title="Số tiền thanh toán chưa đủ"
+      >
+        Số tiền khách đưa đang nhỏ hơn số tiền mà khách phải trả. Bạn có chắc chắn muốn tiếp tục
+        thanh toán? Đơn hàng sẽ không được ghi nhận hoàn thành đến khi được thanh toán toàn bộ.
+      </Modal>
+    )
+  }
+
+  const _validatedBeforeCreateOrderOrPay = () => {
+    if (invoices[indexInvoice].isDelivery && !invoices[indexInvoice].customer) {
+      notification.warning({ message: 'Vui lòng thêm khách hàng để sử dụng dịch vụ giao hàng' })
+      return false
+    }
+
+    if (invoices[indexInvoice].order_details.length === 0) {
+      notification.warning({ message: 'Vui lòng chọn sản phẩm vào đơn hàng' })
+      return false
+    }
+
+    if (invoices[indexInvoice].payments.length === 0) {
+      notification.warning({ message: 'Vui lòng chọn phương thức thanh toán' })
+      return false
+    }
+
+    if (invoices[indexInvoice].isDelivery) {
+      if (!invoices[indexInvoice].billOfLadingCode) {
+        notification.warning({ message: 'Vui lòng nhập mã vận đơn' })
+        return false
+      }
+      if (!invoices[indexInvoice].shipping) {
+        notification.warning({ message: 'Vui lòng chọn đơn vị vận chuyển' })
+        return false
+      }
+    }
+
+    if (
+      isConfirm &&
+      !invoices[indexInvoice].isDelivery &&
+      invoices[indexInvoice].moneyGivenByCustomer < invoices[indexInvoice].moneyToBePaidByCustomer
+    ) {
+      setVisibleConfirmCreateOrder(true)
+      return
+    }
+
+    return true
+  }
+
+  const _createOrderOrPay = async () => {
+    try {
+      const isValidated = _validatedBeforeCreateOrderOrPay()
+      if (!isValidated) return
+
+      dispatch({ type: ACTION.LOADING, data: true })
+
+      const store = JSON.parse(localStorage.getItem('storeSell'))
+
+      let shipping = {}
+      if (invoices[indexInvoice].isDelivery) {
+        shipping.shipping_company_id = invoices[indexInvoice].shipping.shipping_company_id || ''
+        shipping.shipping_info = {
+          ship_code: invoices[indexInvoice].shipping.code || '',
+          to_name: `${invoices[indexInvoice].customer.first_name || ''} ${
+            invoices[indexInvoice].customer.last_name || ''
+          }`,
+          to_phone: invoices[indexInvoice].customer.phone || '',
+          to_address: invoices[indexInvoice].customer.address || '',
+          to_ward: '',
+          to_district: invoices[indexInvoice].customer.district || '',
+          to_province: invoices[indexInvoice].customer.province || '',
+          to_province_code: '',
+          to_postcode: 70000,
+          to_country_code: '',
+          return_name: `${invoices[indexInvoice].customer.first_name || ''} ${
+            invoices[indexInvoice].customer.last_name || ''
+          }`,
+          return_phone: invoices[indexInvoice].customer.phone || '',
+          return_address: invoices[indexInvoice].customer.address || '',
+          return_ward: '',
+          return_district: invoices[indexInvoice].customer.district || '',
+          return_province: invoices[indexInvoice].customer.province || '',
+          return_province_code: '',
+          return_postcode_code: '',
+          return_country_code: '',
+          cod: 20000,
+          delivery_time: '2021-09-30T00:00:00+07:00',
+          complete_time: '2021-10-30T00:00:00+07:00',
+        }
+      }
+
+      const body = {
+        sale_location: { store_id: store.store_id || '' },
+        customer_id: invoices[indexInvoice].customer
+          ? invoices[indexInvoice].customer.customer_id
+          : '',
+        employee_id: dataUser ? dataUser.data.user_id || '' : '',
+        order_details: invoices[indexInvoice].order_details.map((item) => {
+          return {
+            product_id: item.product_id || '',
+            variant_id: item.variant_id || '',
+            quantity: item.quantity || '',
+            total_cost: item.sumCost || '',
+            discount: item.VAT_Product || '',
+            final_cost: 4440000 || '',
+          }
+        }),
+        payments: invoices[indexInvoice].payments,
+        ...shipping,
+        voucher: invoices[indexInvoice].discount ? invoices[indexInvoice].discount.name || '' : '',
+        promotion_id: invoices[indexInvoice].discount
+          ? invoices[indexInvoice].discount.promotion_id || ''
+          : '',
+        total_cost: invoices[indexInvoice].sumCostPaid || 0,
+        total_tax: invoices[indexInvoice].VAT || 0,
+        total_discount:
+          invoices[indexInvoice].sumCostPaid - invoices[indexInvoice].moneyToBePaidByCustomer,
+        final_cost: invoices[indexInvoice].noteInvoice.moneyToBePaidByCustomer || 0,
+        customer_paid: invoices[indexInvoice].noteInvoice.isDelivery
+          ? invoices[indexInvoice].noteInvoice.prepay || 0
+          : invoices[indexInvoice].noteInvoice.moneyGivenByCustomer || 0,
+        customer_debt: 0,
+        bill_status: 'DRAFT',
+        ship_status: 'DRAFT',
+        note: invoices[indexInvoice].noteInvoice || '',
+        tags: [],
+      }
+
+      const CryptoJS = require('crypto-js')
+      const bodyEncryption = CryptoJS.AES.encrypt(
+        JSON.stringify(body),
+        process.env.REACT_APP_SECRET_KEY_CRYPTO
+      ).toString()
+      const res = await addOrder(bodyEncryption)
+      console.log(res)
+
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
+    }
+  }
+
   const _getCustomers = async () => {
     try {
       setLoadingCustomer(true)
       const res = await getAllCustomer()
-      console.log(res)
       if (res.status === 200) setCustomers(res.data.data)
 
       setLoadingCustomer(false)
@@ -495,13 +791,13 @@ export default function Sell() {
       const res = await getAllCustomer({
         customer_id: invoices[indexInvoice].customer.customer_id,
       })
-      console.log(res)
       if (res.status === 200)
         if (res.data.data.length) {
           const invoicesNew = [...invoices]
           invoices[indexInvoice].customer = res.data.data[0]
-          invoicesNew[indexInvoice].name = `${res.data.data[0].first_name} 
-          ${res.data.data[0].last_name} - ${res.data.data[0].phone}`
+          invoicesNew[
+            indexInvoice
+          ].name = `${res.data.data[0].first_name} ${res.data.data[0].last_name} - ${res.data.data[0].phone}`
           setInvoices([...invoicesNew])
         }
 
@@ -515,6 +811,7 @@ export default function Sell() {
   const _getShippingsMethod = async () => {
     try {
       const res = await apiAllShipping()
+      console.log(res)
       if (res.status === 200) setShippingsMethod(res.data.data)
     } catch (error) {
       console.log(error)
@@ -533,9 +830,8 @@ export default function Sell() {
   const _getProductsSearch = async (store_id) => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ store_id, merge: true })
-      if (res.status === 200) setProductsSearch(res.data.data)
-
+      const res = await getProducts({ store_id, merge: true, detach: true })
+      if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
     } catch (error) {
       console.log(error)
@@ -555,7 +851,6 @@ export default function Sell() {
         detach: true,
         ...params,
       })
-      console.log(res)
       if (res.status === 200) {
         setProductsRelated(res.data.data.map((e) => e.variants))
         setCountProducts(res.data.count)
@@ -575,7 +870,6 @@ export default function Sell() {
       history.push(ROUTES.LOGIN)
     } else {
       const data = jwt_decode(localStorage.getItem('accessToken'))
-      console.log(data)
       if (!localStorage.getItem('storeSell')) {
         if (data.data._store) {
           localStorage.setItem('storeSell', JSON.stringify(data.data._store))
@@ -601,6 +895,7 @@ export default function Sell() {
   return (
     <div className={styles['sell-container']}>
       <HandlerKeyboard />
+      <ModalConfirmCreateOrderOrPay />
       <div className={styles['sell-header']}>
         <Row align="middle" wrap={false}>
           <div className="select-product-sell">
@@ -610,9 +905,7 @@ export default function Sell() {
               allowClear
               showSearch
               clearIcon={<CloseOutlined style={{ color: 'black' }} />}
-              suffixIcon={
-                <SearchOutlined style={{ color: 'black', fontSize: 15 }} />
-              }
+              suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
               className={styles['search-product']}
               placeholder="Thêm sản phẩm vào hoá đơn"
               dropdownRender={(menu) => (
@@ -655,63 +948,57 @@ export default function Sell() {
                 </div>
               )}
             >
-              {productsSearch.map((product, index) =>
-                product.variants.map((data) => (
-                  <Select.Option value={data.title} key={data.title}>
-                    <Row
-                      align="middle"
-                      wrap={false}
-                      style={{ padding: '7px 13px' }}
-                      onClick={(e) => {
-                        _addProductToCartInvoice(data)
-                        e.stopPropagation()
+              {productsSearch.map((data) => (
+                <Select.Option value={data.title} key={data.title}>
+                  <Row
+                    align="middle"
+                    wrap={false}
+                    style={{ padding: '7px 13px' }}
+                    onClick={(e) => {
+                      _addProductToCartInvoice(data)
+                      e.stopPropagation()
+                    }}
+                  >
+                    <img
+                      src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
+                      alt=""
+                      style={{
+                        minWidth: 40,
+                        minHeight: 40,
+                        maxWidth: 40,
+                        maxHeight: 40,
+                        objectFit: 'cover',
                       }}
-                    >
-                      <img
-                        src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
-                        alt=""
-                        style={{
-                          minWidth: 40,
-                          minHeight: 40,
-                          maxWidth: 40,
-                          maxHeight: 40,
-                          objectFit: 'cover',
-                        }}
-                      />
+                    />
 
-                      <div style={{ width: '100%', marginLeft: 15 }}>
-                        <Row wrap={false} justify="space-between">
-                          <span
-                            style={{
-                              maxWidth: 200,
-                              marginBottom: 0,
-                              fontWeight: 600,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              WebkitLineClamp: 1,
-                              WebkitBoxOrient: 'vertical',
-                              display: '-webkit-box',
-                            }}
-                          >
-                            {data.title}
-                          </span>
-                          <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                            {formatCash(data.sale_price)}
-                          </p>
-                        </Row>
-                        <Row wrap={false} justify="space-between">
-                          <p style={{ marginBottom: 0, color: 'gray' }}>
-                            {data.sku}
-                          </p>
-                          <p style={{ marginBottom: 0, color: 'gray' }}>
-                            Có thể bán: {formatCash(data.total_quantity)}
-                          </p>
-                        </Row>
-                      </div>
-                    </Row>
-                  </Select.Option>
-                ))
-              )}
+                    <div style={{ width: '100%', marginLeft: 15 }}>
+                      <Row wrap={false} justify="space-between">
+                        <span
+                          style={{
+                            maxWidth: 200,
+                            marginBottom: 0,
+                            fontWeight: 600,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            WebkitLineClamp: 1,
+                            WebkitBoxOrient: 'vertical',
+                            display: '-webkit-box',
+                          }}
+                        >
+                          {data.title}
+                        </span>
+                        <p style={{ marginBottom: 0, fontWeight: 500 }}>{formatCash(data.price)}</p>
+                      </Row>
+                      <Row wrap={false} justify="space-between">
+                        <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
+                        <p style={{ marginBottom: 0, color: 'gray' }}>
+                          Có thể bán: {formatCash(data.total_quantity)}
+                        </p>
+                      </Row>
+                    </div>
+                  </Row>
+                </Select.Option>
+              ))}
             </Select>
           </div>
           <img
@@ -735,9 +1022,7 @@ export default function Sell() {
                 const invoicesNew = [...invoices]
                 initInvoice.name = `Đơn ${invoicesNew.length + 1}`
                 invoicesNew.push(initInvoice)
-                const iVoice = invoicesNew.findIndex(
-                  (e) => e.id === initInvoice.id
-                )
+                const iVoice = invoicesNew.findIndex((e) => e.id === initInvoice.id)
                 if (iVoice !== -1) setIndexInvoice(iVoice)
                 setInvoices([...invoicesNew])
                 setActiveKeyTab(initInvoice.id)
@@ -753,9 +1038,7 @@ export default function Sell() {
             className="tabs-invoices"
             addIcon={
               <Tooltip title="Thêm mới đơn hàng">
-                <PlusOutlined
-                  style={{ color: 'white', fontSize: 21, marginLeft: 7 }}
-                />
+                <PlusOutlined style={{ color: 'white', fontSize: 21, marginLeft: 7 }} />
               </Tooltip>
             }
           >
@@ -774,9 +1057,7 @@ export default function Sell() {
                         setIndexInvoice(0)
                         setActiveKeyTab(invoicesNew[0].id)
                       } else {
-                        const indexInvoice = invoicesNew.findIndex(
-                          (e) => e.id === activeKeyTab
-                        )
+                        const indexInvoice = invoicesNew.findIndex((e) => e.id === activeKeyTab)
                         if (indexInvoice !== -1) setIndexInvoice(indexInvoice)
                       }
 
@@ -816,7 +1097,7 @@ export default function Sell() {
           style={{ width: '100%', marginLeft: 15 }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <ModalChangeStore resetInvoices={_resetInvoices} />
+            <ModalChangeStore />
             <ModalInfoSeller />
           </div>
           <HeaderGroupButton />
@@ -825,36 +1106,13 @@ export default function Sell() {
       <div className={styles['sell-content']}>
         <div className={styles['sell-left']}>
           <div className={styles['sell-products-invoice']}>
-            {invoices[indexInvoice].order_details &&
-            invoices[indexInvoice].order_details.length ? (
+            {invoices[indexInvoice].order_details && invoices[indexInvoice].order_details.length ? (
               invoices[indexInvoice].order_details.map((product, index) => {
                 const Quantity = () => (
                   <InputNumber
                     onBlur={(e) => {
-                      const value = +e.target.value
-                      const invoicesNew = [...invoices]
-
-                      invoicesNew[indexInvoice].order_details[index].sumCost =
-                        +product.sale_price * value
-
-                      invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
-                        indexInvoice
-                      ].order_details.reduce(
-                        (total, current) => total + current.sumCost,
-                        0
-                      )
-
-                      const excessCashNew =
-                        invoicesNew[indexInvoice].sumCostPaid +
-                        invoicesNew[indexInvoice].VAT -
-                        invoicesNew[indexInvoice].discount -
-                        invoicesNew[indexInvoice].deliveryCharges
-
-                      invoicesNew[indexInvoice].excessCash =
-                        excessCashNew >= 0 ? 0 : excessCashNew
-
-                      setInvoices([...invoicesNew])
-                      _editProductInInvoices('quantity', value, index)
+                      const value = e.target.value.replaceAll(',', '')
+                      _editProductInInvoices('quantity', +value, index)
                     }}
                     defaultValue={product.quantity || 1}
                     className="show-handler-number"
@@ -862,6 +1120,8 @@ export default function Sell() {
                     bordered={false}
                     max={product.total_quantity}
                     min={1}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     placeholder="Số lượng"
                   />
                 )
@@ -870,38 +1130,13 @@ export default function Sell() {
                   <InputNumber
                     onBlur={(e) => {
                       const value = e.target.value.replaceAll(',', '')
-
-                      const invoicesNew = [...invoices]
-
-                      invoicesNew[indexInvoice].order_details[index].sumCost =
-                        +product.quantity * +value
-
-                      invoicesNew[indexInvoice].sumCostPaid = invoicesNew[
-                        indexInvoice
-                      ].order_details.reduce(
-                        (total, current) => total + current.sumCost,
-                        0
-                      )
-
-                      const excessCashNew =
-                        invoicesNew[indexInvoice].sumCostPaid +
-                        invoicesNew[indexInvoice].VAT -
-                        invoicesNew[indexInvoice].discount -
-                        invoicesNew[indexInvoice].deliveryCharges
-
-                      invoicesNew[indexInvoice].excessCash =
-                        excessCashNew >= 0 ? 0 : excessCashNew
-
-                      setInvoices([...invoicesNew])
-                      _editProductInInvoices('sale_price', +value, index)
+                      _editProductInInvoices('price', +value, index)
                     }}
-                    defaultValue={product.sale_price || ''}
+                    defaultValue={product.price || ''}
                     min={0}
                     style={{ width: '100%' }}
                     bordered={false}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     placeholder="Giá tiền"
                   />
@@ -909,10 +1144,7 @@ export default function Sell() {
 
                 const Unit = () => (
                   <Input
-                    onBlur={(e) => {
-                      const value = e.target.value
-                      _editProductInInvoices('unit', value, index)
-                    }}
+                    onBlur={(e) => _editProductInInvoices('unit', e.target.value, index)}
                     defaultValue={product.unit || ''}
                     style={{ width: '100%' }}
                     placeholder="Đơn vị"
@@ -948,16 +1180,12 @@ export default function Sell() {
                         }}
                       />
                       <Tooltip title={product.sku}>
-                        <p className={styles['sell-product__item-sku']}>
-                          {product.sku}
-                        </p>
+                        <p className={styles['sell-product__item-sku']}>{product.sku}</p>
                       </Tooltip>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Tooltip title={product.title}>
-                            <p className={styles['sell-product__item-name']}>
-                              {product.title}
-                            </p>
+                            <p className={styles['sell-product__item-name']}>{product.title}</p>
                           </Tooltip>
                           <ModalQuantityProductInStores product={product} />
                         </div>
@@ -1052,33 +1280,29 @@ export default function Sell() {
                   paramsFilter.page = page
                   paramsFilter.page_size = pageSize
 
-                  setParamsFilter(paramsFilter)
+                  setParamsFilter({ ...paramsFilter })
                 }}
               />
             </Row>
             <div className={styles['list-product-related']}>
               {loadingProductRelated ? (
-                <Row
-                  justify="center"
-                  align="middle"
-                  style={{ width: '100%', height: 320 }}
-                >
+                <Row justify="center" align="middle" style={{ width: '100%', height: 320 }}>
                   <Spin />
                 </Row>
               ) : productsRelated.length ? (
                 <Space wrap={true} size="large">
-                  {productsRelated.map((data) => (
+                  {productsRelated.map((product) => (
                     <div
                       className={styles['product-item']}
-                      onClick={() => _addProductToCartInvoice(data)}
+                      onClick={() => _addProductToCartInvoice(product)}
                     >
                       <img
-                        src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
+                        src={product.image[0] ? product.image[0] : IMAGE_DEFAULT}
                         alt=""
                         style={{
                           width: '100%',
                           height: '70%',
-                          objectFit: data.image[0] ? 'cover' : 'contain',
+                          objectFit: product.image[0] ? 'cover' : 'contain',
                         }}
                       />
                       <Row
@@ -1091,13 +1315,11 @@ export default function Sell() {
                           marginTop: 3,
                         }}
                       >
-                        <p className={styles['product-item__name']}>
-                          {data.title}
-                        </p>
-                        <ModalQuantityProductInStores product={data} />
+                        <p className={styles['product-item__name']}>{product.title}</p>
+                        <ModalQuantityProductInStores product={product} />
                       </Row>
                       <p className={styles['product-item__price']}>
-                        {formatCash(data.sale_price)} VNĐ
+                        {formatCash(product.price)} VNĐ
                       </p>
                     </div>
                   ))}
@@ -1135,12 +1357,8 @@ export default function Sell() {
           >
             {SHORT_CUTS.map((shortcut) => (
               <div className={styles['keyboard-shorcuts']}>
-                <p style={{ textAlign: 'center', marginBottom: 0 }}>
-                  {shortcut.text}
-                </p>
-                <p style={{ textAlign: 'center', marginBottom: 0 }}>
-                  {shortcut.icon}
-                </p>
+                <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.text}</p>
+                <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.icon}</p>
               </div>
             ))}
           </Row>
@@ -1156,10 +1374,7 @@ export default function Sell() {
               placeholder="Tìm kiếm khách hàng"
             >
               {customers.map((customer, index) => (
-                <Select.Option
-                  value={customer.first_name + ' ' + customer.last_name}
-                  key={index}
-                >
+                <Select.Option value={customer.first_name + ' ' + customer.last_name} key={index}>
                   <Row
                     style={{ padding: '7px 13px' }}
                     align="middle"
@@ -1169,8 +1384,7 @@ export default function Sell() {
                       _editInvoice('customer', customer)
                       _editInvoice(
                         'name',
-                        `${customer.first_name} 
-                    ${customer.last_name} - ${customer.phone}`
+                        `${customer.first_name} ${customer.last_name} - ${customer.phone}`
                       )
                       e.stopPropagation()
                     }}
@@ -1245,24 +1459,20 @@ export default function Sell() {
                 </Permission>
                 <span style={{ fontWeight: 500 }}>
                   {' '}
-                  -{' '}
-                  {invoices[indexInvoice].customer &&
-                    invoices[indexInvoice].customer.phone}
+                  - {invoices[indexInvoice].customer && invoices[indexInvoice].customer.phone}
                 </span>
               </Row>
               <Row wrap={false} justify="space-between" align="middle">
                 <div>
                   <span style={{ fontWeight: 600 }}>Công nợ: </span>
                   <span>
-                    {invoices[indexInvoice].customer &&
-                      invoices[indexInvoice].customer.debt}
+                    {invoices[indexInvoice].customer && invoices[indexInvoice].customer.debt}
                   </span>
                 </div>
                 <div>
                   <span style={{ fontWeight: 600 }}>Điểm hiện tại: </span>
                   <span>
-                    {invoices[indexInvoice].customer &&
-                      invoices[indexInvoice].customer.point}
+                    {invoices[indexInvoice].customer && invoices[indexInvoice].customer.point}
                   </span>
                 </div>
               </Row>
@@ -1273,12 +1483,10 @@ export default function Sell() {
               cancelText="Từ chối"
               onConfirm={async () => {
                 _editInvoice('customer', null)
-                _editInvoice('name', `Đơn ${invoices.length + 1}`)
+                _editInvoice('name', `Đơn ${invoices.length}`)
               }}
             >
-              <CloseCircleTwoTone
-                style={{ cursor: 'pointer', marginLeft: 20, fontSize: 23 }}
-              />
+              <CloseCircleTwoTone style={{ cursor: 'pointer', marginLeft: 20, fontSize: 23 }} />
             </Popconfirm>
           </Row>
           <Divider style={{ marginTop: 15, marginBottom: 15 }} />
@@ -1289,7 +1497,9 @@ export default function Sell() {
                 style={{ marginRight: 10 }}
                 onChange={(checked) => {
                   _editInvoice('isDelivery', checked)
+                  _editInvoice('shipping', null)
                   _editInvoice('deliveryCharges', 0)
+                  _editInvoice('billOfLadingCode', '')
                   _editInvoice('prepay', 0)
                   _editInvoice('moneyGivenByCustomer', 0)
                   _editInvoice('payments', [])
@@ -1325,13 +1535,13 @@ export default function Sell() {
 
           <Row wrap={false} justify="space-between" align="middle">
             <Radio
-              checked={invoices[indexInvoice].type === 'default' ? true : false}
+              checked={invoices[indexInvoice].type === 'default'}
               onClick={() => _editInvoice('type', 'default')}
             >
               Tạo hoá đơn
             </Radio>
             <Radio
-              checked={invoices[indexInvoice].type === 'online' ? true : false}
+              checked={invoices[indexInvoice].type === 'online'}
               onClick={() => _editInvoice('type', 'online')}
             >
               Đặt online
@@ -1339,12 +1549,7 @@ export default function Sell() {
             <ModalOrdersReturn />
           </Row>
           <div>
-            <Row
-              justify="space-between"
-              wrap={false}
-              align="middle"
-              style={{ marginTop: 9 }}
-            >
+            <Row justify="space-between" wrap={false} align="middle" style={{ marginTop: 9 }}>
               <Row wrap={false} align="middle">
                 <p>
                   Tổng tiền (
@@ -1355,7 +1560,10 @@ export default function Sell() {
                     )}
                   </b>{' '}
                   sản phẩm)
-                  <ModalPromotion invoiceCurrent={invoices[indexInvoice]} />
+                  <ModalPromotion
+                    invoiceCurrent={invoices[indexInvoice]}
+                    editInvoice={_editInvoice}
+                  />
                 </p>
               </Row>
 
@@ -1367,12 +1575,19 @@ export default function Sell() {
             </Row>
             <Row justify="space-between" wrap={false} align="middle">
               <p>Chiết khấu</p>
-              <p>0</p>
+              <p>
+                {formatCash(
+                  invoices[indexInvoice].discount ? invoices[indexInvoice].discount.value : 0
+                )}{' '}
+                {invoices[indexInvoice].discount
+                  ? invoices[indexInvoice].discount.type === 'VALUE'
+                    ? ''
+                    : '%'
+                  : ''}
+              </p>
             </Row>
 
-            <div
-              style={{ display: !invoices[indexInvoice].isDelivery && 'none' }}
-            >
+            <div style={{ display: !invoices[indexInvoice].isDelivery && 'none' }}>
               <Row justify="space-between" wrap={false} align="middle">
                 <p>Đơn vị vận chuyển</p>
                 <div
@@ -1383,17 +1598,15 @@ export default function Sell() {
                   }}
                 >
                   <Select
-                    value={invoices[indexInvoice].shippingMethod || undefined}
-                    onChange={(value) => _editInvoice('shippingMethod', value)}
+                    value={invoices[indexInvoice].shipping || undefined}
+                    onChange={(value) => _editInvoice('shipping', value)}
                     bordered={false}
                     style={{ width: '100%' }}
                     placeholder="Chọn đơn vị vận chuyển"
                     optionFilterProp="children"
                     showSearch
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     {shippingsMethod.map((shipping, index) => (
@@ -1414,9 +1627,7 @@ export default function Sell() {
                   }}
                 >
                   <Input
-                    onChange={(e) =>
-                      _editInvoice('billOfLadingCode', e.target.value)
-                    }
+                    onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
                     value={invoices[indexInvoice].billOfLadingCode}
                     placeholder="Nhập mã vận đơn"
                     bordered={false}
@@ -1433,12 +1644,10 @@ export default function Sell() {
                   }}
                 >
                   <InputNumber
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     value={invoices[indexInvoice].deliveryCharges}
-                    onChange={(value) => _editInvoice('deliveryCharges', value)}
+                    onChange={(value) => _editInvoice('deliveryCharges', +value)}
                     placeholder="Nhập phí giao hàng"
                     min={0}
                     bordered={false}
@@ -1459,14 +1668,7 @@ export default function Sell() {
               }}
             >
               <p style={{ color: 'black', fontWeight: 600 }}>Khách phải trả</p>
-              <p>
-                {formatCash(
-                  invoices[indexInvoice].sumCostPaid +
-                    invoices[indexInvoice].VAT -
-                    invoices[indexInvoice].discount -
-                    invoices[indexInvoice].deliveryCharges
-                )}
-              </p>
+              <p>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</p>
             </Row>
             {invoices[indexInvoice].isDelivery ? (
               <Row justify="space-between" wrap={false} align="middle">
@@ -1481,30 +1683,14 @@ export default function Sell() {
                     <InputNumber
                       ref={inputRef}
                       value={invoices[indexInvoice].prepay}
-                      onChange={(value) => _editInvoice('prepay', value)}
-                      onBlur={(e) => {
-                        const valueNew = e.target.value.replaceAll(',', '')
-                        const excessCash =
-                          +valueNew -
-                          (invoices[indexInvoice].sumCostPaid +
-                            invoices[indexInvoice].VAT -
-                            invoices[indexInvoice].discount -
-                            invoices[indexInvoice].deliveryCharges)
-                        if (excessCash >= 0)
-                          _editInvoice('excessCash', excessCash)
-                        else _editInvoice('excessCash', 0)
-
+                      onChange={(value) => {
+                        _editInvoice('prepay', value)
                         _editInvoice('payments', [
-                          {
-                            ...invoices[indexInvoice].payments[0],
-                            value: +valueNew,
-                          },
+                          { method: invoices[indexInvoice].payments[0].method, value: value },
                         ])
                       }}
                       placeholder="Nhập tiền thanh toán trước"
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                       min={0}
                       bordered={false}
@@ -1529,31 +1715,13 @@ export default function Sell() {
                       placeholder="Nhập tiền tiền khách đưa"
                       ref={inputRef}
                       value={invoices[indexInvoice].moneyGivenByCustomer}
-                      onChange={(value) =>
+                      onChange={(value) => {
                         _editInvoice('moneyGivenByCustomer', value)
-                      }
-                      onBlur={(e) => {
-                        const valueNew = e.target.value.replaceAll(',', '')
-                        const excessCash =
-                          +valueNew -
-                          (invoices[indexInvoice].sumCostPaid +
-                            invoices[indexInvoice].VAT -
-                            invoices[indexInvoice].discount -
-                            invoices[indexInvoice].deliveryCharges)
-                        if (excessCash >= 0)
-                          _editInvoice('excessCash', excessCash)
-                        else _editInvoice('excessCash', 0)
-
                         _editInvoice('payments', [
-                          {
-                            ...invoices[indexInvoice].payments[0],
-                            value: +valueNew,
-                          },
+                          { method: invoices[indexInvoice].payments[0].method, value: value },
                         ])
                       }}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                      }
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                       min={0}
                       bordered={false}
@@ -1567,12 +1735,7 @@ export default function Sell() {
             )}
             <Row>
               <PaymentMethods
-                costMustPaid={
-                  invoices[indexInvoice].sumCostPaid +
-                  invoices[indexInvoice].VAT -
-                  invoices[indexInvoice].discount -
-                  invoices[indexInvoice].deliveryCharges
-                }
+                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
                 indexInvoice={indexInvoice}
                 invoices={invoices}
                 editInvoice={_editInvoice}
@@ -1580,33 +1743,31 @@ export default function Sell() {
             </Row>
             <div style={{ marginBottom: 20 }}>
               <Space size="middle">
-                {invoices[indexInvoice].payments.map((payment, index) => (
+                {invoices[indexInvoice].payments.map((payment) => (
                   <i style={{ color: '#637381' }}>{payment.method}</i>
                 ))}
               </Space>
             </div>
           </div>
-          <Row
-            wrap={false}
-            justify="space-between"
-            align="middle"
-            style={{ display: invoices[indexInvoice].isDelivery && 'none' }}
-          >
-            <span>Tiền thừa: </span>
-            <span style={{ fontWeight: 600, color: 'red' }}>
-              {formatCash(invoices[indexInvoice].excessCash)}
-            </span>
-          </Row>
+          {!invoices[indexInvoice].isDelivery && (
+            <Row wrap={false} justify="space-between" align="middle">
+              <span>Tiền thừa: </span>
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: 'red',
+                }}
+              >
+                {formatCash(invoices[indexInvoice].excessCash)}
+              </span>
+            </Row>
+          )}
           <div style={{ marginBottom: 15, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />
           </div>
 
-          <Row
-            justify="center"
-            align="middle"
-            className={styles['sell-right__footer-btn']}
-          >
+          <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
             <Space>
               <Button
                 size="large"
@@ -1617,7 +1778,7 @@ export default function Sell() {
                   borderColor: '#EA9649',
                 }}
               >
-                In báo giá
+                In hóa đơn
               </Button>
               <Button
                 size="large"
@@ -1627,10 +1788,9 @@ export default function Sell() {
                   backgroundColor: '#0877DE',
                   borderColor: '#0877DE',
                 }}
+                onClick={_createOrderOrPay}
               >
-                {invoices[indexInvoice].isDelivery
-                  ? 'Tạo đơn giao hàng'
-                  : 'Thanh toán'}
+                {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'}
               </Button>
             </Space>
           </Row>
