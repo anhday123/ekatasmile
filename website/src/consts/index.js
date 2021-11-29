@@ -119,6 +119,7 @@ export const ROUTES = {
   BRAND_CREATE:'/brand/create',
   CHANNEL:'/channel',
   // CHANNEL_CREATE:'/channel/create',
+  CONTACT:'/contact',
 }
 
 export const PERMISSIONS = {

@@ -30,6 +30,7 @@ function App() {
       })
 
       const dataUser = decodeToken(localStorage.getItem('accessToken'))
+      console.log(dataUser)
       if (dataUser)
         dispatch({
           type: 'SET_BRANCH_ID',

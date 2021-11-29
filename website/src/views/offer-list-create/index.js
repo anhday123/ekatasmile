@@ -23,7 +23,7 @@ import {
   Spin,
   Form,
 } from 'antd'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import { IMAGE_DEFAULT, POSITION_TABLE, ROUTES } from 'consts'
 
 // ckeditor
@@ -33,6 +33,9 @@ import { formatCash } from 'utils'
 
 // moment
 import moment from 'moment'
+
+// react html parser
+import parse from 'html-react-parser'
 
 // api
 import { apiAllProduct, getProducts } from 'apis/product'
@@ -47,6 +50,7 @@ const { Dragger } = Upload
 
 export default function OfferListCreate() {
   const history = useHistory()
+  const location = useLocation()
   const [form] = Form.useForm()
   const [filter, setFilter] = useState('')
   const [searchStatus, setSearchStatus] = useState(false)
@@ -61,6 +65,8 @@ export default function OfferListCreate() {
   const [selectKeyProduct, setSelectKeyProduct] = useState([])
   const [selectKeyCategory, setSelectKeyCategory] = useState([])
   const [imgUpload, setImgUpload] = useState([])
+  const [imageDeal, setImageDeal] = useState([])
+  const [dealId, setDealId] = useState('')
   const typingTimeoutRef = useRef()
 
   const handleChangeMoTa = (e) => {
@@ -78,24 +84,6 @@ export default function OfferListCreate() {
     }
   }
 
-  const getBase64 = (img, callback) => {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => callback(reader.result))
-    reader.readAsDataURL(img)
-  }
-  // const props = {
-  //   name: 'file',
-  //   multiple: true,
-  //   action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-  //   onChange={(info)=> {
-  //     if (info.file.status !== 'done') info.file.status = 'done'
-  //     let imagesProductNew = info.fileList.map(
-  //       (e) => e.originFileObj
-  //     )
-
-  //   }}
-  // }
-
   const _actionDeal = async () => {
     try {
       await form.validateFields()
@@ -109,6 +97,7 @@ export default function OfferListCreate() {
           saleoff_value: formData.deal_price,
           product_list: dataTableProduct.map((item) => item.product_id),
           description: description,
+          image: imageDeal,
         }
       } else if (filter === 'category') {
         body = {
@@ -118,6 +107,7 @@ export default function OfferListCreate() {
           saleoff_value: formData.deal_price,
           category_list: dataTableCategory.map((item) => item.category_id),
           description: description,
+          image: imageDeal,
         }
       } else {
         body = {
@@ -127,16 +117,27 @@ export default function OfferListCreate() {
           saleoff_value: formData.deal_price,
           image_list: imgUpload,
           description: description,
+          image: imageDeal,
         }
       }
-      const res = await addDeal(body)
+      // console.log(body)
+      let res
+      if (location.state) {
+        res = await updateDeal(body, dealId)
+      } else {
+        res = await addDeal(body)
+      }
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           history.goBack()
-          notification.success({ message: 'Tạo ưu đãi thành công' })
+          notification.success({
+            message: `${location.state ? 'Cập nhật' : 'Tạo'} ưu đãi thành công`,
+          })
         } else {
-          notification.success({ message: res.data.message || 'Tạo ưu đãi thất bại' })
+          notification.success({
+            message: res.data.message || `${location.state ? 'Cập nhật' : 'Tạo'} ưu đãi thất bại`,
+          })
         }
       }
     } catch (err) {
@@ -154,7 +155,7 @@ export default function OfferListCreate() {
     {
       title: 'Hình ảnh',
       dataIndex: 'image',
-      width: '10%',
+      width: '20%',
       align: 'center',
       render: (text) => (
         <img src={text ? text : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
@@ -163,7 +164,7 @@ export default function OfferListCreate() {
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
-      width: '10%',
+      width: '15%',
       align: 'center',
     },
     {
@@ -282,11 +283,11 @@ export default function OfferListCreate() {
   }
 
   const _deleteProductTable = () => {
-    const dataNew = dataTableProduct.filter((item) => !selectKeyProduct.includes(item.product_id))
+    const dataNew = dataTableProduct.filter((item) => !selectKeyProduct.includes(item.variant_id))
     // console.log(dataNew)
     setDataTableProduct(dataNew)
     setSelectKeyProduct([])
-    message.success("Xóa sản phẩm được chọn thành công")
+    message.success('Xóa sản phẩm được chọn thành công')
   }
 
   const _deleteCategoryTable = () => {
@@ -295,12 +296,131 @@ export default function OfferListCreate() {
     )
     setDataTableCategory(dataNew)
     setSelectKeyCategory([])
-    message.success("Xóa danh mục được chọn thành công")
+    message.success('Xóa danh mục được chọn thành công')
+  }
+
+  const UploadImageWithEditDeal = () => (
+    <Dragger
+      listType="picture"
+      name="file"
+      multiple
+      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+      onChange={(info) => {
+        if (info.file.status !== 'done') info.file.status = 'done'
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+        typingTimeoutRef.current = setTimeout(async () => {
+          let listUrl = []
+          let listFile = []
+          info.fileList.map((item) => {
+            if (item.url) {
+              listUrl.push(item.url)
+            } else {
+              listFile.push(item.originFileObj)
+            }
+          })
+          const imgUrls = await uploadFiles(listFile)
+          setImageDeal([...listUrl, ...imgUrls])
+          // console.log(info.fileList)
+        }, 350)
+        // console.log(info)
+      }}
+      fileList={imageDeal?.map((item, index) => {
+        return {
+          uid: index,
+          name: 'image',
+          status: 'done',
+          url: item,
+          thumbUrl: item,
+        }
+      })}
+    >
+      <p className="ant-upload-drag-icon">
+        <InboxOutlined />
+      </p>
+      <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
+      <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
+    </Dragger>
+  )
+
+  const UploadImageBanner = () => (
+    <Dragger
+      listType="picture"
+      name="file"
+      multiple
+      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+      onChange={(info) => {
+        if (info.file.status !== 'done') info.file.status = 'done'
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+        typingTimeoutRef.current = setTimeout(async () => {
+          let listUrl = []
+          let listFile = []
+          info.fileList.map((item) => {
+            if (item.url) {
+              listUrl.push(item.url)
+            } else {
+              listFile.push(item.originFileObj)
+            }
+          })
+          const imgUrls = await uploadFiles(listFile)
+          setImgUpload([...listUrl, ...imgUrls])
+          // console.log(info.fileList)
+        }, 350)
+        // console.log(info)
+      }}
+      fileList={imgUpload?.map((item, index) => {
+        return {
+          uid: index,
+          name: 'image',
+          status: 'done',
+          url: item,
+          thumbUrl: item,
+        }
+      })}
+    >
+      <p className="ant-upload-drag-icon">
+        <InboxOutlined />
+      </p>
+      <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
+      <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
+    </Dragger>
+  )
+
+  const setDataForEditOfferList = () => {
+    if (location.state) {
+      console.log(location.state)
+      form.setFieldsValue({ deal_name: location.state.name })
+      form.setFieldsValue({ deal_price: location.state.saleoff_value })
+      setDescription(location.state.description)
+      setDealId(location.state.deal_id)
+      setImageDeal(location.state.image)
+      setFilter(location.state.type.toLowerCase())
+      if (location.state.type === 'PRODUCT') {
+        form.setFieldsValue({ type: 'Sản phẩm' })
+        const dataTableEdit = []
+        location.state._products.map((item) =>
+          item.variants.map((variants) => dataTableEdit.push(variants))
+        )
+        setDataTableProduct(dataTableEdit)
+      }
+      if (location.state.type === 'CATEGORY') {
+        form.setFieldsValue({ type: 'Nhóm sản phẩm' })
+        setDataTableCategory(location.state._categories)
+      }
+      if (location.state.type === 'BANNER') {
+        form.setFieldsValue({ type: 'Banner' })
+        setImgUpload(location.state.image_list)
+      }
+    }
   }
 
   useEffect(() => {
     _getCategory()
     _getProduct()
+    setDataForEditOfferList()
   }, [])
 
   return (
@@ -311,66 +431,71 @@ export default function OfferListCreate() {
             onClick={() => history.goBack()}
             style={{ fontSize: '20px', paddingRight: '10px' }}
           />
-          <span className={styles['body_offer_header_list_text']}>Tạo ưu đãi</span>
+          <span className={styles['body_offer_header_list_text']}>
+            {location.state ? 'Cập nhật' : 'Tạo'} ưu đãi
+          </span>
           <a>
             <InfoCircleOutlined />
           </a>
         </div>
         <Button onClick={_actionDeal} style={{ width: '90px' }} type="primary">
-          Tạo
+          {location.state ? 'Cập nhật' : 'Tạo'}
         </Button>
       </div>
       <hr />
-      <Form autoComplete="off" form={form}  className={styles['body_offer_content']}>
+      <Form autoComplete="off" form={form} className={styles['body_offer_content']}>
         <div className={styles['body_offer_content_header']}>
-          
-            <div className={styles['body_offer_content_header_item_1']}>
-              <h3>Tên ưu đãi</h3>
-              <Form.Item
-                name="deal_name"
-                rules={[{ required: true, message: 'Vui lòng nhập tên ưu đãi' }]}
-              >
-                <Input
-                  // onChange={(e) => setDealName(e.target.value)}
-                  style={{ width: '80%' }}
-                  placeholder="Nhập tên ưu đãi"
-                ></Input>
-              </Form.Item>
-            </div>
-            <div className={styles['body_offer_content_header_item_2']}>
-              <h3>Gía ưu đãi</h3>
-              <Form.Item
-                name="deal_price"
-                rules={[{ required: true, message: 'Vui lòng nhập giá ưu đãi' }]}
-              >
-                <InputNumber
-                  // onChange={(value) => setDealPrice(value)}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  defaultValue={0}
-                  min={0}
-                  max={100000000000}
-                  style={{ width: '80%' }}
-                  placeholder="Nhập giá ưu đãi"
-                ></InputNumber>
-              </Form.Item>
-            </div>
-          
+          <div className={styles['body_offer_content_header_item_1']}>
+            <h3>Tên ưu đãi</h3>
+            <Form.Item
+              name="deal_name"
+              rules={[{ required: true, message: 'Vui lòng nhập tên ưu đãi' }]}
+            >
+              <Input
+                // onChange={(e) => setDealName(e.target.value)}
+                style={{ width: '80%' }}
+                placeholder="Nhập tên ưu đãi"
+              ></Input>
+            </Form.Item>
+          </div>
+          <div className={styles['body_offer_content_header_item_2']}>
+            <h3>Gía ưu đãi</h3>
+            <Form.Item
+              name="deal_price"
+              rules={[{ required: true, message: 'Vui lòng nhập giá ưu đãi' }]}
+            >
+              <InputNumber
+                // onChange={(value) => setDealPrice(value)}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                defaultValue={0}
+                min={0}
+                max={100000000000}
+                style={{ width: '80%' }}
+                placeholder="Nhập giá ưu đãi"
+              ></InputNumber>
+            </Form.Item>
+          </div>
         </div>
+        <h3>Hình ảnh ưu đãi</h3>
+        <UploadImageWithEditDeal />
         <h3 style={{ padding: '20px 0' }}>Mô tả</h3>
-        <CKEditor initData={'Nhập mô tả tại đây'} onChange={handleChangeMoTa} />
+        <CKEditor
+          initData={location.state ? parse(description) : 'Nhập mô tả tại đây'}
+          onChange={handleChangeMoTa}
+        />
         <h3 style={{ padding: '20px 0' }}>Loại ưu đãi</h3>
         <Input.Group compact>
-          <Form.Item name="type" rules={[{required:true,message:"Vui lòng chọn loại ưu đãi"}]}>
-          <Select
-            onChange={handleChangeFilter}
-            style={{ width: '100%' }}
-            placeholder="Chọn loại ưu đãi"
-            allowClear
-          >
-            <Option value="product">Sản phẩm</Option>
-            <Option value="category">Nhóm sản phẩm</Option>
-            <Option value="banner">Banner</Option>
-          </Select>
+          <Form.Item name="type" rules={[{ required: true, message: 'Vui lòng chọn loại ưu đãi' }]}>
+            <Select
+              onChange={handleChangeFilter}
+              style={{ width: '100%' }}
+              placeholder="Chọn loại ưu đãi"
+              allowClear
+            >
+              <Option value="product">Sản phẩm</Option>
+              <Option value="category">Nhóm sản phẩm</Option>
+              <Option value="banner">Banner</Option>
+            </Select>
           </Form.Item>
           {filter === 'product' ? (
             <div className="select-product-sell">
@@ -432,13 +557,14 @@ export default function OfferListCreate() {
                       onClick={(e) => {
                         e.stopPropagation()
                         const findProduct = dataTableProduct.find(
-                          (item) => item.product_id === data.product_id
+                          (item) => item.variant_id === data.variant_id
                         )
                         if (findProduct) {
                           message.error('Chỉ được chọn sản phẩm khác phân loại')
                           return
                         }
                         const dataIndex = {
+                          variant_id:data.variant_id,
                           product_id: data.product_id,
                           base_price: data.base_price,
                           image: data.image,
@@ -634,7 +760,7 @@ export default function OfferListCreate() {
             <div>
               <Table
                 size="small"
-                rowKey="product_id"
+                rowKey="variant_id"
                 columns={columnsProduct}
                 dataSource={dataTableProduct}
                 rowSelection={{
@@ -675,37 +801,9 @@ export default function OfferListCreate() {
           ) : (
             ''
           )}
-          {filter === 'banner' ? (
-            <Dragger
-              listType="picture"
-              name="file"
-              multiple
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              onChange={(info) => {
-                if (info.file.status !== 'done') info.file.status = 'done'
-                if (typingTimeoutRef.current) {
-                  clearTimeout(typingTimeoutRef.current)
-                }
-                typingTimeoutRef.current = setTimeout(async () => {
-                  let imagesBanner = []
-                  info.fileList.map((e) => imagesBanner.push(e.originFileObj))
-                  const imgUrl = await uploadFiles(imagesBanner)
-                  // console.log(imgUrl)
-                  setImgUpload(imgUrl)
-                }, 450)
-              }}
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-              <p className="ant-upload-hint">Hỗ trợ định dạng .PNG,.JPG,.TIFF,.EPS</p>
-            </Dragger>
-          ) : (
-            ''
-          )}
+          {filter === 'banner' ? <UploadImageBanner /> : ''}
         </div>
-        </Form>
+      </Form>
     </div>
   )
 }

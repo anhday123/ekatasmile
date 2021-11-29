@@ -27,7 +27,7 @@ import {
   DatePicker,
 } from 'antd'
 import { Link } from 'react-router-dom'
-import { PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
+import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
@@ -45,7 +45,7 @@ export default function OfferList() {
   const [modalVisiblePrice, setModalVisiblePrice] = useState(false)
   const [loadingTable, setLoadingTable] = useState(false)
   const [dealList, setDealList] = useState([])
-  const [name, setName] = useState('')
+  // const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [idChange, setIdChange] = useState('')
   const [countPage, setCountPage] = useState('')
@@ -68,11 +68,11 @@ export default function OfferList() {
     setOpenSelect(!openSelect)
   }
 
-  const infoName = (record) => {
-    setName(record.name)
-    setIdChange(record.deal_id)
-    setModalVisibleName(!modalVisibleName)
-  }
+  // const infoName = (record) => {
+  //   setName(record.name)
+  //   setIdChange(record.deal_id)
+  //   setModalVisibleName(!modalVisibleName)
+  // }
 
   const infoPrice = (record) => {
     setPrice(record.saleoff_value)
@@ -82,12 +82,21 @@ export default function OfferList() {
 
   const columns = [
     {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      width: '15%',
+      align: 'center',
+      render: (text,record) => <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{width:80,height:80}} /> ,
+    },
+    {
       title: 'Tên ưu đãi',
       dataIndex: 'name',
       width: '15%',
       align: 'center',
       sorter: (a, b) => a.name.length - b.name.length,
-      render: (text, record, index) => <a onClick={() => infoName(record)}>{text}</a>,
+      render: (text, record, index) => (
+        <Link to={{ pathname: ROUTES.OFFER_LIST_CREATE, state: record }}>{text}</Link>
+      ),
     },
     {
       title: 'Loại ưu đãi',
@@ -194,7 +203,7 @@ export default function OfferList() {
         dataIndex: 'image',
         render: (text, record, index) =>
           record ? (
-            <img src={record.image} alt="" style={{ width: '100px', height: '100px' }} />
+            <img src={text && text.length >=1 ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: '100px', height: '100px' }} />
           ) : (
             ''
           ),
@@ -304,25 +313,26 @@ export default function OfferList() {
     return ''
   }
 
-  const _changeDealName = async () => {
-    const body = {
-      name: name,
-    }
-    // console.log(body)
-    try {
-      const res = await updateDeal(body, idChange)
-      console.log(res)
-      if (res.data.success) {
-        setModalVisibleName(!modalVisibleName)
-        message.success('Thay đổi tên ưu đãi thành công')
-        _getDeal(paramsFilter)
-      } else {
-        message.success(res.data.message)
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const _changeDealName = async () => {
+  //   const body = {
+  //     name: name,
+  //   }
+  //   // console.log(body)
+  //   try {
+  //     const res = await updateDeal(body, idChange)
+  //     console.log(res)
+  //     if (res.data.success) {
+  //       setModalVisibleName(!modalVisibleName)
+  //       message.success('Thay đổi tên ưu đãi thành công')
+  //       _getDeal(paramsFilter)
+  //     } else {
+  //       message.success(res.data.message)
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
+
   const _changePrice = async () => {
     const body = {
       saleoff_value: price,
@@ -421,7 +431,7 @@ export default function OfferList() {
 
   return (
     <div className={styles['body_offer']}>
-      <Modal
+      {/* <Modal
         title="Cập nhật tên ưu đãi"
         visible={modalVisibleName}
         centered={true}
@@ -440,18 +450,18 @@ export default function OfferList() {
           value={name}
           placeholder="Nhập tên ưu đãi"
         />
-      </Modal>
+      </Modal> */}
       <Modal
         title="Cập nhật giá ưu đãi"
         visible={modalVisiblePrice}
         centered={true}
         onCancel={toggleModalPrice}
         footer={[
-          <div style={{textAlign:"center"}}>
-          <Button onClick={_changePrice} style={{ textAlign: 'center' }} type="primary">
-            Cập nhật
-          </Button>
-          </div>
+          <div style={{ textAlign: 'center' }}>
+            <Button onClick={_changePrice} style={{ textAlign: 'center' }} type="primary">
+              Cập nhật
+            </Button>
+          </div>,
         ]}
       >
         <h3>Gía ưu đãi</h3>

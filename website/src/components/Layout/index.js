@@ -56,6 +56,7 @@ import {
   ForkOutlined,
   BarChartOutlined,
   TransactionOutlined,
+  ContactsOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -229,6 +230,12 @@ const BaseLayout = (props) => {
       title: 'Tích điểm',
       permissions: [PERMISSIONS.tich_diem],
       icon: <AlertOutlined />,
+    },
+    {
+      path: ROUTES.CONTACT,
+      title: 'Liên hệ',
+      permissions: [],
+      icon: <ContactsOutlined />,
     },
     {
       path: ROUTES.CUSTOMER,
