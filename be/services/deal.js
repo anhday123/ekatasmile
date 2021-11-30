@@ -90,15 +90,13 @@ let getDealS = async (req, res, next) => {
                         $lookup: {
                             from: 'Categories',
                             let: { categoryId: '$category_id' },
-                            pipeline: [
-                                { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
-                            ],
+                            pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } }],
                             as: 'children_category',
-                        }
-                    }
+                        },
+                    },
                 ],
                 as: '_categories',
-            }
+            },
         });
         aggregateQuery.push({
             $lookup: {
@@ -110,15 +108,13 @@ let getDealS = async (req, res, next) => {
                         $lookup: {
                             from: 'Variants',
                             let: { productId: '$product_id' },
-                            pipeline: [
-                                { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-                            ],
+                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                             as: 'variants',
                         },
-                    }
+                    },
                 ],
                 as: '_products',
-            }
+            },
         });
         if (req.query._business) {
             aggregateQuery.push(
