@@ -153,7 +153,7 @@ const locTrung = () => {
 };
 
 // IF React
-// export default TienThoi;
+export default TienThoi;
 
 // If Nodejs
-module.exports = { TienThoi };
+// module.exports = { TienThoi };

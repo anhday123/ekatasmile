@@ -14,10 +14,6 @@ export default function KeyboardShortCuts() {
       icon: '(F1)',
     },
     {
-      text: 'Thêm sản phẩm vào hoá đơn',
-      icon: '(F3)',
-    },
-    {
       text: 'Nhập khách hàng mới',
       icon: '(F4)',
     },
@@ -90,12 +86,8 @@ export default function KeyboardShortCuts() {
                 alignItems: 'center',
               }}
             >
-              <p style={{ textAlign: 'center', marginBottom: 0 }}>
-                {shortcut.text}
-              </p>
-              <p style={{ textAlign: 'center', marginBottom: 0 }}>
-                {shortcut.icon}
-              </p>
+              <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.text}</p>
+              <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.icon}</p>
             </div>
           ))}
         </Row>

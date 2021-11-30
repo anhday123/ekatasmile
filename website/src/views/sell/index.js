@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { formatCash } from 'utils'
+import TienThoi from 'utils/tienthoi'
 import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
 import noData from 'assets/icons/no-data.png'
 import jwt_decode from 'jwt-decode'
@@ -71,13 +72,17 @@ import { getProducts } from 'apis/product'
 import { addOrder } from 'apis/order'
 
 export default function Sell() {
-  const inputRef = useRef(null)
   const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
 
+  //list ref keyboard
+  const inputRef = useRef(null)
+  const selectCustomerRef = useRef(null)
+
+  const [chooseButtonPrice, setChooseButtonPrice] = useState('')
+
   const [visibleConfirmCreateOrder, setVisibleConfirmCreateOrder] = useState(false)
-  const [isConfirm, setIsConfirm] = useState(false)
 
   const [shippingsMethod, setShippingsMethod] = useState([])
   const [visibleCustomerUpdate, setVisibleCustomerUpdate] = useState(false)
@@ -90,6 +95,9 @@ export default function Sell() {
   const [loadingProductRelated, setLoadingProductRelated] = useState(false)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 10 })
 
+  const [visiblePayments, setVisiblePayments] = useState(false)
+  const [visibleCreateCustomer, setVisibleCreateCustomer] = useState(false)
+  const toggleCustomer = () => setVisibleCreateCustomer(!visibleCreateCustomer)
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
@@ -121,12 +129,8 @@ export default function Sell() {
 
   const SHORT_CUTS = [
     {
-      text: 'Thanh toán',
+      text: `${invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'}`,
       icon: '(F1)',
-    },
-    {
-      text: 'Thêm sản phẩm vào hoá đơn',
-      icon: '(F3)',
     },
     {
       text: 'Nhập khách hàng mới',
@@ -136,7 +140,56 @@ export default function Sell() {
       text: 'Điều chỉnh phương thức thanh toán (F8)',
       icon: '',
     },
+    {
+      text: 'Tạo đơn khác',
+      icon: '(F9)',
+    },
   ]
+
+  const _deleteInvoiceAfterCreateOrder = () => {
+    const invoicesNew = [...invoices]
+    invoicesNew.splice(indexInvoice, 1)
+
+    if (invoicesNew.length === 0) {
+      initInvoice.name = `Đơn ${invoicesNew.length + 1}`
+      invoicesNew.push(initInvoice)
+      setActiveKeyTab(initInvoice.id)
+    } else setActiveKeyTab(invoicesNew[0].id)
+
+    setIndexInvoice(0)
+    setInvoices([...invoicesNew])
+  }
+
+  const _createInvoice = () => {
+    if (invoices.length > 9) {
+      notification.warning({ message: 'Tối đa chỉ tạo được 10 đơn hàng' })
+      return
+    }
+
+    const invoicesNew = [...invoices]
+    initInvoice.name = `Đơn ${invoicesNew.length + 1}`
+    invoicesNew.push(initInvoice)
+
+    setInvoices([...invoicesNew])
+    setActiveKeyTab(initInvoice.id)
+    const iVoice = invoicesNew.findIndex((e) => e.id === initInvoice.id)
+    if (iVoice !== -1) setIndexInvoice(iVoice)
+  }
+
+  const _deleteInvoice = (invoice, index) => {
+    const invoicesNew = [...invoices]
+    invoicesNew.splice(index, 1)
+
+    if (activeKeyTab === invoice.id) {
+      setIndexInvoice(0)
+      setActiveKeyTab(invoicesNew[0].id)
+    } else {
+      const indexInvoice = invoicesNew.findIndex((e) => e.id === activeKeyTab)
+      if (indexInvoice !== -1) setIndexInvoice(indexInvoice)
+    }
+
+    setInvoices([...invoicesNew])
+  }
 
   const _addProductToCartInvoice = (product) => {
     console.log(product)
@@ -572,13 +625,10 @@ export default function Sell() {
   }
 
   const ModalAddCustomer = () => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-
     return (
       <>
         <PlusSquareFilled
-          onClick={toggle}
+          onClick={toggleCustomer}
           style={{
             fontSize: 34,
             color: '#0362BA',
@@ -586,11 +636,11 @@ export default function Sell() {
           }}
         />
         <Modal
-          onCancel={toggle}
+          onCancel={toggleCustomer}
           width={700}
           footer={null}
           title="Thêm khách hàng mới"
-          visible={visible}
+          visible={visibleCreateCustomer}
         >
           <AddCustomer text="Thêm" reload={_getCustomers} />
         </Modal>
@@ -601,11 +651,27 @@ export default function Sell() {
   const HandlerKeyboard = () => {
     return (
       <KeyboardEventHandler
-        handleKeys={['f2']}
+        handleKeys={['f1', 'f2', 'f4', 'f8', 'f9']}
         onKeyEvent={(key, e) => {
           switch (key) {
+            case 'f1': {
+              _validatedCreateOrderOrPay()
+              break
+            }
             case 'f2': {
               inputRef.current.focus({ cursor: 'end' })
+              break
+            }
+            case 'f4': {
+              toggleCustomer()
+              break
+            }
+            case 'f8': {
+              setVisiblePayments(true)
+              break
+            }
+            case 'f9': {
+              _createInvoice()
               break
             }
             default:
@@ -621,10 +687,7 @@ export default function Sell() {
       <Modal
         onOk={() => {
           setVisibleConfirmCreateOrder(false)
-          setIsConfirm(true)
-          setTimeout(() => {
-            _createOrderOrPay()
-          }, 500)
+          _createOrderOrPay()
         }}
         cancelText="Thoát"
         okText="Đồng ý"
@@ -666,7 +729,6 @@ export default function Sell() {
     }
 
     if (
-      isConfirm &&
       !invoices[indexInvoice].isDelivery &&
       invoices[indexInvoice].moneyGivenByCustomer < invoices[indexInvoice].moneyToBePaidByCustomer
     ) {
@@ -677,11 +739,15 @@ export default function Sell() {
     return true
   }
 
+  const _validatedCreateOrderOrPay = () => {
+    const isValidated = _validatedBeforeCreateOrderOrPay()
+    if (!isValidated) return
+
+    _createOrderOrPay()
+  }
+
   const _createOrderOrPay = async () => {
     try {
-      const isValidated = _validatedBeforeCreateOrderOrPay()
-      if (!isValidated) return
-
       dispatch({ type: ACTION.LOADING, data: true })
 
       const store = JSON.parse(localStorage.getItem('storeSell'))
@@ -756,13 +822,29 @@ export default function Sell() {
         tags: [],
       }
 
+      //encrypt body
       const CryptoJS = require('crypto-js')
       const bodyEncryption = CryptoJS.AES.encrypt(
         JSON.stringify(body),
         process.env.REACT_APP_SECRET_KEY_CRYPTO
       ).toString()
-      const res = await addOrder(bodyEncryption)
+
+      const res = await addOrder({ order: bodyEncryption })
       console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) notification.success({ message: 'Tạo đơn hàng thành công' })
+        else
+          notification.error({
+            message:
+              res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+          })
+      } else
+        notification.error({
+          message:
+            res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+        })
+
+      if (res.status === 200 && res.data.success) _deleteInvoiceAfterCreateOrder()
 
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -1018,15 +1100,7 @@ export default function Sell() {
             moreIcon={<MoreOutlined style={{ color: 'white', fontSize: 16 }} />}
             activeKey={activeKeyTab}
             onEdit={(key, action) => {
-              if (action === 'add') {
-                const invoicesNew = [...invoices]
-                initInvoice.name = `Đơn ${invoicesNew.length + 1}`
-                invoicesNew.push(initInvoice)
-                const iVoice = invoicesNew.findIndex((e) => e.id === initInvoice.id)
-                if (iVoice !== -1) setIndexInvoice(iVoice)
-                setInvoices([...invoicesNew])
-                setActiveKeyTab(initInvoice.id)
-              }
+              if (action === 'add') _createInvoice()
             }}
             onChange={(activeKey) => {
               const iVoice = invoices.findIndex((e) => e.id === activeKey)
@@ -1049,23 +1123,11 @@ export default function Sell() {
                     okText="Đồng ý"
                     cancelText="Từ chối"
                     title="Bạn có muốn xoá hoá đơn này ?"
-                    onConfirm={() => {
-                      const invoicesNew = [...invoices]
-                      invoicesNew.splice(index, 1)
-
-                      if (activeKeyTab === invoice.id) {
-                        setIndexInvoice(0)
-                        setActiveKeyTab(invoicesNew[0].id)
-                      } else {
-                        const indexInvoice = invoicesNew.findIndex((e) => e.id === activeKeyTab)
-                        if (indexInvoice !== -1) setIndexInvoice(indexInvoice)
-                      }
-
-                      setInvoices([...invoicesNew])
-                    }}
+                    onConfirm={() => _deleteInvoice(invoice, index)}
                   >
                     <CloseCircleOutlined
                       style={{
+                        display: invoices.length === 1 && 'none',
                         fontSize: 15,
                         color: invoice.id === activeKeyTab ? 'black' : 'white',
                       }}
@@ -1366,6 +1428,7 @@ export default function Sell() {
         <div className={styles['sell-right']}>
           <Row justify="space-between" align="middle" wrap={false}>
             <Select
+              ref={selectCustomerRef}
               notFoundContent={loadingCustomer ? <Spin /> : null}
               dropdownClassName="dropdown-select-search-product"
               allowClear
@@ -1735,6 +1798,8 @@ export default function Sell() {
             )}
             <Row>
               <PaymentMethods
+                setVisible={setVisiblePayments}
+                visible={visiblePayments}
                 moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
                 indexInvoice={indexInvoice}
                 invoices={invoices}
@@ -1747,6 +1812,29 @@ export default function Sell() {
                   <i style={{ color: '#637381' }}>{payment.method}</i>
                 ))}
               </Space>
+            </div>
+            <div
+              style={{
+                marginBottom: 20,
+                display: invoices[indexInvoice].payments.length !== 1 && 'none',
+              }}
+            >
+              <Row style={{ marginBottom: 15 }} justify="space-between" wrap={true}>
+                {invoices[indexInvoice].moneyToBePaidByCustomer &&
+                  TienThoi(+invoices[indexInvoice].moneyToBePaidByCustomer).map((price, index) => (
+                    <Button
+                      onClick={() => {
+                        setChooseButtonPrice(price)
+                        if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', +price)
+                        else _editInvoice('moneyGivenByCustomer', +price)
+                      }}
+                      type={chooseButtonPrice === price ? 'primary' : ''}
+                      style={{ minWidth: 120, display: index > 5 && 'none', marginBottom: 15 }}
+                    >
+                      {formatCash(+price)}
+                    </Button>
+                  ))}
+              </Row>
             </div>
           </div>
           {!invoices[indexInvoice].isDelivery && (
@@ -1788,9 +1876,9 @@ export default function Sell() {
                   backgroundColor: '#0877DE',
                   borderColor: '#0877DE',
                 }}
-                onClick={_createOrderOrPay}
+                onClick={_validatedCreateOrderOrPay}
               >
-                {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'}
+                {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
               </Button>
             </Space>
           </Row>
