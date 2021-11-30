@@ -120,10 +120,12 @@ let updateSaleOff = async (req, res, next) => {
             .collection('Deals')
             .updateMany(
                 { deal_id: { $in: req.body.deal_id } },
-                { saleoff_value: Number(req.body.saleoff_value) }
+                { $set: { saleoff_value: Number(req.body.saleoff_value) } }
             );
         res.send({ success: true, data: 'Cập nhật giá ưu đãi thành công!' });
-    } catch (err) {}
+    } catch (err) {
+        next(err);
+    }
 };
 
 module.exports = {
