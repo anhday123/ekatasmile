@@ -209,7 +209,7 @@ let getProductS = async (req, res, next) => {
         aggregateQuery.push({
             $lookup: {
                 from: 'Taxes',
-                localField: 'tax_id',
+                localField: 'taxes',
                 foreignField: 'tax_id',
                 as: '_taxes',
             },

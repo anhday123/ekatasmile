@@ -73,6 +73,7 @@ class Variant {
         this.business_id = Number(data.business_id);
         this.product_id = Number(data.product_id);
         this.variant_id = Number(data.variant_id);
+        this.code = Number(this.variant_id) + 1000000;
         this.title = String(data.title).trim().toUpperCase();
         this.sku = String(data.sku).trim().toUpperCase();
         this.image = data.image;

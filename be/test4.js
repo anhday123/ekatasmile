@@ -1,5 +1,6 @@
 require(`dotenv`).config();
 const client = require('./config/mongodb');
+const { Variant } = require('./models/product');
 const DB = process.env.DATABASE;
 
 (async () => {
@@ -11,7 +12,20 @@ const DB = process.env.DATABASE;
     // await client.db(DB).collection('Customers').deleteMany();
     // await client.db(DB).collection('Labels').deleteMany();
     // await client.db(DB).collection('Locations').deleteMany();
-    await client.db(DB).collection('Deals').deleteMany();
+    let variant = await client.db(DB).collection('Variants').find().toArray();
+    await new Promise(async (resolve, reject) => {
+        for (let i in variant) {
+            let _variant = new Variant();
+            _variant.create(variant[i]);
+            await client
+                .db(DB)
+                .collection('Variants')
+                .updateOne({ variant_id: _variant.variant_id }, { $set: _variant });
+        }
+        resolve();
+    });
+
+    console.log(`done`);
     // await client.db(DB).collection('PointSettings').deleteMany();
     // await client.db(DB).collection('Products').deleteMany();
     // await client.db(DB).collection('Promotions').deleteMany();
@@ -26,5 +40,5 @@ const DB = process.env.DATABASE;
     // await client.db(DB).collection('Variants').deleteMany();
     // await client.db(DB).collection('VertifyLinks').deleteMany();
     // await client.db(DB).collection('Warranties').deleteMany();
-    client.close()
+    client.close();
 })();

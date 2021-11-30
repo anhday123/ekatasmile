@@ -67,7 +67,9 @@ let updateDealC = async (req, res, next) => {
         if (!deal) {
             throw new Error(`400: Chương trình giảm giá không tồn tại!`);
         }
-        req.body.name = String(req.body.name || deal.name).trim().toUpperCase();
+        req.body.name = String(req.body.name || deal.name)
+            .trim()
+            .toUpperCase();
         if (req.body.name) {
             let check = await client
                 .db(DB)
@@ -93,12 +95,15 @@ let updateDealC = async (req, res, next) => {
 let deleteDealC = async (req, res, next) => {
     try {
         req['_delete'] = req.query.deal_id.split(',');
-        if(req._delete.length > 0) {
-            req._delete = req._delete.map((id)=>{
+        if (req._delete.length > 0) {
+            req._delete = req._delete.map((id) => {
                 return Number(id);
-            })
+            });
         }
-        await client.db(DB).collection(`Deals`).deleteMany({ deal_id: { $in: req._delete } });
+        await client
+            .db(DB)
+            .collection(`Deals`)
+            .deleteMany({ deal_id: { $in: req._delete } });
         res.send({
             success: true,
             message: 'Xóa ưu đãi thành công!',
@@ -108,9 +113,23 @@ let deleteDealC = async (req, res, next) => {
     }
 };
 
+let updateSaleOff = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection('Deals')
+            .updateMany(
+                { deal_id: { $in: req.body.deal_id } },
+                { saleoff_value: Number(req.body.saleoff_value) }
+            );
+        res.send({ success: true, data: 'Cập nhật giá ưu đãi thành công!' });
+    } catch (err) {}
+};
+
 module.exports = {
     getDealC,
     addDealC,
     updateDealC,
     deleteDealC,
+    updateSaleOff,
 };
