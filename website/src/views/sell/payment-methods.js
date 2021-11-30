@@ -16,8 +16,9 @@ export default function PaymentMethods({
   invoices,
   indexInvoice,
   moneyToBePaidByCustomer,
+  setVisible,
+  visible,
 }) {
-  const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
   const [payments, setPayments] = useState([])
@@ -82,7 +83,7 @@ export default function PaymentMethods({
   return (
     <>
       <p onClick={_exit} style={{ marginBottom: 0, color: '#1890ff', cursor: 'pointer' }}>
-        Chọn hình thức thanh toán
+        Chọn hình thức thanh toán (F8)
       </p>
       <Modal
         width={540}
