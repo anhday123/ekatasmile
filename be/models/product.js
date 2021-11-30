@@ -13,6 +13,7 @@ class Product {
         this.sku = String(data.sku);
         this.name = String(data.name).trim().toUpperCase();
         this.slug = removeUnicode(this.name, false).toLowerCase().split(' ').join('-');
+        this.link = data.link;
         this.supplier_id = Number(data.supplier_id);
         this.category_id = data.category_id || [];
         this.deal_id = data.deal_id || [];
@@ -89,7 +90,7 @@ class Variant {
         this.price = Number(data.price || 0);
         this.regular_price = Number(data.regular_price || this.price);
         this.bulk_price = Number(data.bulk_price || this.price);
-        this.bulk_condition = Number(data.bulk_condition || 1) ;
+        this.bulk_condition = Number(data.bulk_condition || 1);
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
