@@ -18,6 +18,7 @@ import {
   InputNumber,
   Upload,
   notification,
+  DatePicker,
 } from 'antd'
 
 //icons
@@ -26,6 +27,8 @@ import { DeleteOutlined, SearchOutlined, PlusCircleOutlined, PlusOutlined } from
 //apis
 import { getCategories, apiAddCategory, deleteCategories } from 'apis/category'
 import { uploadFile } from 'apis/upload'
+
+const { RangePicker } = DatePicker
 
 export default function Category() {
   const history = useHistory()
@@ -40,11 +43,17 @@ export default function Category() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [valueSearch, setValueSearch] = useState('')
   const [valueFilterTime, setValueFilterTime] = useState()
+  const [openSelect, setOpenSelect] = useState(false)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
 
   function getBase64(img, callback) {
     const reader = new FileReader()
     reader.addEventListener('load', () => callback(reader.result))
     reader.readAsDataURL(img)
+  }
+
+  const toggleOpenSelect = () => {
+    setOpenSelect(!openSelect)
   }
 
   const _onSearch = (e) => {
@@ -403,6 +412,7 @@ export default function Category() {
             style={{ width: 250 }}
             placeholder="Lọc theo thời gian"
             showSearch
+            open={openSelect}
             onChange={(value) => {
               setValueFilterTime(value)
               delete paramsFilter[valueFilterTime]
@@ -410,6 +420,67 @@ export default function Category() {
               else delete paramsFilter[value]
               setParamsFilter({ ...paramsFilter })
             }}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
+
+                    if (openSelect) toggleOpenSelect()
+
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
+
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
+
+                      setValueDateSearch(null)
+                      setValueFilterTime()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setValueFilterTime(`${dateFirst} -> ${dateLast}`)
+
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
+
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
+
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
+                {menu}
+              </>
+            )}
           >
             <Select.Option value="today">Today</Select.Option>
             <Select.Option value="yesterday">Yesterday</Select.Option>

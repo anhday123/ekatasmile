@@ -41,7 +41,7 @@ export default function BrandCreate() {
   const [image, setImage] = useState([])
   const [idBrand, setIdBrand] = useState('')
   const [country, setCountry] = useState('')
-  const [viewCountry, setViewCountry] = useState('')
+  const [viewCountry, setViewCountry] = useState('Chọn quốc gia')
   const [foundedYear, setFoundedYear] = useState('')
   const [priority, setPriority] = useState('')
   const [countryList, setCountryList] = useState([])
@@ -271,10 +271,11 @@ export default function BrandCreate() {
             <Select
               notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
               showSearch
-              value={viewCountry}
+              value={viewCountry ? viewCountry : ''}
               // onChange={handleChangeCountry}
               style={{ width: '85%' }}
               placeholder="Chọn quốc gia"
+              allowClear
             >
               {countryList?.map((data) => (
                 <Select.Option value={data.name} key={data.code}>

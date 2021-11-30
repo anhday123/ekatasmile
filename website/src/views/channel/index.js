@@ -24,7 +24,7 @@ import {
   Modal,
   DatePicker,
   Form,
-  Badge
+  Badge,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
@@ -59,6 +59,8 @@ export default function Channel() {
     url: '',
     base: '',
   })
+  const [base, setBase] = useState('')
+  console.log(base)
   const [channelName, setChannelName] = useState('')
   const typingTimeoutRef = useRef(null)
 
@@ -113,7 +115,12 @@ export default function Channel() {
       dataIndex: 'active',
       width: '15%',
       align: 'center',
-      render: (text) => (text ? <Badge status="success" text="Hoạt động" /> : <Badge status="error" text="Không hoạt động" />),
+      render: (text) =>
+        text ? (
+          <Badge status="success" text="Hoạt động" />
+        ) : (
+          <Badge status="error" text="Không hoạt động" />
+        ),
     },
     {
       title: 'Ngày tạo',
@@ -148,7 +155,7 @@ export default function Channel() {
       align: 'center',
       render: (text) => (
         <div>
-          <Switch defaultChecked={text}  onChange={handleChange} />
+          <Switch defaultChecked={text} onChange={handleChange} />
         </div>
       ),
     },
@@ -161,7 +168,7 @@ export default function Channel() {
       base: 'Shopee',
       active: true,
       create_date: '24/11/2021',
-      active:true,
+      active: true,
     },
     {
       name: 'Tiki sale',
@@ -169,7 +176,7 @@ export default function Channel() {
       base: 'Tiki',
       active: false,
       create_date: '24/11/2021',
-      active:false,
+      active: false,
     },
   ]
 
@@ -181,12 +188,12 @@ export default function Channel() {
   }
 
   const handleChangeChannelName = (e) => {
-    setDataUpdate({ ...dataUpdate, name: e.target.value })
+    // setDataUpdate({ ...dataUpdate, name: e.target.value })
     console.log(dataUpdate)
   }
 
   const handleChangeChannelUrl = (e) => {
-    setDataUpdate({ ...dataUpdate, url: e.target.value })
+    // setDataUpdate({ ...dataUpdate, url: e.target.value })
     console.log(dataUpdate)
   }
 
@@ -203,7 +210,7 @@ export default function Channel() {
   //   }
   // }
 
-  const _addChannel = async () => {
+  const _actionChannel = async () => {
     try {
       await form.validateFields()
       const formData = form.getFieldsValue()
@@ -220,7 +227,7 @@ export default function Channel() {
     }
   }
 
-  // const _delelteBlog = async () => {
+  // const _delelteChannel = async () => {
   //   const id = {
   //     blog_id: selectKeys,
   //   }
@@ -249,6 +256,7 @@ export default function Channel() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
+    if (openSelect) toggleOpenSelect()
   }
 
   const onChangeOptionSearchStatus = (value) => {
@@ -295,7 +303,7 @@ export default function Channel() {
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  const title = `${dataUpdate ? 'Cập nhật' : 'Thêm mới'}  kênh bán hàng`
+  const title = `${form.getFieldsValue().name ? 'Cập nhật' : 'Thêm mới'}  kênh bán hàng`
 
   // useEffect(() => {
   //   _getBlog(paramsFilter)
@@ -309,9 +317,11 @@ export default function Channel() {
         centered={true}
         onCancel={toggleModal}
         footer={[
-          <Button onClick={_addChannel} style={{ textAlign: 'center' }} type="primary">
-            Kết nối
-          </Button>,
+          <div style={{ textAlign: 'center' }}>
+            <Button onClick={_actionChannel} type="primary">
+              Kết nối
+            </Button>
+          </div>,
         ]}
       >
         <Form form={form}>
@@ -336,7 +346,7 @@ export default function Channel() {
             <Select
               style={{ width: '100%' }}
               value={attributeBase}
-              onChange={onChangeOptionSearchBase}
+              onChange={(value) => setBase(value)}
               placeholder="Chọn nền tảng"
               allowClear
             >
@@ -350,6 +360,31 @@ export default function Channel() {
               <Option value="shopee">Shopee</Option>
             </Select>
           </Form.Item>
+          {base ? (
+            <>
+              <h3>Key</h3>
+              <Form.Item name="key" rules={[{ required: true, message: 'Vui lòng nhập key' }]}>
+                <Input
+                  // value={dataUpdate.url ? dataUpdate.url : ''}
+                  // onChange={handleChangeChannelUrl}
+                  placeholder="Nhập key"
+                />
+              </Form.Item>
+              <h3>Key Secret</h3>
+              <Form.Item
+                name="key"
+                rules={[{ required: true, message: 'Vui lòng nhập key secret' }]}
+              >
+                <Input
+                  // value={dataUpdate.url ? dataUpdate.url : ''}
+                  // onChange={handleChangeChannelUrl}
+                  placeholder="Nhập key secret"
+                />
+              </Form.Item>
+            </>
+          ) : (
+            ''
+          )}
         </Form>
       </Modal>
       <div className={styles['body_channel_header']}>
