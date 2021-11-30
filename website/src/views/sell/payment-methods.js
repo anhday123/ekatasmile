@@ -15,40 +15,31 @@ export default function PaymentMethods({
   editInvoice,
   invoices,
   indexInvoice,
-  costMustPaid,
+  moneyToBePaidByCustomer,
 }) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
   const [payments, setPayments] = useState([])
-  const [costPaid, setCostPaid] = useState('0')
-  const [excessCash, setExcessCash] = useState('0')
+  const [costPaid, setCostPaid] = useState(0)
+  const [excessCash, setExcessCash] = useState(0)
 
   const _inputValue = (value, index) => {
     let paymentsNew = [...payments]
     paymentsNew[index].value = value
-    const sumCostPaid = paymentsNew.reduce(
-      (total, current) => total + +current.value.replaceAll(',', ''),
-      0
-    )
-    const excessCash =
-      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
 
-    setExcessCash(excessCash)
+    const sumCostPaid = paymentsNew.reduce((total, current) => total + current.value, 0)
+    const excessCash = sumCostPaid - moneyToBePaidByCustomer
+
+    setExcessCash(excessCash >= 0 ? excessCash : 0)
     setCostPaid(sumCostPaid)
-    setPayments([...paymentsNew])
-  }
-
-  const _changePaymentMethod = (value, index) => {
-    let paymentsNew = [...payments]
-    paymentsNew[index].method = value
     setPayments([...paymentsNew])
   }
 
   const _addPaymentMethod = (payment) => {
     let paymentsNew = [...payments]
     if (!paymentsNew.find((p) => p.method === payment)) {
-      paymentsNew.push({ method: payment, value: '0' })
+      paymentsNew.push({ method: payment, value: 0 })
       setPayments([...paymentsNew])
     }
   }
@@ -56,63 +47,41 @@ export default function PaymentMethods({
   const _removePaymentMethod = (index) => {
     let paymentsNew = [...payments]
     paymentsNew.splice(index, 1)
-    const sumCostPaid = paymentsNew.reduce(
-      (total, current) => total + +current.value.replaceAll(',', ''),
-      0
-    )
-    const excessCash =
-      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
 
-    setExcessCash(excessCash)
+    const sumCostPaid = paymentsNew.reduce((total, current) => total + current.value, 0)
+    const excessCash = sumCostPaid - moneyToBePaidByCustomer
+
+    setExcessCash(excessCash >= 0 ? excessCash : 0)
     setCostPaid(sumCostPaid)
     setPayments([...paymentsNew])
   }
 
   const _savePayments = () => {
-    const sumCostPaid = payments.reduce(
-      (total, current) => total + +current.value.replaceAll(',', ''),
-      0
-    )
-    const excessCash =
-      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
-
     editInvoice('payments', payments)
-    if (invoices[indexInvoice].isDelivery) editInvoice('prepay', sumCostPaid)
-    else {
-      editInvoice('moneyGivenByCustomer', sumCostPaid)
-      editInvoice('excessCash', excessCash)
-    }
-
+    if (invoices[indexInvoice].isDelivery) editInvoice('prepay', costPaid)
+    else editInvoice('moneyGivenByCustomer', costPaid)
     toggle()
   }
 
   const _exit = () => {
     toggle()
-    setPayments(
-      invoices[indexInvoice].payments && invoices[indexInvoice].payments
-    )
+    setPayments(invoices[indexInvoice].payments && invoices[indexInvoice].payments)
   }
 
   useEffect(() => {
-    setPayments(invoices[indexInvoice].payments)
+    if (visible) {
+      setPayments([...invoices[indexInvoice].payments])
 
-    const sumCostPaid = invoices[indexInvoice].payments.reduce(
-      (total, current) => total + +current.value.replaceAll(',', ''),
-      0
-    )
-    const excessCash =
-      sumCostPaid > costMustPaid ? +sumCostPaid - costMustPaid : '0'
+      if (invoices[indexInvoice].isDelivery) setCostPaid(invoices[indexInvoice].prepay)
+      else setCostPaid(invoices[indexInvoice].moneyGivenByCustomer)
 
-    setCostPaid(sumCostPaid)
-    setExcessCash(excessCash)
-  }, [invoices])
+      setExcessCash(excessCash)
+    }
+  }, [visible])
 
   return (
     <>
-      <p
-        onClick={_exit}
-        style={{ marginBottom: 0, color: '#1890ff', cursor: 'pointer' }}
-      >
+      <p onClick={_exit} style={{ marginBottom: 0, color: '#1890ff', cursor: 'pointer' }}>
         Chọn hình thức thanh toán
       </p>
       <Modal
@@ -140,29 +109,13 @@ export default function PaymentMethods({
         onCancel={toggle}
         visible={visible}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ width: '100%', fontSize: 18 }}
-        >
+        <Space direction="vertical" size="middle" style={{ width: '100%', fontSize: 18 }}>
           <Row justify="space-between" style={{ fontWeight: 600 }}>
             <p>Khách phải trả</p>
-            <p>{formatCash(costMustPaid)}</p>
+            <p>{formatCash(moneyToBePaidByCustomer)}</p>
           </Row>
 
           <Row wrap={false} justify="space-between" align="middle">
-            <Button
-              onClick={() => _addPaymentMethod('Quẹt thẻ')}
-              icon={<IdcardOutlined />}
-              style={{
-                backgroundColor: '#3579FE',
-                borderColor: '#3579FE',
-                borderRadius: 5,
-                color: 'white',
-              }}
-            >
-              Quẹt thẻ
-            </Button>
             <Button
               onClick={() => _addPaymentMethod('COD')}
               icon={<UsergroupDeleteOutlined />}
@@ -176,8 +129,8 @@ export default function PaymentMethods({
               COD
             </Button>
             <Button
-              onClick={() => _addPaymentMethod('Chuyển khoản')}
-              icon={<CreditCardOutlined />}
+              onClick={() => _addPaymentMethod('Quẹt thẻ')}
+              icon={<IdcardOutlined />}
               style={{
                 backgroundColor: '#3579FE',
                 borderColor: '#3579FE',
@@ -185,7 +138,7 @@ export default function PaymentMethods({
                 color: 'white',
               }}
             >
-              Chuyển khoản
+              Quẹt thẻ
             </Button>
             <Button
               onClick={() => _addPaymentMethod('Tiền mặt')}
@@ -198,13 +151,24 @@ export default function PaymentMethods({
             >
               Tiền mặt
             </Button>
+            <Button
+              onClick={() => _addPaymentMethod('Chuyển khoản')}
+              icon={<CreditCardOutlined />}
+              style={{
+                backgroundColor: '#3579FE',
+                borderColor: '#3579FE',
+                borderRadius: 5,
+                color: 'white',
+              }}
+            >
+              Chuyển khoản
+            </Button>
           </Row>
           <Space direction="vertical" style={{ width: '100%' }}>
             {payments.map((payment, index) => {
               const SelectPayments = () => (
                 <Input
                   value={payment.method}
-                  onChange={(value) => _changePaymentMethod(value, index)}
                   style={{ width: 150, pointerEvents: 'none' }}
                   bordered={false}
                   placeholder="Chọn phương thức thanh toán"
@@ -214,13 +178,11 @@ export default function PaymentMethods({
               const InputValue = () => (
                 <InputNumber
                   onBlur={(e) => {
-                    const value = e.target.value
-                    _inputValue(value, index)
+                    const value = e.target.value.replaceAll(',', '')
+                    _inputValue(+value, index)
                   }}
                   defaultValue={payment.value}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   style={{ width: 230 }}
                   min={0}

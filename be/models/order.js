@@ -10,6 +10,7 @@ class OrderDetail {
     create(data) {
         this.product_id = Number(data.product_id);
         this.variant_id = Number(data.variant_id);
+        this.title = data.title;
         this.variants = data.variants || [];
         this.properties = data.properties || [];
         this.image = data.image || [];

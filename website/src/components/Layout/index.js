@@ -54,6 +54,10 @@ import {
   ShoppingCartOutlined,
   FileDoneOutlined,
   SketchOutlined,
+  ForkOutlined,
+  BarChartOutlined,
+  TransactionOutlined,
+  ContactsOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -205,6 +209,12 @@ const BaseLayout = (props) => {
       icon: <SketchOutlined />,
     },
     {
+      path: ROUTES.CHANNEL,
+      title: 'Quản lý kênh',
+      permissions: [],
+      icon: <ForkOutlined />,
+    },
+    {
       icon: <BankOutlined />,
       path: ROUTES.BRANCH,
       title: 'Quản lý chi nhánh',
@@ -223,6 +233,12 @@ const BaseLayout = (props) => {
       icon: <AlertOutlined />,
     },
     {
+      path: ROUTES.CONTACT,
+      title: 'Liên hệ',
+      permissions: [],
+      icon: <ContactsOutlined />,
+    },
+    {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
       permissions: [PERMISSIONS.quan_li_khach_hang],
@@ -232,7 +248,7 @@ const BaseLayout = (props) => {
       path: 'report',
       title: 'Báo cáo',
       permissions: [PERMISSIONS.bao_cao_don_hang],
-      icon: <DollarCircleOutlined />,
+      icon: <BarChartOutlined />,
       menuItems: [
         {
           icon: <GraphicEqIcon />,
@@ -264,7 +280,7 @@ const BaseLayout = (props) => {
       path: 'transport',
       title: 'Vận chuyển',
       permissions: [PERMISSIONS.van_chuyen],
-      icon: <DollarCircleOutlined />,
+      icon: <TransactionOutlined/>,
       menuItems: [
         {
           icon: <ClusterOutlined />,

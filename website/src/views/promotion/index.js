@@ -84,8 +84,7 @@ export default function Promotion() {
       dataIndex: 'value',
       width: 150,
       render(data, record) {
-        if (record.type.toLowerCase() === 'value')
-          return formatCash(data.toString()) + ' VND'
+        if (record.type.toLowerCase() === 'value') return formatCash(data.toString()) + ' VND'
         return formatCash(data.toString()) + '%'
       },
       sorter: (a, b) => compare(a, b, 'value'),
@@ -120,10 +119,7 @@ export default function Promotion() {
       width: 100,
       render(data, record) {
         return (
-          <Switch
-            checked={data}
-            onChange={(e) => onFinish(record.promotion_id, { active: e })}
-          />
+          <Switch checked={data} onChange={(e) => onFinish(record.promotion_id, { active: e })} />
         )
       },
     },
@@ -247,14 +243,7 @@ export default function Promotion() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Input
                 size="large"
@@ -267,14 +256,7 @@ export default function Promotion() {
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -282,10 +264,7 @@ export default function Promotion() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 value={searchFilter.date}
                 onChange={(a, b) => {
@@ -301,14 +280,7 @@ export default function Promotion() {
             </div>
           </Col>
 
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
                 size="large"
@@ -361,15 +333,17 @@ export default function Promotion() {
                       <Text>
                         Phần trăm:{' '}
                         {pageData.reduce(
-                          (a, b) => (a += b.type == 'percent' ? b.value : 0),
+                          (total, current) =>
+                            total + (current.type === 'PERCENT' ? current.value : 0),
                           0
-                        )}
+                        )}{' '}
                         %
                         <br />
                         Giá trị:{' '}
                         {formatCash(
                           pageData.reduce(
-                            (a, b) => (a += b.type !== 'percent' ? b.value : 0),
+                            (total, current) =>
+                              total + (current.type !== 'PERCENT' ? current.value : 0),
                             0
                           )
                         )}{' '}
@@ -377,9 +351,7 @@ export default function Promotion() {
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
-                      <Text>
-                        {formatCash(tableSum(pageData, 'limit.amount'))}
-                      </Text>
+                      <Text>{formatCash(tableSum(pageData, 'limit.amount'))}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text></Text>
@@ -418,11 +390,7 @@ export default function Promotion() {
               width: '100%',
             }}
           >
-            <Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              okText="Yes"
-              cancelText="No"
-            >
+            <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Yes" cancelText="No">
               <Button
                 type="primary"
                 danger
@@ -449,11 +417,7 @@ export default function Promotion() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <Form
-          className={styles['promotion_add_form_parent']}
-          onFinish={onFinish}
-          form={form}
-        >
+        <Form className={styles['promotion_add_form_parent']} onFinish={onFinish} form={form}>
           <Row className={styles['promotion_add_name']}>
             <Col
               className={styles['promotion_add_name_col']}
@@ -474,10 +438,7 @@ export default function Promotion() {
                   name="name"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
-                  <Input
-                    placeholder="Nhập tên chương trình khuyến mãi"
-                    disabled
-                  />
+                  <Input placeholder="Nhập tên chương trình khuyến mãi" disabled />
                 </Form.Item>
               </div>
             </Col>
@@ -505,26 +466,18 @@ export default function Promotion() {
                     <div className={styles['promotion_add_option_col_left']}>
                       <div
                         style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles['promotion_add_option_col_left_title']
-                        }
+                        className={styles['promotion_add_option_col_left_title']}
                       >
                         Loại khuyến mãi
                       </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
+                      <div className={styles['promotion_add_option_col_left_percent']}>
                         <Form.Item
                           name="type"
                           noStyle
                           rules={[{ required: true, message: 'Giá trị rỗng' }]}
                         >
                           <Select
-                            className={
-                              styles['promotion_add_form_left_select_child']
-                            }
+                            className={styles['promotion_add_form_left_select_child']}
                             placeholder="Theo phần trăm"
                           >
                             <Option value="percent">Phần trăm</Option>
@@ -532,9 +485,7 @@ export default function Promotion() {
                           </Select>
                         </Form.Item>
                         <Form.Item
-                          className={
-                            styles['promotion_add_name_col_child_title']
-                          }
+                          className={styles['promotion_add_name_col_child_title']}
                           // label="Username"
                           name="promotion_id"
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
@@ -554,31 +505,21 @@ export default function Promotion() {
                   >
                     <div className={styles['promotion_add_option_col_left']}>
                       <div
-                        className={
-                          styles['promotion_add_option_col_left_title_left']
-                        }
+                        className={styles['promotion_add_option_col_left_title_left']}
                         style={{ marginBottom: '0.5rem' }}
                       >
                         Giá trị khuyến mãi
                       </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
+                      <div className={styles['promotion_add_option_col_left_percent']}>
                         <Form.Item
-                          className={
-                            styles['promotion_add_name_col_child_title']
-                          }
+                          className={styles['promotion_add_name_col_child_title']}
                           // label="Username"
                           name="value"
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                         >
                           <InputNumber
                             placeholder="Nhập giá trị"
-                            formatter={(value) =>
-                              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                            }
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                           />
                         </Form.Item>
@@ -616,21 +557,13 @@ export default function Promotion() {
                     <div className={styles['promotion_add_option_col_left']}>
                       <div
                         style={{ marginBottom: '0.5rem' }}
-                        className={
-                          styles['promotion_add_option_col_left_title']
-                        }
+                        className={styles['promotion_add_option_col_left_title']}
                       >
                         Vourcher
                       </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
+                      <div className={styles['promotion_add_option_col_left_percent']}>
                         <Form.Item
-                          className={
-                            styles['promotion_add_name_col_child_title']
-                          }
+                          className={styles['promotion_add_name_col_child_title']}
                           // label="Username"
                           name="amount"
                           rules={[{ required: true, message: 'Giá trị rỗng!' }]}
@@ -651,18 +584,12 @@ export default function Promotion() {
                   >
                     <div className={styles['promotion_add_option_col_left']}>
                       <div
-                        className={
-                          styles['promotion_add_option_col_left_title_left_fix']
-                        }
+                        className={styles['promotion_add_option_col_left_title_left_fix']}
                         style={{ marginBottom: '0.5rem' }}
                       >
                         Chi nhánh
                       </div>
-                      <div
-                        className={
-                          styles['promotion_add_option_col_left_percent']
-                        }
-                      >
+                      <div className={styles['promotion_add_option_col_left_percent']}>
                         <Form.Item
                           name="branch"
                           noStyle
@@ -670,9 +597,7 @@ export default function Promotion() {
                         >
                           <Select
                             mode="multiple"
-                            className={
-                              styles['promotion_add_form_left_select_child']
-                            }
+                            className={styles['promotion_add_form_left_select_child']}
                             placeholder="Chọn chi nhánh"
                           >
                             {listBranch.map((e) => (
@@ -695,9 +620,7 @@ export default function Promotion() {
               xl={11}
               className={styles['promotion_add_form_right']}
             >
-              <div className={styles['promotion_add_form_left_title']}>
-                Mô tả
-              </div>
+              <div className={styles['promotion_add_form_left_title']}>Mô tả</div>
               <div
                 style={{ width: '100%', height: '100%' }}
                 className={styles['promotion_add_form_right_content']}
@@ -713,11 +636,7 @@ export default function Promotion() {
 
           <div className={styles['promotion_add_button']}>
             <Form.Item>
-              <Button
-                style={{ width: '7.5rem' }}
-                type="primary"
-                htmlType="submit"
-              >
+              <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
                 Lưu
               </Button>
             </Form.Item>
@@ -730,10 +649,7 @@ export default function Promotion() {
         title="Thêm khuyến mãi"
         width="75%"
       >
-        <PromotionAdd
-          close={() => setShowCreate(false)}
-          reload={getPromotions}
-        />
+        <PromotionAdd close={() => setShowCreate(false)} reload={getPromotions} />
       </Drawer>
     </>
   )

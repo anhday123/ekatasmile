@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { formatCash } from 'utils'
 
 // style
 import styles from './../offer-list/offer.module.scss'
@@ -7,10 +8,26 @@ import styles from './../offer-list/offer.module.scss'
 import moment from 'moment'
 
 // antd
-import { DeleteOutlined, EditOutlined, FilterOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Input, message, Modal, Select, Table, Popconfirm } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  FilterOutlined,
+  InfoCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Select,
+  Table,
+  Popconfirm,
+  InputNumber,
+  DatePicker,
+} from 'antd'
 import { Link } from 'react-router-dom'
-import { PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
+import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
@@ -20,6 +37,7 @@ import { deleteDeal, getDeal, updateDeal } from '../../apis/deal'
 import parse from 'html-react-parser'
 
 const { Option } = Select
+const { RangePicker } = DatePicker
 
 export default function OfferList() {
   const [selectKeys, setSelectKeys] = useState([])
@@ -27,13 +45,15 @@ export default function OfferList() {
   const [modalVisiblePrice, setModalVisiblePrice] = useState(false)
   const [loadingTable, setLoadingTable] = useState(false)
   const [dealList, setDealList] = useState([])
-  const [name, setName] = useState('')
+  // const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [idChange, setIdChange] = useState('')
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
+  const [openSelect, setOpenSelect] = useState(false)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const typingTimeoutRef = useRef(null)
 
   const toggleModalName = () => {
@@ -44,11 +64,15 @@ export default function OfferList() {
     setModalVisiblePrice(!modalVisiblePrice)
   }
 
-  const infoName = (record) => {
-    setName(record.name)
-    setIdChange(record.deal_id)
-    setModalVisibleName(!modalVisibleName)
+  const toggleOpenSelect = () => {
+    setOpenSelect(!openSelect)
   }
+
+  // const infoName = (record) => {
+  //   setName(record.name)
+  //   setIdChange(record.deal_id)
+  //   setModalVisibleName(!modalVisibleName)
+  // }
 
   const infoPrice = (record) => {
     setPrice(record.saleoff_value)
@@ -58,46 +82,57 @@ export default function OfferList() {
 
   const columns = [
     {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      width: '15%',
+      align: 'center',
+      render: (text,record) => <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{width:80,height:80}} /> ,
+    },
+    {
       title: 'Tên ưu đãi',
       dataIndex: 'name',
       width: '15%',
       align: 'center',
       sorter: (a, b) => a.name.length - b.name.length,
-      render: (text, record, index) => <a onClick={() => infoName(record)}>{text}</a>,
+      render: (text, record, index) => (
+        <Link to={{ pathname: ROUTES.OFFER_LIST_CREATE, state: record }}>{text}</Link>
+      ),
     },
     {
       title: 'Loại ưu đãi',
       dataIndex: 'type',
-      width: '10%',
+      width: '15%',
       align: 'center',
+      render: (text) => <b>{text}</b>,
     },
     {
       title: 'Giảm giá',
       dataIndex: 'saleoff_value',
-      width: '10%',
+      width: '15%',
       align: 'center',
       sorter: (a, b) => a.saleoff_value - b.saleoff_value,
-      render: (text, record, index) => <a onClick={() => infoPrice(record)}>{text}</a>,
+      render: (text, record, index) =>
+        text ? <a onClick={() => infoPrice(record)}>{formatCash(text)}</a> : '',
     },
     {
       title: 'Giảm giá tối đa',
       dataIndex: 'max_saleoff_value',
-      width: '10%',
+      width: '15%',
       align: 'center',
     },
-    {
-      title: 'Danh mục áp dụng',
-      dataIndex: 'sub_type',
-      width: '10%',
-      align: 'center',
-    },
-    {
-      title: 'Banner',
-      dataIndex: 'type',
-      width: '10%',
-      align: 'center',
-      render: (item, record) => (item !== 'BANNER' ? <span>Không có</span> : <span>Có</span>),
-    },
+    // {
+    //   title: 'Danh mục áp dụng',
+    //   dataIndex: 'sub_type',
+    //   width: '10%',
+    //   align: 'center',
+    // },
+    // {
+    //   title: 'Banner',
+    //   dataIndex: 'type',
+    //   width: '10%',
+    //   align: 'center',
+    //   render: (item, record) => (item !== 'BANNER' ? <span>Không có</span> : <span>Có</span>),
+    // },
     {
       title: 'Mô tả',
       dataIndex: 'description',
@@ -161,8 +196,54 @@ export default function OfferList() {
         render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
       },
     ]
+    const columnsProduct = [
+      {
+        title: 'Hình ảnh',
+        align: 'center',
+        dataIndex: 'image',
+        render: (text, record, index) =>
+          record ? (
+            <img src={text && text.length >=1 ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: '100px', height: '100px' }} />
+          ) : (
+            ''
+          ),
+      },
+      {
+        title: 'Tên sản phẩm',
+        dataIndex: 'title',
+        align: 'center',
+        children: [],
+      },
+
+      {
+        title: 'SKU',
+        dataIndex: 'sku',
+        align: 'center',
+      },
+      {
+        title: 'Danh mục',
+        dataIndex: 'category',
+        align: 'center',
+      },
+      {
+        title: 'Gía áp dụng',
+        dataIndex: 'price',
+        align: 'center',
+      },
+      {
+        title: 'Nhà cung cấp',
+        dataIndex: 'supplier',
+        align: 'center',
+      },
+      {
+        title: 'Ngày tạo',
+        dataIndex: 'create_date',
+        align: 'center',
+        render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      },
+    ]
     const expandedRowRenderChild = (record) => {
-      console.log(record)
+      // console.log(record)
       const columnsChild = [
         {
           title: 'Tên sản phẩm',
@@ -207,39 +288,51 @@ export default function OfferList() {
       return (
         <Table
           rowKey="category_id"
-          expandable={{ expandedRowRender: expandedRowRenderChild }}
+          expandable={{
+            expandedRowRender: expandedRowRenderChild,
+            rowExpandable: (record) => (record.children_category.length ? true : false),
+          }}
           columns={columnsCategory}
-          dataSource={record.list}
+          dataSource={record._categories}
           pagination={false}
         />
       )
     }
     if (record.type === 'BANNER') {
-      return <Table columns={columnsBanner} dataSource={record.list} pagination={false} />
+      return <Table columns={columnsBanner} dataSource={record.image_list} pagination={false} />
+    }
+    if (record.type === 'PRODUCT') {
+      const dataProductVariant = []
+      record._products.map((product) =>
+        product.variants.map((item) => dataProductVariant.push(item))
+      )
+      // console.log(dataProductVariant)
+      return <Table columns={columnsProduct} dataSource={dataProductVariant} pagination={false} />
     }
 
     return ''
   }
 
-  const _changeDealName = async () => {
-    const body = {
-      name: name,
-    }
-    console.log(body)
-    try {
-      const res = await updateDeal(body, idChange)
-      console.log(res)
-      if (res.data.success) {
-        setModalVisibleName(!modalVisibleName)
-        message.success('Thay đổi tên ưu đãi thành công')
-        _getDeal(paramsFilter)
-      } else {
-        message.success(res.data.message)
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const _changeDealName = async () => {
+  //   const body = {
+  //     name: name,
+  //   }
+  //   // console.log(body)
+  //   try {
+  //     const res = await updateDeal(body, idChange)
+  //     console.log(res)
+  //     if (res.data.success) {
+  //       setModalVisibleName(!modalVisibleName)
+  //       message.success('Thay đổi tên ưu đãi thành công')
+  //       _getDeal(paramsFilter)
+  //     } else {
+  //       message.success(res.data.message)
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
+
   const _changePrice = async () => {
     const body = {
       saleoff_value: price,
@@ -266,7 +359,7 @@ export default function OfferList() {
       const res = await getDeal(paramsFilter)
       setDealList(res.data.data)
       setCountPage(res.data.count)
-      console.log(res)
+      // console.log(res)
       setLoadingTable(false)
     } catch (err) {
       console.log(err)
@@ -281,6 +374,7 @@ export default function OfferList() {
         if (res.data.success) {
           message.success('Xóa ưu đãi thành công')
           _getDeal(paramsFilter)
+          setSelectKeys([])
         } else {
           message.error(res.data.message || 'Xóa ưu đãi không thành công')
         }
@@ -326,6 +420,7 @@ export default function OfferList() {
 
   const _resetFilter = () => {
     setAttributeDate(undefined)
+    setValueDateSearch(null)
     setValueSearch('')
     setParamsFilter({ page: 1, pageSize: 5 })
   }
@@ -336,15 +431,17 @@ export default function OfferList() {
 
   return (
     <div className={styles['body_offer']}>
-      <Modal
+      {/* <Modal
         title="Cập nhật tên ưu đãi"
         visible={modalVisibleName}
         centered={true}
         onCancel={toggleModalName}
         footer={[
-          <Button onClick={_changeDealName} style={{ textAlign: 'center' }} type="primary">
+          <div style={{textAlign:"center"}}>
+          <Button onClick={_changeDealName} style={{textAlign:"center"}} type="primary">
             Cập nhật
-          </Button>,
+          </Button>
+          </div>
         ]}
       >
         <h3>Tên ưu đãi</h3>
@@ -353,22 +450,26 @@ export default function OfferList() {
           value={name}
           placeholder="Nhập tên ưu đãi"
         />
-      </Modal>
+      </Modal> */}
       <Modal
         title="Cập nhật giá ưu đãi"
         visible={modalVisiblePrice}
         centered={true}
         onCancel={toggleModalPrice}
         footer={[
-          <Button onClick={_changePrice} style={{ textAlign: 'center' }} type="primary">
-            Cập nhật
-          </Button>,
+          <div style={{ textAlign: 'center' }}>
+            <Button onClick={_changePrice} style={{ textAlign: 'center' }} type="primary">
+              Cập nhật
+            </Button>
+          </div>,
         ]}
       >
         <h3>Gía ưu đãi</h3>
-        <Input
-          onChange={(e) => setPrice(e.target.value)}
+        <InputNumber
+          style={{ width: '100%' }}
+          onChange={(value) => setPrice(value)}
           value={price}
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           placeholder="Nhập giá ưu đãi"
         />
       </Modal>
@@ -409,11 +510,73 @@ export default function OfferList() {
             <Option value="banner">Banner</Option>
           </Select>
           <Select
-            style={{ width: '16%' }}
+            style={{ width: '25%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
             allowClear
+            open={openSelect}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
+
+                    if (openSelect) toggleOpenSelect()
+
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
+
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
+
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
+
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
+
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
+
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
+                {menu}
+              </>
+            )}
           >
             <Option value="today">Hôm nay</Option>
             <Option value="yesterday">Hôm qua</Option>
