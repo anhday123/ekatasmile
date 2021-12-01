@@ -113,13 +113,13 @@ export const ROUTES = {
   SETTING: '/setting',
   OFFER_LIST: '/offer-list',
   OFFER_LIST_CREATE: '/offer-list/create',
-  BLOG:'/blog',
-  BLOG_CREATE:'/blog/create',
-  BRAND:'/brand',
-  BRAND_CREATE:'/brand/create',
-  CHANNEL:'/channel',
+  BLOG: '/blog',
+  BLOG_CREATE: '/blog/create',
+  BRAND: '/brand',
+  BRAND_CREATE: '/brand/create',
+  CHANNEL: '/channel',
   // CHANNEL_CREATE:'/channel/create',
-  CONTACT:'/contact',
+  CONTACT: '/contact',
 }
 
 export const PERMISSIONS = {
@@ -189,12 +189,12 @@ export const PERMISSIONS = {
   nhat_ki_hoat_dong: 'nhat_ki_hoat_dong',
   tao_quyen: 'tao_quyen',
   tao_uu_dai: 'tao_uu_dai',
-  tao_bai_viet:'tao_bai_viet',
-  tao_thuong_hieu:'tao_thuong_hieu',
-  tao_kenh_ban_hang:'tao_kenh_ban_hang',
+  tao_bai_viet: 'tao_bai_viet',
+  tao_thuong_hieu: 'tao_thuong_hieu',
+  tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.0.8'
+export const VERSION_APP = '1.0.10'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

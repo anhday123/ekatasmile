@@ -10,6 +10,7 @@ import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
 import noData from 'assets/icons/no-data.png'
 import jwt_decode from 'jwt-decode'
 import KeyboardEventHandler from 'react-keyboard-event-handler'
+import ReactToPrint, { useReactToPrint } from 'react-to-print'
 
 //components
 import AddCustomer from 'views/actions/customer/add'
@@ -21,9 +22,11 @@ import Permission from 'components/permission'
 import PaymentMethods from './payment-methods'
 import ModalOrdersReturn from './orders-returns'
 import ModalChangeStore from './change-store'
+import ModalDeliveryAddress from './delivery-address'
 import ModalInfoSeller from './info-seller'
 import CustomerUpdate from 'views/actions/customer/update'
 import HeaderGroupButton from './header-group-button'
+import PrintOrder from 'components/print/print-order'
 
 //antd
 import {
@@ -75,10 +78,15 @@ export default function Sell() {
   const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
+  const invoicesSelector = useSelector((state) => state.invoice.invoices)
+  let printOrderRef = useRef()
 
   //list ref keyboard
   const inputRef = useRef(null)
   const selectCustomerRef = useRef(null)
+  const handlePrint = useReactToPrint({
+    content: () => printOrderRef.current,
+  })
 
   const [chooseButtonPrice, setChooseButtonPrice] = useState('')
 
@@ -101,6 +109,8 @@ export default function Sell() {
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
+  const [infoStore, setInfoStore] = useState(null)
+
   //object invoice
   const initInvoice = {
     id: uuidv4(),
@@ -116,6 +126,7 @@ export default function Sell() {
     salesChannel: '', //kênh bán hàng
     isDelivery: false,
     deliveryCharges: 0, //phí giao hàng
+    deliveryAddress: null, //địa chỉ nhận hàng
     shipping: null, //đơn vị vận chuyển
     billOfLadingCode: '',
     moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả
@@ -192,7 +203,6 @@ export default function Sell() {
   }
 
   const _addProductToCartInvoice = (product) => {
-    console.log(product)
     if (product) {
       //check product có đủ số lượng
       if (product.total_quantity !== 0) {
@@ -757,29 +767,27 @@ export default function Sell() {
         shipping.shipping_company_id = invoices[indexInvoice].shipping.shipping_company_id || ''
         shipping.shipping_info = {
           ship_code: invoices[indexInvoice].shipping.code || '',
-          to_name: `${invoices[indexInvoice].customer.first_name || ''} ${
-            invoices[indexInvoice].customer.last_name || ''
-          }`,
-          to_phone: invoices[indexInvoice].customer.phone || '',
-          to_address: invoices[indexInvoice].customer.address || '',
+          to_name: infoStore.name || '',
+          to_phone: infoStore.phone || '',
+          to_address: infoStore.address || '',
           to_ward: '',
-          to_district: invoices[indexInvoice].customer.district || '',
-          to_province: invoices[indexInvoice].customer.province || '',
+          to_district: infoStore.district || '',
+          to_province: infoStore.province || '',
           to_province_code: '',
           to_postcode: 70000,
           to_country_code: '',
-          return_name: `${invoices[indexInvoice].customer.first_name || ''} ${
-            invoices[indexInvoice].customer.last_name || ''
+          return_name: `${invoices[indexInvoice].deliveryAddress.first_name || ''} ${
+            invoices[indexInvoice].deliveryAddress.last_name || ''
           }`,
-          return_phone: invoices[indexInvoice].customer.phone || '',
-          return_address: invoices[indexInvoice].customer.address || '',
+          return_phone: invoices[indexInvoice].deliveryAddress.phone || '',
+          return_address: invoices[indexInvoice].deliveryAddress.address || '',
           return_ward: '',
-          return_district: invoices[indexInvoice].customer.district || '',
-          return_province: invoices[indexInvoice].customer.province || '',
+          return_district: invoices[indexInvoice].deliveryAddress.district || '',
+          return_province: invoices[indexInvoice].deliveryAddress.province || '',
           return_province_code: '',
-          return_postcode_code: '',
+          return_postcode_code: 70000,
           return_country_code: '',
-          cod: 20000,
+          cod: invoices[indexInvoice].deliveryCharges || 0,
           delivery_time: '2021-09-30T00:00:00+07:00',
           complete_time: '2021-10-30T00:00:00+07:00',
         }
@@ -822,7 +830,7 @@ export default function Sell() {
         tags: [],
       }
 
-      //encrypt body
+      //encrypt body create order
       const CryptoJS = require('crypto-js')
       const bodyEncryption = CryptoJS.AES.encrypt(
         JSON.stringify(body),
@@ -832,7 +840,7 @@ export default function Sell() {
       const res = await addOrder({ order: bodyEncryption })
       console.log(res)
       if (res.status === 200) {
-        if (res.data.success) notification.success({ message: 'Tạo đơn hàng thành công' })
+        if (res.data.success) handlePrint()
         else
           notification.error({
             message:
@@ -893,7 +901,6 @@ export default function Sell() {
   const _getShippingsMethod = async () => {
     try {
       const res = await apiAllShipping()
-      console.log(res)
       if (res.status === 200) setShippingsMethod(res.data.data)
     } catch (error) {
       console.log(error)
@@ -945,22 +952,37 @@ export default function Sell() {
     }
   }
 
-  useEffect(() => {
-    //back to login
-    if (!localStorage.getItem('accessToken')) {
-      localStorage.clear()
-      history.push(ROUTES.LOGIN)
+  //get invoice từ reducer (local storage)
+  const _getInvoicesToReducer = () => {
+    if (invoicesSelector && invoicesSelector.length) {
+      setInvoices([...invoicesSelector])
+      setActiveKeyTab(invoicesSelector[0].id)
     } else {
-      const data = jwt_decode(localStorage.getItem('accessToken'))
-      if (!localStorage.getItem('storeSell')) {
-        if (data.data._store) {
-          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
-          _getProductsSearch(data.data._store.store_id)
-        }
-      } else {
-        const store = JSON.parse(localStorage.getItem('storeSell'))
-        if (store) _getProductsSearch(store.store_id)
+      setInvoices([initInvoice])
+      setActiveKeyTab(initInvoice.id)
+    }
+  }
+
+  //lưu invoice lên reducer mỗi khi có sự thay đổi
+  useEffect(() => {
+    if (invoices) dispatch({ type: 'UPDATE_INVOICE', data: invoices })
+  }, [invoices])
+
+  useEffect(() => {
+    _getInvoicesToReducer()
+  }, [])
+
+  useEffect(() => {
+    const data = jwt_decode(localStorage.getItem('accessToken'))
+    if (!localStorage.getItem('storeSell')) {
+      if (data.data._store) {
+        localStorage.setItem('storeSell', JSON.stringify(data.data._store))
+        _getProductsSearch(data.data._store.store_id)
       }
+    } else {
+      const store = JSON.parse(localStorage.getItem('storeSell'))
+      if (store) _getProductsSearch(store.store_id)
+      setInfoStore(store)
     }
   }, [])
 
@@ -974,10 +996,18 @@ export default function Sell() {
     _getProductsRelated(paramsFilter)
   }, [paramsFilter])
 
+  const Print = () => (
+    <div style={{ display: 'none' }}>
+      <PrintOrder ref={printOrderRef} data={invoices[indexInvoice]} />
+    </div>
+  )
+
   return (
     <div className={styles['sell-container']}>
       <HandlerKeyboard />
       <ModalConfirmCreateOrderOrPay />
+      <Print />
+
       <div className={styles['sell-header']}>
         <Row align="middle" wrap={false}>
           <div className="select-product-sell">
@@ -1444,6 +1474,7 @@ export default function Sell() {
                     justify="space-between"
                     wrap={false}
                     onClick={(e) => {
+                      _editInvoice('deliveryAddress', customer)
                       _editInvoice('customer', customer)
                       _editInvoice(
                         'name',
@@ -1545,6 +1576,7 @@ export default function Sell() {
               okText="Đồng ý"
               cancelText="Từ chối"
               onConfirm={async () => {
+                _editInvoice('deliveryAddress', null)
                 _editInvoice('customer', null)
                 _editInvoice('name', `Đơn ${invoices.length}`)
               }}
@@ -1552,6 +1584,26 @@ export default function Sell() {
               <CloseCircleTwoTone style={{ cursor: 'pointer', marginLeft: 20, fontSize: 23 }} />
             </Popconfirm>
           </Row>
+          <div style={{ marginTop: 15, display: !invoices[indexInvoice].isDelivery && 'none' }}>
+            <Row style={{ fontSize: 16, fontWeight: 600 }} justify="space-between" align="middle">
+              <div>Địa chỉ giao hàng</div>
+              <ModalDeliveryAddress
+                editInvoice={_editInvoice}
+                address={invoices[indexInvoice].deliveryAddress}
+              />
+            </Row>
+            {invoices[indexInvoice].deliveryAddress && (
+              <div style={{ fontSize: 15 }}>
+                <div>
+                  {`${invoices[indexInvoice].deliveryAddress.first_name} ${invoices[indexInvoice].deliveryAddress.last_name}`}{' '}
+                  - {invoices[indexInvoice].deliveryAddress.phone}
+                </div>
+                <div>
+                  {`${invoices[indexInvoice].deliveryAddress.address}, ${invoices[indexInvoice].deliveryAddress.district}, ${invoices[indexInvoice].deliveryAddress.province}`}
+                </div>
+              </div>
+            )}
+          </div>
           <Divider style={{ marginTop: 15, marginBottom: 15 }} />
           <Row justify="space-between" align="middle" wrap={false}>
             <div>
@@ -1857,18 +1909,24 @@ export default function Sell() {
 
           <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
             <Space>
+              <ReactToPrint
+                trigger={() => (
+                  <Button
+                    size="large"
+                    type="primary"
+                    style={{
+                      width: 150,
+                      backgroundColor: '#EA9649',
+                      borderColor: '#EA9649',
+                    }}
+                  >
+                    In hóa đơn
+                  </Button>
+                )}
+                content={() => printOrderRef.current}
+              />
               <Button
-                size="large"
-                type="primary"
-                style={{
-                  width: 150,
-                  backgroundColor: '#EA9649',
-                  borderColor: '#EA9649',
-                }}
-              >
-                In hóa đơn
-              </Button>
-              <Button
+                onClick={_validatedCreateOrderOrPay}
                 size="large"
                 type="primary"
                 style={{
@@ -1876,7 +1934,6 @@ export default function Sell() {
                   backgroundColor: '#0877DE',
                   borderColor: '#0877DE',
                 }}
-                onClick={_validatedCreateOrderOrPay}
               >
                 {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
               </Button>
