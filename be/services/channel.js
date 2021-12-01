@@ -9,8 +9,8 @@ let _get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
-        if (req.query.site_id) {
-            aggregateQuery.push({ $match: { site_id: Number(req.query.site_id) } });
+        if (req.query.channel_id) {
+            aggregateQuery.push({ $match: { channel_id: Number(req.query.channel_id) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -91,18 +91,18 @@ let _get = async (req, res, next) => {
             aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         }
         // lấy data từ database
-        let [sites, counts] = await Promise.all([
-            client.db(DB).collection(`Sites`).aggregate(aggregateQuery).toArray(),
+        let [channels, counts] = await Promise.all([
+            client.db(DB).collection(`Channels`).aggregate(aggregateQuery).toArray(),
             client
                 .db(DB)
-                .collection(`Sites`)
+                .collection(`Channels`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
         ]);
         res.send({
             success: true,
             count: counts[0] ? counts[0].counts : 0,
-            data: sites,
+            data: channels,
         });
     } catch (err) {
         next(err);
@@ -111,8 +111,8 @@ let _get = async (req, res, next) => {
 
 let _create = async (req, res, next) => {
     try {
-        let site = await client.db(DB).collection(`Sites`).insertOne(req._insert);
-        if (!site.insertedId) {
+        let channel = await client.db(DB).collection(`Channels`).insertOne(req._insert);
+        if (!channel.insertedId) {
             throw new Error('500: Lỗi hệ thống, thêm cửa hàng trực tuyến thất bại!');
         }
         try {
@@ -120,8 +120,8 @@ let _create = async (req, res, next) => {
             _action.create({
                 business_id: Number(req.user.business_id),
                 type: 'Add',
-                properties: 'Site',
-                name: 'Thêm cửa hàng trực tuyến',
+                properties: 'Channel',
+                name: 'Thêm kênh bán hàng',
                 data: req._insert,
                 performer_id: Number(req.user.user_id),
                 date: new Date(),
@@ -138,14 +138,14 @@ let _create = async (req, res, next) => {
 
 let _update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Sites`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Channels`).findOneAndUpdate(req.params, { $set: req._update });
         try {
             let _action = new Action();
             _action.create({
                 business_id: Number(req.user.business_id),
                 type: 'Update',
-                properties: 'Site',
-                name: 'Cập nhật cửa hàng trực tuyến',
+                properties: 'Channel',
+                name: 'Cập nhật kênh bán hàng',
                 data: req._update,
                 performer_id: Number(req.user.user_id),
                 date: new Date(),
@@ -160,8 +160,18 @@ let _update = async (req, res, next) => {
     }
 };
 
+let _getPlatform = async (req, res, next) => {
+    try {
+        let platforms = await client.db(DB).collection('Platforms').find().toArray();
+        res.send({ success:true, data: platforms });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     _create,
     _get,
     _update,
+    _getPlatform,
 };
