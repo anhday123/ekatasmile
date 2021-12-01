@@ -144,4 +144,5 @@ module.exports = {
     _create,
     _update,
     _delete,
+    _getPlatform,
 };
