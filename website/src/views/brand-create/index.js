@@ -41,7 +41,7 @@ export default function BrandCreate() {
   const [image, setImage] = useState([])
   const [idBrand, setIdBrand] = useState('')
   const [country, setCountry] = useState('')
-  const [viewCountry, setViewCountry] = useState('Chọn quốc gia')
+  // const [viewCountry, setViewCountry] = useState('Chọn quốc gia')
   const [foundedYear, setFoundedYear] = useState('')
   const [priority, setPriority] = useState('')
   const [countryList, setCountryList] = useState([])
@@ -51,14 +51,11 @@ export default function BrandCreate() {
     const value = e.editor.getData()
     setContent(value)
   }
-  // const handleChangeName = (e) => {
-  //   setName(e.target.value)
-  // }
-
+  
   const handleChangeCountry = (code, name) => {
     // console.log(value)
     setCountry(code)
-    setViewCountry(name)
+    // setViewCountry(name)
   }
 
   const handleChangeYear = (info) => {
@@ -175,6 +172,7 @@ export default function BrandCreate() {
         style={{ width: '85%' }}
         picker="year"
         defaultValue={moment(foundedYear ? foundedYear : '2021')}
+        allowClear
       />
     )
   }
@@ -186,10 +184,10 @@ export default function BrandCreate() {
       // setName(location.state.name)
       setImage(location.state.images)
       setCountry(location.state.country_code)
-      setViewCountry(location.state._country[0]?.name)
       setPriority(location.state.priority)
       setFoundedYear(location.state.founded_year)
       form.setFieldsValue({ name: location.state.name })
+      form.setFieldsValue({country:location.state._country[0]?.name})
       // console.log(location.state.founded_year)
     }
     _getCountry()
@@ -250,55 +248,58 @@ export default function BrandCreate() {
             </Dragger>
           )}
         </div>
-        <div className={styles['body_brand_content_header']}>
-          <Form form={form}>
-            <h3>Tên thương hiệu</h3>
-            <Form.Item
-              name="name"
-              rules={[{ required: true, message: 'Vui lòng nhập tên thương hiệu' }]}
-            >
-              <Input
-                // value={name}
-                // onChange={handleChangeName}
-                style={{ width: '85%' }}
-                placeholder="Nhập tên thương hiệu"
-              ></Input>
-            </Form.Item>
-          </Form>
+        <div style={{paddingTop:20}}>
+          <Form className={styles['body_brand_content_header']} form={form}>
+            <div>
+              <h3>Tên thương hiệu</h3>
+              <Form.Item
+                name="name"
+                rules={[{ required: true, message: 'Vui lòng nhập tên thương hiệu' }]}
+              >
+                <Input
+                  // value={name}
+                  // onChange={handleChangeName}
+                  style={{ width: '85%' }}
+                  placeholder="Nhập tên thương hiệu"
+                ></Input>
+              </Form.Item>
+            </div>
 
-          <div className="select-product-sell">
-            <h3>Quốc gia</h3>
-            <Select
-              notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
-              showSearch
-              value={viewCountry ? viewCountry : ''}
-              // onChange={handleChangeCountry}
-              style={{ width: '85%' }}
-              placeholder="Chọn quốc gia"
-              allowClear
-            >
-              {countryList?.map((data) => (
-                <Select.Option value={data.name} key={data.code}>
-                  <p onClick={() => handleChangeCountry(data.code, data.name)}>{data.name}</p>
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <h3>Năm thành lập</h3>
-            <DatePickerData/>
-          </div>
-          <div>
-            <h3>Độ ưu tiên</h3>
-            <InputNumber
-              min={1}
-              max={1000}
-              style={{ width: '85%' }}
-              placeholder="Nhập độ ưu tiên"
-              onChange={handleChangePrio}
-              value={priority}
-            ></InputNumber>
-          </div>
+            <div>
+              <h3>Quốc gia</h3>
+              <Form.Item name="country">
+              <Select
+                notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
+                showSearch
+                // onChange={handleChangeCountry}
+                style={{ width: '85%' }}
+                placeholder="Chọn quốc gia"
+                allowClear
+              >
+                {countryList?.map((data) => (
+                  <Select.Option value={data.name} key={data.code}>
+                    <p onClick={() => handleChangeCountry(data.code, data.name)}>{data.name}</p>
+                  </Select.Option>
+                ))}
+              </Select>
+              </Form.Item>
+            </div>
+            <div>
+              <h3>Năm thành lập</h3>
+              <DatePickerData />
+            </div>
+            <div>
+              <h3>Độ ưu tiên</h3>
+              <InputNumber
+                min={1}
+                max={1000}
+                style={{ width: '85%' }}
+                placeholder="Nhập độ ưu tiên"
+                onChange={handleChangePrio}
+                value={priority}
+              ></InputNumber>
+            </div>
+          </Form>
         </div>
         <h3 style={{ padding: '20px 0' }}>Mô tả</h3>
         <CKEditor

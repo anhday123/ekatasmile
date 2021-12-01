@@ -148,6 +148,7 @@ export const PERMISSIONS = {
   cau_hinh_thong_tin: 'cau_hinh_thong_tin',
   quan_li_phan_quyen: 'quan_li_phan_quyen',
   tich_diem: 'tich_diem',
+  quan_li_uu_dai:'quan_li_uu_dai',
 
   //Permission function
   them_cua_hang: 'them_cua_hang',
