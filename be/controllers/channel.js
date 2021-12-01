@@ -30,7 +30,7 @@ let _get = async (req, res, next) => {
 
 let _create = async (req, res, next) => {
     try {
-        ['name', 'url', 'platform', 'client_id', 'secrect_key'].map((properties) => {
+        ['name', 'url', 'platform_id', 'client_id', 'secrect_key'].map((properties) => {
             if (req.body[properties] == undefined) {
                 throw new Error(`400: Thiếu thuộc tính ${properties}!`);
             }
@@ -60,7 +60,7 @@ let _create = async (req, res, next) => {
             name: req.body.name,
             slug_name: removeUnicode(String(req.body.name), true),
             url: req.body.url,
-            platform: req.body.platform,
+            platform_id: req.body.platform_id,
             client_id: req.body.client_id,
             secrect_key: req.body.secrect_key,
             status: status,

@@ -50,6 +50,14 @@ let _get = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push({
+            $lookup: {
+                from: "Platforms",
+                localField: 'platform_id',
+                foreignField: 'platform_id',
+                as: '_platform',
+            }
+        });
         if (req.query._business) {
             aggregateQuery.push(
                 {
