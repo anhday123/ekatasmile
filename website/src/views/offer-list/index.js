@@ -31,7 +31,7 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteDeal, getDeal, updateDeal } from '../../apis/deal'
+import { deleteDeal, getDeal, updateDeal, updateDealsPrice } from '../../apis/deal'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -46,7 +46,7 @@ export default function OfferList() {
   const [loadingTable, setLoadingTable] = useState(false)
   const [dealList, setDealList] = useState([])
   // const [name, setName] = useState('')
-  const [price, setPrice] = useState('')
+  const [price, setPrice] = useState([])
   const [idChange, setIdChange] = useState('')
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
@@ -56,11 +56,17 @@ export default function OfferList() {
   const [valueDateSearch, setValueDateSearch] = useState(null)
   const typingTimeoutRef = useRef(null)
 
-  const toggleModalName = () => {
-    setModalVisibleName(!modalVisibleName)
-  }
+  // const toggleModalName = () => {
+  //   setModalVisibleName(!modalVisibleName)
+  // }
 
   const toggleModalPrice = () => {
+    if(price.length ===1){
+      setPrice(price[0])
+    }
+    else{
+      setPrice(0)
+    }
     setModalVisiblePrice(!modalVisiblePrice)
   }
 
@@ -86,7 +92,9 @@ export default function OfferList() {
       dataIndex: 'image',
       width: '15%',
       align: 'center',
-      render: (text,record) => <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{width:80,height:80}} /> ,
+      render: (text, record) => (
+        <img src={text ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: 80, height: 80 }} />
+      ),
     },
     {
       title: 'Tên ưu đãi',
@@ -112,7 +120,7 @@ export default function OfferList() {
       align: 'center',
       sorter: (a, b) => a.saleoff_value - b.saleoff_value,
       render: (text, record, index) =>
-        text ? <a onClick={() => infoPrice(record)}>{formatCash(text)}</a> : '',
+        text ? <p>{formatCash(text)}</p> : '',
     },
     {
       title: 'Giảm giá tối đa',
@@ -203,7 +211,11 @@ export default function OfferList() {
         dataIndex: 'image',
         render: (text, record, index) =>
           record ? (
-            <img src={text && text.length >=1 ? text[0] : IMAGE_DEFAULT} alt="" style={{ width: '100px', height: '100px' }} />
+            <img
+              src={text && text.length >= 1 ? text[0] : IMAGE_DEFAULT}
+              alt=""
+              style={{ width: '100px', height: '100px' }}
+            />
           ) : (
             ''
           ),
@@ -334,13 +346,24 @@ export default function OfferList() {
   // }
 
   const _changePrice = async () => {
-    const body = {
-      saleoff_value: price,
-    }
-    console.log(body)
     try {
-      const res = await updateDeal(body, idChange)
-      console.log(res)
+      let body={}
+      let res
+      if(selectKeys.length===1){
+        body = {
+          saleoff_value: price,
+        }
+        res = await updateDeal(body, selectKeys)
+      }
+      else{
+        body = {
+          saleoff_value: price,
+          deal_id:selectKeys,
+        }
+        res = await updateDealsPrice(body)
+      }
+      // console.log(body)
+      // console.log(res)
       if (res.data.success) {
         setModalVisiblePrice(!modalVisiblePrice)
         message.success('Thay đổi giá ưu đãi thành công')
@@ -398,6 +421,7 @@ export default function OfferList() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
+    if(openSelect) toggleOpenSelect()
   }
 
   const _search = (e) => {
@@ -604,13 +628,13 @@ export default function OfferList() {
                   Xóa
                 </Button>
               </Popconfirm>
-              {/* <Button
-                onClick={toggleModal}
+              <Button
+                onClick={toggleModalPrice}
                 type="primary"
                 style={{ margin: '0 15px', backgroundColor: '#83BC0B', border: 'none' }}
               >
-                Cập nhật tên ưu đãi
-              </Button> */}
+                Cập nhật giá ưu đãi
+              </Button>
             </>
           ) : (
             <div></div>
@@ -629,7 +653,11 @@ export default function OfferList() {
         rowSelection={{
           selectedRowKeys: selectKeys,
           onChange: (keys, records) => {
-            // console.log('keys', keys)
+            // console.log('records', records)
+            // console.log(keys)
+            const priceSelect=[]
+            records.map((item)=>priceSelect.push(item.saleoff_value))
+            setPrice(priceSelect)
             setSelectKeys(keys)
           },
         }}

@@ -122,6 +122,7 @@ export default function Blog() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
+    if(openSelect) toggleOpenSelect()
   }
 
   const _search = (e) => {
