@@ -47,6 +47,8 @@ export default function ChangeStore() {
   const _changeStore = async () => {
     const store = stores.find((s) => s.store_id === storeId)
     localStorage.setItem('storeSell', JSON.stringify(store))
+    localStorage.setItem('invoice', JSON.stringify({ invoice: {} })) //reset đơn hàng local storage
+    dispatch({ type: 'UPDATE_INVOICE', data: [] }) //reset đơn hàng trong reducer
     window.location.reload()
   }
 
