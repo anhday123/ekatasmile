@@ -4,7 +4,8 @@ const initialState = {
 const invoice = (state = initialState, action) => {
   switch (action.type) {
     case 'UPDATE_INVOICE':
-      return { ...state, invoices: action.data }
+      const invoicesNew = [...action.data]
+      return { ...state, invoices: invoicesNew }
 
     default:
       return state
