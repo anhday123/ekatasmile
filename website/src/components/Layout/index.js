@@ -81,6 +81,8 @@ const { Dragger } = Upload
 const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
+  const WIDTH_MENU_OPEN = 230
+  const WIDTH_MENU_CLOSE = 160
 
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
@@ -280,7 +282,7 @@ const BaseLayout = (props) => {
       path: 'transport',
       title: 'Vận chuyển',
       permissions: [PERMISSIONS.van_chuyen],
-      icon: <TransactionOutlined/>,
+      icon: <TransactionOutlined />,
       menuItems: [
         {
           icon: <ClusterOutlined />,
@@ -302,7 +304,7 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
-   
+
     {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -811,46 +813,45 @@ const BaseLayout = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 230}
-        collapsedWidth={isMobile ? 0 : 160}
+        width={isMobile ? '100%' : WIDTH_MENU_OPEN}
+        collapsedWidth={isMobile ? 0 : WIDTH_MENU_CLOSE}
         style={{
           backgroundColor: 'white',
-          height: '100%',
           zIndex: isMobile && 6000,
+          height: '100vh',
+          position: 'fixed',
         }}
         collapsed={collapsed}
         onCollapse={onCollapse}
       >
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
             alignItems: 'center',
+            justifyContent: 'center',
             flexDirection: 'column',
             width: '100%',
+            display: collapsed ? 'none' : 'flex',
+            maxHeight: 108,
           }}
-          className={collapsed ? styles['hidden'] : styles['show']}
         >
           <img
             src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
-            className={collapsed ? styles['hidden'] : styles['show']}
-            style={{ width: '6rem', objectFit: 'contain' }}
+            style={{ width: '6rem', objectFit: 'contain', marginTop: 12 }}
             alt=""
           />
-          <div
-            className={collapsed ? styles['hidden'] : styles['show']}
-            style={{
-              color: 'black',
-              fontSize: '1rem',
-              fontWeight: '600',
-              margin: '0.5rem 0 1rem 0.5rem',
-            }}
+          <Row
+            justify="center"
+            style={{ color: 'black', fontSize: '1rem', fontWeight: '600', margin: '7px 0px' }}
           >
             {(user && user.company_name) || dataUser.data.company_name}
-          </div>
+          </Row>
         </div>
         <Menu
-          className={styles['toggle_left']}
+          style={{
+            height: `calc(100vh - ${collapsed ? 4 : 108}px)`,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}
           theme="light"
           onOpenChange={(openKeys) => onOpenChange(openKeys)}
           openKeys={
@@ -884,7 +885,7 @@ const BaseLayout = (props) => {
           </Menu.Item>
         </Menu>
       </Sider>
-      <Layout className={styles['site-layout']}>
+      <Layout style={{ marginLeft: collapsed ? WIDTH_MENU_CLOSE : WIDTH_MENU_OPEN }}>
         <Affix offsetTop={0}>
           <Row className={styles['background_right_top']}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -1017,4 +1018,4 @@ const BaseLayout = (props) => {
   )
 }
 
-export default BaseLayout;
+export default BaseLayout
