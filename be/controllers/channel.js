@@ -3,7 +3,7 @@ const crypto = require(`crypto`);
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
-const channelSerive = require(`../services/channel`);
+const channelService = require(`../services/channel`);
 const { removeUnicode } = require('../utils/string-handle');
 
 let checkPlatform = async (name, url, clientId, secretKey) => {
@@ -22,7 +22,7 @@ let checkPlatform = async (name, url, clientId, secretKey) => {
 
 let _get = async (req, res, next) => {
     try {
-        await channelSerive._get(req, res, next);
+        await channelService._get(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -71,7 +71,7 @@ let _create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Channels' }, { $set: { name: 'Channels', value: channel_id } }, { upsert: true });
         req[`_insert`] = _site;
-        await channelSerive._create(req, res, next);
+        await channelService._create(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -108,7 +108,7 @@ let _update = async (req, res, next) => {
             active: _site.active,
         };
         req['_update'] = _site;
-        await channelSerive._update(req, res, next);
+        await channelService._update(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -128,7 +128,7 @@ let _delete = async (req, res, next) => {
 
 let _getPlatform = async (req, res, next) => {
     try {
-        await channelSerive._getPlatform(req, res, next);
+        await channelService._getPlatform(req, res, next);
     } catch (err) {
         next(err);
         s;
