@@ -6,7 +6,7 @@ const DB = process.env.DATABASE;
 const channelSerive = require(`../services/channel`);
 const { removeUnicode } = require('../utils/string-handle');
 
-let checkPlatform = async (name, url, clientId, secrectKey) => {
+let checkPlatform = async (name, url, clientId, secretKey) => {
     //kiểm tra kết nối với các nền tảng khác nhau dựa theo tên, id, key
     let result = Math.floor(Math.random() * 1000) % 2;
     return new Promise((resolve, reject) => {
@@ -30,7 +30,7 @@ let _get = async (req, res, next) => {
 
 let _create = async (req, res, next) => {
     try {
-        ['name', 'url', 'platform_id', 'client_id', 'secrect_key'].map((properties) => {
+        ['name', 'url', 'platform_id', 'client_id', 'secret_key'].map((properties) => {
             if (req.body[properties] == undefined) {
                 throw new Error(`400: Thiếu thuộc tính ${properties}!`);
             }
@@ -45,24 +45,21 @@ let _create = async (req, res, next) => {
             return 0;
         })();
         channel_id++;
-        let status = await checkPlatform(
-            req.body.name,
-            req.body.url,
-            req.body.client_id,
-            req.body.secrect_key
-        ).catch((err) => {
-            throw new Error(err);
-        });
+        let status = await checkPlatform(req.body.name, req.body.url, req.body.client_id, req.body.secret_key).catch(
+            (err) => {
+                throw new Error(err);
+            }
+        );
         let _site = {
             channel_id: Number(channel_id),
             business_id: Number(req.user.business_id),
-            code: Number(channel_id) + 1000000,
+            code: String(channel_id).padStart(6, '0'),
             name: req.body.name,
             slug_name: removeUnicode(String(req.body.name), true),
             url: req.body.url,
             platform_id: req.body.platform_id,
             client_id: req.body.client_id,
-            secrect_key: req.body.secrect_key,
+            secret_key: req.body.secret_key,
             status: status,
             create_date: new Date(),
             last_update: new Date(),
@@ -93,11 +90,9 @@ let _update = async (req, res, next) => {
         delete req.body.create_date;
         delete req.body.creator_id;
         let _site = { ...site, ...req.body };
-        let status = await checkPlatform(_site.name, _site.url, _site.client_id, _site.secrect_key).catch(
-            (err) => {
-                throw err;
-            }
-        );
+        let status = await checkPlatform(_site.name, _site.url, _site.client_id, _site.secret_key).catch((err) => {
+            throw err;
+        });
         _site = {
             channel_id: Number(_site.channel_id),
             code: Number(_site.code),
@@ -105,7 +100,7 @@ let _update = async (req, res, next) => {
             url: req.body.url,
             platform: _site.platform,
             client_id: _site.client_id,
-            secrect_key: _site.secrect_key,
+            secret_key: _site.secret_key,
             status: status,
             create_date: _site.create_date,
             last_update: new Date(),
@@ -132,11 +127,12 @@ let _delete = async (req, res, next) => {
 };
 
 let _getPlatform = async (req, res, next) => {
-    try{
+    try {
         await channelSerive._getPlatform(req, res, next);
-    }catch(err){
+    } catch (err) {
         next(err);
-    s}
+        s;
+    }
 };
 
 module.exports = {

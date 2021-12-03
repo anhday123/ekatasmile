@@ -18,8 +18,17 @@ let _get = async (req, res, next) => {
         if (req.query.business_id) {
             aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
         }
+        if (req.query.platform_id) {
+            aggregateQuery.push({ $match: { platform_id: Number(req.query.platform_id) } });
+        }
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
+        }
+        if (req.query.active == 'true') {
+            aggregateQuery.push({ $match: { active: true } });
+        }
+        if (req.query.active == 'false') {
+            aggregateQuery.push({ $match: { active: false } });
         }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
@@ -32,31 +41,25 @@ let _get = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
-                from: "Platforms",
+                from: 'Platforms',
                 localField: 'platform_id',
                 foreignField: 'platform_id',
                 as: '_platform',
-            }
+            },
         });
         if (req.query._business) {
             aggregateQuery.push(
@@ -171,7 +174,7 @@ let _update = async (req, res, next) => {
 let _getPlatform = async (req, res, next) => {
     try {
         let platforms = await client.db(DB).collection('Platforms').find().toArray();
-        res.send({ success:true, data: platforms });
+        res.send({ success: true, data: platforms });
     } catch (err) {
         next(err);
     }
