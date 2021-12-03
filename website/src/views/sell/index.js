@@ -4,7 +4,7 @@ import styles from './sell.module.scss'
 import { v4 as uuidv4 } from 'uuid'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { formatCash } from 'utils'
+import { formatCash, encryptText } from 'utils'
 import TienThoi from 'utils/tienthoi'
 import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
 import noData from 'assets/icons/no-data.png'
@@ -831,11 +831,7 @@ export default function Sell() {
       }
 
       //encrypt body create order
-      const CryptoJS = require('crypto-js')
-      const bodyEncryption = CryptoJS.AES.encrypt(
-        JSON.stringify(body),
-        process.env.REACT_APP_SECRET_KEY_CRYPTO
-      ).toString()
+      const bodyEncryption = encryptText(JSON.stringify(body))
 
       const res = await addOrder({ order: bodyEncryption })
       console.log(res)
