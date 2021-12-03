@@ -121,7 +121,8 @@ export default function PaymentMethods({
               onClick={() => _addPaymentMethod('COD')}
               icon={<UsergroupDeleteOutlined />}
               style={{
-                color: '#3579FE',
+                color: 'white',
+                backgroundColor: '#3579FE',
                 borderColor: '#3579FE',
                 borderRadius: 5,
                 display: invoices[indexInvoice].isDelivery && 'none',
@@ -145,7 +146,8 @@ export default function PaymentMethods({
               onClick={() => _addPaymentMethod('Tiền mặt')}
               icon={<DollarOutlined />}
               style={{
-                color: '#3579FE',
+                color: 'white',
+                backgroundColor: '#3579FE',
                 borderColor: '#3579FE',
                 borderRadius: 5,
               }}

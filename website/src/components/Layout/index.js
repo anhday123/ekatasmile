@@ -444,8 +444,9 @@ const BaseLayout = (props) => {
     }
   }
 
-  const onClickSignout = () => {
+  const onSignOut = () => {
     dispatch({ type: ACTION.LOGOUT })
+    dispatch({ type: 'UPDATE_INVOICE', data: [] })
   }
 
   const [username, setUsername] = useState('')
@@ -465,7 +466,7 @@ const BaseLayout = (props) => {
       </div>
       <Link
         to={ROUTES.LOGIN}
-        onClick={onClickSignout}
+        onClick={onSignOut}
         className={styles['user_information_link']}
         style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
       >
@@ -665,7 +666,7 @@ const BaseLayout = (props) => {
 
   return (
     <Layout style={{ backgroundColor: 'white', height: '100%' }}>
-      <BackTop style={{ right: '20px', bottom: '20px' }} />
+      <BackTop style={{ right: 10, bottom: 15 }} />
       <Modal
         title="Chỉnh sửa thông tin cá nhân"
         centered
@@ -867,7 +868,7 @@ const BaseLayout = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item onClick={onClickSignout} key="9" icon={!collapsed && <LogoutOutlined />}>
+          <Menu.Item onClick={onSignOut} key="9" icon={!collapsed && <LogoutOutlined />}>
             <Link
               to={ROUTES.LOGIN}
               style={{

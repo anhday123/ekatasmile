@@ -6,7 +6,14 @@ import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { formatCash, encryptText } from 'utils'
 import TienThoi from 'utils/tienthoi'
-import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES } from 'consts'
+import {
+  ACTION,
+  BILL_STATUS_ORDER,
+  IMAGE_DEFAULT,
+  PERMISSIONS,
+  ROUTES,
+  SHIP_STATUS_ORDER,
+} from 'consts'
 import noData from 'assets/icons/no-data.png'
 import jwt_decode from 'jwt-decode'
 import KeyboardEventHandler from 'react-keyboard-event-handler'
@@ -83,7 +90,6 @@ export default function Sell() {
 
   //list ref keyboard
   const inputRef = useRef(null)
-  const selectCustomerRef = useRef(null)
   const handlePrint = useReactToPrint({
     content: () => printOrderRef.current,
   })
@@ -281,9 +287,10 @@ export default function Sell() {
             invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
               +invoicesNew[indexInvoice].discount.value
           else
-            invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer -= (
               (+invoicesNew[indexInvoice].discount.value / 100) *
               invoicesNew[indexInvoice].moneyToBePaidByCustomer
+            ).toFixed(0)
         }
 
         //tiền thừa
@@ -334,9 +341,10 @@ export default function Sell() {
           invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
             +invoicesNew[indexInvoice].discount.value
         else
-          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -= (
             (+invoicesNew[indexInvoice].discount.value / 100) *
             invoicesNew[indexInvoice].moneyToBePaidByCustomer
+          ).toFixed(0)
       }
 
       //tiền thừa
@@ -370,9 +378,10 @@ export default function Sell() {
         invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
           +invoicesNew[indexInvoice].discount.value
       else
-        invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+        invoicesNew[indexInvoice].moneyToBePaidByCustomer -= (
           (+invoicesNew[indexInvoice].discount.value / 100) *
           invoicesNew[indexInvoice].moneyToBePaidByCustomer
+        ).toFixed(0)
     }
 
     //tiền thừa
@@ -437,9 +446,10 @@ export default function Sell() {
           invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
             +invoicesNew[indexInvoice].discount.value
         else
-          invoicesNew[indexInvoice].moneyToBePaidByCustomer -=
+          invoicesNew[indexInvoice].moneyToBePaidByCustomer -= (
             (+invoicesNew[indexInvoice].discount.value / 100) *
             invoicesNew[indexInvoice].moneyToBePaidByCustomer
+          ).toFixed(0)
       }
 
       //tiền thừa
@@ -533,7 +543,7 @@ export default function Sell() {
                   display: '-webkit-box',
                 }}
               >
-                {product && product.title}
+                Thông tin sản phẩm: {product && product.title}
               </p>
               <SearchOutlined
                 onClick={(e) => {
@@ -637,14 +647,16 @@ export default function Sell() {
   const ModalAddCustomer = () => {
     return (
       <>
-        <PlusSquareFilled
-          onClick={toggleCustomer}
-          style={{
-            fontSize: 34,
-            color: '#0362BA',
-            cursor: 'pointer',
-          }}
-        />
+        <Tooltip placement="bottom" title="Thêm mới khách hàng">
+          <PlusSquareFilled
+            onClick={toggleCustomer}
+            style={{
+              fontSize: 34,
+              color: '#0362BA',
+              cursor: 'pointer',
+            }}
+          />
+        </Tooltip>
         <Modal
           onCancel={toggleCustomer}
           width={700}
@@ -725,17 +737,6 @@ export default function Sell() {
     if (invoices[indexInvoice].payments.length === 0) {
       notification.warning({ message: 'Vui lòng chọn phương thức thanh toán' })
       return false
-    }
-
-    if (invoices[indexInvoice].isDelivery) {
-      if (!invoices[indexInvoice].billOfLadingCode) {
-        notification.warning({ message: 'Vui lòng nhập mã vận đơn' })
-        return false
-      }
-      if (!invoices[indexInvoice].shipping) {
-        notification.warning({ message: 'Vui lòng chọn đơn vị vận chuyển' })
-        return false
-      }
     }
 
     if (
@@ -819,13 +820,13 @@ export default function Sell() {
         total_tax: invoices[indexInvoice].VAT || 0,
         total_discount:
           invoices[indexInvoice].sumCostPaid - invoices[indexInvoice].moneyToBePaidByCustomer,
-        final_cost: invoices[indexInvoice].noteInvoice.moneyToBePaidByCustomer || 0,
-        customer_paid: invoices[indexInvoice].noteInvoice.isDelivery
-          ? invoices[indexInvoice].noteInvoice.prepay || 0
-          : invoices[indexInvoice].noteInvoice.moneyGivenByCustomer || 0,
+        final_cost: invoices[indexInvoice].moneyToBePaidByCustomer || 0,
+        customer_paid: invoices[indexInvoice].isDelivery
+          ? invoices[indexInvoice].prepay || 0
+          : invoices[indexInvoice].moneyGivenByCustomer || 0,
         customer_debt: 0,
-        bill_status: 'DRAFT',
-        ship_status: 'DRAFT',
+        bill_status: BILL_STATUS_ORDER.DRAFT,
+        ship_status: SHIP_STATUS_ORDER.DRAFT,
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
       }
@@ -969,17 +970,19 @@ export default function Sell() {
   }, [])
 
   useEffect(() => {
-    const data = jwt_decode(localStorage.getItem('accessToken'))
-    if (!localStorage.getItem('storeSell')) {
-      if (data.data._store) {
-        localStorage.setItem('storeSell', JSON.stringify(data.data._store))
-        _getProductsSearch(data.data._store.store_id)
+    if (localStorage.getItem('accessToken')) {
+      const data = jwt_decode(localStorage.getItem('accessToken'))
+      if (!localStorage.getItem('storeSell')) {
+        if (data.data._store) {
+          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
+          _getProductsSearch(data.data._store.store_id)
+        }
+      } else {
+        const store = JSON.parse(localStorage.getItem('storeSell'))
+        if (store) _getProductsSearch(store.store_id)
+        setInfoStore(store)
       }
-    } else {
-      const store = JSON.parse(localStorage.getItem('storeSell'))
-      if (store) _getProductsSearch(store.store_id)
-      setInfoStore(store)
-    }
+    } else history.push(ROUTES.LOGIN)
   }, [])
 
   useEffect(() => {
@@ -1195,113 +1198,123 @@ export default function Sell() {
         <div className={styles['sell-left']}>
           <div className={styles['sell-products-invoice']}>
             {invoices[indexInvoice].order_details && invoices[indexInvoice].order_details.length ? (
-              invoices[indexInvoice].order_details.map((product, index) => {
-                const Quantity = () => (
-                  <InputNumber
-                    onBlur={(e) => {
-                      const value = e.target.value.replaceAll(',', '')
-                      _editProductInInvoices('quantity', +value, index)
-                    }}
-                    defaultValue={product.quantity || 1}
-                    className="show-handler-number"
-                    style={{ width: '100%' }}
-                    bordered={false}
-                    max={product.total_quantity}
-                    min={1}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    placeholder="Số lượng"
-                  />
-                )
+              <>
+                <Row align="middle" wrap={false} className={styles['sell-product-header']}>
+                  <div className={styles['header-stt']}>STT</div>
+                  <div className={styles['header-remove']}></div>
+                  <div className={styles['header-sku']}>Tên phiên bản</div>
+                  <div className={styles['header-name']}>Tên sản phẩm</div>
+                  <div className={styles['header-unit']}>Đơn vị</div>
+                  <div className={styles['header-quantity']}>Số lượng</div>
+                  <div className={styles['header-price']}>Đơn giá</div>
+                  <div className={styles['header-sum-price']}>Tổng tiền</div>
+                </Row>
+                {invoices[indexInvoice].order_details.map((product, index) => {
+                  const Quantity = () => (
+                    <InputNumber
+                      onBlur={(e) => {
+                        const value = e.target.value.replaceAll(',', '')
+                        _editProductInInvoices('quantity', +value, index)
+                      }}
+                      defaultValue={product.quantity || 1}
+                      className="show-handler-number"
+                      style={{ width: '100%' }}
+                      bordered={false}
+                      max={product.total_quantity}
+                      min={1}
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      placeholder="Số lượng"
+                    />
+                  )
 
-                const Price = () => (
-                  <InputNumber
-                    onBlur={(e) => {
-                      const value = e.target.value.replaceAll(',', '')
-                      _editProductInInvoices('price', +value, index)
-                    }}
-                    defaultValue={product.price || ''}
-                    min={0}
-                    style={{ width: '100%' }}
-                    bordered={false}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    placeholder="Giá tiền"
-                  />
-                )
+                  const Price = () => (
+                    <InputNumber
+                      onBlur={(e) => {
+                        const value = e.target.value.replaceAll(',', '')
+                        _editProductInInvoices('price', +value, index)
+                      }}
+                      defaultValue={product.price || ''}
+                      min={0}
+                      style={{ width: '100%' }}
+                      bordered={false}
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      placeholder="Giá tiền"
+                    />
+                  )
 
-                const Unit = () => (
-                  <Input
-                    onBlur={(e) => _editProductInInvoices('unit', e.target.value, index)}
-                    defaultValue={product.unit || ''}
-                    style={{ width: '100%' }}
-                    placeholder="Đơn vị"
-                    bordered={false}
-                  />
-                )
-
-                return (
-                  <Row
-                    align="middle"
-                    wrap={false}
-                    className={`${styles['sell-product__item']} ${
-                      styles[index % 2 === 0 && 'bg-active']
-                    }`}
-                  >
-                    <Row wrap={false} align="middle">
-                      <p
-                        style={{
-                          marginBottom: 0,
-                          marginRight: 15,
-                          width: 17,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {index}
-                      </p>
-                      <DeleteOutlined
-                        onClick={() => _removeProductToCartInvoice(index)}
-                        style={{
-                          color: 'red',
-                          marginRight: 15,
-                          cursor: 'pointer',
-                        }}
-                      />
-                      <Tooltip title={product.sku}>
-                        <p className={styles['sell-product__item-sku']}>{product.sku}</p>
-                      </Tooltip>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Tooltip title={product.title}>
-                            <p className={styles['sell-product__item-name']}>{product.title}</p>
-                          </Tooltip>
-                          <ModalQuantityProductInStores product={product} />
-                        </div>
-                        <ModalNoteProduct product={product} index={index} />
-                      </div>
-                    </Row>
-                    <Row
-                      wrap={false}
-                      justify="space-between"
-                      align="middle"
-                      style={{ marginLeft: 20, marginRight: 10, width: '100%' }}
+                  const Unit = () => (
+                    <Select
+                      allowClear
+                      showSearch
+                      onChange={(value) => _editProductInInvoices('unit', value, index)}
+                      defaultValue={product.unit || undefined}
+                      style={{ width: '100%' }}
+                      placeholder="Đơn vị"
+                      bordered={false}
                     >
-                      <div className={styles['sell-product__item-unit']}>
-                        <Unit />
-                      </div>
-                      <div className={styles['sell-product__item-quantity']}>
-                        <Quantity />
-                      </div>
-                      <div className={styles['sell-product__item-price']}>
-                        <Price />
-                      </div>
-                      <p style={{ marginBottom: 0, fontWeight: 600 }}>
-                        {formatCash(product.sumCost)}
-                      </p>
+                      <Select.Option value="Cái">Cái</Select.Option>
+                    </Select>
+                  )
+
+                  return (
+                    <Row align="middle" wrap={false} className={styles['sell-product__item']}>
+                      <Row wrap={false} align="middle">
+                        <p
+                          style={{
+                            marginBottom: 0,
+                            marginRight: 15,
+                            width: 17,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {index}
+                        </p>
+                        <DeleteOutlined
+                          onClick={() => _removeProductToCartInvoice(index)}
+                          style={{
+                            color: 'red',
+                            marginRight: 15,
+                            cursor: 'pointer',
+                          }}
+                        />
+                        <Tooltip title={product.sku}>
+                          <p className={styles['sell-product__item-sku']}>{product.sku}</p>
+                        </Tooltip>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Tooltip title={product.title}>
+                              <p className={styles['sell-product__item-name']}>{product.title}</p>
+                            </Tooltip>
+                            <ModalQuantityProductInStores product={product} />
+                          </div>
+                          <ModalNoteProduct product={product} index={index} />
+                        </div>
+                      </Row>
+                      <Row
+                        wrap={false}
+                        justify="space-between"
+                        align="middle"
+                        style={{ marginLeft: 20, marginRight: 10, width: '100%' }}
+                      >
+                        <div className={styles['sell-product__item-unit']}>
+                          <Unit />
+                        </div>
+                        <div className={styles['sell-product__item-quantity']}>
+                          <Quantity />
+                        </div>
+                        <div className={styles['sell-product__item-price']}>
+                          <Price />
+                        </div>
+                        <p style={{ marginBottom: 0, fontWeight: 600 }}>
+                          {formatCash(product.sumCost)}
+                        </p>
+                      </Row>
                     </Row>
-                  </Row>
-                )
-              })
+                  )
+                })}
+              </>
             ) : (
               <div
                 style={{
@@ -1454,7 +1467,6 @@ export default function Sell() {
         <div className={styles['sell-right']}>
           <Row justify="space-between" align="middle" wrap={false}>
             <Select
-              ref={selectCustomerRef}
               notFoundContent={loadingCustomer ? <Spin /> : null}
               dropdownClassName="dropdown-select-search-product"
               allowClear
@@ -1617,7 +1629,7 @@ export default function Sell() {
                   _editInvoice('excessCash', 0)
                 }}
               />
-              Giao hàng
+              Giao hàng tận nơi
             </div>
             <div
               style={{
@@ -1671,10 +1683,6 @@ export default function Sell() {
                     )}
                   </b>{' '}
                   sản phẩm)
-                  <ModalPromotion
-                    invoiceCurrent={invoices[indexInvoice]}
-                    editInvoice={_editInvoice}
-                  />
                 </p>
               </Row>
 
@@ -1685,7 +1693,13 @@ export default function Sell() {
               <p>{formatCash(invoices[indexInvoice].VAT || 0)}</p>
             </Row>
             <Row justify="space-between" wrap={false} align="middle">
-              <p>Chiết khấu</p>
+              <p>
+                Chiết khấu{' '}
+                <ModalPromotion
+                  invoiceCurrent={invoices[indexInvoice]}
+                  editInvoice={_editInvoice}
+                />
+              </p>
               <p>
                 {formatCash(
                   invoices[indexInvoice].discount ? invoices[indexInvoice].discount.value : 0
@@ -1704,7 +1718,7 @@ export default function Sell() {
                 <div
                   style={{
                     borderBottom: '0.75px solid #C9C8C8',
-                    width: '40%',
+                    minWidth: '50%',
                     marginBottom: 10,
                   }}
                 >
@@ -1713,7 +1727,7 @@ export default function Sell() {
                     onChange={(value) => _editInvoice('shipping', value)}
                     bordered={false}
                     style={{ width: '100%' }}
-                    placeholder="Chọn đơn vị vận chuyển"
+                    placeholder="Chọn đơn vị vận chuyển (nếu có)"
                     optionFilterProp="children"
                     showSearch
                     filterOption={(input, option) =>
@@ -1731,16 +1745,12 @@ export default function Sell() {
               <Row justify="space-between" wrap={false} align="middle">
                 <p>Mã vận đơn</p>
                 <div
-                  style={{
-                    borderBottom: '0.75px solid #C9C8C8',
-                    width: '40%',
-                    marginBottom: 10,
-                  }}
+                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%', marginBottom: 10 }}
                 >
                   <Input
                     onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
                     value={invoices[indexInvoice].billOfLadingCode}
-                    placeholder="Nhập mã vận đơn"
+                    placeholder="Nhập mã vận đơn (nếu có)"
                     bordered={false}
                     style={{ width: '100%' }}
                   />
@@ -1748,18 +1758,14 @@ export default function Sell() {
               </Row>
               <Row justify="space-between" wrap={false} align="middle">
                 <p style={{ marginTop: 10 }}>Phí giao hàng</p>
-                <div
-                  style={{
-                    borderBottom: '0.75px solid #C9C8C8',
-                    width: '40%',
-                  }}
-                >
+                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%' }}>
                   <InputNumber
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    value={invoices[indexInvoice].deliveryCharges}
+                    value={invoices[indexInvoice].deliveryCharges || ''}
                     onChange={(value) => _editInvoice('deliveryCharges', +value)}
                     placeholder="Nhập phí giao hàng"
+                    defaultValue={''}
                     min={0}
                     bordered={false}
                     style={{ width: '100%' }}
@@ -1767,6 +1773,25 @@ export default function Sell() {
                 </div>
               </Row>
             </div>
+
+            <Row>
+              <PaymentMethods
+                setVisible={setVisiblePayments}
+                visible={visiblePayments}
+                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
+                indexInvoice={indexInvoice}
+                invoices={invoices}
+                editInvoice={_editInvoice}
+              />
+            </Row>
+            <div style={{ marginBottom: 10 }}>
+              <Space size="middle">
+                {invoices[indexInvoice].payments.map((payment) => (
+                  <i style={{ color: '#637381' }}>{payment.method}</i>
+                ))}
+              </Space>
+            </div>
+
             <Row
               justify="space-between"
               wrap={false}
@@ -1775,7 +1800,6 @@ export default function Sell() {
                 fontWeight: 700,
                 color: '#0877de',
                 fontSize: 17,
-                marginTop: 8,
               }}
             >
               <p style={{ color: 'black', fontWeight: 600 }}>Khách phải trả</p>
@@ -1783,7 +1807,7 @@ export default function Sell() {
             </Row>
             {invoices[indexInvoice].isDelivery ? (
               <Row justify="space-between" wrap={false} align="middle">
-                <p style={{ marginBottom: 0 }}>Tiền thanh toán trước (F2)</p>
+                <p style={{ marginBottom: 0 }}>Tiền thanh một phần (F2)</p>
                 {invoices[indexInvoice].payments.length === 1 ? (
                   <div
                     style={{
@@ -1800,7 +1824,7 @@ export default function Sell() {
                           { method: invoices[indexInvoice].payments[0].method, value: value },
                         ])
                       }}
-                      placeholder="Nhập tiền thanh toán trước"
+                      placeholder="Nhập tiền thanh toán một phần"
                       formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                       min={0}
@@ -1844,60 +1868,43 @@ export default function Sell() {
                 )}
               </Row>
             )}
-            <Row>
-              <PaymentMethods
-                setVisible={setVisiblePayments}
-                visible={visiblePayments}
-                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
-                indexInvoice={indexInvoice}
-                invoices={invoices}
-                editInvoice={_editInvoice}
-              />
-            </Row>
-            <div style={{ marginBottom: 20 }}>
-              <Space size="middle">
-                {invoices[indexInvoice].payments.map((payment) => (
-                  <i style={{ color: '#637381' }}>{payment.method}</i>
-                ))}
-              </Space>
-            </div>
+
             <div
               style={{
-                marginBottom: 20,
                 display: invoices[indexInvoice].payments.length !== 1 && 'none',
               }}
             >
-              <Row style={{ marginBottom: 15 }} justify="space-between" wrap={true}>
-                {invoices[indexInvoice].moneyToBePaidByCustomer &&
-                  TienThoi(+invoices[indexInvoice].moneyToBePaidByCustomer).map((price, index) => (
-                    <Button
-                      onClick={() => {
-                        setChooseButtonPrice(price)
-                        if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', +price)
-                        else _editInvoice('moneyGivenByCustomer', +price)
-                      }}
-                      type={chooseButtonPrice === price ? 'primary' : ''}
-                      style={{ minWidth: 120, display: index > 5 && 'none', marginBottom: 15 }}
-                    >
-                      {formatCash(+price)}
-                    </Button>
-                  ))}
+              <Row style={{ marginTop: 20 }} justify="space-between" wrap={true}>
+                {invoices[indexInvoice].moneyToBePaidByCustomer
+                  ? TienThoi(+invoices[indexInvoice].moneyToBePaidByCustomer).map(
+                      (price, index) => (
+                        <Button
+                          onClick={() => {
+                            setChooseButtonPrice(price)
+                            if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', +price)
+                            else _editInvoice('moneyGivenByCustomer', +price)
+                          }}
+                          type={chooseButtonPrice === price ? 'primary' : ''}
+                          style={{ minWidth: 120, display: index > 5 && 'none', marginBottom: 15 }}
+                        >
+                          {formatCash(+price)}
+                        </Button>
+                      )
+                    )
+                  : ''}
               </Row>
             </div>
           </div>
+
           {!invoices[indexInvoice].isDelivery && (
-            <Row wrap={false} justify="space-between" align="middle">
+            <Row wrap={false} justify="space-between" align="middle" style={{ marginTop: 10 }}>
               <span>Tiền thừa: </span>
-              <span
-                style={{
-                  fontWeight: 600,
-                  color: 'red',
-                }}
-              >
+              <span style={{ fontWeight: 600, color: 'red' }}>
                 {formatCash(invoices[indexInvoice].excessCash)}
               </span>
             </Row>
           )}
+
           <div style={{ marginBottom: 15, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />

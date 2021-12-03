@@ -63,22 +63,60 @@
         padding-left: 5px;
         padding-right: 5px;
 
-        .bg-active {
-          background-color: #f3f7fc;
+        .sell-product-header {
+          font-size: 15px;
+          font-weight: 600;
+          min-height: 40px;
+          max-height: 40px;
+          display: flex;
+          align-items: center;
+          border-bottom: 0.5px solid #cac7c7;
+
+          .header-stt {
+            width: 17px;
+          }
+
+          .header-remove {
+            width: 50px;
+          }
+
+          .header-sku {
+            width: 110px;
+            margin-right: 15px;
+          }
+
+          .header-name {
+            min-width: 180px;
+            max-width: 180px;
+          }
+
+          .header-unit {
+            width: 100px;
+            margin-left: 48px;
+          }
+
+          .header-quantity {
+            width: 130px;
+            text-align: center;
+          }
+
+          .header-price {
+            width: 130px;
+            text-align: center;
+          }
+
+          .header-sum-price {
+            width: 130px;
+            text-align: end;
+          }
         }
 
         .sell-product__item {
-          border-radius: 3px;
           width: 100%;
           padding: 30px 9px;
           min-height: 50px;
           max-height: 50px;
           border-bottom: 0.5px solid #cac7c7;
-
-          &:nth-child(1) {
-            border: 1px solid #a4a4a4;
-            box-shadow: 0px 2px 4px rgb(63 63 63 / 25%);
-          }
 
           .sell-product__item-sku {
             margin-bottom: 0px;

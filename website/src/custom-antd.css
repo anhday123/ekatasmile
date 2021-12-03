@@ -49,7 +49,7 @@
 .ant-input {
   border-radius: 5px !important;
 }
-.ant-input-number{
+.ant-input-number {
   border-radius: 5px !important;
 }
 .ant-input-affix-wrapper {
@@ -173,27 +173,10 @@
   display: none;
 }
 
-/* custom pagination */
-/* .ant-pagination-item{
-  overflow: hidden !important;
-  border-radius: 50% !important;
-  box-shadow: 0px 0px 25px rgba(75, 0, 224, 0.229);
-  margin: 0 5px !important;
-  background-color: #5b6be8 !important;
+.table-product-in-order thead > tr > th {
+  background-color: white !important;
 }
-.ant-pagination-item a{
-  color:white !important;
+
+.table-product-in-order .ant-table {
+  margin-left: 0px !important;
 }
-.anticon-left,.anticon-right {
-  color: #5b6be8 !important;
-} */
-
-/* custom table */
-/* .ant-table-thead tr th {
-  background-color: #5b6be8 !important;
-} */
-
-/* custom modal */
-/* .ant-modal-footer{
-  text-align: center !important;
-} */
