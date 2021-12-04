@@ -87,8 +87,8 @@ export default function OrderList() {
   const columnsOrder = [
     {
       title: 'Mã đơn hàng',
-      dataIndex: 'order_id',
-      sorter: (a, b) => compare(a, b, 'order_id'),
+      dataIndex: 'code',
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Ngày tạo',
@@ -313,7 +313,9 @@ export default function OrderList() {
                                 ? `${record.customer.first_name} ${record.customer.last_name}`
                                 : ''}
                             </a>
-                            <div style={{ margin: '0px 5px' }}>-</div>
+                            <div style={{ margin: '0px 5px', display: !record.customer && 'none' }}>
+                              -
+                            </div>
                             <div>{record.customer ? record.customer.phone : ''}</div>
                           </Row>
                           <div>
@@ -331,7 +333,11 @@ export default function OrderList() {
                           </div>
                           <div>
                             <p style={{ fontWeight: 700, marginBottom: 4 }}>Tags</p>
-                            <div style={{ color: record.note ? '#747C87' : '' }}>
+                            <div
+                              style={{
+                                color: !record.tags || !record.tags.length ? '#747C87' : '',
+                              }}
+                            >
                               {record.tags && record.tags.length
                                 ? record.tags.join(',')
                                 : 'Đơn hàng chưa có tag'}
@@ -346,14 +352,21 @@ export default function OrderList() {
                         size="large"
                         type="primary"
                         onClick={async () => {
+                          console.log(record)
                           setDataPrint({
                             ...record,
+                            isDelivery: record.shipping_info ? true : false,
+                            deliveryCharges:
+                              record.shipping_info && (record.shipping_info.cod || 0),
                             sumCostPaid: record.total_cost,
                             discount:
                               record.promotion && Object.keys(record.promotion).length
                                 ? record.promotion
                                 : null,
                             moneyToBePaidByCustomer: record.final_cost,
+                            deliveryAddress: record.shipping_info,
+                            moneyGivenByCustomer: 0,
+                            prepay: 0,
                           })
                           await delay(500)
                           handlePrint()
