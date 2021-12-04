@@ -249,7 +249,7 @@ export default function Sell() {
         } else
           invoicesNew[indexInvoice].order_details.push({
             ...product,
-            unit: '', //đơn vị
+            unit: 'Cái', //đơn vị
             quantity: 1, //số lượng sản phẩm
             sumCost: product.price, // tổng giá tiền
             VAT_Product:
@@ -497,14 +497,6 @@ export default function Sell() {
           <span>Có thể bán</span>
           <span>{formatCash(product ? product.total_quantity : 0)}</span>
         </Row>
-        <Row justify="space-between">
-          <span>Hệ thống</span>
-          <span></span>
-        </Row>
-        <Row justify="space-between">
-          <span>Áp dụng thuế</span>
-          <span></span>
-        </Row>
       </div>
     )
 
@@ -635,6 +627,48 @@ export default function Sell() {
               onChange={(e) => setNote(e.target.value)}
               value={note}
               placeholder="Nhập ghi chú"
+              rows={4}
+              style={{ width: '100%' }}
+            />
+          </div>
+        </Modal>
+      </>
+    )
+  }
+
+  const ModalSkuProduct = ({ product, index }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const [sku, setSku] = useState(product.sku || '')
+    console.log(product)
+
+    return (
+      <>
+        <Tooltip title={product.sku}>
+          <p className={styles['sell-product__item-sku']} onClick={toggle}>
+            {product.sku}
+          </p>
+        </Tooltip>
+        <Modal
+          cancelText="Hủy bỏ"
+          okText="Cập nhật"
+          title="Cập nhật tên phiên bản"
+          onCancel={() => {
+            toggle()
+            setSku(product.sku || '')
+          }}
+          onOk={() => {
+            _editProductInInvoices('sku', sku, index)
+          }}
+          visible={visible}
+        >
+          <div>
+            Tên phiên bản
+            <Input
+              onChange={(e) => setSku(e.target.value)}
+              value={sku}
+              placeholder="Nhập tên phiên bản"
               rows={4}
               style={{ width: '100%' }}
             />
@@ -1202,8 +1236,8 @@ export default function Sell() {
                 <Row align="middle" wrap={false} className={styles['sell-product-header']}>
                   <div className={styles['header-stt']}>STT</div>
                   <div className={styles['header-remove']}></div>
-                  <div className={styles['header-sku']}>Tên phiên bản</div>
                   <div className={styles['header-name']}>Tên sản phẩm</div>
+                  <div className={styles['header-sku']}>Tên phiên bản</div>
                   <div className={styles['header-unit']}>Đơn vị</div>
                   <div className={styles['header-quantity']}>Số lượng</div>
                   <div className={styles['header-price']}>Đơn giá</div>
@@ -1279,9 +1313,7 @@ export default function Sell() {
                             cursor: 'pointer',
                           }}
                         />
-                        <Tooltip title={product.sku}>
-                          <p className={styles['sell-product__item-sku']}>{product.sku}</p>
-                        </Tooltip>
+
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Tooltip title={product.title}>
@@ -1291,6 +1323,8 @@ export default function Sell() {
                           </div>
                           <ModalNoteProduct product={product} index={index} />
                         </div>
+
+                        <ModalSkuProduct product={product} index={index} />
                       </Row>
                       <Row
                         wrap={false}
@@ -1774,40 +1808,18 @@ export default function Sell() {
               </Row>
             </div>
 
-            <Row>
-              <PaymentMethods
-                setVisible={setVisiblePayments}
-                visible={visiblePayments}
-                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
-                indexInvoice={indexInvoice}
-                invoices={invoices}
-                editInvoice={_editInvoice}
-              />
-            </Row>
-            <div style={{ marginBottom: 10 }}>
-              <Space size="middle">
-                {invoices[indexInvoice].payments.map((payment) => (
-                  <i style={{ color: '#637381' }}>{payment.method}</i>
-                ))}
-              </Space>
-            </div>
-
             <Row
               justify="space-between"
               wrap={false}
               align="middle"
-              style={{
-                fontWeight: 700,
-                color: '#0877de',
-                fontSize: 17,
-              }}
+              style={{ fontWeight: 700, color: '#0877de', fontSize: 17, margin: '13px 0px' }}
             >
-              <p style={{ color: 'black', fontWeight: 600 }}>Khách phải trả</p>
-              <p>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</p>
+              <div>Khách phải trả</div>
+              <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
             </Row>
             {invoices[indexInvoice].isDelivery ? (
               <Row justify="space-between" wrap={false} align="middle">
-                <p style={{ marginBottom: 0 }}>Tiền thanh một phần (F2)</p>
+                <p style={{ marginBottom: 0 }}>Tiền thanh toán một phần (F2)</p>
                 {invoices[indexInvoice].payments.length === 1 ? (
                   <div
                     style={{
@@ -1869,7 +1881,27 @@ export default function Sell() {
               </Row>
             )}
 
-            <div
+            <Row>
+              <PaymentMethods
+                setVisible={setVisiblePayments}
+                visible={visiblePayments}
+                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
+                indexInvoice={indexInvoice}
+                invoices={invoices}
+                editInvoice={_editInvoice}
+              />
+            </Row>
+            <div style={{ marginBottom: 10 }}>
+              <Space size="middle">
+                {invoices[indexInvoice].payments.map((payment) => (
+                  <i style={{ color: '#637381' }}>
+                    {payment.method} ({formatCash(payment.value || 0)})
+                  </i>
+                ))}
+              </Space>
+            </div>
+
+            {/* <div
               style={{
                 display: invoices[indexInvoice].payments.length !== 1 && 'none',
               }}
@@ -1893,11 +1925,11 @@ export default function Sell() {
                     )
                   : ''}
               </Row>
-            </div>
+            </div> */}
           </div>
 
           {!invoices[indexInvoice].isDelivery && (
-            <Row wrap={false} justify="space-between" align="middle" style={{ marginTop: 10 }}>
+            <Row wrap={false} justify="space-between" align="middle">
               <span>Tiền thừa: </span>
               <span style={{ fontWeight: 600, color: 'red' }}>
                 {formatCash(invoices[indexInvoice].excessCash)}

@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './order-list.module.scss'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
-import { compare, compareCustom, formatCash } from 'utils'
+import { compare, formatCash } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 
 //antd
-import { Input, Button, Row, Col, DatePicker, Table, Modal, Select, Form, Space } from 'antd'
+import { Input, Button, Row, DatePicker, Table, Select, Space } from 'antd'
 
 //icons
-import { EditOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 //components
 import Permissions from 'components/permission'
@@ -33,7 +33,6 @@ export default function OrderList() {
 
   const [loading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [showUpdate, setShowUpdate] = useState(false)
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
 
@@ -442,61 +441,6 @@ export default function OrderList() {
           dataSource={orders}
         />
       </div>
-      <Modal
-        title="Cập nhật địa chỉ giao hàng"
-        visible={showUpdate}
-        onCancel={() => setShowUpdate(false)}
-        onOk={() => setShowUpdate(false)}
-        centered
-      >
-        <Form layout="vertical">
-          <Row gutter={10}>
-            <Col span={12}>
-              <Form.Item label="tên khách hàng">
-                <Input placeholder="Nhập  tên khách hàng" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Địa chỉ">
-                <Input placeholder="Nhập địa chỉ" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Số điện thoại">
-                <Input placeholder="Nhập số điện thoại" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Tỉnh/ Thành phố">
-                <Select
-                  placeholder="Chọn Tỉnh/Thành phố"
-                  style={{ width: '100%' }}
-                  size="large"
-                ></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Quận/huyện">
-                <Select
-                  placeholder="Chọn Quận/Huyện"
-                  style={{ width: '100%' }}
-                  size="large"
-                ></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Quốc gia">
-                <Select placeholder="Chọn Quốc gia" style={{ width: '100%' }} size="large"></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Công ty">
-                <Input placeholder="Nhập tên công ty" size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
     </>
   )
 }
