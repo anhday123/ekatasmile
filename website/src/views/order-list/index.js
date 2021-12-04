@@ -1,839 +1,446 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './order-list.module.scss'
-import { Link } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import moment from 'moment'
-import { ROUTES, PERMISSIONS } from 'consts'
-import { compare, compareCustom, tableSum, formatCash, decryptText } from 'utils'
+import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
+import { compare, formatCash } from 'utils'
+import { useReactToPrint } from 'react-to-print'
+import delay from 'delay'
 
 //antd
-import {
-  Input,
-  Button,
-  Tabs,
-  Pagination,
-  Row,
-  Col,
-  DatePicker,
-  Table,
-  Modal,
-  Typography,
-  Select,
-  Form,
-} from 'antd'
+import { Input, Button, Row, DatePicker, Table, Select, Space } from 'antd'
 
-//antd
-import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons'
+//icons
+import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 //components
 import Permissions from 'components/permission'
+import PrintOrder from 'components/print/print-order'
 
 //apis
 import { apiAllOrder } from 'apis/order'
 
-const { Text } = Typography
 const { RangePicker } = DatePicker
-const { TabPane } = Tabs
-
 export default function OrderList() {
+  let printOrderRef = useRef()
+  const history = useHistory()
+  const typingTimeoutRef = useRef(null)
+  const handlePrint = useReactToPrint({
+    content: () => printOrderRef.current,
+  })
+
+  const [dataPrint, setDataPrint] = useState(null)
+
   const [loading, setLoading] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [showUpdate, setShowUpdate] = useState(false)
+  const [orders, setOrders] = useState([])
+  const [countOrder, setCountOrder] = useState(0)
 
-  useEffect(() => {
-    console.log(
-      decryptText(
-        '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'
-      )
-    )
-  }, [])
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: PAGE_SIZE })
+  const [valueSearch, setValueSearch] = useState('')
 
-  const dataTmp = [
+  const Print = () => (
+    <div style={{ display: 'none' }}>
+      <PrintOrder ref={printOrderRef} data={dataPrint} />
+    </div>
+  )
+
+  const _onSearch = (e) => {
+    const value = e.target.value
+    setValueSearch(value)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      paramsFilter.page = 1
+
+      if (value) paramsFilter.order_id = value
+      else delete paramsFilter.order_id
+
+      setParamsFilter({ ...paramsFilter })
+    }, 650)
+  }
+
+  const _onChangeDate = (date, dateString) => {
+    paramsFilter.page = 1
+
+    if (date) {
+      paramsFilter.from_date = dateString[0]
+      paramsFilter.to_date = dateString[1]
+    } else {
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
+    }
+
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const _onChangeStatus = (value) => {
+    paramsFilter.page = 1
+
+    if (value) paramsFilter.bill_status = value
+    else delete paramsFilter.bill_status
+
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const columnsOrder = [
     {
-      _id: '612ca61b8997e5680e63d0fe',
-      order_id: '34',
-      bussiness: {
-        _id: '6130603eca474e0a0c802a71',
-        user_id: '1',
-        business_id: '1',
-        username: 'phandangluu',
-        otp_code: false,
-        otp_timelife: false,
-        role_id: '2',
-        email: 'phandangluu.viesoftware@gmail.com',
-        phone: '0967845619',
-        avatar: '',
-        first_name: 'Phan Đăng',
-        last_name: 'Lưu',
-        sub_name: 'phandangluu',
-        birthday: '1993-06-07',
-        address: 'C7C/18H Phạm Hùng',
-        sub_address: 'c7c/18hphamhung',
-        district: 'Huyện Bình Chánh',
-        sub_district: 'huyenbinhchanh',
-        province: 'Hồ Chí Minh',
-        sub_province: 'hochiminh',
-        company_name: 'LULU',
-        company_website: '',
-        tax_code: '',
-        fax: '',
-        branch_id: '',
-        store_id: '',
-        create_date: '2021-09-02T12:25:18+07:00',
-        last_login: '2021-09-02T12:33:29+07:00',
-        creator: ' ',
-        exp: '2021-09-12T12:25:18+07:00',
-        is_new: true,
-        active: true,
-        sub_company_name: 'lulu',
-      },
-      code: '000034',
-      order_type: null,
-      platform: 'SHOP',
-      branch: {
-        _id: '613c34305965867d61e1bd82',
-        branch_id: '1',
-        business_id: '2',
-        code: '1000001',
-        name: 'HAI BÀ TRƯNG',
-        sub_name: 'haibatrung',
-        logo: '',
-        phone: '0833963029',
-        email: '',
-        fax: '',
-        website: '',
-        latitude: '',
-        longtitude: '',
-        warehouse_type: 'sở hữu',
-        sub_warehouse_type: 'sohuu',
-        address: 'TPHCM',
-        sub_address: 'tphcm',
-        district: 'Huyện Mường Khương',
-        sub_district: 'huyenmuongkhuong',
-        province: 'Lào Cai',
-        sub_province: 'laocai',
-        accumulate_point: false,
-        use_point: false,
-        create_date: '2021-09-11T11:44:32+07:00',
-        creator_id: '2',
-        active: true,
-      },
-      employee: {
-        _id: '6130603eca474e0a0c802a71',
-        user_id: '1',
-        business_id: '1',
-        username: 'phandangluu',
-        otp_code: false,
-        otp_timelife: false,
-        role_id: '2',
-        email: 'phandangluu.viesoftware@gmail.com',
-        phone: '0967845619',
-        avatar: '',
-        first_name: 'Phan Đăng',
-        last_name: 'Lưu',
-        sub_name: 'phandangluu',
-        birthday: '1993-06-07',
-        address: 'C7C/18H Phạm Hùng',
-        sub_address: 'c7c/18hphamhung',
-        district: 'Huyện Bình Chánh',
-        sub_district: 'huyenbinhchanh',
-        province: 'Hồ Chí Minh',
-        sub_province: 'hochiminh',
-        company_name: 'LULU',
-        company_website: '',
-        tax_code: '',
-        fax: '',
-        branch_id: '',
-        store_id: '',
-        create_date: '2021-09-02T12:25:18+07:00',
-        last_login: '2021-09-02T12:33:29+07:00',
-        creator: ' ',
-        exp: '2021-09-12T12:25:18+07:00',
-        is_new: true,
-        active: true,
-        sub_company_name: 'lulu',
-      },
-      customer: {
-        _id: '611b8e9c2b94861ee4e42aec',
-        customer_id: '98',
-        bussiness: '1',
-        code: 'DEMOBUSSINESS_98',
-        phone: '7493697401',
-        type: 'Tiềm năng',
-        first_name: 'Khách hàng',
-        last_name: 'Demo 98',
-        gender: 'NAM',
-        birthday: '2021-08-17T17:28:01+07:00',
-        address: 'Số nhà - tên đường',
-        ward: 'Xã/Phường',
-        district: 'Quận Gò Vấp',
-        province: 'Hồ Chí Minh',
-        balance: [],
-        create_date: '2021-08-17T17:25:32+07:00',
-        last_login: '2021-08-17T17:25:32+07:00',
-        creator: '1',
-        active: true,
-      },
-      payment: {
-        _id: '61013480db4cfa8d8c768b70',
-        payment_id: '1',
-        bussiness: '1',
-        name: 'Tiền mặt',
-        type: 'CASH',
-        description: 'mô tả',
-        tutorial: 'hướng dẫn sử dụng',
-        branchs: ['1', '2', '3', '4'],
-        active: true,
-      },
-      info_payment: null,
-      taxes: [
-        {
-          _id: '613b20a6c95b7c3f7306c036',
-          tax_id: '1',
-          business_id: '2',
-          code: '1000001',
-          name: 'VAT',
-          sub_name: 'vat',
-          value: 5,
-          description: '',
-          default: false,
-          create_date: '2021-09-10T16:08:54+07:00',
-          creator_id: '2',
-          active: true,
-        },
-      ],
-      shipping_company: {},
-      shipping: '',
-      order_details: [
-        {
-          quantityAvailable: 100,
-          sale_price: 500000,
-          title: 'SẢN PHẨM MẪU 2 WHITE S',
-          product_id: '2',
-          sku: 'SPM2-WHITE-S',
-          supplier: 'NCC1',
-          options: [
-            {
-              name: 'COLOR',
-              values: 'WHITE',
-            },
-            {
-              name: 'SIZE',
-              values: 'S',
-            },
-          ],
-          quantity: 1,
-          total_cost: 500000,
-          voucher: '',
-          discount: 0,
-          final_cost: 500000,
-          import_price: 90000,
-          base_price: 110000,
-        },
-      ],
-      voucher: '',
-      promotion: {},
-      total_cost: 500000,
-      discount: 0,
-      final_cost: 525000,
-      price_real: 525000,
-      note: '',
-      fulfillments: [],
-      latitude: '',
-      longtitude: '',
-      bill_status: 'PROCESSING',
-      shipping_status: 'COMPLETE',
-      hmac: null,
-      timestampe: null,
-      create_date: '2021-08-30T16:34:19+07:00',
-      creator: {
-        _id: '6130603eca474e0a0c802a71',
-        user_id: '1',
-        business_id: '1',
-        username: 'phandangluu',
-        otp_code: false,
-        otp_timelife: false,
-        role_id: '2',
-        email: 'phandangluu.viesoftware@gmail.com',
-        phone: '0967845619',
-        avatar: '',
-        first_name: 'Phan Đăng',
-        last_name: 'Lưu',
-        sub_name: 'phandangluu',
-        birthday: '1993-06-07',
-        address: 'C7C/18H Phạm Hùng',
-        sub_address: 'c7c/18hphamhung',
-        district: 'Huyện Bình Chánh',
-        sub_district: 'huyenbinhchanh',
-        province: 'Hồ Chí Minh',
-        sub_province: 'hochiminh',
-        company_name: 'LULU',
-        company_website: '',
-        tax_code: '',
-        fax: '',
-        branch_id: '',
-        store_id: '',
-        create_date: '2021-09-02T12:25:18+07:00',
-        last_login: '2021-09-02T12:33:29+07:00',
-        creator: ' ',
-        exp: '2021-09-12T12:25:18+07:00',
-        is_new: true,
-        active: true,
-        sub_company_name: 'lulu',
-      },
-      active: true,
-      _bussiness: 'Phan Đăng Lưu',
-      _creator: 'Phan Đăng Lưu',
-      _customer: 'Khách hàng Demo 98',
-    },
-  ]
-
-  const columnsPromotion = [
-    {
-      title: 'Mã hóa đơn',
+      title: 'Mã đơn hàng',
       dataIndex: 'order_id',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'order_id'),
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      width: 200,
-      render: (text, record) => text && moment(text).format('YYYY-MM-DD, HH:mm:ss'),
+      render: (text, record) => text && moment(text).format('DD/MM/YYYY HH:mm'),
       sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
-      title: 'Khách hàng',
-      dataIndex: 'customerMain',
-      width: 150,
+      title: 'Tên khách hàng',
       render: (text, record) =>
-        record && record.customer && record.customer.first_name
-          ? `${record.customer.first_name} ${record.customer.last_name}`
-          : '',
-      sorter: (a, b) =>
-        compareCustom(
-          `${a.customer.first_name} ${a.customer.last_name}`,
-          `${b.customer.first_name} ${b.customer.last_name}`
-        ),
+        record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
     },
     {
       title: 'Nhân viên',
-      dataIndex: 'employeeMain',
-      width: 150,
       render: (text, record) =>
-        record && record.employee && record.employee.first_name && record.employee.last_name
-          ? `${record.employee.first_name} ${record.employee.last_name}`
-          : '',
+        record.employee ? `${record.employee.first_name} ${record.employee.last_name}` : '',
+    },
+    {
+      title: 'Trạng thái đơn hàng',
+      dataIndex: 'bill_status',
     },
     {
       title: 'Thanh toán',
-      dataIndex: 'bill_status',
-      width: 150,
-      render(data) {
-        return data.toLowerCase() === 'complete' ? (
-          <span style={{ color: '#04B000' }}>
-            <b>Đã thanh toán</b>
-          </span>
-        ) : (
-          <span style={{ color: '#E59700' }}>
-            <b>Chưa thanh toán</b>
-          </span>
-        )
-      },
+      dataIndex: 'payment_status',
     },
     {
-      title: 'Giao hàng',
-      dataIndex: 'shipping_status',
-      width: 150,
-      render(data) {
-        return data.toLowerCase() === 'complete' ? (
-          <span style={{ color: '#04B000' }}>
-            <b>Đã giao hàng</b>
-          </span>
-        ) : (
-          <span style={{ color: '#E59700' }}>
-            <b>Chưa giao hàng</b>
-          </span>
-        )
-      },
-    },
-    {
-      title: 'Thành tiền',
+      title: 'Khách phải trả',
       dataIndex: 'final_cost',
-      width: 150,
-      render: (text, record) => `${formatCash(String(text))} VNĐ`,
-      sorter: (a, b) => compare(a, b, 'final_cost'),
+      render: (text) => formatCash(text),
     },
-    // {
-    //   title: 'Khách đã trả',
-    //   dataIndex: 'final_cost',
-    //   width: 150,
-    //   render: (text, record) => `${formatCash(String(text))} VNĐ`,
-    //   sorter: (a, b) => compare(a, b, 'final_cost'),
-    // },
   ]
 
-  const columnsDetailOrder = [
+  const columnsProduct = [
     {
       title: 'Mã sản phẩm',
-      dataIndex: 'sku',
+      dataIndex: 'product_id',
     },
     {
-      title: 'ảnh',
+      title: 'Ảnh',
       dataIndex: 'image',
-      render(data) {
-        return data && <img src={data[0]} width="60" />
-      },
+      render: (data) => (
+        <img src={data[0] && data[0]} style={{ maxWidth: 60, maxHeight: 60 }} alt="" />
+      ),
     },
     {
       title: 'Tên sản phẩm',
-      dataIndex: 'name',
-      render(data, record) {
-        return record.title || data
-      },
+      dataIndex: 'title',
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
     },
     {
-      title: 'Đơn vị',
-      dataIndex: '',
-      // render(data) {
-      //   return formatCash(data)
-      // },
+      title: 'Đơn giá',
+      render: (text, record) => (record.price ? formatCash(+record.price) : 0),
     },
     {
-      title: 'Đơn giá',
-      dataIndex: 'sale_price',
-      render(data) {
-        return formatCash(data)
-      },
+      title: 'Chiết khấu',
+      render: (text, record) => (record.discount ? formatCash(+record.discount) : 0),
     },
     {
       title: 'Thành tiền',
-      dataIndex: 'final_cost',
-      render(data) {
-        return formatCash(data)
-      },
+      render: (text, record) => (record.total_cost ? formatCash(+record.total_cost) : 0),
     },
   ]
 
-  const apiAllOrderDataTable = async (page, page_size) => {
+  const _getOrders = async (params) => {
     try {
       setLoading(true)
-      const res = await apiAllOrder({ page: page, page_size: page_size })
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-        setOrder(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  function onShowSizeChangeTable(current, pageSize) {
-    apiAllOrderDataTable(current, pageSize)
-  }
-  function onChangeTable(pageNumber) {
-    apiAllOrderDataTable(pageNumber, 10)
-  }
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-
-  const [order, setOrder] = useState([])
-  const apiAllOrderData = async (object, id, data) => {
-    try {
-      setLoading(true)
-      const res = await apiAllOrder({ page: 1, page_size: 10 })
+      const res = await apiAllOrder(params)
       console.log(res)
       if (res.status === 200) {
-        setOrder(res.data.data)
+        setOrders(res.data.data)
+        setCountOrder(res.data.count)
       }
-
       setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.log(error)
-      setLoading(false)
     }
   }
+
   useEffect(() => {
-    apiAllOrderData()
-  }, [])
-  const [countTable, setCountTable] = useState(0)
-  const apiAllOrderDataTableOrderDetail = async (e) => {
-    try {
-      setLoading(true)
-      const res = await apiAllOrder({ keyword: e, page: 1, page_size: 10 })
+    _getOrders(paramsFilter)
+  }, [paramsFilter])
 
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-        setOrder(res.data.data)
-        let now = moment()
-
-        setOrder(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const typingTimeoutRef = useRef(null)
-  const [valueSearchOrderDetail, setValueSearchOrderDetail] = useState('')
-  const onSearchOrderDetail = (e) => {
-    setValueSearchOrderDetail(e.target.value)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      const value = e.target.value
-      apiAllOrderDataTableOrderDetail(value)
-    }, 300)
-  }
-  const apiAllOrderDataTableOrderDetailDate = async (start, end) => {
-    try {
-      setLoading(true)
-      const res = await apiAllOrder({ from_date: start, to_date: end })
-
-      if (res.status === 200) {
-        setCountTable(res.data.count)
-
-        setOrder(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  const dateFormat = 'YYYY/MM/DD'
-  const [start, setStart] = useState('')
-  const [clear, setClear] = useState(-1)
-  const [end, setEnd] = useState('')
-  function onChangeDate(dates, dateStrings) {
-    setClear(-1)
-    setStart(dateStrings && dateStrings.length > 0 ? dateStrings[0] : [])
-    setEnd(dateStrings && dateStrings.length > 0 ? dateStrings[1] : [])
-    apiAllOrderDataTableOrderDetailDate(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
-  }
   return (
     <>
+      <Print />
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <Row
+          justify="space-between"
+          wrap={false}
+          align="middle"
           style={{
-            display: 'flex',
             borderBottom: '1px solid rgb(236, 226, 226)',
             paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
             width: '100%',
           }}
         >
-          <Col
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-            className={styles['promotion_manager_title']}
-          >
-            Danh sách đơn hàng
-          </Col>
-          <Col
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-            cls={24}
-            className={styles['promotion_manager_button']}
-          >
-            <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
-              <Link
-                to={ROUTES.ORDER_CREATE_SHIPPING}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-                  Tạo đơn hàng
-                </Button>
-              </Link>
-            </Permissions>
-          </Col>
+          <h3 style={{ marginBottom: 0, fontSize: 19 }}>Danh sách đơn hàng</h3>
+          <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
+            <Button
+              onClick={() => history.push(ROUTES.ORDER_CREATE)}
+              size="large"
+              type="primary"
+              icon={<PlusCircleOutlined />}
+            >
+              Tạo đơn hàng
+            </Button>
+          </Permissions>
         </Row>
 
-        <Tabs style={{ width: '100%' }} defaultActiveKey="1">
-          <TabPane
-            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Tất cả đơn hàng</span>}
-            key="1"
-          ></TabPane>
-          <TabPane
-            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Đơn hàng Hủy</span>}
-            key="2"
-          ></TabPane>
-          <TabPane
-            tab={<span style={{ fontSize: 16, fontWeight: 600 }}>Đơn hàng hoàn tiền</span>}
-            key="3"
-          ></TabPane>
-        </Tabs>
-
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-              marginRight: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
+        <Row style={{ marginTop: '1rem', width: '100%' }} wrap={false}>
+          <Space>
+            <div>
+              <div>Tìm kiếm theo mã đơn hàng</div>
               <Input
+                style={{ width: 350 }}
+                prefix={<SearchOutlined />}
                 size="large"
-                style={{ width: '100%' }}
                 name="name"
-                value={valueSearchOrderDetail}
-                enterButton
-                onChange={onSearchOrderDetail}
-                placeholder="Tìm kiếm theo mã, theo tên"
+                value={valueSearch}
+                onChange={_onSearch}
+                placeholder="Nhập mã đơn hàng"
                 allowClear
               />
             </div>
-          </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
+            <div>
+              <div>Lọc theo thời gian</div>
               <RangePicker
+                onChange={_onChangeDate}
+                style={{ width: 270 }}
                 size="large"
                 className="br-15__date-picker"
-                value={
-                  clear === 1
-                    ? []
-                    : start !== ''
-                    ? [moment(start, dateFormat), moment(end, dateFormat)]
-                    : []
-                }
-                style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
                   'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
-                onChange={onChangeDate}
               />
             </div>
-          </Col>
+            <div>
+              <div>Lọc theo trạng thái</div>
+              <Select
+                value={paramsFilter.value}
+                onChange={_onChangeStatus}
+                showSearch
+                size="large"
+                allowClear
+                placeholder="Chọn trạng thái"
+                style={{ width: 250 }}
+              >
+                {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
+                  <Select.Option value={status} key={index}>
+                    {status}
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
+          </Space>
         </Row>
 
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
+        <Table
+          size="small"
+          rowKey="_id"
+          loading={loading}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys),
           }}
-        >
-          <Table
-            size="small"
-            rowKey="_id"
-            loading={loading}
-            bordered
-            rowSelection={rowSelection}
-            expandable={{
-              expandedRowRender: (record) => {
-                return (
-                  <div
-                    style={{
-                      width: '100%',
-                      background: '#fff',
-                    }}
-                  >
-                    <Row justify="space-between" style={{ width: '1000px', padding: 10 }}>
-                      <Col span={5}>
-                        <Row>Mã hóa đơn: {record.order_id}</Row>
-                        <Row>Thời gian: {moment(record.create_date).format('L')}</Row>
-                        <Row>Khách hàng: {record._customer}</Row>
-                        <Row>Cửa hàng: {record._bussiness}</Row>
-                      </Col>
-                      <Col span={5}>
-                        <Row>
-                          <b style={{ cursor: 'pointer' }} onClick={() => setShowUpdate(true)}>
-                            Thông tin giao hàng <EditOutlined />
-                          </b>
-                        </Row>
-                        <Row>Trạng thái</Row>
-                        <Row>Nhân viên bán: {record._creator}</Row>
-                        <Row>Nhân viên tạo: {record._creator}</Row>
-                      </Col>
-                      <Col span={5}>
-                        <Row>
-                          Tổng số lượng: {record.order_details.reduce((a, b) => a + b.quantity, 0)}
-                        </Row>
-                        <Row>Tổng tiền: {record.total_cost}</Row>
-                        <Row>Chiết khấu: {record.discount}</Row>
-                        <Row>Thành tiền: {record.final_cost}</Row>
-                      </Col>
-                      <Col span={6}>
-                        <Row>Ghi chú</Row>
-                        <Row>
-                          <Input.TextArea />
-                        </Row>
-                        <Row>Nhãn</Row>
-                        <Row>
-                          <Select mode="tags" style={{ width: '100%' }}></Select>
-                        </Row>
-                        <Row justify="end" style={{ margin: '1em 0' }}>
-                          <Button type="primary">Lưu</Button>
-                        </Row>
-                      </Col>
-                    </Row>
+          expandable={{
+            expandedRowRender: (record) => {
+              return (
+                <div style={{ paddingTop: 17, paddingBottom: 17 }}>
+                  <Row wrap={false}>
+                    <div
+                      style={{
+                        width: 'calc(100% - 165px)',
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: 5,
+                        border: '1px solid #E8EAEB',
+                        padding: '15px 0px',
+                        marginRight: 15,
+                        fontSize: 14.7,
+                      }}
+                    >
+                      <Row wrap={false}>
+                        <div style={{ width: '33.33333%', padding: '0px 25px' }}>
+                          <p style={{ fontWeight: 700, marginBottom: 6 }}>Thông tin đơn hàng</p>
+                          <Row justify="space-between">
+                            <div style={{ color: '#747C87' }}>Mã đơn hàng:</div>
+                            <div>{record.order_id || ''}</div>
+                          </Row>
+                          <Row justify="space-between">
+                            <div style={{ color: '#747C87' }}>Ngày tạo:</div>
+                            <div>{moment(record.create_date).format('DD/MM/YYYY HH:mm')}</div>
+                          </Row>
+                          <Row justify="space-between">
+                            <div style={{ color: '#747C87' }}>Nguồn bán hàng:</div>
+                            <div>POS</div>
+                          </Row>
+                          <Row justify="space-between">
+                            <div style={{ color: '#747C87' }}>Nhân viên bán hàng:</div>
+                            <div>
+                              {record.employee
+                                ? `${record.employee.first_name} ${record.employee.last_name}`
+                                : ''}
+                            </div>
+                          </Row>
+                        </div>
+                        <div
+                          style={{
+                            width: '33.33333%',
+                            padding: '0px 25px',
+                            borderRight: '1px solid #E8EAEB',
+                          }}
+                        >
+                          <p style={{ fontWeight: 700, marginBottom: 6 }}>Khách hàng</p>
+                          <Row wrap={false} style={{ width: '100%' }}>
+                            <a>
+                              {record.customer
+                                ? `${record.customer.first_name} ${record.customer.last_name}`
+                                : ''}
+                            </a>
+                            <div style={{ margin: '0px 5px' }}>-</div>
+                            <div>{record.customer ? record.customer.phone : ''}</div>
+                          </Row>
+                          <div>
+                            {record.customer
+                              ? `${record.customer.address}, ${record.customer.district}, ${record.customer.province}`
+                              : ''}
+                          </div>
+                        </div>
+                        <div style={{ width: '33.33333%', padding: '0px 25px' }}>
+                          <div style={{ marginBottom: 10 }}>
+                            <p style={{ fontWeight: 700, marginBottom: 4 }}>Ghi chú đơn hàng</p>
+                            <div style={{ color: record.note ? '' : '#747C87' }}>
+                              {record.note ? record.note : 'Đơn hàng không có ghi chú'}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontWeight: 700, marginBottom: 4 }}>Tags</p>
+                            <div style={{ color: record.note ? '#747C87' : '' }}>
+                              {record.tags && record.tags.length
+                                ? record.tags.join(',')
+                                : 'Đơn hàng chưa có tag'}
+                            </div>
+                          </div>
+                        </div>
+                      </Row>
+                    </div>
+                    <Space direction="vertical">
+                      <Button
+                        style={{ width: 140 }}
+                        size="large"
+                        type="primary"
+                        onClick={async () => {
+                          setDataPrint({
+                            ...record,
+                            sumCostPaid: record.total_cost,
+                            discount:
+                              record.promotion && Object.keys(record.promotion).length
+                                ? record.promotion
+                                : null,
+                            moneyToBePaidByCustomer: record.final_cost,
+                          })
+                          await delay(500)
+                          handlePrint()
+                        }}
+                      >
+                        In đơn hàng
+                      </Button>
+                      <Button style={{ width: 140 }} size="large">
+                        Sửa đơn hàng
+                      </Button>
+                    </Space>
+                  </Row>
+                  <div className="table-product-in-order">
                     <Table
+                      pagination={false}
                       size="small"
-                      bordered
-                      style={{ width: '100%' }}
-                      columns={columnsDetailOrder}
-                      dataSource={
-                        record && record.order_details && record.order_details.length > 0
-                          ? record.order_details
-                          : []
-                      }
+                      style={{ width: '99%', marginTop: 30 }}
+                      columns={columnsProduct}
+                      dataSource={record.order_details}
+                      summary={() => (
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell colSpan={2}>
+                            <div style={{ fontSize: 14.7 }}>
+                              <Row wrap={false} justify="space-between">
+                                <div>Tổng tiền ({record.order_details.length} sản phẩm)</div>
+                                <div>{record.total_cost ? formatCash(+record.total_cost) : 0}</div>
+                              </Row>
+                              <Row wrap={false} justify="space-between">
+                                <div>Chiết khấu</div>
+                                <div>
+                                  {record.promotion
+                                    ? `${formatCash(+(record.promotion.value || 0))} ${
+                                        record.promotion.type && record.promotion.type !== 'VALUE'
+                                          ? '%'
+                                          : ''
+                                      }`
+                                    : 0}
+                                </div>
+                              </Row>
+                              <Row wrap={false} justify="space-between">
+                                <div>Phí giao hàng</div>
+                                <div>
+                                  {record.shipping_info
+                                    ? formatCash(+record.shipping_info.cod || 0)
+                                    : 0}
+                                </div>
+                              </Row>
+                              <Row wrap={false} justify="space-between" style={{ fontWeight: 600 }}>
+                                <div>Khách phải trả</div>
+                                <div>
+                                  {record.final_cost ? formatCash(+record.final_cost || 0) : 0}
+                                </div>
+                              </Row>
+                            </div>
+                          </Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      )}
                     />
                   </div>
-                )
-              },
-              // expandedRowKeys: selectedRowKeys,
-              // expandIconColumnIndex: -1,
-              rowExpandable: (record) => true,
-            }}
-            columns={columnsPromotion}
-            style={{ width: '100%' }}
-            pagination={false}
-            scroll={{ x: 'max-content' }}
-            dataSource={dataTmp} //order
-            summary={(pageData) => {
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>Tổng</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text>{formatCash(tableSum(pageData, 'final_cost'))} VND</Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
+                </div>
               )
-            }}
-          />
-          <Pagination
-            style={{
-              display: 'flex',
-              marginBottom: '1rem',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            showSizeChanger
-            onShowSizeChange={onShowSizeChangeTable}
-            defaultCurrent={10}
-            onChange={onChangeTable}
-            total={countTable}
-          />
-        </div>
+            },
+          }}
+          columns={columnsOrder}
+          style={{ width: '100%', marginTop: 35 }}
+          pagination={{
+            current: paramsFilter.page,
+            pageSize: paramsFilter.page_size,
+            pageSizeOptions: PAGE_SIZE_OPTIONS,
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              paramsFilter.page = page
+              paramsFilter.page_size = pageSize
+
+              setParamsFilter({ ...paramsFilter })
+            },
+            total: countOrder,
+          }}
+          scroll={{ x: 'max-content' }}
+          dataSource={orders}
+        />
       </div>
-      <Modal
-        title="Cập nhật địa chỉ giao hàng"
-        visible={showUpdate}
-        onCancel={() => setShowUpdate(false)}
-        onOk={() => setShowUpdate(false)}
-        centered
-      >
-        <Form layout="vertical">
-          <Row gutter={10}>
-            <Col span={12}>
-              <Form.Item label="tên khách hàng">
-                <Input placeholder="Nhập  tên khách hàng" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Địa chỉ">
-                <Input placeholder="Nhập địa chỉ" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Số điện thoại">
-                <Input placeholder="Nhập số điện thoại" size="large" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Tỉnh/ Thành phố">
-                <Select
-                  placeholder="Chọn Tỉnh/Thành phố"
-                  style={{ width: '100%' }}
-                  size="large"
-                ></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Quận/huyện">
-                <Select
-                  placeholder="Chọn Quận/Huyện"
-                  style={{ width: '100%' }}
-                  size="large"
-                ></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Quốc gia">
-                <Select placeholder="Chọn Quốc gia" style={{ width: '100%' }} size="large"></Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Công ty">
-                <Input placeholder="Nhập tên công ty" size="large" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
     </>
   )
 }

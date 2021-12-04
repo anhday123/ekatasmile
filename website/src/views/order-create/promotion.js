@@ -7,7 +7,7 @@ import { formatCash } from 'utils'
 //apis
 import { getPromoton, checkVoucher } from 'apis/promotion'
 
-export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
+export default function PromotionAvailable({ order, editOrder }) {
   const [loading, setLoading] = useState(false)
   const [voucherCheck, setVoucherCheck] = useState('')
 
@@ -22,16 +22,12 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
     <Row>
       <Col xs={8} sm={8}>
         <Checkbox
-          disabled={
-            invoiceCurrent.moneyToBePaidByCustomer < promotion.max_discount ||
-            invoiceCurrent.order_details.length === 0
-          }
           checked={promotionCheck && promotionCheck._id === promotion._id ? true : false}
           onClick={(e) => {
             const checked = e.target.checked
             if (checked) {
-              if (invoiceCurrent.moneyToBePaidByCustomer >= promotion.max_discount) {
-                if (invoiceCurrent.order_details.length !== 0) setPromotionCheck(promotion)
+              if (order.moneyToBePaidByCustomer >= promotion.max_discount) {
+                if (order.order_details.length !== 0) setPromotionCheck(promotion)
                 else
                   notification.warning({
                     message: 'Đơn hàng của bạn chưa có sản phẩm, vui lòng chọn sản phẩm trước',
@@ -69,7 +65,7 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
   }
 
   const _applyVoucher = () => {
-    editInvoice('discount', promotionCheck)
+    editOrder('discount', promotionCheck)
     toggle()
   }
 
@@ -101,12 +97,13 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
 
   useEffect(() => {
     if (visible) {
-      if (invoiceCurrent.discount) {
-        if (invoiceCurrent.moneyToBePaidByCustomer >= invoiceCurrent.discount.max_discount)
-          setPromotionCheck(invoiceCurrent.discount)
+      console.log(order)
+      if (order.discount) {
+        if (order.moneyToBePaidByCustomer >= order.discount.max_discount)
+          setPromotionCheck(order.discount)
         else {
           setPromotionCheck(null)
-          editInvoice('discount', null)
+          editOrder('discount', null)
         }
       } else setPromotionCheck(null)
 
@@ -117,18 +114,20 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
   return (
     <>
       {promotions && promotions.length !== 0 ? (
-        <img
-          onClick={toggle}
-          src={gift}
-          alt=""
-          style={{ width: 16, height: 16, marginLeft: 8, cursor: 'pointer' }}
-        />
+        <Row wrap={false} align="middle" onClick={toggle}>
+          <img
+            src={gift}
+            alt=""
+            style={{ width: 16, height: 16, marginLeft: 8, cursor: 'pointer', marginRight: 6 }}
+          />
+          <a>Áp dụng khuyến mãi</a>
+        </Row>
       ) : (
         ''
       )}
 
       <Modal
-        width={800}
+        width={700}
         visible={visible}
         title="Khuyến mãi khả dụng"
         onCancel={toggle}
@@ -150,25 +149,25 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
       >
         <Row>
           <Col xs={8} sm={8}>
-            <h3 style={{ textAlign: 'center' }}>Chọn 1 chương trình khuyến mãi</h3>
+            <h3 style={{ textAlign: 'center' }}>Chương trình khuyến mãi</h3>
           </Col>
           <Col xs={8} sm={8}>
-            <h3 style={{ textAlign: 'center' }}>Giá trị giảm</h3>
+            <h3 style={{ textAlign: 'center' }}>Giá trị</h3>
           </Col>
           <Col xs={8} sm={8}>
-            <h3 style={{ textAlign: 'center' }}>Hạn mức đơn hàng được áp dụng</h3>
+            <h3 style={{ textAlign: 'center' }}>Hạn mức áp dụng</h3>
           </Col>
         </Row>
         {promotions.map((promotion) => (
           <PromotionItem promotion={promotion} />
         ))}
         <div style={{ marginTop: 15 }}>
-          <h3 style={{ marginBottom: 0, fontSize: 17 }}>Kiểm tra mã voucher/khuyến mãi</h3>
+          <h3 style={{ marginBottom: 0, fontSize: 17 }}>Tìm kiếm mã khuyên mãi</h3>
           <Space wrap={false}>
             <Input
               value={voucherCheck}
               onChange={(e) => setVoucherCheck(e.target.value)}
-              placeholder="Nhập mã voucher/ khuyễn mãi"
+              placeholder="Nhập mã khuyên mãi"
               style={{ width: 300 }}
             />
             <Button

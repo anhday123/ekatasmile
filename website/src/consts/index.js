@@ -25,6 +25,23 @@ export const STATUS_PRODUCT = {
   out_stock: 'out_stock',
 }
 
+//status order
+export const BILL_STATUS_ORDER = {
+  DRAFT: 'DRAFT',
+  PROCESSING: 'PROCESSING',
+  COMPLETE: 'COMPLETE',
+  CANCEL: 'CANCEL',
+  REFUND: 'REFUND',
+}
+
+export const SHIP_STATUS_ORDER = {
+  DRAFT: 'DRAFT',
+  WATTING_FOR_SHIPPING: 'WATTING_FOR_SHIPPING',
+  SHIPPING: 'SHIPPING',
+  COMPLETE: 'COMPLETE',
+  CANCEL: 'CANCEL',
+}
+
 export const ROUTES = {
   LOGIN: '/login',
   REPORT_IMPORT: '/report-import',
@@ -59,7 +76,7 @@ export const ROUTES = {
   BRANCH_VIEW: '/actions/branch/view',
   SHIPPING_PRODUCT_ADD: '/actions/shipping-product/add',
   SHIPPING_PRODUCT_UPDATE: '/actions/shipping-product/update',
-  ORDER_CREATE_SHIPPING: '/order-create-shipping',
+  ORDER_CREATE: '/order-create',
   INVENTORY: '/inventory',
   PRODUCT: '/product',
   PAYMENT: '/payment',
@@ -148,7 +165,7 @@ export const PERMISSIONS = {
   cau_hinh_thong_tin: 'cau_hinh_thong_tin',
   quan_li_phan_quyen: 'quan_li_phan_quyen',
   tich_diem: 'tich_diem',
-  quan_li_uu_dai:'quan_li_uu_dai',
+  quan_li_uu_dai: 'quan_li_uu_dai',
 
   //Permission function
   them_cua_hang: 'them_cua_hang',
@@ -195,7 +212,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.0.11'
+export const VERSION_APP = '1.0.12'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

@@ -57,22 +57,23 @@ export default class PrintOrder extends React.PureComponent {
           <div style={{ width: '33.333333%', fontWeight: 600, textAlign: 'end' }}>Thành tiền</div>
         </Row>
         <div style={{ marginBottom: 20 }}>
-          {data.order_details.map((product) => (
-            <div style={{ paddingBottom: 7, marginTop: 6, borderBottom: '1px dashed gray' }}>
-              <div>{product.title}</div>
-              <Row justify="space-between" wrap={false} align="middle">
-                <div style={{ width: '33.333333%' }}>
-                  <div>{product.quantity}</div>
-                </div>
-                <div style={{ width: '33.333333%', textAlign: 'center' }}>
-                  {formatCash(product.price || 0)}
-                </div>
-                <div style={{ width: '33.333333%', textAlign: 'end' }}>
-                  {formatCash(product.sumCost || 0)}
-                </div>
-              </Row>
-            </div>
-          ))}
+          {data.order_details &&
+            data.order_details.map((product) => (
+              <div style={{ paddingBottom: 7, marginTop: 6, borderBottom: '1px dashed gray' }}>
+                <div>{product.title}</div>
+                <Row justify="space-between" wrap={false} align="middle">
+                  <div style={{ width: '33.333333%' }}>
+                    <div>{product.quantity}</div>
+                  </div>
+                  <div style={{ width: '33.333333%', textAlign: 'center' }}>
+                    {formatCash(product.price || 0)}
+                  </div>
+                  <div style={{ width: '33.333333%', textAlign: 'end' }}>
+                    {formatCash(product.sumCost || 0)}
+                  </div>
+                </Row>
+              </div>
+            ))}
         </div>
         <div>
           <Row justify="space-between">
