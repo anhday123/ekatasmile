@@ -1,5 +1,6 @@
 require(`dotenv`).config();
 const client = require('./config/mongodb');
+const { Order } = require('./models/order');
 const { Variant } = require('./models/product');
 const DB = process.env.DATABASE;
 
@@ -12,15 +13,12 @@ const DB = process.env.DATABASE;
     // await client.db(DB).collection('Customers').deleteMany();
     // await client.db(DB).collection('Labels').deleteMany();
     // await client.db(DB).collection('Locations').deleteMany();
-    let variant = await client.db(DB).collection('Variants').find().toArray();
+    let orders = await client.db(DB).collection('Orders').find().toArray();
     await new Promise(async (resolve, reject) => {
-        for (let i in variant) {
-            let _variant = new Variant();
-            _variant.create(variant[i]);
-            await client
-                .db(DB)
-                .collection('Variants')
-                .updateOne({ variant_id: _variant.variant_id }, { $set: _variant });
+        for (let i in orders) {
+            let _order = new Order();
+            _order.create(orders[i]);
+            await client.db(DB).collection('Orders').updateOne({ order_id: _order.order_id }, { $set: _order });
         }
         resolve();
     });
