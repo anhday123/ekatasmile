@@ -368,6 +368,18 @@ export default function Sell() {
     const invoicesNew = [...invoices]
     invoicesNew[indexInvoice][attribute] = value
 
+    // tổng tiền của tất cả sản phẩm
+    invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
+      (total, current) => total + current.sumCost,
+      0
+    )
+
+    //tổng thuế VAT của tất cả sản phẩm
+    invoicesNew[indexInvoice].VAT = invoicesNew[indexInvoice].order_details.reduce(
+      (total, current) => total + +current.VAT_Product,
+      0
+    )
+
     //tổng tiền khách hàng phải trả
     invoicesNew[indexInvoice].moneyToBePaidByCustomer =
       invoicesNew[indexInvoice].sumCostPaid +
@@ -642,9 +654,57 @@ export default function Sell() {
 
   const ModalSkuProduct = ({ product, index }) => {
     const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
 
     const [sku, setSku] = useState(product.sku || '')
+    const [variant, setVariant] = useState(null)
+    const [variants, setVariants] = useState([])
+
+    const toggle = () => {
+      setVisible(!visible)
+      setSku(product.sku || '')
+    }
+
+    const _getVariantsByProductId = async () => {
+      try {
+        const res = await getProducts({
+          store_id: infoStore.store_id,
+          merge: true,
+          detach: true,
+          product_id: product.product_id,
+        })
+        if (res.status === 200) setVariants(res.data.data.map((e) => e.variants))
+        console.log(res)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    const _updateProductInCart = () => {
+      if (variant) {
+        let productsNew = invoices[indexInvoice].order_details
+        productsNew[index] = {
+          ...variant,
+          unit: 'Cái', //đơn vị
+          quantity: 1, //số lượng sản phẩm
+          sumCost: variant.price, // tổng giá tiền
+          VAT_Product:
+            variant._taxes && variant._taxes.length
+              ? (
+                  (variant._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                  variant.price
+                ).toFixed(0)
+              : 0,
+        }
+
+        _editInvoice('order_details', [...productsNew])
+      }
+
+      setVisible(false)
+    }
+
+    useEffect(() => {
+      _getVariantsByProductId()
+    }, [])
 
     return (
       <>
@@ -656,25 +716,36 @@ export default function Sell() {
         <Modal
           cancelText="Hủy bỏ"
           okText="Cập nhật"
-          title="Cập nhật tên phiên bản"
+          title="Cập nhật phiên bản"
           onCancel={() => {
             toggle()
             setSku(product.sku || '')
           }}
-          onOk={() => {
-            _editProductInInvoices('sku', sku, index)
-          }}
+          onOk={_updateProductInCart}
           visible={visible}
         >
           <div>
             Tên phiên bản
-            <Input
-              onChange={(e) => setSku(e.target.value)}
+            <Select
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
               value={sku}
-              placeholder="Nhập tên phiên bản"
-              rows={4}
+              onChange={(value) => {
+                setSku(value)
+                const variantFind = variants.find((e) => e.sku === value)
+                setVariant(variantFind)
+              }}
+              placeholder="Chọn tên phiên bản"
               style={{ width: '100%' }}
-            />
+            >
+              {variants.map((variant, index) => (
+                <Select.Option value={variant.sku || ''} key={index}>
+                  {variant.sku || ''}
+                </Select.Option>
+              ))}
+            </Select>
           </div>
         </Modal>
       </>

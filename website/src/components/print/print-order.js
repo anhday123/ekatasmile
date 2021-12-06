@@ -108,7 +108,7 @@ export default class PrintOrder extends React.PureComponent {
           </Row>
         </div>
         <Row justify="center" style={{ marginTop: 20 }}>
-          <i>Cảm ơn quý khách. Hện gặp lại!</i>
+          <i>Cảm ơn quý khách. Hẹn gặp lại!</i>
         </Row>
       </div>
     )
