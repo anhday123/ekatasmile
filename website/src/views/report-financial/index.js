@@ -211,7 +211,26 @@ export default function ReportFinancial() {
           </Col>
         </Row>
 
-        <Table columns={columns} dataSource={[1, 2, 3]} size="small" />
+        <Table
+          columns={columns}
+          dataSource={[1, 2, 3]}
+          size="small"
+          summary={(pageData) => (
+            <Table.Summary.Row>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>
+                <div>Tổng thu: {formatCash(1065000)} VND</div>
+                <div>Tổng chi: 0 VND</div>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
+        />
       </div>
       <Modal
         title="Giải thích thuật ngữ"

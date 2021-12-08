@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
-import { compareCustom, formatCash } from 'utils'
+import { compareCustom, formatCash, tableSum } from 'utils'
 import moment from 'moment'
 
 import {
@@ -952,6 +952,29 @@ export default function Product() {
               },
               total: countProduct,
             }}
+            summary={(pageData) => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell>
+                  <b>Tổng</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumQuantity'))}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumBasePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumSalePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumImportPrice'))} VND
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </div>
       </div>

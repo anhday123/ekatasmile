@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { compare, formatCash } from 'utils'
+import { compare, formatCash, tableSum } from 'utils'
 
 // style
 import styles from './../offer-list/offer.module.scss'
@@ -682,6 +682,24 @@ export default function OfferList() {
             })
           },
         }}
+        summary={(pageData) => (
+          <Table.Summary.Row>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ textAlign: 'center' }}>
+                {formatCash(tableSum(pageData, 'saleoff_value'))}
+              </div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ textAlign: 'center' }}>
+                {formatCash(tableSum(pageData, 'max_saleoff_value'))}
+              </div>
+            </Table.Summary.Cell>
+          </Table.Summary.Row>
+        )}
       />
     </div>
   )

@@ -3,7 +3,7 @@ import styles from './order-list.module.scss'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
-import { compare, formatCash, compareCustom } from 'utils'
+import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 
@@ -475,6 +475,23 @@ export default function OrderList() {
           }}
           scroll={{ x: 'max-content' }}
           dataSource={orders}
+          summary={(pageData) => (
+            <Table.Summary.Row>
+              <Table.Summary.Cell>
+                <b>Tổng</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {formatCash(tableSum(pageData, 'final_cost'))} VND
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
         />
       </div>
     </>
