@@ -3,7 +3,7 @@ import styles from './order-list.module.scss'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
-import { compare, formatCash } from 'utils'
+import { compare, formatCash, compareCustom } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 

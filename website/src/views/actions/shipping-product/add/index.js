@@ -1,4 +1,4 @@
-import styles from './../add/add.module.scss'
+import styles from './add.module.scss'
 import React, { useEffect, useState } from 'react'
 import {
   Select,
@@ -20,15 +20,16 @@ import {
 } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { FileExcelOutlined, ArrowLeftOutlined } from '@ant-design/icons'
-import { getAllBranch } from '../../../../apis/branch'
-import { getProducts } from '../../../../apis/product'
-import { addDelivery } from '../../../../apis/delivery'
+import { getAllBranch } from 'apis/branch'
+import { getProducts } from 'apis/product'
+import { addDelivery } from 'apis/delivery'
 import { useDispatch } from 'react-redux'
 import XLSX from 'xlsx'
-import ImportModal from '../../../../components/ExportCSV/importModal'
+import ImportModal from 'components/ExportCSV/importModal'
 import moment from 'moment'
 import { ROUTES } from 'consts'
 import { getAllStore } from 'apis/store'
+import { compare } from 'utils'
 const { Option } = Select
 export default function ShippingProductAdd(props) {
   const [modal3Visible, setModal3Visible] = useState(false)
@@ -142,11 +143,14 @@ export default function ShippingProductAdd(props) {
       title: 'Mã hàng',
       dataIndex: 'sku',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'name',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'name'),
+
       render(data, record) {
         return record.title || data
       },
@@ -154,6 +158,7 @@ export default function ShippingProductAdd(props) {
     {
       title: 'Tồn kho',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'available_stock_quantity'),
       render(data) {
         return data.available_stock_quantity
       },
@@ -163,6 +168,7 @@ export default function ShippingProductAdd(props) {
       dataIndex: 'quantity',
       key: 'deliveryQuantity',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
     // {
     //   title: 'Action',
@@ -181,26 +187,32 @@ export default function ShippingProductAdd(props) {
     {
       title: 'SKU',
       dataIndex: 'sku',
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
     {
       title: 'Giá nhập',
       dataIndex: 'import_price',
+      sorter: (a, b) => compare(a, b, 'import_price'),
     },
     {
       title: 'Giá cơ bản',
       dataIndex: 'base_price',
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
     {
       title: 'Giá bán',
       dataIndex: 'sale_price',
+      sorter: (a, b) => compare(a, b, 'sale_price'),
     },
     {
       title: 'Số lượng tồn',
       dataIndex: 'available_stock_quantity',
+      sorter: (a, b) => compare(a, b, 'available_stock_quantity'),
     },
     {
       title: 'Số lượng chuyển',
       key: 'variantsNumber',
+      sorter: (a, b) => compare(a, b, 'variantsNumber'),
     },
   ]
 
@@ -305,12 +317,7 @@ export default function ShippingProductAdd(props) {
     }
   }
   const handleImport = () => {
-    if (
-      ImportData.reduce(
-        (a, b) => a && b.available_stock_quantity >= b.quantity,
-        true
-      )
-    ) {
+    if (ImportData.reduce((a, b) => a && b.available_stock_quantity >= b.quantity, true)) {
       ImportData.forEach((e) => onSelect(JSON.stringify(e)))
       // setProductDelivery([...productDelivery, ...ImportData])
       setModalImportVisible(false)
@@ -336,9 +343,7 @@ export default function ShippingProductAdd(props) {
               page_size: 20,
             })
       if (res.status == 200) {
-        res.data.data.length > 0
-          ? setOptions(searchResult(res.data.data))
-          : setOptions([])
+        res.data.data.length > 0 ? setOptions(searchResult(res.data.data)) : setOptions([])
       }
     } else {
       notification.warning({ message: 'Vui lòng chọn nơi chuyển!' })
@@ -419,19 +424,12 @@ export default function ShippingProductAdd(props) {
       <div className={styles['supplier_add']}>
         <Row className={styles['supplier_add-header']}>
           <Col>
-            <ArrowLeftOutlined
-              onClick={() => history.goBack()}
-              style={{ cursor: 'pointer' }}
-            />
+            <ArrowLeftOutlined onClick={() => history.goBack()} style={{ cursor: 'pointer' }} />
           </Col>
           <Col>Thêm phiếu chuyển hàng</Col>
         </Row>
 
-        <Form
-          style={{}}
-          className={styles['supplier_add_content']}
-          onFinish={onFinish}
-        >
+        <Form style={{}} className={styles['supplier_add_content']} onFinish={onFinish}>
           <Row style={{ width: '100%' }} align="middle">
             <span
               style={{
@@ -460,14 +458,7 @@ export default function ShippingProductAdd(props) {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -501,38 +492,23 @@ export default function ShippingProductAdd(props) {
                     placeholder="Chọn nơi chuyển"
                     showSearch
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
-                    onChange={(e) =>
-                      setDeliveryFlow({ ...deliveryFlow, from: e })
-                    }
+                    onChange={(e) => setDeliveryFlow({ ...deliveryFlow, from: e })}
                     optionFilterProp="children"
                   >
                     {deliveryFlow.fromtype === 'BRANCH'
                       ? branchList
                           .filter((e) => e.active)
-                          .map((e) => (
-                            <Option value={e.branch_id}>{e.name}</Option>
-                          ))
+                          .map((e) => <Option value={e.branch_id}>{e.name}</Option>)
                       : storeList
                           .filter((e) => e.active)
-                          .map((e) => (
-                            <Option value={e.store_id}>{e.name}</Option>
-                          ))}
+                          .map((e) => <Option value={e.store_id}>{e.name}</Option>)}
                   </Select>
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -561,14 +537,7 @@ export default function ShippingProductAdd(props) {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -602,38 +571,23 @@ export default function ShippingProductAdd(props) {
                     placeholder="Chọn nơi nhận"
                     showSearch
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
-                    onChange={(e) =>
-                      setDeliveryFlow({ ...deliveryFlow, to: e })
-                    }
+                    onChange={(e) => setDeliveryFlow({ ...deliveryFlow, to: e })}
                     optionFilterProp="children"
                   >
                     {deliveryFlow.totype === 'BRANCH'
                       ? branchList
                           .filter((e) => e.active)
-                          .map((e) => (
-                            <Option value={e.branch_id}>{e.name}</Option>
-                          ))
+                          .map((e) => <Option value={e.branch_id}>{e.name}</Option>)
                       : storeList
                           .filter((e) => e.active)
-                          .map((e) => (
-                            <Option value={e.store_id}>{e.name}</Option>
-                          ))}
+                          .map((e) => <Option value={e.store_id}>{e.name}</Option>)}
                   </Select>
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -648,11 +602,7 @@ export default function ShippingProductAdd(props) {
                   className={styles['supplier_add_content_supplier_code_input']}
                   name="tag"
                 >
-                  <Select
-                    size="large"
-                    mode="tags"
-                    style={{ width: '100%' }}
-                  ></Select>
+                  <Select size="large" mode="tags" style={{ width: '100%' }}></Select>
                 </Form.Item>
               </div>
             </Col>
@@ -733,9 +683,7 @@ export default function ShippingProductAdd(props) {
               Danh sách sản phẩm chuyển
             </div>
           </Row>
-          <div
-            style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}
-          >
+          <div style={{ border: '1px solid rgb(236, 226, 226)', width: '100%' }}>
             <Table
               rowSelection={rowSelectionMain}
               expandable={{
@@ -752,9 +700,9 @@ export default function ShippingProductAdd(props) {
                             return (
                               <InputNumber
                                 onBlur={(val) => {
-                                  productDelivery[indexRecord].variants[
-                                    i
-                                  ].quantity = parseInt(val.target.value)
+                                  productDelivery[indexRecord].variants[i].quantity = parseInt(
+                                    val.target.value
+                                  )
                                 }}
                               />
                             )
@@ -777,9 +725,7 @@ export default function ShippingProductAdd(props) {
                           <InputNumber
                             defaultValue={data}
                             onBlur={(e) => {
-                              productDelivery[index].quantity = parseInt(
-                                e.target.value
-                              )
+                              productDelivery[index].quantity = parseInt(e.target.value)
                             }}
                           />
                         )
@@ -876,10 +822,7 @@ export default function ShippingProductAdd(props) {
             >
               <Input placeholder="Nhập số lượng cập nhật" />
             </Form.Item>
-            <Row
-              style={{}}
-              className={styles['supplier_add_content_supplier_button']}
-            >
+            <Row style={{}} className={styles['supplier_add_content_supplier_button']}>
               {/* <Col onClick={() => modal2VisibleModal(false)} style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }} xs={24} sm={24} md={5} lg={4} xl={3}>
 
                 <Button style={{ width: '7.5rem' }} type="primary" danger>
@@ -903,11 +846,7 @@ export default function ShippingProductAdd(props) {
                 lg={4}
                 xl={3}
               >
-                <Button
-                  style={{ width: '7.5rem' }}
-                  type="primary"
-                  htmlType="submit"
-                >
+                <Button style={{ width: '7.5rem' }} type="primary" htmlType="submit">
                   Xác nhận
                 </Button>
               </Col>
