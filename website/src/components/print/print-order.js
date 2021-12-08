@@ -8,12 +8,13 @@ import { formatCash } from 'utils'
 export default class PrintOrder extends React.PureComponent {
   render() {
     const data = this.props.data || {}
-
+    console.log(data)
     return (
       <div style={{ paddingTop: 55, paddingLeft: 35, paddingRight: 35 }}>
         <Row>
-          <div style={{ width: '50%' }}>{moment(new Date()).format('DD/MM/YYYY HH:mm')}</div>
-          <div style={{ width: '50%' }}>Hóa đơn bán hàng [SON00032]</div>
+          <div style={{ width: '50%' }}>
+            {data.create_date && moment(data.create_date).format('DD/MM/YYYY HH:mm')}
+          </div>
         </Row>
         <Divider dashed />
         <div>
@@ -21,8 +22,10 @@ export default class PrintOrder extends React.PureComponent {
             <h3 style={{ fontWeight: 700 }}>HÓA ĐƠN BÁN HÀNG</h3>
           </Row>
           <Row justify="space-between">
-            <p style={{ marginBottom: 0 }}>Số: SON00032</p>
-            <p style={{ marginBottom: 0 }}>Ngày: {moment(new Date()).format('DD-MM-YYYY')}</p>
+            <p style={{ marginBottom: 0 }}>Số: [{data.code || ''}]</p>
+            <p style={{ marginBottom: 0 }}>
+              Ngày: {data.create_date && moment(data.create_date).format('DD-MM-YYYY')}
+            </p>
           </Row>
         </div>
         <Divider />
@@ -44,9 +47,9 @@ export default class PrintOrder extends React.PureComponent {
             <p style={{ marginBottom: 0 }}>Địa chỉ giao hàng: </p>
             <p style={{ fontWeight: 700, marginBottom: 0, marginLeft: 4 }}>
               {data.deliveryAddress &&
-                `${data.deliveryAddress.address || ''}, ${data.deliveryAddress.district || ''}, ${
-                  data.deliveryAddress.province || ''
-                }`}
+                `${data.deliveryAddress.to_address || ''}, ${
+                  data.deliveryAddress.to_district || ''
+                }, ${data.deliveryAddress.to_province || ''}`}
             </p>
           </Row>
         </div>
@@ -69,7 +72,7 @@ export default class PrintOrder extends React.PureComponent {
                     {formatCash(product.price || 0)}
                   </div>
                   <div style={{ width: '33.333333%', textAlign: 'end' }}>
-                    {formatCash(product.sumCost || 0)}
+                    {formatCash(product.sumCost || product.total_cost || 0)}
                   </div>
                 </Row>
               </div>
@@ -87,6 +90,10 @@ export default class PrintOrder extends React.PureComponent {
               {data.discount ? (data.discount.type === 'VALUE' ? '' : '%') : ''}
             </div>
           </Row>
+          <Row justify="space-between" style={{ display: !data.isDelivery && 'none' }}>
+            <div>Phí giao hàng</div>
+            <div>{formatCash(data.deliveryCharges || 0)}</div>
+          </Row>
           <Row justify="space-between" style={{ fontWeight: 600 }}>
             <div>Khách phải trả</div>
             <div>{formatCash(data.moneyToBePaidByCustomer || 0)}</div>
@@ -101,7 +108,7 @@ export default class PrintOrder extends React.PureComponent {
           </Row>
         </div>
         <Row justify="center" style={{ marginTop: 20 }}>
-          <i>Cảm ơn quý khách. Hện gặp lại!</i>
+          <i>Cảm ơn quý khách. Hẹn gặp lại!</i>
         </Row>
       </div>
     )

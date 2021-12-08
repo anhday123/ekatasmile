@@ -74,6 +74,7 @@ class Order {
     create(data) {
         this.order_id = Number(data.order_id);
         this.business_id = Number(data.business_id);
+        this.code = String(this.order_id).padStart(6, '0');
         this.chanel = String(data.chanel).trim().toUpperCase();
         this.sub_chanel = removeUnicode(this.chanel, true).toLowerCase();
         this.sale_location = data.sale_location;
