@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { formatCash } from 'utils'
+import { compare, formatCash } from 'utils'
 
 // style
 import styles from './../offer-list/offer.module.scss'
@@ -61,10 +61,9 @@ export default function OfferList() {
   // }
 
   const toggleModalPrice = () => {
-    if(price.length ===1){
+    if (price.length === 1) {
       setPrice(price[0])
-    }
-    else{
+    } else {
       setPrice(0)
     }
     setModalVisiblePrice(!modalVisiblePrice)
@@ -101,7 +100,7 @@ export default function OfferList() {
       dataIndex: 'name',
       width: '15%',
       align: 'center',
-      sorter: (a, b) => a.name.length - b.name.length,
+      sorter: (a, b) => compare(a, b, 'name'),
       render: (text, record, index) => (
         <Link to={{ pathname: ROUTES.OFFER_LIST_CREATE, state: record }}>{text}</Link>
       ),
@@ -111,6 +110,7 @@ export default function OfferList() {
       dataIndex: 'type',
       width: '15%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'type'),
       render: (text) => <b>{text}</b>,
     },
     {
@@ -119,13 +119,14 @@ export default function OfferList() {
       width: '15%',
       align: 'center',
       sorter: (a, b) => a.saleoff_value - b.saleoff_value,
-      render: (text, record, index) =>
-        text ? <p>{formatCash(text)}</p> : '',
+      render: (text, record, index) => (text ? <p>{formatCash(text)}</p> : ''),
     },
     {
       title: 'Giảm giá tối đa',
       dataIndex: 'max_saleoff_value',
       width: '15%',
+      sorter: (a, b) => compare(a, b, 'max_saleoff_value'),
+
       align: 'center',
     },
     // {
@@ -146,6 +147,8 @@ export default function OfferList() {
       dataIndex: 'description',
       width: '30%',
       align: 'center',
+      sorter: (a, b) => a.description.length - b.description.length,
+
       render: (text, record) => (!text ? '' : parse(text)),
     },
     {
@@ -153,7 +156,8 @@ export default function OfferList() {
       dataIndex: 'create_date',
       width: '15%',
       align: 'center',
-      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
     },
   ]
 
@@ -347,18 +351,17 @@ export default function OfferList() {
 
   const _changePrice = async () => {
     try {
-      let body={}
+      let body = {}
       let res
-      if(selectKeys.length===1){
+      if (selectKeys.length === 1) {
         body = {
           saleoff_value: price,
         }
         res = await updateDeal(body, selectKeys)
-      }
-      else{
+      } else {
         body = {
           saleoff_value: price,
-          deal_id:selectKeys,
+          deal_id: selectKeys,
         }
         res = await updateDealsPrice(body)
       }
@@ -421,7 +424,7 @@ export default function OfferList() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
-    if(openSelect) toggleOpenSelect()
+    if (openSelect) toggleOpenSelect()
   }
 
   const _search = (e) => {
@@ -655,8 +658,8 @@ export default function OfferList() {
           onChange: (keys, records) => {
             // console.log('records', records)
             // console.log(keys)
-            const priceSelect=[]
-            records.map((item)=>priceSelect.push(item.saleoff_value))
+            const priceSelect = []
+            records.map((item) => priceSelect.push(item.saleoff_value))
             setPrice(priceSelect)
             setSelectKeys(keys)
           },

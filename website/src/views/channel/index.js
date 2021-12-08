@@ -35,6 +35,7 @@ import { deleteBlog, getBlog } from 'apis/blog'
 
 // html react parser
 import parse from 'html-react-parser'
+import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -98,6 +99,7 @@ export default function Channel() {
       dataIndex: 'url',
       width: '15%',
       align: 'center',
+      sorter: (a, b) => a.url.length - b.url.length,
       render: (text) => (
         <a target="_blank" href={text}>
           {text}
@@ -109,6 +111,7 @@ export default function Channel() {
       dataIndex: 'base',
       width: '15%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'base'),
     },
     {
       title: 'Trạng thái',
@@ -127,6 +130,8 @@ export default function Channel() {
       dataIndex: 'create_date',
       width: '10%',
       align: 'center',
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
       // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
     {

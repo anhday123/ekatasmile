@@ -66,7 +66,7 @@ export default function Promotion() {
       render: (data) => (
         <>
           <div>{data.name}</div>
-          <div>Mô tả:{data.description}</div>
+          {data.description && <div>Mô tả:{data.description}</div>}
         </>
       ),
     },

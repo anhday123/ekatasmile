@@ -977,7 +977,7 @@ const BaseLayout = (props) => {
                             )}
                           </Avatar>
                         ) : (
-                          <Avatar src={<Image src={user.avatar} />} />
+                          <Avatar src={user.avatar} />
                         )}
                       </div>
                       <div className={styles['navbar_right_left_name']}>

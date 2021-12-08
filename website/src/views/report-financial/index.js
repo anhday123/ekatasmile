@@ -20,6 +20,7 @@ export default function ReportFinancial() {
     {
       title: 'Loại phiếu',
       dataIndex: '',
+      sorter: (a, b) => 0,
       render(data) {
         return 'Phiếu thu'
       },
@@ -27,6 +28,8 @@ export default function ReportFinancial() {
     {
       title: 'Ngày tạo',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return moment('2021-09-07T12:05:09').format('DD/MM/YYYY hh:mm:ss')
       },
@@ -34,6 +37,8 @@ export default function ReportFinancial() {
     {
       title: 'Ngày ghi nhận',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return moment('2021-09-07T12:05:09').format('DD/MM/YYYY hh:mm:ss')
       },
@@ -41,6 +46,8 @@ export default function ReportFinancial() {
     {
       title: 'Mã phiếu',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return 'RVN0016'
       },
@@ -48,6 +55,8 @@ export default function ReportFinancial() {
     {
       title: 'Mã doanh nghiệp',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return 'BGY0016'
       },
@@ -55,6 +64,8 @@ export default function ReportFinancial() {
     {
       title: 'Người nộp/nhận',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return 'Khách lẻ'
       },
@@ -62,6 +73,8 @@ export default function ReportFinancial() {
     {
       title: 'Hình thức thanh toán',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return 'Tiền mặt'
       },
@@ -69,6 +82,8 @@ export default function ReportFinancial() {
     {
       title: 'tiền thu/tiền chi',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return <span style={{ color: '#009D10' }}>+355,000</span>
       },
@@ -76,6 +91,8 @@ export default function ReportFinancial() {
     {
       title: 'Mô tả',
       dataIndex: '',
+      sorter: (a, b) => 0,
+
       render(data) {
         return 'Bán hàng'
       },
@@ -127,22 +144,13 @@ export default function ReportFinancial() {
       <div className={styles['report']}>
         <div className={styles['report-header']}>
           <div className={styles['report-title']}>Báo cáo tài chính</div>
-          <Button
-            size="large"
-            type="primary"
-            onClick={() => setShowKeyword(true)}
-          >
+          <Button size="large" type="primary" onClick={() => setShowKeyword(true)}>
             Giải thích thuật ngữ
           </Button>
         </div>
         <Row gutter={10}>
           <Col xs={24} lg={8}>
-            <Select
-              placeholder="Chọn loại phiếu"
-              allowClear
-              style={{ width: '100%' }}
-              size="large"
-            >
+            <Select placeholder="Chọn loại phiếu" allowClear style={{ width: '100%' }} size="large">
               <Select.Option value="chi">Phiếu chi</Select.Option>
               <Select.Option value="thu">Phiếu chi</Select.Option>
             </Select>
@@ -166,11 +174,7 @@ export default function ReportFinancial() {
 
         <Row gutter={10} justify="end" style={{ margin: '1em 0' }}>
           <Col>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => setShowDateCheck(true)}
-            >
+            <Button type="primary" size="large" onClick={() => setShowDateCheck(true)}>
               Cài đặt ngày ghi nhận
             </Button>
           </Col>
@@ -217,11 +221,7 @@ export default function ReportFinancial() {
         width={800}
         centered
       >
-        <Table
-          columns={keyWordColumns}
-          dataSource={KeywordData}
-          pagination={false}
-        />
+        <Table columns={keyWordColumns} dataSource={KeywordData} pagination={false} />
       </Modal>
       <Modal
         title="Cài đặt ngày ghi nhận"

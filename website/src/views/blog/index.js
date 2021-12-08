@@ -13,7 +13,7 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
-import { Button, Input, message, Select, Table, Popconfirm ,DatePicker } from 'antd'
+import { Button, Input, message, Select, Table, Popconfirm, DatePicker } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
@@ -24,8 +24,10 @@ import { deleteBlog, getBlog } from 'apis/blog'
 // html react parser
 import parse from 'html-react-parser'
 
+import { compare } from 'utils'
+
 const { Option } = Select
-const {RangePicker} = DatePicker
+const { RangePicker } = DatePicker
 
 export default function Blog() {
   const [selectKeys, setSelectKeys] = useState([])
@@ -34,12 +36,12 @@ export default function Blog() {
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
-  const [valueDateSearch,setValueDateSearch]=useState(null)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const [valueSearch, setValueSearch] = useState('')
-  const [openSelect,setOpenSelect]=useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const typingTimeoutRef = useRef(null)
 
-  const toggleOpenSelect=()=>{
+  const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
   }
 
@@ -58,6 +60,8 @@ export default function Blog() {
       dataIndex: 'title',
       width: '25%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'title'),
+
       render: (text, record) => (
         <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
       ),
@@ -75,7 +79,8 @@ export default function Blog() {
       dataIndex: 'create_date',
       width: '15%',
       align: 'center',
-      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
     },
   ]
 
@@ -122,7 +127,7 @@ export default function Blog() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
-    if(openSelect) toggleOpenSelect()
+    if (openSelect) toggleOpenSelect()
   }
 
   const _search = (e) => {
@@ -196,55 +201,55 @@ export default function Blog() {
             dropdownRender={(menu) => (
               <>
                 <RangePicker
-                 style={{width:"100%"}} 
-                 onFocus={() => {
-                  if (!openSelect) toggleOpenSelect()
-                }}
-                onBlur={() => {
-                  if (openSelect) toggleOpenSelect()
-                }}
-                value={valueDateSearch}
-                onChange={(dates, dateStrings) => {
-                  //khi search hoac filter thi reset page ve 1
-                  paramsFilter.page = 1
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-                  if (openSelect) toggleOpenSelect()
+                    if (openSelect) toggleOpenSelect()
 
-                  //nếu search date thì xoá các params date
-                  delete paramsFilter.to_day
-                  delete paramsFilter.yesterday
-                  delete paramsFilter.this_week
-                  delete paramsFilter.last_week
-                  delete paramsFilter.last_month
-                  delete paramsFilter.this_month
-                  delete paramsFilter.this_year
-                  delete paramsFilter.last_year
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                  //Kiểm tra xem date có được chọn ko
-                  //Nếu ko thì thoát khỏi hàm, tránh cash app
-                  //và get danh sách order
-                  if (!dateStrings[0] && !dateStrings[1]) {
-                    delete paramsFilter.from_date
-                    delete paramsFilter.to_date
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                    setValueDateSearch(null)
-                    setAttributeDate()
-                  } else {
-                    const dateFirst = dateStrings[0]
-                    const dateLast = dateStrings[1]
-                    setValueDateSearch(dates)
-                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
 
-                    dateFirst.replace(/-/g, '/')
-                    dateLast.replace(/-/g, '/')
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                    paramsFilter.from_date = dateFirst
-                    paramsFilter.to_date = dateLast
-                  }
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                  setParamsFilter({ ...paramsFilter })
-                }}
-                 />
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
                 {menu}
               </>
             )}

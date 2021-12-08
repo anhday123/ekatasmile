@@ -99,25 +99,40 @@ export default function OrderList() {
     },
     {
       title: 'Tên khách hàng',
+      sorter: (a, b) =>
+        compareCustom(
+          a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
+          b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
+        ),
       render: (text, record) =>
         record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
     },
     {
       title: 'Nhân viên',
+      sorter: (a, b) =>
+        compareCustom(
+          a.employee ? `${a.employee.first_name} ${a.employee.last_name}` : '',
+          a.employee ? `${b.employee.first_name} ${b.employee.last_name}` : ''
+        ),
+
       render: (text, record) =>
         record.employee ? `${record.employee.first_name} ${record.employee.last_name}` : '',
     },
     {
       title: 'Trạng thái đơn hàng',
       dataIndex: 'bill_status',
+      sorter: (a, b) => compare(a, b, 'bill_status'),
     },
     {
       title: 'Thanh toán',
       dataIndex: 'payment_status',
+      sorter: (a, b) => compare(a, b, 'payment_status'),
     },
     {
       title: 'Khách phải trả',
       dataIndex: 'final_cost',
+      sorter: (a, b) => compare(a, b, 'final_cost'),
+
       render: (text) => formatCash(text),
     },
   ]
@@ -126,6 +141,7 @@ export default function OrderList() {
     {
       title: 'Mã sản phẩm',
       dataIndex: 'product_id',
+      sorter: (a, b) => compare(a, b, 'product_id'),
     },
     {
       title: 'Ảnh',
@@ -137,21 +153,28 @@ export default function OrderList() {
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
+      sorter: (a, b) => compare(a, b, 'title'),
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
     {
       title: 'Đơn giá',
+      sorter: (a, b) => compare(a, b, 'price'),
+
       render: (text, record) => (record.price ? formatCash(+record.price) : 0),
     },
     {
       title: 'Chiết khấu',
+      sorter: (a, b) => compare(a, b, 'discount'),
+
       render: (text, record) => (record.discount ? formatCash(+record.discount) : 0),
     },
     {
       title: 'Thành tiền',
+      sorter: (a, b) => compare(a, b, 'total_cost'),
       render: (text, record) => (record.total_cost ? formatCash(+record.total_cost) : 0),
     },
   ]

@@ -16,6 +16,7 @@ import {
 import { apiAllUser, updateUser } from 'apis/user'
 import { apiDistrict, apiProvince } from 'apis/information'
 import moment from 'moment'
+import { compare } from 'utils'
 const { Option } = Select
 const columns = [
   {
@@ -90,28 +91,34 @@ export default function Business() {
     {
       title: 'Tên business',
       dataIndex: 'company_name',
+      sorter: (a, b) => compare(a, b, 'company_name'),
     },
     {
       title: 'Liên hệ',
       dataIndex: 'phone',
+      sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
+      sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thành phố',
       dataIndex: 'city',
+      sorter: (a, b) => compare(a, b, 'city'),
     },
     {
       title: 'Thời gian đăng kí',
       dataIndex: 'create_date',
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
       render(data) {
         return moment(data).format('DD/MM/YYYY')
       },
     },
     {
       title: 'Lĩnh vực kinh doanh',
+      sorter: (a, b) => 0,
     },
   ]
 
@@ -177,8 +184,7 @@ export default function Business() {
     }
   }
   const changePagi = (page, page_size) => setpagination({ page, page_size })
-  const resetFilter = () =>
-    setFilter({ search: '', province: undefined, district: undefined })
+  const resetFilter = () => setFilter({ search: '', province: undefined, district: undefined })
   useEffect(() => {
     getAddress(apiProvince, setAddress, 'province')
     getAddress(apiDistrict, setAddress, 'district')
@@ -199,9 +205,7 @@ export default function Business() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Danh sách business
-          </div>
+          <div className={styles['promotion_manager_title']}>Danh sách business</div>
         </div>
         <Row
           style={{
@@ -211,14 +215,7 @@ export default function Business() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Input
                 placeholder="Tìm kiếm tên bussiness"
@@ -229,14 +226,7 @@ export default function Business() {
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
                 allowClear
@@ -248,8 +238,7 @@ export default function Business() {
                 value={filter.province}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
                 {Address.province.map((e) => (
@@ -258,14 +247,7 @@ export default function Business() {
               </Select>
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               {Address.district.length ? (
                 <Select
@@ -277,9 +259,7 @@ export default function Business() {
                   optionFilterProp="children"
                   value={filter.district}
                   filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                   onChange={(e) => setFilter({ ...filter, district: e })}
                 >
@@ -288,10 +268,7 @@ export default function Business() {
                   ))}
                 </Select>
               ) : (
-                <Select
-                  style={{ width: '100%' }}
-                  placeholder="Chọn quận/huyện"
-                ></Select>
+                <Select style={{ width: '100%' }} placeholder="Chọn quận/huyện"></Select>
               )}
             </div>
           </Col>
