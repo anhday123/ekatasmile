@@ -25,6 +25,8 @@ import {
   Popconfirm,
   InputNumber,
   DatePicker,
+  Col,
+  Row,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
@@ -515,106 +517,115 @@ export default function OfferList() {
         </Permission>
       </div>
       <hr />
+
       <div className={styles['body_offer_filter']}>
-        <Input.Group compact>
-          <Input
-            style={{ width: '20%' }}
-            placeholder="Tìm kiếm theo tên"
-            allowClear
-            prefix={<SearchOutlined />}
-            onChange={_search}
-            value={valueSearch}
-          />
-          <Select
-            onChange={onChangeOptionSearchType}
-            value={paramsFilter.type}
-            style={{ width: '16%' }}
-            placeholder="Tất cả loại ưu đãi"
-            allowClear
-          >
-            <Option value="PRODUCT">Sản phẩm</Option>
-            <Option value="category">Nhóm sản phẩm</Option>
-            <Option value="banner">Banner</Option>
-          </Select>
-          <Select
-            style={{ width: '25%' }}
-            value={attributeDate}
-            onChange={onChangeOptionSearchDate}
-            placeholder="Thời gian"
-            allowClear
-            open={openSelect}
-            onBlur={() => {
-              if (openSelect) toggleOpenSelect()
-            }}
-            onClick={() => {
-              if (!openSelect) toggleOpenSelect()
-            }}
-            dropdownRender={(menu) => (
-              <>
-                <RangePicker
-                  style={{ width: '100%' }}
-                  onFocus={() => {
-                    if (!openSelect) toggleOpenSelect()
-                  }}
-                  onBlur={() => {
-                    if (openSelect) toggleOpenSelect()
-                  }}
-                  value={valueDateSearch}
-                  onChange={(dates, dateStrings) => {
-                    //khi search hoac filter thi reset page ve 1
-                    paramsFilter.page = 1
+        <Row gutter={30}>
+          <Col span={6}>
+            <Input
+              size="large"
+              placeholder="Tìm kiếm theo tên"
+              allowClear
+              prefix={<SearchOutlined />}
+              onChange={_search}
+              value={valueSearch}
+            />
+          </Col>
+          <Col span={6}>
+            <Select
+              size="large"
+              onChange={onChangeOptionSearchType}
+              value={paramsFilter.type}
+              style={{ width: '100%' }}
+              placeholder="Tất cả loại ưu đãi"
+              allowClear
+            >
+              <Option value="PRODUCT">Sản phẩm</Option>
+              <Option value="category">Nhóm sản phẩm</Option>
+              <Option value="banner">Banner</Option>
+            </Select>
+          </Col>
+          <Col span={6}>
+            <Select
+              size="large"
+              style={{ width: '100%' }}
+              value={attributeDate}
+              onChange={onChangeOptionSearchDate}
+              placeholder="Thời gian"
+              allowClear
+              open={openSelect}
+              onBlur={() => {
+                if (openSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!openSelect) toggleOpenSelect()
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <RangePicker
+                    style={{ width: '100%' }}
+                    onFocus={() => {
+                      if (!openSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (openSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
 
-                    if (openSelect) toggleOpenSelect()
+                      if (openSelect) toggleOpenSelect()
 
-                    //nếu search date thì xoá các params date
-                    delete paramsFilter.to_day
-                    delete paramsFilter.yesterday
-                    delete paramsFilter.this_week
-                    delete paramsFilter.last_week
-                    delete paramsFilter.last_month
-                    delete paramsFilter.this_month
-                    delete paramsFilter.this_year
-                    delete paramsFilter.last_year
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
 
-                    //Kiểm tra xem date có được chọn ko
-                    //Nếu ko thì thoát khỏi hàm, tránh cash app
-                    //và get danh sách order
-                    if (!dateStrings[0] && !dateStrings[1]) {
-                      delete paramsFilter.from_date
-                      delete paramsFilter.to_date
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
 
-                      setValueDateSearch(null)
-                      setAttributeDate()
-                    } else {
-                      const dateFirst = dateStrings[0]
-                      const dateLast = dateStrings[1]
-                      setValueDateSearch(dates)
-                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
+                        setValueDateSearch(null)
+                        setAttributeDate()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setAttributeDate(`${dateFirst} -> ${dateLast}`)
 
-                      dateFirst.replace(/-/g, '/')
-                      dateLast.replace(/-/g, '/')
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
 
-                      paramsFilter.from_date = dateFirst
-                      paramsFilter.to_date = dateLast
-                    }
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
 
-                    setParamsFilter({ ...paramsFilter })
-                  }}
-                />
-                {menu}
-              </>
-            )}
-          >
-            <Option value="today">Hôm nay</Option>
-            <Option value="yesterday">Hôm qua</Option>
-            <Option value="this_week">Tuần này</Option>
-            <Option value="last_week">Tuần trước</Option>
-            <Option value="this_month">Tháng này</Option>
-            <Option value="last_month">Tháng trước</Option>
-            <Option value="this_year">Năm này</Option>
-            <Option value="last_year">Năm trước</Option>
-          </Select>
-        </Input.Group>
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                  />
+                  {menu}
+                </>
+              )}
+            >
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
+            </Select>
+          </Col>
+        </Row>
       </div>
       <div className={styles['body_offer_delete_filter']}>
         <div>

@@ -13,13 +13,14 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
-import { Button, Input, message, Select, Table, Popconfirm, DatePicker } from 'antd'
+import { Button, Input, message, Select, Table, Popconfirm, DatePicker, Row, Col } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
 import { deleteBlog, getBlog } from 'apis/blog'
+import { apiFilterRoleEmployee } from 'apis/employee'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -40,6 +41,7 @@ export default function Blog() {
   const [valueSearch, setValueSearch] = useState('')
   const [openSelect, setOpenSelect] = useState(false)
   const typingTimeoutRef = useRef(null)
+  const [userList, setUserList] = useState([])
 
   const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
@@ -58,7 +60,7 @@ export default function Blog() {
     {
       title: 'Tiêu đề',
       dataIndex: 'title',
-      width: '25%',
+      width: '20%',
       align: 'center',
       sorter: (a, b) => compare(a, b, 'title'),
 
@@ -69,10 +71,21 @@ export default function Blog() {
     {
       title: 'Nội dung',
       dataIndex: 'content',
-      width: '40%',
+      width: '30%',
       align: 'center',
       sorter: (a, b) => a.content.length - b.content.length,
       render: (text, record) => (!text ? '' : parse(text)),
+    },
+    {
+      title: 'Người đăng bài',
+      align: 'center',
+      width: '15%',
+      // sorter: (a, b) => a.content.length - b.content.length,
+      render: (text, record) => {
+        const creator = userList.find((e) => e.user_id == record.creator_id)
+        if (creator) return `${creator.first_name} ${creator.last_name}`
+        return ''
+      },
     },
     {
       title: 'Ngày tạo',
@@ -129,6 +142,16 @@ export default function Blog() {
     setParamsFilter({ ...paramsFilter })
     if (openSelect) toggleOpenSelect()
   }
+  const getUserList = async () => {
+    try {
+      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      if (res.data.success) {
+        setUserList(res.data.data)
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const _search = (e) => {
     setValueSearch(e.target.value)
@@ -154,6 +177,9 @@ export default function Blog() {
     setValueDateSearch(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
+  useEffect(() => {
+    getUserList()
+  }, [])
 
   useEffect(() => {
     _getBlog(paramsFilter)
@@ -175,18 +201,21 @@ export default function Blog() {
         </Permission>
       </div>
       <hr />
-      <div className={styles['body_blog_filter']}>
-        <Input.Group compact>
+      <Row style={{ marginTop: 20 }} gutter={30}>
+        <Col span={6}>
           <Input
-            style={{ width: '20%' }}
+            size="large"
             placeholder="Tìm kiếm theo tên"
             allowClear
             prefix={<SearchOutlined />}
             onChange={_search}
             value={valueSearch}
           />
+        </Col>
+        <Col span={6}>
           <Select
-            style={{ width: '25%' }}
+            size="large"
+            style={{ width: '100%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
@@ -263,8 +292,18 @@ export default function Blog() {
             <Option value="this_year">Năm này</Option>
             <Option value="last_year">Năm trước</Option>
           </Select>
-        </Input.Group>
-      </div>
+        </Col>
+        <Col span={6}>
+          <Select style={{ width: '100%' }} placeholder="Người đăng" size="large">
+            {userList.map((e) => (
+              <Option value={e.user_id}>
+                {e.first_name} {e.last_name}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
+
       <div className={styles['body_blog_delete_filter']}>
         <div>
           {selectKeys.length !== 0 ? (

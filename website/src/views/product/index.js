@@ -61,7 +61,7 @@ export default function Product() {
   const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
     this_week: true,
   })
