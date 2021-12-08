@@ -684,7 +684,9 @@ export default function OfferList() {
         }}
         summary={(pageData) => (
           <Table.Summary.Row>
-            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <b>Tổng</b>
+            </Table.Summary.Cell>
             <Table.Summary.Cell></Table.Summary.Cell>
             <Table.Summary.Cell></Table.Summary.Cell>
             <Table.Summary.Cell></Table.Summary.Cell>
