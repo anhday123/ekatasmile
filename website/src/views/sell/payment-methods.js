@@ -90,7 +90,7 @@ export default function PaymentMethods({
         footer={
           <Row justify="end">
             <Button style={{ width: 100, borderRadius: 5 }} onClick={_exit}>
-              Thoát
+              Đóng
             </Button>
             <Button
               onClick={_savePayments}
@@ -110,6 +110,9 @@ export default function PaymentMethods({
         onCancel={toggle}
         visible={visible}
       >
+        <p style={{ fontSize: 14, marginBottom: 10, fontWeight: 600 }}>
+          Có thể chọn nhiều phương thức thanh toán
+        </p>
         <Space direction="vertical" size="middle" style={{ width: '100%', fontSize: 18 }}>
           <Row justify="space-between" style={{ fontWeight: 600 }}>
             <p>Khách phải trả</p>

@@ -8,7 +8,17 @@ import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 
 //antd
-import { Input, Button, Row, DatePicker, Table, Select, Space, Popconfirm } from 'antd'
+import {
+  Input,
+  Button,
+  Row,
+  DatePicker,
+  Table,
+  Select,
+  Space,
+  Popconfirm,
+  notification,
+} from 'antd'
 
 //icons
 import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
@@ -20,7 +30,7 @@ import SettingColumns from 'components/setting-columns'
 import columnsOrder from './columnsOrder'
 
 //apis
-import { apiAllOrder } from 'apis/order'
+import { apiAllOrder, deleteOrders } from 'apis/order'
 
 const { RangePicker } = DatePicker
 export default function OrderList() {
@@ -61,6 +71,23 @@ export default function OrderList() {
 
       setParamsFilter({ ...paramsFilter })
     }, 650)
+  }
+
+  const _deleteOrders = async () => {
+    try {
+      setLoading(true)
+      const res = await deleteOrders(selectedRowKeys)
+      setLoading(false)
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: 'Xóa các đơn hàng thành công!' })
+          _getOrders()
+        } else notification.error({ message: res.data.message || 'Xóa các đơn hàng thất bại!' })
+      } else notification.error({ message: res.data.message || 'Xóa các đơn hàng thất bại!' })
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
   }
 
   const _onChangeDate = (date, dateString) => {
@@ -226,7 +253,7 @@ export default function OrderList() {
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 15 }}>
-          <Popconfirm title="Bạn có muốn xóa các đơn hàng này không ?">
+          <Popconfirm onConfirm={_deleteOrders} title="Bạn có muốn xóa các đơn hàng này không ?">
             <Button
               style={{ visibility: !selectedRowKeys.length && 'hidden' }}
               type="primary"
@@ -247,7 +274,7 @@ export default function OrderList() {
 
         <Table
           size="small"
-          rowKey="_id"
+          rowKey="order_id"
           loading={loading}
           rowSelection={{
             selectedRowKeys,
