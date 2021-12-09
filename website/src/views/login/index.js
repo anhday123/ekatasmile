@@ -286,6 +286,7 @@ export default function Login() {
               rules={[{ required: true, message: 'Giá trị rỗng!' }]}
             >
               <Input
+                defaultValue="admin"
                 size="large"
                 style={{ borderRadius: '2rem' }}
                 prefix={<UserOutlined />}
@@ -298,6 +299,7 @@ export default function Login() {
               rules={[{ required: true, message: 'Giá trị rỗng!' }]}
             >
               <Input.Password
+                defaultValue="admin"
                 size="large"
                 style={{ borderRadius: '2rem' }}
                 prefix={<LockOutlined />}

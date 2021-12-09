@@ -203,13 +203,13 @@ const BaseLayout = (props) => {
       menuItems: [
         {
           icon: <GiftOutlined />,
-          path: '/product',
-          title: 'Nhập kho',
+          path: '',
+          title: ROUTES.PRODUCT,
           permissions: [],
         },
         {
           icon: <BankOutlined />,
-          path: '/product-export',
+          path: ROUTES.PRODUCT,
           title: 'Xuất kho',
           permissions: [],
         },
