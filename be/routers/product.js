@@ -13,6 +13,8 @@ router.route(`/addproduct`).post(auth, product.addProductC);
 router.route(`/updateproduct/:product_id`).patch(auth, product.updateProductC);
 router.route(`/deleteproduct`).delete(auth, product.deleteProductC);
 router.route(`/getattribute`).get(auth, product.getAllAtttributeC);
+router.route(`/unit`).get(auth, product.getAllUnitProductC);
+router.route(`/unit/add`).post(auth, product.AddUnitProductC);
 router.route(`/addfeedback`).post(auth, product.addFeedbackC);
 router.route(`/deletefeedback`).delete(auth, product.deleteFeedbackC);
 router.route(`/importfile`).post(auth, upload.single('file'), product.importFileC);
