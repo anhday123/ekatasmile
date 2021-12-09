@@ -1018,7 +1018,7 @@ module.exports.importFileC = async (req, res, next) => {
 
 module.exports.AddUnitProductC = async (req, res, next) => {
   try {
-    if (req.body.pcs == undefined || req.body.name == undefined) {
+    if (req.body.pcs == undefined || req.body.name == undefined || req.body.price == undefined) {
       return res.send({ success: false, mess: "pcs or name invalid !!!" });
     }
 
