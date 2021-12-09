@@ -5,7 +5,7 @@ import { ACTION } from 'consts'
 import { useSelector, useDispatch } from 'react-redux'
 
 //antd
-import { Row, Modal, Select, Button, notification, Input } from 'antd'
+import { Row, Modal, Select, Button, Tooltip, Input } from 'antd'
 
 //icons antd
 import { ExclamationCircleOutlined } from '@ant-design/icons'
@@ -73,10 +73,12 @@ export default function ChangeStore() {
 
   return (
     <>
-      <Row wrap={false} align="middle" style={{ cursor: 'pointer' }} onClick={toggle}>
-        <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
-        <p className={styles['name-store']}>{storeActive && storeActive.name}</p>
-      </Row>
+      <Tooltip title={storeActive ? storeActive.name : ''}>
+        <Row wrap={false} align="middle" style={{ cursor: 'pointer' }} onClick={toggle}>
+          <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
+          <p className={styles['name-store']}>{storeActive && storeActive.name}</p>
+        </Row>
+      </Tooltip>
       <Modal
         width={400}
         onCancel={toggle}
