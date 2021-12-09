@@ -27,11 +27,11 @@ export const STATUS_PRODUCT = {
 
 //status order
 export const BILL_STATUS_ORDER = {
-  DRAFT: 'DRAFT',
-  PROCESSING: 'PROCESSING',
-  COMPLETE: 'COMPLETE',
-  CANCEL: 'CANCEL',
-  REFUND: 'REFUND',
+  DRAFT: 'Lưu nháp',
+  PROCESSING: 'Đang Xử Lý',
+  COMPLETE: 'Hoàn Thành',
+  CANCEL: 'Huỷ Bỏ',
+  REFUND: 'Hoàn Tiền',
 }
 
 export const SHIP_STATUS_ORDER = {
@@ -212,7 +212,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.0.14'
+export const VERSION_APP = '1.0.18'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

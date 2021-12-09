@@ -50,6 +50,7 @@ export default function Login() {
     }
   }
   const onFinish = (values) => {
+    console.log(values)
     const object = {
       username: values.emailLogin.trim(),
       password: values.passwordLogin.trim(),
@@ -281,6 +282,7 @@ export default function Login() {
         {status === 1 ? (
           <Form className={styles['login_bottom']} form={form} onFinish={onFinish}>
             <Form.Item
+              initialValue="admin"
               className={styles['login_bottom_email']}
               name="emailLogin"
               rules={[{ required: true, message: 'Giá trị rỗng!' }]}
@@ -293,6 +295,7 @@ export default function Login() {
               />
             </Form.Item>
             <Form.Item
+              initialValue="admin"
               className={styles['login_bottom_password']}
               name="passwordLogin"
               rules={[{ required: true, message: 'Giá trị rỗng!' }]}

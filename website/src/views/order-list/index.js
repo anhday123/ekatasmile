@@ -8,7 +8,7 @@ import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 
 //antd
-import { Input, Button, Row, DatePicker, Table, Select, Space } from 'antd'
+import { Input, Button, Row, DatePicker, Table, Select, Space, Popconfirm } from 'antd'
 
 //icons
 import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
@@ -16,6 +16,8 @@ import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 //components
 import Permissions from 'components/permission'
 import PrintOrder from 'components/print/print-order'
+import SettingColumns from 'components/setting-columns'
+import columnsOrder from './columnsOrder'
 
 //apis
 import { apiAllOrder } from 'apis/order'
@@ -28,7 +30,7 @@ export default function OrderList() {
   const handlePrint = useReactToPrint({
     content: () => printOrderRef.current,
   })
-
+  const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
 
   const [loading, setLoading] = useState(false)
@@ -84,58 +86,6 @@ export default function OrderList() {
     setParamsFilter({ ...paramsFilter })
   }
 
-  const columnsOrder = [
-    {
-      title: 'Mã đơn hàng',
-      dataIndex: 'code',
-      sorter: (a, b) => compare(a, b, 'code'),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      render: (text, record) => text && moment(text).format('DD/MM/YYYY HH:mm'),
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
-      title: 'Tên khách hàng',
-      sorter: (a, b) =>
-        compareCustom(
-          a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
-          b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
-        ),
-      render: (text, record) =>
-        record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
-    },
-    {
-      title: 'Nhân viên',
-      sorter: (a, b) =>
-        compareCustom(
-          a.employee ? `${a.employee.first_name} ${a.employee.last_name}` : '',
-          a.employee ? `${b.employee.first_name} ${b.employee.last_name}` : ''
-        ),
-
-      render: (text, record) =>
-        record.employee ? `${record.employee.first_name} ${record.employee.last_name}` : '',
-    },
-    {
-      title: 'Trạng thái đơn hàng',
-      dataIndex: 'bill_status',
-      sorter: (a, b) => compare(a, b, 'bill_status'),
-    },
-    {
-      title: 'Thanh toán',
-      dataIndex: 'payment_status',
-      sorter: (a, b) => compare(a, b, 'payment_status'),
-    },
-    {
-      title: 'Khách phải trả',
-      dataIndex: 'final_cost',
-      sorter: (a, b) => compare(a, b, 'final_cost'),
-
-      render: (text) => formatCash(text),
-    },
-  ]
-
   const columnsProduct = [
     {
       title: 'Mã sản phẩm',
@@ -181,6 +131,7 @@ export default function OrderList() {
   const _getOrders = async (params) => {
     try {
       setLoading(true)
+      setSelectedRowKeys([])
       const res = await apiAllOrder(params)
       console.log(res)
       if (res.status === 200) {
@@ -212,7 +163,7 @@ export default function OrderList() {
             width: '100%',
           }}
         >
-          <h3 style={{ marginBottom: 0, fontSize: 19 }}>Danh sách đơn hàng</h3>
+          <h3 style={{ marginBottom: 0, fontSize: 19 }}>Danh sách hóa đơn bán hàng</h3>
           <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
             <Button
               onClick={() => history.push(ROUTES.ORDER_CREATE)}
@@ -266,12 +217,32 @@ export default function OrderList() {
               >
                 {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
                   <Select.Option value={status} key={index}>
-                    {status}
+                    {BILL_STATUS_ORDER[status]}
                   </Select.Option>
                 ))}
               </Select>
             </div>
           </Space>
+        </Row>
+
+        <Row justify="space-between" style={{ width: '100%', marginTop: 15 }}>
+          <Popconfirm title="Bạn có muốn xóa các đơn hàng này không ?">
+            <Button
+              style={{ visibility: !selectedRowKeys.length && 'hidden' }}
+              type="primary"
+              danger
+              size="large"
+            >
+              Xóa đơn hàng
+            </Button>
+          </Popconfirm>
+
+          <SettingColumns
+            columnsDefault={columnsOrder}
+            nameColumn="columnsOrder"
+            columns={columns}
+            setColumns={setColumns}
+          />
         </Row>
 
         <Table
@@ -457,9 +428,60 @@ export default function OrderList() {
                 </div>
               )
             },
+            expandedRowKeys: selectedRowKeys,
+            expandIconColumnIndex: -1,
           }}
-          columns={columnsOrder}
-          style={{ width: '100%', marginTop: 35 }}
+          columns={columns.map((column) => {
+            if (column.key === 'code') return { ...column, sorter: (a, b) => compare(a, b, 'code') }
+            if (column.key === 'create_date')
+              return {
+                ...column,
+                render: (text, record) => text && moment(text).format('DD/MM/YYYY HH:mm'),
+                sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+              }
+            if (column.key === 'customer')
+              return {
+                ...column,
+                sorter: (a, b) =>
+                  compareCustom(
+                    a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
+                    b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
+                  ),
+                render: (text, record) =>
+                  record.customer
+                    ? `${record.customer.first_name} ${record.customer.last_name}`
+                    : '',
+              }
+            if (column.key === 'employee')
+              return {
+                ...column,
+                sorter: (a, b) =>
+                  compareCustom(
+                    a.employee ? `${a.employee.first_name} ${a.employee.last_name}` : '',
+                    a.employee ? `${b.employee.first_name} ${b.employee.last_name}` : ''
+                  ),
+                render: (text, record) =>
+                  record.employee
+                    ? `${record.employee.first_name} ${record.employee.last_name}`
+                    : '',
+              }
+            if (column.key === 'bill_status')
+              return {
+                ...column,
+                render: (text) => BILL_STATUS_ORDER[text] || '',
+                sorter: (a, b) => compare(a, b, 'bill_status'),
+              }
+            if (column.key === 'payment_status')
+              return { ...column, sorter: (a, b) => compare(a, b, 'payment_status') }
+            if (column.key === 'final_cost')
+              return {
+                ...column,
+                sorter: (a, b) => compare(a, b, 'final_cost'),
+                render: (text) => formatCash(text),
+              }
+            return column
+          })}
+          style={{ width: '100%', marginTop: 15 }}
           pagination={{
             current: paramsFilter.page,
             pageSize: paramsFilter.page_size,
@@ -477,19 +499,21 @@ export default function OrderList() {
           dataSource={orders}
           summary={(pageData) => (
             <Table.Summary.Row>
-              <Table.Summary.Cell>
-                <b>Tổng</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>
-                {formatCash(tableSum(pageData, 'final_cost'))} VND
-              </Table.Summary.Cell>
+              {columns.map((e, index) => (
+                <>
+                  {index === 0 && (
+                    <Table.Summary.Cell>
+                      <b>Tổng</b>
+                    </Table.Summary.Cell>
+                  )}
+                  {columns.length - 1 !== index && <Table.Summary.Cell></Table.Summary.Cell>}
+                  {columns.length - 2 === index && (
+                    <Table.Summary.Cell>
+                      {formatCash(tableSum(pageData, 'final_cost'))} VND
+                    </Table.Summary.Cell>
+                  )}
+                </>
+              ))}
             </Table.Summary.Row>
           )}
         />

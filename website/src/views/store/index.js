@@ -30,8 +30,8 @@ import Permission from 'components/permission'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
-import { apiFilterCity } from 'apis/branch'
 import { apiSearch, getAllStore, updateStore } from 'apis/store'
+import { apiAllEmployee } from 'apis/employee'
 import { compare } from 'utils'
 
 const { Option } = Select
@@ -40,6 +40,7 @@ export default function Store() {
   const dispatch = useDispatch()
   const typingTimeoutRef = useRef(null)
 
+  const [users, setUsers] = useState([])
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -88,9 +89,7 @@ export default function Store() {
       message: 'Thành công',
       duration: 3,
       description:
-        data === 2
-          ? 'Vô hiệu hóa cửa hàng thành công.'
-          : 'Kích hoạt cửa hàng thành công',
+        data === 2 ? 'Vô hiệu hóa cửa hàng thành công.' : 'Kích hoạt cửa hàng thành công',
     })
   }
 
@@ -113,17 +112,13 @@ export default function Store() {
 
   function onChangeSwitch(checked, record) {
     console.log(`switch to ${checked}`)
-    updateStoreData(
-      { ...record, active: checked },
-      record.store_id,
-      checked ? 1 : 2
-    )
+    updateStoreData({ ...record, active: checked }, record.store_id, checked ? 1 : 2)
   }
 
   const _getStores = async (params) => {
     try {
       setLoading(true)
-      const res = await getAllStore(params)
+      const res = await getAllStore({ ...params, _creator: true })
       console.log(res)
       if (res.status === 200) {
         setStore(res.data.data)
@@ -137,11 +132,7 @@ export default function Store() {
 
   const contentImage = (data) => (
     <div>
-      <img
-        src={data}
-        style={{ width: '25rem', height: '15rem', objectFit: 'contain' }}
-        alt=""
-      />
+      <img src={data} style={{ width: '25rem', height: '15rem', objectFit: 'contain' }} alt="" />
     </div>
   )
   const columns = [
@@ -204,8 +195,14 @@ export default function Store() {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+    },
+    {
+      title: 'Người tạo',
+      render: (text, record) => record._creator.first_name + ' ' + record._creator.last_name,
       sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
     },
     {
       title: 'Trạng thái',
@@ -228,21 +225,6 @@ export default function Store() {
     setVisibleUpdate(false)
   }
 
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys)
-    setSelectedRowKeys(selectedRowKeys)
-    const array = []
-    store &&
-      store.length > 0 &&
-      store.forEach((values, index) => {
-        selectedRowKeys.forEach((values1, index1) => {
-          if (values._id === values1) {
-            array.push(values)
-          }
-        })
-      })
-    setArrayUpdate([...array])
-  }
   const openNotificationErrorStoreRegexPhone = (data) => {
     notification.error({
       message: 'Thất bại',
@@ -268,117 +250,6 @@ export default function Store() {
       ),
     })
   }
-  const openNotificationErrorStore = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Lỗi cập nhật thông tin cửa hàng.',
-    })
-  }
-  const updateStoreDataUpdate = async (object, id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      // console.log(value);
-      const res = await updateStore(object, id)
-      console.log(res)
-      if (res.status === 200) {
-        await _getStores()
-        setSelectedRowKeys([])
-        openNotificationSuccessStoreUpdate(object.name)
-        onClose()
-        onCloseUpdate()
-      } else {
-        openNotificationErrorStore()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-  const onCloseUpdateFunc = (data) => {
-    if (data === 1) {
-      arrayUpdate &&
-        arrayUpdate.length > 0 &&
-        arrayUpdate.forEach((values, index) => {
-          if (isNaN(values.phone) || isNaN(values.fax)) {
-            if (isNaN(values.phone)) {
-              openNotificationErrorStoreRegexPhone('Liên hệ')
-            }
-            if (isNaN(values.fax)) {
-              openNotificationErrorStoreRegex('Số fax')
-            }
-          } else {
-            if (regex.test(values.phone)) {
-              updateStoreDataUpdate(
-                {
-                  ...values,
-                  name: values.name.toLowerCase(),
-                  logo: values.logo,
-                  phone: values.phone,
-                  email: values.email,
-                  fax: values.fax,
-                  website: values && values.website ? values.website : '',
-                  latitude: ' ',
-                  longtitude: ' ',
-                  address:
-                    values && values.address
-                      ? values.address.toLowerCase()
-                      : '',
-                  ward: '',
-                  district: values.district,
-                  province: values.province,
-                },
-                values.store_id
-              )
-            } else {
-              openNotificationErrorStoreRegexPhone('Liên hệ')
-            }
-          }
-        })
-    } else {
-      arrayUpdate.forEach((values, index) => {
-        if (isNaN(values.phone) || isNaN(values.fax)) {
-          if (isNaN(values.phone)) {
-            openNotificationErrorStoreRegexPhone('Liên hệ')
-          }
-          if (isNaN(values.fax)) {
-            openNotificationErrorStoreRegex('Số fax')
-          }
-        } else {
-          if (regex.test(values.phone)) {
-            updateStoreDataUpdate(
-              {
-                ...values,
-                name: values.name.toLowerCase(),
-                phone: values.phone,
-                email: values.email,
-                fax: arrayUpdate[0].fax,
-                website:
-                  arrayUpdate[0] && arrayUpdate[0].website
-                    ? arrayUpdate[0].website
-                    : '',
-                latitude: ' ',
-                longtitude: ' ',
-                address:
-                  arrayUpdate[0] && arrayUpdate[0].address
-                    ? arrayUpdate[0].address.toLowerCase()
-                    : '',
-                ward: '',
-                district: arrayUpdate[0].district,
-                province: arrayUpdate[0].province,
-                logo: arrayUpdate[0].logo,
-              },
-              values.store_id
-            )
-          } else {
-            openNotificationErrorStoreRegexPhone('Liên hệ')
-          }
-        }
-      })
-    }
-  }
 
   const onClickClear = async () => {
     Object.keys(paramsFilter).map((e) => delete paramsFilter[e])
@@ -393,36 +264,40 @@ export default function Store() {
   const [districtMain, setDistrictMain] = useState([])
   const apiDistrictData = async (params) => {
     try {
-      setLoading(true)
       const res = await apiDistrict(params)
       console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
       // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
+    } catch (error) {}
   }
   const [provinceMain, setProvinceMain] = useState([])
   const apiProvinceData = async () => {
     try {
-      setLoading(true)
       const res = await apiProvince()
       console.log(res)
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
-      // if (res.status === 200) setUsers(res.data);
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
+    } catch (error) {}
   }
+
+  const _getUsers = async () => {
+    try {
+      const res = await apiAllEmployee()
+      console.log(res)
+      if (res.status === 200) {
+        setUsers(res.data.data)
+      }
+    } catch (error) {}
+  }
+
   useEffect(() => {
     apiProvinceData()
+    _getUsers()
   }, [])
+
   useEffect(() => {
     apiDistrictData({ search: paramsFilter.province })
   }, [paramsFilter.province])
@@ -450,9 +325,7 @@ export default function Store() {
           }}
           to={ROUTES.CONFIGURATION_STORE}
         >
-          <ArrowLeftOutlined
-            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-          />
+          <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
           <div
             style={{
               color: 'black',
@@ -479,140 +352,125 @@ export default function Store() {
           width: '100%',
         }}
       >
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <Input
-              size="large"
-              style={{ width: '100%' }}
-              name="name"
-              value={valueSearch}
-              enterButton
-              onChange={onSearch}
-              className={styles['orders_manager_content_row_col_search']}
-              placeholder="Tìm kiếm theo mã, theo tên"
-              allowClear
-            />
-          </div>
+        <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Input
+            size="large"
+            style={{ width: '100%' }}
+            name="name"
+            value={valueSearch}
+            enterButton
+            onChange={onSearch}
+            className={styles['orders_manager_content_row_col_search']}
+            placeholder="Tìm kiếm theo mã, theo tên"
+            allowClear
+          />
         </Col>
 
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <Select
-              size="large"
-              showSearch
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Chọn tỉnh/thành phố"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              onChange={(value) => {
-                if (value) paramsFilter.province = value
-                else delete paramsFilter.province
-                paramsFilter.page = 1
-                setParamsFilter({ ...paramsFilter })
-              }}
-              value={paramsFilter.province}
-            >
-              {provinceMain.map((values, index) => (
-                <Option value={values.province_name} key={index}>
-                  {values.province_name}
-                </Option>
-              ))}
-            </Select>
-          </div>
+        <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Select
+            size="large"
+            showSearch
+            allowClear
+            style={{ width: '100%' }}
+            placeholder="Chọn tỉnh/thành phố"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            onChange={(value) => {
+              if (value) paramsFilter.province = value
+              else delete paramsFilter.province
+              paramsFilter.page = 1
+              setParamsFilter({ ...paramsFilter })
+            }}
+            value={paramsFilter.province}
+          >
+            {provinceMain.map((values, index) => (
+              <Option value={values.province_name} key={index}>
+                {values.province_name}
+              </Option>
+            ))}
+          </Select>
         </Col>
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <Select
-              size="large"
-              showSearch
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Chọn quận/huyện"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.district}
-              onChange={(value) => {
-                if (value) paramsFilter.district = value
-                else delete paramsFilter.district
+        <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Select
+            size="large"
+            showSearch
+            allowClear
+            style={{ width: '100%' }}
+            placeholder="Chọn quận/huyện"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={paramsFilter.district}
+            onChange={(value) => {
+              if (value) paramsFilter.district = value
+              else delete paramsFilter.district
 
-                paramsFilter.page = 1
-                setParamsFilter({ ...paramsFilter })
-              }}
-            >
-              {districtMain.map((values, index) => (
-                <Option value={values.district_name} key={index}>
-                  {values.district_name}
-                </Option>
-              ))}
-            </Select>
-          </div>
+              paramsFilter.page = 1
+              setParamsFilter({ ...paramsFilter })
+            }}
+          >
+            {districtMain.map((values, index) => (
+              <Option value={values.district_name} key={index}>
+                {values.district_name}
+              </Option>
+            ))}
+          </Select>
         </Col>
 
-        <Col
-          style={{ width: '100%', marginTop: '1rem' }}
-          xs={24}
-          sm={24}
-          md={11}
-          lg={11}
-          xl={7}
-        >
-          <div style={{ width: '100%' }}>
-            <RangePicker
-              size="large"
-              className="br-15__date-picker"
-              value={valueDateFilter}
-              style={{ width: '100%' }}
-              ranges={{
-                Today: [moment(), moment()],
-                'This Month': [
-                  moment().startOf('month'),
-                  moment().endOf('month'),
-                ],
-              }}
-              onChange={onChangeDate}
-            />
-          </div>
+        <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <RangePicker
+            size="large"
+            className="br-15__date-picker"
+            value={valueDateFilter}
+            style={{ width: '100%' }}
+            ranges={{
+              Today: [moment(), moment()],
+              'This Month': [moment().startOf('month'), moment().endOf('month')],
+            }}
+            onChange={onChangeDate}
+          />
+        </Col>
+        <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Select
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            showSearch
+            size="large"
+            placeholder="Chọn người tạo"
+            style={{ width: '100%' }}
+            value={paramsFilter.creator_id}
+            onChange={(value) => {
+              if (value) paramsFilter.creator_id = value
+              else delete paramsFilter.creator_id
+
+              paramsFilter.page = 1
+              setParamsFilter({ ...paramsFilter })
+            }}
+          >
+            {users.map((user, index) => (
+              <Select.Option key={index} value={user.user_id}>
+                {user.first_name || ''} {user.last_name || ''}
+              </Select.Option>
+            ))}
+          </Select>
         </Col>
       </Row>
-      <div
+      <Row
+        justify="end"
         style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
           width: '100%',
-          marginTop: '1rem',
+          marginTop: 15,
+          display: Object.keys(paramsFilter).length < 3 && 'none',
         }}
       >
         <Button onClick={onClickClear} type="primary" size="large">
           Xóa tất cả lọc
         </Button>
-      </div>
+      </Row>
       <div
         style={{
           width: '100%',

@@ -58,6 +58,7 @@ import {
   BarChartOutlined,
   TransactionOutlined,
   ContactsOutlined,
+  HomeOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -103,8 +104,9 @@ const BaseLayout = (props) => {
   const getInfoUser = async () => {
     try {
       const res = await apiSearch({ user_id: dataUser.data.user_id })
+      console.log(res)
       if (res.status === 200) {
-        if (res.data.data.length) setUser(res.data.data[0])
+        if (res.data.data.length) setUser({ ...res.data.data[0] })
       }
     } catch (error) {
       console.log(error)
@@ -194,11 +196,52 @@ const BaseLayout = (props) => {
       ],
     },
     {
-      path: ROUTES.OFFER_LIST,
+      path: 'warehouse',
+      title: 'Kho',
+      permissions: [],
+      icon: <HomeOutlined />,
+      menuItems: [
+        {
+          icon: <GiftOutlined />,
+          path: ROUTES.PRODUCT,
+          title: 'Nhập kho',
+          permissions: [],
+        },
+        {
+          icon: <BankOutlined />,
+          path: ROUTES.PRODUCT,
+          title: 'Xuất kho',
+          permissions: [],
+        },
+      ],
+    },
+    {
+      path: 'offer',
       title: 'Quản lý ưu đãi',
       permissions: [],
       icon: <ControlOutlined />,
+      menuItems: [
+        {
+          icon: <AlertOutlined />,
+          path: ROUTES.POINT,
+          title: 'Tích điểm',
+          permissions: [PERMISSIONS.tich_diem],
+        },
+        {
+          icon: <TagsOutlined />,
+          path: ROUTES.PROMOTION,
+          title: 'Khuyến mãi',
+          permissions: [PERMISSIONS.khuyen_mai],
+        },
+        {
+          icon: <ControlOutlined />,
+          path: ROUTES.OFFER_LIST,
+          title: 'Quản lý ưu đãi',
+          permissions: [],
+        },
+      ],
     },
+
     {
       path: ROUTES.BLOG,
       title: 'Quản lý bài viết',
@@ -224,18 +267,6 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.quan_li_chi_nhanh],
     },
     {
-      path: ROUTES.PROMOTION,
-      title: 'Khuyến mãi',
-      permissions: [PERMISSIONS.khuyen_mai],
-      icon: <TagsOutlined />,
-    },
-    {
-      path: ROUTES.POINT,
-      title: 'Tích điểm',
-      permissions: [PERMISSIONS.tich_diem],
-      icon: <AlertOutlined />,
-    },
-    {
       path: ROUTES.CONTACT,
       title: 'Liên hệ',
       permissions: [],
@@ -250,32 +281,68 @@ const BaseLayout = (props) => {
     {
       path: 'report',
       title: 'Báo cáo',
-      permissions: [PERMISSIONS.bao_cao_don_hang],
+      permissions: [],
       icon: <BarChartOutlined />,
       menuItems: [
         {
           icon: <GraphicEqIcon />,
           path: ROUTES.REPORT_END_DAY,
           title: 'Báo cáo cuối ngày',
-          permissions: [PERMISSIONS.bao_cao_cuoi_ngay],
+          permissions: [],
         },
         {
           icon: <ReplyAllIcon />,
           path: ROUTES.REPORT_IMPORT,
           title: 'Báo cáo nhập hàng',
-          permissions: [PERMISSIONS.bao_cao_nhap_hang],
+          permissions: [],
         },
         {
-          icon: <FastfoodIcon />,
+          icon: (
+            <svg
+              style={{ width: 14, height: 14 }}
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fal"
+              data-icon="dolly-flatbed-alt"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 640 512"
+              class="svg-inline--fa fa-dolly-flatbed-alt fa-w-20 fa-3x"
+            >
+              <path
+                fill="currentColor"
+                d="M208 352h384c8.8 0 16-7.2 16-16V208c0-8.8-7.2-16-16-16h-48V80c0-8.8-7.2-16-16-16H208c-8.8 0-16 7.2-16 16v256c0 8.8 7.2 16 16 16zM416 96h96v96h-96V96zm0 128h160v96H416v-96zM224 96h160v224H224V96zm408 320H128V8c0-4.4-3.6-8-8-8H8C3.6 0 0 3.6 0 8v16c0 4.4 3.6 8 8 8h88v408c0 4.4 3.6 8 8 8h58.9c-1.8 5-2.9 10.4-2.9 16 0 26.5 21.5 48 48 48s48-21.5 48-48c0-5.6-1.2-11-2.9-16H451c-1.8 5-2.9 10.4-2.9 16 0 26.5 21.5 48 48 48s48-21.5 48-48c0-5.6-1.2-11-2.9-16H632c4.4 0 8-3.6 8-8v-16c0-4.4-3.6-8-8-8zm-424 64c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm288 0c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16z"
+                class=""
+              ></path>
+            </svg>
+          ),
           path: ROUTES.REPORT_INVENTORY,
           title: 'Báo cáo tồn kho',
-          permissions: [PERMISSIONS.bao_cao_ton_kho],
+          permissions: [],
         },
         {
-          icon: <FastfoodIcon />,
+          icon: (
+            <svg
+              style={{ width: 14, height: 14 }}
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fal"
+              data-icon="sack-dollar"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              class="svg-inline--fa fa-sack-dollar fa-w-16 fa-3x"
+            >
+              <path
+                fill="currentColor"
+                d="M334.89 121.63l43.72-71.89C392.77 28.47 377.53 0 352 0H160.15c-25.56 0-40.8 28.5-26.61 49.76l43.57 71.88C-9.27 240.59.08 392.36.08 412c0 55.23 49.11 100 109.68 100h292.5c60.58 0 109.68-44.77 109.68-100 0-19.28 8.28-172-177.05-290.37zM160.15 32H352l-49.13 80h-93.73zM480 412c0 37.49-34.85 68-77.69 68H109.76c-42.84 0-77.69-30.51-77.69-68v-3.36c-.93-59.86 20-173 168.91-264.64h110.1C459.64 235.46 480.76 348.94 480 409zM285.61 310.74l-49-14.54c-5.66-1.62-9.57-7.22-9.57-13.68 0-7.86 5.76-14.21 12.84-14.21h30.57a26.78 26.78 0 0 1 13.93 4 8.92 8.92 0 0 0 11-.75l12.73-12.17a8.54 8.54 0 0 0-.65-13 63.12 63.12 0 0 0-34.17-12.17v-17.6a8.68 8.68 0 0 0-8.7-8.62H247.2a8.69 8.69 0 0 0-8.71 8.62v17.44c-25.79.75-46.46 22.19-46.46 48.57 0 21.54 14.14 40.71 34.38 46.74l49 14.54c5.66 1.61 9.58 7.21 9.58 13.67 0 7.87-5.77 14.22-12.84 14.22h-30.61a26.72 26.72 0 0 1-13.93-4 8.92 8.92 0 0 0-11 .76l-12.84 12.06a8.55 8.55 0 0 0 .65 13 63.2 63.2 0 0 0 34.17 12.17v17.55a8.69 8.69 0 0 0 8.71 8.62h17.41a8.69 8.69 0 0 0 8.7-8.62V406c25.68-.64 46.46-22.18 46.57-48.56.02-21.5-14.13-40.67-34.37-46.7z"
+                class=""
+              ></path>
+            </svg>
+          ),
           path: ROUTES.REPORT_FINANCIAL,
           title: 'Báo cáo tài chính',
-          permissions: [PERMISSIONS.bao_cao_tai_chinh],
+          permissions: [],
         },
       ],
     },
@@ -492,6 +559,7 @@ const BaseLayout = (props) => {
       <Menu.Item
         icon={
           <img
+            alt=""
             src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
             width="30"
           />
@@ -503,6 +571,7 @@ const BaseLayout = (props) => {
       <Menu.Item
         icon={
           <img
+            alt=""
             src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
             width="30"
           />
@@ -522,7 +591,6 @@ const BaseLayout = (props) => {
       data.phoneNumber = user.phone
       data.email = user.email
       data.workPlace = user.company_name
-      data.role = user._role.role_id
       data.address = user.address
     } else {
       data.firstName = login.objectUsername.first_name
@@ -530,7 +598,6 @@ const BaseLayout = (props) => {
       data.phoneNumber = login.objectUsername.phone
       data.email = login.objectUsername.email
       data.workPlace = login.objectUsername.company_name
-      data.role = login.objectUsername._role.role_id
       data.address = login.objectUsername.address
     }
   }
@@ -703,16 +770,7 @@ const BaseLayout = (props) => {
         onOk={() => modal1VisibleModal(false)}
         onCancel={() => modal1VisibleModal(false)}
       >
-        <Form
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            flexDirection: 'column',
-            width: '100%',
-          }}
-          onFinish={onFinish}
-          form={form}
-        >
+        <Form layout="vertical" onFinish={onFinish} form={form}>
           <Row
             style={{
               display: 'flex',

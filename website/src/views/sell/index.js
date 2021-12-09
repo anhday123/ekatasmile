@@ -122,7 +122,7 @@ export default function Sell() {
   //object invoice
   const initInvoice = {
     id: uuidv4(),
-    name: 'Đơn 1',
+    name: '000001',
     type: 'default',
     customer: null,
     order_details: [], //danh sách sản phẩm trong hóa đơn
@@ -172,7 +172,7 @@ export default function Sell() {
     invoicesNew.splice(indexInvoice, 1)
 
     if (invoicesNew.length === 0) {
-      initInvoice.name = `Đơn ${invoicesNew.length + 1}`
+      initInvoice.name = `00000${invoicesNew.length + 1}`
       invoicesNew.push(initInvoice)
       setActiveKeyTab(initInvoice.id)
     } else setActiveKeyTab(invoicesNew[0].id)
@@ -188,7 +188,7 @@ export default function Sell() {
     }
 
     const invoicesNew = [...invoices]
-    initInvoice.name = `Đơn ${invoicesNew.length + 1}`
+    initInvoice.name = `0000${invoicesNew.length + 1}`
     invoicesNew.push(initInvoice)
 
     setInvoices([...invoicesNew])
@@ -1239,7 +1239,7 @@ export default function Sell() {
               if (iVoice !== -1) setIndexInvoice(iVoice)
               setActiveKeyTab(activeKey)
             }}
-            tabBarStyle={{ height: 55, color: 'white' }}
+            tabBarStyle={{ height: 48, color: 'white' }}
             type="editable-card"
             className="tabs-invoices"
             addIcon={
@@ -1294,6 +1294,7 @@ export default function Sell() {
             <ModalChangeStore />
             <ModalInfoSeller />
           </div>
+          <ModalKeyboardShortCuts />
           <HeaderGroupButton />
         </Row>
       </div>
@@ -1351,13 +1352,28 @@ export default function Sell() {
                     <Select
                       allowClear
                       showSearch
-                      onChange={(value) => _editProductInInvoices('unit', value, index)}
+                      onChange={(value) => {
+                        _editProductInInvoices('unit', value, index)
+                        if (value) {
+                          let quantity = 0
+                          if (value === 'Thùng') quantity = 24
+                          if (value === 'Lốc') quantity = 6
+                          if (value === 'Lô') quantity = 100
+                          if (value === '1 Bộ') quantity = 2
+                          if (value === 'Combo x10') quantity = 10
+                          _editProductInInvoices('quantity', quantity, index)
+                        }
+                      }}
                       defaultValue={product.unit || undefined}
                       style={{ width: '100%' }}
                       placeholder="Đơn vị"
                       bordered={false}
                     >
-                      <Select.Option value="Cái">Cái</Select.Option>
+                      <Select.Option value="Thùng">Thùng</Select.Option>
+                      <Select.Option value="Lốc">Lốc</Select.Option>
+                      <Select.Option value="Lô">Lô</Select.Option>
+                      <Select.Option value="1 Bộ">1 Bộ</Select.Option>
+                      <Select.Option value="Combo x10">Combo x10</Select.Option>
                     </Select>
                   )
 
@@ -1544,28 +1560,6 @@ export default function Sell() {
               )}
             </div>
           </div>
-          <Row
-            justify="end"
-            style={{
-              backgroundColor: '#eff1f5',
-              paddingTop: 5,
-              paddingBottom: 5,
-            }}
-          >
-            <ModalKeyboardShortCuts />
-          </Row>
-          <Row
-            wrap={false}
-            justify="space-between"
-            style={{ backgroundColor: 'white', padding: '15px 10px' }}
-          >
-            {SHORT_CUTS.map((shortcut) => (
-              <div className={styles['keyboard-shorcuts']}>
-                <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.text}</p>
-                <p style={{ textAlign: 'center', marginBottom: 0 }}>{shortcut.icon}</p>
-              </div>
-            ))}
-          </Row>
         </div>
         <div className={styles['sell-right']}>
           <Row justify="space-between" align="middle" wrap={false}>

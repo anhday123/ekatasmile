@@ -10,15 +10,13 @@ import {
   Table,
   notification,
   Upload,
+  Select,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { FileExcelOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import moment from 'moment'
-import {
-  addWarranty,
-  apiAllWarranty,
-  updateWarranty,
-} from '../../apis/warranty'
+import { addWarranty, apiAllWarranty, updateWarranty } from '../../apis/warranty'
+import { apiAllEmployee } from 'apis/employee'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permission from 'components/permission'
 import exportToCSV from 'components/ExportCSV/export'
@@ -33,6 +31,7 @@ function removeFalse(a) {
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 export default function Guarantee() {
+  const [users, setUsers] = useState([])
   const [warrantyList, setWarrantyList] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
   const [showImport, setShowImport] = useState(false)
@@ -42,9 +41,9 @@ export default function Guarantee() {
     search: '',
     from_date: undefined,
     to_date: undefined,
+    creator_id: undefined,
   })
-  const onSearch = (value) =>
-    setFilter({ ...filter, search: value.target.value })
+  const onSearch = (value) => setFilter({ ...filter, search: value.target.value })
   function onChange(dates, dateStrings) {
     setFilter({ ...filter, from_date: dateStrings[0], to_date: dateStrings[1] })
   }
@@ -56,9 +55,7 @@ export default function Guarantee() {
       if (res.data.success) {
         notification.success({
           message: 'Thành công',
-          description: `${
-            data.active ? 'Kích hoạt' : 'Vô hiệu hóa'
-          } thành công`,
+          description: `${data.active ? 'Kích hoạt' : 'Vô hiệu hóa'} thành công`,
         })
       }
     } catch (e) {
@@ -109,6 +106,14 @@ export default function Guarantee() {
       dataIndex: 'description',
       width: 150,
       sorter: (a, b) => compare(a, b, 'description'),
+    },
+    {
+      title: 'Người tạo',
+      render: (text, record) =>
+        record._creator && record._creator.first_name + ' ' + record._creator.last_name,
+      sorter: (a, b) =>
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
     },
     {
       title: 'Trạng thái',
@@ -174,7 +179,7 @@ export default function Guarantee() {
           if (!e.data.success) {
             notification.error({
               message: 'Thất bại',
-              description: `Dòng ${index+1}: ${e.data.message} ` ,
+              description: `Dòng ${index + 1}: ${e.data.message} `,
             })
           }
         })
@@ -188,7 +193,8 @@ export default function Guarantee() {
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getWarranty = async (params) => {
     try {
-      const res = await apiAllWarranty({ ...params, ...pagination })
+      const res = await apiAllWarranty({ ...params, ...pagination, _creator: true })
+      console.log(res)
       if (res.status == 200) {
         setWarrantyList(res.data.data)
       }
@@ -203,17 +209,19 @@ export default function Guarantee() {
       </Upload>
     )
   }
-  const onResetFilter = () => {
-    setFilter({
-      search: '',
-      from_date: undefined,
-      to_date: undefined,
-    })
-    notification.success({
-      message: 'Thành công',
-      description: 'Dữ liệu đã được reset về ban đầu',
-    })
+
+  const _getUsers = async () => {
+    try {
+      const res = await apiAllEmployee()
+      if (res.status === 200) setUsers(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
   }
+
+  useEffect(() => {
+    _getUsers()
+  }, [])
   useEffect(() => {
     getWarranty({ ...removeFalse(filter) })
   }, [filter])
@@ -230,9 +238,7 @@ export default function Guarantee() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Quản lý bảo hành
-          </div>
+          <div className={styles['promotion_manager_title']}>Quản lý bảo hành</div>
           <div className={styles['promotion_manager_button']}>
             <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
               <Link to={ROUTES.GUARANTEE_ADD}>
@@ -247,69 +253,72 @@ export default function Guarantee() {
             </Permission>
           </div>
         </div>
-        <Row
-          gutter={20}
-          style={{
-            display: 'flex',
-            // justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <Input
-                placeholder="Tìm kiếm theo mã, theo tên"
-                value={filter.search}
-                onChange={onSearch}
-                enterButton
-                size="large"
-                allowClear
-              />
-            </div>
+        <Row wrap={false} justify="space-between" style={{ marginTop: '1rem' }}>
+          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+            <Input
+              placeholder="Tìm kiếm theo mã, theo tên"
+              value={filter.search}
+              onChange={onSearch}
+              enterButton
+              size="large"
+              allowClear
+            />
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
-                }}
-                value={
-                  filter.from_date
-                    ? [moment(filter.from_date), moment(filter.to_date)]
-                    : []
-                }
-                onChange={onChange}
-              />
-            </div>
+          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+            <RangePicker
+              size="large"
+              className="br-15__date-picker"
+              style={{ width: '100%' }}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              value={filter.from_date ? [moment(filter.from_date), moment(filter.to_date)] : []}
+              onChange={onChange}
+            />
           </Col>
-        </Row>
-        <Row justify="end" style={{ width: '100%' }}>
-          <Button size="large" type="primary" onClick={onResetFilter}>
+          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+            <Select
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              allowClear
+              showSearch
+              size="large"
+              placeholder="Chọn người tạo"
+              style={{ width: '100%' }}
+              value={filter.creator_id}
+              onChange={(value) => {
+                if (value) filter.creator_id = value
+                else filter.creator_id = undefined
+
+                filter.page = 1
+                setFilter({ ...filter })
+              }}
+            >
+              {users.map((user, index) => (
+                <Select.Option key={index} value={user.user_id}>
+                  {user.first_name || ''} {user.last_name || ''}
+                </Select.Option>
+              ))}
+            </Select>
+          </Col>
+          <Button
+            size="large"
+            type="primary"
+            onClick={() => {
+              setFilter({
+                search: '',
+                from_date: undefined,
+                to_date: undefined,
+                creator_id: undefined,
+              })
+            }}
+          >
             Xóa bộ lọc
           </Button>
         </Row>
+
         <Row
           style={{
             display: 'flex',
@@ -318,14 +327,7 @@ export default function Guarantee() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={12}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row
               style={{
                 display: 'flex',
@@ -384,9 +386,7 @@ export default function Guarantee() {
                   size="large"
                   onClick={() =>
                     exportToCSV(
-                      warrantyList.map((e) =>
-                        convertFields(e, guarantee, true)
-                      ),
+                      warrantyList.map((e) => convertFields(e, guarantee, true)),
                       'bao_hanh'
                     )
                   }

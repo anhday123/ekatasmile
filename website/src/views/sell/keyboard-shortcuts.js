@@ -53,10 +53,11 @@ export default function KeyboardShortCuts() {
         onClick={toggle}
         type="primary"
         style={{
-          backgroundColor: '#C5CDD5',
-          borderColor: '#C5CDD5',
+          backgroundColor: '#192DA0',
+          borderColor: '#192DA0',
           borderRadius: 5,
-          color: 'black',
+          color: 'white',
+          marginRight: 5,
         }}
       >
         Danh sách phím tắt

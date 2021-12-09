@@ -42,6 +42,7 @@ export default function Blog() {
   const [openSelect, setOpenSelect] = useState(false)
   const typingTimeoutRef = useRef(null)
   const [userList, setUserList] = useState([])
+  const [userFilterValue, setUserFilterValue] = useState(null)
 
   const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
@@ -78,14 +79,17 @@ export default function Blog() {
     },
     {
       title: 'Người đăng bài',
+      dataIndex: `_creator`,
       align: 'center',
       width: '15%',
-      // sorter: (a, b) => a.content.length - b.content.length,
-      render: (text, record) => {
-        const creator = userList.find((e) => e.user_id == record.creator_id)
-        if (creator) return `${creator.first_name} ${creator.last_name}`
-        return ''
-      },
+      sorter: (a, b) =>
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
+      render: (text, record) =>
+        // const creator = userList.find((e) => e.user_id == record.creator_id)
+        // if (creator) return `${creator.first_name} ${creator.last_name}`
+        // return ''
+        `${text.first_name} ${text.last_name}`,
     },
     {
       title: 'Ngày tạo',
@@ -100,7 +104,7 @@ export default function Blog() {
   const _getBlog = async () => {
     try {
       setLoadingTable(true)
-      const res = await getBlog(paramsFilter)
+      const res = await getBlog({ ...paramsFilter, _creator: true })
       setBlogList(res.data.data)
       setCountPage(res.data.count)
       console.log(res)
@@ -142,9 +146,18 @@ export default function Blog() {
     setParamsFilter({ ...paramsFilter })
     if (openSelect) toggleOpenSelect()
   }
-  const getUserList = async () => {
+
+  const onChangeCreatorFilter = (value) => {
+    setUserFilterValue(value)
+    if (value) paramsFilter.creator_id = value
+    else delete paramsFilter.creator_id
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const _getUserList = async () => {
     try {
       const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      console.log(res)
       if (res.data.success) {
         setUserList(res.data.data)
       }
@@ -175,10 +188,11 @@ export default function Blog() {
     setAttributeDate(undefined)
     setValueSearch('')
     setValueDateSearch(null)
+    setUserFilterValue(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
   useEffect(() => {
-    getUserList()
+    _getUserList()
   }, [])
 
   useEffect(() => {
@@ -294,10 +308,18 @@ export default function Blog() {
           </Select>
         </Col>
         <Col span={6}>
-          <Select style={{ width: '100%' }} placeholder="Người đăng" size="large">
-            {userList.map((e) => (
-              <Option value={e.user_id}>
-                {e.first_name} {e.last_name}
+          <Select
+            style={{ width: '100%' }}
+            value={userFilterValue}
+            onChange={onChangeCreatorFilter}
+            placeholder="Người đăng"
+            size="large"
+            allowClear
+            showSearch
+          >
+            {userList.map((item) => (
+              <Option value={item.user_id}>
+                {item.first_name} {item.last_name}
               </Option>
             ))}
           </Select>
