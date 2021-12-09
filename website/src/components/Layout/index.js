@@ -103,8 +103,9 @@ const BaseLayout = (props) => {
   const getInfoUser = async () => {
     try {
       const res = await apiSearch({ user_id: dataUser.data.user_id })
+      console.log(res)
       if (res.status === 200) {
-        if (res.data.data.length) setUser(res.data.data[0])
+        if (res.data.data.length) setUser({ ...res.data.data[0] })
       }
     } catch (error) {
       console.log(error)
@@ -522,7 +523,6 @@ const BaseLayout = (props) => {
       data.phoneNumber = user.phone
       data.email = user.email
       data.workPlace = user.company_name
-      data.role = user._role.role_id
       data.address = user.address
     } else {
       data.firstName = login.objectUsername.first_name
@@ -530,7 +530,6 @@ const BaseLayout = (props) => {
       data.phoneNumber = login.objectUsername.phone
       data.email = login.objectUsername.email
       data.workPlace = login.objectUsername.company_name
-      data.role = login.objectUsername._role.role_id
       data.address = login.objectUsername.address
     }
   }

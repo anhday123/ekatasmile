@@ -27,11 +27,11 @@ export const STATUS_PRODUCT = {
 
 //status order
 export const BILL_STATUS_ORDER = {
-  DRAFT: 'DRAFT',
-  PROCESSING: 'PROCESSING',
-  COMPLETE: 'COMPLETE',
-  CANCEL: 'CANCEL',
-  REFUND: 'REFUND',
+  DRAFT: 'Lưu nháp',
+  PROCESSING: 'Đang Xử Lý',
+  COMPLETE: 'Hoàn Thành',
+  CANCEL: 'Huỷ Bỏ',
+  REFUND: 'Hoàn Tiền',
 }
 
 export const SHIP_STATUS_ORDER = {

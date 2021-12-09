@@ -266,7 +266,7 @@ export default function OrderList() {
               >
                 {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
                   <Select.Option value={status} key={index}>
-                    {status}
+                    {BILL_STATUS_ORDER[status]}
                   </Select.Option>
                 ))}
               </Select>
