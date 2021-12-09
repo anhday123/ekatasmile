@@ -58,6 +58,7 @@ import {
   BarChartOutlined,
   TransactionOutlined,
   ContactsOutlined,
+  HomeOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -195,11 +196,52 @@ const BaseLayout = (props) => {
       ],
     },
     {
-      path: ROUTES.OFFER_LIST,
+      path: 'warehouse',
+      title: 'Kho',
+      permissions: [],
+      icon: <HomeOutlined />,
+      menuItems: [
+        {
+          icon: <GiftOutlined />,
+          path: '/product',
+          title: 'Nhập kho',
+          permissions: [],
+        },
+        {
+          icon: <BankOutlined />,
+          path: '/product-export',
+          title: 'Xuất kho',
+          permissions: [],
+        },
+      ],
+    },
+    {
+      path: 'offer',
       title: 'Quản lý ưu đãi',
       permissions: [],
       icon: <ControlOutlined />,
+      menuItems: [
+        {
+          icon: <AlertOutlined />,
+          path: ROUTES.POINT,
+          title: 'Tích điểm',
+          permissions: [PERMISSIONS.tich_diem],
+        },
+        {
+          icon: <TagsOutlined />,
+          path: ROUTES.PROMOTION,
+          title: 'Khuyến mãi',
+          permissions: [PERMISSIONS.khuyen_mai],
+        },
+        {
+          icon: <ControlOutlined />,
+          path: ROUTES.OFFER_LIST,
+          title: 'Quản lý ưu đãi',
+          permissions: [],
+        },
+      ],
     },
+
     {
       path: ROUTES.BLOG,
       title: 'Quản lý bài viết',
@@ -223,18 +265,6 @@ const BaseLayout = (props) => {
       path: ROUTES.BRANCH,
       title: 'Quản lý chi nhánh',
       permissions: [PERMISSIONS.quan_li_chi_nhanh],
-    },
-    {
-      path: ROUTES.PROMOTION,
-      title: 'Khuyến mãi',
-      permissions: [PERMISSIONS.khuyen_mai],
-      icon: <TagsOutlined />,
-    },
-    {
-      path: ROUTES.POINT,
-      title: 'Tích điểm',
-      permissions: [PERMISSIONS.tich_diem],
-      icon: <AlertOutlined />,
     },
     {
       path: ROUTES.CONTACT,
