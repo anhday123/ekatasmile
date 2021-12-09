@@ -37,6 +37,7 @@ import { deleteDeal, getDeal, updateDeal, updateDealsPrice } from '../../apis/de
 
 // html react parser
 import parse from 'html-react-parser'
+import { apiFilterRoleEmployee } from 'apis/employee'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -56,6 +57,8 @@ export default function OfferList() {
   const [valueSearch, setValueSearch] = useState('')
   const [openSelect, setOpenSelect] = useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null)
+  const [userList, setUserList] = useState([])
+  const [valueUserFilter, setValueUserFilter] = useState(null)
   const typingTimeoutRef = useRef(null)
 
   // const toggleModalName = () => {
@@ -137,13 +140,14 @@ export default function OfferList() {
     //   width: '10%',
     //   align: 'center',
     // },
-    // {
-    //   title: 'Banner',
-    //   dataIndex: 'type',
-    //   width: '10%',
-    //   align: 'center',
-    //   render: (item, record) => (item !== 'BANNER' ? <span>Không có</span> : <span>Có</span>),
-    // },
+    {
+      title: 'Người tạo',
+      dataIndex: '_creator',
+      width: '10%',
+      align: 'center',
+      sorter: (a, b) => a._creator.sub_name.length - b._creator.sub_name.length,
+      render: (text, record) => `${text.first_name} ${text.last_name}`,
+    },
     {
       title: 'Mô tả',
       dataIndex: 'description',
@@ -384,11 +388,25 @@ export default function OfferList() {
   const _getDeal = async () => {
     try {
       setLoadingTable(true)
-      const res = await getDeal(paramsFilter)
+      const res = await getDeal({ ...paramsFilter, _creator: true })
       setDealList(res.data.data)
       setCountPage(res.data.count)
-      // console.log(res)
+      console.log(res)
       setLoadingTable(false)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const _getUserList = async () => {
+    try {
+      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          setUserList(res.data.data)
+        }
+      }
     } catch (err) {
       console.log(err)
     }
@@ -417,6 +435,13 @@ export default function OfferList() {
   const onChangeOptionSearchType = (value) => {
     if (value) paramsFilter.type = value
     else delete paramsFilter.type
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const onChangeUserFilter = (value) => {
+    setValueUserFilter(value)
+    if (value) paramsFilter.creator_id = value
+    else delete paramsFilter.creator_id
     setParamsFilter({ ...paramsFilter })
   }
 
@@ -451,8 +476,13 @@ export default function OfferList() {
     setAttributeDate(undefined)
     setValueDateSearch(null)
     setValueSearch('')
+    setValueUserFilter(null)
     setParamsFilter({ page: 1, pageSize: 5 })
   }
+
+  useEffect(() => {
+    _getUserList()
+  }, [])
 
   useEffect(() => {
     _getDeal(paramsFilter)
@@ -519,7 +549,7 @@ export default function OfferList() {
       <hr />
 
       <div className={styles['body_offer_filter']}>
-        <Row gutter={30}>
+        <Row gutter={20}>
           <Col span={6}>
             <Input
               size="large"
@@ -542,6 +572,24 @@ export default function OfferList() {
               <Option value="PRODUCT">Sản phẩm</Option>
               <Option value="category">Nhóm sản phẩm</Option>
               <Option value="banner">Banner</Option>
+            </Select>
+          </Col>
+          <Col span={6}>
+            <Select
+              size="large"
+              onChange={onChangeUserFilter}
+              value={valueUserFilter}
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm theo người tạo"
+              allowClear
+            >
+              {userList.map((item, index) => {
+                return (
+                  <Option value={item.user_id}>
+                    {item.first_name} {item.last_name}
+                  </Option>
+                )
+              })}
             </Select>
           </Col>
           <Col span={6}>

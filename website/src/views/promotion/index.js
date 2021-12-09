@@ -21,6 +21,7 @@ import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { getPromoton, updatePromotion } from '../../apis/promotion'
 import { getAllBranch } from '../../apis/branch'
+import { apiFilterRoleEmployee } from 'apis/employee'
 import { useDispatch } from 'react-redux'
 import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
@@ -45,7 +46,10 @@ export default function Promotion() {
     search: '',
     date: [],
     type: undefined,
+    creator_id:null,
   })
+  const [userList, setUserList] = useState([])
+  const [valueUserFilter, setValueUserFilter] = useState(null)
   const dispatch = useDispatch()
 
   const onClose = () => {
@@ -57,6 +61,9 @@ export default function Promotion() {
 
   function handleChange(value) {
     getPromotions({ type: value })
+  }
+  function handleChangeUserFilter(value) {
+    getPromotions({ creator_id: value })
   }
   const columnsPromotion = [
     {
@@ -88,6 +95,13 @@ export default function Promotion() {
         return formatCash(data.toString()) + '%'
       },
       sorter: (a, b) => compare(a, b, 'value'),
+    },
+    {
+      title: 'Người tạo',
+      dataIndex: '_creator',
+      width: 150,
+      render: (text, record) => `${text.first_name} ${text.last_name}`,
+      sorter: (a, b) => a._creator.sub_name.length - b._creator.sub_name.length,
     },
     {
       title: 'Số lượng khuyến mãi',
@@ -167,11 +181,25 @@ export default function Promotion() {
     }
   }
 
+  const _getUserList = async () => {
+    try {
+      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          setUserList(res.data.data)
+        }
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getPromotions = async (params) => {
     try {
       setLoading(true)
-      const res = await getPromoton({ ...params, ...pagination })
+      const res = await getPromoton({ ...params, ...pagination, _creator: true })
       console.log(res)
       if (res.status === 200) {
         setListPromotion(res.data.data)
@@ -202,6 +230,7 @@ export default function Promotion() {
   useEffect(() => {
     getBranch()
     getStore()
+    _getUserList()
   }, [])
   useEffect(() => {
     let tmp = { ...searchFilter }
@@ -295,6 +324,28 @@ export default function Promotion() {
               >
                 <Option value="percent">Phần trăm</Option>
                 <Option value="value">Giá trị</Option>
+              </Select>
+            </div>
+          </Col>
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+            <div style={{ width: '100%' }}>
+              <Select
+                size="large"
+                style={{ width: '100%' }}
+                allowClear
+                placeholder="Tìm kiếm theo người tạo"
+                value={searchFilter.creator_id}
+                onChange={(e) => {
+                  setSearchFilter({ ...searchFilter, creator_id: e })
+                  handleChangeUserFilter(e)
+                }}
+              >
+                {userList.map((item)=>{
+                  return (
+                    <Option value={item.user_id}>{item.first_name} {item.last_name}</Option>
+                  )
+                })}
+               
               </Select>
             </div>
           </Col>

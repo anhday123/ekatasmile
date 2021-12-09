@@ -25,19 +25,17 @@ import {
   DatePicker,
   Form,
   Badge,
-  Row,
-  Col,
+  notification,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteBlog, getBlog } from 'apis/blog'
+import { createChannel, deleteChannel, getChannel, getPlatform, updateChannel } from 'apis/channel'
 
 // html react parser
 import parse from 'html-react-parser'
-import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -47,38 +45,31 @@ export default function Channel() {
   const [selectKeys, setSelectKeys] = useState([])
   const [loadingTable, setLoadingTable] = useState(false)
   const [channelList, setChannelList] = useState([])
+  const [platformList, setPlatformList] = useState([])
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [attributeStatus, setAttributeStatus] = useState(undefined)
-  const [attributeBase, setAttributeBase] = useState(undefined)
+  const [attributePlatform, setAttributePlatform] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
   const [valueDateSearch, setValueDateSearch] = useState(null)
   const [connect, setConnect] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [openSelect, setOpenSelect] = useState(false)
-  const [dataUpdate, setDataUpdate] = useState({
-    name: '',
-    url: '',
-    base: '',
-  })
-  const [base, setBase] = useState('')
-  console.log(base)
-  const [channelName, setChannelName] = useState('')
+  const [platform, setPlatform] = useState('')
+  const [idChannel, setIdChannel] = useState('')
+  // console.log(base)
   const typingTimeoutRef = useRef(null)
 
   const handleChange = (checked) => {
-    console.log(checked)
+    // console.log(checked)
     setConnect(checked)
   }
   const toggleModal = () => {
     setModalVisible(!modalVisible)
-    // setDataUpdate({
-    //   name: '',
-    //   url: '',
-    //   base: '',
-    // })
     form.resetFields()
+    setPlatform('')
+    setIdChannel('')
   }
 
   const toggleOpenSelect = () => {
@@ -101,7 +92,6 @@ export default function Channel() {
       dataIndex: 'url',
       width: '15%',
       align: 'center',
-      sorter: (a, b) => a.url.length - b.url.length,
       render: (text) => (
         <a target="_blank" href={text}>
           {text}
@@ -110,18 +100,18 @@ export default function Channel() {
     },
     {
       title: 'Nền tảng',
-      dataIndex: 'base',
+      dataIndex: '_platform',
       width: '15%',
       align: 'center',
-      sorter: (a, b) => compare(a, b, 'base'),
+      render: (text, record) => <span>{text[0].name}</span>,
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'active',
+      dataIndex: 'status',
       width: '15%',
       align: 'center',
       render: (text) =>
-        text ? (
+        text === 'WORKING' ? (
           <Badge status="success" text="Hoạt động" />
         ) : (
           <Badge status="error" text="Không hoạt động" />
@@ -132,9 +122,7 @@ export default function Channel() {
       dataIndex: 'create_date',
       width: '10%',
       align: 'center',
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-
-      // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
     {
       title: 'Hành động',
@@ -146,7 +134,11 @@ export default function Channel() {
           <Button type="primary" onClick={() => _updateChannel(record)} style={{ width: 100 }}>
             Cập nhật
           </Button>
-          <Button type="danger" style={{ width: 100, margin: '10px 0' }}>
+          <Button
+            type="danger"
+            onClick={() => _delelteChannel(record.channel_id)}
+            style={{ width: 100, margin: '10px 0' }}
+          >
             Xóa
           </Button>
           <Button type="primary" style={{ width: 100, backgroundColor: '#70BE4B', border: 'none' }}>
@@ -168,94 +160,95 @@ export default function Channel() {
     },
   ]
 
-  const data = [
-    {
-      name: 'Shopee sale',
-      url: 'https://shopee.vn/',
-      base: 'Shopee',
-      active: true,
-      create_date: '24/11/2021',
-      active: true,
-    },
-    {
-      name: 'Tiki sale',
-      url: 'https://tiki.vn/',
-      base: 'Tiki',
-      active: false,
-      create_date: '24/11/2021',
-      active: false,
-    },
-  ]
-
   const _updateChannel = (record) => {
-    console.log(record)
-    // setDataUpdate({ ...dataUpdate, name: record.name, url: record.url, base: record.base })
-    form.setFieldsValue({ name: record.name, url: record.url, base: record.base })
+    // console.log(record)
+    form.setFieldsValue({ name: record.name, url: record.url })
+    setIdChannel(record.channel_id)
     setModalVisible(!modalVisible)
   }
 
-  const handleChangeChannelName = (e) => {
-    // setDataUpdate({ ...dataUpdate, name: e.target.value })
-    console.log(dataUpdate)
-  }
-
-  const handleChangeChannelUrl = (e) => {
-    // setDataUpdate({ ...dataUpdate, url: e.target.value })
-    console.log(dataUpdate)
-  }
-
-  // const _getBlog = async () => {
-  //   try {
-  //     setLoadingTable(true)
-  //     const res = await getBlog(paramsFilter)
-  //     setBlogList(res.data.data)
-  //     setCountPage(res.data.count)
-  //     // console.log(res)
-  //     setLoadingTable(false)
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
-
-  const _actionChannel = async () => {
+  const _getChannel = async () => {
     try {
-      await form.validateFields()
-      const formData = form.getFieldsValue()
-      const body = {
-        name: formData.name,
-        url: formData.url,
-        base: formData.base,
-      }
-      console.log(body)
-      // const res = await getBlog(paramsFilter)
-      // console.log(res)
+      setLoadingTable(true)
+      const res = await getChannel(paramsFilter)
+      setChannelList(res.data.data)
+      setCountPage(res.data.count)
+      console.log(res)
+      setLoadingTable(false)
     } catch (err) {
       console.log(err)
     }
   }
 
-  // const _delelteChannel = async () => {
-  //   const id = {
-  //     blog_id: selectKeys,
-  //   }
-  //   // console.log(id)
-  //   try {
-  //     const res = await deleteBlog(id)
-  //     // console.log(res)
-  //     if (res.status === 200) {
-  //       if (res.data.success) {
-  //         message.success('Xóa bài viết thành công')
-  //         _getBlog(paramsFilter)
-  //       } else {
-  //         message.error(res.data.message || 'Xóa bài viết không thành công')
-  //       }
-  //     } else {
-  //       message.error('Xóa bài viết không thành công')
-  //     }
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
+  const _getPlatForm = async () => {
+    try {
+      const res = await getPlatform()
+      // console.log(res)
+      if (res.status === 200) {
+        if (res.data.success === true) {
+          setPlatformList(res.data.data)
+        }
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const _actionChannel = async () => {
+    try {
+      await form.validateFields()
+      const formData = form.getFieldsValue()
+      let res
+      const body = {
+        name: formData.name,
+        url: formData.url,
+        platform_id: formData.platform,
+        client_id: formData.client_id,
+        secret_key: formData.secret_key,
+      }
+      console.log(body)
+      if (idChannel) {
+        res = await updateChannel(idChannel, body)
+      } else {
+        res = await createChannel(body)
+      }
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success === true) {
+          _getChannel(paramsFilter)
+          notification.success({ message: `${idChannel ? 'Cập nhật' : 'Tạo'} kênh thành công` })
+          setModalVisible(false)
+        }
+      } else {
+        notification.error({ message: `${idChannel ? 'Cập nhật' : 'Tạo'} kênh thất bại` })
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const _delelteChannel = async (idChannel) => {
+    const id = {
+      channel_id: [idChannel],
+    }
+    console.log(id)
+    try {
+      const res = await deleteChannel(id)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          message.success('Xóa kênh thành công')
+          _getChannel(paramsFilter)
+        } else {
+          message.error(res.data.message || 'Xóa kênh không thành công')
+        }
+      } else {
+        message.error('Xóa kênh không thành công')
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const onChangeOptionSearchDate = (value) => {
     delete paramsFilter[attributeDate]
@@ -268,17 +261,17 @@ export default function Channel() {
 
   const onChangeOptionSearchStatus = (value) => {
     delete paramsFilter[attributeStatus]
-    if (value) paramsFilter[value] = true
-    else delete paramsFilter[value]
+    if (value) paramsFilter.active = value
+    else delete paramsFilter.active
     setAttributeStatus(value)
     setParamsFilter({ ...paramsFilter })
   }
 
-  const onChangeOptionSearchBase = (value) => {
-    delete paramsFilter[attributeBase]
-    if (value) paramsFilter.base = value
-    else delete paramsFilter.base
-    setAttributeBase(value)
+  const onChangeOptionSearchPlatform = (value) => {
+    delete paramsFilter[attributePlatform]
+    if (value) paramsFilter.platform_id = value
+    else delete paramsFilter.platform_id
+    setAttributePlatform(value)
     setParamsFilter({ ...paramsFilter })
   }
 
@@ -293,8 +286,8 @@ export default function Channel() {
       //khi search hoặc filter thi reset page ve 1
       paramsFilter.page = 1
 
-      if (value) paramsFilter.title = value
-      else delete paramsFilter.title
+      if (value) paramsFilter.name = value
+      else delete paramsFilter.name
 
       setParamsFilter({ ...paramsFilter })
     }, 450)
@@ -304,17 +297,18 @@ export default function Channel() {
     // console.log(paramsFilter)
     setAttributeDate(undefined)
     setAttributeStatus(undefined)
-    setAttributeBase(undefined)
+    setAttributePlatform(undefined)
     setValueSearch('')
     setValueDateSearch(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
 
-  const title = `${form.getFieldsValue().name ? 'Cập nhật' : 'Thêm mới'}  kênh bán hàng`
+  const title = `${idChannel ? 'Cập nhật' : 'Thêm mới'}  kênh bán hàng`
 
-  // useEffect(() => {
-  //   _getBlog(paramsFilter)
-  // }, [paramsFilter])
+  useEffect(() => {
+    _getChannel(paramsFilter)
+    _getPlatForm()
+  }, [paramsFilter])
 
   return (
     <div className={styles['body_channel']}>
@@ -349,28 +343,29 @@ export default function Channel() {
             />
           </Form.Item>
           <h3>Nền tảng</h3>
-          <Form.Item name="base" rules={[{ required: true, message: 'Vui lòng chọn nền tảng' }]}>
+          <Form.Item
+            name="platform"
+            rules={[{ required: true, message: 'Vui lòng chọn nền tảng' }]}
+          >
             <Select
               style={{ width: '100%' }}
-              value={attributeBase}
-              onChange={(value) => setBase(value)}
+              // value={attributePlatform}
+              onChange={(value) => setPlatform(value)}
               placeholder="Chọn nền tảng"
               allowClear
             >
-              <Option value="shopify">Shopify</Option>
-              <Option value="amazon">Amazon</Option>
-              <Option value="shopbase">Shopbase</Option>
-              <Option value="wordpress">Woocommerce (wordpress)</Option>
-              <Option value="esty">Esty</Option>
-              <Option value="tiki">Tiki</Option>
-              <Option value="lazada">Lazada</Option>
-              <Option value="shopee">Shopee</Option>
+              {platformList.map((item) => (
+                <Option value={item.platform_id}>{item.name}</Option>
+              ))}
             </Select>
           </Form.Item>
-          {base ? (
+          {platform ? (
             <>
               <h3>Key</h3>
-              <Form.Item name="key" rules={[{ required: true, message: 'Vui lòng nhập key' }]}>
+              <Form.Item
+                name="client_id"
+                rules={[{ required: true, message: 'Vui lòng nhập key' }]}
+              >
                 <Input
                   // value={dataUpdate.url ? dataUpdate.url : ''}
                   // onChange={handleChangeChannelUrl}
@@ -379,7 +374,7 @@ export default function Channel() {
               </Form.Item>
               <h3>Key Secret</h3>
               <Form.Item
-                name="key"
+                name="secret_key"
                 rules={[{ required: true, message: 'Vui lòng nhập key secret' }]}
               >
                 <Input
@@ -408,53 +403,39 @@ export default function Channel() {
         </Permission>
       </div>
       <hr />
-      <Row style={{ marginTop: 20, marginBottom: 20 }} gutter={30}>
-        <Col span={6}>
+      <div className={styles['body_channel_filter']}>
+        <Input.Group compact>
           <Input
-            size="large"
+            style={{ width: '20%' }}
             placeholder="Tìm kiếm theo tên"
             allowClear
             prefix={<SearchOutlined />}
             onChange={_search}
             value={valueSearch}
           />
-        </Col>
-        <Col span={6}>
           <Select
-            size="large"
-            style={{ width: '100%' }}
+            style={{ width: '13%' }}
             value={attributeStatus}
             onChange={onChangeOptionSearchStatus}
             placeholder="Tất cả (trạng thái)"
             allowClear
           >
-            <Option value="active">Hoạt động</Option>
-            <Option value="nonactive">Không hoạt động</Option>
+            <Option value="true">Hoạt động</Option>
+            <Option value="false">Không hoạt động</Option>
           </Select>
-        </Col>
-        <Col span={6}>
           <Select
-            size="large"
-            style={{ width: '100%' }}
-            value={attributeBase}
-            onChange={onChangeOptionSearchBase}
+            style={{ width: '18%' }}
+            value={attributePlatform}
+            onChange={onChangeOptionSearchPlatform}
             placeholder="Tất cả (nền tảng)"
             allowClear
           >
-            <Option value="shopify">Shopify</Option>
-            <Option value="amazon">Amazon</Option>
-            <Option value="shopbase">Shopbase</Option>
-            <Option value="wordpress">Woocommerce (wordpress)</Option>
-            <Option value="esty">Esty</Option>
-            <Option value="tiki">Tiki</Option>
-            <Option value="lazada">Lazada</Option>
-            <Option value="shopee">Shopee</Option>
+            {platformList.map((item) => (
+              <Option value={item.platform_id}>{item.name}</Option>
+            ))}
           </Select>
-        </Col>
-        <Col span={6}>
           <Select
-            size="large"
-            style={{ width: '100%' }}
+            style={{ width: '25%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
@@ -531,20 +512,19 @@ export default function Channel() {
             <Option value="this_year">Năm này</Option>
             <Option value="last_year">Năm trước</Option>
           </Select>
-        </Col>
-      </Row>
-
+        </Input.Group>
+      </div>
       <div className={styles['body_channel_delete_filter']}>
         <Button onClick={_resetFilter} type="danger" icon={<FilterOutlined />}>
           Xóa bộ lọc
         </Button>
       </div>
       <Table
-        rowKey="name"
+        rowKey="channel_id"
         size="small"
         loading={loadingTable}
         columns={columns}
-        dataSource={data}
+        dataSource={channelList}
         // rowSelection={{
         //   selectedRowKeys: selectKeys,
         //   onChange: (keys, records) => {
