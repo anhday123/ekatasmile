@@ -27,10 +27,12 @@ import { DeleteOutlined, SearchOutlined, PlusCircleOutlined, PlusOutlined } from
 //apis
 import { getCategories, apiAddCategory, deleteCategories } from 'apis/category'
 import { uploadFile } from 'apis/upload'
+import { apiFilterRoleEmployee } from 'apis/employee'
 
 import { compare, compareCustom } from 'utils'
 
 const { RangePicker } = DatePicker
+const { Option } = Select
 
 export default function Category() {
   const history = useHistory()
@@ -47,11 +49,27 @@ export default function Category() {
   const [valueFilterTime, setValueFilterTime] = useState()
   const [openSelect, setOpenSelect] = useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null)
+  const [userList,setUserList]=useState([])
+  const [valueUserFilter, setValueUserFilter] = useState(null)
 
   function getBase64(img, callback) {
     const reader = new FileReader()
     reader.addEventListener('load', () => callback(reader.result))
     reader.readAsDataURL(img)
+  }
+
+  const _getUserList = async () => {
+    try {
+      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          setUserList(res.data.data)
+        }
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const toggleOpenSelect = () => {
@@ -73,6 +91,12 @@ export default function Category() {
       paramsFilter.page = 1
       setParamsFilter({ ...paramsFilter })
     }, 750)
+  }
+  const onChangeUserFilter = (value) => {
+    setValueUserFilter(value)
+    if (value) paramsFilter.creator_id = value
+    else delete paramsFilter.creator_id
+    setParamsFilter({ ...paramsFilter })
   }
 
   const _deleteCategories = async (category_id) => {
@@ -238,6 +262,7 @@ export default function Category() {
 
     setValueSearch('')
     setValueFilterTime()
+    setValueUserFilter(null)
     paramsFilter.page = 1
     paramsFilter.page_size = 20
 
@@ -400,6 +425,10 @@ export default function Category() {
     { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
   ]
 
+  useEffect(()=>{
+    _getUserList()
+  },[])
+
   useEffect(() => {
     _getCategories(paramsFilter)
   }, [paramsFilter])
@@ -422,10 +451,26 @@ export default function Category() {
             allowClear
             value={valueSearch}
             onChange={_onSearch}
-            style={{ width: 350 }}
+            style={{ width: 250 }}
             prefix={<SearchOutlined />}
             placeholder="Tìm kiếm theo tên hoặc theo mã"
           />
+          <Select
+              onChange={onChangeUserFilter}
+              value={valueUserFilter}
+              style={{ width: 200 }}
+              placeholder="Tìm kiếm theo người tạo"
+              allowClear
+              showSearch
+            >
+              {userList.map((item, index) => {
+                return (
+                  <Option value={item.user_id}>
+                    {item.first_name} {item.last_name}
+                  </Option>
+                )
+              })}
+            </Select>
           <Select
             value={valueFilterTime}
             allowClear
