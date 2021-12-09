@@ -103,7 +103,9 @@ export default function Brand() {
       dataIndex: '_creator',
       width: '10%',
       align: 'center',
-      sorter: (a, b) => a._creator.sub_name.length - b._creator.sub_name.length,
+      sorter: (a, b) =>
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
       render: (text, record) => `${text.first_name} ${text.last_name}`,
     },
     {
@@ -333,6 +335,7 @@ export default function Brand() {
               style={{ width: '100%' }}
               placeholder="Tìm kiếm theo người tạo"
               allowClear
+              showSearch
             >
               {userList.map((item, index) => {
                 return (

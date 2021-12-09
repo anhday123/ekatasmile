@@ -82,7 +82,9 @@ export default function Blog() {
       dataIndex: `_creator`,
       align: 'center',
       width: '15%',
-      sorter: (a, b) => a._creator.sub_name.length - b._creator.sub_name.length,
+      sorter: (a, b) =>
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
       render: (text, record) =>
         // const creator = userList.find((e) => e.user_id == record.creator_id)
         // if (creator) return `${creator.first_name} ${creator.last_name}`
@@ -313,10 +315,11 @@ export default function Blog() {
             placeholder="Người đăng"
             size="large"
             allowClear
+            showSearch
           >
-            {userList.map((e) => (
-              <Option value={e.user_id}>
-                {e.first_name} {e.last_name}
+            {userList.map((item) => (
+              <Option value={item.user_id}>
+                {item.first_name} {item.last_name}
               </Option>
             ))}
           </Select>

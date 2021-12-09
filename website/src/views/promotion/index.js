@@ -46,7 +46,7 @@ export default function Promotion() {
     search: '',
     date: [],
     type: undefined,
-    creator_id:null,
+    creator_id: null,
   })
   const [userList, setUserList] = useState([])
   const [valueUserFilter, setValueUserFilter] = useState(null)
@@ -101,7 +101,9 @@ export default function Promotion() {
       dataIndex: '_creator',
       width: 150,
       render: (text, record) => `${text.first_name} ${text.last_name}`,
-      sorter: (a, b) => a._creator.sub_name.length - b._creator.sub_name.length,
+      sorter: (a, b) =>
+        (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+        (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
     },
     {
       title: 'Số lượng khuyến mãi',
@@ -339,13 +341,15 @@ export default function Promotion() {
                   setSearchFilter({ ...searchFilter, creator_id: e })
                   handleChangeUserFilter(e)
                 }}
+                showSearch
               >
-                {userList.map((item)=>{
+                {userList.map((item) => {
                   return (
-                    <Option value={item.user_id}>{item.first_name} {item.last_name}</Option>
+                    <Option value={item.user_id}>
+                      {item.first_name} {item.last_name}
+                    </Option>
                   )
                 })}
-               
               </Select>
             </div>
           </Col>
