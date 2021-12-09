@@ -213,21 +213,24 @@ export default function ShippingProduct() {
       dataIndex: 'create_date',
       width: 150,
       render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Ngày chuyển',
       dataIndex: 'ship_time',
       width: 150,
       render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
       width: 150,
+      sorter: (a, b) =>
+        compareCustom(
+          a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
+          b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
+        ),
       render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
@@ -296,14 +299,8 @@ export default function ShippingProduct() {
       case 'last_week':
         setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'weeks')
-            .startOf('week')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'weeks')
-            .endOf('week')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'this_month':
@@ -316,14 +313,8 @@ export default function ShippingProduct() {
       case 'last_month':
         setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'month')
-            .startOf('month')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'month')
-            .endOf('month')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
         })
         break
       case 'this_year':
@@ -336,14 +327,8 @@ export default function ShippingProduct() {
       case 'last_year':
         setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'year')
-            .startOf('year')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'year')
-            .endOf('year')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
         })
         break
       default:
@@ -374,9 +359,7 @@ export default function ShippingProduct() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Quản lý chuyển hàng
-          </div>
+          <div className={styles['promotion_manager_title']}>Quản lý chuyển hàng</div>
           <div className={styles['promotion_manager_button']}>
             <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
               <Button
@@ -398,31 +381,12 @@ export default function ShippingProduct() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                placeholder="Tìm kiếm theo mã"
-                onChange={onSearch}
-                allowClear
-              />
+              <Input size="large" placeholder="Tìm kiếm theo mã" onChange={onSearch} allowClear />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Select
               size="large"
               open={isOpenSelect}
@@ -466,14 +430,7 @@ export default function ShippingProduct() {
               <Option value="last_year">Last year</Option>
             </Select>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
                 size="large"
@@ -498,14 +455,7 @@ export default function ShippingProduct() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={12}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row
               style={{
                 display: 'flex',
@@ -561,14 +511,8 @@ export default function ShippingProduct() {
         </Row>
         <Row style={{ width: '100%' }}>
           {selectedRowKeys.length ? (
-            <Permission
-              permissions={[PERMISSIONS.cap_nhat_trang_thai_phieu_chuyen_hang]}
-            >
-              <Button
-                size="large"
-                type="primary"
-                onClick={() => setShowMultiUpdate(true)}
-              >
+            <Permission permissions={[PERMISSIONS.cap_nhat_trang_thai_phieu_chuyen_hang]}>
+              <Button size="large" type="primary" onClick={() => setShowMultiUpdate(true)}>
                 Cập nhật trạng thái
               </Button>
             </Permission>

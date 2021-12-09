@@ -86,6 +86,7 @@ const BaseLayout = (props) => {
 
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
+  const [appLanguage, setAppLanguage] = useState('VN')
   const login = useSelector((state) => state.login)
   const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
@@ -484,6 +485,33 @@ const BaseLayout = (props) => {
         <Empty />
       </div>
     </div>
+  )
+
+  const LanguageDropdown = () => (
+    <Menu>
+      <Menu.Item
+        icon={
+          <img
+            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
+            width="30"
+          />
+        }
+        onClick={() => setAppLanguage('VN')}
+      >
+        Tiếng việt
+      </Menu.Item>
+      <Menu.Item
+        icon={
+          <img
+            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
+            width="30"
+          />
+        }
+        onClick={() => setAppLanguage('EN')}
+      >
+        Tiếng anh
+      </Menu.Item>
+    </Menu>
   )
   const modal1VisibleModal = (modal1Visible) => {
     setModal1Visible(modal1Visible)
@@ -946,6 +974,32 @@ const BaseLayout = (props) => {
                 </Row>
                 <div className={styles['navbar_right']}>
                   <div className={styles['navbar_notification']}>
+                    <Dropdown
+                      overlay={<LanguageDropdown />}
+                      placement="bottomCenter"
+                      trigger="click"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div>
+                          {appLanguage == 'VN' ? (
+                            <img
+                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
+                              width="30"
+                            />
+                          ) : (
+                            <img
+                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
+                              width="30"
+                            />
+                          )}
+                        </div>
+                        <div style={{ color: '#fff', width: 90 }}>
+                          {appLanguage == 'VN' ? 'Tiếng Việt' : 'Tiếng Anh'} <CarretDown />
+                        </div>
+                      </div>
+                    </Dropdown>
+                  </div>
+                  <div className={styles['navbar_notification']}>
                     <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
                       <Badge count={0} showZero size="small" offset={[-3, 3]}>
                         <Bell style={{ color: 'rgb(253, 170, 62)' }} />
@@ -977,7 +1031,7 @@ const BaseLayout = (props) => {
                             )}
                           </Avatar>
                         ) : (
-                          <Avatar src={<Image src={user.avatar} />} />
+                          <Avatar src={user.avatar} />
                         )}
                       </div>
                       <div className={styles['navbar_right_left_name']}>

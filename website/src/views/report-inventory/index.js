@@ -50,10 +50,12 @@ export default function ReportInventory() {
       title: 'Sản phẩm',
       dataIndex: 'name',
       align: 'center',
+      sorter: (a, b) => 0,
     },
     {
       title: 'Mã SKU',
       align: 'center',
+      sorter: (a, b) => 0,
     },
     {
       title: 'Chi nhánh mặc định',
@@ -64,24 +66,28 @@ export default function ReportInventory() {
           dataIndex: 'age',
           key: 'age',
           align: 'center',
+          sorter: (a, b) => 0,
         },
         {
           title: 'Giá trị tồn kho',
           dataIndex: 'age',
           key: 'age',
           align: 'center',
+          sorter: (a, b) => 0,
         },
         {
           title: 'Giá vốn',
           dataIndex: 'age',
           key: 'age',
           align: 'center',
+          sorter: (a, b) => 0,
         },
         {
           title: 'Tỷ trọng (%)',
           dataIndex: 'age',
           key: 'age',
           align: 'center',
+          sorter: (a, b) => 0,
         },
       ],
     },
@@ -93,11 +99,13 @@ export default function ReportInventory() {
           title: 'Số lượng tồn kho',
           dataIndex: 'companyAddress',
           key: 'companyAddress',
+          sorter: (a, b) => 0,
         },
         {
           title: 'Giá trị tồn kho',
           dataIndex: 'companyName',
           key: 'companyName',
+          sorter: (a, b) => 0,
         },
       ],
     },
@@ -128,9 +136,7 @@ export default function ReportInventory() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Báo cáo tồn kho
-          </div>
+          <div className={styles['promotion_manager_title']}>Báo cáo tồn kho</div>
         </div>
         <Row
           style={{
@@ -139,11 +145,7 @@ export default function ReportInventory() {
             marginTop: 20,
           }}
         >
-          <DatePicker
-            size="large"
-            className="br-15__date-picker"
-            style={{ width: 300 }}
-          />
+          <DatePicker size="large" className="br-15__date-picker" style={{ width: 300 }} />
         </Row>
 
         <Table

@@ -25,6 +25,8 @@ import {
   DatePicker,
   Form,
   Badge,
+  Row,
+  Col,
 } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
@@ -35,6 +37,7 @@ import { deleteBlog, getBlog } from 'apis/blog'
 
 // html react parser
 import parse from 'html-react-parser'
+import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -98,6 +101,7 @@ export default function Channel() {
       dataIndex: 'url',
       width: '15%',
       align: 'center',
+      sorter: (a, b) => a.url.length - b.url.length,
       render: (text) => (
         <a target="_blank" href={text}>
           {text}
@@ -109,6 +113,7 @@ export default function Channel() {
       dataIndex: 'base',
       width: '15%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'base'),
     },
     {
       title: 'Trạng thái',
@@ -127,6 +132,8 @@ export default function Channel() {
       dataIndex: 'create_date',
       width: '10%',
       align: 'center',
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
       // render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
     },
     {
@@ -401,18 +408,21 @@ export default function Channel() {
         </Permission>
       </div>
       <hr />
-      <div className={styles['body_channel_filter']}>
-        <Input.Group compact>
+      <Row style={{ marginTop: 20, marginBottom: 20 }} gutter={30}>
+        <Col span={6}>
           <Input
-            style={{ width: '20%' }}
+            size="large"
             placeholder="Tìm kiếm theo tên"
             allowClear
             prefix={<SearchOutlined />}
             onChange={_search}
             value={valueSearch}
           />
+        </Col>
+        <Col span={6}>
           <Select
-            style={{ width: '13%' }}
+            size="large"
+            style={{ width: '100%' }}
             value={attributeStatus}
             onChange={onChangeOptionSearchStatus}
             placeholder="Tất cả (trạng thái)"
@@ -421,8 +431,11 @@ export default function Channel() {
             <Option value="active">Hoạt động</Option>
             <Option value="nonactive">Không hoạt động</Option>
           </Select>
+        </Col>
+        <Col span={6}>
           <Select
-            style={{ width: '18%' }}
+            size="large"
+            style={{ width: '100%' }}
             value={attributeBase}
             onChange={onChangeOptionSearchBase}
             placeholder="Tất cả (nền tảng)"
@@ -437,8 +450,11 @@ export default function Channel() {
             <Option value="lazada">Lazada</Option>
             <Option value="shopee">Shopee</Option>
           </Select>
+        </Col>
+        <Col span={6}>
           <Select
-            style={{ width: '25%' }}
+            size="large"
+            style={{ width: '100%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
@@ -515,8 +531,9 @@ export default function Channel() {
             <Option value="this_year">Năm này</Option>
             <Option value="last_year">Năm trước</Option>
           </Select>
-        </Input.Group>
-      </div>
+        </Col>
+      </Row>
+
       <div className={styles['body_channel_delete_filter']}>
         <Button onClick={_resetFilter} type="danger" icon={<FilterOutlined />}>
           Xóa bộ lọc

@@ -23,6 +23,7 @@ import { deleteBrand, getBrand } from 'apis/brand'
 
 // html react parser
 import parse from 'html-react-parser'
+import { compare, compareCustom } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -32,14 +33,14 @@ export default function Brand() {
   const [loadingTable, setLoadingTable] = useState(false)
   const [brandList, setBrandList] = useState([])
   const [countPage, setCountPage] = useState('')
-  const [openSelect,setOpenSelect]=useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
   const [valueSearch, setValueSearch] = useState('')
-  const [valueDateSearch,setValueDateSearch]=useState(null)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const typingTimeoutRef = useRef(null)
 
-  const toggleOpenSelect=()=>{
+  const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
   }
 
@@ -68,6 +69,8 @@ export default function Brand() {
       dataIndex: '_country',
       width: '15%',
       align: 'center',
+      sorter: (a, b) =>
+        compareCustom(a._country ? a._country[0].name : '', b._country ? b._country[0].name : ''),
       render: (text, record) => (text && text[0]?.name ? text[0].name : 'Chưa cập nhật quốc gia'),
     },
     {
@@ -75,18 +78,21 @@ export default function Brand() {
       dataIndex: 'founded_year',
       width: '10%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'founded_year'),
     },
     {
       title: 'Độ ưu tiên',
       dataIndex: 'priority',
       width: '10%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'priority'),
     },
     {
       title: 'Mô tả',
       dataIndex: 'content',
       width: '25%',
       align: 'center',
+      sorter: (a, b) => a.content.length - b.content.length,
       render: (text) => parse(text),
     },
     {
@@ -94,7 +100,9 @@ export default function Brand() {
       dataIndex: 'create_date',
       width: '10%',
       align: 'center',
-      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
+      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
     },
   ]
 
@@ -141,7 +149,7 @@ export default function Brand() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
-    if(openSelect) toggleOpenSelect()
+    if (openSelect) toggleOpenSelect()
   }
 
   const _search = (e) => {
@@ -215,54 +223,54 @@ export default function Brand() {
             dropdownRender={(menu) => (
               <>
                 <RangePicker
-                 style={{width:"100%"}}
-                 onFocus={() => {
-                  if (!openSelect) toggleOpenSelect()
-                }}
-                onBlur={() => {
-                  if (openSelect) toggleOpenSelect()
-                }}
-                value={valueDateSearch}
-                onChange={(dates, dateStrings) => {
-                  //khi search hoac filter thi reset page ve 1
-                  paramsFilter.page = 1
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-                  if (openSelect) toggleOpenSelect()
+                    if (openSelect) toggleOpenSelect()
 
-                  //nếu search date thì xoá các params date
-                  delete paramsFilter.to_day
-                  delete paramsFilter.yesterday
-                  delete paramsFilter.this_week
-                  delete paramsFilter.last_week
-                  delete paramsFilter.last_month
-                  delete paramsFilter.this_month
-                  delete paramsFilter.this_year
-                  delete paramsFilter.last_year
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                  //Kiểm tra xem date có được chọn ko
-                  //Nếu ko thì thoát khỏi hàm, tránh cash app
-                  //và get danh sách order
-                  if (!dateStrings[0] && !dateStrings[1]) {
-                    delete paramsFilter.from_date
-                    delete paramsFilter.to_date
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                    setValueDateSearch(null)
-                    setAttributeDate()
-                  } else {
-                    const dateFirst = dateStrings[0]
-                    const dateLast = dateStrings[1]
-                    setValueDateSearch(dates)
-                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
 
-                    dateFirst.replace(/-/g, '/')
-                    dateLast.replace(/-/g, '/')
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                    paramsFilter.from_date = dateFirst
-                    paramsFilter.to_date = dateLast
-                  }
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                  setParamsFilter({ ...paramsFilter })
-                }}
+                    setParamsFilter({ ...paramsFilter })
+                  }}
                 />
                 {menu}
               </>

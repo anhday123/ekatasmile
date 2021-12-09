@@ -3,7 +3,7 @@ import styles from './order-list.module.scss'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
-import { compare, formatCash } from 'utils'
+import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
 
@@ -87,8 +87,8 @@ export default function OrderList() {
   const columnsOrder = [
     {
       title: 'Mã đơn hàng',
-      dataIndex: 'order_id',
-      sorter: (a, b) => compare(a, b, 'order_id'),
+      dataIndex: 'code',
+      sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Ngày tạo',
@@ -98,25 +98,40 @@ export default function OrderList() {
     },
     {
       title: 'Tên khách hàng',
+      sorter: (a, b) =>
+        compareCustom(
+          a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
+          b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
+        ),
       render: (text, record) =>
         record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
     },
     {
       title: 'Nhân viên',
+      sorter: (a, b) =>
+        compareCustom(
+          a.employee ? `${a.employee.first_name} ${a.employee.last_name}` : '',
+          a.employee ? `${b.employee.first_name} ${b.employee.last_name}` : ''
+        ),
+
       render: (text, record) =>
         record.employee ? `${record.employee.first_name} ${record.employee.last_name}` : '',
     },
     {
       title: 'Trạng thái đơn hàng',
       dataIndex: 'bill_status',
+      sorter: (a, b) => compare(a, b, 'bill_status'),
     },
     {
       title: 'Thanh toán',
       dataIndex: 'payment_status',
+      sorter: (a, b) => compare(a, b, 'payment_status'),
     },
     {
       title: 'Khách phải trả',
       dataIndex: 'final_cost',
+      sorter: (a, b) => compare(a, b, 'final_cost'),
+
       render: (text) => formatCash(text),
     },
   ]
@@ -125,6 +140,7 @@ export default function OrderList() {
     {
       title: 'Mã sản phẩm',
       dataIndex: 'product_id',
+      sorter: (a, b) => compare(a, b, 'product_id'),
     },
     {
       title: 'Ảnh',
@@ -136,21 +152,28 @@ export default function OrderList() {
     {
       title: 'Tên sản phẩm',
       dataIndex: 'title',
+      sorter: (a, b) => compare(a, b, 'title'),
     },
     {
       title: 'Số lượng',
       dataIndex: 'quantity',
+      sorter: (a, b) => compare(a, b, 'quantity'),
     },
     {
       title: 'Đơn giá',
+      sorter: (a, b) => compare(a, b, 'price'),
+
       render: (text, record) => (record.price ? formatCash(+record.price) : 0),
     },
     {
       title: 'Chiết khấu',
+      sorter: (a, b) => compare(a, b, 'discount'),
+
       render: (text, record) => (record.discount ? formatCash(+record.discount) : 0),
     },
     {
       title: 'Thành tiền',
+      sorter: (a, b) => compare(a, b, 'total_cost'),
       render: (text, record) => (record.total_cost ? formatCash(+record.total_cost) : 0),
     },
   ]
@@ -313,7 +336,9 @@ export default function OrderList() {
                                 ? `${record.customer.first_name} ${record.customer.last_name}`
                                 : ''}
                             </a>
-                            <div style={{ margin: '0px 5px' }}>-</div>
+                            <div style={{ margin: '0px 5px', display: !record.customer && 'none' }}>
+                              -
+                            </div>
                             <div>{record.customer ? record.customer.phone : ''}</div>
                           </Row>
                           <div>
@@ -331,7 +356,11 @@ export default function OrderList() {
                           </div>
                           <div>
                             <p style={{ fontWeight: 700, marginBottom: 4 }}>Tags</p>
-                            <div style={{ color: record.note ? '#747C87' : '' }}>
+                            <div
+                              style={{
+                                color: !record.tags || !record.tags.length ? '#747C87' : '',
+                              }}
+                            >
                               {record.tags && record.tags.length
                                 ? record.tags.join(',')
                                 : 'Đơn hàng chưa có tag'}
@@ -346,14 +375,21 @@ export default function OrderList() {
                         size="large"
                         type="primary"
                         onClick={async () => {
+                          console.log(record)
                           setDataPrint({
                             ...record,
+                            isDelivery: record.shipping_info ? true : false,
+                            deliveryCharges:
+                              record.shipping_info && (record.shipping_info.cod || 0),
                             sumCostPaid: record.total_cost,
                             discount:
                               record.promotion && Object.keys(record.promotion).length
                                 ? record.promotion
                                 : null,
                             moneyToBePaidByCustomer: record.final_cost,
+                            deliveryAddress: record.shipping_info,
+                            moneyGivenByCustomer: 0,
+                            prepay: 0,
                           })
                           await delay(500)
                           handlePrint()
@@ -439,6 +475,23 @@ export default function OrderList() {
           }}
           scroll={{ x: 'max-content' }}
           dataSource={orders}
+          summary={(pageData) => (
+            <Table.Summary.Row>
+              <Table.Summary.Cell>
+                <b>Tổng</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {formatCash(tableSum(pageData, 'final_cost'))} VND
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
         />
       </div>
     </>

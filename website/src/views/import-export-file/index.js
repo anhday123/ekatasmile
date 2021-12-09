@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+import { compare } from 'utils'
 const { Option } = Select
 const { Text } = Typography
 const { RangePicker } = DatePicker
@@ -75,26 +76,31 @@ export default function ImportExportFile() {
       title: 'Tên file',
       dataIndex: 'fileName',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'fileName'),
     },
     {
       title: 'Người thao tác',
       dataIndex: 'actionPerson',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'actionPerson'),
     },
     {
       title: 'Chức năng',
       dataIndex: 'function',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'function'),
     },
     {
       title: 'Thời gian',
       dataIndex: 'time',
       width: 150,
+      sorter: (a, b) => moment(a.time).unix() - moment(b.time).unix(),
     },
     {
       title: 'Trạng thái xử lý',
       dataIndex: 'processStatus',
       width: 150,
+      sorter: (a, b) => compare(a, b, 'processStatus'),
     },
   ]
 
@@ -146,9 +152,7 @@ export default function ImportExportFile() {
               }}
               to={ROUTES.CONFIGURATION_STORE}
             >
-              <ArrowLeftOutlined
-                style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-              />
+              <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
               <div
                 style={{
                   color: 'black',
@@ -181,11 +185,7 @@ export default function ImportExportFile() {
           >
             <Popover placement="bottomLeft" content={content} trigger="click">
               <div style={{ width: '100%' }}>
-                <Input
-                  size="large"
-                  placeholder="Tìm kiếm theo tên file"
-                  enterButton
-                />
+                <Input size="large" placeholder="Tìm kiếm theo tên file" enterButton />
               </div>
             </Popover>
           </Col>
@@ -204,10 +204,7 @@ export default function ImportExportFile() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
               />
             </div>
@@ -221,11 +218,7 @@ export default function ImportExportFile() {
             xl={7}
           >
             <div style={{ width: '100%' }}>
-              <DatePicker
-                style={{ width: '100%' }}
-                size="large"
-                className="br-15__date-picker"
-              />
+              <DatePicker style={{ width: '100%' }} size="large" className="br-15__date-picker" />
             </div>
           </Col>
           <Col
@@ -237,11 +230,7 @@ export default function ImportExportFile() {
             xl={7}
           >
             <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Lọc theo chi nhánh"
-              >
+              <Select size="large" style={{ width: '100%' }} placeholder="Lọc theo chi nhánh">
                 <Option value="branch1">Chi nhánh 1</Option>
                 <Option value="branch2">Chi nhánh 2</Option>
                 <Option value="branch3">Chi nhánh 3</Option>
@@ -257,11 +246,7 @@ export default function ImportExportFile() {
             xl={7}
           >
             <div style={{ width: '100%' }}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Trạng thái xử lý"
-                size="large"
-              >
+              <Select style={{ width: '100%' }} placeholder="Trạng thái xử lý" size="large">
                 <Option value="status1">Trạng thái 1</Option>
                 <Option value="status2">Trạng thái 2</Option>
                 <Option value="status3">Trạng thái 3</Option>
@@ -294,11 +279,7 @@ export default function ImportExportFile() {
               width: '100%',
             }}
           >
-            <Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              okText="Yes"
-              cancelText="No"
-            >
+            <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Yes" cancelText="No">
               <Button type="primary" danger size="large">
                 Xóa thông tin
               </Button>

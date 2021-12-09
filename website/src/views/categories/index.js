@@ -28,6 +28,8 @@ import { DeleteOutlined, SearchOutlined, PlusCircleOutlined, PlusOutlined } from
 import { getCategories, apiAddCategory, deleteCategories } from 'apis/category'
 import { uploadFile } from 'apis/upload'
 
+import { compare, compareCustom } from 'utils'
+
 const { RangePicker } = DatePicker
 
 export default function Category() {
@@ -270,24 +272,42 @@ export default function Category() {
     {
       title: 'Tên danh mục',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'name'),
+
       render: (text, record) => (
         <Link to={{ pathname: ROUTES.CATEGORY, state: record }}>{record.name || ''}</Link>
       ),
     },
-    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
+    {
+      title: 'Mã danh mục',
+      align: 'center',
+      dataIndex: 'code',
+      sorter: (a, b) => compare(a, b, 'code'),
+    },
     {
       title: 'Người tạo',
       align: 'center',
+      sorter: (a, b) =>
+        compareCustom(
+          a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
+          b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
+        ),
       render: (text, record) =>
         record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
     },
     {
       title: 'Ngày tạo',
       align: 'center',
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
       render: (text, record) =>
         record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
     },
-    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
+    {
+      title: 'Độ ưu tiên',
+      align: 'center',
+      dataIndex: 'priority',
+      sorter: (a, b) => compare(a, b, 'priority'),
+    },
     {
       width: 100,
       align: 'center',

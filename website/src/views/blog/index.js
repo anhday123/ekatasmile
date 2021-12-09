@@ -13,19 +13,22 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
-import { Button, Input, message, Select, Table, Popconfirm ,DatePicker } from 'antd'
+import { Button, Input, message, Select, Table, Popconfirm, DatePicker, Row, Col } from 'antd'
 import { Link } from 'react-router-dom'
 import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
 import { deleteBlog, getBlog } from 'apis/blog'
+import { apiFilterRoleEmployee } from 'apis/employee'
 
 // html react parser
 import parse from 'html-react-parser'
 
+import { compare } from 'utils'
+
 const { Option } = Select
-const {RangePicker} = DatePicker
+const { RangePicker } = DatePicker
 
 export default function Blog() {
   const [selectKeys, setSelectKeys] = useState([])
@@ -34,12 +37,13 @@ export default function Blog() {
   const [countPage, setCountPage] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
   const [attributeDate, setAttributeDate] = useState(undefined)
-  const [valueDateSearch,setValueDateSearch]=useState(null)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
   const [valueSearch, setValueSearch] = useState('')
-  const [openSelect,setOpenSelect]=useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const typingTimeoutRef = useRef(null)
+  const [userList, setUserList] = useState([])
 
-  const toggleOpenSelect=()=>{
+  const toggleOpenSelect = () => {
     setOpenSelect(!openSelect)
   }
 
@@ -56,8 +60,10 @@ export default function Blog() {
     {
       title: 'Tiêu đề',
       dataIndex: 'title',
-      width: '25%',
+      width: '20%',
       align: 'center',
+      sorter: (a, b) => compare(a, b, 'title'),
+
       render: (text, record) => (
         <Link to={{ pathname: ROUTES.BLOG_CREATE, state: record }}>{text}</Link>
       ),
@@ -65,17 +71,29 @@ export default function Blog() {
     {
       title: 'Nội dung',
       dataIndex: 'content',
-      width: '40%',
+      width: '30%',
       align: 'center',
       sorter: (a, b) => a.content.length - b.content.length,
       render: (text, record) => (!text ? '' : parse(text)),
+    },
+    {
+      title: 'Người đăng bài',
+      align: 'center',
+      width: '15%',
+      // sorter: (a, b) => a.content.length - b.content.length,
+      render: (text, record) => {
+        const creator = userList.find((e) => e.user_id == record.creator_id)
+        if (creator) return `${creator.first_name} ${creator.last_name}`
+        return ''
+      },
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
       width: '15%',
       align: 'center',
-      render: (text) => moment(text).format('DD/MM/YYYY h:mm:ss'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (text) => moment(text).format('DD/MM/YYYY HH:mm:ss'),
     },
   ]
 
@@ -122,7 +140,17 @@ export default function Blog() {
     else delete paramsFilter[value]
     setAttributeDate(value)
     setParamsFilter({ ...paramsFilter })
-    if(openSelect) toggleOpenSelect()
+    if (openSelect) toggleOpenSelect()
+  }
+  const getUserList = async () => {
+    try {
+      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      if (res.data.success) {
+        setUserList(res.data.data)
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const _search = (e) => {
@@ -149,6 +177,9 @@ export default function Blog() {
     setValueDateSearch(null)
     setParamsFilter({ page: 1, page_size: 5 })
   }
+  useEffect(() => {
+    getUserList()
+  }, [])
 
   useEffect(() => {
     _getBlog(paramsFilter)
@@ -170,18 +201,21 @@ export default function Blog() {
         </Permission>
       </div>
       <hr />
-      <div className={styles['body_blog_filter']}>
-        <Input.Group compact>
+      <Row style={{ marginTop: 20 }} gutter={30}>
+        <Col span={6}>
           <Input
-            style={{ width: '20%' }}
+            size="large"
             placeholder="Tìm kiếm theo tên"
             allowClear
             prefix={<SearchOutlined />}
             onChange={_search}
             value={valueSearch}
           />
+        </Col>
+        <Col span={6}>
           <Select
-            style={{ width: '25%' }}
+            size="large"
+            style={{ width: '100%' }}
             value={attributeDate}
             onChange={onChangeOptionSearchDate}
             placeholder="Thời gian"
@@ -196,55 +230,55 @@ export default function Blog() {
             dropdownRender={(menu) => (
               <>
                 <RangePicker
-                 style={{width:"100%"}} 
-                 onFocus={() => {
-                  if (!openSelect) toggleOpenSelect()
-                }}
-                onBlur={() => {
-                  if (openSelect) toggleOpenSelect()
-                }}
-                value={valueDateSearch}
-                onChange={(dates, dateStrings) => {
-                  //khi search hoac filter thi reset page ve 1
-                  paramsFilter.page = 1
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-                  if (openSelect) toggleOpenSelect()
+                    if (openSelect) toggleOpenSelect()
 
-                  //nếu search date thì xoá các params date
-                  delete paramsFilter.to_day
-                  delete paramsFilter.yesterday
-                  delete paramsFilter.this_week
-                  delete paramsFilter.last_week
-                  delete paramsFilter.last_month
-                  delete paramsFilter.this_month
-                  delete paramsFilter.this_year
-                  delete paramsFilter.last_year
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                  //Kiểm tra xem date có được chọn ko
-                  //Nếu ko thì thoát khỏi hàm, tránh cash app
-                  //và get danh sách order
-                  if (!dateStrings[0] && !dateStrings[1]) {
-                    delete paramsFilter.from_date
-                    delete paramsFilter.to_date
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                    setValueDateSearch(null)
-                    setAttributeDate()
-                  } else {
-                    const dateFirst = dateStrings[0]
-                    const dateLast = dateStrings[1]
-                    setValueDateSearch(dates)
-                    setAttributeDate(`${dateFirst} -> ${dateLast}`)
+                      setValueDateSearch(null)
+                      setAttributeDate()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setAttributeDate(`${dateFirst} -> ${dateLast}`)
 
-                    dateFirst.replace(/-/g, '/')
-                    dateLast.replace(/-/g, '/')
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                    paramsFilter.from_date = dateFirst
-                    paramsFilter.to_date = dateLast
-                  }
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                  setParamsFilter({ ...paramsFilter })
-                }}
-                 />
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
                 {menu}
               </>
             )}
@@ -258,8 +292,18 @@ export default function Blog() {
             <Option value="this_year">Năm này</Option>
             <Option value="last_year">Năm trước</Option>
           </Select>
-        </Input.Group>
-      </div>
+        </Col>
+        <Col span={6}>
+          <Select style={{ width: '100%' }} placeholder="Người đăng" size="large">
+            {userList.map((e) => (
+              <Option value={e.user_id}>
+                {e.first_name} {e.last_name}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
+
       <div className={styles['body_blog_delete_filter']}>
         <div>
           {selectKeys.length !== 0 ? (

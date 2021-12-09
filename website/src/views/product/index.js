@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
-import { formatCash } from 'utils'
+import { compareCustom, formatCash, tableSum } from 'utils'
 import moment from 'moment'
 
 import {
@@ -61,7 +61,7 @@ export default function Product() {
   const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
     this_week: true,
   })
@@ -854,6 +854,11 @@ export default function Product() {
               if (column.key === 'category')
                 return {
                   ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a._category ? a._category.name : '',
+                      b._category ? b._category.name : ''
+                    ),
                   render: (text, record) => {
                     const category = categories.find((c) => c.category_id === record.category_id)
                     if (category) return category.name
@@ -864,6 +869,11 @@ export default function Product() {
               if (column.key === 'supplier')
                 return {
                   ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a.supplier ? a.supplier.name : '',
+                      b.supplier ? b.supplier.name : ''
+                    ),
                   render: (text, record) => {
                     const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
                     if (supplier) return supplier.name
@@ -874,24 +884,31 @@ export default function Product() {
               if (column.key === 'sum-count')
                 return {
                   ...column,
+                  sorter: (a, b) => compareCustom(a.sumQuantity || 0, b.sumQuantity || 0),
                   render: (text, record) => record.sumQuantity && formatCash(record.sumQuantity),
                 }
 
               if (column.key === 'base-price')
                 return {
                   ...column,
+                  sorter: (a, b) => compareCustom(a.sumBasePrice || 0, b.sumBasePrice || 0),
+
                   render: (text, record) => record.sumBasePrice && formatCash(record.sumBasePrice),
                 }
 
               if (column.key === 'price')
                 return {
                   ...column,
+                  sorter: (a, b) => compareCustom(a.sumSalePrice || 0, b.sumSalePrice || 0),
+
                   render: (text, record) => record.sumSalePrice && formatCash(record.sumSalePrice),
                 }
 
               if (column.key === 'import-price')
                 return {
                   ...column,
+                  sorter: (a, b) => compareCustom(a.sumImportPrice || 0, b.sumImportPrice || 0),
+
                   render: (text, record) =>
                     record.sumImportPrice && formatCash(record.sumImportPrice),
                 }
@@ -899,6 +916,8 @@ export default function Product() {
               if (column.key === 'create_date')
                 return {
                   ...column,
+                  sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
                   render: (text, record) =>
                     record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
                 }
@@ -933,6 +952,29 @@ export default function Product() {
               },
               total: countProduct,
             }}
+            summary={(pageData) => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell>
+                  <b>Tổng</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumQuantity'))}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumBasePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumSalePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumImportPrice'))} VND
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </div>
       </div>
