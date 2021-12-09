@@ -125,10 +125,7 @@ let addOrderC = async (req, res, next) => {
             });
             return _detail;
         });
-        if (
-            (req.body.voucher && req.body.voucher != '') ||
-            (req.body.promotion_id && req.body.promotion_id != '')
-        ) {
+        if ((req.body.voucher && req.body.voucher != '') || (req.body.promotion_id && req.body.promotion_id != '')) {
             if (req.body.voucher && req.body.voucher != '') {
                 let promotion = await client
                     .db(DB)
@@ -216,8 +213,21 @@ let updateOrderC = async (req, res, next) => {
     }
 };
 
+let _delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection('Orders')
+            .deleteMany({ order_id: { $in: req.body.order_id } });
+        res.send({ success: true, message: 'Xóa đơn hàng thành công!' });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getOrderC,
     addOrderC,
     updateOrderC,
+    _delete,
 };
