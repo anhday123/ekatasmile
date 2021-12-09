@@ -51,7 +51,6 @@ export default function Product() {
   const [paramsFilter, setParamsFilter] = useState({
     page: 1,
     page_size: 20,
-    this_week: true,
   })
 
   const [suppliers, setSuppliers] = useState([])
@@ -62,9 +61,7 @@ export default function Product() {
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
-    this_week: true,
-  })
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
   const [stores, setStores] = useState([]) //list store in filter
   const [storeId, setStoreId] = useState() //filter product by store
   const [columns, setColumns] = useState([])
