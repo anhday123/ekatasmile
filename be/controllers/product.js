@@ -816,9 +816,9 @@ let importFileC = async (req, res, next) => {
                     supplier: product['Mã sản phẩm'],
                     import_price: product['Giá nhập hàng'],
                     base_price: product['Giá vốn'],
-                    sale_price: product['Giá bán lẻ'],
-                    wholesale_price: product['Giá bán sỉ'],
-                    wholesale_quantity: product['Số lượng sỉ'],
+                    price: product['Giá bán lẻ'],
+                    bulk_price: product['Giá bán sỉ'],
+                    bulk_quantity: product['Số lượng bán sỉ'],
                     locations: (() => {
                         if (product['Số địa điểm nhập']) {
                             let _locations = [];

@@ -57,7 +57,7 @@ export default function Channel() {
   const [modalVisible, setModalVisible] = useState(false)
   const [openSelect, setOpenSelect] = useState(false)
   const [platform, setPlatform] = useState('')
-  const [idChannel,setIdChannel]=useState('')
+  const [idChannel, setIdChannel] = useState('')
   // console.log(base)
   const typingTimeoutRef = useRef(null)
 
@@ -134,7 +134,11 @@ export default function Channel() {
           <Button type="primary" onClick={() => _updateChannel(record)} style={{ width: 100 }}>
             Cập nhật
           </Button>
-          <Button type="danger" onClick={()=>_delelteChannel(record.channel_id)} style={{ width: 100, margin: '10px 0' }}>
+          <Button
+            type="danger"
+            onClick={() => _delelteChannel(record.channel_id)}
+            style={{ width: 100, margin: '10px 0' }}
+          >
             Xóa
           </Button>
           <Button type="primary" style={{ width: 100, backgroundColor: '#70BE4B', border: 'none' }}>
@@ -158,11 +162,10 @@ export default function Channel() {
 
   const _updateChannel = (record) => {
     // console.log(record)
-    form.setFieldsValue({ name: record.name, url: record.url  })
+    form.setFieldsValue({ name: record.name, url: record.url })
     setIdChannel(record.channel_id)
     setModalVisible(!modalVisible)
   }
-
 
   const _getChannel = async () => {
     try {
@@ -200,26 +203,24 @@ export default function Channel() {
         name: formData.name,
         url: formData.url,
         platform_id: formData.platform,
-        client_id:formData.client_id,
-        secret_key:formData.secret_key,
+        client_id: formData.client_id,
+        secret_key: formData.secret_key,
       }
       console.log(body)
-      if(idChannel){
-        res=await updateChannel(idChannel,body)
-      }
-      else {
-        res=await createChannel(body)
+      if (idChannel) {
+        res = await updateChannel(idChannel, body)
+      } else {
+        res = await createChannel(body)
       }
       console.log(res)
-      if(res.status===200){
-        if(res.data.success===true){
+      if (res.status === 200) {
+        if (res.data.success === true) {
           _getChannel(paramsFilter)
-          notification.success({message:`${idChannel ? "Cập nhật" : "Tạo"} kênh thành công`})
+          notification.success({ message: `${idChannel ? 'Cập nhật' : 'Tạo'} kênh thành công` })
           setModalVisible(false)
         }
-      }
-      else{
-        notification.error({message:`${idChannel ? "Cập nhật" : "Tạo"} kênh thất bại`})
+      } else {
+        notification.error({ message: `${idChannel ? 'Cập nhật' : 'Tạo'} kênh thất bại` })
       }
     } catch (err) {
       console.log(err)
@@ -342,7 +343,10 @@ export default function Channel() {
             />
           </Form.Item>
           <h3>Nền tảng</h3>
-          <Form.Item name="platform" rules={[{ required: true, message: 'Vui lòng chọn nền tảng' }]}>
+          <Form.Item
+            name="platform"
+            rules={[{ required: true, message: 'Vui lòng chọn nền tảng' }]}
+          >
             <Select
               style={{ width: '100%' }}
               // value={attributePlatform}
@@ -350,7 +354,7 @@ export default function Channel() {
               placeholder="Chọn nền tảng"
               allowClear
             >
-              {platformList.map((item)=>(
+              {platformList.map((item) => (
                 <Option value={item.platform_id}>{item.name}</Option>
               ))}
             </Select>
@@ -358,7 +362,10 @@ export default function Channel() {
           {platform ? (
             <>
               <h3>Key</h3>
-              <Form.Item name="client_id" rules={[{ required: true, message: 'Vui lòng nhập key' }]}>
+              <Form.Item
+                name="client_id"
+                rules={[{ required: true, message: 'Vui lòng nhập key' }]}
+              >
                 <Input
                   // value={dataUpdate.url ? dataUpdate.url : ''}
                   // onChange={handleChangeChannelUrl}

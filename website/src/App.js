@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ACTION } from './consts'
-import { decodeToken } from 'react-jwt'
 import { clearBrowserCache } from 'utils'
-
+import jwt_decode from 'jwt-decode'
 import Loading from 'components/loading/Loading'
 
 //views
@@ -17,10 +16,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (
-      localStorage.getItem('accessToken') &&
-      localStorage.getItem('refreshToken')
-    ) {
+    if (localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')) {
       dispatch({
         type: ACTION.LOGIN,
         data: {
@@ -29,8 +25,7 @@ function App() {
         },
       })
 
-      const dataUser = decodeToken(localStorage.getItem('accessToken'))
-      console.log(dataUser)
+      const dataUser = jwt_decode(localStorage.getItem('accessToken'))
       if (dataUser)
         dispatch({
           type: 'SET_BRANCH_ID',

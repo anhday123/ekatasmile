@@ -10,6 +10,7 @@ class OrderDetail {
     create(data) {
         this.product_id = Number(data.product_id);
         this.variant_id = Number(data.variant_id);
+        this.title = data.title;
         this.variants = data.variants || [];
         this.properties = data.properties || [];
         this.image = data.image || [];
@@ -19,7 +20,7 @@ class OrderDetail {
         this.weight = data.weight || 0;
         this.import_price = data.import_price || 0;
         this.base_price = data.base_price || 0;
-        this.sale_price = data.sale_price || 0;
+        this.price = data.price || 0;
         this.quantity = data.quantity || 0;
         this.total_cost = data.total_cost || this.sale_price * this.quantity;
         this.taxable = data.taxable || false;
@@ -73,6 +74,7 @@ class Order {
     create(data) {
         this.order_id = Number(data.order_id);
         this.business_id = Number(data.business_id);
+        this.code = String(this.order_id).padStart(6, '0');
         this.chanel = String(data.chanel).trim().toUpperCase();
         this.sub_chanel = removeUnicode(this.chanel, true).toLowerCase();
         this.sale_location = data.sale_location;
@@ -97,12 +99,14 @@ class Order {
         this.final_cost = data.final_cost || 0;
         this.customer_paid = data.customer_paid || 0;
         this.customer_debt = data.customer_debt || 0;
-        this.payment_status = data.payment_status || (()=>{
-            if(this.customer_debt == 0) {
-                return 'PAID';
-            }
-            return 'UNPAID';
-        })();
+        this.payment_status =
+            data.payment_status ||
+            (() => {
+                if (this.customer_debt == 0) {
+                    return 'PAID';
+                }
+                return 'UNPAID';
+            })();
         // DRAFT - PROCESSING - COMPLETE - CANCEL - REFUND
         this.bill_status = data.bill_status || 'DRAFT';
         // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL

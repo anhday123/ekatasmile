@@ -19,12 +19,12 @@ let getOrderC = async (req, res, next) => {
 let addOrderC = async (req, res, next) => {
     try {
         let hmac = req.body.order;
-        try{
-            let bytes  = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
-            let decryptedData  = bytes.toString(CryptoJS.enc.Utf8);
+        try {
+            let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
+            let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
             req.body = JSON.parse(decryptedData);
-        }catch(err){
-            throw new Error('400: Đơn hàng không chính xác!')
+        } catch (err) {
+            throw new Error('400: Đơn hàng không chính xác!');
         }
         let _order = new Order();
         // _order.validateInput(req.body);
@@ -120,8 +120,8 @@ let addOrderC = async (req, res, next) => {
             _detail.create({
                 ..._variants[String(detail.variant_id)],
                 ..._products[String(detail.product_id)],
-                ...detail,
                 properties: _variants[String(detail.variant_id)].options,
+                ...detail,
             });
             return _detail;
         });
@@ -153,7 +153,7 @@ let addOrderC = async (req, res, next) => {
                         // delete promotion.vouchers;
                         req.body.promotion = promotion;
                     } else {
-                        req.body.promotion = {}
+                        req.body.promotion = {};
                     }
                 }
             }
@@ -168,7 +168,7 @@ let addOrderC = async (req, res, next) => {
                 req.body.promotion = promotion;
             }
         } else {
-            req.body.promotion = {}
+            req.body.promotion = {};
         }
         let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
         let order_id = (() => {

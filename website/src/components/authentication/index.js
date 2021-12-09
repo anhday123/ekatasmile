@@ -2,7 +2,7 @@ import React, { cloneElement } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 import { notification } from 'antd'
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
 
 /**
  *
@@ -13,8 +13,7 @@ import { decodeToken } from 'react-jwt'
 const Authentication = ({ permissions, title, children, ...props }) => {
   const history = useHistory()
   const payload =
-    localStorage.getItem('accessToken') &&
-    decodeToken(localStorage.getItem('accessToken'))
+    localStorage.getItem('accessToken') && jwt_decode(localStorage.getItem('accessToken'))
 
   //modify title
   document.title = title
@@ -32,17 +31,11 @@ const Authentication = ({ permissions, title, children, ...props }) => {
     return <Redirect to={ROUTES.LOGIN} />
   }
 
-  const allPermission = [
-    ...payload.data._role.menu_list,
-    ...payload.data._role.permission_list,
-  ]
+  const allPermission = [...payload.data._role.menu_list, ...payload.data._role.permission_list]
 
   // permissions.length = 0 -> screen public
   // permissions.length > 0 -> check user có quyền truy cập vào màn hình này
-  if (
-    permissions.length === 0 ||
-    permissions.filter((p) => allPermission.includes(p)).length > 0
-  ) {
+  if (permissions.length === 0 || permissions.filter((p) => allPermission.includes(p)).length > 0) {
     return cloneElement(children, props)
   }
 

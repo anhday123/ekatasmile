@@ -51,6 +51,7 @@ import {
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
+  ShoppingCartOutlined,
   FileDoneOutlined,
   SketchOutlined,
   ForkOutlined,
@@ -72,21 +73,24 @@ import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
+
 const { Sider } = Layout
 const { Option } = Select
 const { Dragger } = Upload
-
 const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
+  const WIDTH_MENU_OPEN = 230
+  const WIDTH_MENU_CLOSE = 160
 
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
+  const [appLanguage, setAppLanguage] = useState('VN')
   const login = useSelector((state) => state.login)
   const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
-    ? decodeToken(localStorage.getItem('accessToken'))
+    ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
 
   const [form] = Form.useForm()
@@ -133,12 +137,12 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined />,
     },
-    // {
-    //   path: ROUTES.SELL,
-    //   title: 'Bán hàng',
-    //   permissions: [PERMISSIONS.ban_hang],
-    //   icon: <ShoppingCartOutlined />,
-    // },
+    {
+      path: ROUTES.SELL,
+      title: 'Bán hàng',
+      permissions: [],
+      icon: <ShoppingCartOutlined />,
+    },
     {
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',
@@ -279,7 +283,7 @@ const BaseLayout = (props) => {
       path: 'transport',
       title: 'Vận chuyển',
       permissions: [PERMISSIONS.van_chuyen],
-      icon: <TransactionOutlined/>,
+      icon: <TransactionOutlined />,
       menuItems: [
         {
           icon: <ClusterOutlined />,
@@ -301,7 +305,7 @@ const BaseLayout = (props) => {
       permissions: [PERMISSIONS.business_management],
       icon: <ApartmentOutlined />,
     },
-   
+
     {
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -441,8 +445,9 @@ const BaseLayout = (props) => {
     }
   }
 
-  const onClickSignout = () => {
+  const onSignOut = () => {
     dispatch({ type: ACTION.LOGOUT })
+    dispatch({ type: 'UPDATE_INVOICE', data: [] })
   }
 
   const [username, setUsername] = useState('')
@@ -462,7 +467,7 @@ const BaseLayout = (props) => {
       </div>
       <Link
         to={ROUTES.LOGIN}
-        onClick={onClickSignout}
+        onClick={onSignOut}
         className={styles['user_information_link']}
         style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
       >
@@ -480,6 +485,33 @@ const BaseLayout = (props) => {
         <Empty />
       </div>
     </div>
+  )
+
+  const LanguageDropdown = () => (
+    <Menu>
+      <Menu.Item
+        icon={
+          <img
+            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
+            width="30"
+          />
+        }
+        onClick={() => setAppLanguage('VN')}
+      >
+        Tiếng việt
+      </Menu.Item>
+      <Menu.Item
+        icon={
+          <img
+            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
+            width="30"
+          />
+        }
+        onClick={() => setAppLanguage('EN')}
+      >
+        Tiếng anh
+      </Menu.Item>
+    </Menu>
   )
   const modal1VisibleModal = (modal1Visible) => {
     setModal1Visible(modal1Visible)
@@ -662,7 +694,7 @@ const BaseLayout = (props) => {
 
   return (
     <Layout style={{ backgroundColor: 'white', height: '100%' }}>
-      <BackTop style={{ right: '20px', bottom: '20px' }} />
+      <BackTop style={{ right: 10, bottom: 15 }} />
       <Modal
         title="Chỉnh sửa thông tin cá nhân"
         centered
@@ -810,46 +842,45 @@ const BaseLayout = (props) => {
       <Sider
         trigger={null}
         collapsible
-        width={isMobile ? '100%' : 230}
-        collapsedWidth={isMobile ? 0 : 160}
+        width={isMobile ? '100%' : WIDTH_MENU_OPEN}
+        collapsedWidth={isMobile ? 0 : WIDTH_MENU_CLOSE}
         style={{
           backgroundColor: 'white',
-          height: '100%',
           zIndex: isMobile && 6000,
+          height: '100vh',
+          position: 'fixed',
         }}
         collapsed={collapsed}
         onCollapse={onCollapse}
       >
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
             alignItems: 'center',
+            justifyContent: 'center',
             flexDirection: 'column',
             width: '100%',
+            display: collapsed ? 'none' : 'flex',
+            maxHeight: 108,
           }}
-          className={collapsed ? styles['hidden'] : styles['show']}
         >
           <img
             src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
-            className={collapsed ? styles['hidden'] : styles['show']}
-            style={{ width: '6rem', objectFit: 'contain' }}
+            style={{ width: '6rem', objectFit: 'contain', marginTop: 12 }}
             alt=""
           />
-          <div
-            className={collapsed ? styles['hidden'] : styles['show']}
-            style={{
-              color: 'black',
-              fontSize: '1rem',
-              fontWeight: '600',
-              margin: '0.5rem 0 1rem 0.5rem',
-            }}
+          <Row
+            justify="center"
+            style={{ color: 'black', fontSize: '1rem', fontWeight: '600', margin: '7px 0px' }}
           >
             {(user && user.company_name) || dataUser.data.company_name}
-          </div>
+          </Row>
         </div>
         <Menu
-          className={styles['toggle_left']}
+          style={{
+            height: `calc(100vh - ${collapsed ? 4 : 108}px)`,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}
           theme="light"
           onOpenChange={(openKeys) => onOpenChange(openKeys)}
           openKeys={
@@ -865,7 +896,7 @@ const BaseLayout = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item onClick={onClickSignout} key="9" icon={!collapsed && <LogoutOutlined />}>
+          <Menu.Item onClick={onSignOut} key="9" icon={!collapsed && <LogoutOutlined />}>
             <Link
               to={ROUTES.LOGIN}
               style={{
@@ -883,7 +914,7 @@ const BaseLayout = (props) => {
           </Menu.Item>
         </Menu>
       </Sider>
-      <Layout className={styles['site-layout']}>
+      <Layout style={{ marginLeft: collapsed ? WIDTH_MENU_CLOSE : WIDTH_MENU_OPEN }}>
         <Affix offsetTop={0}>
           <Row className={styles['background_right_top']}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -943,6 +974,32 @@ const BaseLayout = (props) => {
                 </Row>
                 <div className={styles['navbar_right']}>
                   <div className={styles['navbar_notification']}>
+                    <Dropdown
+                      overlay={<LanguageDropdown />}
+                      placement="bottomCenter"
+                      trigger="click"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div>
+                          {appLanguage == 'VN' ? (
+                            <img
+                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
+                              width="30"
+                            />
+                          ) : (
+                            <img
+                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
+                              width="30"
+                            />
+                          )}
+                        </div>
+                        <div style={{ color: '#fff', width: 90 }}>
+                          {appLanguage == 'VN' ? 'Tiếng Việt' : 'Tiếng Anh'} <CarretDown />
+                        </div>
+                      </div>
+                    </Dropdown>
+                  </div>
+                  <div className={styles['navbar_notification']}>
                     <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
                       <Badge count={0} showZero size="small" offset={[-3, 3]}>
                         <Bell style={{ color: 'rgb(253, 170, 62)' }} />
@@ -974,7 +1031,7 @@ const BaseLayout = (props) => {
                             )}
                           </Avatar>
                         ) : (
-                          <Avatar src={<Image src={user.avatar} />} />
+                          <Avatar src={user.avatar} />
                         )}
                       </div>
                       <div className={styles['navbar_right_left_name']}>
@@ -1016,4 +1073,4 @@ const BaseLayout = (props) => {
   )
 }
 
-export default BaseLayout;
+export default BaseLayout

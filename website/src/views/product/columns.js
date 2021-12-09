@@ -33,8 +33,8 @@ const columnsProduct = [
   },
   {
     title: 'Tổng giá bán',
-    dataIndex: 'sale_price',
-    key: 'sale-price',
+    dataIndex: 'price',
+    key: 'price',
   },
   {
     title: 'Ngày tạo',

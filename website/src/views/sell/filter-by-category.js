@@ -9,10 +9,7 @@ import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons'
 //apis
 import { getCategories } from 'apis/category'
 
-export default function FilterProductsByCategory({
-  setParamsFilter,
-  paramsFilter,
-}) {
+export default function FilterProductsByCategory({ setParamsFilter, paramsFilter }) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
   const [categories, setCategories] = useState([])
@@ -20,10 +17,11 @@ export default function FilterProductsByCategory({
   const [valueSearch, setValueSearch] = useState('')
   const [listCategory, setListCategory] = useState([])
 
-  const _getCategories = async (params) => {
+  const _getCategories = async () => {
     try {
       setLoading(true)
-      const res = await getCategories(params)
+      const res = await getCategories()
+      console.log(res)
       if (res.status === 200) setCategories(res.data.data)
       setLoading(false)
     } catch (error) {
@@ -34,9 +32,7 @@ export default function FilterProductsByCategory({
 
   useEffect(() => {
     if (visible)
-      setListCategory(
-        paramsFilter.category_id ? paramsFilter.category_id.split('---') : []
-      )
+      setListCategory(paramsFilter.category_id ? paramsFilter.category_id.split('---') : [])
   }, [visible])
 
   useEffect(() => {
@@ -56,8 +52,7 @@ export default function FilterProductsByCategory({
           <Row justify="end">
             <Button
               onClick={() => {
-                if (listCategory.length)
-                  paramsFilter.category_id = listCategory.join('---')
+                if (listCategory.length) paramsFilter.category_id = listCategory.join('---')
                 else delete paramsFilter.category_id
                 setParamsFilter({ ...paramsFilter })
                 toggle()
@@ -101,29 +96,24 @@ export default function FilterProductsByCategory({
           <Space direction="vertical" style={{ marginTop: 20 }}>
             {categories.map((category) => (
               <Checkbox
-                checked={listCategory.includes(category.category_id)}
+                checked={
+                  listCategory.filter((e) => e == category.category_id).length ? true : false
+                }
                 onChange={(e) => {
                   const checked = e.target.checked
                   const listCategoryNew = [...listCategory]
 
                   if (checked) listCategoryNew.push(category.category_id)
                   else {
-                    const indexRemove = listCategoryNew.findIndex(
-                      (c) => c === category.category_id
-                    )
+                    const indexRemove = listCategoryNew.findIndex((c) => c == category.category_id)
                     listCategoryNew.splice(indexRemove, 1)
                   }
 
                   setListCategory([...listCategoryNew])
                 }}
               >
-                {valueSearch &&
-                category.name
-                  .toLowerCase()
-                  .includes(valueSearch.toLowerCase()) ? (
-                  <mark style={{ backgroundColor: 'yellow' }}>
-                    {category.name}
-                  </mark>
+                {valueSearch && category.name.toLowerCase().includes(valueSearch.toLowerCase()) ? (
+                  <mark style={{ backgroundColor: 'yellow' }}>{category.name}</mark>
                 ) : (
                   category.name
                 )}

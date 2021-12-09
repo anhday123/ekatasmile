@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
-import { formatCash } from 'utils'
+import { compareCustom, formatCash, tableSum } from 'utils'
 import moment from 'moment'
 
 import {
@@ -61,7 +61,7 @@ export default function Product() {
   const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({
     this_week: true,
   })
@@ -74,8 +74,7 @@ export default function Product() {
   const apiAllCategoryData = async () => {
     try {
       const res = await getCategories()
-      if (res.status === 200)
-        setCategories(res.data.data.filter((e) => e.active))
+      if (res.status === 200) setCategories(res.data.data.filter((e) => e.active))
     } catch (error) {
       console.log(error)
     }
@@ -119,7 +118,7 @@ export default function Product() {
     },
     {
       title: 'Giá bán',
-      dataIndex: 'sale_price',
+      dataIndex: 'price',
       render: (text) => text && formatCash(text),
     },
   ]
@@ -199,7 +198,7 @@ export default function Product() {
           e.variants.map((v) => {
             sumQuantity += v.total_quantity
             sumBasePrice += v.base_price
-            sumSalePrice += v.sale_price
+            sumSalePrice += v.price
             sumImportPrice += v.import_price
           })
           return {
@@ -288,15 +287,10 @@ export default function Product() {
                 try {
                   setLoading(true)
 
-                  const listPromise = selectedRowKeys.map(
-                    async (product_id) => {
-                      const res = await updateProduct(
-                        { category_id: categoryId },
-                        product_id
-                      )
-                      return res
-                    }
-                  )
+                  const listPromise = selectedRowKeys.map(async (product_id) => {
+                    const res = await updateProduct({ category_id: categoryId }, product_id)
+                    return res
+                  })
 
                   await Promise.all(listPromise)
                   setLoading(false)
@@ -328,8 +322,7 @@ export default function Product() {
       setLoading(true)
       const res = await deleteProducts(selectedRowKeys.join('---'))
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Xoá sản phẩm thành công!' })
+      if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
       else notification.error({ message: 'Xoá sản phẩm thất bại!' })
       await getAllProduct({ ...paramsFilter })
       setSelectedRowKeys([])
@@ -373,11 +366,7 @@ export default function Product() {
         disabled
       >
         {record.image && record.image.length ? (
-          <Popover
-            style={{ top: 300 }}
-            placement="top"
-            content={ContentZoomImage(record.image[0])}
-          >
+          <Popover style={{ top: 300 }} placement="top" content={ContentZoomImage(record.image[0])}>
             <img src={record.image[0]} alt="" style={{ width: '100%' }} />
           </Popover>
         ) : (
@@ -407,10 +396,8 @@ export default function Product() {
       setLoading(true)
       let res = await updateProduct(body, id)
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Cập nhật thành công!' })
-      else
-        notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
+      if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
+      else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
 
       await getAllProduct({ ...paramsFilter })
 
@@ -484,24 +471,10 @@ export default function Product() {
             alignItems: 'center',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <h3 style={{ marginBottom: 0 }}>Danh sách sản phẩm</h3>
           </Col>
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <div
               style={{
                 display: 'flex',
@@ -511,9 +484,7 @@ export default function Product() {
               }}
             >
               <Space>
-                <ImportProducts
-                  reload={() => getAllProduct({ ...paramsFilter })}
-                />
+                <ImportProducts reload={() => getAllProduct({ ...paramsFilter })} />
                 <ExportProduct
                   fileName="Products"
                   name="Export Sản Phẩm"
@@ -521,11 +492,7 @@ export default function Product() {
                 />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
                   <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button
-                      size="large"
-                      type="primary"
-                      icon={<PlusCircleOutlined />}
-                    >
+                    <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
                       Thêm sản phẩm
                     </Button>
                   </Link>
@@ -543,14 +510,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={14}>
@@ -578,9 +538,7 @@ export default function Product() {
                       setOptionSearchName(value)
                     }}
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     <Option value="name">Tên sản phẩm</Option>
@@ -651,8 +609,7 @@ export default function Product() {
                 placeholder="Tìm kiếm theo thời gian"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 value={valueTime}
                 onChange={async (value) => {
@@ -881,11 +838,7 @@ export default function Product() {
                   ...column,
                   render: (text, record) =>
                     record.active ? (
-                      <Link
-                        to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}
-                      >
-                        {text}
-                      </Link>
+                      <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
                     ) : (
                       text
                     ),
@@ -901,10 +854,13 @@ export default function Product() {
               if (column.key === 'category')
                 return {
                   ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a._category ? a._category.name : '',
+                      b._category ? b._category.name : ''
+                    ),
                   render: (text, record) => {
-                    const category = categories.find(
-                      (c) => c.category_id === record.category_id
-                    )
+                    const category = categories.find((c) => c.category_id === record.category_id)
                     if (category) return category.name
                     else return ''
                   },
@@ -913,10 +869,13 @@ export default function Product() {
               if (column.key === 'supplier')
                 return {
                   ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a.supplier ? a.supplier.name : '',
+                      b.supplier ? b.supplier.name : ''
+                    ),
                   render: (text, record) => {
-                    const supplier = suppliers.find(
-                      (c) => c.supplier_id === record.supplier_id
-                    )
+                    const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
                     if (supplier) return supplier.name
                     else return ''
                   },
@@ -925,27 +884,31 @@ export default function Product() {
               if (column.key === 'sum-count')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumQuantity && formatCash(record.sumQuantity),
+                  sorter: (a, b) => compareCustom(a.sumQuantity || 0, b.sumQuantity || 0),
+                  render: (text, record) => record.sumQuantity && formatCash(record.sumQuantity),
                 }
 
               if (column.key === 'base-price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumBasePrice && formatCash(record.sumBasePrice),
+                  sorter: (a, b) => compareCustom(a.sumBasePrice || 0, b.sumBasePrice || 0),
+
+                  render: (text, record) => record.sumBasePrice && formatCash(record.sumBasePrice),
                 }
 
-              if (column.key === 'sale-price')
+              if (column.key === 'price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumSalePrice && formatCash(record.sumSalePrice),
+                  sorter: (a, b) => compareCustom(a.sumSalePrice || 0, b.sumSalePrice || 0),
+
+                  render: (text, record) => record.sumSalePrice && formatCash(record.sumSalePrice),
                 }
 
               if (column.key === 'import-price')
                 return {
                   ...column,
+                  sorter: (a, b) => compareCustom(a.sumImportPrice || 0, b.sumImportPrice || 0),
+
                   render: (text, record) =>
                     record.sumImportPrice && formatCash(record.sumImportPrice),
                 }
@@ -953,9 +916,10 @@ export default function Product() {
               if (column.key === 'create_date')
                 return {
                   ...column,
+                  sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
                   render: (text, record) =>
-                    record.create_date &&
-                    moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
+                    record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
                 }
 
               if (column.key === 'active')
@@ -964,12 +928,7 @@ export default function Product() {
                   render: (text, record) => (
                     <Switch
                       defaultChecked={record.active}
-                      onClick={() =>
-                        _updateProduct(
-                          { active: !record.active },
-                          record.product_id
-                        )
-                      }
+                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
                     />
                   ),
                 }
@@ -993,6 +952,29 @@ export default function Product() {
               },
               total: countProduct,
             }}
+            summary={(pageData) => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell>
+                  <b>Tổng</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumQuantity'))}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumBasePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumSalePrice'))} VND
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {formatCash(tableSum(pageData, 'sumImportPrice'))} VND
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </div>
       </div>

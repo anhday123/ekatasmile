@@ -10,15 +10,37 @@ class Deal {
     create(data) {
         this.business_id = Number(data.business_id);
         this.deal_id = Number(data.deal_id);
-        this.code = Number(this.customer_id) + 1000000;
+        this.code = Number(this.deal_id) + 1000000;
         this.name = String(data.name).trim().toUpperCase();
         this.sub_name = removeUnicode(this.name, true).toLowerCase();
         this.type = String(data.type).trim().toUpperCase();
         this.sub_type = removeUnicode(this.type, true).toLowerCase();
-        this.image = data.image;
-        this.list = data.list;
+        this.saleoff_type = String(data.saleoff_type).trim().toUpperCase();
+        this.sub_saleoff_type = removeUnicode(this.saleoff_type, true).toLowerCase();
+        this.saleoff_value = Number(data.saleoff_value || 0);
+        this.max_saleoff_value = Number(data.max_saleoff_value || 0);
+        this.image = data.image || '';
+        this.image_list = (()=>{
+            if (this.sub_type == 'banner') {
+                return data.image_list || [];
+            }
+            return [];
+        })();
+        this.category_list = (()=>{
+            if (this.sub_type == 'category') {
+                return data.category_list || [];
+            }
+            return [];
+        })();
+        this.product_list = (()=>{
+            if (this.sub_type == 'product') {
+                return data.product_list || [];
+            }
+            return [];
+        })();
         this.start_time = new Date(data.start_time);
         this.end_time = new Date(data.end_time);
+        this.description = data.description;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;

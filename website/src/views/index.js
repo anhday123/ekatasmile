@@ -4,7 +4,7 @@ import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //base layout
-import BaseLayout from 'components/Layout'
+import BaseLayout from 'components/Layout/index'
 import Authentication from 'components/authentication'
 
 //views
@@ -40,7 +40,7 @@ import TaxAdd from './actions/tax/add'
 import TaxUpdate from './actions/tax/update'
 import BranchView from './actions/branch/view'
 import ShippingProductAdd from './actions/shipping-product/add'
-import OrderCreateShipping from './order-create-shipping'
+import OrderCreate from './order-create'
 import VertifyAccount from './vertify-account'
 import Categories from './categories'
 import Category from './category'
@@ -266,9 +266,9 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
-    path: ROUTES.ORDER_CREATE_SHIPPING,
-    Component: () => <OrderCreateShipping />,
-    title: 'Tạo đơn và giao hàng',
+    path: ROUTES.ORDER_CREATE,
+    Component: () => <OrderCreate />,
+    title: 'Tạo đơn',
     permissions: [],
     exact: true,
   },
@@ -433,7 +433,6 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  
 ]
 
 const AUTH_ROUTER = [
@@ -733,7 +732,6 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  
 ]
 
 export default function Views() {
@@ -764,9 +762,7 @@ export default function Views() {
           <NotFound />
         </Route>
 
-         {/* ở đây */}
-
-
+        {/* ở đây */}
       </Switch>
     </BrowserRouter>
   )

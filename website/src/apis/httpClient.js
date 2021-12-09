@@ -1,13 +1,11 @@
 import axios from 'axios'
 import { notification } from 'antd'
 import { stringify } from 'querystring'
-import { decodeToken } from 'react-jwt'
+import jwt_decode from 'jwt-decode'
 
 export const getNewToken = () => {
-  if (
-    decodeToken(localStorage.getItem('refreshToken')).exp <
-    Math.floor(Date.now() / 1000)
-  ) {
+  const rft = localStorage.getItem('refreshToken')
+  if (rft && jwt_decode(rft).exp < Math.floor(Date.now() / 1000)) {
     throw new Error('Token expired!')
   }
   try {
@@ -39,11 +37,9 @@ export const FetchAPI = async (
     : process.env.REACT_APP_API_ENDPOINT_DEV
 ) => {
   if (!headers || !headers.Authorization) {
-    const payloadAccessToken = decodeToken(localStorage.getItem('accessToken'))
-    if (
-      payloadAccessToken &&
-      payloadAccessToken.exp < Math.floor(Date.now() / 1000) + 5 * 60
-    ) {
+    const rft = localStorage.getItem('refreshToken')
+    const payloadAccessToken = rft ? jwt_decode(localStorage.getItem('accessToken')) : null
+    if (payloadAccessToken && payloadAccessToken.exp < Math.floor(Date.now() / 1000) + 5 * 60) {
       try {
         const response = await getNewToken()
 

@@ -71,12 +71,23 @@ let getCategoryS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Products',
+                    localField: 'category_id',
+                    foreignField: 'category_id',
+                    as: '_products',
+                },
+            },
+            { $addFields: { product_quantity: { $size: '$_products' } } }
+        );
         aggregateQuery.push({
             $lookup: {
                 from: 'Categories',
-                let: { category_id: '$category_id' },
+                let: { categoryId: '$category_id' },
                 pipeline: [
-                    { $match: { $expr: { $eq: ['$parent_id', '$$category_id'] } } },
+                    { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
                     ...(() => {
                         if (req.query._creator) {
                             return [
@@ -93,10 +104,72 @@ let getCategoryS = async (req, res, next) => {
                         }
                         return [];
                     })(),
+                    {
+                        $lookup: {
+                            from: 'Products',
+                            localField: 'category_id',
+                            foreignField: 'category_id',
+                            as: '_products',
+                        },
+                    },
+                    { $addFields: { product_quantity: { $size: '$_products' } } },
+                    {
+                        $lookup: {
+                            from: 'Categories',
+                            let: { categoryId: '$category_id' },
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } },
+                                ...(() => {
+                                    if (req.query._creator) {
+                                        return [
+                                            {
+                                                $lookup: {
+                                                    from: 'Users',
+                                                    localField: 'creator_id',
+                                                    foreignField: 'user_id',
+                                                    as: '_creator',
+                                                },
+                                            },
+                                            { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } },
+                                        ];
+                                    }
+                                    return [];
+                                })(),
+                                {
+                                    $lookup: {
+                                        from: 'Products',
+                                        localField: 'category_id',
+                                        foreignField: 'category_id',
+                                        as: '_products',
+                                    },
+                                },
+                                { $addFields: { product_quantity: { $size: '$_products' } } },
+                            ],
+                            as: 'children_category',
+                        },
+                    }
                 ],
                 as: 'children_category',
             },
         });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Deals',
+                let: { categoryId: '$category_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [{ $in: ['$$categoryId', '$category_list'] }, { $eq: ['$type', 'category'] }],
+                            },
+                        },
+                    },
+                ],
+                as: '_deals',
+            },
+        });
+        aggregateQuery.push({ $addFields: { 'children_category._deals': '$_deals' } });
+        aggregateQuery.push({ $addFields: { 'children_category.children_category._deals': '$_deals' } });
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -126,6 +199,9 @@ let getCategoryS = async (req, res, next) => {
         aggregateQuery.push({
             $project: {
                 sub_name: 0,
+                _products: 0,
+                'children_category._products': 0,
+                'children_category._business.password': 0,
                 'children_category._creator.password': 0,
                 '_business.password': 0,
                 '_creator.password': 0,

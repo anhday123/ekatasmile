@@ -16,7 +16,7 @@ import location from 'assets/icons/location.png'
 //apis
 import { getAllStore } from 'apis/store'
 
-export default function ChangeStore({ resetInvoices }) {
+export default function ChangeStore() {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
 
@@ -27,8 +27,7 @@ export default function ChangeStore({ resetInvoices }) {
   const toggle = () => setVisible(!visible)
 
   const storeActive =
-    localStorage.getItem('storeSell') &&
-    JSON.parse(localStorage.getItem('storeSell'))
+    localStorage.getItem('storeSell') && JSON.parse(localStorage.getItem('storeSell'))
 
   const [storeId, setStoreId] = useState(storeActive && storeActive.store_id)
 
@@ -46,9 +45,10 @@ export default function ChangeStore({ resetInvoices }) {
   }
 
   const _changeStore = async () => {
-    resetInvoices()
     const store = stores.find((s) => s.store_id === storeId)
     localStorage.setItem('storeSell', JSON.stringify(store))
+    localStorage.setItem('invoice', JSON.stringify({ invoice: {} })) //reset đơn hàng local storage
+    dispatch({ type: 'UPDATE_INVOICE', data: [] }) //reset đơn hàng trong reducer
     window.location.reload()
   }
 
@@ -73,16 +73,9 @@ export default function ChangeStore({ resetInvoices }) {
 
   return (
     <>
-      <Row
-        wrap={false}
-        align="middle"
-        style={{ cursor: 'pointer' }}
-        onClick={toggle}
-      >
+      <Row wrap={false} align="middle" style={{ cursor: 'pointer' }} onClick={toggle}>
         <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
-        <p className={styles['name-store']}>
-          {storeActive && storeActive.name}
-        </p>
+        <p className={styles['name-store']}>{storeActive && storeActive.name}</p>
       </Row>
       <Modal
         width={400}
@@ -95,11 +88,7 @@ export default function ChangeStore({ resetInvoices }) {
           <p style={{ marginBottom: 0 }}>Doanh nghiệp</p>
           <Input
             style={{ color: 'black' }}
-            value={
-              dataUser.data &&
-              dataUser.data._branch &&
-              dataUser.data._branch.name
-            }
+            value={dataUser.data && dataUser.data._branch && dataUser.data._branch.name}
             disabled
           />
         </div>

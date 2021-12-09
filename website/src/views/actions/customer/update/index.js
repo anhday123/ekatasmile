@@ -1,21 +1,11 @@
 import styles from './../update/update.module.scss'
-import {
-  Select,
-  Button,
-  Input,
-  Form,
-  Row,
-  Col,
-  DatePicker,
-  notification,
-  Drawer,
-} from 'antd'
+import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Drawer } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
-import { updateCustomer } from '../../../../apis/customer'
-import { apiProvince, apiDistrict } from '../../../../apis/information'
+import { updateCustomer } from 'apis/customer'
+import { apiProvince, apiDistrict } from 'apis/information'
 import { ROUTES } from 'consts'
 
 const dateFormat = 'YYYY/MM/DD'
@@ -62,9 +52,7 @@ export default function CustomerUpdate(props) {
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo)
-    errorInfo.errorFields.forEach((e) =>
-      notification.error({ message: e.errors[0] })
-    )
+    errorInfo.errorFields.forEach((e) => notification.error({ message: e.errors[0] }))
   }
 
   const getAddress = async (api, callback, keyword, params) => {
@@ -148,14 +136,7 @@ export default function CustomerUpdate(props) {
                     marginBottom: 15,
                   }}
                 >
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -170,22 +151,13 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'code']}
                         fieldKey={[fieldKey, 'code']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                       >
                         <Input placeholder="GH6789" disabled size="large" />
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -197,9 +169,7 @@ export default function CustomerUpdate(props) {
                         Ngày sinh
                       </div>
                       <Form.Item
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         {...restField}
                         name={[name, 'birthday']}
                         fieldKey={[fieldKey, 'birthday']}
@@ -215,14 +185,7 @@ export default function CustomerUpdate(props) {
                     </div>
                   </Col>
 
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -237,23 +200,14 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'phone']}
                         fieldKey={[fieldKey, 'phone']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Input placeholder="0384943497" size="large" />
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -268,9 +222,7 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'type']}
                         fieldKey={[fieldKey, 'type']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Select placeholder="Tiềm năng" size="large">
@@ -280,14 +232,7 @@ export default function CustomerUpdate(props) {
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -302,26 +247,14 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'address']}
                         fieldKey={[fieldKey, 'address']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
-                        <Input
-                          placeholder="27/27, đường Ngô Y Linh"
-                          size="large"
-                        />
+                        <Input placeholder="27/27, đường Ngô Y Linh" size="large" />
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -336,23 +269,14 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'last_name']}
                         fieldKey={[fieldKey, 'last_name']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Input placeholder="Tỷ" size="large" />
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -376,9 +300,7 @@ export default function CustomerUpdate(props) {
                           showSearch
                           optionFilterProp="children"
                           filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                           onChange={(e) =>
                             getAddress(apiDistrict, setAddress, 'district', {
@@ -387,22 +309,13 @@ export default function CustomerUpdate(props) {
                           }
                         >
                           {Address.province.map((e) => (
-                            <Option value={e.province_name}>
-                              {e.province_name}
-                            </Option>
+                            <Option value={e.province_name}>{e.province_name}</Option>
                           ))}
                         </Select>
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -418,23 +331,14 @@ export default function CustomerUpdate(props) {
                         {...restField}
                         name={[name, 'first_name']}
                         fieldKey={[fieldKey, 'first_name']}
-                        className={
-                          styles['supplier_add_content_supplier_code_input']
-                        }
+                        className={styles['supplier_add_content_supplier_code_input']}
                         rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                       >
                         <Input placeholder="Nguyễn" size="large" />
                       </Form.Item>
                     </div>
                   </Col>
-                  <Col
-                    style={{ width: '100%' }}
-                    xs={24}
-                    sm={24}
-                    md={11}
-                    lg={11}
-                    xl={11}
-                  >
+                  <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                     <div>
                       <div
                         style={{
@@ -457,15 +361,11 @@ export default function CustomerUpdate(props) {
                           size="large"
                           optionFilterProp="children"
                           filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
                         >
                           {Address.district.map((e) => (
-                            <Option value={e.district_name}>
-                              {e.district_name}
-                            </Option>
+                            <Option value={e.district_name}>{e.district_name}</Option>
                           ))}
                         </Select>
                       </Form.Item>
@@ -476,17 +376,10 @@ export default function CustomerUpdate(props) {
                       {...restField}
                       name={[name, 'customer_id']}
                       fieldKey={[fieldKey, 'customer_id']}
-                      className={
-                        styles['supplier_add_content_supplier_code_input']
-                      }
+                      className={styles['supplier_add_content_supplier_code_input']}
                       rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                     >
-                      <Input
-                        placeholder="GH6789"
-                        disabled
-                        hidden
-                        size="large"
-                      />
+                      <Input placeholder="GH6789" disabled hidden size="large" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -509,12 +402,7 @@ export default function CustomerUpdate(props) {
             xl={3}
           >
             <Form.Item>
-              <Button
-                loading={loading}
-                size="large"
-                type="primary"
-                htmlType="submit"
-              >
+              <Button loading={loading} size="large" type="primary" htmlType="submit">
                 Cập nhật
               </Button>
             </Form.Item>

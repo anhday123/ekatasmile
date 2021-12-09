@@ -50,8 +50,7 @@ export default function PenddingCompare(props) {
       title: 'Ngày tạo',
       dataIndex: 'revice_date',
       width: 150,
-      sorter: (a, b) =>
-        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sorter: (a, b) => moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Tiền CoD',
@@ -98,8 +97,7 @@ export default function PenddingCompare(props) {
     selectedRowKeys,
     onChange: onSelectChange,
   }
-  const onSearch = (value) =>
-    props.setFilter({ ...filter, keyword: value.target.value })
+  const onSearch = (value) => props.setFilter({ ...filter, keyword: value.target.value })
   const changeRange = (date, dateString) => {
     props.setFilter({
       ...filter,
@@ -133,14 +131,8 @@ export default function PenddingCompare(props) {
       case 'last_week':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'weeks')
-            .startOf('week')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'weeks')
-            .endOf('week')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'this_month':
@@ -153,14 +145,8 @@ export default function PenddingCompare(props) {
       case 'last_month':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'month')
-            .startOf('month')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'month')
-            .endOf('month')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
         })
         break
       case 'this_year':
@@ -173,14 +159,8 @@ export default function PenddingCompare(props) {
       case 'last_year':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'year')
-            .startOf('year')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'year')
-            .endOf('year')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
         })
         break
       default:
@@ -306,32 +286,15 @@ export default function PenddingCompare(props) {
             return (
               <Table.Summary fixed>
                 <Table.Summary.Row>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text>Tiền CoD: {tableSum(pageData, 'cod_cost')}</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text>
-                      Tiền chuyển khoản: {tableSum(pageData, 'transfer_cost')}
-                    </Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell> {tableSum(pageData, 'cod_cost')} VND</Table.Summary.Cell>
+                  <Table.Summary.Cell>{tableSum(pageData, 'transfer_cost')} VND</Table.Summary.Cell>
                 </Table.Summary.Row>
               </Table.Summary>
             )

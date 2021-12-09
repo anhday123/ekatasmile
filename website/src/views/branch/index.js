@@ -6,12 +6,7 @@ import moment from 'moment'
 import { Link } from 'react-router-dom'
 
 //icons
-import {
-  ArrowLeftOutlined,
-  EditOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from '@ant-design/icons'
+import { ArrowLeftOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 
 //antd
 import {
@@ -129,10 +124,8 @@ export default function Branch() {
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      render: (text) =>
-        text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '',
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (text) => (text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Liên hệ',
@@ -147,6 +140,7 @@ export default function Branch() {
     {
       title: 'Loại kho',
       dataIndex: 'warehouse_type',
+      sorter: (a, b) => compare(a, b, 'warehouse_type'),
     },
     {
       title: 'Dùng điểm',
@@ -181,8 +175,7 @@ export default function Branch() {
     const [imageBranch, setImageBranch] = useState('')
     const [fileImageBranch, setFileImageBranch] = useState(null)
 
-    const toggleUpdateBranch = () =>
-      setVisibleUpdateBranch(!visibleUpdateBranch)
+    const toggleUpdateBranch = () => setVisibleUpdateBranch(!visibleUpdateBranch)
 
     useEffect(() => {
       if (!visibleUpdateBranch) {
@@ -247,9 +240,7 @@ export default function Branch() {
             onChange={(info) => {
               if (info.file.status === 'done') info.file.status = 'done'
               setFileImageBranch(info.file.originFileObj)
-              getBase64(info.file.originFileObj, (imageUrl) =>
-                setImageBranch(imageUrl)
-              )
+              getBase64(info.file.originFileObj, (imageUrl) => setImageBranch(imageUrl))
             }}
           >
             {imageBranch ? (
@@ -267,9 +258,7 @@ export default function Branch() {
                 <Form.Item
                   name="name"
                   label="Tên chi nhánh"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập tên chi nhánh' },
-                  ]}
+                  rules={[{ required: true, message: 'Vui lòng nhập tên chi nhánh' }]}
                 >
                   <Input size="large" placeholder="Nhập tên chi nhánh" />
                 </Form.Item>
@@ -294,9 +283,7 @@ export default function Branch() {
                 <Form.Item
                   name="province"
                   label="Tỉnh/thành phố"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập tỉnh/thành phố' },
-                  ]}
+                  rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}
                 >
                   <Select
                     allowClear
@@ -306,9 +293,7 @@ export default function Branch() {
                     placeholder="Chọn tỉnh/thành phố"
                     optionFilterProp="children"
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     {provinces.map((values, index) => {
@@ -323,21 +308,10 @@ export default function Branch() {
               </Col>
             </Row>
             <Row justify="space-between" align="middle">
-              <Col
-                style={{ width: '100%' }}
-                xs={24}
-                sm={24}
-                md={11}
-                lg={11}
-                xl={11}
-              >
+              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
                 <Form.Item
                   name="warehouse_type"
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Loại kho
-                    </div>
-                  }
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Loại kho</div>}
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
                   <Select
@@ -346,9 +320,7 @@ export default function Branch() {
                     style={{ width: '100%' }}
                     placeholder="Chọn quận huyện"
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     <Option value="sở hữu">Kho sở hữu</Option>
@@ -360,18 +332,14 @@ export default function Branch() {
                 <Form.Item
                   name="district"
                   label="Quận/huyện"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập quận/huyện' },
-                  ]}
+                  rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}
                 >
                   <Select
                     allowClear
                     size="large"
                     showSearch
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                     placeholder="Chọn quận/huyện"
                   >
@@ -513,10 +481,7 @@ export default function Branch() {
   }, [])
 
   function onChangeSwitch(checked, record) {
-    apiUpdateInfoBranch(
-      { active: checked, store: record.store.store_id },
-      record.branch_id
-    )
+    apiUpdateInfoBranch({ active: checked, store: record.store.store_id }, record.branch_id)
   }
 
   return (
@@ -554,14 +519,7 @@ export default function Branch() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Input
                 size="large"
@@ -596,23 +554,13 @@ export default function Branch() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 onChange={onChangeDate}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Select
               allowClear
               size="large"
@@ -637,14 +585,7 @@ export default function Branch() {
               <Option value="dich vu">Kho thuê dịch vụ</Option>
             </Select>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Select
               allowClear
               size="large"
@@ -674,22 +615,11 @@ export default function Branch() {
               }}
             >
               {provinces.map((values, index) => {
-                return (
-                  <Option value={values.province_name}>
-                    {values.province_name}
-                  </Option>
-                )
+                return <Option value={values.province_name}>{values.province_name}</Option>
               })}
             </Select>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Select
               allowClear
               size="large"
