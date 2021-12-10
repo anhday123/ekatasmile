@@ -37,9 +37,7 @@ export default function OrderList() {
   let printOrderRef = useRef()
   const history = useHistory()
   const typingTimeoutRef = useRef(null)
-  const handlePrint = useReactToPrint({
-    content: () => printOrderRef.current,
-  })
+  const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
 

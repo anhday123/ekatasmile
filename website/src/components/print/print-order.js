@@ -8,7 +8,7 @@ import { formatCash } from 'utils'
 export default class PrintOrder extends React.PureComponent {
   render() {
     const data = this.props.data || {}
-    console.log(data)
+
     return (
       <div style={{ paddingTop: 55, paddingLeft: 35, paddingRight: 35 }}>
         <Row>
