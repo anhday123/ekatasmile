@@ -113,6 +113,17 @@ module.exports.getProductS = async (req, res, next) => {
         as: "attributes",
       },
     });
+
+    // Lấy danh sách đơn vị
+    aggregateQuery.push({
+      $lookup: {
+        from: "UnitProducts",
+        localField: "product_id",
+        foreignField: "product_id",
+        as: "units",
+      },
+    });
+
     if (req.query.attribute) {
       req.query.attribute = String(req.query.attribute).trim().toUpperCase();
       let filters = req.query.attribute.split("---");
@@ -667,10 +678,7 @@ module.exports.getAllUnitProductS = async (req, res, next) => {
 
 module.exports.AddUnitProductS = async (req, res, next) => {
   try {
-    await client
-      .db(DB)
-      .collection("UnitProducts")
-      .insertOne(req.body);
+    await client.db(DB).collection("UnitProducts").insertOne(req.body);
 
     res.send({ success: true, mess: "Add Success" });
   } catch (err) {
