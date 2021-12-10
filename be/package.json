@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
+    "restart": "pm2 restart AdminOrder",
     "push": "rm -r node_modules && scp -r ../be root@103.81.87.65:/root/Admin_Order/be && exit"
   },
   "author": "",
