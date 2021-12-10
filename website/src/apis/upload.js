@@ -3,6 +3,7 @@ import moment from 'moment'
 import S3 from 'aws-sdk/clients/s3'
 import AWS from 'aws-sdk'
 import { v4 as uuidv4 } from 'uuid'
+import { removeAccents } from 'utils'
 
 export const uploadImg = (formData) =>
   axios.post('https://ecom-fulfill.com/api/fileupload/single', formData, {
@@ -12,15 +13,11 @@ export const uploadImg = (formData) =>
   })
 
 export const uploadImgs = (formData) =>
-  axios.post(
-    'https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }
-  )
+  axios.post('https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 
 /* config upload S3 */
 const wasabiEndpoint = new AWS.Endpoint(process.env.REACT_APP_S3_URL)
@@ -40,7 +37,9 @@ export const uploadFile = async (file) => {
     if (!file) return ''
 
     let fileName = file.name.split('.')
-    const fileNameUpload = _d + '/' + fileName.toString().replaceAll(',', '.')
+    fileName = removeAccents(fileName.join('.'))
+    let fileNameUpload = _d + '/' + fileName
+    fileNameUpload = fileNameUpload.replace(/[&#+()$~%'":*?<>{}]/g, '')
 
     await upload
       .putObject({
@@ -67,7 +66,9 @@ export const uploadFiles = async (files) => {
     let arrayFileName = []
     const promises = files.map(async (file) => {
       let fileName = file.name.split('.')
-      const fileNameUpload = _d + '/' + fileName.toString().replaceAll(',', '.')
+      fileName = removeAccents(fileName.join('.'))
+      let fileNameUpload = _d + '/' + fileName
+      fileNameUpload = fileNameUpload.replace(/[&#+()$~%'":*?<>{}]/g, '')
 
       arrayFileName.push(fileNameUpload)
 
@@ -83,9 +84,7 @@ export const uploadFiles = async (files) => {
       return res
     })
     await Promise.all(promises)
-    let listUrl = arrayFileName.map(
-      (name) => 'https://' + ENDPOINT_URL_IMAGE + name
-    )
+    let listUrl = arrayFileName.map((name) => 'https://' + ENDPOINT_URL_IMAGE + name)
     return listUrl || false
   } catch (error) {
     console.log(error)

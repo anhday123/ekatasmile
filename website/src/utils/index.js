@@ -50,29 +50,19 @@ export function removeNull(a) {
 }
 
 //xoá dấu
-export function removeAccents(str) {
-  var AccentsMap = [
-    'aàảãáạăằẳẵắặâầẩẫấậ',
-    'AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ',
-    'dđ',
-    'DĐ',
-    'eèẻẽéẹêềểễếệ',
-    'EÈẺẼÉẸÊỀỂỄẾỆ',
-    'iìỉĩíị',
-    'IÌỈĨÍỊ',
-    'oòỏõóọôồổỗốộơờởỡớợ',
-    'OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ',
-    'uùủũúụưừửữứự',
-    'UÙỦŨÚỤƯỪỬỮỨỰ',
-    'yỳỷỹýỵ',
-    'YỲỶỸÝỴ',
-  ]
-  for (var i = 0; i < AccentsMap.length; i++) {
-    var re = new RegExp('[' + AccentsMap[i].substr(1) + ']', 'g')
-    var char = AccentsMap[i][0]
-    str = str.replace(re, char)
+export function removeAccents(text, removeSpace = false) {
+  if (removeSpace && typeof removeSpace != 'boolean') {
+    throw new Error('Type of removeSpace input must be boolean!')
   }
-  return str
+  text = (text + '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+  if (removeSpace) {
+    text = text.replace(/\s/g, '')
+  }
+  return text
 }
 
 export const clearBrowserCache = () => {
