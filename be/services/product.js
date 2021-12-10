@@ -114,16 +114,6 @@ module.exports.getProductS = async (req, res, next) => {
       },
     });
 
-    // Lấy danh sách đơn vị
-    aggregateQuery.push({
-      $lookup: {
-        from: "UnitProducts",
-        localField: "product_id",
-        foreignField: "product_id",
-        as: "units",
-      },
-    });
-
     if (req.query.attribute) {
       req.query.attribute = String(req.query.attribute).trim().toUpperCase();
       let filters = req.query.attribute.split("---");
@@ -279,7 +269,17 @@ module.exports.getProductS = async (req, res, next) => {
       aggregateQuery.push({
         $unwind: { path: "$variants", preserveNullAndEmptyArrays: true },
       });
+
+      aggregateQuery.push({
+        $lookup: {
+          from: "UnitProducts",
+          localField: "variants.variant_id",
+          foreignField: "variant_id",
+          as: "units",
+        },
+      });
     }
+
     if (req.query.min_price) {
       aggregateQuery.push({
         $match: { "variants.price": { $gte: Number(req.query.min_price) } },
