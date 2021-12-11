@@ -78,7 +78,7 @@ import {
 //apis
 import { getAllCustomer } from 'apis/customer'
 import { apiAllShipping } from 'apis/shipping'
-import { getProducts } from 'apis/product'
+import { getProducts, pricesProduct } from 'apis/product'
 import { addOrder } from 'apis/order'
 
 export default function Sell() {
@@ -147,25 +147,6 @@ export default function Sell() {
   const [invoices, setInvoices] = useState([initInvoice])
   const [indexInvoice, setIndexInvoice] = useState(0)
   const [activeKeyTab, setActiveKeyTab] = useState(initInvoice.id)
-
-  const SHORT_CUTS = [
-    {
-      text: `${invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'}`,
-      icon: '(F1)',
-    },
-    {
-      text: 'Nhập khách hàng mới',
-      icon: '(F4)',
-    },
-    {
-      text: 'Điều chỉnh phương thức thanh toán (F8)',
-      icon: '',
-    },
-    {
-      text: 'Tạo đơn khác',
-      icon: '(F9)',
-    },
-  ]
 
   const _deleteInvoiceAfterCreateOrder = () => {
     const invoicesNew = [...invoices]
@@ -250,12 +231,14 @@ export default function Sell() {
             notification.warning({
               message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
             })
-        } else
+        } else {
+          const price = product.units && product.units.length ? product.units[0].price : 20000
           invoicesNew[indexInvoice].order_details.push({
             ...product,
-            unit: 'Cái', //đơn vị
+            unit: product.units && product.units.length ? product.units[0].name : 'Cái', //đơn vị
+            price: price, //giá sản phẩm
             quantity: 1, //số lượng sản phẩm
-            sumCost: product.price, // tổng giá tiền
+            sumCost: price, // tổng giá tiền
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
@@ -264,7 +247,7 @@ export default function Sell() {
                   ).toFixed(0)
                 : 0,
           })
-
+        }
         // tổng tiền của tất cả sản phẩm
         invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
           (total, current) => total + current.sumCost,
@@ -673,7 +656,6 @@ export default function Sell() {
           product_id: product.product_id,
         })
         if (res.status === 200) setVariants(res.data.data.map((e) => e.variants))
-        console.log(res)
       } catch (error) {
         console.log(error)
       }
@@ -682,11 +664,13 @@ export default function Sell() {
     const _updateProductInCart = () => {
       if (variant) {
         let productsNew = invoices[indexInvoice].order_details
+        const price = variant.units && variant.units.length ? variant.units[0].price : 20000
         productsNew[index] = {
           ...variant,
-          unit: 'Cái', //đơn vị
+          unit: variant.units && variant.units.length ? variant.units[0].name : 'Cái', //đơn vị
+          price: price, //giá sản phẩm
           quantity: 1, //số lượng sản phẩm
-          sumCost: variant.price, // tổng giá tiền
+          sumCost: price, // tổng giá tiền
           VAT_Product:
             variant._taxes && variant._taxes.length
               ? (
@@ -1025,6 +1009,7 @@ export default function Sell() {
     try {
       setLoadingProduct(true)
       const res = await getProducts({ store_id, merge: true, detach: true })
+      console.log(res)
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
     } catch (error) {
@@ -1066,14 +1051,19 @@ export default function Sell() {
     }
   }
 
+  const _getPricesProduct = async () => {
+    try {
+      const res = await pricesProduct()
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   //lưu invoice lên reducer mỗi khi có sự thay đổi
   useEffect(() => {
     if (invoices) dispatch({ type: 'UPDATE_INVOICE', data: invoices })
   }, [invoices])
-
-  useEffect(() => {
-    _getInvoicesToReducer()
-  }, [])
 
   useEffect(() => {
     if (localStorage.getItem('accessToken')) {
@@ -1089,6 +1079,8 @@ export default function Sell() {
   }, [])
 
   useEffect(() => {
+    _getPricesProduct()
+    _getInvoicesToReducer()
     _getCustomers()
     _getShippingsMethod()
     _getProductsAllStore()
@@ -1355,13 +1347,12 @@ export default function Sell() {
                       onChange={(value) => {
                         _editProductInInvoices('unit', value, index)
                         if (value) {
-                          let quantity = 0
-                          if (value === 'Thùng') quantity = 24
-                          if (value === 'Lốc') quantity = 6
-                          if (value === 'Lô') quantity = 100
-                          if (value === '1 Bộ') quantity = 2
-                          if (value === 'Combo x10') quantity = 10
-                          _editProductInInvoices('quantity', quantity, index)
+                          if (product.units) {
+                            const variantFind = product.units.find((e) => e.name == value)
+                            console.log(variantFind)
+                            if (variantFind)
+                              _editProductInInvoices('price', +variantFind.price, index)
+                          }
                         }
                       }}
                       defaultValue={product.unit || undefined}
@@ -1369,11 +1360,15 @@ export default function Sell() {
                       placeholder="Đơn vị"
                       bordered={false}
                     >
-                      <Select.Option value="Thùng">Thùng</Select.Option>
-                      <Select.Option value="Lốc">Lốc</Select.Option>
-                      <Select.Option value="Lô">Lô</Select.Option>
-                      <Select.Option value="1 Bộ">1 Bộ</Select.Option>
-                      <Select.Option value="Combo x10">Combo x10</Select.Option>
+                      {product.units && product.units.length ? (
+                        product.units.map((unit, index) => (
+                          <Select.Option key={index} value={unit.name}>
+                            {unit.name}
+                          </Select.Option>
+                        ))
+                      ) : (
+                        <Select.Option value="Cái">Cái</Select.Option>
+                      )}
                     </Select>
                   )
 

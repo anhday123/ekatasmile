@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
 import { formatCash } from 'utils'
 import moment from 'moment'
+import jwt_decode from 'jwt-decode'
 
 //antd
 import {
@@ -70,6 +71,9 @@ export default function OrderCreateShipping() {
   const [productsSearch, setProductsSearch] = useState([])
   const [productData, setProductData] = useState([])
   const [options, setOptions] = useState([])
+  const [infoStore, setInfoStore] = useState(
+    localStorage.getItem('storeSell') ? JSON.parse(localStorage.getItem('storeSell')) : null
+  )
 
   //object order create
   const [orderCreate, setOrderCreate] = useState({
@@ -574,7 +578,7 @@ export default function OrderCreateShipping() {
     }
   }
 
-  const _getProductsSearch = async (store_id = storeActive.store_id) => {
+  const _getProductsSearch = async (store_id = storeActive ? storeActive.store_id : '') => {
     try {
       setLoadingProduct(true)
       const res = await getProducts({ store_id, merge: true, detach: true })
@@ -586,7 +590,22 @@ export default function OrderCreateShipping() {
     }
   }
 
+  const _getStoreEmployee = () => {
+    const accessToken = localStorage.getItem('accessToken')
+    if (accessToken) {
+      const data = jwt_decode(accessToken)
+      if (!infoStore) {
+        if (data.data._store) {
+          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
+          setInfoStore(data.data._store)
+          _getProductsSearch(data.data._store.store_id)
+        }
+      } else _getProductsSearch(infoStore.store_id)
+    } else history.push(ROUTES.LOGIN)
+  }
+
   useEffect(() => {
+    _getStoreEmployee()
     _getCustomers()
     _getStores()
     _getProductsSearch()

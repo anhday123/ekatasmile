@@ -11,6 +11,7 @@ import { Row, Col, Popover, Skeleton, Space } from 'antd'
 //icons antd
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { getStatistical } from 'apis/statis'
+import axios from 'axios'
 
 const Overview = () => {
   const [statistical, setStatistical] = useState({})
@@ -18,13 +19,9 @@ const Overview = () => {
   const [isMobile, setIsMobile] = useState(false)
 
   const contentProfit = <div>Profit = Seller's Revenue - Total Base cost</div>
-  const contentRevenue = (
-    <div>Revenue = SUM OF [Sale price * Line Item Quantity]</div>
-  )
+  const contentRevenue = <div>Revenue = SUM OF [Sale price * Line Item Quantity]</div>
 
-  const contentOrder = (
-    <div>Number of Orders in this app including line items in each</div>
-  )
+  const contentOrder = <div>Number of Orders in this app including line items in each</div>
 
   const SALES = [
     {
@@ -79,9 +76,7 @@ const Overview = () => {
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (
-        <div
-          className={`${styles['dashboard_manager_balance']} ${styles['card']}`}
-        >
+        <div className={`${styles['dashboard_manager_balance']} ${styles['card']}`}>
           <div className={styles['dashboard_manager_balance_title']}>
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
@@ -92,19 +87,12 @@ const Overview = () => {
                   width: '50%',
                   padding: 15,
                   borderRight: (index === 0 || index === 2) && '1px solid gray',
-                  borderBottom:
-                    (index === 0 || index === 1) && '1px solid gray',
+                  borderBottom: (index === 0 || index === 1) && '1px solid gray',
                 }}
               >
                 <Row wrap={false}>
-                  <p style={{ marginBottom: 0, fontSize: 17, marginRight: 7 }}>
-                    Hôm nay:
-                  </p>
-                  <p
-                    style={{ marginBottom: 0, fontSize: 17, color: '#5B6BE8' }}
-                  >
-                    {e.profitToday}
-                  </p>
+                  <p style={{ marginBottom: 0, fontSize: 17, marginRight: 7 }}>Hôm nay:</p>
+                  <p style={{ marginBottom: 0, fontSize: 17, color: '#5B6BE8' }}>{e.profitToday}</p>
                 </Row>
                 <Row
                   justify="space-between"
@@ -185,11 +173,7 @@ const Overview = () => {
             </Col>
           )}
           {loadingSkeleton ? (
-            <Skeleton
-              active
-              paragraph={{ rows: 9 }}
-              style={{ marginBottom: 15 }}
-            />
+            <Skeleton active paragraph={{ rows: 9 }} style={{ marginBottom: 15 }} />
           ) : (
             <Col
               xs={24}
@@ -211,11 +195,7 @@ const Overview = () => {
                 }}
                 className={styles['card']}
               >
-                <div
-                  className={
-                    styles['dashboard_manager_bottom_row_col_parent_top']
-                  }
-                >
+                <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
                   <div>Sản phẩm bán chạy</div>
                 </div>
                 <div style={{ width: '100%' }}>
@@ -232,20 +212,11 @@ const Overview = () => {
                           }
                         >
                           <Col span={5}>
-                            <img
-                              alt=""
-                              src={e[0].image && e[0].image[0]}
-                              width="50px"
-                            />
+                            <img alt="" src={e[0].image && e[0].image[0]} width="50px" />
                           </Col>
                           <Col span={12}>
-                            <Row>
-                              {(e[0].name || e[0].title) &&
-                                (e[0].name || e[0].title)}
-                            </Row>
-                            <Row style={{ fontWeight: 500 }}>
-                              Đã bán {e[1].quantity} sản phẩm
-                            </Row>
+                            <Row>{(e[0].name || e[0].title) && (e[0].name || e[0].title)}</Row>
+                            <Row style={{ fontWeight: 500 }}>Đã bán {e[1].quantity} sản phẩm</Row>
                           </Col>
                           <Col span={7} style={{ fontSize: 15 }}>
                             <div style={{ width: 'max-content' }}>
