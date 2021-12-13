@@ -524,21 +524,18 @@ export default function OrderList() {
           dataSource={orders}
           summary={(pageData) => (
             <Table.Summary.Row>
-              {columns.map((e, index) => (
-                <>
-                  {index === 0 && (
-                    <Table.Summary.Cell>
-                      <b>Tổng</b>
-                    </Table.Summary.Cell>
-                  )}
-                  {columns.length - 1 !== index && <Table.Summary.Cell></Table.Summary.Cell>}
-                  {columns.length - 2 === index && (
+              <Table.Summary.Cell>
+                <b>Tổng</b>
+              </Table.Summary.Cell>
+              {columns.map((e, index) => {
+                if (e.key === 'final_cost')
+                  return (
                     <Table.Summary.Cell>
                       {formatCash(tableSum(pageData, 'final_cost'))} VND
                     </Table.Summary.Cell>
-                  )}
-                </>
-              ))}
+                  )
+                return <Table.Summary.Cell></Table.Summary.Cell>
+              })}
             </Table.Summary.Row>
           )}
         />
