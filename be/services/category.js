@@ -10,6 +10,9 @@ let getCategoryS = async (req, res, next) => {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         aggregateQuery.push({ $match: { parent_id: -1 } });
+        if (req.query.detach) {
+            aggregateQuery.shift();
+        }
         if (req.query.category_id) {
             aggregateQuery.push({ $match: { category_id: Number(req.query.category_id) } });
         }
@@ -33,20 +36,14 @@ let getCategoryS = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -147,7 +144,7 @@ let getCategoryS = async (req, res, next) => {
                             ],
                             as: 'children_category',
                         },
-                    }
+                    },
                 ],
                 as: 'children_category',
             },
