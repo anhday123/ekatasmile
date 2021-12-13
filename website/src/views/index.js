@@ -102,6 +102,8 @@ import Brand from './brand'
 import BrandCreate from './brand-create'
 import Channel from './channel'
 import Contact from './contact'
+import ImportInventory from './import-inventory'
+
 const DEFINE_ROUTER = [
   {
     path: ROUTES.REPORT_IMPORT,
@@ -430,6 +432,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.CHANNEL,
     Component: () => <Channel />,
     title: 'Danh sách kênh',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.IMPORT_INVENTORY,
+    Component: () => <ImportInventory />,
+    title: 'Nhập kho',
     permissions: [],
     exact: true,
   },

@@ -137,6 +137,7 @@ export const ROUTES = {
   CHANNEL: '/channel',
   // CHANNEL_CREATE:'/channel/create',
   CONTACT: '/contact',
+  IMPORT_INVENTORY: '/import-inventory',
 }
 
 export const PERMISSIONS = {

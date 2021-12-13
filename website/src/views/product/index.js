@@ -954,22 +954,33 @@ export default function Product() {
                 <Table.Summary.Cell>
                   <b>Tổng</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  {formatCash(tableSum(pageData, 'sumQuantity'))}
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  {formatCash(tableSum(pageData, 'sumBasePrice'))} VND
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  {formatCash(tableSum(pageData, 'sumSalePrice'))} VND
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  {formatCash(tableSum(pageData, 'sumImportPrice'))} VND
-                </Table.Summary.Cell>
+                {columns.map((column) => {
+                  if (column.key === 'sum-count')
+                    return (
+                      <Table.Summary.Cell>
+                        {formatCash(tableSum(pageData, 'sumQuantity'))}
+                      </Table.Summary.Cell>
+                    )
+                  if (column.key === 'base-price')
+                    return (
+                      <Table.Summary.Cell>
+                        {formatCash(tableSum(pageData, 'sumBasePrice'))}
+                      </Table.Summary.Cell>
+                    )
+                  if (column.key === 'price')
+                    return (
+                      <Table.Summary.Cell>
+                        {formatCash(tableSum(pageData, 'sumSalePrice'))}
+                      </Table.Summary.Cell>
+                    )
+                  if (column.key === 'import-price')
+                    return (
+                      <Table.Summary.Cell>
+                        {formatCash(tableSum(pageData, 'sumImportPrice'))}
+                      </Table.Summary.Cell>
+                    )
+                  return <Table.Summary.Cell></Table.Summary.Cell>
+                })}
               </Table.Summary.Row>
             )}
           />
