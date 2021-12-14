@@ -115,6 +115,9 @@ let addOrderC = async (req, res, next) => {
         if (req.body.employee) {
             delete req.body.employee.password;
         }
+        if (!req.body.order_details || req.body.order_details.length == 0) {
+            throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
+        }
         req.body.order_details = req.body.order_details.map((detail) => {
             let _detail = new OrderDetail();
             _detail.create({
