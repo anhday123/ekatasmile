@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import styles from './../add/add.module.scss'
+import styles from './add.module.scss'
 
 import { ACTION } from 'consts'
 import { removeAccents } from 'utils'
@@ -29,6 +29,7 @@ import {
   Modal,
   Affix,
   Switch,
+  Tabs,
 } from 'antd'
 
 //icons
@@ -41,6 +42,7 @@ import {
   FileImageOutlined,
   DollarOutlined,
   ReloadOutlined,
+  UploadOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -56,25 +58,23 @@ export default function ProductAdd() {
   const location = useLocation()
   const history = useHistory()
   const [form] = Form.useForm()
+  const typingTimeoutRef = useRef(null)
 
   const [locations, setLocations] = useState([])
+  const [files, setFiles] = useState([])
+  const [loadingFile, setLoadingFile] = useState(false)
   const [idsWarranty, setIdsWarranty] = useState([])
   const [isWarranty, setIsWarranty] = useState(false)
   const [warranties, setWarranties] = useState([])
   const [stores, setStores] = useState([])
-  const [attributes, setAttributes] = useState([
-    {
-      option: '',
-      values: [],
-    },
-  ])
+  const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
   const [helpTextImage, setHelpTextImage] = useState('')
   const [imagesProduct, setImagesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
-  const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
+  const [isInputInfoProduct, setIsInputInfoProduct] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
   const [productIsHaveDescription, setProductIsHaveDescription] = useState(false)
@@ -83,7 +83,6 @@ export default function ProductAdd() {
   const [isGeneratedSku, setIsGeneratedSku] = useState(false)
   const [valueGeneratedSku, setValueGeneratedSku] = useState('')
   const [skuProductWithEdit, setSkuProductWithEdit] = useState('')
-  const typingTimeoutRef = useRef(null)
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -192,15 +191,14 @@ export default function ProductAdd() {
         if (res.data.data && res.data.data.length) {
           const dataNew = res.data.data.filter((value) => value.active)
 
-          let supplierDefault = res.data.data.find(
-            (supplier) => supplier.active && supplier.default
-          )
-          if (supplierDefault) {
-            if (!location.state)
-              form.setFieldsValue({
-                supplier_id: supplierDefault.supplier_id,
-              })
-            setSupplier(supplierDefault.name)
+          if (!location.state) {
+            let supplierDefault = res.data.data.find(
+              (supplier) => supplier.active && supplier.default
+            )
+            if (supplierDefault) {
+              form.setFieldsValue({ supplier_id: supplierDefault.supplier_id })
+              setSupplier(supplierDefault.name)
+            } else form.setFieldsValue({ supplier_id: res.data.data[0].supplier_id })
           }
 
           setSuppliers([...dataNew])
@@ -288,6 +286,7 @@ export default function ProductAdd() {
         height: formProduct.height || '',
         weight: formProduct.weight || '',
         unit: formProduct.unit || '',
+        files: files || [],
         warranties: idsWarranty,
         description: productIsHaveDescription ? description || '' : '',
       }
@@ -374,10 +373,10 @@ export default function ProductAdd() {
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
           const category = res.data.data.find((category) => category.active && category.default)
-          if (category && !location.state)
-            form.setFieldsValue({
-              category_id: category.category_id,
-            })
+          if (!location.state) {
+            if (category) form.setFieldsValue({ category_id: category.category_id })
+            else form.setFieldsValue({ category_id: res.data.data[0].category_id })
+          }
           setCategories(res.data.data.filter((e) => e.active))
         }
       }
@@ -1103,6 +1102,7 @@ export default function ProductAdd() {
 
       setIsGeneratedSku(true)
       setValueGeneratedSku(product.sku)
+      setFiles(product.files)
 
       //check bao hanh
       if (product.waranties.length) {
@@ -1176,623 +1176,665 @@ export default function ProductAdd() {
         </Row>
       </Affix>
       <Form form={form} layout="vertical" style={{ width: '100%', marginTop: 15 }}>
-        <Row justify="space-between" align="middle">
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Tên sản phẩm"
-              name="name"
-              rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
-            >
-              <Input
-                size="large"
-                placeholder="Nhập tên sản phẩm"
-                onBlur={(e) => {
-                  const generatedItemsSku = e.target.value.split(' ')
-                  const valueSku = generatedItemsSku
-                    .map((items) => (items[0] ? removeAccents(items[0]).toUpperCase() : ''))
-                    .join('')
+        <Tabs defaultActiveKey="1" type="card">
+          <Tabs.TabPane tab="Thông tin sản phẩm" key="1">
+            <Row justify="space-between" align="middle">
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  label="Tên sản phẩm"
+                  name="name"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
+                >
+                  <Input
+                    size="large"
+                    placeholder="Nhập tên sản phẩm"
+                    onBlur={(e) => {
+                      const generatedItemsSku = e.target.value.split(' ')
+                      const valueSku = generatedItemsSku
+                        .map((items) => (items[0] ? removeAccents(items[0]).toUpperCase() : ''))
+                        .join('')
 
-                  if (isGeneratedSku) form.setFieldsValue({ sku: valueSku })
+                      if (isGeneratedSku) form.setFieldsValue({ sku: valueSku })
 
-                  setValueGeneratedSku(valueSku)
-                }}
-              />
-            </Form.Item>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: -17,
-              }}
-            >
-              <Checkbox
-                checked={isGeneratedSku}
-                onChange={(e) => {
-                  if (e.target.checked) form.setFieldsValue({ sku: valueGeneratedSku })
+                      setValueGeneratedSku(valueSku)
+                    }}
+                  />
+                </Form.Item>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: -17,
+                  }}
+                >
+                  <Checkbox
+                    checked={isGeneratedSku}
+                    onChange={(e) => {
+                      if (e.target.checked) form.setFieldsValue({ sku: valueGeneratedSku })
 
-                  setIsGeneratedSku(e.target.checked)
-                }}
+                      setIsGeneratedSku(e.target.checked)
+                    }}
+                  >
+                    Tự động tạo mã sản phẩm/sku
+                  </Checkbox>
+                </div>
+              </Col>
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  label="Nhà cung cấp"
+                  name="supplier_id"
+                  rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp!' }]}
+                >
+                  <Select
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    size="large"
+                    style={{ width: '100%' }}
+                    placeholder="Chọn nhà cung cấp"
+                    onChange={(value) => {
+                      const supplier = suppliers.find((s) => s.supplier_id === value)
+                      supplier && setSupplier(supplier.name)
+                    }}
+                  >
+                    {suppliers.map((values, index) => {
+                      return (
+                        <Select.Option value={values.supplier_id} key={index}>
+                          {values.name}
+                        </Select.Option>
+                      )
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  label="Danh mục"
+                  name="category_id"
+                  rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
+                >
+                  <Select
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    size="large"
+                    style={{ width: '100%' }}
+                    placeholder="Chọn danh mục"
+                  >
+                    {categories.map((values, index) => {
+                      return (
+                        <Select.Option value={values.category_id} key={index}>
+                          {values.name}
+                        </Select.Option>
+                      )
+                    })}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
+                <Form.Item
+                  label="Mã sản phẩm/SKU"
+                  name="sku"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng nhập mã sản phẩm/sku!',
+                    },
+                  ]}
+                >
+                  <Input
+                    disabled={isGeneratedSku}
+                    size="large"
+                    placeholder="Nhập mã sản phẩm/sku"
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ marginTop: 30, display: isProductHasVariants && 'none' }}
               >
-                Tự động tạo mã sản phẩm/sku
-              </Checkbox>
-            </div>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Nhà cung cấp"
-              name="supplier_id"
-              rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp!' }]}
-            >
-              <Select
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Chọn nhà cung cấp"
-                onChange={(value) => {
-                  const supplier = suppliers.find((s) => s.supplier_id === value)
-                  supplier && setSupplier(supplier.name)
-                }}
-              >
-                {suppliers.map((values, index) => {
-                  return (
-                    <Select.Option value={values.supplier_id} key={index}>
-                      {values.name}
-                    </Select.Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-            <Form.Item
-              label="Danh mục"
-              name="category_id"
-              rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-            >
-              <Select
-                showSearch
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Chọn danh mục"
-              >
-                {categories.map((values, index) => {
-                  return (
-                    <Select.Option value={values.category_id} key={index}>
-                      {values.name}
-                    </Select.Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
-            <Form.Item
-              label="Mã sản phẩm/SKU"
-              name="sku"
-              rules={[
-                {
-                  required: true,
-                  message: 'Vui lòng nhập mã sản phẩm/sku!',
-                },
-              ]}
-            >
-              <Input disabled={isGeneratedSku} size="large" placeholder="Nhập mã sản phẩm/sku" />
-            </Form.Item>
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{ marginTop: 30, display: isProductHasVariants && 'none' }}
-          >
-            <div>
-              <div>
-                <span style={{ color: 'red' }}>*</span>
-                <span>Danh sách cửa hàng</span>
-              </div>
-              <Select
-                mode="multiple"
-                placeholder="Nhập số lượng vào cửa hàng"
-                size="large"
-                style={{ width: '100%' }}
-                value={locations.map((location) => `${location.name}: ${location.quantity + ''}`)}
-                onDeselect={(value) => {
-                  const locationsNew = [...locations]
-                  const indexRemove = locationsNew.findIndex((e) => value.includes(e.name))
-                  if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
-
-                  setLocations([...locationsNew])
-                }}
-                dropdownRender={() => (
+                <div>
                   <div>
-                    {stores.map((store) => (
+                    <span style={{ color: 'red' }}>*</span>
+                    <span>Danh sách cửa hàng</span>
+                  </div>
+                  <Select
+                    mode="multiple"
+                    placeholder="Nhập số lượng vào cửa hàng"
+                    size="large"
+                    style={{ width: '100%' }}
+                    value={locations.map(
+                      (location) => `${location.name}: ${location.quantity + ''}`
+                    )}
+                    onDeselect={(value) => {
+                      const locationsNew = [...locations]
+                      const indexRemove = locationsNew.findIndex((e) => value.includes(e.name))
+                      if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
+
+                      setLocations([...locationsNew])
+                    }}
+                    dropdownRender={() => (
+                      <div>
+                        {stores.map((store) => (
+                          <Row
+                            wrap={false}
+                            align="middle"
+                            justify="space-between"
+                            style={{ marginBottom: 9, padding: '0px 10px' }}
+                          >
+                            <div style={{ color: 'black' }}>{store.name}</div>
+                            <Space>
+                              <InputNumber
+                                min={0}
+                                placeholder="Nhập số lượng"
+                                style={{ width: 100 }}
+                                onBlur={(e) => {
+                                  const value = +e.target.value
+                                  const locationsNew = [...locations]
+
+                                  const indexLocation = locationsNew.findIndex(
+                                    (l) => l.inventory_id === store.store_id
+                                  )
+
+                                  if (value) {
+                                    const location = {
+                                      type: 'store',
+                                      name: store.name,
+                                      inventory_id: store.store_id,
+                                      quantity: value,
+                                    }
+
+                                    if (indexLocation !== -1) locationsNew[indexLocation] = location
+                                    else locationsNew.push(location)
+                                  } else {
+                                    if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
+                                  }
+                                  console.log(locationsNew)
+                                  setLocations([...locationsNew])
+                                }}
+                                onPressEnter={(e) => {
+                                  const value = +e.target.value
+                                  const locationsNew = [...locations]
+
+                                  const indexLocation = locationsNew.findIndex(
+                                    (l) => l.inventory_id === store.store_id
+                                  )
+
+                                  if (value) {
+                                    const location = {
+                                      type: 'store',
+                                      name: store.name,
+                                      inventory_id: store.store_id,
+                                      quantity: value,
+                                    }
+
+                                    if (indexLocation !== -1) locationsNew[indexLocation] = location
+                                    else locationsNew.push(location)
+                                  } else {
+                                    if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
+                                  }
+
+                                  setLocations([...locationsNew])
+                                }}
+                              />
+                            </Space>
+                          </Row>
+                        ))}
+                      </div>
+                    )}
+                  ></Select>
+                </div>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
+                style={{ marginTop: 2, marginBottom: 15 }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <Switch
+                    checked={productIsHaveDescription}
+                    onChange={(checked) => {
+                      setProductIsHaveDescription(checked)
+                    }}
+                    style={{ marginRight: 5 }}
+                  />
+                  Sản phẩm {productIsHaveDescription ? 'có' : 'không'} mô tả
+                </div>
+                {productIsHaveDescription ? (
+                  <div style={{ display: !productIsHaveDescription && 'none' }}>
+                    <CKEditor
+                      initData={location.state && parse(location.state.description)}
+                      onChange={(e) => setDescription(e.editor.getData())}
+                    />
+                  </div>
+                ) : (
+                  ''
+                )}
+              </Col>
+            </Row>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Phiên bản" key="2">
+            <div style={{ display: !location.state && 'none', marginBottom: 10 }}>
+              <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 phiên bản</div>
+            </div>
+            <Row justify="space-between" align="middle">
+              <Row
+                align="middle"
+                style={{
+                  width: '100%',
+                  marginTop: 15,
+                  marginBottom: 15,
+                  display: location.state && 'none',
+                }}
+              >
+                <Switch
+                  style={{ marginRight: 5 }}
+                  checked={isProductHasVariants}
+                  onChange={(checked) => setIsProductHasVariants(checked)}
+                />
+                Sản phẩm {isProductHasVariants ? 'có nhiều' : 'có 1'} phiên bản
+              </Row>
+              <div style={{ display: isProductHasVariants ? '' : 'none', width: '100%' }}>
+                <div
+                  style={{
+                    marginBottom: 16,
+                    border: '1px solid #f0f0f0',
+                    padding: 16,
+                    width: '100%',
+                  }}
+                >
+                  {attributes.map((e, index) => {
+                    const RenderInput = () => (
+                      <Input
+                        disabled={location.state ? true : false}
+                        size="large"
+                        placeholder="Nhập tên thuộc tính"
+                        defaultValue={e.option}
+                        onBlur={(e) => {
+                          attributes[index].option = e.target.value
+                        }}
+                        style={{ width: '100%' }}
+                      />
+                    )
+                    return (
                       <Row
-                        wrap={false}
-                        align="middle"
+                        style={{ width: '100%', marginBottom: 15 }}
                         justify="space-between"
-                        style={{ marginBottom: 9, padding: '0px 10px' }}
+                        align="middle"
                       >
-                        <div style={{ color: 'black' }}>{store.name}</div>
-                        <Space>
-                          <InputNumber
-                            min={0}
-                            placeholder="Nhập số lượng"
-                            style={{ width: 100 }}
-                            onBlur={(e) => {
-                              const value = +e.target.value
-                              const locationsNew = [...locations]
-
-                              const indexLocation = locationsNew.findIndex(
-                                (l) => l.inventory_id === store.store_id
-                              )
-
-                              if (value) {
-                                const location = {
-                                  type: 'store',
-                                  name: store.name,
-                                  inventory_id: store.store_id,
-                                  quantity: value,
-                                }
-
-                                if (indexLocation !== -1) locationsNew[indexLocation] = location
-                                else locationsNew.push(location)
-                              } else {
-                                if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
+                        <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                          <span style={{ marginBottom: 0 }}>Tên thuộc tính</span>
+                          <RenderInput />
+                        </Col>
+                        <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                          <span style={{ marginBottom: 0 }}>Giá trị</span>
+                          <Select
+                            disabled={location.state ? true : false}
+                            mode="tags"
+                            size="large"
+                            style={{ width: '100%' }}
+                            placeholder="Nhập giá trị"
+                            value={e.values.map((v) => v)}
+                            onDeselect={(v) => {
+                              //remove tag
+                              let items = [...attributes]
+                              const indexRemove = e.values.findIndex((f) => f === v)
+                              if (indexRemove !== -1) {
+                                items[index].values.splice(indexRemove, 1)
+                                setAttributes([...items])
                               }
-                              console.log(locationsNew)
-                              setLocations([...locationsNew])
                             }}
-                            onPressEnter={(e) => {
-                              const value = +e.target.value
-                              const locationsNew = [...locations]
+                            onSelect={(e) => {
+                              //add tag
+                              let items = [...attributes]
 
-                              const indexLocation = locationsNew.findIndex(
-                                (l) => l.inventory_id === store.store_id
-                              )
-
-                              if (value) {
-                                const location = {
-                                  type: 'store',
-                                  name: store.name,
-                                  inventory_id: store.store_id,
-                                  quantity: value,
+                              //check value add này đã tồn tại chưa
+                              for (let i = 0; i < items.length; ++i) {
+                                for (let j = 0; j < items[i].values.length; ++j) {
+                                  if (items[i].values[j] === e) {
+                                    notification.error({
+                                      message: 'Giá trị đã có!',
+                                    })
+                                    return
+                                  }
                                 }
-
-                                if (indexLocation !== -1) locationsNew[indexLocation] = location
-                                else locationsNew.push(location)
-                              } else {
-                                if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
                               }
 
-                              setLocations([...locationsNew])
+                              //trường hợp nhập nhiều variant bởi dấu phẩy
+                              //ví dụ: color, size, quantity
+                              const splitValue = e.split(',')
+
+                              splitValue.map((v) => {
+                                if (v) items[index].values.push(v.trim())
+                              })
+                              setAttributes([...items])
+                            }}
+                            optionLabelProp="label"
+                          ></Select>
+                        </Col>
+                        <Popconfirm
+                          title="Bạn có muốn xoá thuộc tính này?"
+                          onConfirm={() => removeAttribute(index)}
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <CloseOutlined
+                            style={{
+                              cursor: 'pointer',
+                              color: 'red',
+                              fontSize: 18,
+                              marginTop: 22,
+                              marginLeft: 5,
+                              display: attributes.length === 1 && 'none',
+                              visibility: location.state && 'hidden',
                             }}
                           />
-                        </Space>
+                        </Popconfirm>
+                        <Col xs={24} sm={24} md={5} lg={5} xl={5}>
+                          <Tooltip title="Tối đa tạo 2 thuộc tính">
+                            <Button
+                              size="large"
+                              style={{
+                                marginTop: 17,
+                                display: attributes.length === 2 && 'none',
+                              }}
+                              onClick={addAttribute}
+                              disabled={location.state ? true : false}
+                            >
+                              Thêm thuộc tính khác
+                            </Button>
+                          </Tooltip>
+                        </Col>
                       </Row>
-                    ))}
-                  </div>
-                )}
-              ></Select>
-            </div>
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24} style={{ marginTop: 2, marginBottom: 15 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: 8,
-              }}
-            >
-              <Switch
-                checked={productIsHaveDescription}
-                onChange={(checked) => {
-                  setProductIsHaveDescription(checked)
-                }}
-                style={{ marginRight: 5 }}
-              />
-              Sản phẩm {productIsHaveDescription ? 'có' : 'không'} mô tả
-            </div>
-            {productIsHaveDescription ? (
-              <div style={{ display: !productIsHaveDescription && 'none' }}>
-                <CKEditor
-                  initData={location.state && parse(location.state.description)}
-                  onChange={(e) => setDescription(e.editor.getData())}
-                />
-              </div>
-            ) : (
-              ''
-            )}
-          </Col>
-          <Row
-            align="middle"
-            style={{
-              width: '100%',
-              marginTop: 15,
-              marginBottom: 15,
-              display: location.state && 'none',
-            }}
-          >
-            <Switch
-              style={{ marginRight: 5 }}
-              checked={isProductHasVariants}
-              onChange={(checked) => setIsProductHasVariants(checked)}
-            />
-            Sản phẩm {isProductHasVariants ? 'có nhiều' : 'có 1'} phiên bản
-          </Row>
-          <div
-            style={{
-              display: isProductHasVariants ? '' : 'none',
-              width: '100%',
-            }}
-          >
-            <div
-              style={{
-                marginBottom: 16,
-                border: '1px solid #f0f0f0',
-                padding: 16,
-                width: '100%',
-              }}
-            >
-              {attributes.map((e, index) => {
-                const RenderInput = () => (
-                  <Input
-                    disabled={location.state ? true : false}
-                    size="large"
-                    placeholder="Nhập tên thuộc tính"
-                    defaultValue={e.option}
-                    onBlur={(e) => {
-                      attributes[index].option = e.target.value
+                    )
+                  })}
+                </div>
+
+                <div
+                  style={{
+                    marginBottom: 16,
+                    border: '1px solid #f0f0f0',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      borderBottom: '1px solid #f0f0f0',
+                      width: '100%',
                     }}
-                    style={{ width: '100%' }}
-                  />
-                )
-                return (
-                  <Row
-                    style={{ width: '100%', marginBottom: 15 }}
-                    justify="space-between"
-                    align="middle"
                   >
-                    <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-                      <span style={{ marginBottom: 0 }}>Tên thuộc tính</span>
-                      <RenderInput />
-                    </Col>
-                    <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-                      <span style={{ marginBottom: 0 }}>Giá trị</span>
-                      <Select
-                        disabled={location.state ? true : false}
-                        mode="tags"
-                        size="large"
-                        style={{ width: '100%' }}
-                        placeholder="Nhập giá trị"
-                        value={e.values.map((v) => v)}
-                        onDeselect={(v) => {
-                          //remove tag
-                          let items = [...attributes]
-                          const indexRemove = e.values.findIndex((f) => f === v)
-                          if (indexRemove !== -1) {
-                            items[index].values.splice(indexRemove, 1)
-                            setAttributes([...items])
-                          }
-                        }}
-                        onSelect={(e) => {
-                          //add tag
-                          let items = [...attributes]
-
-                          //check value add này đã tồn tại chưa
-                          for (let i = 0; i < items.length; ++i) {
-                            for (let j = 0; j < items[i].values.length; ++j) {
-                              if (items[i].values[j] === e) {
-                                notification.error({
-                                  message: 'Giá trị đã có!',
-                                })
-                                return
-                              }
-                            }
-                          }
-
-                          //trường hợp nhập nhiều variant bởi dấu phẩy
-                          //ví dụ: color, size, quantity
-                          const splitValue = e.split(',')
-
-                          splitValue.map((v) => {
-                            if (v) items[index].values.push(v.trim())
-                          })
-                          setAttributes([...items])
-                        }}
-                        optionLabelProp="label"
-                      ></Select>
-                    </Col>
-                    <Popconfirm
-                      title="Bạn có muốn xoá thuộc tính này?"
-                      onConfirm={() => removeAttribute(index)}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <CloseOutlined
-                        style={{
-                          cursor: 'pointer',
-                          color: 'red',
-                          fontSize: 18,
-                          marginTop: 22,
-                          marginLeft: 5,
-                          display: attributes.length === 1 && 'none',
-                          visibility: location.state && 'hidden',
-                        }}
-                      />
-                    </Popconfirm>
-                    <Col xs={24} sm={24} md={5} lg={5} xl={5}>
-                      <Tooltip title="Tối đa tạo 2 thuộc tính">
-                        <Button
-                          size="large"
-                          style={{
-                            marginTop: 17,
-                            display: attributes.length === 2 && 'none',
-                          }}
-                          onClick={addAttribute}
-                          disabled={location.state ? true : false}
-                        >
-                          Thêm thuộc tính khác
-                        </Button>
-                      </Tooltip>
-                    </Col>
-                  </Row>
-                )
-              })}
-            </div>
-
-            <div
-              style={{
-                marginBottom: 16,
-                border: '1px solid #f0f0f0',
-                width: '100%',
-              }}
-            >
-              <div
-                style={{
-                  borderBottom: '1px solid #f0f0f0',
-                  width: '100%',
-                }}
-              >
-                <div style={{ width: '100%', padding: 16 }}>
-                  <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
+                    <div style={{ width: '100%', padding: 16 }}>
+                      <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      marginLeft: 10,
+                      marginTop: 10,
+                      marginBottom: 20,
+                      display: !selectRowKeyVariant.length && 'none',
+                    }}
+                  >
+                    <Space wrap>
+                      <UploadAllVariant />
+                      <EditQuantityStores />
+                      {!location.state && <EditSku />}
+                      <EditPrice />
+                    </Space>
+                  </div>
+                  <Table
+                    rowKey="title"
+                    columns={columnsVariant}
+                    dataSource={variants}
+                    pagination={false}
+                    rowSelection={{
+                      selectedRowKeys: selectRowKeyVariant,
+                      onChange: (selectedRowKeys, selectedRows) => {
+                        setSelectRowKeyVariant(selectedRowKeys)
+                      },
+                    }}
+                    size="small"
+                    style={{ width: '100%' }}
+                    scroll={{ x: 'max-content' }}
+                  />
                 </div>
               </div>
-              <div
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ display: isProductHasVariants && 'none' }}
+              >
+                <Form.Item
+                  label="Giá bán"
+                  name="price"
+                  rules={[
+                    {
+                      required: !isProductHasVariants && true,
+                      message: 'Vui lòng nhập giá bán!',
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá bán"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ display: isProductHasVariants && 'none' }}
+              >
+                <Form.Item label="Giá cơ bản" name="base_price">
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá cơ bản"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ display: isProductHasVariants && 'none' }}
+              >
+                <Form.Item label="Giá nhập" name="import_price">
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá nhập"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={24}
+                lg={24}
+                xl={24}
                 style={{
-                  marginLeft: 10,
-                  marginTop: 10,
-                  marginBottom: 20,
-                  display: !selectRowKeyVariant.length && 'none',
+                  display: isProductHasVariants && 'none',
                 }}
               >
-                <Space wrap>
-                  <UploadAllVariant />
-                  <EditQuantityStores />
-                  {!location.state && <EditSku />}
-                  <EditPrice />
-                </Space>
-              </div>
-              <Table
-                rowKey="title"
-                columns={columnsVariant}
-                dataSource={variants}
-                pagination={false}
-                rowSelection={{
-                  selectedRowKeys: selectRowKeyVariant,
-                  onChange: (selectedRowKeys, selectedRows) => {
-                    setSelectRowKeyVariant(selectedRowKeys)
-                  },
+                <span style={{ color: 'red' }}>* </span>
+                Hình ảnh
+                {location.state ? (
+                  <UploadImageWithEditProduct />
+                ) : (
+                  <Upload.Dragger
+                    name="files"
+                    listType="picture"
+                    multiple
+                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                    onChange={(info) => {
+                      if (info.file.status !== 'done') info.file.status = 'done'
+                      let imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                      setImagesProduct([...imagesProductNew])
+                      setHelpTextImage('')
+                    }}
+                  >
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined />
+                    </p>
+                    <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
+                    <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
+                  </Upload.Dragger>
+                )}
+                <span style={{ color: 'red' }}>{helpTextImage}</span>
+              </Col>
+            </Row>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Thông số sản phẩm" key="3">
+            <Row justify="space-between" align="middle">
+              <Row align="middle" style={{ marginBottom: 5, marginTop: 10, width: '100%' }}>
+                <Switch
+                  checked={isInputInfoProduct}
+                  onChange={(checked) => setIsInputInfoProduct(checked)}
+                  style={{ marginRight: 5 }}
+                />
+                Thông số sản phẩm
+              </Row>
+              <Row
+                justify="space-between"
+                align="middle"
+                style={{
+                  width: '100%',
+                  marginBottom: 15,
+                  display: !isInputInfoProduct && 'none',
                 }}
-                size="small"
-                style={{ width: '100%' }}
-                scroll={{ x: 'max-content' }}
-              />
-            </div>
-          </div>
-
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{ display: isProductHasVariants && 'none' }}
-          >
-            <Form.Item
-              label="Giá bán"
-              name="price"
-              rules={[
-                {
-                  required: !isProductHasVariants && true,
-                  message: 'Vui lòng nhập giá bán!',
-                },
-              ]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá bán"
-                style={{ width: '100%' }}
-                className="br-15__input"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-              />
-            </Form.Item>
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{ display: isProductHasVariants && 'none' }}
-          >
-            <Form.Item
-              label="Giá cơ bản"
-              name="base_price"
-              rules={[
-                {
-                  required: !isProductHasVariants && true,
-                  message: 'Vui lòng nhập giá cơ bản!',
-                },
-              ]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá cơ bản"
-                style={{ width: '100%' }}
-                className="br-15__input"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-              />
-            </Form.Item>
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={7}
-            lg={7}
-            xl={7}
-            style={{ display: isProductHasVariants && 'none' }}
-          >
-            <Form.Item
-              label="Giá nhập"
-              name="import_price"
-              rules={[
-                {
-                  required: !isProductHasVariants && true,
-                  message: 'Vui lòng nhập giá nhập!',
-                },
-              ]}
-            >
-              <InputNumber
-                size="large"
-                min={0}
-                placeholder="Nhập giá nhập"
-                style={{ width: '100%' }}
-                className="br-15__input"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-              />
-            </Form.Item>
-          </Col>
-
-          <Row align="middle" style={{ marginBottom: 5, marginTop: 10, width: '100%' }}>
-            <Switch
-              checked={isInputInfoProduct}
-              onChange={(checked) => setIsInputInfoProduct(checked)}
-              style={{ marginRight: 5 }}
-            />
-            Thông số sản phẩm
-          </Row>
-          <Row
-            justify="space-between"
-            align="middle"
-            style={{
-              width: '100%',
-              marginBottom: 15,
-              display: !isInputInfoProduct && 'none',
-            }}
-          >
-            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item label="Chiều dài" name="length">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  className="br-15__input"
-                  size="large"
-                  placeholder="Chiều dài (cm)"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item label="Chiều rộng" name="width">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  className="br-15__input"
-                  size="large"
-                  placeholder="Chiều rộng (cm)"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item label="Chiều cao" name="height">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  className="br-15__input"
-                  size="large"
-                  placeholder="Chiều cao (cm)"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item label="Cân nặng" name="weight">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  className="br-15__input"
-                  size="large"
-                  placeholder="Cân nặng (kg)"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-              <Form.Item label="Đơn vị" name="unit">
-                <Input size="large" placeholder="Đơn vị" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={24}
-            xl={24}
-            style={{
-              display: isProductHasVariants && 'none',
-            }}
-          >
-            <span style={{ color: 'red' }}>* </span>
-            Hình ảnh
-            {location.state ? (
-              <UploadImageWithEditProduct />
-            ) : (
-              <Upload.Dragger
-                name="files"
-                listType="picture"
-                multiple
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+              >
+                <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+                  <Form.Item label="Chiều dài" name="length">
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      className="br-15__input"
+                      size="large"
+                      placeholder="Chiều dài (cm)"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+                  <Form.Item label="Chiều rộng" name="width">
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      className="br-15__input"
+                      size="large"
+                      placeholder="Chiều rộng (cm)"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+                  <Form.Item label="Chiều cao" name="height">
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      className="br-15__input"
+                      size="large"
+                      placeholder="Chiều cao (cm)"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+                  <Form.Item label="Cân nặng" name="weight">
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      className="br-15__input"
+                      size="large"
+                      placeholder="Cân nặng (kg)"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+                  <Form.Item label="Đơn vị" name="unit">
+                    <Input size="large" placeholder="Đơn vị" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Row>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="File đính kèm" key="4">
+            <div style={{ minHeight: 250 }}>
+              <Upload
+                fileList={files.map((file, index) => {
+                  const fileSplit = file.split('/')
+                  const nameFile = fileSplit[fileSplit.length - 1]
+                  return {
+                    uid: index,
+                    name: nameFile ? nameFile : 'file',
+                    status: 'done',
+                    url: file,
+                  }
+                })}
+                onRemove={(file) => {
+                  const indexRemove = files.findIndex((url) => url === file)
+                  if (indexRemove) {
+                    const filesNew = [...files]
+                    filesNew.splice(indexRemove, 1)
+                    setFiles([...filesNew])
+                  }
+                }}
+                data={async (file) => {
+                  setLoadingFile(true)
+                  const url = await uploadFile(file)
+                  setLoadingFile(false)
+                  const filesNew = [...files]
+                  filesNew.push(url)
+                  setFiles([...filesNew])
+                }}
                 onChange={(info) => {
                   if (info.file.status !== 'done') info.file.status = 'done'
-                  let imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                  setImagesProduct([...imagesProductNew])
-                  setHelpTextImage('')
                 }}
               >
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-                <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
-              </Upload.Dragger>
-            )}
-            <span style={{ color: 'red' }}>{helpTextImage}</span>
-          </Col>
-        </Row>
+                <Button
+                  loading={loadingFile}
+                  style={{ width: 140 }}
+                  size="large"
+                  icon={<UploadOutlined />}
+                >
+                  Chọn file
+                </Button>
+              </Upload>
+            </div>
+          </Tabs.TabPane>
+        </Tabs>
       </Form>
 
-      <Row
-        style={{
-          width: '100%',
-          marginTop: 20,
-        }}
-      >
+      <Row style={{ width: '100%', marginTop: 20 }}>
         <Col xs={24} sm={24} md={9} lg={9} xl={9}>
           <Checkbox
             style={{ marginBottom: 4 }}
