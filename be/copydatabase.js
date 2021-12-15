@@ -1,12 +1,12 @@
 const { MongoClient } = require('mongodb');
 // URI database gốc
-const sourceUri = `mongodb://manman:manman0710@194.233.77.145:27017`;
+const sourceUri = `mongodb://manman:manman0710@194.233.77.253:27017/`;
 const sourceClient = new MongoClient(sourceUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
 // URI database cần copy đến
-const destinationUri = `mongodb://dangluu%40:%40Luu123456@103.81.87.65:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`;
+const destinationUri = `mongodb://dangluu:d%40ngluu123456@154.53.32.27:27017/`;
 const destinationClient = new MongoClient(destinationUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -24,9 +24,9 @@ new Promise(async (resolve, reject) => {
     .then(async (message) => {
         console.log(message);
         // Tên database gốc
-        let sourceDatabaseName = `Ecom`;
+        let sourceDatabaseName = `Drop`;
         // Tên database cần copy đến
-        let destinationDatabaseName = `EcomDemo`;
+        let destinationDatabaseName = `Drop`;
         // Các collection cần copy để mảng rỗng nếu muốn copy toàn bộ
         let collections = [];
         let _check = [];
@@ -40,11 +40,7 @@ new Promise(async (resolve, reject) => {
             for (let i in collections) {
                 // if (collections[i] == `order`) continue;
                 console.log(`start copy ${collections[i]}`);
-                let data1 = await sourceClient
-                    .db(sourceDatabaseName)
-                    .collection(collections[i])
-                    .find({})
-                    .toArray();
+                let data1 = await sourceClient.db(sourceDatabaseName).collection(collections[i]).find({}).toArray();
                 if (data1.length == 0) {
                     let data2 = await destinationClient
                         .db(destinationDatabaseName)
