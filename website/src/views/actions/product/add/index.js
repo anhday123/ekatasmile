@@ -30,6 +30,7 @@ import {
   Affix,
   Switch,
   Tabs,
+  TreeSelect,
 } from 'antd'
 
 //icons
@@ -51,7 +52,6 @@ import { apiAllSupplier } from 'apis/supplier'
 import { uploadFiles, uploadFile } from 'apis/upload'
 import { apiAllWarranty } from 'apis/warranty'
 import { updateProduct, addProduct } from 'apis/product'
-import { getAllStore } from 'apis/store'
 
 export default function ProductAdd() {
   const dispatch = useDispatch()
@@ -60,21 +60,18 @@ export default function ProductAdd() {
   const [form] = Form.useForm()
   const typingTimeoutRef = useRef(null)
 
-  const [locations, setLocations] = useState([])
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
   const [idsWarranty, setIdsWarranty] = useState([])
   const [isWarranty, setIsWarranty] = useState(false)
   const [warranties, setWarranties] = useState([])
-  const [stores, setStores] = useState([])
   const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
-  const [helpTextImage, setHelpTextImage] = useState('')
   const [imagesProduct, setImagesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
-  const [isInputInfoProduct, setIsInputInfoProduct] = useState(true)
+  const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
   const [productIsHaveDescription, setProductIsHaveDescription] = useState(false)
@@ -86,10 +83,7 @@ export default function ProductAdd() {
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
-    attributesNew.push({
-      option: '',
-      values: [],
-    })
+    attributesNew.push({ option: '', values: [] })
     setAttributes([...attributesNew])
   }
 
@@ -105,7 +99,6 @@ export default function ProductAdd() {
     const initVariant = {
       image: '',
       imagePreview: '',
-      locations: [],
       import_price: 0,
       base_price: 0,
       price: 0,
@@ -228,22 +221,7 @@ export default function ProductAdd() {
       return
     }
 
-    //validated images product
-    if (!isProductHasVariants) {
-      if (!imagesProduct.length && !location.state) {
-        setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
-        return
-      }
-
-      if (!imagesPreviewProduct.length && location.state) {
-        setHelpTextImage('Vui lòng chọn ít nhất 1 ảnh!')
-        return
-      }
-
-      setHelpTextImage('')
-    } else setHelpTextImage('')
-
-    //validated locations, prices
+    //validated, prices
     for (let i = 0; i < variants.length; ++i) {
       if (!variants[i].base_price) {
         notification.error({
@@ -263,20 +241,27 @@ export default function ProductAdd() {
         })
         return
       }
-      if (!variants[i].locations.length) {
-        notification.error({
-          message: 'Vui lòng nhập số lượng sản phẩm trong ít nhất 1 cửa hàng!',
-        })
-        return
-      }
     }
 
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const formProduct = form.getFieldsValue()
 
+      //phát sinh sku nếu user ko điền sku
+      let valueDefaultSku = ''
+      if (!formProduct.sku) {
+        const generatedItemsSku = formProduct.name.split(' ')
+        valueDefaultSku = generatedItemsSku
+          .map((items) => (items[0] ? removeAccents(items[0]).toUpperCase() : ''))
+          .join('')
+      }
+
       let body = {
-        sku: !isGeneratedSku ? formProduct.sku : valueGeneratedSku,
+        sku: !isGeneratedSku
+          ? formProduct.sku
+            ? formProduct.sku
+            : valueDefaultSku
+          : valueGeneratedSku,
         barcode: '',
         name: formProduct.name,
         category_id: formProduct.category_id,
@@ -316,13 +301,6 @@ export default function ProductAdd() {
 
         body.variants = variantsNew
       } else {
-        if (!locations.length) {
-          notification.error({
-            message: 'Vui lòng nhập số lượng sản phẩm trong ít nhất 1 cửa hàng',
-          })
-          dispatch({ type: ACTION.LOADING, data: false })
-          return
-        }
         const images = location.state ? imagesPreviewProduct : await uploadFiles(imagesProduct)
 
         body.attributes = []
@@ -339,7 +317,6 @@ export default function ProductAdd() {
           price: formProduct.price,
           base_price: formProduct.base_price,
           import_price: formProduct.import_price,
-          locations: locations,
         }
         body.variants = [bodyOneVariant]
       }
@@ -416,7 +393,6 @@ export default function ProductAdd() {
         action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
         onChange={(info) => {
           if (info.file.status !== 'done') info.file.status = 'done'
-          setHelpTextImage('')
 
           if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current)
@@ -503,111 +479,6 @@ export default function ProductAdd() {
         onChange={(e) => setValueSku(e.target.value)}
         style={{ width: '100%' }}
       />
-    )
-  }
-
-  const InputQuantityStores = ({ locations, variant }) => {
-    const [locationsVariant, setLocationsVariant] = useState(locations ? locations : [])
-
-    return (
-      <Select
-        mode="multiple"
-        placeholder="Nhập số lượng vào cửa hàng"
-        size="large"
-        style={{ width: '100%' }}
-        value={locationsVariant.map((location) => `${location.name}: ${location.quantity + ''}`)}
-        onDeselect={(value) => {
-          const locationsNew = [...locationsVariant]
-          const indexRemove = locationsNew.findIndex((e) => value.includes(e.name))
-          if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
-
-          let variantsNew = [...variants]
-          const index = variantsNew.findIndex((e) => e.title === variant.title)
-          variantsNew[index].locations = locationsNew
-          setVariants([...variantsNew])
-
-          setLocationsVariant([...locationsNew])
-        }}
-        dropdownRender={() => (
-          <div>
-            {stores.map((store) => (
-              <Row
-                wrap={false}
-                align="middle"
-                justify="space-between"
-                style={{ marginBottom: 9, padding: '0px 10px' }}
-              >
-                <div style={{ color: 'black' }}>{store.name}</div>
-                <Space>
-                  <InputNumber
-                    min={0}
-                    placeholder="Nhập số lượng"
-                    style={{ width: 100 }}
-                    onBlur={(e) => {
-                      const value = +e.target.value
-                      const locationsNew = [...locationsVariant]
-
-                      const indexLocation = locationsNew.findIndex(
-                        (l) => l.inventory_id === store.store_id
-                      )
-
-                      if (value) {
-                        const location = {
-                          type: 'store',
-                          name: store.name,
-                          inventory_id: store.store_id,
-                          quantity: value,
-                        }
-
-                        if (indexLocation !== -1) locationsNew[indexLocation] = location
-                        else locationsNew.push(location)
-                      } else {
-                        if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                      }
-
-                      let variantsNew = [...variants]
-                      const index = variantsNew.findIndex((e) => e.title === variant.title)
-                      variantsNew[index].locations = locationsNew
-                      setVariants([...variantsNew])
-
-                      setLocationsVariant([...locationsNew])
-                    }}
-                    onPressEnter={(e) => {
-                      const value = +e.target.value
-                      const locationsNew = [...locationsVariant]
-
-                      const indexLocation = locationsNew.findIndex(
-                        (l) => l.inventory_id === store.store_id
-                      )
-
-                      if (value) {
-                        const location = {
-                          type: 'store',
-                          name: store.name,
-                          inventory_id: store.store_id,
-                          quantity: value,
-                        }
-
-                        if (indexLocation !== -1) locationsNew[indexLocation] = location
-                        else locationsNew.push(location)
-                      } else {
-                        if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                      }
-
-                      let variantsNew = [...variants]
-                      const index = variantsNew.findIndex((e) => e.title === variant.title)
-                      variantsNew[index].locations = locationsNew
-                      setVariants([...variantsNew])
-
-                      setLocationsVariant([...locationsNew])
-                    }}
-                  />
-                </Space>
-              </Row>
-            ))}
-          </div>
-        )}
-      ></Select>
     )
   }
 
@@ -742,127 +613,6 @@ export default function ProductAdd() {
               </div>
             )}
           </Upload>
-        </Modal>
-      </>
-    )
-  }
-
-  const EditQuantityStores = () => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [locationsVariant, setLocationsVariant] = useState([])
-
-    const edit = () => {
-      if (locationsVariant.length) {
-        let variantsNew = [...variants]
-
-        selectRowKeyVariant.map((key) => {
-          const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
-          variantsNew[indexVariant].locations = locationsVariant
-        })
-
-        setVariants([...variantsNew])
-      }
-
-      toggle()
-    }
-
-    //reset
-    useEffect(() => {
-      if (!visible) setLocationsVariant([])
-    }, [visible])
-
-    return (
-      <>
-        <Button size="large" onClick={toggle} icon={<EditOutlined />}>
-          Chỉnh sửa số lượng sản phẩm
-        </Button>
-        <Modal visible={visible} onCancel={toggle} onOk={edit} title="Nhập số lượng sản phẩm">
-          <Select
-            mode="multiple"
-            placeholder="Nhập số lượng vào cửa hàng"
-            size="large"
-            style={{ width: '100%' }}
-            value={locationsVariant.map(
-              (location) => `${location.name}: ${location.quantity + ''}`
-            )}
-            onDeselect={(value) => {
-              const locationsNew = [...locationsVariant]
-              const indexRemove = locationsNew.findIndex((e) => value.includes(e.name))
-              if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
-
-              setLocationsVariant([...locationsNew])
-            }}
-            dropdownRender={() => (
-              <div>
-                {stores.map((store) => (
-                  <Row
-                    wrap={false}
-                    align="middle"
-                    justify="space-between"
-                    style={{ marginBottom: 9, padding: '0px 10px' }}
-                  >
-                    <div style={{ color: 'black' }}>{store.name}</div>
-                    <Space>
-                      <InputNumber
-                        min={0}
-                        placeholder="Nhập số lượng"
-                        style={{ width: 100 }}
-                        onBlur={(e) => {
-                          const value = +e.target.value
-                          const locationsNew = [...locationsVariant]
-
-                          const indexLocation = locationsNew.findIndex(
-                            (l) => l.inventory_id === store.store_id
-                          )
-
-                          if (value) {
-                            const location = {
-                              type: 'store',
-                              name: store.name,
-                              inventory_id: store.store_id,
-                              quantity: value,
-                            }
-
-                            if (indexLocation !== -1) locationsNew[indexLocation] = location
-                            else locationsNew.push(location)
-                          } else {
-                            if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                          }
-
-                          setLocationsVariant([...locationsNew])
-                        }}
-                        onPressEnter={(e) => {
-                          const value = +e.target.value
-                          const locationsNew = [...locationsVariant]
-
-                          const indexLocation = locationsNew.findIndex(
-                            (l) => l.inventory_id === store.store_id
-                          )
-
-                          if (value) {
-                            const location = {
-                              type: 'store',
-                              name: store.name,
-                              inventory_id: store.store_id,
-                              quantity: value,
-                            }
-
-                            if (indexLocation !== -1) locationsNew[indexLocation] = location
-                            else locationsNew.push(location)
-                          } else {
-                            if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                          }
-
-                          setLocationsVariant([...locationsNew])
-                        }}
-                      />
-                    </Space>
-                  </Row>
-                ))}
-              </div>
-            )}
-          ></Select>
         </Modal>
       </>
     )
@@ -1015,13 +765,6 @@ export default function ProductAdd() {
       render: (text, record) => <InputSku value={record.sku} variant={record} />,
     },
     {
-      title: 'Số lượng',
-      width: 250,
-      render: (text, record) => (
-        <InputQuantityStores locations={record.locations} variant={record} />
-      ),
-    },
-    {
       title: 'Giá',
       width: 250,
       render: (text, record) => (
@@ -1048,19 +791,6 @@ export default function ProductAdd() {
     }
   }
 
-  const apiGetAllStore = async () => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await getAllStore()
-      if (res.status === 200) {
-        setStores(res.data.data)
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
   const initProductWithEditProduct = async () => {
     if (location.state) {
       const product = location.state
@@ -1075,7 +805,6 @@ export default function ProductAdd() {
       if (product.variants.length === 1) {
         setIsProductHasVariants(false)
         setImagesPreviewProduct(product.variants[0].image || [])
-        setLocations([...product.variants[0].locations])
         form.setFieldsValue({ ...product.variants[0] })
         setSkuProductWithEdit(product.variants[0].sku)
       } else {
@@ -1116,7 +845,6 @@ export default function ProductAdd() {
     apiAllSupplierData()
     apiAllWarrantyData()
     apiAllCategoryData()
-    apiGetAllStore()
   }, [])
 
   //get width device
@@ -1253,36 +981,33 @@ export default function ProductAdd() {
                   name="category_id"
                   rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
                 >
-                  <Select
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
+                  <TreeSelect
                     size="large"
                     style={{ width: '100%' }}
+                    showSearch={false}
                     placeholder="Chọn danh mục"
+                    allowClear
+                    multiple
+                    treeDefaultExpandAll
                   >
-                    {categories.map((values, index) => {
-                      return (
-                        <Select.Option value={values.category_id} key={index}>
-                          {values.name}
-                        </Select.Option>
-                      )
-                    })}
-                  </Select>
+                    {categories.map((category) => (
+                      <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                        {category.children_category.map((child) => (
+                          <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                            {child.children_category.map((e) => (
+                              <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                                {e.name}
+                              </TreeSelect.TreeNode>
+                            ))}
+                          </TreeSelect.TreeNode>
+                        ))}
+                      </TreeSelect.TreeNode>
+                    ))}
+                  </TreeSelect>
                 </Form.Item>
               </Col>
               <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
-                <Form.Item
-                  label="Mã sản phẩm/SKU"
-                  name="sku"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Vui lòng nhập mã sản phẩm/sku!',
-                    },
-                  ]}
-                >
+                <Form.Item label="Mã sản phẩm/SKU" name="sku">
                   <Input
                     disabled={isGeneratedSku}
                     size="large"
@@ -1290,106 +1015,7 @@ export default function ProductAdd() {
                   />
                 </Form.Item>
               </Col>
-              <Col
-                xs={24}
-                sm={24}
-                md={7}
-                lg={7}
-                xl={7}
-                style={{ marginTop: 30, display: isProductHasVariants && 'none' }}
-              >
-                <div>
-                  <div>
-                    <span style={{ color: 'red' }}>*</span>
-                    <span>Danh sách cửa hàng</span>
-                  </div>
-                  <Select
-                    mode="multiple"
-                    placeholder="Nhập số lượng vào cửa hàng"
-                    size="large"
-                    style={{ width: '100%' }}
-                    value={locations.map(
-                      (location) => `${location.name}: ${location.quantity + ''}`
-                    )}
-                    onDeselect={(value) => {
-                      const locationsNew = [...locations]
-                      const indexRemove = locationsNew.findIndex((e) => value.includes(e.name))
-                      if (indexRemove !== -1) locationsNew.splice(indexRemove, 1)
 
-                      setLocations([...locationsNew])
-                    }}
-                    dropdownRender={() => (
-                      <div>
-                        {stores.map((store) => (
-                          <Row
-                            wrap={false}
-                            align="middle"
-                            justify="space-between"
-                            style={{ marginBottom: 9, padding: '0px 10px' }}
-                          >
-                            <div style={{ color: 'black' }}>{store.name}</div>
-                            <Space>
-                              <InputNumber
-                                min={0}
-                                placeholder="Nhập số lượng"
-                                style={{ width: 100 }}
-                                onBlur={(e) => {
-                                  const value = +e.target.value
-                                  const locationsNew = [...locations]
-
-                                  const indexLocation = locationsNew.findIndex(
-                                    (l) => l.inventory_id === store.store_id
-                                  )
-
-                                  if (value) {
-                                    const location = {
-                                      type: 'store',
-                                      name: store.name,
-                                      inventory_id: store.store_id,
-                                      quantity: value,
-                                    }
-
-                                    if (indexLocation !== -1) locationsNew[indexLocation] = location
-                                    else locationsNew.push(location)
-                                  } else {
-                                    if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                                  }
-                                  console.log(locationsNew)
-                                  setLocations([...locationsNew])
-                                }}
-                                onPressEnter={(e) => {
-                                  const value = +e.target.value
-                                  const locationsNew = [...locations]
-
-                                  const indexLocation = locationsNew.findIndex(
-                                    (l) => l.inventory_id === store.store_id
-                                  )
-
-                                  if (value) {
-                                    const location = {
-                                      type: 'store',
-                                      name: store.name,
-                                      inventory_id: store.store_id,
-                                      quantity: value,
-                                    }
-
-                                    if (indexLocation !== -1) locationsNew[indexLocation] = location
-                                    else locationsNew.push(location)
-                                  } else {
-                                    if (indexLocation !== -1) locationsNew.splice(indexLocation, 1)
-                                  }
-
-                                  setLocations([...locationsNew])
-                                }}
-                              />
-                            </Space>
-                          </Row>
-                        ))}
-                      </div>
-                    )}
-                  ></Select>
-                </div>
-              </Col>
               <Col
                 xs={24}
                 sm={24}
@@ -1591,7 +1217,6 @@ export default function ProductAdd() {
                   >
                     <Space wrap>
                       <UploadAllVariant />
-                      <EditQuantityStores />
                       {!location.state && <EditSku />}
                       <EditPrice />
                     </Space>
@@ -1622,19 +1247,19 @@ export default function ProductAdd() {
                 style={{ display: isProductHasVariants && 'none' }}
               >
                 <Form.Item
-                  label="Giá bán"
+                  label="Giá vốn"
                   name="price"
                   rules={[
                     {
                       required: !isProductHasVariants && true,
-                      message: 'Vui lòng nhập giá bán!',
+                      message: 'Vui lòng nhập giá vốn!',
                     },
                   ]}
                 >
                   <InputNumber
                     size="large"
                     min={0}
-                    placeholder="Nhập giá bán"
+                    placeholder="Nhập giá vốn"
                     style={{ width: '100%' }}
                     className="br-15__input"
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -1692,7 +1317,6 @@ export default function ProductAdd() {
                   display: isProductHasVariants && 'none',
                 }}
               >
-                <span style={{ color: 'red' }}>* </span>
                 Hình ảnh
                 {location.state ? (
                   <UploadImageWithEditProduct />
@@ -1706,7 +1330,6 @@ export default function ProductAdd() {
                       if (info.file.status !== 'done') info.file.status = 'done'
                       let imagesProductNew = info.fileList.map((e) => e.originFileObj)
                       setImagesProduct([...imagesProductNew])
-                      setHelpTextImage('')
                     }}
                   >
                     <p className="ant-upload-drag-icon">
@@ -1716,7 +1339,6 @@ export default function ProductAdd() {
                     <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
                   </Upload.Dragger>
                 )}
-                <span style={{ color: 'red' }}>{helpTextImage}</span>
               </Col>
             </Row>
           </Tabs.TabPane>

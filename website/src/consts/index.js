@@ -55,7 +55,7 @@ export const ROUTES = {
   GUARANTEE: '/guarantee',
   SHIPPING_PRODUCT: '/shipping-product',
   BUSINESS: '/business',
-  BRANCH: '/branch',
+  BRANCH_MANAGEMENT: '/branch-management',
   CONFIGURATION_STORE: '/configuration-store',
   VERTIFY_ACCOUNT: '/vertifyaccount',
   OTP: '/otp',
@@ -213,7 +213,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.0.22'
+export const VERSION_APP = '1.1.1'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

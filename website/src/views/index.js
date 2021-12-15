@@ -212,9 +212,9 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
-    path: ROUTES.BRANCH,
+    path: ROUTES.BRANCH_MANAGEMENT,
     Component: () => <Branch />,
-    title: 'Quản lý chi nhánh',
+    title: 'Quản lý kho',
     permissions: [],
     exact: true,
   },

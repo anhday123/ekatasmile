@@ -32,7 +32,7 @@ const columnsProduct = [
     key: 'import-price',
   },
   {
-    title: 'Tổng giá bán',
+    title: 'Tổng giá vốn',
     dataIndex: 'price',
     key: 'price',
   },
