@@ -211,12 +211,6 @@ const BaseLayout = (props) => {
           permissions: [],
         },
         {
-          icon: <BankOutlined />,
-          path: '',
-          title: 'Xuất kho',
-          permissions: [],
-        },
-        {
           icon: <AreaChartOutlined />,
           path: ROUTES.PRODUCT,
           title: 'Sản phẩm ở kho',
