@@ -73,6 +73,9 @@ let getOrderS = async (req, res, next) => {
         );
 
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
+        if (req.query.chanel) {
+            aggregateQuery.push({ $match: { chanel: new RegExp(removeUnicode(req.query.chanel, true), 'ig') } });
+        }
         if (req.query.product_name) {
             aggregateQuery.push({
                 $match: {
