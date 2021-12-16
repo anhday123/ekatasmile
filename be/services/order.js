@@ -56,7 +56,7 @@ let getOrderS = async (req, res, next) => {
         if (req.query.product_name) {
             aggregateQuery.push({
                 $match: {
-                    'order_details.name': {
+                    'order_details.sub_title': {
                         $in: [
                             new RegExp(
                                 `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
