@@ -11,6 +11,8 @@ class OrderDetail {
         this.product_id = Number(data.product_id);
         this.variant_id = Number(data.variant_id);
         this.title = data.title;
+        this.sub_title = removeUnicode(this.title, true).toLowerCase();
+        this.sku = data.sku;
         this.variants = data.variants || [];
         this.properties = data.properties || [];
         this.image = data.image || [];

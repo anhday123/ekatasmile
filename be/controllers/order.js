@@ -123,7 +123,12 @@ let addOrderC = async (req, res, next) => {
             _detail.create({
                 ..._variants[String(detail.variant_id)],
                 ..._products[String(detail.product_id)],
-                properties: _variants[String(detail.variant_id)].options,
+                properties: (() => {
+                    if (_variants[String(detail.variant_id)] && _variants[String(detail.variant_id)].options) {
+                        return _variants[String(detail.variant_id)].options;
+                    }
+                    return [];
+                })(),
                 ...detail,
             });
             return _detail;

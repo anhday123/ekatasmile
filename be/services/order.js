@@ -49,29 +49,6 @@ let getOrderS = async (req, res, next) => {
                 { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
             );
         }
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Users',
-                    localField: 'employee_id',
-                    foreignField: 'user_id',
-                    as: '_employee',
-                },
-            },
-            { $unwind: { path: '$_employee', preserveNullAndEmptyArrays: true } }
-        );
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Customers',
-                    localField: 'customer_id',
-                    foreignField: 'customer_id',
-                    as: '_customer',
-                },
-            },
-            { $unwind: { path: '$_customer', preserveNullAndEmptyArrays: true } }
-        );
-
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.chanel) {
             aggregateQuery.push({ $match: { chanel: new RegExp(removeUnicode(req.query.chanel, true), 'ig') } });
@@ -79,11 +56,13 @@ let getOrderS = async (req, res, next) => {
         if (req.query.product_name) {
             aggregateQuery.push({
                 $match: {
-                    'order_details.name': {
-                        $in: new RegExp(
-                            `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
+                    'order_details.sub_title': {
+                        $in: [
+                            new RegExp(
+                                `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        ],
                     },
                 },
             });
@@ -92,21 +71,23 @@ let getOrderS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: {
                     'order_details.sku': {
-                        $in: new RegExp(
-                            `${removeUnicode(req.query.product_sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
+                        $in: [
+                            new RegExp(
+                                `${removeUnicode(req.query.product_sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        ],
                     },
                 },
             });
         }
         if (req.query.customer_code) {
-            aggregateQuery.push({ $match: { '_customer.code': String(req.query.customer_code) } });
+            aggregateQuery.push({ $match: { 'customer.code': Number(req.query.customer_code) } });
         }
         if (req.query.customer_name) {
             aggregateQuery.push({
                 $match: {
-                    '_customer.sub_name': new RegExp(
+                    'customer.sub_name': new RegExp(
                         `${removeUnicode(req.query.customer_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -116,7 +97,7 @@ let getOrderS = async (req, res, next) => {
         if (req.query.customer_phone) {
             aggregateQuery.push({
                 $match: {
-                    '_customer.phone': new RegExp(
+                    'customer.phone': new RegExp(
                         `${removeUnicode(req.query.customer_phone, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -126,7 +107,7 @@ let getOrderS = async (req, res, next) => {
         if (req.query.employee_name) {
             aggregateQuery.push({
                 $match: {
-                    '_employee.sub_name': new RegExp(
+                    'employee.sub_name': new RegExp(
                         `${removeUnicode(req.query.employee_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -157,7 +138,6 @@ let getOrderS = async (req, res, next) => {
         aggregateQuery.push({
             $project: {
                 '_business.password': 0,
-                '_employee.password': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -236,9 +216,9 @@ let addOrderS = async (req, res, next) => {
                     }
                 }
             }
-            if (_detail.quantity > 0) {
-                throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
-            }
+            // if (_detail.quantity > 0) {
+            //     throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
+            // }
         });
         await new Promise(async (resolve, reject) => {
             for (let i in _update) {
