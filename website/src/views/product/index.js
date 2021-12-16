@@ -93,7 +93,7 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Giá cơ bản',
+      title: 'Giá vốn',
       dataIndex: 'base_price',
       render: (text) => text && formatCash(text),
     },
@@ -103,7 +103,7 @@ export default function Product() {
       render: (text) => text && formatCash(text),
     },
     {
-      title: 'Giá vốn',
+      title: 'Giá bán',
       dataIndex: 'price',
       render: (text) => text && formatCash(text),
     },
