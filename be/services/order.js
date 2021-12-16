@@ -216,9 +216,9 @@ let addOrderS = async (req, res, next) => {
                     }
                 }
             }
-            if (_detail.quantity > 0) {
-                throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
-            }
+            // if (_detail.quantity > 0) {
+            //     throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
+            // }
         });
         await new Promise(async (resolve, reject) => {
             for (let i in _update) {
