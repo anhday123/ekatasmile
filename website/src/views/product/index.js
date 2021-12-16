@@ -22,6 +22,8 @@ import {
   Popover,
   Space,
   Popconfirm,
+  Tag,
+  TreeSelect,
 } from 'antd'
 
 //components
@@ -114,7 +116,7 @@ export default function Product() {
       render: (text) => text && formatCash(text),
     },
     {
-      title: 'Giá bán',
+      title: 'Giá vốn',
       dataIndex: 'price',
       render: (text) => text && formatCash(text),
     },
@@ -231,11 +233,10 @@ export default function Product() {
   const UpdateCategoryProducts = () => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-    const [categoryId, setCategoryId] = useState()
-    const [categoryName, setCategoryName] = useState('')
+    const [categoryIds, setCategoryIds] = useState([])
 
     useEffect(() => {
-      if (!visible) setCategoryId()
+      if (!visible) setCategoryIds([])
     }, [visible])
 
     return (
@@ -253,31 +254,30 @@ export default function Product() {
           visible={visible}
           onCancel={toggle}
         >
-          <Select
+          <TreeSelect
+            multiple
+            treeDefaultExpandAll
             size="large"
-            showSearch
             style={{ width: '100%', marginBottom: 30 }}
             placeholder="Chọn danh mục"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            onChange={(value) => {
-              setCategoryId(value)
-
-              const category = categories.find((e) => e.category_id === value)
-              if (category) setCategoryName(category.name)
-            }}
-            value={categoryId}
+            showSearch={false}
+            onChange={(value) => setCategoryIds(value)}
+            value={categoryIds}
           >
-            {categories.map((values, index) => {
-              return (
-                <Option value={values.category_id} key={index}>
-                  {values.name}
-                </Option>
-              )
-            })}
-          </Select>
+            {categories.map((category) => (
+              <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                {category.children_category.map((child) => (
+                  <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                    {child.children_category.map((e) => (
+                      <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                        {e.name}
+                      </TreeSelect.TreeNode>
+                    ))}
+                  </TreeSelect.TreeNode>
+                ))}
+              </TreeSelect.TreeNode>
+            ))}
+          </TreeSelect>
           <Row justify="end">
             <Button
               onClick={async () => {
@@ -285,7 +285,7 @@ export default function Product() {
                   setLoading(true)
 
                   const listPromise = selectedRowKeys.map(async (product_id) => {
-                    const res = await updateProduct({ category_id: categoryId }, product_id)
+                    const res = await updateProduct({ category_id: categoryIds }, product_id)
                     return res
                   })
 
@@ -294,7 +294,7 @@ export default function Product() {
                   toggle()
                   await getAllProduct({ ...paramsFilter })
                   notification.success({
-                    message: `Cập nhật thành công ${selectedRowKeys.length} sản phẩm vào danh mục ${categoryName}`,
+                    message: `Cập nhật thành công danh mục vào các sản phẩm thành công!`,
                   })
                 } catch (error) {
                   setLoading(false)
@@ -304,7 +304,7 @@ export default function Product() {
               }}
               type="primary"
               size="large"
-              disabled={categoryId ? false : true}
+              disabled={categoryIds.length !== 0 ? false : true}
             >
               Cập nhật
             </Button>
@@ -430,7 +430,7 @@ export default function Product() {
 
   const [optionSearchName, setOptionSearchName] = useState('name')
 
-  const onChangeStore = async (storeId) => {
+  const onChangeStore = (storeId) => {
     if (storeId) paramsFilter.store_id = storeId
     else delete paramsFilter.store_id
 
@@ -438,16 +438,8 @@ export default function Product() {
     setParamsFilter({ ...paramsFilter })
   }
 
-  const filterProductByStatus = (status) => {
-    if (status !== STATUS_PRODUCT.all) paramsFilter.status = status
-    else delete paramsFilter.status
-
-    paramsFilter.page = 1
-    setParamsFilter({ ...paramsFilter })
-  }
-
-  const onChangeCategoryValue = async (id) => {
-    if (id) paramsFilter.category_id = id
+  const onChangeCategoryValue = (id) => {
+    if (id) paramsFilter.category_id = id.join('---')
     else delete paramsFilter.category_id
 
     paramsFilter.page = 1
@@ -545,38 +537,34 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
-            <Select
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+            <TreeSelect
               size="large"
-              showSearch
               style={{ width: '100%' }}
               placeholder="Tìm kiếm theo danh mục"
               allowClear
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              multiple
+              showSearch={false}
+              treeDefaultExpandAll
+              value={
+                paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
               }
-              value={paramsFilter.category_id}
               onChange={onChangeCategoryValue}
             >
-              {categories.map((values, index) => {
-                return (
-                  <Option value={values.category_id} key={index}>
-                    {values.name}
-                  </Option>
-                )
-              })}
-            </Select>
+              {categories.map((category) => (
+                <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                  {category.children_category.map((child) => (
+                    <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                      {child.children_category.map((e) => (
+                        <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                          {e.name}
+                        </TreeSelect.TreeNode>
+                      ))}
+                    </TreeSelect.TreeNode>
+                  ))}
+                </TreeSelect.TreeNode>
+              ))}
+            </TreeSelect>
           </Col>
 
           <Col
@@ -856,11 +844,13 @@ export default function Product() {
                       a._category ? a._category.name : '',
                       b._category ? b._category.name : ''
                     ),
-                  render: (text, record) => {
-                    const category = categories.find((c) => c.category_id === record.category_id)
-                    if (category) return category.name
-                    else return ''
-                  },
+                  render: (text, record) =>
+                    record._categories &&
+                    record._categories.map((category, index) => (
+                      <Tag key={index} closable={false}>
+                        {category.name}
+                      </Tag>
+                    )),
                 }
 
               if (column.key === 'supplier')

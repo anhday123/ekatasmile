@@ -59,6 +59,8 @@ import {
   TransactionOutlined,
   ContactsOutlined,
   HomeOutlined,
+  BgColorsOutlined,
+  AreaChartOutlined,
 } from '@ant-design/icons'
 import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
@@ -85,6 +87,7 @@ const BaseLayout = (props) => {
   const WIDTH_MENU_OPEN = 230
   const WIDTH_MENU_CLOSE = 160
 
+  const [username, setUsername] = useState('')
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
   const [appLanguage, setAppLanguage] = useState('VN')
@@ -100,6 +103,18 @@ const BaseLayout = (props) => {
   const dispatch = useDispatch()
   const [collapsed, setCollapsed] = useState(location.pathname === ROUTES.SELL ? true : false) //nếu nhấn vào menu bán hàng thì thu gọn menu
   const [isMobile, setIsMobile] = useState(false)
+
+  const [openKeys, setOpenKeys] = useState([])
+  const rootSubmenuKeys = ['product', 'warehouse', 'offer', 'report', 'transport', 'commerce']
+  const onOpenChange = (keys) => {
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1)
+    if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+      setOpenKeys(keys)
+    } else {
+      localStorage.setItem('openKey', latestOpenKey)
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : [])
+    }
+  }
 
   const getInfoUser = async () => {
     try {
@@ -181,12 +196,7 @@ const BaseLayout = (props) => {
           title: 'Chuyển hàng',
           permissions: [PERMISSIONS.quan_li_chuyen_hang],
         },
-        {
-          icon: <GoldOutlined />,
-          path: ROUTES.SUPPLIER,
-          title: 'Nhà cung cấp',
-          permissions: [PERMISSIONS.quan_li_nha_cung_cap],
-        },
+
         {
           icon: <AccountBookOutlined />,
           path: ROUTES.GUARANTEE,
@@ -209,9 +219,27 @@ const BaseLayout = (props) => {
         },
         {
           icon: <BankOutlined />,
-          path: ROUTES.PRODUCT,
+          path: '',
           title: 'Xuất kho',
           permissions: [],
+        },
+        {
+          icon: <BgColorsOutlined />,
+          path: ROUTES.BRANCH_MANAGEMENT,
+          title: 'Quản lí kho',
+          permissions: [],
+        },
+        {
+          icon: <AreaChartOutlined />,
+          path: '',
+          title: 'Sản phẩm ở kho',
+          permissions: [],
+        },
+        {
+          icon: <GoldOutlined />,
+          path: ROUTES.SUPPLIER,
+          title: 'Nhà cung cấp',
+          permissions: [PERMISSIONS.quan_li_nha_cung_cap],
         },
       ],
     },
@@ -241,37 +269,39 @@ const BaseLayout = (props) => {
         },
       ],
     },
+    {
+      path: 'commerce',
+      title: 'Thương mại',
+      permissions: [],
+      icon: <ControlOutlined />,
+      menuItems: [
+        {
+          path: ROUTES.BLOG,
+          title: 'Quản lý bài viết',
+          permissions: [],
+          icon: <FileDoneOutlined />,
+        },
+        {
+          path: ROUTES.BRAND,
+          title: 'Quản lý thương hiệu',
+          permissions: [],
+          icon: <SketchOutlined />,
+        },
+        {
+          path: ROUTES.CHANNEL,
+          title: 'Quản lý kênh',
+          permissions: [],
+          icon: <ForkOutlined />,
+        },
+      ],
+    },
 
-    {
-      path: ROUTES.BLOG,
-      title: 'Quản lý bài viết',
-      permissions: [],
-      icon: <FileDoneOutlined />,
-    },
-    {
-      path: ROUTES.BRAND,
-      title: 'Quản lý thương hiệu',
-      permissions: [],
-      icon: <SketchOutlined />,
-    },
-    {
-      path: ROUTES.CHANNEL,
-      title: 'Quản lý kênh',
-      permissions: [],
-      icon: <ForkOutlined />,
-    },
-    {
-      icon: <BankOutlined />,
-      path: ROUTES.BRANCH,
-      title: 'Quản lý chi nhánh',
-      permissions: [PERMISSIONS.quan_li_chi_nhanh],
-    },
-    {
-      path: ROUTES.CONTACT,
-      title: 'Liên hệ',
-      permissions: [],
-      icon: <ContactsOutlined />,
-    },
+    // {
+    //   path: ROUTES.CONTACT,
+    //   title: 'Liên hệ',
+    //   permissions: [],
+    //   icon: <ContactsOutlined />,
+    // },
     {
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
@@ -366,12 +396,12 @@ const BaseLayout = (props) => {
         },
       ],
     },
-    {
-      path: ROUTES.BUSINESS,
-      title: 'Quản lý doanh nghiệp',
-      permissions: [PERMISSIONS.business_management],
-      icon: <ApartmentOutlined />,
-    },
+    // {
+    //   path: ROUTES.BUSINESS,
+    //   title: 'Quản lý doanh nghiệp',
+    //   permissions: [PERMISSIONS.business_management],
+    //   icon: <ApartmentOutlined />,
+    // },
 
     {
       path: ROUTES.CONFIGURATION_STORE,
@@ -487,12 +517,6 @@ const BaseLayout = (props) => {
     </Permission>
   )
 
-  const [key, setKey] = useState([])
-  const onOpenChange = (data) => {
-    localStorage.setItem('key', JSON.stringify(data))
-    setKey(data)
-  }
-
   const openNotification = () => {
     notification.success({
       message: 'Thành công',
@@ -517,9 +541,8 @@ const BaseLayout = (props) => {
     dispatch({ type: 'UPDATE_INVOICE', data: [] })
   }
 
-  const [username, setUsername] = useState('')
   useEffect(() => {
-    setKey(JSON.parse(localStorage.getItem('key')))
+    if (localStorage.getItem('openKey')) setOpenKeys([localStorage.getItem('openKey')])
 
     const username = localStorage.getItem('username')
     setUsername(username)
@@ -940,16 +963,11 @@ const BaseLayout = (props) => {
             overflowX: 'hidden',
           }}
           theme="light"
-          onOpenChange={(openKeys) => onOpenChange(openKeys)}
-          openKeys={
-            key
-              ? key.map((values, index) => {
-                  if (index === key.length - 1) {
-                    return values
-                  }
-                })
-              : ''
-          }
+          onClick={(e) => {
+            if (e.keyPath && e.keyPath.length === 1) localStorage.removeItem('openKey')
+          }}
+          onOpenChange={onOpenChange}
+          openKeys={openKeys}
           selectedKeys={routeMatch.path}
           mode="inline"
         >
