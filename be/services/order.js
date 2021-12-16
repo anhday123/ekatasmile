@@ -80,10 +80,12 @@ let getOrderS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: {
                     'order_details.name': {
-                        $in: new RegExp(
-                            `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
+                        $in: [
+                            new RegExp(
+                                `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        ],
                     },
                 },
             });
@@ -92,10 +94,12 @@ let getOrderS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: {
                     'order_details.sku': {
-                        $in: new RegExp(
-                            `${removeUnicode(req.query.product_sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
+                        $in: [
+                            new RegExp(
+                                `${removeUnicode(req.query.product_sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                                'ig'
+                            ),
+                        ],
                     },
                 },
             });
