@@ -10,6 +10,10 @@ const columnsOrder = [
     key: 'create_date',
   },
   {
+    title: 'Kênh bán hàng',
+    dataIndex: 'chanel',
+  },
+  {
     title: 'Tên khách hàng',
     key: 'customer',
   },

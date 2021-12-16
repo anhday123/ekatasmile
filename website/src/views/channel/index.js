@@ -42,7 +42,6 @@ const { RangePicker } = DatePicker
 
 export default function Channel() {
   const [form] = Form.useForm()
-  const [selectKeys, setSelectKeys] = useState([])
   const [loadingTable, setLoadingTable] = useState(false)
   const [channelList, setChannelList] = useState([])
   const [platformList, setPlatformList] = useState([])
@@ -392,9 +391,6 @@ export default function Channel() {
       <div className={styles['body_channel_header']}>
         <div className={styles['body_channel_header_title']}>
           <span className={styles['body_channel_header_list_text']}>Quản lý kênh</span>
-          <a>
-            <InfoCircleOutlined />
-          </a>
         </div>
         <Permission permissions={[PERMISSIONS.tao_kenh_ban_hang]}>
           <Button onClick={toggleModal} type="primary">
@@ -414,7 +410,7 @@ export default function Channel() {
             value={valueSearch}
           />
           <Select
-            style={{ width: '13%' }}
+            style={{ width: '15%' }}
             value={attributeStatus}
             onChange={onChangeOptionSearchStatus}
             placeholder="Tất cả (trạng thái)"

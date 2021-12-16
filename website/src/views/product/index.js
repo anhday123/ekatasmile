@@ -93,19 +93,6 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Số lượng',
-      dataIndex: 'total_quantity',
-      render: (text, record) => (
-        <div>
-          {record.locations.map((location) => (
-            <div>
-              {location.name} - {location.quantity}
-            </div>
-          ))}
-        </div>
-      ),
-    },
-    {
       title: 'Giá cơ bản',
       dataIndex: 'base_price',
       render: (text) => text && formatCash(text),
@@ -866,13 +853,6 @@ export default function Product() {
                     if (supplier) return supplier.name
                     else return ''
                   },
-                }
-
-              if (column.key === 'sum-count')
-                return {
-                  ...column,
-                  sorter: (a, b) => compareCustom(a.sumQuantity || 0, b.sumQuantity || 0),
-                  render: (text, record) => record.sumQuantity && formatCash(record.sumQuantity),
                 }
 
               if (column.key === 'base-price')

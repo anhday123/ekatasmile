@@ -1,5 +1,12 @@
-import styles from './../guarantee/guarantee.module.scss'
 import React, { useEffect, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import styles from './guarantee.module.scss'
+import moment from 'moment'
+import { ROUTES, PERMISSIONS } from 'consts'
+import { compare } from 'utils'
+import * as XLSX from 'xlsx'
+
+//antd
 import {
   Switch,
   Input,
@@ -12,18 +19,20 @@ import {
   Upload,
   Select,
 } from 'antd'
-import { Link } from 'react-router-dom'
-import { FileExcelOutlined, PlusCircleOutlined } from '@ant-design/icons'
-import moment from 'moment'
-import { addWarranty, apiAllWarranty, updateWarranty } from '../../apis/warranty'
+
+//icons
+import { FileExcelOutlined, PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+
+//apis
+import { addWarranty, apiAllWarranty, updateWarranty } from 'apis/warranty'
 import { apiAllEmployee } from 'apis/employee'
-import { ROUTES, PERMISSIONS } from 'consts'
+
+//components
 import Permission from 'components/permission'
 import exportToCSV from 'components/ExportCSV/export'
 import ImportModal from 'components/ExportCSV/importModal'
 import { convertFields, guarantee } from 'components/ExportCSV/fieldConvert'
-import { compare } from 'utils'
-import * as XLSX from 'xlsx'
+
 const { RangePicker } = DatePicker
 function removeFalse(a) {
   return Object.keys(a)
@@ -31,6 +40,8 @@ function removeFalse(a) {
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 export default function Guarantee() {
+  const history = useHistory()
+
   const [users, setUsers] = useState([])
   const [warrantyList, setWarrantyList] = useState([])
   const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
@@ -238,7 +249,15 @@ export default function Guarantee() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>Quản lý bảo hành</div>
+          <Row
+            onClick={() => history.goBack()}
+            wrap={false}
+            align="middle"
+            style={{ width: 200, fontSize: 17, fontWeight: 500, cursor: 'pointer' }}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
+            <div>Quản lý bảo hành</div>
+          </Row>
           <div className={styles['promotion_manager_button']}>
             <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
               <Link to={ROUTES.GUARANTEE_ADD}>

@@ -18,10 +18,6 @@ const columnsProduct = [
     key: 'supplier',
   },
   {
-    title: 'Tổng số lượng',
-    key: 'sum-count',
-  },
-  {
     title: 'Tổng giá cơ bản',
     dataIndex: 'base_price',
     key: 'base-price',
