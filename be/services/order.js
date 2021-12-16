@@ -82,7 +82,7 @@ let getOrderS = async (req, res, next) => {
             });
         }
         if (req.query.customer_code) {
-            aggregateQuery.push({ $match: { 'customer.code': String(req.query.customer_code) } });
+            aggregateQuery.push({ $match: { 'customer.code': Number(req.query.customer_code) } });
         }
         if (req.query.customer_name) {
             aggregateQuery.push({
