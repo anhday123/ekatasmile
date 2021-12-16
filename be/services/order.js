@@ -25,6 +25,9 @@ let getOrderS = async (req, res, next) => {
         if (req.query.customer_id) {
             aggregateQuery.push({ $match: { customer_id: Number(req.query.customer_id) } });
         }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
@@ -32,12 +35,96 @@ let getOrderS = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        // lấy các thuộc tính tùy chọn khác
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'user_id',
+                        as: '_business',
+                    },
+                },
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+            );
+        }
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'employee_id',
+                    foreignField: 'user_id',
+                    as: '_employee',
+                },
+            },
+            { $unwind: { path: '$_employee', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Customers',
+                    localField: 'customer_id',
+                    foreignField: 'customer_id',
+                    as: '_customer',
+                },
+            },
+            { $unwind: { path: '$_customer', preserveNullAndEmptyArrays: true } }
+        );
+
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code) {
+        if (req.query.product_name) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                    'order_details.name': {
+                        $in: new RegExp(
+                            `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                            'ig'
+                        ),
+                    },
+                },
+            });
+        }
+        if (req.query.product_sku) {
+            aggregateQuery.push({
+                $match: {
+                    'order_details.sku': {
+                        $in: new RegExp(
+                            `${removeUnicode(req.query.product_sku, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                            'ig'
+                        ),
+                    },
+                },
+            });
+        }
+        if (req.query.customer_code) {
+            aggregateQuery.push({ $match: { '_customer.code': String(req.query.customer_code) } });
+        }
+        if (req.query.customer_name) {
+            aggregateQuery.push({
+                $match: {
+                    '_customer.sub_name': new RegExp(
+                        `${removeUnicode(req.query.customer_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
+        if (req.query.customer_phone) {
+            aggregateQuery.push({
+                $match: {
+                    '_customer.phone': new RegExp(
+                        `${removeUnicode(req.query.customer_phone, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
+        if (req.query.employee_name) {
+            aggregateQuery.push({
+                $match: {
+                    '_employee.sub_name': new RegExp(
+                        `${removeUnicode(req.query.employee_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
                 },
@@ -63,46 +150,7 @@ let getOrderS = async (req, res, next) => {
                 },
             });
         }
-        // lấy các thuộc tính tùy chọn khác
-        if (req.query._business) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'business_id',
-                        foreignField: 'user_id',
-                        as: '_business',
-                    },
-                },
-                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
-            );
-        }
-        if (req.query._employee) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'employee_id',
-                        foreignField: 'user_id',
-                        as: '_employee',
-                    },
-                },
-                { $unwind: { path: '$_employee', preserveNullAndEmptyArrays: true } }
-            );
-        }
-        if (req.query._customer) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Customers',
-                        localField: 'customer_id',
-                        foreignField: 'customer_id',
-                        as: '_customer',
-                    },
-                },
-                { $unwind: { path: '$_customer', preserveNullAndEmptyArrays: true } }
-            );
-        }
+
         aggregateQuery.push({
             $project: {
                 '_business.password': 0,
@@ -141,41 +189,41 @@ let addOrderS = async (req, res, next) => {
         if (!_order.insertedId) {
             throw new Error('500: Lỗi hệ thống, tạo đơn hàng thất bại!');
         }
-        let sortQuery = (()=>{
-            if(req.body.type == 'LIFO') {
-                return { create_date: -1 }
+        let sortQuery = (() => {
+            if (req.body.type == 'LIFO') {
+                return { create_date: -1 };
             }
-            return { create_date: 1 }
+            return { create_date: 1 };
         })();
         let locations = await client
             .db(DB)
             .collection('Locations')
             .find({
-                variant_id: { $in: req.variantIds }, 
-                type: req.saleAt.type, 
-                inventory_id: req.saleAt.inventory_id
+                variant_id: { $in: req.variantIds },
+                type: req.saleAt.type,
+                inventory_id: req.saleAt.inventory_id,
             })
             .sort(sortQuery)
             .toArray();
         let _locations = {};
-        locations.map((location)=>{
-            if(!_locations[String(location.variant_id)]){
+        locations.map((location) => {
+            if (!_locations[String(location.variant_id)]) {
                 _locations[String(location.variant_id)] = [];
             }
-            if(_locations[String(location.variant_id)]){
-                _locations[String(location.variant_id)].push(location)
+            if (_locations[String(location.variant_id)]) {
+                _locations[String(location.variant_id)].push(location);
             }
-        })
-        let _update = []
-        req._insert.order_details.map((_detail)=>{
-            let locationArray =  _locations[String(_detail.variant_id)];
-            for(let i in locationArray) {
-                if(_detail.quantity <= 0) {
+        });
+        let _update = [];
+        req._insert.order_details.map((_detail) => {
+            let locationArray = _locations[String(_detail.variant_id)];
+            for (let i in locationArray) {
+                if (_detail.quantity <= 0) {
                     break;
                 }
-                if(locationArray[i].quantity > 0) {
-                    if(locationArray[i].quantity > _detail.quantity) {
-                        locationArray[i].quantity = Number(locationArray[i].quantity) - Number(_detail.quantity)
+                if (locationArray[i].quantity > 0) {
+                    if (locationArray[i].quantity > _detail.quantity) {
+                        locationArray[i].quantity = Number(locationArray[i].quantity) - Number(_detail.quantity);
                         _detail.quantity = 0;
                         _update.push(locationArray[i]);
                     } else {
@@ -185,16 +233,19 @@ let addOrderS = async (req, res, next) => {
                     }
                 }
             }
-            if(_detail.quantity > 0) {
-                throw new Error ('400: Số lượng sản phẩm trong kho không đủ cung cấp')
+            if (_detail.quantity > 0) {
+                throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
             }
         });
-        await new Promise(async(resolve, reject)=>{
-            for(let i in _update) {
-                await client.db(DB).collection('Locations').updateOne({ location_id: Number(_update[i].location_id) }, { $set: _update[i] })
+        await new Promise(async (resolve, reject) => {
+            for (let i in _update) {
+                await client
+                    .db(DB)
+                    .collection('Locations')
+                    .updateOne({ location_id: Number(_update[i].location_id) }, { $set: _update[i] });
             }
             resolve();
-        })
+        });
         try {
             let _action = new Action();
             _action.create({
