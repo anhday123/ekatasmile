@@ -312,6 +312,8 @@ export default function ProductAdd() {
             ? skuProductWithEdit
             : !isGeneratedSku
             ? formProduct.sku
+              ? formProduct.sku
+              : valueDefaultSku
             : valueGeneratedSku,
           options: [],
           image: images || [],
