@@ -27,7 +27,7 @@ router.use(`/promotion`, require(`./promotion`));
 router.use(`/shippingcompany`, require(`./shipping-company`));
 router.use(`/order`, require(`./order`));
 router.use(`/delivery`, require(`./delivery`));
-router.use(`/statis`, require(`./statis`));
+router.use(`/statistic`, require(`./statistic`));
 router.use(`/compare`, require(`./compare`));
 router.use(`/channel`, require(`./channel`));
 router.use(`/upload`, require(`./upload`));

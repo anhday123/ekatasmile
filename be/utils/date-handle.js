@@ -19,22 +19,15 @@ let createTimeline = (timelineObject, timezone) => {
     if (timelineObject['today'] != undefined) {
         timelineObject[`from_date`] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 00:00:00`));
         timelineObject[`to_date`] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 23:59:59`));
-        console.log(timelineObject[`to_date`]);
         delete timelineObject.today;
     }
     if (timelineObject['yesterday'] != undefined) {
-        timelineObject[`from_date`] = new Date(
-            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 00:00:00`)
-        );
-        timelineObject[`to_date`] = new Date(
-            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 23:59:59`)
-        );
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 00:00:00`));
+        timelineObject[`to_date`] = new Date(moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 23:59:59`));
         delete timelineObject.yesterday;
     }
     if (timelineObject['this_week'] != undefined) {
-        timelineObject[`from_date`] = new Date(
-            moment.tz(timezone).isoWeekday(1).format(`YYYY-MM-DD 00:00:00`)
-        );
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).isoWeekday(1).format(`YYYY-MM-DD 00:00:00`));
         timelineObject[`to_date`] = new Date(moment.tz(timezone).isoWeekday(7).format(`YYYY-MM-DD 23:59:59`));
         delete timelineObject.this_week;
     }
@@ -61,9 +54,7 @@ let createTimeline = (timelineObject, timezone) => {
         delete timelineObject.this_month;
     }
     if (timelineObject['last_month'] != undefined) {
-        timelineObject[`from_date`] = new Date(
-            moment.tz(timezone).add(-1, `months`).format(`YYYY-MM-01 00:00:00`)
-        );
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).add(-1, `months`).format(`YYYY-MM-01 00:00:00`));
         timelineObject[`to_date`] = new Date(
             moment
                 .tz(timezone)
@@ -78,13 +69,9 @@ let createTimeline = (timelineObject, timezone) => {
         delete timelineObject.this_year;
     }
     if (timelineObject['last_year'] != undefined) {
-        timelineObject[`from_date`] = new Date(
-            moment.tz(timezone).add(-1, `years`).format(`YYYY-01-01 00:00:00`)
-        );
+        timelineObject[`from_date`] = new Date(moment.tz(timezone).add(-1, `years`).format(`YYYY-01-01 00:00:00`));
 
-        timelineObject[`to_date`] = new Date(
-            moment.tz(timezone).add(-1, `years`).format(`YYYY-12-31 23:59:59`)
-        );
+        timelineObject[`to_date`] = new Date(moment.tz(timezone).add(-1, `years`).format(`YYYY-12-31 23:59:59`));
         delete timelineObject.last_year;
     }
     if (timelineObject['from_date'] != undefined) {
