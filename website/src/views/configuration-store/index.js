@@ -51,75 +51,6 @@ export default function ConfigurationStore() {
               xl={7}
             >
               <Link
-                to={ROUTES.STORE}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <div
-                  className={styles['hover_item']}
-                  style={{
-                    backgroundColor: '#e8fce1',
-                    marginRight: '1rem',
-                    border: '1px solid green',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '4rem',
-                    height: '3rem',
-                    borderRadius: '0.25rem',
-                  }}
-                >
-                  <HomeOutlined style={{ color: 'green', fontSize: '1.5rem' }} />
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                      fontSize: '1rem',
-                      color: '#0015CD',
-                    }}
-                  >
-                    Quản lý cửa hàng
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      width: '100%',
-                      color: 'black',
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    Tạo, quản lý các cửa hàng
-                  </div>
-                </div>
-              </Link>
-            </Col>
-            <Col
-              style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <Link
                 to={ROUTES.EMPLOYEE}
                 style={{
                   display: 'flex',
@@ -195,6 +126,75 @@ export default function ConfigurationStore() {
               width: '100%',
             }}
           >
+            <Col
+              style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }}
+              xs={24}
+              sm={24}
+              md={11}
+              lg={7}
+              xl={7}
+            >
+              <Link
+                to={ROUTES.GUARANTEE}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <div
+                  className={styles['hover_item']}
+                  style={{
+                    backgroundColor: '#FCF7EB',
+                    marginRight: '1rem',
+                    border: '1px solid #EFC76E',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '4rem',
+                    height: '3rem',
+                    borderRadius: '0.25rem',
+                  }}
+                >
+                  <DollarOutlined style={{ color: '#EFC76E', fontSize: '1.5rem' }} />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                      fontSize: '1rem',
+                      color: '#0015CD',
+                    }}
+                  >
+                    Quản lí bảo hành
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      width: '100%',
+                      color: 'black',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    Thiết lập quản lí bảo hành
+                  </div>
+                </div>
+              </Link>
+            </Col>
             <Col
               style={{ width: '100%', marginTop: '1rem', marginRight: '1rem' }}
               xs={24}

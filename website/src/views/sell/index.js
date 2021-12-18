@@ -1723,11 +1723,7 @@ export default function Sell() {
               />
               Giao hàng tận nơi
             </div>
-            <div
-              style={{
-                visibility: !invoices[indexInvoice].isDelivery && 'hidden',
-              }}
-            >
+            <div style={{ visibility: !invoices[indexInvoice].isDelivery && 'hidden' }}>
               Kênh:{' '}
               <Select
                 allowClear
@@ -1737,11 +1733,10 @@ export default function Sell() {
                 value={invoices[indexInvoice].salesChannel || undefined}
                 onChange={(value) => _editInvoice('salesChannel', value)}
               >
-                <Select.Option value="live">Bán trực tiếp</Select.Option>
-                <Select.Option value="facebook">Facebook</Select.Option>
-                <Select.Option value="instagram">Instagram</Select.Option>
-                <Select.Option value="shopee">Shopee</Select.Option>
-                <Select.Option value="lazada">Lazada</Select.Option>
+                <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
+                <Select.Option value="Cửa hàng">Cửa hàng</Select.Option>
+                <Select.Option value="Kho">Kho</Select.Option>
+                <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
                 <Select.Option value="other">Khác</Select.Option>
               </Select>
             </div>

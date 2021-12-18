@@ -105,7 +105,7 @@ const BaseLayout = (props) => {
   const [isMobile, setIsMobile] = useState(false)
 
   const [openKeys, setOpenKeys] = useState([])
-  const rootSubmenuKeys = ['product', 'warehouse', 'offer', 'report', 'transport', 'commerce']
+  const rootSubmenuKeys = ['store', 'warehouse', 'offer', 'report', 'transport', 'commerce']
   const onOpenChange = (keys) => {
     const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1)
     if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
@@ -173,16 +173,16 @@ const BaseLayout = (props) => {
       icon: <SlidersOutlined />,
     },
     {
-      path: 'product',
-      title: 'Sản phẩm',
-      permissions: [PERMISSIONS.san_pham],
+      path: 'store',
+      title: 'Cửa hàng',
+      permissions: [],
       icon: <FormOutlined />,
       menuItems: [
         {
           icon: <GiftOutlined />,
           path: ROUTES.PRODUCT,
           title: 'Sản phẩm cửa hàng',
-          permissions: [PERMISSIONS.quan_li_san_pham],
+          permissions: [],
         },
         // {
         //   icon: <BankOutlined />,
@@ -192,16 +192,9 @@ const BaseLayout = (props) => {
         // },
         {
           icon: <RotateLeftOutlined />,
-          path: ROUTES.SHIPPING_PRODUCT,
-          title: 'Chuyển hàng',
-          permissions: [PERMISSIONS.quan_li_chuyen_hang],
-        },
-
-        {
-          icon: <AccountBookOutlined />,
-          path: ROUTES.GUARANTEE,
-          title: 'Bảo hành',
-          permissions: [PERMISSIONS.quan_li_bao_hanh],
+          path: ROUTES.STORE,
+          title: 'Quản lí cửa hàng',
+          permissions: [],
         },
       ],
     },
@@ -213,25 +206,13 @@ const BaseLayout = (props) => {
       menuItems: [
         {
           icon: <GiftOutlined />,
-          path: ROUTES.IMPORT_INVENTORY,
+          path: ROUTES.IMPORT_INVENTORIES,
           title: 'Nhập kho',
           permissions: [],
         },
         {
-          icon: <BankOutlined />,
-          path: '',
-          title: 'Xuất kho',
-          permissions: [],
-        },
-        {
-          icon: <BgColorsOutlined />,
-          path: ROUTES.BRANCH_MANAGEMENT,
-          title: 'Quản lí kho',
-          permissions: [],
-        },
-        {
           icon: <AreaChartOutlined />,
-          path: '',
+          path: ROUTES.PRODUCT,
           title: 'Sản phẩm ở kho',
           permissions: [],
         },
@@ -240,6 +221,12 @@ const BaseLayout = (props) => {
           path: ROUTES.SUPPLIER,
           title: 'Nhà cung cấp',
           permissions: [PERMISSIONS.quan_li_nha_cung_cap],
+        },
+        {
+          icon: <RotateLeftOutlined />,
+          path: ROUTES.SHIPPING_PRODUCT,
+          title: 'Chuyển hàng',
+          permissions: [],
         },
       ],
     },

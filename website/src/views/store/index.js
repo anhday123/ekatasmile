@@ -316,27 +316,7 @@ export default function Store() {
           width: '100%',
         }}
       >
-        <Link
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
-          }}
-          to={ROUTES.CONFIGURATION_STORE}
-        >
-          <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
-          <div
-            style={{
-              color: 'black',
-              fontWeight: '600',
-              fontSize: '1rem',
-              marginLeft: '0.5rem',
-            }}
-          >
-            Quản lý cửa hàng
-          </div>
-        </Link>
+        <div style={{ fontWeight: '600', fontSize: '1.2rem', width: 150 }}>Quản lý cửa hàng</div>
         <div className={styles['promotion_manager_button']}>
           <Permission permissions={[PERMISSIONS.them_cua_hang]}>
             <StoreInformationAdd reloadData={_getStores} />

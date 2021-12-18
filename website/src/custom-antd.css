@@ -77,8 +77,8 @@
 /* custom menu */
 
 .upload-variant-image > .ant-upload {
-  width: 65px !important;
-  height: 65px !important;
+  width: 72px !important;
+  height: 72px !important;
 }
 
 .upload-category-image > .ant-upload {

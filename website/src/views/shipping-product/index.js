@@ -11,6 +11,7 @@ import {
   notification,
   Drawer,
   Typography,
+  Space,
 } from 'antd'
 
 import { PERMISSIONS } from 'consts'
@@ -33,38 +34,25 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 export default function ShippingProduct() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [pagination, setPagination] = useState({ page: 1, page_size: 10 })
+
   const [totalRecord, setTotalRecord] = useState(0)
-  const [deliveryList, setDelivery] = useState([])
+  const [deliveryList, setDeliveryList] = useState([])
   const [loading, setLoading] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
   const [showMultiUpdate, setShowMultiUpdate] = useState(false)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const [filter, setFilter] = useState({
-    search: '',
-    from_date: moment().startOf('month').format('YYYY-MM-DD'),
-    to_date: moment().format('YYYY-MM-DD'),
-    status: undefined,
-  })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const history = useHistory()
-
-  const changePage = (page, page_size) => {
-    setPagination({ page, page_size })
-  }
 
   const getAllDelivery = async (params) => {
     try {
       setLoading(true)
-      const res = await getDelivery({
-        ...params,
-        page: pagination.page,
-        page_size: pagination.page_size,
-      })
+      const res = await getDelivery(params)
       console.log(res)
-      if (res.status == 200) {
-        setDelivery(res.data.data)
+      if (res.status === 200) {
+        setDeliveryList(res.data.data)
         setTotalRecord(res.data.count)
       }
       setLoading(false)
@@ -83,7 +71,7 @@ export default function ShippingProduct() {
         )
         if (res.reduce((a, b) => a && b.data.success, true)) {
           notification.success({ message: 'Cập nhật thành công' })
-          getAllDelivery({ ...filter })
+          getAllDelivery({ ...paramsFilter })
           setShowMultiUpdate(false)
         }
       } else setShowMultiUpdate(false)
@@ -93,150 +81,56 @@ export default function ShippingProduct() {
   }
 
   const onSearch = (value) => {
-    setFilter({ ...filter, search: value.target.value })
+    setParamsFilter({ ...paramsFilter, search: value.target.value })
   }
-  function handleChange(value) {
-    // console.log(`selected ${value}`);
-  }
+
   const columnsPromotion = [
     {
       title: 'STT',
       width: 50,
-      render(data, record, index) {
-        return (pagination.page - 1) * pagination.page_size + index + 1
-      },
+      render: (data, record, index) => index + 1,
     },
     {
       title: 'Mã phiếu',
       dataIndex: 'code',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Nơi chuyển',
       dataIndex: 'from',
-      width: 150,
-      render(data) {
-        return data.name
-      },
-      sorter: (a, b) => compareCustom(a.from.name, b.from.name),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
-      width: 150,
-      render(data, record) {
-        switch (data.toUpperCase()) {
-          case 'PROCESSING': {
-            return (
-              <div
-                onClick={() => onClickStatus(record)}
-                style={{
-                  color: '#FF9D0A',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Chờ chuyển
-              </div>
-            )
-          }
-          case 'SHIPPING': {
-            return (
-              <div
-                onClick={() => onClickStatus(record)}
-                style={{
-                  color: 'rgba(47, 155, 255, 1)',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Đang chuyển
-              </div>
-            )
-          }
-          case 'CANCEL': {
-            return (
-              <div
-                onClick={() => onClickStatus(record)}
-                style={{
-                  color: 'red',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Đã hủy
-              </div>
-            )
-          }
-          case 'CANCEL_FINISH': {
-            return (
-              <div
-                onClick={() => onClickStatus(record)}
-                style={{ color: 'red', fontWeight: '600', cursor: 'pointer' }}
-              >
-                Đã Hủy
-              </div>
-            )
-          }
-          case 'COMPLETE': {
-            return (
-              <div
-                onClick={() => onClickStatus(record)}
-                style={{
-                  color: 'rgba(26, 184, 0, 1)',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Hoàn thành
-              </div>
-            )
-          }
-          default:
-            break
-        }
-      },
-      sorter: (a, b) => compare(a, b, 'status'),
     },
     {
       title: 'Nơi nhận',
       dataIndex: 'to',
-      width: 150,
-      render(data) {
-        return data.name
-      },
-      sorter: (a, b) => compareCustom(a.to.name, b.to.name),
     },
     {
       title: 'Ngày nhận',
       dataIndex: 'create_date',
-      width: 150,
-      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      // render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      // sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Ngày chuyển',
       dataIndex: 'ship_time',
-      width: 150,
-      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      // render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      // sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
-      width: 150,
-      sorter: (a, b) =>
-        compareCustom(
-          a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
-          b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
-        ),
-      render: (text) => text && text.first_name + ' ' + text.last_name,
+      // sorter: (a, b) =>
+      //   compareCustom(
+      //     a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
+      //     b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
+      //   ),
+      // render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
-  const onClickStatus = (data) => {
-    history.push({ pathname: '/actions/shipping-product/update', state: data })
-  }
+
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
   }
@@ -263,89 +157,97 @@ export default function ShippingProduct() {
   const ExportButton = () => <Button onClick={ExportExcel}>Xuất excel</Button>
 
   const changeRange = (date, dateString) => {
-    setFilter({ ...filter, from_date: dateString[0], to_date: dateString[1] })
+    setParamsFilter({ ...paramsFilter, from_date: dateString[0], to_date: dateString[1] })
   }
-  const resetFilter = () => {
-    setFilter({
-      search: '',
-      from_date: moment().startOf('month').format('YYYY-MM-DD'),
-      to_date: moment().format('YYYY-MM-DD'),
-      status: undefined,
-    })
-  }
+
   const changeTimeOption = (value) => {
     switch (value) {
       case 'to_day':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().format('YYYY-MM-DD'),
           to_date: moment().format('YYYY-MM-DD'),
         })
         break
       case 'yesterday':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
           to_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
         })
         break
       case 'this_week':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().startOf('week').format('YYYY-MM-DD'),
           to_date: moment().endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'last_week':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
           to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'this_month':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().startOf('month').format('YYYY-MM-DD'),
           to_date: moment().format('YYYY-MM-DD'),
         })
         break
       case 'last_month':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
           to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
         })
         break
       case 'this_year':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().startOf('years').format('YYYY-MM-DD'),
           to_date: moment().endOf('years').format('YYYY-MM-DD'),
         })
         break
       case 'last_year':
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
           to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
         })
         break
       default:
-        setFilter({
-          ...filter,
+        setParamsFilter({
+          ...paramsFilter,
           from_date: moment().startOf('month').format('YYYY-MM-DD'),
           to_date: moment().format('YYYY-MM-DD'),
         })
         break
     }
   }
+
   useEffect(() => {
-    getAllDelivery()
+    let data = []
+    const status = ['Chờ Chuyển', 'Đang Chuyển', 'Đã Hủy', 'Hoàn Thành']
+    for (let i = 0; i < 40; i++)
+      data.push({
+        code: Math.floor(Math.random() * 500000),
+        from: 'Cửa hàng 48',
+        status: status[Math.floor(Math.random() * 3)],
+        to: 'Nguyên Văn Trỗi',
+        create_date: moment(new Date()).format('DD-MM-YYYY HH:mm'),
+        ship_time: '04-12-2021 12:00',
+        _creator: 'Van Hoang',
+      })
+
+    setDeliveryList([...data])
   }, [])
+
   useEffect(() => {
-    getAllDelivery({ ...filter })
-  }, [filter, pagination])
+    getAllDelivery({ ...paramsFilter })
+  }, [paramsFilter])
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
@@ -360,7 +262,7 @@ export default function ShippingProduct() {
           }}
         >
           <div className={styles['promotion_manager_title']}>Quản lý chuyển hàng</div>
-          <div className={styles['promotion_manager_button']}>
+          {/* <div className={styles['promotion_manager_button']}>
             <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
               <Button
                 size="large"
@@ -371,7 +273,7 @@ export default function ShippingProduct() {
                 Tạo phiếu chuyển hàng
               </Button>
             </Permission>
-          </div>
+          </div> */}
         </div>
         <Row
           style={{
@@ -433,11 +335,12 @@ export default function ShippingProduct() {
           <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
+                allowClear
                 size="large"
                 style={{ width: '100%' }}
-                placeholder="Lọc phiếu chuyển"
-                value={filter.status}
-                onChange={(e) => setFilter({ ...filter, status: e })}
+                placeholder="Lọc theo trạng thái"
+                value={paramsFilter.status}
+                onChange={(e) => setParamsFilter({ ...paramsFilter, status: e })}
               >
                 <Option value="processing">Chờ chuyển</Option>
                 <Option value="shipping">Đang chuyển</Option>
@@ -447,67 +350,23 @@ export default function ShippingProduct() {
             </div>
           </Col>
         </Row>
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Row
+        <Row justify="end" style={{ marginTop: 30 }}>
+          <Space>
+            {/* <Button size="large" type="primary" >
+              Xóa bộ lọc
+            </Button> */}
+            <Button
+              size="large"
+              icon={<FileExcelOutlined />}
               style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
+                backgroundColor: '#008816',
+                color: 'white',
               }}
+              onClick={() => setExportVisible(true)}
             >
-              <Col
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  display: 'flex',
-                  marginLeft: '1rem',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={6}
-              >
-                <Button
-                  size="large"
-                  icon={<FileExcelOutlined />}
-                  style={{
-                    backgroundColor: '#008816',
-                    color: 'white',
-                  }}
-                  onClick={() => setExportVisible(true)}
-                >
-                  Xuất excel
-                </Button>
-              </Col>
-              <Col
-                style={{
-                  marginTop: '1rem',
-                  marginLeft: '1rem',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={6}
-              >
-                <Button size="large" type="primary" onClick={resetFilter}>
-                  Xóa bộ lọc
-                </Button>
-              </Col>
-            </Row>
-          </Col>
+              Xuất excel
+            </Button>
+          </Space>
         </Row>
         <Row style={{ width: '100%' }}>
           {selectedRowKeys.length ? (
@@ -534,9 +393,15 @@ export default function ShippingProduct() {
             loading={loading}
             columns={columnsPromotion}
             rowKey="delivery_id"
-            pagination={{ onChange: changePage, total: totalRecord }}
+            pagination={{
+              page: paramsFilter.page,
+              pageSize: paramsFilter.page_size,
+              onChange: (page, pageSize) =>
+                setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+              total: totalRecord,
+            }}
             dataSource={deliveryList}
-            scroll={{ y: 500, x: 'max-content' }}
+            style={{ width: '100%' }}
           />
         </div>
       </div>

@@ -102,6 +102,7 @@ import Brand from './brand'
 import BrandCreate from './brand-create'
 import Channel from './channel'
 import Contact from './contact'
+import ImportInventories from './import-inventories'
 import ImportInventory from './import-inventory'
 
 const DEFINE_ROUTER = [
@@ -436,9 +437,16 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
+    path: ROUTES.IMPORT_INVENTORIES,
+    Component: () => <ImportInventories />,
+    title: 'Nhập kho',
+    permissions: [],
+    exact: true,
+  },
+  {
     path: ROUTES.IMPORT_INVENTORY,
     Component: () => <ImportInventory />,
-    title: 'Nhập kho',
+    title: 'Chi tiết đơn hàng nhập kho',
     permissions: [],
     exact: true,
   },

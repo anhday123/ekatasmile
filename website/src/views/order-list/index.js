@@ -31,6 +31,7 @@ import columnsOrder from './columnsOrder'
 
 //apis
 import { apiAllOrder, deleteOrders } from 'apis/order'
+import { apiAllUser } from 'apis/user'
 
 const { RangePicker } = DatePicker
 export default function OrderList() {
@@ -45,7 +46,9 @@ export default function OrderList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
+  const [employees, setEmployees] = useState([])
 
+  const [optionSearchName, setOptionSearchName] = useState('code')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: PAGE_SIZE })
   const [valueSearch, setValueSearch] = useState('')
 
@@ -64,8 +67,8 @@ export default function OrderList() {
     typingTimeoutRef.current = setTimeout(() => {
       paramsFilter.page = 1
 
-      if (value) paramsFilter.order_id = value
-      else delete paramsFilter.order_id
+      if (value) paramsFilter[optionSearchName] = value
+      else delete paramsFilter[optionSearchName]
 
       setParamsFilter({ ...paramsFilter })
     }, 650)
@@ -102,20 +105,18 @@ export default function OrderList() {
     setParamsFilter({ ...paramsFilter })
   }
 
-  const _onChangeStatus = (value) => {
+  const _onChangeFilter = (attribute = '', value = '') => {
     paramsFilter.page = 1
-
-    if (value) paramsFilter.bill_status = value
-    else delete paramsFilter.bill_status
-
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
     setParamsFilter({ ...paramsFilter })
   }
 
   const columnsProduct = [
     {
       title: 'Mã sản phẩm',
-      dataIndex: 'product_id',
-      sorter: (a, b) => compare(a, b, 'product_id'),
+      dataIndex: 'sku',
+      sorter: (a, b) => compare(a, b, 'sku'),
     },
     {
       title: 'Ảnh',
@@ -170,6 +171,20 @@ export default function OrderList() {
     }
   }
 
+  const _getEmployees = async () => {
+    try {
+      const res = await apiAllUser()
+      if (res.status === 200) setEmployees(res.data.data)
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    _getEmployees()
+  }, [])
+
   useEffect(() => {
     _getOrders(paramsFilter)
   }, [paramsFilter])
@@ -201,56 +216,107 @@ export default function OrderList() {
           </Permissions>
         </Row>
 
-        <Row style={{ marginTop: '1rem', width: '100%' }} wrap={false}>
-          <Space>
-            <div>
-              <div>Tìm kiếm theo mã đơn hàng</div>
+        <Row justify="space-between" style={{ marginTop: '1rem', width: '100%' }} wrap={false}>
+          <div>
+            <div>Tìm kiếm đơn hàng</div>
+            <Row wrap={false}>
               <Input
                 style={{ width: 350 }}
                 prefix={<SearchOutlined />}
-                size="large"
                 name="name"
                 value={valueSearch}
                 onChange={_onSearch}
-                placeholder="Nhập mã đơn hàng"
+                placeholder="Tìm kiếm theo ..."
                 allowClear
               />
-            </div>
-            <div>
-              <div>Lọc theo thời gian</div>
-              <RangePicker
-                onChange={_onChangeDate}
-                style={{ width: 270 }}
-                size="large"
-                className="br-15__date-picker"
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-              />
-            </div>
-            <div>
-              <div>Lọc theo trạng thái</div>
               <Select
-                value={paramsFilter.value}
-                onChange={_onChangeStatus}
                 showSearch
-                size="large"
-                allowClear
-                placeholder="Chọn trạng thái"
-                style={{ width: 250 }}
+                style={{ width: 170 }}
+                placeholder="Chọn theo"
+                value={optionSearchName}
+                onChange={(value) => {
+                  delete paramsFilter[optionSearchName]
+                  setOptionSearchName(value)
+                }}
               >
-                {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
-                  <Select.Option value={status} key={index}>
-                    {BILL_STATUS_ORDER[status]}
-                  </Select.Option>
-                ))}
+                <Select.Option value="code">Mã đơn hàng</Select.Option>
+                <Select.Option value="product_name">Tên sản phẩm</Select.Option>
+                <Select.Option value="product_sku">Mã sản phẩm</Select.Option>
+                <Select.Option value="customer_name">Tên khách hàng</Select.Option>
+                <Select.Option value="customer_code">Mã khách hàng</Select.Option>
+                <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
+                <Select.Option value="employee_name">Tên nhân viên</Select.Option>
               </Select>
-            </div>
-          </Space>
+            </Row>
+          </div>
+          <div>
+            <div>Lọc theo thời gian</div>
+            <RangePicker
+              onChange={_onChangeDate}
+              style={{ width: 270 }}
+              className="br-15__date-picker"
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+            />
+          </div>
+          <div>
+            <div>Lọc theo trạng thái</div>
+            <Select
+              value={paramsFilter.bill_status}
+              onChange={(value) => _onChangeFilter('bill_status', value)}
+              showSearch
+              allowClear
+              placeholder="Chọn trạng thái"
+              style={{ width: 250 }}
+            >
+              {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
+                <Select.Option value={status} key={index}>
+                  {BILL_STATUS_ORDER[status]}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+        </Row>
+        <Row justify="space-between" style={{ marginTop: '1rem', width: '100%' }} wrap={false}>
+          <div>
+            <div>Lọc theo kênh bán hàng</div>
+            <Select
+              value={paramsFilter.chanel}
+              onChange={(value) => _onChangeFilter('chanel', value)}
+              showSearch
+              allowClear
+              placeholder="Chọn kênh bán hàng"
+              style={{ width: 520 }}
+            >
+              <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
+              <Select.Option value="Cửa hàng">Cửa hàng</Select.Option>
+              <Select.Option value="Kho">Kho</Select.Option>
+              <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
+              <Select.Option value="other">Khác</Select.Option>
+            </Select>
+          </div>
+          <div>
+            <div>Lọc theo nhân viên</div>
+            <Select
+              value={paramsFilter.employee_name}
+              onChange={(value) => _onChangeFilter('employee_name', value)}
+              showSearch
+              allowClear
+              placeholder="Chọn nhân viên"
+              style={{ width: 250 }}
+            >
+              {employees.map((employee, index) => (
+                <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
+                  {employee.first_name} {employee.last_name}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
         </Row>
 
-        <Row justify="space-between" style={{ width: '100%', marginTop: 15 }}>
+        <Row justify="space-between" style={{ width: '100%', marginTop: 30 }}>
           <Popconfirm onConfirm={_deleteOrders} title="Bạn có muốn xóa các đơn hàng này không ?">
             <Button
               style={{ visibility: !selectedRowKeys.length && 'hidden' }}

@@ -96,12 +96,14 @@ export default function ProductAdd() {
   const addValueVariant = () => {
     let variantsNew = []
 
+    const dataForm = form.getFieldsValue()
+
     const initVariant = {
       image: '',
       imagePreview: '',
-      import_price: 0,
-      base_price: 0,
-      price: 0,
+      import_price: dataForm.import_price || 0,
+      base_price: dataForm.base_price || 0,
+      price: dataForm.price || 0,
     }
 
     if (attributes.length !== 0) {
@@ -225,7 +227,7 @@ export default function ProductAdd() {
     for (let i = 0; i < variants.length; ++i) {
       if (!variants[i].base_price) {
         notification.error({
-          message: 'Vui lòng nhập giá cơ bản trong phiên bản!',
+          message: 'Vui lòng nhập giá vốn trong phiên bản!',
         })
         return
       }
@@ -310,6 +312,8 @@ export default function ProductAdd() {
             ? skuProductWithEdit
             : !isGeneratedSku
             ? formProduct.sku
+              ? formProduct.sku
+              : valueDefaultSku
             : valueGeneratedSku,
           options: [],
           image: images || [],
@@ -514,9 +518,9 @@ export default function ProductAdd() {
 
     return (
       <>
-        Giá cơ bản
+        Giá vốn
         <InputNumber
-          placeholder="Nhập giá cơ bản"
+          placeholder="Nhập giá vốn"
           className="br-15__input"
           formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -716,9 +720,9 @@ export default function ProductAdd() {
             </div>
 
             <div>
-              <span style={{ marginBottom: 0 }}>Giá cơ bản</span>
+              <span style={{ marginBottom: 0 }}>Giá vốn</span>
               <InputNumber
-                placeholder="Nhập giá cơ bản"
+                placeholder="Nhập giá vốn"
                 className="br-15__input"
                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -761,12 +765,12 @@ export default function ProductAdd() {
     },
     {
       title: 'SKU',
-      width: 250,
+      width: 300,
       render: (text, record) => <InputSku value={record.sku} variant={record} />,
     },
     {
       title: 'Giá',
-      width: 250,
+      width: 300,
       render: (text, record) => (
         <Space size="middle" direction="vertical" style={{ width: '100%' }}>
           <InputSalePrice value={record.price} variant={record} />
@@ -1058,6 +1062,63 @@ export default function ProductAdd() {
               <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 phiên bản</div>
             </div>
             <Row justify="space-between" align="middle">
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  label="Giá vốn"
+                  name="base_price"
+                  rules={[
+                    {
+                      required: !isProductHasVariants && true,
+                      message: 'Vui lòng nhập giá vốn!',
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá vốn"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  rules={[
+                    {
+                      required: !isProductHasVariants && true,
+                      message: 'Vui lòng nhập giá bán!',
+                    },
+                  ]}
+                  label="Giá bán"
+                  name="price"
+                >
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá bán"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item label="Giá nhập" name="import_price">
+                  <InputNumber
+                    size="large"
+                    min={0}
+                    placeholder="Nhập giá nhập"
+                    style={{ width: '100%' }}
+                    className="br-15__input"
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+              </Col>
               <Row
                 align="middle"
                 style={{
@@ -1070,9 +1131,13 @@ export default function ProductAdd() {
                 <Switch
                   style={{ marginRight: 5 }}
                   checked={isProductHasVariants}
-                  onChange={(checked) => setIsProductHasVariants(checked)}
+                  onChange={(checked) => {
+                    setIsProductHasVariants(checked)
+                    setVariants([])
+                    setAttributes([{ option: '', values: [] }])
+                  }}
                 />
-                Sản phẩm {isProductHasVariants ? 'có nhiều' : 'có 1'} phiên bản
+                Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} phiên bản
               </Row>
               <div style={{ display: isProductHasVariants ? '' : 'none', width: '100%' }}>
                 <div
@@ -1238,75 +1303,7 @@ export default function ProductAdd() {
                   />
                 </div>
               </div>
-              <Col
-                xs={24}
-                sm={24}
-                md={7}
-                lg={7}
-                xl={7}
-                style={{ display: isProductHasVariants && 'none' }}
-              >
-                <Form.Item
-                  label="Giá vốn"
-                  name="price"
-                  rules={[
-                    {
-                      required: !isProductHasVariants && true,
-                      message: 'Vui lòng nhập giá vốn!',
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    size="large"
-                    min={0}
-                    placeholder="Nhập giá vốn"
-                    style={{ width: '100%' }}
-                    className="br-15__input"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
-              </Col>
-              <Col
-                xs={24}
-                sm={24}
-                md={7}
-                lg={7}
-                xl={7}
-                style={{ display: isProductHasVariants && 'none' }}
-              >
-                <Form.Item label="Giá cơ bản" name="base_price">
-                  <InputNumber
-                    size="large"
-                    min={0}
-                    placeholder="Nhập giá cơ bản"
-                    style={{ width: '100%' }}
-                    className="br-15__input"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
-              </Col>
-              <Col
-                xs={24}
-                sm={24}
-                md={7}
-                lg={7}
-                xl={7}
-                style={{ display: isProductHasVariants && 'none' }}
-              >
-                <Form.Item label="Giá nhập" name="import_price">
-                  <InputNumber
-                    size="large"
-                    min={0}
-                    placeholder="Nhập giá nhập"
-                    style={{ width: '100%' }}
-                    className="br-15__input"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
-              </Col>
+
               <Col
                 xs={24}
                 sm={24}
