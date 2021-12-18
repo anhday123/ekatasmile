@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require(`cors`);
 const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
+const app = express();
+const endPoint = process.env.END_POINT;
 
 const router = require(`./routers/index`);
 const client = require('./config/mongodb');
@@ -20,9 +22,6 @@ const options = {
 };
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
-
-const app = express();
-const endPoint = process.env.END_POINT;
 
 app.use(cors()).use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
