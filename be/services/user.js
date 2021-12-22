@@ -43,10 +43,7 @@ let getUserS = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -277,6 +274,7 @@ let updateUserS = async (req, res, next) => {
                     },
                     {
                         $set: {
+                            price_recipe: req._update.price_recipe,
                             company_name: req._update.company_name,
                             company_website: req._update.company_website,
                         },
