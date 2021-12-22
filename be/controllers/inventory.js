@@ -454,6 +454,27 @@ module.exports._updateImportOrder = async (req, res, next) => {
         let order = await client.db(DB).collection('ImportOrders').findOne(req.params);
         delete req.body._id;
         let _order = { ...order, ...req.body };
+        _order = {
+            business_id: Number(_order.business_id),
+            order_id: _order.order_id,
+            code: _order.code,
+            import_location: _order.import_location,
+            import_location_info: _order.importLocation,
+            products: _order.products,
+            total_cost: _order.total_cost,
+            final_cost: _order.final_cost,
+            total_quantity: _order.total_quantity,
+            // DRAFT - VERIFY - COMPLETE - CANCEL
+            status: _order.status,
+            verify_date: _order.verify_date,
+            verifier_id: _order.verifier_id,
+            complete_date: _order.complete_date,
+            completer_id: _order.completer_id,
+            create_date: _order.create_date,
+            last_update: moment().tz(TIMEZONE).format(),
+            creator_id: _order.creator_id,
+            active: _order.active,
+        };
         if (_order.status == 'VERIFY' && order.status != 'VERIFY') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
