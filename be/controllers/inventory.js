@@ -426,6 +426,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         let _order = { ...order, ...req.body };
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+            _order['verifier_id'] = Number(req.user.user_id);
             let [price_id, location_id] = await Promise.all([
                 client
                     .db(DB)
