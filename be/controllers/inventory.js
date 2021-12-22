@@ -31,7 +31,7 @@ module.exports._getImportOrder = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         if (req.query.order_id) {
-            aggregateQuery.push({ $match: { order_id: Number(order_id) } });
+            aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
         }
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
@@ -51,8 +51,8 @@ module.exports._getImportOrder = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: orders,
             count: counts[0] ? counts[0].counts : 0,
+            data: orders,
         });
     } catch (err) {
         next(err);
