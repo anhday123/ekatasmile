@@ -27,39 +27,45 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-module.exports._importOrder = async (req, res, next) => {
+module.exports._getImportOrder = async (req, res, next) => {
     try {
-        let [order_id, price_id, location_id] = await Promise.all([
+        let aggregateQuery = [];
+        if (req.query.order_id) {
+            aggregateQuery.push({ $match: { order_id: Number(order_id) } });
+        }
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
+        // lấy data từ database
+        let [orders, counts] = await Promise.all([
+            client.db(DB).collection(`ImportOrders`).aggregate(aggregateQuery).toArray(),
+            client
+                .db(DB)
+                .collection(`ImportOrders`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            data: orders,
+            count: counts[0] ? counts[0].counts : 0,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._createImportOrder = async (req, res, next) => {
+    try {
+        let [order_id] = await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
-                .findOne({ name: 'IOHistories' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Prices' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' })
+                .findOne({ name: 'ImportOrders' })
                 .then((doc) => {
                     if (doc && doc.value) {
                         return doc.value;
@@ -71,54 +77,21 @@ module.exports._importOrder = async (req, res, next) => {
                 }),
         ]);
         order_id++;
-        let order = {
-            order_id: order_id,
-            code: 1000000 + order_id,
-            location_type: req.body.location_type,
-            location_id: req.body.location_id,
-            products: req.body.products || [],
-            create_date: moment().tz(TIMEZONE).format(),
-            last_update: moment().tz(TIMEZONE).format(),
-            creator_id: req.user.user_id,
-            active: true,
-        };
-        let prices = [];
-        let locations = [];
+        const importAt = (() => {
+            if (req.body.import_location && req.body.import_location.branch_id) {
+                return 'Branchs';
+            }
+            return 'Stores';
+        })();
+        let importLocation = await client.db(DB).collection(importAt).findOne(req.body.import_location);
+        if (!importLocation) {
+            throw new Error('400: Địa điểm nhập hàng không chính xác!');
+        }
         let productIds = [];
         let variantIds = [];
         req.body.products.map((product) => {
             productIds.push(product.product_id);
             variantIds.push(product.variant_id);
-            price_id++;
-            let _price = {
-                business_id: Number(req.user.business_id),
-                price_id: Number(price_id),
-                product_id: Number(product.product_id),
-                variant_id: Number(product.variant_id),
-                import_price: Number(product.import_price),
-                create_date: moment().tz(TIMEZONE).format(),
-                last_update: moment().tz(TIMEZONE).format(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            };
-            prices.push(_price);
-            location_id++;
-            let _location = {
-                business_id: Number(req.user.business_id),
-                location_id: Number(location_id),
-                product_id: Number(product.product_id),
-                variant_id: Number(product.variant_id),
-                price_id: Number(price_id),
-                type: req.body.inventory_type,
-                inventory_id: req.body.inventory_id,
-                name: '',
-                quantity: product.quantity,
-                create_date: moment().tz(TIMEZONE).format(),
-                last_update: moment().tz(TIMEZONE).format(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            };
-            locations.push(_location);
         });
         productIds = [...new Set(productIds)];
         variantIds = [...new Set(variantIds)];
@@ -142,37 +115,38 @@ module.exports._importOrder = async (req, res, next) => {
         variants.map((variant) => {
             _variants[String(variant.variant_id)] = variant;
         });
-        order.products = order.products.map((product) => {
+        req.body.products = req.body.products.map((product) => {
             return {
                 ...product,
                 product_info: _products[product.product_id],
                 variant_info: _variants[product.variant_id],
             };
         });
+        let order = {
+            business_id: Number(req.user.business_id),
+            order_id: order_id,
+            code: 1000000 + order_id,
+            import_location: req.body.import_location,
+            import_location_info: importLocation,
+            products: req.body.products || [],
+            status: 'DRAFT',
+            verify_date: '',
+            verifier_id: '',
+            create_date: moment().tz(TIMEZONE).format(),
+            last_update: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            active: true,
+        };
         await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
                 .updateOne(
-                    { name: 'IOHistories' },
-                    { $set: { name: 'IOHistories', value: order_id } },
+                    { name: 'ImportOrders' },
+                    { $set: { name: 'ImportOrders', value: order_id } },
                     { upsert: true }
                 ),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'Locations' },
-                    { $set: { name: 'Locations', value: location_id } },
-                    { upsert: true }
-                ),
-            client.db(DB).collection('IOHistories').insertOne(order),
-            client.db(DB).collection('Prices').insertMany(prices),
-            client.db(DB).collection('Locations').insertMany(locations),
+            client.db(DB).collection('ImportOrders').insertOne(order),
         ]);
         res.send({
             success: true,
@@ -355,6 +329,168 @@ module.exports._importOrderFile = async (req, res, next) => {
                 locations: locations,
             },
         });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._updateImportOrder = async (req, res, next) => {
+    try {
+        req.params.order_id = Number(req.params.order_id);
+        let order = await client.db(DB).collection('ImportOrders').findOne(req.params);
+        delete req.body._id;
+        let _order = { ...order, ...req.body };
+        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+            let [price_id, location_id] = await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .findOne({ name: 'Prices' })
+                    .then((doc) => {
+                        if (doc && doc.value) {
+                            return doc.value;
+                        }
+                        return 0;
+                    })
+                    .catch((err) => {
+                        throw new Error(`500: ${err}`);
+                    }),
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .findOne({ name: 'Locations' })
+                    .then((doc) => {
+                        if (doc && doc.value) {
+                            return doc.value;
+                        }
+                        return 0;
+                    })
+                    .catch((err) => {
+                        throw new Error(`500: ${err}`);
+                    }),
+            ]);
+            let prices = [];
+            let locations = [];
+            _order.products.map((product) => {
+                price_id++;
+                let _price = {
+                    business_id: Number(_order.business_id),
+                    price_id: Number(price_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    import_price: Number(product.import_price),
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                };
+                prices.push(_price);
+                location_id++;
+                let _location = {
+                    business_id: Number(_order.business_id),
+                    location_id: Number(location_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    price_id: Number(price_id),
+                    type: (() => {
+                        if (_order.import_location && _order.import_location.branch_id) {
+                            return 'BRANCH';
+                        }
+                        if (_order.import_location && _order.import_location.store_id) {
+                            return 'STORE';
+                        }
+                        return '';
+                    })(),
+                    inventory_id: (() => {
+                        if (_order.import_location && _order.import_location.branch_id) {
+                            return _order.import_location.branch_id;
+                        }
+                        if (_order.import_location && _order.import_location.store_id) {
+                            return _order.import_location.store_id;
+                        }
+                        return 0;
+                    })(),
+                    name: (() => {
+                        if (_order.import_location_info && _order.import_location_info.branch_id) {
+                            return _order.import_location_info.name;
+                        }
+                        return '';
+                    })(),
+                    quantity: product.quantity,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                };
+                locations.push(_location);
+            });
+            await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .updateOne(
+                        { name: 'Locations' },
+                        { $set: { name: 'Locations', value: location_id } },
+                        { upsert: true }
+                    ),
+                client.db(DB).collection('Prices').insertMany(prices),
+                client.db(DB).collection('Locations').insertMany(locations),
+            ]);
+        }
+        await client.db(DB).collection('ImportOrders').updateOne(req.params, { $set: _order });
+        res.send({ success: true, data: _order });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._transportOrderFile = async (req, res, next) => {
+    try {
+        let [order_id, price_id, location_id] = await Promise.all([
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'TransportOrders' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Prices' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Locations' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+        ]);
     } catch (err) {
         next(err);
     }
