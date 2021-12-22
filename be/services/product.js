@@ -36,13 +36,6 @@ module.exports.getProductS = async (req, res, next) => {
             });
             aggregateQuery.push({ $match: { category_id: { $in: ids } } });
         }
-        if (req.query.deal_id) {
-            let ids = req.query.deal_id.split('---');
-            ids = ids.map((id) => {
-                return Number(id);
-            });
-            aggregateQuery.push({ $match: { deal_id: { $in: ids } } });
-        }
         if (req.query.supplier_id) {
             aggregateQuery.push({
                 $match: { supplier_id: Number(req.query.supplier_id) },
@@ -93,66 +86,50 @@ module.exports.getProductS = async (req, res, next) => {
                 as: 'attributes',
             },
         });
-
-        if (req.query.attribute) {
-            req.query.attribute = String(req.query.attribute).trim().toUpperCase();
-            let filters = req.query.attribute.split('---');
-            filters = filters.map((filter) => {
-                let [option, values] = filter.split(':');
-                values = values.split('||');
-                return { option: option, values: values };
-            });
-            filters = filters.map((filter) => {
-                let values = filter.values.map((value) => {
-                    return new RegExp(`${removeUnicode(String(value), false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig');
-                });
-                aggregateQuery.push({
-                    $match: {
-                        'attributes.sub_option': new RegExp(
-                            `${removeUnicode(String(filter.option), false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
-                        'attributes.sub_values': { $in: values },
+        if (req.query.branch_id) {
+            req.query['branch'] = true;
+        }
+        let branchQuery = (() => {
+            if (req.query.branch) {
+                return [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$type', 'BRANCH'] },
+                                    ...(() => {
+                                        if (req.query.branch_id) {
+                                            return [{ $eq: ['$inventory_id', Number(req.query.branch_id)] }];
+                                        }
+                                        return [];
+                                    })(),
+                                ],
+                            },
+                        },
                     },
-                });
-            });
+                ];
+            }
+            return [];
+        })();
+        if (req.query.store_id) {
+            req.query['store'] = true;
         }
         let storeQuery = (() => {
-            if (req.query.store_id) {
+            if (req.query.store) {
                 return [
                     {
                         $match: {
-                            $expr: { $eq: ['$inventory_id', Number(req.query.store_id)] },
-                        },
-                    },
-                    { $match: { $expr: { $eq: ['$type', 'STORE'] } } },
-                ];
-            }
-            return [];
-        })();
-        let branchQuery = (() => {
-            if (req.query.branch_id) {
-                return [
-                    {
-                        $match: {
-                            $expr: { $eq: ['$inventory_id', Number(req.query.branch_id)] },
-                        },
-                    },
-                    { $match: { $expr: { $eq: ['$type', 'BRANCH'] } } },
-                ];
-            }
-            return [];
-        })();
-        let mergeQuery = (() => {
-            if (req.query.merge == 'true') {
-                return [
-                    {
-                        $group: {
-                            _id: '$inventory_id',
-                            type: { $first: '$type' },
-                            name: { $first: '$name' },
-                            inventory_id: { $first: '$inventory_id' },
-                            quantity: { $sum: '$quantity' },
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$type', 'STORE'] },
+                                    ...(() => {
+                                        if (req.query.store_id) {
+                                            return [{ $eq: ['$inventory_id', Number(req.query.store_id)] }];
+                                        }
+                                        return [];
+                                    })(),
+                                ],
+                            },
                         },
                     },
                 ];
@@ -171,94 +148,65 @@ module.exports.getProductS = async (req, res, next) => {
                             let: { variantId: '$variant_id' },
                             pipeline: [
                                 { $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } },
-                                ...storeQuery,
                                 ...branchQuery,
-                                ...mergeQuery,
+                                ...storeQuery,
+                                {
+                                    $group: {
+                                        _id: { type: '$type', inventory_id: '$inventory_id' },
+                                        type: { $first: '$type' },
+                                        name: { $first: '$name' },
+                                        inventory_id: { $first: '$inventory_id' },
+                                        quantity: { $sum: '$quantity' },
+                                    },
+                                },
                             ],
                             as: 'locations',
                         },
                     },
-                    { $addFields: { total_quantity: { $sum: '$locations.quantity' } } },
                 ],
                 as: 'variants',
             },
         });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Deals',
-                let: { productId: '$product_id' },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [{ $in: ['$$productId', '$product_list'] }, { $eq: ['$sub_type', 'product'] }],
-                            },
-                        },
-                    },
-                ],
-                as: '_deals',
-            },
-        });
-        aggregateQuery.push({ $addFields: { 'variants._deals': '$_deals' } });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Categories',
-                localField: 'category_id',
-                foreignField: 'category_id',
-                as: '_categories',
-            },
-        });
-        aggregateQuery.push({
-            $addFields: { 'variants._categories': '$_categories' },
-        });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Taxes',
-                localField: 'taxes',
-                foreignField: 'tax_id',
-                as: '_taxes',
-            },
-        });
-        aggregateQuery.push({ $addFields: { 'variants._taxes': '$_taxes' } });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Feedbacks',
-                let: { productId: '$product_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                as: 'feedbacks',
-            },
-        });
-        aggregateQuery.push({
-            $addFields: { avg_rate: { $avg: '$feedbacks.rate' } },
-        });
-        if (req.query.detach == 'true') {
-            aggregateQuery.push({
-                $unwind: { path: '$variants', preserveNullAndEmptyArrays: true },
-            });
-
+        if (req.query.feedbacks) {
             aggregateQuery.push({
                 $lookup: {
-                    from: 'UnitProducts',
-                    localField: 'variants.variant_id',
-                    foreignField: 'variant_id',
-                    as: 'units',
+                    from: 'Feedbacks',
+                    let: { productId: '$product_id' },
+                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                    as: 'feedbacks',
                 },
             });
         }
-
-        if (req.query.min_price) {
+        if (req.query._categories) {
             aggregateQuery.push({
-                $match: { 'variants.price': { $gte: Number(req.query.min_price) } },
+                $lookup: {
+                    from: 'Categories',
+                    localField: 'category_id',
+                    foreignField: 'category_id',
+                    as: '_categories',
+                },
             });
         }
-        if (req.query.max_price) {
+        if (req.query._deals) {
             aggregateQuery.push({
-                $match: { 'variants.price': { $lte: Number(req.query.max_price) } },
+                $lookup: {
+                    from: 'Deals',
+                    let: { productId: '$product_id' },
+                    pipeline: [{ $match: { $expr: { $in: ['$$productId', '$product_list'] } } }],
+                    as: '_deals',
+                },
             });
         }
-        aggregateQuery.push({
-            $addFields: { avg_rate: { $avg: '$feedbacks.rate' } },
-        });
+        if (req.query._origin) {
+            aggregateQuery.push({
+                $lookup: {
+                    from: 'Countries',
+                    localField: 'origin_code',
+                    foreignField: 'code',
+                    as: '_origin',
+                },
+            });
+        }
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -287,8 +235,10 @@ module.exports.getProductS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                'attributes.sub_option': 0,
-                'attributes.sub_values': 0,
+                slug_name: 0,
+                'attributes.slug_option': 0,
+                'attributes.slug_values': 0,
+                'variants.slug_title': 0,
                 '_business.password': 0,
                 '_creator.password': 0,
             },
@@ -339,77 +289,71 @@ module.exports.getProductS = async (req, res, next) => {
 
 module.exports.addProductS = async (req, res, next) => {
     try {
-        if (req._insert._products.length > 0) {
-            await new Promise(async (resolve, reject) => {
-                for (let i in req._insert._products) {
-                    await client
+        let result = [];
+        if (req._newProducts && Array.isArray(req._newProducts) && req._newProducts.length > 0) {
+            result.push(req._newProducts);
+            let insert = await client.db(DB).collection('Products').insertMany(req._newProducts);
+            if (!insert.insertedIds) {
+                throw new Error('500: Tạo sản phẩm thất bại!');
+            }
+        }
+        if (req._newAttributes && Array.isArray(req._newAttributes) && req._newAttributes.length > 0) {
+            result.push(req._newAttributes);
+            let insert = await client.db(DB).collection('Attributes').insertMany(req._newAttributes);
+            if (!insert.insertedIds) {
+                throw new Error('500: Tạo sản thuộc tính sản phẩm bại!');
+            }
+        }
+        if (req._newVariants && Array.isArray(req._newVariants) && req._newVariants.length > 0) {
+            result.push(req._newVariants);
+            let insert = await client.db(DB).collection('Variants').insertMany(req._newVariants);
+            if (!insert.insertedIds) {
+                throw new Error('500: Tạo phiên bản sản phẩm thất bại!');
+            }
+        }
+        if (req._oldProducts && Array.isArray(req._oldProducts) && req._oldProducts.length > 0) {
+            result.push(req._oldProducts);
+            await Promise.all(
+                req._oldProducts.map((product) => {
+                    return client
                         .db(DB)
                         .collection('Products')
-                        .updateOne(
-                            {
-                                product_id: Number(req._insert._products[i].product_id),
-                            },
-                            { $set: { ...req._insert._products[i] } },
-                            { upsert: true }
-                        );
-                }
-                resolve();
-            });
+                        .updateOne({ product_id: product.product_id }, { $set: product });
+                })
+            );
         }
-        if (req._insert._attributes.length > 0) {
-            await new Promise(async (resolve, reject) => {
-                for (let i in req._insert._attributes) {
-                    await client
+        if (req._oldAttributes && Array.isArray(req._oldAttributes) && req._oldAttributes.length > 0) {
+            result.push(req._oldAttributes);
+            await Promise.all(
+                req._oldAttributes.map((attribute) => {
+                    return client
                         .db(DB)
                         .collection('Attributes')
-                        .updateOne(
-                            {
-                                attribute_id: Number(req._insert._attributes[i].attribute_id),
-                            },
-                            { $set: { ...req._insert._attributes[i] } },
-                            { upsert: true }
-                        );
-                }
-                resolve();
-            });
+                        .updateOne({ attribute_id: attribute.attribute_id }, { $set: attribute });
+                })
+            );
         }
-        if (req._insert._variants.length > 0) {
-            await new Promise(async (resolve, reject) => {
-                for (let i in req._insert._variants) {
-                    await client
+        if (req._oldVariants && Array.isArray(req._oldVariants) && req._oldVariants.length > 0) {
+            result.push(req._oldVariants);
+            await Promise.all(
+                req._oldVariants.map((variant) => {
+                    return client
                         .db(DB)
                         .collection('Variants')
-                        .updateOne(
-                            {
-                                variant_id: Number(req._insert._variants[i].variant_id),
-                            },
-                            { $set: { ...req._insert._variants[i] } },
-                            { upsert: true }
-                        );
-                }
-                resolve();
-            });
+                        .updateOne({ variant_id: variant.variant_id }, { $set: variant });
+                })
+            );
         }
-        if (req._insert._locations.length > 0) {
-            await new Promise(async (resolve, reject) => {
-                for (let i in req._insert._locations) {
-                    await client
-                        .db(DB)
-                        .collection('Locations')
-                        .updateOne(
-                            {
-                                location_id: Number(req._insert._locations[i].location_id),
-                            },
-                            { $set: { ...req._insert._locations[i] } },
-                            { upsert: true }
-                        );
-                }
-                resolve();
-            });
+        if (req._newPrices && Array.isArray(req._newPrices) && req._newPrices.length > 0) {
+            result.push(req._newPrices);
+            let insert = await client.db(DB).collection('Prices').insertMany(req._newPrices);
+            if (!insert.insertedIds) {
+                throw new Error('500: Tạo giá nhập sản phẩm thất bại!');
+            }
         }
         res.send({
             success: true,
-            data: req._insert,
+            data: result,
         });
     } catch (err) {
         next(err);

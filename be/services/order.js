@@ -172,63 +172,7 @@ let addOrderS = async (req, res, next) => {
         if (!_order.insertedId) {
             throw new Error('500: Lỗi hệ thống, tạo đơn hàng thất bại!');
         }
-        let sortQuery = (() => {
-            if (req.body.type == 'LIFO') {
-                return { create_date: -1 };
-            }
-            return { create_date: 1 };
-        })();
-        let locations = await client
-            .db(DB)
-            .collection('Locations')
-            .find({
-                variant_id: { $in: req.variantIds },
-                type: req.saleAt.type,
-                inventory_id: req.saleAt.inventory_id,
-            })
-            .sort(sortQuery)
-            .toArray();
-        let _locations = {};
-        locations.map((location) => {
-            if (!_locations[String(location.variant_id)]) {
-                _locations[String(location.variant_id)] = [];
-            }
-            if (_locations[String(location.variant_id)]) {
-                _locations[String(location.variant_id)].push(location);
-            }
-        });
-        let _update = [];
-        req._insert.order_details.map((_detail) => {
-            let locationArray = _locations[String(_detail.variant_id)];
-            for (let i in locationArray) {
-                if (_detail.quantity <= 0) {
-                    break;
-                }
-                if (locationArray[i].quantity > 0) {
-                    if (locationArray[i].quantity > _detail.quantity) {
-                        locationArray[i].quantity = Number(locationArray[i].quantity) - Number(_detail.quantity);
-                        _detail.quantity = 0;
-                        _update.push(locationArray[i]);
-                    } else {
-                        _detail.quantity = Number(_detail.quantity) - Number(locationArray[i].quantity);
-                        locationArray[i].quantity = 0;
-                        _update.push(locationArray[i]);
-                    }
-                }
-            }
-            // if (_detail.quantity > 0) {
-            //     throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
-            // }
-        });
-        await new Promise(async (resolve, reject) => {
-            for (let i in _update) {
-                await client
-                    .db(DB)
-                    .collection('Locations')
-                    .updateOne({ location_id: Number(_update[i].location_id) }, { $set: _update[i] });
-            }
-            resolve();
-        });
+        
         try {
             let _action = new Action();
             _action.create({

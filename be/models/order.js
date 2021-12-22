@@ -20,8 +20,7 @@ class OrderDetail {
         this.width = data.width || 0;
         this.height = data.height || 0;
         this.weight = data.weight || 0;
-        this.import_price = data.import_price || 0;
-        this.base_price = data.base_price || 0;
+        this.base_prices = data.base_prices || [];
         this.price = data.price || 0;
         this.quantity = data.quantity || 0;
         this.total_cost = data.total_cost || this.sale_price * this.quantity;
@@ -111,7 +110,7 @@ class Order {
                 }
                 return 'UNPAID';
             })();
-        // DRAFT - PROCESSING - COMPLETE - CANCEL - REFUND
+        // DRAFT - RECEIVED - PROCESSING - COMPLETE - CANCEL // - REFUND
         this.bill_status = data.bill_status || 'DRAFT';
         // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
         this.ship_status = data.ship_status || 'DRAFT';

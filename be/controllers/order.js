@@ -118,8 +118,72 @@ let addOrderC = async (req, res, next) => {
         if (!req.body.order_details || req.body.order_details.length == 0) {
             throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
         }
+        let sortQuery = (() => {
+            if (req.user.base_price_equal == 'FIFO') {
+                return { create_date: 1 };
+            }
+            return { create_date: -1 };
+        })();
+        let locations = await client
+            .db(DB)
+            .collection('Locations')
+            .find({
+                variant_id: { $in: req.variantIds },
+                type: req.saleAt.type,
+                inventory_id: req.saleAt.inventory_id,
+            })
+            .sort(sortQuery)
+            .toArray();
+        let _locations = {};
+        locations.map((location) => {
+            if (!_locations[String(location.variant_id)]) {
+                _locations[String(location.variant_id)] = [];
+            }
+            if (_locations[String(location.variant_id)]) {
+                _locations[String(location.variant_id)].push(location);
+            }
+        });
+        let prices = await client
+            .db(DB)
+            .collection('Prices')
+            .find({ variant_id: { $in: req.variantIds } })
+            .toArray();
+        let _prices = {};
+        prices.map((price) => {
+            _prices[String(price.price_id)] = price;
+        });
+        let _update = [];
         req.body.order_details = req.body.order_details.map((detail) => {
             let _detail = new OrderDetail();
+            let locationArray = _locations[String(detail.variant_id)];
+            let base_prices = [];
+            for (let i in locationArray) {
+                if (detail.quantity <= 0) {
+                    break;
+                }
+                if (locationArray[i].quantity > 0) {
+                    if (locationArray[i].quantity > detail.quantity) {
+                        base_prices.push({
+                            import_price: _prices[locationArray[i][price_id]].import_price,
+                            quantity: detail.quantity,
+                        });
+                        locationArray[i].quantity = Number(locationArray[i].quantity) - Number(detail.quantity);
+                        detail.quantity = 0;
+                        _update.push(locationArray[i]);
+                    } else {
+                        base_prices.push({
+                            import_price: _prices[locationArray[i][price_id]].import_price,
+                            quantity: locationArray[i].quantity,
+                        });
+                        detail.quantity = Number(detail.quantity) - Number(locationArray[i].quantity);
+                        locationArray[i].quantity = 0;
+                        _update.push(locationArray[i]);
+                    }
+                }
+            }
+            // if (detail.quantity > 0) {
+            //     throw new Error('400: Số lượng sản phẩm trong kho không đủ cung cấp');
+            // }
             _detail.create({
                 ..._variants[String(detail.variant_id)],
                 ..._products[String(detail.product_id)],
@@ -130,6 +194,7 @@ let addOrderC = async (req, res, next) => {
                     return [];
                 })(),
                 ...detail,
+                base_prices: base_prices,
             });
             return _detail;
         });
@@ -193,6 +258,16 @@ let addOrderC = async (req, res, next) => {
                 create_date: new Date(),
                 hmac: hmac,
             },
+        });
+
+        await new Promise(async (resolve, reject) => {
+            for (let i in _update) {
+                await client
+                    .db(DB)
+                    .collection('Locations')
+                    .updateOne({ location_id: Number(_update[i].location_id) }, { $set: _update[i] });
+            }
+            resolve();
         });
         await client
             .db(DB)

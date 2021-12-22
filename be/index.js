@@ -2,7 +2,7 @@ const http = require(`http`);
 const https = require(`https`);
 const fs = require(`fs`);
 require(`dotenv`).config();
-require(`./utils/env-config`).configEnv();
+// require(`./utils/env-config`).configEnv();
 
 const client = require(`./config/mongodb`);
 const app = require(`./app`);
@@ -22,9 +22,7 @@ try {
         };
         const globalServer = https.createServer(options, app);
         globalServer.listen(process.env.GLOBAL_PORT, () => {
-            console.log(
-                `Global server runing at https://${process.env.GLOBAL_HOST_NAME}:${process.env.GLOBAL_PORT}/`
-            );
+            console.log(`Global server runing at https://${process.env.GLOBAL_HOST_NAME}:${process.env.GLOBAL_PORT}/`);
         });
     }
 } catch (err) {

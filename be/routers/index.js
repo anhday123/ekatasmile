@@ -30,6 +30,7 @@ router.use(`/delivery`, require(`./delivery`));
 router.use(`/statistic`, require(`./statistic`));
 router.use(`/compare`, require(`./compare`));
 router.use(`/channel`, require(`./channel`));
+router.use(`/inventory`, require(`./inventory`));
 router.use(`/upload`, require(`./upload`));
 
 module.exports = router;

@@ -51,4 +51,4 @@ let configEnv = () => {
     })();
 };
 
-module.exports = { configEnv };
+// module.exports = { configEnv };
