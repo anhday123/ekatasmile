@@ -4,7 +4,7 @@ import styles from './add.module.scss'
 import { ACTION } from 'consts'
 import { removeAccents } from 'utils'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
 import NotSupportMobile from 'components/not-support-mobile'
@@ -59,6 +59,7 @@ export default function ProductAdd() {
   const history = useHistory()
   const [form] = Form.useForm()
   const typingTimeoutRef = useRef(null)
+  const dataUser = useSelector((state) => state.login.dataUser)
 
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
@@ -101,8 +102,6 @@ export default function ProductAdd() {
     const initVariant = {
       image: '',
       imagePreview: '',
-      import_price: dataForm.import_price || 0,
-      base_price: dataForm.base_price || 0,
       price: dataForm.price || 0,
     }
 
@@ -225,18 +224,6 @@ export default function ProductAdd() {
 
     //validated, prices
     for (let i = 0; i < variants.length; ++i) {
-      if (!variants[i].base_price) {
-        notification.error({
-          message: 'Vui lòng nhập giá vốn trong phiên bản!',
-        })
-        return
-      }
-      if (!variants[i].import_price) {
-        notification.error({
-          message: 'Vui lòng nhập giá nhập trong phiên bản!',
-        })
-        return
-      }
       if (!variants[i].price) {
         notification.error({
           message: 'Vui lòng nhập giá bán trong phiên bản!',
@@ -319,8 +306,6 @@ export default function ProductAdd() {
           image: images || [],
           supplier: supplier || '',
           price: formProduct.price,
-          base_price: formProduct.base_price,
-          import_price: formProduct.import_price,
         }
         body.variants = [bodyOneVariant]
       }
@@ -486,84 +471,27 @@ export default function ProductAdd() {
     )
   }
 
-  const InputImportPrice = ({ value, variant }) => {
-    const [valueImportPrice, setValueImportPrice] = useState(value)
-
-    return (
-      <>
-        Giá nhập
-        <InputNumber
-          placeholder="Nhập giá nhập"
-          className="br-15__input"
-          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-          size="large"
-          defaultValue={value}
-          min={0}
-          onBlur={() => {
-            let variantsNew = [...variants]
-            const index = variantsNew.findIndex((e) => e.title === variant.title)
-            variantsNew[index].import_price = valueImportPrice
-            setVariants([...variantsNew])
-          }}
-          onChange={(value) => setValueImportPrice(value)}
-          style={{ width: '100%' }}
-        />
-      </>
-    )
-  }
-
-  const InputBasePrice = ({ value, variant }) => {
-    const [valueBasePrice, setValueBasePrice] = useState(value)
-
-    return (
-      <>
-        Giá vốn
-        <InputNumber
-          placeholder="Nhập giá vốn"
-          className="br-15__input"
-          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-          size="large"
-          defaultValue={value}
-          min={0}
-          onBlur={() => {
-            let variantsNew = [...variants]
-            const index = variantsNew.findIndex((e) => e.title === variant.title)
-            variantsNew[index].base_price = valueBasePrice
-            setVariants([...variantsNew])
-          }}
-          onChange={(value) => setValueBasePrice(value)}
-          style={{ width: '100%' }}
-        />
-      </>
-    )
-  }
-
   const InputSalePrice = ({ value, variant }) => {
     const [valueSalePrice, setValueSalePrice] = useState(value)
 
     return (
-      <>
-        Giá bán
-        <InputNumber
-          placeholder="Nhập giá bán"
-          className="br-15__input"
-          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-          size="large"
-          defaultValue={value}
-          min={0}
-          onBlur={() => {
-            let variantsNew = [...variants]
-            const index = variantsNew.findIndex((e) => e.title === variant.title)
-            variantsNew[index].price = valueSalePrice
-            setVariants([...variantsNew])
-          }}
-          onChange={(value) => setValueSalePrice(value)}
-          style={{ width: '100%' }}
-        />
-      </>
+      <InputNumber
+        placeholder="Nhập giá bán"
+        className="br-15__input"
+        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+        size="large"
+        defaultValue={value}
+        min={0}
+        onBlur={() => {
+          let variantsNew = [...variants]
+          const index = variantsNew.findIndex((e) => e.title === variant.title)
+          variantsNew[index].price = valueSalePrice
+          setVariants([...variantsNew])
+        }}
+        onChange={(value) => setValueSalePrice(value)}
+        style={{ width: '100%' }}
+      />
     )
   }
 
@@ -670,8 +598,6 @@ export default function ProductAdd() {
     const toggle = () => setVisible(!visible)
 
     const [valueSalePrice, setValueSalePrice] = useState('')
-    const [valueBasePrice, setValueBasePrice] = useState('')
-    const [valueImportPrice, setValueImportPrice] = useState('')
 
     const edit = () => {
       let variantsNew = [...variants]
@@ -679,9 +605,7 @@ export default function ProductAdd() {
       selectRowKeyVariant.map((key) => {
         const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
 
-        variantsNew[indexVariant].import_price = valueImportPrice
         variantsNew[indexVariant].price = valueSalePrice
-        variantsNew[indexVariant].base_price = valueBasePrice
       })
 
       setVariants([...variantsNew])
@@ -693,8 +617,6 @@ export default function ProductAdd() {
     useEffect(() => {
       if (!visible) {
         setValueSalePrice('')
-        setValueImportPrice('')
-        setValueBasePrice('')
       }
     }, [visible])
 
@@ -715,34 +637,6 @@ export default function ProductAdd() {
                 size="large"
                 min={0}
                 onChange={(value) => setValueSalePrice(value)}
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <span style={{ marginBottom: 0 }}>Giá vốn</span>
-              <InputNumber
-                placeholder="Nhập giá vốn"
-                className="br-15__input"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                size="large"
-                min={0}
-                onChange={(value) => setValueBasePrice(value)}
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <span style={{ marginBottom: 0 }}>Giá nhập</span>
-              <InputNumber
-                placeholder="Nhập giá nhập"
-                className="br-15__input"
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                size="large"
-                min={0}
-                onChange={(value) => setValueImportPrice(value)}
                 style={{ width: '100%' }}
               />
             </div>
@@ -769,15 +663,9 @@ export default function ProductAdd() {
       render: (text, record) => <InputSku value={record.sku} variant={record} />,
     },
     {
-      title: 'Giá',
+      title: 'Giá bán',
       width: 300,
-      render: (text, record) => (
-        <Space size="middle" direction="vertical" style={{ width: '100%' }}>
-          <InputSalePrice value={record.price} variant={record} />
-          <InputBasePrice value={record.base_price} variant={record} />
-          <InputImportPrice value={record.import_price} variant={record} />
-        </Space>
-      ),
+      render: (text, record) => <InputSalePrice value={record.price} variant={record} />,
     },
   ]
 
@@ -1062,29 +950,7 @@ export default function ProductAdd() {
               <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 phiên bản</div>
             </div>
             <Row justify="space-between" align="middle">
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item
-                  label="Giá vốn"
-                  name="base_price"
-                  rules={[
-                    {
-                      required: !isProductHasVariants && true,
-                      message: 'Vui lòng nhập giá vốn!',
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    size="large"
-                    min={0}
-                    placeholder="Nhập giá vốn"
-                    style={{ width: '100%' }}
-                    className="br-15__input"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+              <Col xs={24} sm={24} md={10} lg={10} xl={10}>
                 <Form.Item
                   rules={[
                     {
@@ -1099,31 +965,26 @@ export default function ProductAdd() {
                     size="large"
                     min={0}
                     placeholder="Nhập giá bán"
-                    style={{ width: '100%' }}
+                    style={{ width: '75%' }}
                     className="br-15__input"
                     formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item label="Giá nhập" name="import_price">
-                  <InputNumber
-                    size="large"
-                    min={0}
-                    placeholder="Nhập giá nhập"
-                    style={{ width: '100%' }}
-                    className="br-15__input"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
+                <div>
+                  {dataUser &&
+                    dataUser.data &&
+                    ((dataUser.data.price_recipe === 'FIFO' &&
+                      '* Sản phẩm nhập trước sẽ được tính giá trước (FIFO)') ||
+                      (dataUser.data.price_recipe === 'LIFO' &&
+                        '* Sản phẩm nhập sau sẽ được tính giá trước (LIFO)'))}
+                </div>
               </Col>
               <Row
                 align="middle"
                 style={{
                   width: '100%',
-                  marginTop: 15,
+                  marginTop: 40,
                   marginBottom: 15,
                   display: location.state && 'none',
                 }}

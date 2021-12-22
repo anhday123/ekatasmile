@@ -303,8 +303,8 @@ const BaseLayout = (props) => {
       menuItems: [
         {
           icon: <GraphicEqIcon />,
-          path: ROUTES.REPORT_END_DAY,
-          title: 'Báo cáo cuối ngày',
+          path: ROUTES.RECEIPTS_PAYMENT,
+          title: 'Báo cáo thu chi',
           permissions: [],
         },
         {

@@ -18,21 +18,6 @@ const columnsProduct = [
     key: 'supplier',
   },
   {
-    title: 'Tổng giá vốn',
-    dataIndex: 'base_price',
-    key: 'base-price',
-  },
-  {
-    title: 'Tổng giá nhập',
-    dataIndex: 'import_price',
-    key: 'import-price',
-  },
-  {
-    title: 'Tổng giá vốn',
-    dataIndex: 'price',
-    key: 'price',
-  },
-  {
     title: 'Ngày tạo',
     key: 'create_date',
   },

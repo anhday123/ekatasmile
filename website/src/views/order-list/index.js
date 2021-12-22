@@ -264,13 +264,13 @@ export default function OrderList() {
           <div>
             <div>Lọc theo trạng thái</div>
             <Select
-              value={paramsFilter.bill_status}
+              value={paramsFilter.bill_status || ''}
               onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
-              allowClear
               placeholder="Chọn trạng thái"
               style={{ width: 250 }}
             >
+              <Select.Option value="">Tất cả</Select.Option>
               {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
                 <Select.Option value={status} key={index}>
                   {BILL_STATUS_ORDER[status]}
@@ -283,13 +283,13 @@ export default function OrderList() {
           <div>
             <div>Lọc theo kênh bán hàng</div>
             <Select
-              value={paramsFilter.chanel}
+              value={paramsFilter.chanel || ''}
               onChange={(value) => _onChangeFilter('chanel', value)}
               showSearch
-              allowClear
               placeholder="Chọn kênh bán hàng"
               style={{ width: 520 }}
             >
+              <Select.Option value="">Tất cả</Select.Option>
               <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
               <Select.Option value="Cửa hàng">Cửa hàng</Select.Option>
               <Select.Option value="Kho">Kho</Select.Option>
@@ -300,13 +300,13 @@ export default function OrderList() {
           <div>
             <div>Lọc theo nhân viên</div>
             <Select
-              value={paramsFilter.employee_name}
+              value={paramsFilter.employee_name || ''}
               onChange={(value) => _onChangeFilter('employee_name', value)}
               showSearch
-              allowClear
               placeholder="Chọn nhân viên"
               style={{ width: 250 }}
             >
+              <Select.Option value="">Tất cả</Select.Option>
               {employees.map((employee, index) => (
                 <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
                   {employee.first_name} {employee.last_name}
@@ -523,7 +523,25 @@ export default function OrderList() {
             expandIconColumnIndex: -1,
           }}
           columns={columns.map((column) => {
-            if (column.key === 'code') return { ...column, sorter: (a, b) => compare(a, b, 'code') }
+            if (column.key === 'code')
+              return {
+                ...column,
+                sorter: (a, b) => compare(a, b, 'code'),
+                render: (text, record) => (
+                  <a
+                    style={{
+                      color:
+                        (record.bill_status === 'DRAFT' && 'black') ||
+                        (record.bill_status === 'PROCESSING' && 'orange') ||
+                        (record.bill_status === 'COMPLETE' && 'green') ||
+                        (record.bill_status === 'CANCEL' && 'red') ||
+                        (record.bill_status === 'REFUND' && '#ff7089'),
+                    }}
+                  >
+                    #{text}
+                  </a>
+                ),
+              }
             if (column.key === 'create_date')
               return {
                 ...column,

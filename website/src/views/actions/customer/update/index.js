@@ -69,6 +69,7 @@ export default function CustomerUpdate(props) {
   }
 
   useEffect(() => {
+    console.log(props.customerData)
     form.setFieldsValue({
       customer: props.customerData.map((e) => {
         return {
@@ -81,7 +82,7 @@ export default function CustomerUpdate(props) {
           address: e.address,
           province: e.province,
           district: e.district,
-          birthday: moment(e.birthday),
+          birthday: e.birthday ? moment(e.birthday) : '',
         }
       }),
     })
@@ -98,22 +99,6 @@ export default function CustomerUpdate(props) {
       onClose={props.onClose}
       width={1000}
     >
-      {/* <div className={styles['supplier_add']}>
-        <Link
-          className={styles['supplier_add_back_parent']}
-          style={{
-            borderBottom: '1px solid rgb(233, 220, 220)',
-            paddingBottom: '1rem',
-          }}
-          to={ROUTES.CUSTOMER}
-        >
-          <ArrowLeftOutlined
-            style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-          />
-          <div className={styles['supplier_add_back']}>
-            Cập nhật thông tin khách hàng
-          </div>
-        </Link> */}
       <Form
         name="dynamic_form_nest_item"
         className={styles['supplier_add_content']}
@@ -179,7 +164,7 @@ export default function CustomerUpdate(props) {
                           size="large"
                           className="br-15__date-picker"
                           style={{ width: '100%' }}
-                          placeholder={moment('2021/06/28', dateFormat)}
+                          placeholder="Chọn ngày sinh"
                         />
                       </Form.Item>
                     </div>

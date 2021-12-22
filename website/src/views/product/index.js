@@ -93,16 +93,6 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Giá vốn',
-      dataIndex: 'base_price',
-      render: (text) => text && formatCash(text),
-    },
-    {
-      title: 'Giá nhập',
-      dataIndex: 'import_price',
-      render: (text) => text && formatCash(text),
-    },
-    {
       title: 'Giá bán',
       dataIndex: 'price',
       render: (text) => text && formatCash(text),
@@ -174,29 +164,7 @@ export default function Product() {
 
       console.log(res)
       if (res.status === 200) {
-        //tính tổng số lượng nếu có variant
-        const dataNew = res.data.data.map((e) => {
-          let sumQuantity = 0
-          let sumBasePrice = 0
-          let sumSalePrice = 0
-          let sumImportPrice = 0
-
-          e.variants.map((v) => {
-            sumQuantity += v.total_quantity
-            sumBasePrice += v.base_price
-            sumSalePrice += v.price
-            sumImportPrice += v.import_price
-          })
-          return {
-            ...e,
-            sumQuantity: sumQuantity,
-            sumBasePrice: sumBasePrice,
-            sumSalePrice: sumSalePrice,
-            sumImportPrice: sumImportPrice,
-          }
-        })
-
-        setProducts([...dataNew])
+        setProducts(res.data.data)
         setCountProduct(res.data.count)
       }
 
@@ -255,11 +223,12 @@ export default function Product() {
               <TreeSelect.TreeNode value={category.category_id} title={category.name}>
                 {category.children_category.map((child) => (
                   <TreeSelect.TreeNode value={child.category_id} title={child.name}>
-                    {child.children_category.map((e) => (
-                      <TreeSelect.TreeNode value={e.category_id} title={e.name}>
-                        {e.name}
-                      </TreeSelect.TreeNode>
-                    ))}
+                    {child.children_category &&
+                      child.children_category.map((e) => (
+                        <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                          {e.name}
+                        </TreeSelect.TreeNode>
+                      ))}
                   </TreeSelect.TreeNode>
                 ))}
               </TreeSelect.TreeNode>
@@ -542,11 +511,12 @@ export default function Product() {
                 <TreeSelect.TreeNode value={category.category_id} title={category.name}>
                   {category.children_category.map((child) => (
                     <TreeSelect.TreeNode value={child.category_id} title={child.name}>
-                      {child.children_category.map((e) => (
-                        <TreeSelect.TreeNode value={e.category_id} title={e.name}>
-                          {e.name}
-                        </TreeSelect.TreeNode>
-                      ))}
+                      {child.children_category &&
+                        child.children_category.map((e) => (
+                          <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                            {e.name}
+                          </TreeSelect.TreeNode>
+                        ))}
                     </TreeSelect.TreeNode>
                   ))}
                 </TreeSelect.TreeNode>
@@ -843,31 +813,6 @@ export default function Product() {
                   },
                 }
 
-              if (column.key === 'base-price')
-                return {
-                  ...column,
-                  sorter: (a, b) => compareCustom(a.sumBasePrice || 0, b.sumBasePrice || 0),
-
-                  render: (text, record) => record.sumBasePrice && formatCash(record.sumBasePrice),
-                }
-
-              if (column.key === 'price')
-                return {
-                  ...column,
-                  sorter: (a, b) => compareCustom(a.sumSalePrice || 0, b.sumSalePrice || 0),
-
-                  render: (text, record) => record.sumSalePrice && formatCash(record.sumSalePrice),
-                }
-
-              if (column.key === 'import-price')
-                return {
-                  ...column,
-                  sorter: (a, b) => compareCustom(a.sumImportPrice || 0, b.sumImportPrice || 0),
-
-                  render: (text, record) =>
-                    record.sumImportPrice && formatCash(record.sumImportPrice),
-                }
-
               if (column.key === 'create_date')
                 return {
                   ...column,
@@ -907,40 +852,6 @@ export default function Product() {
               },
               total: countProduct,
             }}
-            summary={(pageData) => (
-              <Table.Summary.Row>
-                <Table.Summary.Cell>
-                  <b>Tổng</b>
-                </Table.Summary.Cell>
-                {columns.map((column) => {
-                  if (column.key === 'sum-count')
-                    return (
-                      <Table.Summary.Cell>
-                        {formatCash(tableSum(pageData, 'sumQuantity'))}
-                      </Table.Summary.Cell>
-                    )
-                  if (column.key === 'base-price')
-                    return (
-                      <Table.Summary.Cell>
-                        {formatCash(tableSum(pageData, 'sumBasePrice'))}
-                      </Table.Summary.Cell>
-                    )
-                  if (column.key === 'price')
-                    return (
-                      <Table.Summary.Cell>
-                        {formatCash(tableSum(pageData, 'sumSalePrice'))}
-                      </Table.Summary.Cell>
-                    )
-                  if (column.key === 'import-price')
-                    return (
-                      <Table.Summary.Cell>
-                        {formatCash(tableSum(pageData, 'sumImportPrice'))}
-                      </Table.Summary.Cell>
-                    )
-                  return <Table.Summary.Cell></Table.Summary.Cell>
-                })}
-              </Table.Summary.Row>
-            )}
           />
         </div>
       </div>
