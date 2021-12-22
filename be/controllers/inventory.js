@@ -33,6 +33,91 @@ module.exports._getImportOrder = async (req, res, next) => {
         if (req.query.order_id) {
             aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
         }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: Number(req.query.code) } });
+        }
+        if (req.query['today'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date'] != undefined) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date'] != undefined) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
+        if (req.query.from_date) {
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
+        }
+        if (req.query.to_date) {
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
+        }
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'creator_id',
+                    foreignField: 'user_id',
+                    as: '_verifier',
+                },
+            },
+            { $unwind: { path: '$_verifier', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'creator_id',
+                    foreignField: 'user_id',
+                    as: '_creator',
+                },
+            },
+            { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push({
+            $project: {
+                sub_name: 0,
+                '_business.password': 0,
+                '_creator.password': 0,
+            },
+        });
+        aggregateQuery.push({});
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
