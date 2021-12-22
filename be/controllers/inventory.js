@@ -92,7 +92,7 @@ module.exports._getImportOrder = async (req, res, next) => {
             {
                 $lookup: {
                     from: 'Users',
-                    localField: 'creator_id',
+                    localField: 'verifier_id',
                     foreignField: 'user_id',
                     as: '_verifier',
                 },
@@ -117,7 +117,6 @@ module.exports._getImportOrder = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
-        aggregateQuery.push({});
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
@@ -125,6 +124,7 @@ module.exports._getImportOrder = async (req, res, next) => {
             let page_size = Number(req.query.page_size) || 50;
             aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         }
+
         // lấy data từ database
         let [orders, counts] = await Promise.all([
             client.db(DB).collection(`ImportOrders`).aggregate(aggregateQuery).toArray(),
