@@ -1305,12 +1305,19 @@ export default function Sell() {
           <div className={styles['sell-products-invoice']}>
             {invoices[indexInvoice].order_details && invoices[indexInvoice].order_details.length ? (
               <>
-                <Row align="middle" wrap={false} className={styles['sell-product-header']}>
-                  <div className={styles['header-stt']}>STT</div>
-                  <div className={styles['header-remove']}></div>
-                  <div className={styles['header-name']}>Tên sản phẩm</div>
-                  <div className={styles['header-sku']}>Tên phiên bản</div>
-                  <div className={styles['header-unit']}>Đơn vị</div>
+                <Row
+                  justify="space-between"
+                  align="middle"
+                  wrap={false}
+                  className={styles['sell-product-header']}
+                >
+                  <Row>
+                    <div className={styles['header-stt']}>STT</div>
+                    <div className={styles['header-remove']}></div>
+                    <div className={styles['header-name']}>Tên sản phẩm</div>
+                    <div className={styles['header-sku']}>Tên phiên bản</div>
+                    <div className={styles['header-unit']}>Đơn vị</div>
+                  </Row>
                   <div className={styles['header-quantity']}>Số lượng</div>
                   <div className={styles['header-price']}>Đơn giá</div>
                   <div className={styles['header-sum-price']}>Tổng tiền</div>
@@ -1397,11 +1404,7 @@ export default function Sell() {
                         </p>
                         <DeleteOutlined
                           onClick={() => _removeProductToCartInvoice(index)}
-                          style={{
-                            color: 'red',
-                            marginRight: 15,
-                            cursor: 'pointer',
-                          }}
+                          style={{ color: 'red', marginRight: 15, cursor: 'pointer' }}
                         />
 
                         <div>
@@ -1515,41 +1518,39 @@ export default function Sell() {
                   <Spin />
                 </Row>
               ) : productsRelated.length ? (
-                <Space wrap={true} size="large">
+                <Row wrap={true}>
                   {productsRelated.map((product) => (
-                    <div
-                      style={{ borderColor: product.total_quantity === 0 && 'red' }}
-                      className={styles['product-item']}
-                      onClick={() => _addProductToCartInvoice(product)}
-                    >
-                      <img
-                        src={product.image[0] ? product.image[0] : IMAGE_DEFAULT}
-                        alt=""
-                        style={{
-                          width: '100%',
-                          height: '70%',
-                          objectFit: product.image[0] ? 'cover' : 'contain',
-                        }}
-                      />
-                      <Row
-                        justify="space-between"
-                        wrap={false}
-                        align="middle"
-                        style={{
-                          paddingLeft: 5,
-                          paddingRight: 5,
-                          marginTop: 3,
-                        }}
+                    <div className={styles['product-item-wrap']}>
+                      <div
+                        style={{ borderColor: product.total_quantity === 0 && 'red' }}
+                        onClick={() => _addProductToCartInvoice(product)}
+                        className={styles['product-item']}
                       >
-                        <p className={styles['product-item__name']}>{product.title}</p>
-                        <ModalQuantityProductInStores product={product} />
-                      </Row>
-                      <p className={styles['product-item__price']}>
-                        {formatCash(product.price)} VNĐ
-                      </p>
+                        <img
+                          src={product.image[0] ? product.image[0] : IMAGE_DEFAULT}
+                          alt=""
+                          style={{
+                            width: '100%',
+                            height: '70%',
+                            objectFit: product.image[0] ? 'cover' : 'contain',
+                          }}
+                        />
+                        <Row
+                          justify="space-between"
+                          wrap={false}
+                          align="middle"
+                          style={{ paddingLeft: 5, paddingRight: 5, marginTop: 3 }}
+                        >
+                          <p className={styles['product-item__name']}>{product.title}</p>
+                          <ModalQuantityProductInStores product={product} />
+                        </Row>
+                        <p className={styles['product-item__price']}>
+                          {formatCash(product.price)} VNĐ
+                        </p>
+                      </div>
                     </div>
                   ))}
-                </Space>
+                </Row>
               ) : (
                 <div
                   style={{
