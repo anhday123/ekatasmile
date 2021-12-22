@@ -200,7 +200,13 @@ module.exports._createImportOrder = async (req, res, next) => {
         variants.map((variant) => {
             _variants[String(variant.variant_id)] = variant;
         });
+        let total_cost = 0;
+        let final_cost = 0;
+        let total_quantity = 0;
         req.body.products = req.body.products.map((product) => {
+            total_cost += product.quantity * product.import_price;
+            final_cost += product.quantity * product.import_price;
+            total_quantity += product.quantity;
             return {
                 ...product,
                 product_info: _products[product.product_id],
@@ -214,6 +220,9 @@ module.exports._createImportOrder = async (req, res, next) => {
             import_location: req.body.import_location,
             import_location_info: importLocation,
             products: req.body.products || [],
+            total_cost: total_cost,
+            final_cost: final_cost,
+            total_quantity: total_quantity,
             status: 'DRAFT',
             verify_date: '',
             verifier_id: '',
