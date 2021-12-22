@@ -233,6 +233,9 @@ module.exports.getProductS = async (req, res, next) => {
                 { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
         }
+        if (req.query.detach) {
+            aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
+        }
         aggregateQuery.push({
             $project: {
                 slug_name: 0,

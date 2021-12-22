@@ -29,6 +29,162 @@ let removeUnicode = (text, removeSpace) => {
 
 module.exports._importOrder = async (req, res, next) => {
     try {
+        let [order_id, price_id, location_id] = await Promise.all([
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'IOHistories' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Prices' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Locations' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                })
+                .catch((err) => {
+                    throw new Error(`500: ${err}`);
+                }),
+        ]);
+        order_id++;
+        let order = {
+            order_id: order_id,
+            code: 1000000 + order_id,
+            location_type: req.body.location_type,
+            location_id: req.body.location_id,
+            products: req.body.products || [],
+            create_date: moment().tz(TIMEZONE).format(),
+            last_update: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            active: true,
+        };
+        let prices = [];
+        let locations = [];
+        let productIds = [];
+        let variantIds = [];
+        req.body.products.map((product) => {
+            productIds.push(product.product_id);
+            variantIds.push(product.variant_id);
+            price_id++;
+            let _price = {
+                business_id: Number(req.user.business_id),
+                price_id: Number(price_id),
+                product_id: Number(product.product_id),
+                variant_id: Number(product.variant_id),
+                import_price: Number(product.import_price),
+                create_date: moment().tz(TIMEZONE).format(),
+                last_update: moment().tz(TIMEZONE).format(),
+                creator_id: Number(req.user.user_id),
+                active: true,
+            };
+            prices.push(_price);
+            location_id++;
+            let _location = {
+                business_id: Number(req.user.business_id),
+                location_id: Number(location_id),
+                product_id: Number(product.product_id),
+                variant_id: Number(product.variant_id),
+                price_id: Number(price_id),
+                type: req.body.inventory_type,
+                inventory_id: req.body.inventory_id,
+                name: '',
+                quantity: product.quantity,
+                create_date: moment().tz(TIMEZONE).format(),
+                last_update: moment().tz(TIMEZONE).format(),
+                creator_id: Number(req.user.user_id),
+                active: true,
+            };
+            locations.push(_location);
+        });
+        productIds = [...new Set(productIds)];
+        variantIds = [...new Set(variantIds)];
+        let [products, variants] = await Promise.all([
+            client
+                .db(DB)
+                .collection('Products')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+            client
+                .db(DB)
+                .collection('Variants')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+        ]);
+        let _products = {};
+        products.map((product) => {
+            _products[String(product.product_id)] = product;
+        });
+        let _variants = {};
+        variants.map((variant) => {
+            _variants[String(variant.variant_id)] = variant;
+        });
+        order.products = order.products.map((product) => {
+            return {
+                ...product,
+                product_info: _products[product.product_id],
+                variant_info: _variants[product.variant_id],
+            };
+        });
+        await Promise.all([
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'IOHistories' },
+                    { $set: { name: 'IOHistories', value: order_id } },
+                    { upsert: true }
+                ),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'Locations' },
+                    { $set: { name: 'Locations', value: location_id } },
+                    { upsert: true }
+                ),
+            client.db(DB).collection('IOHistories').insertOne(order),
+            client.db(DB).collection('Prices').insertMany(prices),
+            client.db(DB).collection('Locations').insertMany(locations),
+        ]);
+        res.send({
+            success: true,
+            data: order,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._importOrderFile = async (req, res, next) => {
+    try {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
@@ -204,7 +360,7 @@ module.exports._importOrder = async (req, res, next) => {
     }
 };
 
-module.exports._transportOrder = async (req, res, next) => {
+module.exports._transportOrderFile = async (req, res, next) => {
     try {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
