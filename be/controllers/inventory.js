@@ -36,6 +36,12 @@ module.exports._getImportOrder = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({ $match: { code: Number(req.query.code) } });
         }
+        if (req.query.branch_id) {
+            aggregateQuery.push({ $match: { 'import_location.branch_id': Number(req.query.branch_id) } });
+        }
+        if (req.query.store_id) {
+            aggregateQuery.push({ $match: { 'import_location.store_id': Number(req.query.store_id) } });
+        }
         if (req.query['today'] != undefined) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
             req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
