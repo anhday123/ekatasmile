@@ -113,7 +113,7 @@ module.exports._getImportOrder = async (req, res, next) => {
         aggregateQuery.push({
             $project: {
                 sub_name: 0,
-                '_business.password': 0,
+                '_verifier.password': 0,
                 '_creator.password': 0,
             },
         });
@@ -427,6 +427,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         let _order = { ...order, ...req.body };
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
             _order['verifier_id'] = Number(req.user.user_id);
+            console.log(_order['verifier_id']);
             let [price_id, location_id] = await Promise.all([
                 client
                     .db(DB)
