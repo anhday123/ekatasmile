@@ -7,16 +7,16 @@ let order = {
     employee_id: 1,
     order_details: [
         {
-            product_id: 20,
-            variant_id: 56,
+            product_id: 66,
+            variant_id: 205,
             quantity: 10,
             total_cost: 5000000,
             discount: 560000,
             final_cost: 4440000,
         },
         {
-            product_id: 20,
-            variant_id: 57,
+            product_id: 66,
+            variant_id: 206,
             quantity: 10,
             total_cost: 600000,
             discount: 0,

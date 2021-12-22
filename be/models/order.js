@@ -21,6 +21,7 @@ class OrderDetail {
         this.height = data.height || 0;
         this.weight = data.weight || 0;
         this.base_prices = data.base_prices || [];
+        this.total_base_price = data.total_base_price || 0;
         this.price = data.price || 0;
         this.quantity = data.quantity || 0;
         this.total_cost = data.total_cost || this.sale_price * this.quantity;

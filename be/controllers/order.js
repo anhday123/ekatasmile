@@ -157,6 +157,7 @@ let addOrderC = async (req, res, next) => {
             let _detail = new OrderDetail();
             let locationArray = _locations[String(detail.variant_id)];
             let base_prices = [];
+            let total_base_price = 0;
             for (let i in locationArray) {
                 if (detail.quantity <= 0) {
                     break;
@@ -164,17 +165,19 @@ let addOrderC = async (req, res, next) => {
                 if (locationArray[i].quantity > 0) {
                     if (locationArray[i].quantity > detail.quantity) {
                         base_prices.push({
-                            import_price: _prices[locationArray[i][price_id]].import_price,
+                            import_price: _prices[locationArray[i].price_id].import_price,
                             quantity: detail.quantity,
                         });
+                        total_base_price += _prices[locationArray[i].price_id].import_price * detail.quantity;
                         locationArray[i].quantity = Number(locationArray[i].quantity) - Number(detail.quantity);
                         detail.quantity = 0;
                         _update.push(locationArray[i]);
                     } else {
                         base_prices.push({
-                            import_price: _prices[locationArray[i][price_id]].import_price,
+                            import_price: _prices[locationArray[i].price_id].import_price,
                             quantity: locationArray[i].quantity,
                         });
+                        total_base_price += _prices[locationArray[i].price_id].import_price * locationArray[i].quantity;
                         detail.quantity = Number(detail.quantity) - Number(locationArray[i].quantity);
                         locationArray[i].quantity = 0;
                         _update.push(locationArray[i]);
@@ -195,6 +198,7 @@ let addOrderC = async (req, res, next) => {
                 })(),
                 ...detail,
                 base_prices: base_prices,
+                total_base_price: total_base_price,
             });
             return _detail;
         });
