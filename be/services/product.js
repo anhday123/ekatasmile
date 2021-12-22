@@ -177,16 +177,14 @@ module.exports.getProductS = async (req, res, next) => {
                 },
             });
         }
-        if (req.query._categories) {
-            aggregateQuery.push({
-                $lookup: {
-                    from: 'Categories',
-                    localField: 'category_id',
-                    foreignField: 'category_id',
-                    as: '_categories',
-                },
-            });
-        }
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Categories',
+                localField: 'category_id',
+                foreignField: 'category_id',
+                as: '_categories',
+            },
+        });
         if (req.query._deals) {
             aggregateQuery.push({
                 $lookup: {
