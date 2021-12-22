@@ -98,6 +98,17 @@ module.exports._getImportOrder = async (req, res, next) => {
             {
                 $lookup: {
                     from: 'Users',
+                    localField: 'completer_id',
+                    foreignField: 'user_id',
+                    as: '_completer',
+                },
+            },
+            { $unwind: { path: '$_completer', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
                     localField: 'verifier_id',
                     foreignField: 'user_id',
                     as: '_verifier',
@@ -229,9 +240,12 @@ module.exports._createImportOrder = async (req, res, next) => {
             total_cost: req.body.total_cost || total_cost,
             final_cost: req.body.final_cost || final_cost,
             total_quantity: req.body.total_quantity || total_quantity,
+            // DRAFT - VERIFY - COMPLETE - CANCEL
             status: 'DRAFT',
             verify_date: '',
             verifier_id: '',
+            complete_date: '',
+            completer_id: '',
             create_date: moment().tz(TIMEZONE).format(),
             last_update: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
@@ -442,8 +456,11 @@ module.exports._updateImportOrder = async (req, res, next) => {
         let _order = { ...order, ...req.body };
         if (_order.status == 'VERIFY' && order.status != 'VERIFY') {
             _order['verifier_id'] = Number(req.user.user_id);
+            _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+            _order['completer_id'] = Number(req.user.user_id);
+            _order['complete_date'] = moment().tz(TIMEZONE).format();
             let [price_id, location_id] = await Promise.all([
                 client
                     .db(DB)
