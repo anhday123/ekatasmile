@@ -527,9 +527,8 @@ module.exports.addProductC = async (req, res, next) => {
 
 module.exports.updateProductC = async (req, res, next) => {
     try {
-        if (!req.body.products) {
-            throw new Error('400: products không được để trống!');
-        }
+        let tmp = req.body;
+        req.body.products = [tmp];
         let supplierIds = [];
         let productSkus = [];
         req.body.products.map((product) => {
