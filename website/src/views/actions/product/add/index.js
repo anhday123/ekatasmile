@@ -235,7 +235,6 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const formProduct = form.getFieldsValue()
-
       //phát sinh sku nếu user ko điền sku
       let valueDefaultSku = ''
       if (!formProduct.sku) {
@@ -726,9 +725,9 @@ export default function ProductAdd() {
       setFiles(product.files)
 
       //check bao hanh
-      if (product.waranties.length) {
+      if (product.warranties.length) {
         setIsWarranty(true)
-        setIdsWarranty([...product.waranties.map((e) => e.warranty_id)])
+        setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
       }
     }
   }
