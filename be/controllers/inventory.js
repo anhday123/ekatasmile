@@ -334,7 +334,7 @@ module.exports._transportOrder = async (req, res, next) => {
             _importStoreIds.push(eStore.store_id);
         });
         let sortQuery = (() => {
-            if (req.user.base_price_equal == 'FIFO') {
+            if (req.user.price_recipe == 'FIFO') {
                 return { create_date: 1 };
             }
             return { create_date: -1 };

@@ -62,6 +62,7 @@ class User {
         this.sub_district = removeUnicode(this.district, true).toLowerCase();
         this.province = data.province || '';
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
+        this.price_recipe = data.price_recipe || 'FIFO';
         this.company_name = data.company_name || '';
         this.company_website = data.company_website || '';
         this.career_id = (() => {

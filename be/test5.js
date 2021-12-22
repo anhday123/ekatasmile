@@ -9,7 +9,7 @@ let order = {
         {
             product_id: 66,
             variant_id: 205,
-            quantity: 10,
+            quantity: 100,
             total_cost: 5000000,
             discount: 560000,
             final_cost: 4440000,
@@ -17,7 +17,7 @@ let order = {
         {
             product_id: 66,
             variant_id: 206,
-            quantity: 10,
+            quantity: 100,
             total_cost: 600000,
             discount: 0,
             final_cost: 600000,

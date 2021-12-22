@@ -119,7 +119,7 @@ let addOrderC = async (req, res, next) => {
             throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
         }
         let sortQuery = (() => {
-            if (req.user.base_price_equal == 'FIFO') {
+            if (req.user.price_recipe == 'FIFO') {
                 return { create_date: 1 };
             }
             return { create_date: -1 };
