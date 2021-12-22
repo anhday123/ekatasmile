@@ -450,6 +450,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.RECEIPTS_PAYMENT,
+    Component: () => <ReceiptsAndPayment />,
+    title: 'Báo cáo thu chi',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [
@@ -721,13 +728,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.RECEIPTS_PAYMENT,
-    Component: () => <ReceiptsAndPayment />,
-    title: 'Phiếu thu chi',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.PAYMENT_TYPE,
     Component: () => <PaymentType />,

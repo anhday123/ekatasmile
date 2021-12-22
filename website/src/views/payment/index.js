@@ -1,39 +1,53 @@
-import styles from './../payment/payment.module.scss'
-import {
-  Card,
-  Col,
-  Drawer,
-  Row,
-  Switch,
-  Button,
-  Modal,
-  Input,
-  Form,
-} from 'antd'
-import vietcombank from './../../assets/img/vietcombank.png'
-import sub from './../../assets/img/sub.png'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import styles from './payment.module.scss'
 
-import zalopayMethod from './../../assets/img/zalopayMethod.png'
-import airpayMethod from './../../assets/img/airpayMethod.jpg'
-import vnpayMethod from './../../assets/img/vnpayMethod.jpg'
-import wepayMethod from './../../assets/img/wepayMethod.png'
-import vinidMethod from './../../assets/img/vinidMethod.png'
-import mocaMethod from './../../assets/img/mocaMethod.png'
-import React, { useState } from 'react'
-import {
-  CreditCardOutlined,
-  ArrowLeftOutlined,
-  CheckOutlined,
-} from '@ant-design/icons'
+//antd
+import { Card, Col, Drawer, Row, Switch, Button, Modal, Input, Form, Table } from 'antd'
+
+import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS } from 'consts'
 import Permission from 'components/permission'
+
+import zalopayMethod from 'assets/img/zalopayMethod.png'
+import airpayMethod from 'assets/img/airpayMethod.jpg'
+import vnpayMethod from 'assets/img/vnpayMethod.jpg'
+import wepayMethod from 'assets/img/wepayMethod.png'
+import vinidMethod from 'assets/img/vinidMethod.png'
+import mocaMethod from 'assets/img/mocaMethod.png'
+import sub from 'assets/img/sub.png'
+import vietcombank from 'assets/img/vietcombank.png'
+
+//icons
+import { CreditCardOutlined, ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons'
+
+//apis
+import { getAllPayment } from 'apis/payment'
 export default function Payment() {
   const [temp, setTemp] = useState(0)
   const [visible, setVisible] = useState(false)
   const [modal1Visible, setModal1Visible] = useState(false)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [paymentTypeModal, setPaymentTypeModal] = useState(false)
+  const [payments, setPayments] = useState([
+    { name: 'Tiền mặt' },
+    { name: 'Thẻ ngân hàng' },
+    { name: 'Tiền cọc' },
+  ])
+
+  const columns = [
+    {
+      title: 'STT',
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: 'Tên hình thức thanh toán',
+      dataIndex: 'name',
+    },
+    {
+      title: 'Hành động',
+      render: (text, record, index) => <Switch />,
+    },
+  ]
 
   const showDrawer = () => {
     setVisible(true)
@@ -67,14 +81,27 @@ export default function Payment() {
   const onClickVietcombank = (data) => {
     setIconVietcombank(data)
   }
+
+  const _getPayments = async () => {
+    try {
+      const res = await getAllPayment()
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // useEffect(() => {
+  //   _getPayments()
+  // }, [])
+
   return (
     <>
       <div className={`${styles['payment_method']} ${styles['card']}`}>
         <Row
+          justify="space-between"
           style={{
-            display: 'flex',
             borderBottom: '1px solid rgb(233, 223, 223)',
-            justifyContent: 'space-between',
             width: '100%',
             flexWrap: 'nowrap',
             paddingBottom: 15,
@@ -106,333 +133,12 @@ export default function Payment() {
             </Button>
           </Permission>
         </Row>
-
-        <Row
-          style={{ marginTop: '50px' }}
-          className={styles['payment_method_payment']}
-        >
-          <Col
-            className={styles['payment_method_payment_parent']}
-            xs={22}
-            sm={11}
-            md={7}
-            lg={7}
-            xl={7}
-          >
-            <Card className={styles['payment_method_payment_col_left']}>
-              <div>
-                <Switch
-                  defaultChecked
-                  style={{ position: 'absolute', right: 10, top: 10 }}
-                />
-                <div className={styles['payment_method_payment_col_title']}>
-                  Thanh toán tiền mặt
-                </div>
-              </div>
-            </Card>
-          </Col>
-          <Col
-            className={styles['payment_method_payment_parent']}
-            xs={22}
-            sm={11}
-            md={7}
-            lg={7}
-            xl={7}
-          >
-            <Card className={styles['payment_method_payment_col_left']}>
-              <div>
-                <Switch style={{ position: 'absolute', right: 10, top: 10 }} />
-                <div className={styles['payment_method_payment_col_title']}>
-                  Thanh toán thẻ ngân hàng
-                </div>
-              </div>
-            </Card>
-          </Col>
-          <Col
-            className={styles['payment_method_payment_parent']}
-            xs={22}
-            sm={11}
-            md={7}
-            lg={7}
-            xl={7}
-          >
-            <Card className={styles['payment_method_payment_col_left']}>
-              <div>
-                <Switch style={{ position: 'absolute', right: 10, top: 10 }} />
-                <div className={styles['payment_method_payment_col_title']}>
-                  Thanh toán cọc
-                </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-        <div className={styles['payment_method_method_parent']}></div>
-        {value === 2 ? (
-          <Row
-            style={{ marginTop: '0.5rem' }}
-            className={styles['payment_method_online']}
-          >
-            <Col
-              className={styles['payment_method_online_col']}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={24}
-              xl={24}
-            >
-              {' '}
-              <div className={styles['payment_method_online_select']}>
-                <Row className={styles['payment_method_online_select_title']}>
-                  <Col
-                    className={
-                      iconVietcomback === 1
-                        ? styles['payment_method_active']
-                        : styles['payment_method_active_disable']
-                    }
-                    style={{
-                      with: '100%',
-                      position: 'relative',
-                      marginBottom: '1rem',
-                    }}
-                    xs={24}
-                    sm={24}
-                    md={24}
-                    lg={24}
-                    xl={11}
-                  >
-                    <Row
-                      className={
-                        styles['payment_method_online_select_title_image']
-                      }
-                    >
-                      <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                        <div
-                          className={
-                            styles[
-                              'payment_method_online_select_title_image_left'
-                            ]
-                          }
-                        >
-                          <img
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_left_momo'
-                              ]
-                            }
-                            src={vietcombank}
-                            alt=""
-                          />
-                        </div>
-                      </Col>
-                      <Col
-                        className={
-                          styles[
-                            'payment_method_online_select_title_image_col_chil_mini'
-                          ]
-                        }
-                        xs={24}
-                        sm={24}
-                        md={17}
-                        lg={17}
-                        xl={17}
-                      >
-                        <Row
-                          className={
-                            styles[
-                              'payment_method_online_select_title_image_right'
-                            ]
-                          }
-                        >
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            xl={12}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item'
-                                ]
-                              }
-                            >
-                              <div
-                                className={
-                                  styles[
-                                    'payment_method_online_select_title_image_right_item_total'
-                                  ]
-                                }
-                              >
-                                Tổng tiền thanh toán
-                              </div>
-                            </div>
-                          </Col>
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={10}
-                            sm={10}
-                            md={10}
-                            lg={10}
-                            xl={10}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item'
-                                ]
-                              }
-                            >
-                              <div
-                                className={
-                                  styles[
-                                    'payment_method_online_select_title_image_right_item_total'
-                                  ]
-                                }
-                              >
-                                4.000.000 VNĐ
-                              </div>
-                            </div>
-                          </Col>
-                        </Row>
-                        <Row
-                          className={
-                            styles[
-                              'payment_method_online_select_title_image_right'
-                            ]
-                          }
-                        >
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            xl={12}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item'
-                                ]
-                              }
-                            >
-                              <div>Thanh toán trả trước</div>
-                            </div>
-                          </Col>
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={10}
-                            sm={10}
-                            md={10}
-                            lg={10}
-                            xl={10}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item_fix'
-                                ]
-                              }
-                            >
-                              <div>4.000.000 VNĐ</div>
-                            </div>
-                          </Col>
-                        </Row>
-
-                        <Row
-                          className={
-                            styles[
-                              'payment_method_online_select_title_image_right'
-                            ]
-                          }
-                        >
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            xl={12}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item'
-                                ]
-                              }
-                            >
-                              <div>Thanh toán trả sau</div>
-                            </div>
-                          </Col>
-                          <Col
-                            className={
-                              styles[
-                                'payment_method_online_select_title_image_right_col'
-                              ]
-                            }
-                            xs={10}
-                            sm={10}
-                            md={10}
-                            lg={10}
-                            xl={10}
-                          >
-                            <div
-                              className={
-                                styles[
-                                  'payment_method_online_select_title_image_right_item_fix'
-                                ]
-                              }
-                            >
-                              <div>4.000.000 VNĐ</div>
-                            </div>
-                          </Col>
-                        </Row>
-                      </Col>
-                    </Row>
-                    <img
-                      onClick={() => onClickVietcombank(1)}
-                      src={sub}
-                      style={{
-                        width: '1rem',
-                        cursor: 'pointer',
-                        position: 'absolute',
-                        top: '0',
-                        margin: '0.25rem 0 0 0.25rem',
-                        left: '0',
-                        height: '1rem',
-                      }}
-                      alt=""
-                    />
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-          </Row>
-        ) : (
-          <div></div>
-        )}
+        <Table
+          columns={columns}
+          dataSource={payments}
+          size="small"
+          style={{ width: '100%', marginTop: 10 }}
+        />
       </div>
       <Modal
         title="Chọn ví thanh toán"
@@ -446,11 +152,7 @@ export default function Payment() {
         <div style={{}} className={styles['choose']}>
           <Row className={styles['wallet']}>
             <Col
-              className={
-                temp === 1
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 1 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -459,9 +161,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(1)}
             >
               <img
-                className={
-                  temp === 1 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 1 ? styles['wallet_img'] : styles['wallet_img']}
                 src={zalopayMethod}
                 alt=""
               />
@@ -482,11 +182,7 @@ export default function Payment() {
               )}
             </Col>
             <Col
-              className={
-                temp === 2
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 2 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -495,9 +191,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(2)}
             >
               <img
-                className={
-                  temp === 2 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 2 ? styles['wallet_img'] : styles['wallet_img']}
                 src={airpayMethod}
                 alt=""
               />
@@ -518,11 +212,7 @@ export default function Payment() {
               )}
             </Col>
             <Col
-              className={
-                temp === 3
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 3 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -531,9 +221,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(3)}
             >
               <img
-                className={
-                  temp === 3 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 3 ? styles['wallet_img'] : styles['wallet_img']}
                 src={vnpayMethod}
                 alt=""
               />
@@ -554,11 +242,7 @@ export default function Payment() {
               )}
             </Col>
             <Col
-              className={
-                temp === 4
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 4 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -567,9 +251,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(4)}
             >
               <img
-                className={
-                  temp === 4 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 4 ? styles['wallet_img'] : styles['wallet_img']}
                 src={wepayMethod}
                 alt=""
               />
@@ -590,11 +272,7 @@ export default function Payment() {
               )}
             </Col>
             <Col
-              className={
-                temp === 5
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 5 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -603,9 +281,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(5)}
             >
               <img
-                className={
-                  temp === 5 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 5 ? styles['wallet_img'] : styles['wallet_img']}
                 src={vinidMethod}
                 alt=""
               />
@@ -626,11 +302,7 @@ export default function Payment() {
               )}
             </Col>
             <Col
-              className={
-                temp === 6
-                  ? styles['wallet_item_active']
-                  : styles['wallet_item']
-              }
+              className={temp === 6 ? styles['wallet_item_active'] : styles['wallet_item']}
               xs={24}
               sm={24}
               md={11}
@@ -639,9 +311,7 @@ export default function Payment() {
               onClick={() => showStatusMethod(6)}
             >
               <img
-                className={
-                  temp === 6 ? styles['wallet_img'] : styles['wallet_img']
-                }
+                className={temp === 6 ? styles['wallet_img'] : styles['wallet_img']}
                 src={mocaMethod}
                 alt=""
               />
@@ -673,11 +343,7 @@ export default function Payment() {
             >
               Hủy
             </Button>
-            <Button
-              className={styles['choose_button_left']}
-              onClick={showDrawer}
-              type="primary"
-            >
+            <Button className={styles['choose_button_left']} onClick={showDrawer} type="primary">
               Xác nhận
             </Button>
           </div>
@@ -692,49 +358,37 @@ export default function Payment() {
       >
         <div className={styles['payment_confirm']}>
           <div className={styles['payment_confirm_child']}>
-            <div className={styles['payment_confirm_child_title']}>
-              Bước 1 - Đăng Ký Tài Khoản
-            </div>
+            <div className={styles['payment_confirm_child_title']}>Bước 1 - Đăng Ký Tài Khoản</div>
             <div className={styles['payment_confirm_child_content']}>
-              Đăng ký tài khoản kinh doanh với các thông tin doanh nghiệp cơ
-              bản. Đồng ý với điều khoản hợp đồng ZaloPay thể hiện khi đăng ký
-              tài khoản
+              Đăng ký tài khoản kinh doanh với các thông tin doanh nghiệp cơ bản. Đồng ý với điều
+              khoản hợp đồng ZaloPay thể hiện khi đăng ký tài khoản
             </div>
           </div>
           <div className={styles['payment_confirm_child']}>
-            <div className={styles['payment_confirm_child_title']}>
-              Bước 2 - Cập Nhật Chứng Từ
-            </div>
+            <div className={styles['payment_confirm_child_title']}>Bước 2 - Cập Nhật Chứng Từ</div>
             <div className={styles['payment_confirm_child_content']}>
-              Tải lên và cập nhật các chứng từ cần thiết: giấy chứng nhận đăng
-              ký doanh nghiệp, mã số thuế, v.v...
+              Tải lên và cập nhật các chứng từ cần thiết: giấy chứng nhận đăng ký doanh nghiệp, mã
+              số thuế, v.v...
             </div>
           </div>
           <div className={styles['payment_confirm_child']}>
-            <div className={styles['payment_confirm_child_title']}>
-              Bước 3 - In QR / Nghiệm Thu
-            </div>
+            <div className={styles['payment_confirm_child_title']}>Bước 3 - In QR / Nghiệm Thu</div>
             <div className={styles['payment_confirm_child_content']}>
-              Với giải pháp QR Tĩnh: Sau khi đăng ký thành công, hệ thống sẽ
-              kiểm tra tính hợp lý của hồ sơ đăng ký và cung cấp QR Tĩnh sau 2
-              giờ làm việc (giờ hành chính). Với giải pháp QR Động hoặc
-              QuickPay: Doanh nghiệp cần tiến hành tích hợp kỹ thuật, VÍ ĐIỆN TỬ
-              sẽ hỗ trợ nghiệm thu sau khi tích hợp thành công. Sau khi in
-              QR/Nghiệm thu, Doanh nghiệp có thể triển khai thanh toán bằng
-              nguồn Ví (trong khi chờ thẩm định).
+              Với giải pháp QR Tĩnh: Sau khi đăng ký thành công, hệ thống sẽ kiểm tra tính hợp lý
+              của hồ sơ đăng ký và cung cấp QR Tĩnh sau 2 giờ làm việc (giờ hành chính). Với giải
+              pháp QR Động hoặc QuickPay: Doanh nghiệp cần tiến hành tích hợp kỹ thuật, VÍ ĐIỆN TỬ
+              sẽ hỗ trợ nghiệm thu sau khi tích hợp thành công. Sau khi in QR/Nghiệm thu, Doanh
+              nghiệp có thể triển khai thanh toán bằng nguồn Ví (trong khi chờ thẩm định).
             </div>
           </div>
           <div className={styles['payment_confirm_child']}>
-            <div className={styles['payment_confirm_child_title']}>
-              Bước 4 - Thẩm Định
-            </div>
+            <div className={styles['payment_confirm_child_title']}>Bước 4 - Thẩm Định</div>
             <div className={styles['payment_confirm_child_content']}>
-              Doanh nghiệp in và ký bản Hợp đồng sử dụng dịch vụ, sau đó gửi bản
-              cứng về cho Ví Điện Tử trong vòng 5 ngày làm việc. Sau khi nhận
-              hợp đồng, bộ phận pháp chế của Ví Điện Tử sẽ tiến hành thẩm định
-              hồ sơ doanh nghiệp trong 2 ngày làm việc. Nếu hồ sơ đủ điều kiện,
-              doanh nghiệp sẽ được chấp nhận thanh toán bằng tất cả các kênh
-              thanh toán và hạn mức thanh toán chung của Ví Điện Tử.
+              Doanh nghiệp in và ký bản Hợp đồng sử dụng dịch vụ, sau đó gửi bản cứng về cho Ví Điện
+              Tử trong vòng 5 ngày làm việc. Sau khi nhận hợp đồng, bộ phận pháp chế của Ví Điện Tử
+              sẽ tiến hành thẩm định hồ sơ doanh nghiệp trong 2 ngày làm việc. Nếu hồ sơ đủ điều
+              kiện, doanh nghiệp sẽ được chấp nhận thanh toán bằng tất cả các kênh thanh toán và hạn
+              mức thanh toán chung của Ví Điện Tử.
             </div>
           </div>
           <div onClick={onClose} className={styles['payment_confirm_button']}>
@@ -745,9 +399,10 @@ export default function Payment() {
         </div>
       </Drawer>
       <Modal
+        okText="Thêm"
+        cancelText="Đóng"
         visible={paymentTypeModal}
         onCancel={() => setPaymentTypeModal(false)}
-        onOk={() => setPaymentTypeModal(false)}
       >
         <Form layout="vertical">
           <Form.Item label="Hình thức thanh toán">

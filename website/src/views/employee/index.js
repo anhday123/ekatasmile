@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts/index'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
-import styles from './../employee/employee.module.scss'
+import { Link, useHistory } from 'react-router-dom'
+import styles from './employee.module.scss'
 import {
   Select,
   DatePicker,
@@ -22,17 +22,19 @@ import {
 } from 'antd'
 import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
-import { apiFilterRoleEmployee } from '../../apis/employee'
-import { apiAllRole, apiSearch, updateUser } from '../../apis/user'
-import { apiFilterCity, getAllBranch } from '../../apis/branch'
-import { apiDistrict, apiProvince } from '../../apis/information'
+import { apiFilterRoleEmployee } from 'apis/employee'
+import { apiAllRole, apiSearch, updateUser } from 'apis/user'
+import { apiFilterCity, getAllBranch } from 'apis/branch'
+import { apiDistrict, apiProvince } from 'apis/information'
 import EmployeeAdd from '../actions/employee/add'
-import { getAllStore } from '../../apis/store'
+import { getAllStore } from 'apis/store'
 import Permission from 'components/permission'
 import { compare, removeNull } from 'utils'
 const { Option } = Select
 
 export default function Employee() {
+  const history = useHistory()
+
   const [employee, setEmployee] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [modal2Visible, setModal2Visible] = useState(false)
@@ -47,9 +49,9 @@ export default function Employee() {
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [permission, setPermission] = useState([])
   const [district, setDistrict] = useState([])
-  const [branch, setBranch] = useState([])
-  const [store, setStore] = useState([])
-  const [rolelist, setRolelist] = useState([])
+  const [branches, setBranches] = useState([])
+  const [stores, setStores] = useState([])
+  const [optionSearch, setOptionSearch] = useState('name')
   const [showBulkUpdate, setShowBulkUpdate] = useState({
     visible: false,
     key: '',
@@ -74,11 +76,7 @@ export default function Employee() {
   }
 
   function onChangeSwitch(checked, record) {
-    updateUserData(
-      { ...record, active: checked },
-      record.user_id,
-      checked ? 1 : 2
-    )
+    updateUserData({ ...record, active: checked }, record.user_id, checked ? 1 : 2)
   }
 
   const changePagi = (page, page_size) => setPagination({ page, page_size })
@@ -113,7 +111,7 @@ export default function Employee() {
 
   const columns = [
     {
-      title: 'Mã nhân sự',
+      title: 'Mã nhân viên',
       dataIndex: 'user_id',
       width: 100,
       render: (text, record) => (
@@ -130,18 +128,16 @@ export default function Employee() {
       sorter: (a, b) => compare(a, b, 'user_id'),
     },
     {
-      title: 'Tên đăng nhập',
+      title: 'SDT Đăng nhập',
       dataIndex: 'username',
       width: 200,
       sorter: (a, b) => compare(a, b, 'user_name'),
     },
     {
-      title: 'Tên nhân sự',
+      title: 'Tên nhân viên',
       dataIndex: 'name',
       width: 150,
-      render: (text, record) => (
-        <div>{`${record.first_name} ${record.last_name}`}</div>
-      ),
+      render: (text, record) => <div>{`${record.first_name} ${record.last_name}`}</div>,
       sorter: (a, b) => compare(a, b, 'name'),
     },
     {
@@ -162,8 +158,7 @@ export default function Employee() {
       dataIndex: 'create_date',
       width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     // {
     //   title: 'Cửa hàng',
@@ -229,8 +224,8 @@ export default function Employee() {
       message: 'Thành công',
       description:
         data && data === 2
-          ? 'Vô hiệu hóa nhân sự thành công.'
-          : 'Kích hoạt nhân sự thành công.',
+          ? 'Vô hiệu hóa nhân viên thành công.'
+          : 'Kích hoạt nhân viên thành công.',
     })
   }
 
@@ -246,7 +241,7 @@ export default function Employee() {
   const openNotificationErrorUpdate = () => {
     notification.error({
       message: 'Thất bại',
-      description: 'Lỗi cập nhật thông tin nhân sự.',
+      description: 'Lỗi cập nhật thông tin nhân viên.',
     })
   }
 
@@ -279,7 +274,7 @@ export default function Employee() {
         await apiAllEmployeeData()
         notification.success({
           message: 'Thành công',
-          description: 'Cập nhật thông tin nhân sự thành công',
+          description: 'Cập nhật thông tin nhân viên thành công',
         })
         modal2VisibleModal(false)
       } else {
@@ -295,9 +290,6 @@ export default function Employee() {
     }
   }
 
-  const showDrawer = () => {
-    setVisible(true)
-  }
   const onClose = () => {
     setVisible(false)
   }
@@ -310,15 +302,10 @@ export default function Employee() {
 
   const getAllStoreData = async () => {
     try {
-      setLoading(true)
       const res = await getAllStore()
-      if (res.status === 200) {
-        setStore(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
+      console.log(res)
+      if (res.status === 200) setStores(res.data.data)
+    } catch (error) {}
   }
 
   const onSelectChange = (selectedRowKeys) => {
@@ -358,14 +345,10 @@ export default function Employee() {
 
   const getAllBranchData = async () => {
     try {
-      setLoading(true)
       const res = await getAllBranch()
-      if (res.status === 200) {
-        setBranch(res.data.data)
-      }
-      setLoading(false)
+      if (res.status === 200) setBranches(res.data.data)
     } catch (error) {
-      setLoading(false)
+      console.log(error)
     }
   }
 
@@ -395,22 +378,6 @@ export default function Employee() {
     }
   }
 
-  const [districtMainAPI, setDistrictMainAPI] = useState([])
-  const apiFilterCityData = async (object) => {
-    try {
-      setLoading(true)
-      const res = await apiFilterCity({ keyword: object })
-      if (res.status === 200) {
-        setDistrictMainAPI(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-  function handleChangeCity(value) {
-    apiFilterCityData(value)
-  }
   const finishBulkUpdate = async (value) => {
     try {
       const res = await Promise.all(
@@ -434,37 +401,25 @@ export default function Employee() {
   const menuUpdate = () => (
     <Menu>
       <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'phone', title: 'liên hệ' })
-        }
+        onClick={() => setShowBulkUpdate({ visible: true, key: 'phone', title: 'liên hệ' })}
       >
         Liên hệ
       </Menu.Item>
-      <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'email', title: 'email' })
-        }
-      >
+      <Menu.Item onClick={() => setShowBulkUpdate({ visible: true, key: 'email', title: 'email' })}>
         Email
       </Menu.Item>
       <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'last_name', title: 'tên' })
-        }
+        onClick={() => setShowBulkUpdate({ visible: true, key: 'last_name', title: 'tên' })}
       >
         Tên
       </Menu.Item>
       <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'first_name', title: 'họ' })
-        }
+        onClick={() => setShowBulkUpdate({ visible: true, key: 'first_name', title: 'họ' })}
       >
         Họ
       </Menu.Item>
       <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'address', title: 'địa chỉ' })
-        }
+        onClick={() => setShowBulkUpdate({ visible: true, key: 'address', title: 'địa chỉ' })}
       >
         Địa chỉ
       </Menu.Item>
@@ -491,69 +446,43 @@ export default function Employee() {
         Thành phố
       </Menu.Item> */}
       <Menu.Item
-        onClick={() =>
-          setShowBulkUpdate({ visible: true, key: 'role_id', title: 'vai trò' })
-        }
+        onClick={() => setShowBulkUpdate({ visible: true, key: 'role_id', title: 'vai trò' })}
       >
         Vai trò
       </Menu.Item>
     </Menu>
   )
-  useEffect(() => {
-    getAllStoreData()
-  }, [])
+
   useEffect(() => {
     apiAllRoleData()
-  }, [])
-  useEffect(() => {
+    getAllStoreData()
+    apiDistrictData()
+    apiProvinceData()
     getAllBranchData()
   }, [])
+
   useEffect(() => {
     apiAllEmployeeData(removeNull(filter))
   }, [filter])
-  useEffect(() => {
-    apiDistrictData()
-  }, [])
-  useEffect(() => {
-    apiProvinceData()
-  }, [])
 
   return (
     <>
       <div className={`${styles['employee_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            paddingBottom: '1rem',
-            borderBottom: '1px solid rgb(231, 224, 224)',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+        <Row
+          justify="space-between"
+          wrap={false}
+          align="middle"
+          style={{ paddingBottom: '1rem', borderBottom: '1px solid rgb(231, 224, 224)' }}
         >
-          <Link
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ fontWeight: '600', fontSize: '1rem', cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
           >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-            />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
-              }}
-            >
-              Quản lý nhân sự
-            </div>
-          </Link>
+            <ArrowLeftOutlined />
+            <div style={{ marginLeft: '0.5rem' }}>Quản lý nhân viên</div>
+          </Row>
           <Permission permissions={[PERMISSIONS.them_nhan_su]}>
             <Button
               size="large"
@@ -561,154 +490,73 @@ export default function Employee() {
               icon={<PlusCircleOutlined />}
               onClick={showDrawerUpdate}
             >
-              Thêm nhân sự
+              Thêm nhân viên
             </Button>
           </Permission>
-        </div>
-        <div className={styles['employee_manager_search']}>
-          <Row className={styles['employee_manager_search_row']}>
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles['employee_manager_search_row_col']}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
+        </Row>
+        <Row wrap={false} align="middle" justify="space-between" style={{ marginTop: 20 }}>
+          <Row wrap={false}>
+            <Input
+              style={{ width: 280 }}
+              value={filter.search}
+              onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+              placeholder="Tìm kiếm theo..."
+              allowClear
+            />
+            <Select
+              value={optionSearch}
+              onChange={(value) => setOptionSearch(value)}
+              style={{ width: 150 }}
             >
-              <div style={{ width: '100%' }}>
-                <Input
-                  size="large"
-                  style={{ width: '100%' }}
-                  name="name"
-                  value={filter.search}
-                  enterButton
-                  onChange={(e) =>
-                    setFilter({ ...filter, search: e.target.value })
-                  }
-                  className={styles['orders_manager_content_row_col_search']}
-                  placeholder="Tìm kiếm theo mã, tên đăng nhập"
-                  allowClear
-                />
-              </div>
-            </Col>
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles['employee_manager_search_row_col']}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <div style={{ width: '100%' }}>
-                <RangePicker
-                  size="large"
-                  className="br-15__date-picker"
-                  // name="name1" value={moment(valueSearch).format('YYYY-MM-DD')}
-                  value={
-                    filter.from_date
-                      ? [moment(filter.from_date), moment(filter.to_date)]
-                      : []
-                  }
-                  style={{ width: '100%' }}
-                  ranges={{
-                    Today: [moment(), moment()],
-                    'This Month': [
-                      moment().startOf('month'),
-                      moment().endOf('month'),
-                    ],
-                  }}
-                  onChange={(date, dateString) =>
-                    setFilter({
-                      ...filter,
-                      from_date: dateString[0],
-                      to_date: dateString[1],
-                    })
-                  }
-                />
-              </div>
-            </Col>
-            <Col
-              style={{ marginTop: '1.25rem', marginRight: '1rem' }}
-              className={styles['employee_manager_search_row_col']}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={7}
-              xl={7}
-            >
-              <div style={{ width: '100%' }}>
-                <Select
-                  size="large"
-                  showSearch
-                  style={{ width: '100%' }}
-                  placeholder="Select a person"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  value={filter.role_id}
-                  onChange={(event) => {
-                    setFilter({ ...filter, role_id: event })
-                  }}
-                >
-                  <Option value="">Tất cả chức vụ</Option>
+              <Option value="name">Tên nhân viên</Option>
+              <Option value="code">Mã nhân viên</Option>
+              <Option value="phone">SĐT nhân viên</Option>
+            </Select>
+          </Row>
+          <RangePicker
+            className="br-15__date-picker"
+            // value={filter.from_date ? [moment(filter.from_date), moment(filter.to_date)] : []}
+            style={{ width: 240 }}
+            ranges={{
+              Today: [moment(), moment()],
+              'This Month': [moment().startOf('month'), moment().endOf('month')],
+            }}
+            // onChange={(date, dateString) =>
+            //   setFilter({
+            //     ...filter,
+            //     from_date: dateString[0],
+            //     to_date: dateString[1],
+            //   })
+            // }
+          />
+          <Select
+            showSearch
+            style={{ width: 210 }}
+            placeholder="Lọc theo chức vụ"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={filter.role_id}
+            onChange={(event) => {
+              setFilter({ ...filter, role_id: event })
+            }}
+          >
+            <Option value="">Tất cả chức vụ</Option>
+            {permission.map((values, index) => {
+              return <Option value={values.role_id}>{values.name}</Option>
+            })}
+          </Select>
+          <Select showSearch style={{ width: 230 }} placeholder="Lọc theo địa điểm làm việc">
+            {stores.map((store) => (
+              <Select.Option value={store.store_id}>{store.name}</Select.Option>
+            ))}
+            {branches.map((branch) => (
+              <Select.Option value={branch.branch_id}>{branch.name}</Select.Option>
+            ))}
+          </Select>
+        </Row>
 
-                  {permission &&
-                    permission.length > 0 &&
-                    permission.map((values, index) => {
-                      return (
-                        <Option value={values.role_id}>{values.name}</Option>
-                      )
-                    })}
-                </Select>
-              </div>
-            </Col>
-          </Row>
-        </div>
-        <div className={styles['employee_manager_top']}>
-          <Row className={styles['employee_manager_top_center']}>
-            <Col
-              style={{ marginTop: '1.25rem' }}
-              className={styles['employee_manager_top_center_col']}
-              xs={20}
-              sm={10}
-              md={10}
-              lg={6}
-              xl={6}
-            >
-              <div className={styles['employee_manager_top_center_item']}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '600' }}>
-                  {employeeCount.length}
-                </div>
-                <div className={styles['employee_manager_top_center_item_top']}>
-                  Tổng nhân sự
-                </div>
-              </div>
-            </Col>
-            <Col
-              style={{ marginTop: '1.25rem', marginLeft: '1rem' }}
-              className={styles['employee_manager_top_center_col']}
-              xs={20}
-              sm={10}
-              md={10}
-              lg={6}
-              xl={6}
-            >
-              <div className={styles['employee_manager_top_center_item']}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '600' }}>
-                  {monthSix}
-                </div>
-                <div className={styles['employee_manager_top_center_item_top']}>
-                  Nhân viên trên 6 tháng
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </div>
         <div className={styles['employee_manager_bottom']}>
           <div
             style={{
@@ -719,7 +567,7 @@ export default function Employee() {
               marginTop: '1rem',
             }}
           >
-            <Button onClick={onClickClear} type="primary" size="large">
+            <Button onClick={onClickClear} type="primary">
               Xóa tất cả lọc
             </Button>
           </div>
@@ -735,7 +583,7 @@ export default function Employee() {
               <Permission permissions={[PERMISSIONS.cap_nhat_nhan_su]}>
                 <Dropdown overlay={menuUpdate}>
                   <Button type="primary" size="large">
-                    Cập nhật nhân sự
+                    Cập nhật nhân viên
                   </Button>
                 </Dropdown>
               </Permission>
@@ -759,7 +607,7 @@ export default function Employee() {
       </div>
 
       <Modal
-        title="Cập nhật thông tin nhân sự"
+        title="Cập nhật thông tin nhân viên"
         centered
         footer={null}
         width={800}
@@ -797,7 +645,7 @@ export default function Employee() {
             <Col span={12}>
               <Form.Item name="branch_id" label="Chi nhánh">
                 <Select>
-                  {branch.map((e) => (
+                  {branches.map((e) => (
                     <Option value={e.branch_id}>{e.name}</Option>
                   ))}
                 </Select>
@@ -861,10 +709,7 @@ export default function Employee() {
                 ))}
               </Select>
             ) : (
-              <Input
-                size="large"
-                placeholder={`Nhập ${showBulkUpdate.title}`}
-              />
+              <Input size="large" placeholder={`Nhập ${showBulkUpdate.title}`} />
             )}
           </Form.Item>
           <Row>
@@ -875,7 +720,7 @@ export default function Employee() {
         </Form>
       </Modal>
       <Drawer
-        title="Cập nhật thông tin nhân sự"
+        title="Cập nhật thông tin nhân viên"
         width={1000}
         onClose={onClose}
         visible={visible}
@@ -892,7 +737,7 @@ export default function Employee() {
       ></Drawer>
 
       <Drawer
-        title="Thêm nhân sự"
+        title="Thêm nhân viên"
         width="75%"
         onClose={onCloseUpdate}
         visible={visibleUpdate}

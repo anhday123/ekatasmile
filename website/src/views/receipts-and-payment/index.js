@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import styles from './receipts-payment.module.scss'
 import columnsReceiptsPayment from './columns'
 import { formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
@@ -172,10 +173,7 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                  <Select
-                    placeholder="Chọn nhóm người nhận"
-                    style={{ width: 280 }}
-                  >
+                  <Select placeholder="Chọn nhóm người nhận" style={{ width: 280 }}>
                     <Select.Option value="">Khách hàng</Select.Option>
                     <Select.Option value="">Nhà cung cấp</Select.Option>
                     <Select.Option value="">Nhân viên</Select.Option>
@@ -185,28 +183,16 @@ export default function ReceiptsAndPayment() {
                 <Form.Item
                   name="nameReceiver"
                   label="Tên người nhận"
-                  rules={[
-                    { required: true, message: 'Vui lòng chọn tên người nhận' },
-                  ]}
+                  rules={[{ required: true, message: 'Vui lòng chọn tên người nhận' }]}
                 >
-                  <Select
-                    showSearch
-                    placeholder="Chọn chọn  người nhận"
-                    style={{ width: 280 }}
-                  >
+                  <Select showSearch placeholder="Chọn chọn  người nhận" style={{ width: 280 }}>
                     {customers.map((customer, index) => (
                       <Select.Option
                         key={index}
-                        value={
-                          (customer.first_name || '') +
-                          ' ' +
-                          (customer.last_name || '')
-                        }
+                        value={(customer.first_name || '') + ' ' + (customer.last_name || '')}
                       >
-                        {(customer.first_name || '') +
-                          ' ' +
-                          (customer.last_name || '')}{' '}
-                        - {customer.phone || ''}
+                        {(customer.first_name || '') + ' ' + (customer.last_name || '')} -{' '}
+                        {customer.phone || ''}
                       </Select.Option>
                     ))}
                   </Select>
@@ -216,14 +202,9 @@ export default function ReceiptsAndPayment() {
                 <Form.Item
                   name="paymentType"
                   label="Loại phiếu chi"
-                  rules={[
-                    { required: true, message: 'Vui lòng chọn loại phiếu chi' },
-                  ]}
+                  rules={[{ required: true, message: 'Vui lòng chọn loại phiếu chi' }]}
                 >
-                  <Select
-                    placeholder="Chọn loại phiếu chi"
-                    style={{ width: 280 }}
-                  ></Select>
+                  <Select placeholder="Chọn loại phiếu chi" style={{ width: 280 }}></Select>
                 </Form.Item>
                 <Form.Item
                   name="valueReceiver"
@@ -235,11 +216,7 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                  <InputNumber
-                    min={0}
-                    placeholder="Nhập giá trị ghi nhận"
-                    style={{ width: 280 }}
-                  />
+                  <InputNumber min={0} placeholder="Nhập giá trị ghi nhận" style={{ width: 280 }} />
                 </Form.Item>
               </Row>
               <Row justify="space-between">
@@ -253,21 +230,14 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                  <Select
-                    placeholder="Chọn hình thức thanh toán"
-                    style={{ width: 280 }}
-                  >
+                  <Select placeholder="Chọn hình thức thanh toán" style={{ width: 280 }}>
                     <Select.Option value="">Quẹt thẻ</Select.Option>
                     <Select.Option value="">Tiền mặt</Select.Option>
                     <Select.Option value="">Thẻ ngân hàng</Select.Option>
                   </Select>
                 </Form.Item>
                 <Form.Item name="description" label="Mô tả">
-                  <Input.TextArea
-                    rows={4}
-                    placeholder="Nhập Mô tả"
-                    style={{ width: 280 }}
-                  />
+                  <Input.TextArea rows={4} placeholder="Nhập Mô tả" style={{ width: 280 }} />
                 </Form.Item>
               </Row>
             </Space>
@@ -292,23 +262,15 @@ export default function ReceiptsAndPayment() {
   }, [])
 
   return (
-    <div style={{ padding: 20 }}>
+    <div className={styles['card']}>
       <Row
         align="middle"
         justify="space-between"
         style={{ paddingBottom: 17, borderBottom: '1px solid #b4b4b4' }}
       >
-        <Row
-          wrap={false}
-          align="middle"
-          onClick={() => history.push(ROUTES.SELL)}
-          style={{ cursor: 'pointer', fontSize: 18 }}
-        >
-          <ArrowLeftOutlined />
-          <p style={{ marginBottom: 0, marginLeft: 8, fontWeight: 700 }}>
-            Danh sách phiếu
-          </p>
-        </Row>
+        <p style={{ marginBottom: 0, marginLeft: 8, fontWeight: 700, fontSize: 18 }}>
+          Danh sách phiếu
+        </p>
         <Space size="middle">
           <ModalCreatePaymentOrReceipts type="payment" />
           <ModalCreatePaymentOrReceipts type="receipts" />
@@ -468,11 +430,7 @@ export default function ReceiptsAndPayment() {
           <Select.Option value="last_year">Last year</Select.Option>
         </Select>
       </Row>
-      <Row
-        justify="space-between"
-        align="middle"
-        style={{ marginTop: 15, marginBottom: 15 }}
-      >
+      <Row justify="space-between" align="middle" style={{ marginTop: 15, marginBottom: 15 }}>
         <Button
           type="primary"
           danger
@@ -519,13 +477,13 @@ export default function ReceiptsAndPayment() {
         </Space>
       </Row>
       <Table
+        size="small"
         rowSelection={{
           selectedRowKeys,
           onChange: (keys) => console.log(keys),
         }}
         style={{ width: '100%' }}
         columns={columns}
-        dataSource={[1, 2, 3, 4, 5, 6, 7]}
       />
     </div>
   )

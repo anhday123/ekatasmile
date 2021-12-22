@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './sell.module.scss'
 
 import { v4 as uuidv4 } from 'uuid'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link, BrowserRouter } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { formatCash, encryptText } from 'utils'
 import TienThoi from 'utils/tienthoi'
@@ -230,6 +230,16 @@ export default function Sell() {
           } else
             notification.warning({
               message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
+              description: (
+                <Button
+                  onClick={() =>
+                    window.open(`${ROUTES.IMPORT_INVENTORY}?_id=${product._id}`, '_blank')
+                  }
+                  type="primary"
+                >
+                  Nhập kho sản phẩm này
+                </Button>
+              ),
             })
         } else {
           const price = product.units && product.units.length ? product.units[0].price : 20000
@@ -1508,6 +1518,7 @@ export default function Sell() {
                 <Space wrap={true} size="large">
                   {productsRelated.map((product) => (
                     <div
+                      style={{ borderColor: product.total_quantity === 0 && 'red' }}
                       className={styles['product-item']}
                       onClick={() => _addProductToCartInvoice(product)}
                     >
@@ -2002,11 +2013,7 @@ export default function Sell() {
                   <Button
                     size="large"
                     type="primary"
-                    style={{
-                      width: 150,
-                      backgroundColor: '#EA9649',
-                      borderColor: '#EA9649',
-                    }}
+                    style={{ width: 150, backgroundColor: '#EA9649', borderColor: '#EA9649' }}
                   >
                     In hóa đơn
                   </Button>
