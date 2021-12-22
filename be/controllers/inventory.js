@@ -42,6 +42,9 @@ module.exports._getImportOrder = async (req, res, next) => {
         if (req.query.store_id) {
             aggregateQuery.push({ $match: { 'import_location.store_id': Number(req.query.store_id) } });
         }
+        if (req.query.status) {
+            aggregateQuery.push({ $match: { status: String(req.query.status) } });
+        }
         if (req.query['today'] != undefined) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
             req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
@@ -271,7 +274,7 @@ module.exports._createImportOrder = async (req, res, next) => {
     }
 };
 
-module.exports._importOrderFile = async (req, res, next) => {
+module.exports._createImportOrderFile = async (req, res, next) => {
     try {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
@@ -349,24 +352,12 @@ module.exports._importOrderFile = async (req, res, next) => {
         stores.map((eStore) => {
             _stores[eStore.name] = eStore;
         });
-        let [price_id, location_id] = await Promise.all([
+
+        let [order_id] = await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
-                .findOne({ name: 'Prices' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' })
+                .findOne({ name: 'ImportOrders' })
                 .then((doc) => {
                     if (doc && doc.value) {
                         return doc.value;
@@ -377,72 +368,75 @@ module.exports._importOrderFile = async (req, res, next) => {
                     throw new Error(`500: ${err}`);
                 }),
         ]);
-        let prices = [];
-        let locations = [];
-        excelProducts.map((product) => {
-            if (_products[product['masanpham']] && _variants[product['maphienban']]) {
-                price_id++;
-                let _price = {
+        let _orders = {};
+        excelProducts = excelProducts.map((e) => {
+            if (!_orders[e['madonhang']]) {
+                order_id++;
+                _orders[e['madonhang']] = {
                     business_id: Number(req.user.business_id),
-                    price_id: Number(price_id),
-                    product_id: Number(_products[product['masanpham']].product_id),
-                    variant_id: Number(_variants[product['maphienban']].variant_id),
-                    import_price: Number(product['gianhap']),
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
-                    active: true,
-                };
-                prices.push(_price);
-                location_id++;
-                let _location = {
-                    business_id: Number(req.user.business_id),
-                    location_id: Number(location_id),
-                    product_id: Number(_products[product['masanpham']].product_id),
-                    variant_id: Number(_variants[product['maphienban']].variant_id),
-                    price_id: Number(price_id),
-                    type: product['noinhaphang'],
-                    inventory_id: (() => {
-                        if (product['noinhaphang'] == 'BRANCH') {
-                            return _branchs[product['tennoinhap']].branch_id;
+                    order_id: order_id,
+                    code: e['madonhang'],
+                    import_location: (() => {
+                        if (e['noinhaphang'] == 'BRANCH') {
+                            return { branch_id: _branchs[e['tennoinhap']].branch_id };
                         }
-                        if (product['noinhaphang'] == 'STORE') {
-                            return _stores[product['tennoinhap']].store_id;
+                        if (e['noinhaphang'] == 'STORE') {
+                            return { store_id: _stores[e['tennoinhap']].store_id };
                         }
+                        return '';
                     })(),
-                    name: product['tennoinhap'],
-                    quantity: product['soluongnhap'],
+                    import_location_info: (() => {
+                        if (e['noinhaphang'] == 'BRANCH') {
+                            return _branchs[e['tennoinhap']];
+                        }
+                        if (e['noinhaphang'] == 'STORE') {
+                            return _stores[e['tennoinhap']];
+                        }
+                        return {};
+                    })(),
+                    products: req.body.products || [],
+                    total_cost: 0,
+                    final_cost: 0,
+                    total_quantity: 0,
+                    // DRAFT - VERIFY - COMPLETE - CANCEL
+                    status: 'DRAFT',
+                    verify_date: '',
+                    verifier_id: '',
+                    complete_date: '',
+                    completer_id: '',
                     create_date: moment().tz(TIMEZONE).format(),
                     last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
+                    creator_id: req.user.user_id,
                     active: true,
                 };
-                locations.push(_location);
+            }
+            if (_orders[e['madonhang']]) {
+                _orders[e['madonhang']].products.push({
+                    product_id: _products[e['masanpham']].product_id,
+                    variant_id: _variants[e['maphienban']].variant_id,
+                    import_price: e['gianhap'],
+                    quantity: e['soluongnhap'],
+                    product_info: _products[e['masanpham']],
+                    variant_info: _variants[e['maphienban']],
+                });
+                _orders[e['madonhang']].total_cost += e['gianhap'] * e['soluongnhap'];
+                _orders[e['madonhang']].final_cost += e['gianhap'] * e['soluongnhap'];
+                _orders[e['madonhang']].total_quantity += e['soluongnhap'];
             }
         });
-        await Promise.all([
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'Locations' },
-                    { $set: { name: 'Locations', value: location_id } },
-                    { upsert: true }
-                ),
-            client.db(DB).collection('Prices').insertMany(prices),
-            client.db(DB).collection('Locations').insertMany(locations),
-        ]);
-        res.send({
-            success: true,
-            data: {
-                prices: prices,
-                locations: locations,
-            },
-        });
+        let orders = Object.values(_orders);
+        let insert = await client.db(DB).collection('ImportOrders').insertMany(orders);
+        if (!insert.insertedIds) {
+            throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
+        }
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: order_id } }, { upsert: true }),
+            res.send({
+                success: true,
+                data: orders,
+            });
     } catch (err) {
         next(err);
     }
