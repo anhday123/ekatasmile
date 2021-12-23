@@ -11,47 +11,47 @@ import { Row, Col, Popover, Skeleton, Space } from 'antd'
 //icons antd
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { getStatistical } from 'apis/statis'
-import axios from 'axios'
 
 const Overview = () => {
   const [statistical, setStatistical] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
-  const contentProfit = <div>Profit = Seller's Revenue - Total Base cost</div>
-  const contentRevenue = <div>Revenue = SUM OF [Sale price * Line Item Quantity]</div>
-
-  const contentOrder = <div>Number of Orders in this app including line items in each</div>
-
-  const SALES = [
+  const [sales, setSales] = useState([
     {
       profitToday: '0 VND',
       name: 'Tổng đơn hàng',
-      sumProfit: '0 VND',
     },
     {
       profitToday: '0 VND',
       name: 'Tổng giá vốn',
-      sumProfit: '0 VND',
     },
     {
       profitToday: '0 VND',
       name: 'Tổng doanh thu',
-      sumProfit: '0 VND',
     },
     {
       profitToday: '0 VND',
       name: 'Tổng lợi nhuận',
-      sumProfit: '0 VND',
     },
-  ]
+  ])
+
+  const [orderQuantity, setOrderQuantity] = useState(0)
+  const [totalBasePrice, setTotalBasePrice] = useState(0)
+  const [totalProfit, setTotalProfit] = useState(0)
+  const [totalSales, settTotalSales] = useState(0)
 
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
       const res = await getStatistical()
       console.log(res)
-      if (res.status === 200) setStatistical(res.data.data)
+      if (res.status === 200) {
+        setStatistical(res.data.data)
+        setOrderQuantity(res.data.data.order_quantity)
+        setTotalBasePrice(res.data.data.total_base_price)
+        setTotalProfit(res.data.data.total_profit)
+        settTotalSales(res.data.data.total_sales)
+      }
 
       setLoadingSkeleton(false)
     } catch (e) {
@@ -81,7 +81,7 @@ const Overview = () => {
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
           <Row justify="space-between" style={{ width: '100%' }}>
-            {SALES.map((e, index) => (
+            {sales.map((e, index) => (
               <div
                 style={{
                   width: '50%',
@@ -109,15 +109,11 @@ const Overview = () => {
                   </div>
                   <InfoCircleOutlined />
                 </Row>
-                <span
-                  style={{
-                    marginBottom: 0,
-                    fontWeight: 700,
-                    fontSize: 17,
-                    color: '#5B6BE8',
-                  }}
-                >
-                  {e.sumProfit}
+                <span style={{ marginBottom: 0, fontWeight: 700, fontSize: 17, color: '#5B6BE8' }}>
+                  {(e.name === 'Tổng đơn hàng' && formatCash(orderQuantity)) ||
+                    (e.name === 'Tổng giá vốn' && formatCash(totalBasePrice)) ||
+                    (e.name === 'Tổng doanh thu' && formatCash(totalSales)) ||
+                    (e.name === 'Tổng lợi nhuận' && formatCash(totalProfit))}
                 </span>
               </div>
             ))}
@@ -143,32 +139,7 @@ const Overview = () => {
                 <div className={styles['dashboard_manager_revenue_title']}>
                   <div>Doanh thu</div>
                 </div>
-                <LineChart
-                  data={[
-                    {
-                      name: 'Đơn hàng hôm nay',
-                      data: {
-                        '00:00': 3,
-                        '01:00': 7,
-                        '02:00': 5,
-                        '03:00': 1,
-                        '04:00': 9,
-                        '05:00': 15,
-                      },
-                    },
-                    {
-                      name: 'Đơn hàng hôm qua',
-                      data: {
-                        '00:00': 10,
-                        '01:00': 1,
-                        '02:00': 5,
-                        '03:00': 7,
-                        '04:00': 12,
-                        '05:00': 2,
-                      },
-                    },
-                  ]}
-                />
+                <LineChart data={statistical.chart || []} />
               </div>
             </Col>
           )}

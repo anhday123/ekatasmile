@@ -10,6 +10,7 @@ import { LoadingOutlined, PlusOutlined, CopyOutlined, PlusCircleOutlined } from 
 
 //apis
 import { uploadFile } from 'apis/upload'
+import { VERSION_APP } from 'consts'
 
 export default function Setting() {
   const [imageUrl, setImageUrl] = useState('')
@@ -89,7 +90,17 @@ export default function Setting() {
             />
           </Tabs.TabPane>
           <Tabs.TabPane tab="Chi tiết phiên bản" key="2">
-            Phát triển sau
+            <div>
+              <div>Version: {VERSION_APP}</div>
+              <div>
+                <div>Chi tiết:</div>
+                <div>- Bổ sung giao diện nhập kho</div>
+                <div>- Bổ sung chức năng tạo đơn nhập kho</div>
+                <div>- Chỉnh sửa chức năng import sản phẩm bằng file excel</div>
+                <div>- Cho phép tải file đính kèm khi tạo sản phẩm</div>
+                <div>- Xuất file excel các đơn hàng nhập </div>
+              </div>
+            </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Kết nối API" key="3">
             Phát triển sau

@@ -26,6 +26,7 @@ import {
   Affix,
   DatePicker,
   Upload,
+  Modal,
 } from 'antd'
 
 //icons
@@ -44,7 +45,10 @@ import {
 //apis
 import { getProducts } from 'apis/product'
 import { getAllBranch } from 'apis/branch'
+import { getAllStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
+import { apiAllSupplier } from 'apis/supplier'
+import { apiAllUser } from 'apis/user'
 
 //components
 import Permission from 'components/permission'
@@ -55,10 +59,22 @@ export default function ImportInventory() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const [formInfoOrder] = Form.useForm()
 
+  const [users, setUsers] = useState([])
+
   const [loadingUpload, setLoadingUpload] = useState(false)
   const [file, setFile] = useState(false)
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [productsSearch, setProductsSearch] = useState([])
+
+  const [supplierId, setSupplierId] = useState()
+  const [productsSupplier, setProductsSupplier] = useState([])
+  const [suppliers, setSuppliers] = useState([])
+  const [visibleProductsToSupplier, setVisibleProductsToSupplier] = useState(false)
+  const toggleProductsToSupplier = () => {
+    setVisibleProductsToSupplier(!visibleProductsToSupplier)
+    setProductsSupplier([])
+    setSupplierId()
+  }
 
   //object order create
   const [orderCreate, setOrderCreate] = useState({
@@ -76,14 +92,15 @@ export default function ImportInventory() {
     deliveryAddress: null, //địa chỉ nhận hàng
     shipping: null, //đơn vị vận chuyển
     billOfLadingCode: '',
-    moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả
+    moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả (Tổng tiền thanh toán)
     prepay: 0, //tiền khách thanh toán trước
     moneyGivenByCustomer: 0, //tiền khách hàng đưa
     excessCash: 0, //tiền thừa
   })
 
-  const [loadingBranch, setLoadingBranch] = useState(false)
+  const [loadingLocation, setLoadingLocation] = useState(false)
   const [branches, setBranches] = useState([])
+  const [stores, setStores] = useState([])
 
   const _editOrder = (attribute, value) => {
     const orderCreateNew = { ...orderCreate }
@@ -238,6 +255,21 @@ export default function ImportInventory() {
     }
   }
 
+  const columnsProductsToSupplier = [
+    {
+      title: 'Tên Sản phẩm',
+      dataIndex: 'product_name',
+    },
+    {
+      title: 'Phiên bản',
+      dataIndex: 'title',
+    },
+    {
+      title: 'Đơn giá nhập',
+      dataIndex: 'import_price',
+    },
+  ]
+
   const columns = [
     {
       title: 'Mã SKU',
@@ -245,11 +277,11 @@ export default function ImportInventory() {
     },
     {
       title: 'Tên Sản phẩm',
-      dataIndex: 'title',
+      dataIndex: 'product_name',
     },
     {
       title: 'Phiên bản',
-      dataIndex: 'variant',
+      dataIndex: 'title',
     },
     {
       title: 'Số lượng tồn',
@@ -278,11 +310,12 @@ export default function ImportInventory() {
       },
     },
     {
+      width: 130,
       title: 'Đơn giá nhập',
       render: (data, record) => {
         const InputPrice = () => (
           <InputNumber
-            style={{ width: 150 }}
+            style={{ width: '100%' }}
             onBlur={(e) => {
               const value = e.target.value.replaceAll(',', '')
               const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
@@ -304,6 +337,7 @@ export default function ImportInventory() {
       render: (text, record) => record.sumCost && formatCash(record.sumCost || 0),
     },
     {
+      width: 30,
       title: '',
       render: (data, record, index) => (
         <DeleteOutlined
@@ -316,12 +350,36 @@ export default function ImportInventory() {
 
   const _getBranches = async () => {
     try {
-      setLoadingBranch(true)
       const res = await getAllBranch()
       if (res.status === 200) setBranches(res.data.data)
-      setLoadingBranch(false)
     } catch (error) {
-      setLoadingBranch(false)
+      console.log(error)
+    }
+  }
+
+  const _getStores = async () => {
+    try {
+      const res = await getAllStore()
+      if (res.status === 200)
+        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _loadLocations = async () => {
+    setLoadingLocation(true)
+    await _getBranches()
+    await _getStores()
+    setLoadingLocation(false)
+  }
+
+  const _getUsers = async () => {
+    try {
+      const res = await apiAllUser()
+      console.log(res)
+      if (res.status === 200) setUsers(res.data.data)
+    } catch (error) {
       console.log(error)
     }
   }
@@ -337,6 +395,46 @@ export default function ImportInventory() {
     }
   }
 
+  const _getSuppliers = async () => {
+    try {
+      const res = await apiAllSupplier()
+      console.log(res)
+      if (res.status === 200) setSuppliers(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getProductsToSupplier = async (supplierId) => {
+    try {
+      setLoadingProduct(true)
+      const branchId = dataUser && dataUser.data ? dataUser.data.branch_id : ''
+      const res = await getProducts({
+        branch_id: branchId,
+        merge: true,
+        detach: true,
+        supplier_id: supplierId,
+      })
+      console.log(res)
+      if (res.status === 200) {
+        const productsSupplierNew = res.data.data.map((e) => ({
+          ...e.variants,
+          product_name: e.name,
+          import_price: e.import_price_default || 0,
+          quantity: 1,
+          inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
+          sumCost: e.import_price_default || 0,
+        }))
+
+        setProductsSupplier([...productsSupplierNew])
+      }
+      setLoadingProduct(false)
+    } catch (error) {
+      console.log(error)
+      setLoadingProduct(false)
+    }
+  }
+
   const _getProductsSearch = async () => {
     try {
       setLoadingProduct(true)
@@ -346,6 +444,7 @@ export default function ImportInventory() {
       if (res.status === 200) {
         const productsSearchNew = res.data.data.map((e) => ({
           ...e.variants,
+          product_name: e.name,
           import_price: e.import_price_default || 0,
           quantity: 1,
           inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
@@ -370,8 +469,10 @@ export default function ImportInventory() {
   }
 
   useEffect(() => {
-    _getBranches()
+    _loadLocations()
+    _getSuppliers()
     _getProductsSearch()
+    _getUsers()
   }, [])
 
   return (
@@ -405,15 +506,72 @@ export default function ImportInventory() {
               </Row>
             </Link>
 
-            <Button size="large" type="primary">
-              Tạo đơn hàng
-            </Button>
+            <Space>
+              <Button size="large" type="primary">
+                Lưu nháp
+              </Button>
+              <Button size="large" type="primary">
+                Tạo đơn hàng
+              </Button>
+            </Space>
           </Row>
         </Affix>
         <Row gutter={30}>
           <Col span={16}>
             <div className={styles['block']}>
-              <div className={styles['title']}>Sản phẩm</div>
+              <Row justify="space-between" align="middle" wrap={false}>
+                <div className={styles['title']}>Sản phẩm</div>
+                <Button type="link" onClick={toggleProductsToSupplier}>
+                  Chọn nhanh từ nhà cung cấp
+                </Button>
+                <Modal
+                  footer={null}
+                  title="Chọn sản phẩm từ nhà cung cấp"
+                  width={820}
+                  visible={visibleProductsToSupplier}
+                  onCancel={toggleProductsToSupplier}
+                >
+                  <Row justify="space-between" wrap={false} align="middle">
+                    <Select
+                      value={supplierId}
+                      onChange={(value) => {
+                        setSupplierId(value)
+                        _getProductsToSupplier(value)
+                      }}
+                      showSearch
+                      style={{ width: 250, marginBottom: 10 }}
+                      placeholder="Chọn nhà cung cấp"
+                    >
+                      {suppliers.map((supplier, index) => (
+                        <Select.Option key={index} value={supplier.supplier_id}>
+                          {supplier.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    <Button
+                      onClick={() => {
+                        const orderCreateNew = { ...orderCreate }
+                        orderCreateNew.order_details = productsSupplier
+                        setOrderCreate({ ...orderCreateNew })
+                        toggleProductsToSupplier()
+                      }}
+                      type="primary"
+                      style={{ display: !productsSupplier.length && 'none' }}
+                    >
+                      Xác nhận
+                    </Button>
+                  </Row>
+                  <Table
+                    size="small"
+                    loading={loadingProduct}
+                    dataSource={productsSupplier}
+                    columns={columnsProductsToSupplier}
+                    pagination={false}
+                    style={{ width: '100%' }}
+                    scroll={{ y: 350 }}
+                  />
+                </Modal>
+              </Row>
               <div className="select-product-sell">
                 <Select
                   notFoundContent={loadingProduct ? <Spin size="small" /> : null}
@@ -511,6 +669,7 @@ export default function ImportInventory() {
               </div>
 
               <Table
+                sticky
                 pagination={false}
                 columns={columns}
                 size="small"
@@ -534,61 +693,63 @@ export default function ImportInventory() {
                   ),
                 }}
                 summary={() => (
-                  <Table.Summary.Row
-                    style={{ display: orderCreate.order_details.length === 0 && 'none' }}
-                  >
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell colSpan={3}>
-                      <div style={{ fontSize: 14.4 }}>
-                        <Row wrap={false} justify="space-between">
-                          <div>Tổng tiền ({orderCreate.order_details.length} sản phẩm)</div>
-                          <div>
-                            {orderCreate.sumCostPaid ? formatCash(+orderCreate.sumCostPaid) : 0}
-                          </div>
-                        </Row>
-                        <Row wrap={false} justify="space-between">
-                          <div>VAT</div>
-                          <div>{formatCash(orderCreate.VAT || 0)}</div>
-                        </Row>
-                        <Row wrap={false} justify="space-between">
-                          <div>Chiết khấu</div>
-                          <div>
-                            {formatCash(orderCreate.discount ? orderCreate.discount.value : 0)}{' '}
-                            {orderCreate.discount
-                              ? orderCreate.discount.type === 'VALUE'
-                                ? ''
-                                : '%'
-                              : ''}
-                          </div>
-                        </Row>
-                        <Row wrap={false} justify="space-between" align="middle">
-                          <div>Phí giao hàng</div>
-                          <div>
-                            <InputNumber
-                              style={{ minWidth: 120 }}
-                              onBlur={(e) => {
-                                const value = e.target.value.replaceAll(',', '')
-                                _editOrder('deliveryCharges', +value)
-                              }}
-                              min={0}
-                              size="small"
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                              defaultValue={orderCreate.deliveryCharges}
-                            />
-                          </div>
-                        </Row>
-                        <Row wrap={false} justify="space-between" style={{ fontWeight: 600 }}>
-                          <div>Khách phải trả</div>
-                          <div>{formatCash(+orderCreate.moneyToBePaidByCustomer || 0)}</div>
-                        </Row>
-                      </div>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
+                  <Table.Summary>
+                    <Table.Summary.Row
+                      style={{ display: orderCreate.order_details.length === 0 && 'none' }}
+                    >
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell colSpan={3}>
+                        <div style={{ fontSize: 14.4 }}>
+                          <Row wrap={false} justify="space-between">
+                            <div>Tổng tiền ({orderCreate.order_details.length} sản phẩm)</div>
+                            <div>
+                              {orderCreate.sumCostPaid ? formatCash(+orderCreate.sumCostPaid) : 0}
+                            </div>
+                          </Row>
+                          <Row wrap={false} justify="space-between">
+                            <div>VAT</div>
+                            <div>{formatCash(orderCreate.VAT || 0)}</div>
+                          </Row>
+                          <Row wrap={false} justify="space-between">
+                            <div>Chiết khấu</div>
+                            <div>
+                              {formatCash(orderCreate.discount ? orderCreate.discount.value : 0)}{' '}
+                              {orderCreate.discount
+                                ? orderCreate.discount.type === 'VALUE'
+                                  ? ''
+                                  : '%'
+                                : ''}
+                            </div>
+                          </Row>
+                          <Row wrap={false} justify="space-between" align="middle">
+                            <div>Phí giao hàng</div>
+                            <div>
+                              <InputNumber
+                                style={{ minWidth: 120 }}
+                                onBlur={(e) => {
+                                  const value = e.target.value.replaceAll(',', '')
+                                  _editOrder('deliveryCharges', +value)
+                                }}
+                                min={0}
+                                size="small"
+                                formatter={(value) =>
+                                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                }
+                                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                                defaultValue={orderCreate.deliveryCharges}
+                              />
+                            </div>
+                          </Row>
+                          <Row wrap={false} justify="space-between" style={{ fontWeight: 600 }}>
+                            <div>Tổng tiền thanh toán</div>
+                            <div>{formatCash(+orderCreate.moneyToBePaidByCustomer || 0)}</div>
+                          </Row>
+                        </div>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
                 )}
               />
             </div>
@@ -675,22 +836,26 @@ export default function ImportInventory() {
 
                 <Form.Item label="Địa điểm nhận hàng">
                   <Select
+                    defaultValue={dataUser && dataUser.data && dataUser.data.branch_id}
                     allowClear
                     placeholder="Chọn địa điểm nhận hàng"
                     showSearch
-                    notFoundContent={loadingBranch ? <Spin /> : null}
+                    notFoundContent={loadingLocation ? <Spin /> : null}
                     style={{ width: '100%' }}
                   >
-                    {branches.map((e, index) => (
-                      <Select.Option value={e.branch_id} key={index}>
-                        {e.name}
-                      </Select.Option>
+                    {branches.map((e) => (
+                      <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                    ))}
+
+                    {stores.map((e) => (
+                      <Select.Option value={e.store_id}>{e.name}</Select.Option>
                     ))}
                   </Select>
                 </Form.Item>
 
                 <Form.Item label="Ngày nhập hàng" name="">
                   <DatePicker
+                    defaultValue={moment(new Date(), 'YYYY-MM-DD HH:mm')}
                     showTime={{ format: 'HH:mm' }}
                     format="YYYY-MM-DD HH:mm"
                     placeholder="Chọn ngày giao"
@@ -698,26 +863,32 @@ export default function ImportInventory() {
                   />
                 </Form.Item>
 
-                <Form.Item label="Nhân viên lên đơn" name="">
-                  <Input
-                    placeholder="Nhập tên nhân viên lên đơn"
-                    defaultValue={
-                      dataUser &&
-                      dataUser.data &&
-                      dataUser.data.first_name + ' ' + dataUser.data.last_name
-                    }
-                  />
+                <Form.Item label="Nhân viên lên đơn" name="user_create">
+                  <Select
+                    showSearch
+                    placeholder="Chọn nhân viên lên đơn"
+                    defaultValue={dataUser && dataUser.data && dataUser.data.user_id}
+                  >
+                    {users.map((user, index) => (
+                      <Select.Option value={user.user_id} key={index}>
+                        {user.first_name + ' ' + user.last_name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
 
-                <Form.Item label="Nhân viên nhận hàng" name="">
-                  <Input
-                    placeholder="Nhập tên nhân viên nhận hàng"
-                    defaultValue={
-                      dataUser &&
-                      dataUser.data &&
-                      dataUser.data.first_name + ' ' + dataUser.data.last_name
-                    }
-                  />
+                <Form.Item label="Nhân viên nhận hàng" name="user_receiver">
+                  <Select
+                    defaultValue={dataUser && dataUser.data && dataUser.data.user_id}
+                    showSearch
+                    placeholder="Chọn nhân viên nhận hàng"
+                  >
+                    {users.map((user, index) => (
+                      <Select.Option value={user.user_id} key={index}>
+                        {user.first_name + ' ' + user.last_name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
 

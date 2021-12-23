@@ -32,14 +32,7 @@ export const tableSum = (arr, key) => {
 }
 
 export function formatCash(str) {
-  if (str)
-    return str
-      .toString()
-      .split('')
-      .reverse()
-      .reduce((prev, next, index) => {
-        return (index % 3 ? next : next + ',') + prev
-      })
+  if (str) return (str + '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   else return 0
 }
 

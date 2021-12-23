@@ -506,7 +506,7 @@ export default function Branch() {
             }}
             className={styles['supplier_add_back']}
           >
-            Quản lý chi nhánh
+            Danh sách kho
           </div>
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
             <BranchAdd reload={getAllBranchData} />
