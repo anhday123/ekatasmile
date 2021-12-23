@@ -1,5 +1,11 @@
-import styles from './../customer/customer.module.scss'
 import React, { useEffect, useState, useRef } from 'react'
+import styles from './customer.module.scss'
+import moment from 'moment'
+import { PERMISSIONS, ROUTES } from 'consts'
+import { compare, compareCustom, formatCash, tableSum } from 'utils'
+import { Link } from 'react-router-dom'
+
+//antd
 import {
   Input,
   Button,
@@ -12,26 +18,29 @@ import {
   Drawer,
   Modal,
   Checkbox,
+  Space,
 } from 'antd'
+
+//icons
 import { PlusCircleOutlined } from '@ant-design/icons'
-import moment from 'moment'
-import { getCustomer, updateCustomer } from '../../apis/customer'
+
+//components
 import CustomerInfo from './components/customerInfo'
-import CustomerUpdate from '../actions/customer/update'
-import { PERMISSIONS, ROUTES } from 'consts'
+import CustomerUpdate from 'views/actions/customer/update'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
-import { compare, compareCustom, formatCash, tableSum } from 'utils'
-import { Link } from 'react-router-dom'
+import SettingColumns from 'components/setting-columns'
+import columnsCustomer from './columnsCustomer'
+
+//apis
+import { getCustomer, updateCustomer } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
-
 export default function Customer() {
   const typingTimeoutRef = useRef(null)
-  const [showCustomColums, setShowCustomColumns] = useState(false)
-  const [defaultColumns, setDefaultColumns] = useState([0, 1, 2, 3, 4, 5, 6])
-  const [displayColumns, setDisplayColumns] = useState([])
+
+  const [columns, setColumns] = useState([])
   const [page, setPage] = useState(1)
   const [page_size, setPage_size] = useState(20)
   const [countCustomer, setCountCustomer] = useState(0)
@@ -50,6 +59,7 @@ export default function Customer() {
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
   const [customerListUpdate, setCustomerListUpdate] = useState([])
   const [valueSearch, setValueSearch] = useState('')
+  const [optionSearch, setOptionSearch] = useState('name')
   const [valueDate, setValueDate] = useState(null)
   const [valueTypeCustomer, setValueTypeCustomer] = useState()
 
@@ -99,19 +109,7 @@ export default function Customer() {
       dataIndex: 'code',
       key: 0,
       width: 150,
-      render(data, record) {
-        return (
-          <span
-            style={{ color: '#42a5f5', cursor: 'pointer' }}
-            onClick={() => {
-              setInfoCustomer(record)
-              modal2VisibleModal(true)
-            }}
-          >
-            {data}
-          </span>
-        )
-      },
+
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
@@ -122,10 +120,7 @@ export default function Customer() {
         return data.first_name + ' ' + data.last_name
       },
       sorter: (a, b) =>
-        compareCustom(
-          `${a.first_name} ${a.last_name}`,
-          `${b.first_name} ${b.last_name}`
-        ),
+        compareCustom(`${a.first_name} ${a.last_name}`, `${b.first_name} ${b.last_name}`),
     },
     {
       title: 'Loại khách hàng',
@@ -153,7 +148,7 @@ export default function Customer() {
       sorter: (a, b) => compare(a, b, ''),
     },
     {
-      title: 'điểm tích lũy',
+      title: 'Điểm tích lũy',
       dataIndex: '',
       key: 5,
       render: (data) => 5,
@@ -178,8 +173,7 @@ export default function Customer() {
       key: 8,
       dataIndex: 'create_date',
       render: (data) => moment(data).format('DD/MM/YYYY'),
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Ngày sinh',
@@ -195,14 +189,6 @@ export default function Customer() {
       sorter: (a, b) => compare(a, b, 'address'),
     },
   ]
-
-  const handleChangeColumns = () => {
-    let tmp = []
-    defaultColumns.sort(compareCustom).forEach((e) => {
-      tmp.push(columnsPromotion[e])
-    })
-    setDisplayColumns(tmp)
-  }
 
   const deleteMultiCustomer = async () => {
     try {
@@ -244,7 +230,8 @@ export default function Customer() {
     setTableLoading(true)
     try {
       const res = await getCustomer(params)
-      if (res.status === 200 && res.data.success) {
+      console.log(res)
+      if (res.status === 200) {
         setCustomerList(res.data.data.filter((e) => e.active))
         setCountCustomer(res.data.count)
       }
@@ -273,103 +260,72 @@ export default function Customer() {
       setCustomerUpdateDrawer(true)
     }, 300)
   }
+
   useEffect(() => {
     getAllCustomer({ page, page_size, ...paramsFilter })
   }, [])
-  useEffect(() => {
-    handleChangeColumns()
-  }, [])
+
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div className={styles['promotion_manager_title']}>
-            Quản lý khách hàng
-          </div>
-          <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                onClick={() => setShowCreate(true)}
-              >
-                Thêm khách hàng
-              </Button>
-            </Permission>
-          </div>
-        </div>
         <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+          wrap={false}
+          justify="space-between"
+          align="middle"
+          style={{ borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem' }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <Input
-              placeholder="Tìm kiếm theo tên"
-              value={valueSearch}
-              onChange={(e) => onSearch(e)}
+          <div style={{ fontSize: 19, fontWeight: 600 }}>Quản lý khách hàng</div>
+          <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+            <Button
               size="large"
-              allowClear
-            />
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={() => setShowCreate(true)}
+            >
+              Thêm khách hàng
+            </Button>
+          </Permission>
+        </Row>
+        <Row justify="space-between" align="middle">
+          <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={9}>
+            <Row wrap={false} style={{ width: '100%' }}>
+              <Input
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo tên"
+                value={valueSearch}
+                onChange={(e) => onSearch(e)}
+                allowClear
+              />
+              <Select
+                style={{ width: 160 }}
+                value={optionSearch}
+                onChange={(value) => setOptionSearch(value)}
+              >
+                <Option value="name">Tên khách hàng</Option>
+                <Option value="phone">SDT khách hàng</Option>
+                <Option value="code">Mã khách hàng</Option>
+              </Select>
+            </Row>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={6}>
             <div style={{ width: '100%' }}>
               <RangePicker
-                size="large"
                 className="br-15__date-picker"
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 value={valueDate}
                 onChange={onChangeDate}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
-                size="large"
                 style={{ width: '100%' }}
-                placeholder="Lọc theo khách hàng"
+                placeholder="Lọc theo loại khách hàng"
                 value={valueTypeCustomer}
                 onChange={onChangeTypeCustomer}
                 allowClear
@@ -380,11 +336,7 @@ export default function Customer() {
             </div>
           </Col>
         </Row>
-        <Row
-          style={{ width: '100%', marginTop: 20 }}
-          gutter={[10, 20]}
-          justify="space-between"
-        >
+        <Row style={{ width: '100%', marginTop: 20 }} gutter={[10, 20]} justify="space-between">
           {(selectedRowKeys && selectedRowKeys.length > 0 && (
             <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
               <Col>
@@ -407,73 +359,80 @@ export default function Customer() {
               </Col>
             </Permission>
           )) || <Col></Col>}
-          <Col>
-            <Button onClick={clearFilter} type="primary" size="large">
-              Xóa bộ lọc
-            </Button>
-            <Button
-              onClick={() => setShowCustomColumns(true)}
-              style={{ marginLeft: 15 }}
-              type="primary"
-              size="large"
-            >
-              Điều chỉnh cột
-            </Button>
-          </Col>
+          <Row justify="end">
+            <Space>
+              <Button onClick={clearFilter} type="primary" size="large">
+                Xóa bộ lọc
+              </Button>
+              <SettingColumns
+                columnsDefault={columnsCustomer}
+                setColumns={setColumns}
+                columns={columns}
+                nameColumn="columnsCustomer"
+              />
+            </Space>
+          </Row>
         </Row>
-        <Row style={{ width: '100%', marginTop: 20 }}></Row>
 
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
+        <Table
+          style={{ width: '100%', marginBottom: 5 }}
+          rowSelection={rowSelection}
+          rowKey="customer_id"
+          loading={tableLoading}
+          columns={columns.map((column) => {
+            if (column.key === 'code')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <a
+                    onClick={() => {
+                      setInfoCustomer(record)
+                      modal2VisibleModal(true)
+                    }}
+                  >
+                    {record.code}
+                  </a>
+                ),
+              }
+            if (column.key === 'name')
+              return {
+                ...column,
+                render: (text, record) => record.first_name + ' ' + record.last_name,
+              }
+
+            // if (column.key === 'create_date')
+            //   return {
+            //     ...column,
+            //     render: (text, record) =>
+            //       record.create_date && moment(record.create_date).moment('DD-MM-YYYY HH:mm'),
+            //   }
+
+            // if (column.key === 'birthday')
+            //   return {
+            //     ...column,
+            //     render: (text, record) =>
+            //       record.birthday && moment(record.birthday).moment('DD-MM-YYYY HH:mm'),
+            //   }
+
+            return column
+          })}
+          dataSource={customerList}
+          size="small"
+          pagination={{
+            position: ['bottomLeft'],
+            current: page,
+            defaultPageSize: 20,
+            pageSizeOptions: [20, 30, 50, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              setSelectedRowKeys([])
+              setPage(page)
+              setPage_size(pageSize)
+              getAllCustomer({ page, page_size: pageSize, ...paramsFilter })
+            },
+            total: countCustomer,
           }}
-        >
-          <Table
-            rowSelection={rowSelection}
-            rowKey="customer_id"
-            loading={tableLoading}
-            columns={displayColumns}
-            dataSource={customerList}
-            size="small"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              position: ['bottomLeft'],
-              current: page,
-              defaultPageSize: 20,
-              pageSizeOptions: [20, 30, 50, 100],
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setSelectedRowKeys([])
-                setPage(page)
-                setPage_size(pageSize)
-                getAllCustomer({ page, page_size: pageSize, ...paramsFilter })
-              },
-              total: countCustomer,
-            }}
-            summary={(pageData) => (
-              <Table.Summary.Row>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <b>Tổng:</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <b>{tableSum(pageData, '')}</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <b>{tableSum(pageData, '')}</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <b>{tableSum(pageData, '')}</b>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            )}
-          />
-        </div>
+        />
       </div>
       <CustomerInfo
         visible={modal2Visible}
@@ -499,28 +458,6 @@ export default function Customer() {
           close={() => setShowCreate(false)}
         />
       </Drawer>
-      <Modal
-        visible={showCustomColums}
-        onCancel={() => setShowCustomColumns(false)}
-        title="Điều chỉnh cột hiển  thị trên danh sách"
-        onOk={() => {
-          handleChangeColumns()
-          setShowCustomColumns(false)
-        }}
-      >
-        <Checkbox.Group
-          value={defaultColumns}
-          onChange={(e) => setDefaultColumns(e)}
-        >
-          <Row>
-            {columnsPromotion.map((e, index) => (
-              <Col span={12}>
-                <Checkbox value={index}>{e.title}</Checkbox>
-              </Col>
-            ))}
-          </Row>
-        </Checkbox.Group>
-      </Modal>
     </>
   )
 }

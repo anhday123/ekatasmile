@@ -20,6 +20,8 @@ import { SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 //apis
 import { getOrdersImportInventory, uploadOrdersImportInventory } from 'apis/inventory'
 import { getAllBranch } from 'apis/branch'
+import { apiAllSupplier } from 'apis/supplier'
+import { getProducts } from 'apis/product'
 
 export default function ImportInventories() {
   const [ordersInventory, setOrdersInventory] = useState([])
@@ -38,6 +40,16 @@ export default function ImportInventories() {
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
+
+  const [supplierId, setSupplierId] = useState()
+  const [productsSupplier, setProductsSupplier] = useState([])
+  const [suppliers, setSuppliers] = useState([])
+  const [visibleProductsToSupplier, setVisibleProductsToSupplier] = useState(false)
+  const toggleProductsToSupplier = () => {
+    setVisibleProductsToSupplier(!visibleProductsToSupplier)
+    setProductsSupplier([])
+    setSupplierId()
+  }
 
   const ModalDownloadProducts = ({ products }) => {
     const [visible, setVisible] = useState(false)
@@ -150,11 +162,77 @@ export default function ImportInventories() {
     )
   }
 
+  const columnsProductsToSupplier = [
+    {
+      title: 'STT',
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'product_name',
+    },
+    {
+      title: 'Mã sản phẩm',
+      dataIndex: 'product_sku',
+    },
+    {
+      title: 'Loại sản phẩm',
+      dataIndex: 'categories',
+    },
+    {
+      title: 'Mã phiên bản',
+      dataIndex: 'sku',
+    },
+    {
+      title: 'Nhà cung cấp',
+      dataIndex: 'supplier',
+    },
+    {
+      title: 'Đơn vị',
+      dataIndex: 'unit',
+    },
+    {
+      title: 'Đơn giá nhập',
+      dataIndex: 'import_price',
+    },
+    {
+      title: 'Số lượng nhập',
+      dataIndex: 'quantity',
+    },
+  ]
+
   const _onFilter = (attribute = '', value = '') => {
     const paramsFilterNew = { ...paramsFilter }
     if (value) paramsFilterNew[attribute] = value
     else delete paramsFilterNew[attribute]
     setParamsFilter({ ...paramsFilterNew })
+  }
+
+  const _getProductsToSupplier = async (supplierId) => {
+    try {
+      setLoading(true)
+      const res = await getProducts({ merge: true, detach: true, supplier_id: supplierId })
+      console.log(res)
+      if (res.status === 200) {
+        const productsSupplierNew = res.data.data.map((e) => ({
+          ...e.variants,
+          unit: e.unit || '',
+          categories: e._categories && e._categories.map((category) => category.name).join(', '),
+          product_sku: e.sku || '',
+          product_name: e.name || '',
+          import_price: e.import_price_default || 0,
+          quantity: 1,
+          inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
+          sumCost: e.import_price_default || 0,
+        }))
+
+        setProductsSupplier([...productsSupplierNew])
+      }
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
+    }
   }
 
   const _getOrdersImportInventory = async () => {
@@ -183,8 +261,19 @@ export default function ImportInventories() {
     }
   }
 
+  const _getSuppliers = async () => {
+    try {
+      const res = await apiAllSupplier()
+      console.log(res)
+      if (res.status === 200) setSuppliers(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getBranches()
+    _getSuppliers()
   }, [])
 
   useEffect(() => {
@@ -373,37 +462,67 @@ export default function ImportInventories() {
         <Row justify="end" wrap={false}>
           <Space>
             <Button
-              onClick={() => {
-                const dataExport = ordersInventory.map((record) => ({
-                  'Số hóa đơn': record.code || '',
-                  'Địa điểm nhập hàng':
-                    record.import_location_info && record.import_location_info.name,
-                  'Ngày mua hàng': record.create_date
-                    ? moment(record.create_date).format('DD-MM-YYYY HH:mm')
-                    : '',
-                  'Tổng tiền (VND)': record.total_cost && formatCash(record.total_cost || 0),
-                  'Số tiền thanh toán (VND)':
-                    record.final_cost && formatCash(record.final_cost || 0),
-                  'Tổng số lượng nhập':
-                    record.total_quantity && formatCash(record.total_quantity || 0),
-                  'Người tạo đơn':
-                    record._creator &&
-                    `${record._creator.first_name || ''} ${record._creator.last_name || ''}`,
-                  'Người xác nhận phiếu':
-                    record._verifier &&
-                    `${record._verifier.first_name || ''} ${record._verifier.last_name || ''}`,
-                  'Ngày xác nhận phiếu':
-                    record.verify_date && moment(record.verify_date).format('DD-MM-YYYY HH:mm'),
-                  'Trạng thái đơn hàng': record.status && BILL_STATUS_ORDER[record.status],
-                }))
-
-                exportToCSV(dataExport, 'Danh sách đơn hàng nhập kho')
-              }}
+              onClick={toggleProductsToSupplier}
               icon={<VerticalAlignTopOutlined />}
               style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
             >
               Xuất excel
             </Button>
+            <Modal
+              footer={null}
+              title="Xuất file excel sản phẩm từ nhà cung cấp"
+              width={920}
+              visible={visibleProductsToSupplier}
+              onCancel={toggleProductsToSupplier}
+            >
+              <Row justify="space-between" wrap={false} align="middle">
+                <Select
+                  value={supplierId}
+                  onChange={(value) => {
+                    setSupplierId(value)
+                    _getProductsToSupplier(value)
+                  }}
+                  showSearch
+                  style={{ width: 250, marginBottom: 10 }}
+                  placeholder="Chọn nhà cung cấp"
+                >
+                  {suppliers.map((supplier, index) => (
+                    <Select.Option key={index} value={supplier.supplier_id}>
+                      {supplier.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+                <Button
+                  onClick={() => {
+                    const dataExport = productsSupplier.map((record, index) => ({
+                      STT: index + 1,
+                      'Tên sản phẩm': record.product_name || '',
+                      'Mã sản phẩm': record.product_sku || '',
+                      'Loại sản phẩm': record.categories || '',
+                      'Mã phiên bản': record.sku || '',
+                      'Nhà cung cấp': record.supplier || '',
+                      'Đơn vị': record.unit || '',
+                      'Đơn giá nhập': record.import_price || '',
+                      'Số lượng nhập': record.quantity || '',
+                    }))
+                    exportToCSV(dataExport, 'Danh sách sản phẩm')
+                  }}
+                  type="primary"
+                  style={{ display: !productsSupplier.length && 'none' }}
+                >
+                  Tải xuống
+                </Button>
+              </Row>
+              <Table
+                size="small"
+                loading={loading}
+                dataSource={productsSupplier}
+                columns={columnsProductsToSupplier}
+                pagination={false}
+                style={{ width: '100%' }}
+                scroll={{ y: 370 }}
+              />
+            </Modal>
             {selectRowsKey.length !== 0 ? (
               <Space>
                 <Button type="primary">In hóa đơn</Button>

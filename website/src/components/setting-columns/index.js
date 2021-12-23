@@ -10,6 +10,7 @@ export default function SettingColumns({
   setColumns,
   columnsDefault,
   nameColumn,
+  width = 700,
   btn = (
     <Button icon={<SettingOutlined />} type="primary" size="large">
       Điều chỉnh cột
@@ -32,7 +33,7 @@ export default function SettingColumns({
       <div onClick={toggle}>{btn}</div>
 
       <Modal
-        width={600}
+        width={width}
         title="Điều chỉnh cột hiện thị trên trang danh sách"
         visible={visible}
         footer={null}
