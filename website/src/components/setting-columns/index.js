@@ -48,18 +48,14 @@ export default function SettingColumns({
           {columnsDefault.map((e, index) => (
             <div style={{ width: '33.333333%', marginBottom: 10 }}>
               <Checkbox
-                defaultChecked={
-                  columns.filter((v) => v.title === e.title).length
-                }
+                defaultChecked={columns.filter((v) => v.title === e.title).length}
                 onChange={(event) => {
                   let columnsNew = [...columns]
 
                   if (event.target.checked) {
                     columnsNew.splice(index, 0, { ...e })
                   } else {
-                    const indexHidden = columns.findIndex(
-                      (c) => c.title === e.title
-                    )
+                    const indexHidden = columns.findIndex((c) => c.title === e.title)
                     columnsNew.splice(indexHidden, 1)
                   }
 

@@ -9,7 +9,6 @@ export const ACTION = {
   CHANGE_SIDER: 'CHANGE_SIDER',
 }
 
-//co 6 role mac dinh
 export const ROLE_DEFAULT = {
   ADMIN: 'ADMIN',
   EMPLOYEE: 'EMPLOYEE',
@@ -30,6 +29,7 @@ export const BILL_STATUS_ORDER = {
   DRAFT: 'Lưu nháp',
   PROCESSING: 'Đang Xử Lý',
   COMPLETE: 'Hoàn Thành',
+  VERIFY: 'Xác nhận',
   CANCEL: 'Huỷ Bỏ',
   REFUND: 'Hoàn Tiền',
 }
@@ -214,7 +214,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.1.5'
+export const VERSION_APP = '1.1.6'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

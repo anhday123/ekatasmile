@@ -69,7 +69,6 @@ export default function ImportInventory() {
     type_payment: 'payment-all', //hình thức thanh toán
     sumCostPaid: 0, // tổng tiền của tất cả sản phẩm
     discount: null,
-    VAT: 0,
     noteInvoice: '',
     salesChannel: '', //kênh bán hàng
     isDelivery: true, //mặc định là hóa đơn giao hàng
@@ -92,9 +91,7 @@ export default function ImportInventory() {
 
     //tổng tiền khách hàng phải trả
     orderCreateNew.moneyToBePaidByCustomer =
-      orderCreateNew.sumCostPaid +
-      orderCreateNew.VAT +
-      (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
+      orderCreateNew.sumCostPaid + (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
 
     //discount có 2 loại
     //nếu type = value thì cộng
@@ -119,94 +116,44 @@ export default function ImportInventory() {
 
   const _addProductToOrder = (product) => {
     if (product) {
-      //check product có đủ số lượng
-      // if (product.total_quantity !== 0) {
       const orderCreateNew = { ...orderCreate }
       const indexProduct = orderCreateNew.order_details.findIndex((e) => e._id === product._id)
 
-      //nếu đã có sẵn trong cart rồi thì tăng số lượng và tổng tiền của sản phẩm đó lên
-      //nếu chưa có thì push vào giỏ hàng
-      if (indexProduct !== -1) {
-        // if (orderCreateNew.order_details[indexProduct].quantity < product.total_quantity) {
-        orderCreateNew.order_details[indexProduct].quantity++
+      if (indexProduct === -1) {
+        orderCreateNew.order_details.push(product)
 
-        orderCreateNew.order_details[indexProduct].sumCost =
-          +orderCreateNew.order_details[indexProduct].quantity *
-          +orderCreateNew.order_details[indexProduct].price
+        // tổng tiền của tất cả sản phẩm
+        orderCreateNew.sumCostPaid = orderCreateNew.order_details.reduce(
+          (total, current) => total + current.sumCost,
+          0
+        )
 
-        //thuế VAT của mỗi sản phẩm
-        orderCreateNew.order_details[indexProduct].VAT_Product =
-          orderCreateNew.order_details[indexProduct]._taxes &&
-          orderCreateNew.order_details[indexProduct]._taxes.length
-            ? (
-                (orderCreateNew.order_details[indexProduct]._taxes.reduce(
-                  (total, current) => total + current.value,
-                  0
-                ) /
-                  100) *
-                orderCreateNew.order_details[indexProduct].sumCost
-              ).toFixed(0)
-            : 0
-        // } else
-        //   notification.warning({
-        //     message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
-        //   })
-      } else
-        orderCreateNew.order_details.push({
-          ...product,
-          unit: '', //đơn vị
-          quantity: 1, //số lượng sản phẩm
-          sumCost: product.price, // tổng giá tiền
-          VAT_Product:
-            product._taxes && product._taxes.length
-              ? (
-                  (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                  product.price
-                ).toFixed(0)
-              : 0,
-        })
+        //tổng tiền khách hàng phải trả
+        orderCreateNew.moneyToBePaidByCustomer =
+          orderCreateNew.sumCostPaid +
+          (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
 
-      // tổng tiền của tất cả sản phẩm
-      orderCreateNew.sumCostPaid = orderCreateNew.order_details.reduce(
-        (total, current) => total + current.sumCost,
-        0
-      )
+        //discount có 2 loại
+        //nếu type = value thì cộng
+        // nếu type = percent thì nhân
+        if (orderCreateNew.discount) {
+          if (orderCreateNew.discount.type === 'VALUE')
+            orderCreateNew.moneyToBePaidByCustomer -= +orderCreateNew.discount.value
+          else
+            orderCreateNew.moneyToBePaidByCustomer -=
+              (+orderCreateNew.discount.value / 100) * orderCreateNew.moneyToBePaidByCustomer
+        }
 
-      //tổng thuế VAT của tất cả sản phẩm
-      orderCreateNew.VAT = orderCreateNew.order_details.reduce(
-        (total, current) => total + +current.VAT_Product,
-        0
-      )
+        //tiền thừa
+        const excessCashNew =
+          (orderCreateNew.isDelivery
+            ? orderCreateNew.prepay
+            : orderCreateNew.moneyGivenByCustomer) - orderCreateNew.moneyToBePaidByCustomer
 
-      //tổng tiền khách hàng phải trả
-      orderCreateNew.moneyToBePaidByCustomer =
-        orderCreateNew.sumCostPaid +
-        orderCreateNew.VAT +
-        (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
+        orderCreateNew.excessCash = excessCashNew >= 0 ? excessCashNew : 0
 
-      //discount có 2 loại
-      //nếu type = value thì cộng
-      // nếu type = percent thì nhân
-      if (orderCreateNew.discount) {
-        if (orderCreateNew.discount.type === 'VALUE')
-          orderCreateNew.moneyToBePaidByCustomer -= +orderCreateNew.discount.value
-        else
-          orderCreateNew.moneyToBePaidByCustomer -=
-            (+orderCreateNew.discount.value / 100) * orderCreateNew.moneyToBePaidByCustomer
+        setOrderCreate({ ...orderCreateNew })
       }
-
-      //tiền thừa
-      const excessCashNew =
-        (orderCreateNew.isDelivery ? orderCreateNew.prepay : orderCreateNew.moneyGivenByCustomer) -
-        orderCreateNew.moneyToBePaidByCustomer
-
-      orderCreateNew.excessCash = excessCashNew >= 0 ? excessCashNew : 0
-
-      setOrderCreate({ ...orderCreateNew })
-      // } else
-      //   notification.warning({
-      //     message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
-      //   })
     }
   }
 
@@ -217,27 +164,8 @@ export default function ImportInventory() {
 
       //tổng tiền của 1 sản phẩm
       orderCreateNew.order_details[index].sumCost =
-        +orderCreateNew.order_details[index].quantity * +orderCreateNew.order_details[index].price
-
-      //thuế VAT của mỗi sản phẩm
-      orderCreateNew.order_details[index].VAT_Product =
-        orderCreateNew.order_details[index]._taxes &&
-        orderCreateNew.order_details[index]._taxes.length
-          ? (
-              (orderCreateNew.order_details[index]._taxes.reduce(
-                (total, current) => total + current.value,
-                0
-              ) /
-                100) *
-              orderCreateNew.order_details[index].sumCost
-            ).toFixed(0)
-          : 0
-
-      //tổng thuế VAT của tất cả các sản phẩm
-      orderCreateNew.VAT = orderCreateNew.order_details.reduce(
-        (total, current) => total + +current.VAT_Product,
-        0
-      )
+        +orderCreateNew.order_details[index].quantity *
+        +orderCreateNew.order_details[index].import_price
 
       // tổng tiền của tất cả sản phẩm
       orderCreateNew.sumCostPaid = orderCreateNew.order_details.reduce(
@@ -248,7 +176,6 @@ export default function ImportInventory() {
       //tổng tiền khách hàng phải trả
       orderCreateNew.moneyToBePaidByCustomer =
         orderCreateNew.sumCostPaid +
-        orderCreateNew.VAT +
         (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
 
       //discount có 2 loại
@@ -278,12 +205,6 @@ export default function ImportInventory() {
       const orderCreateNew = { ...orderCreate }
       orderCreateNew.order_details.splice(indexProduct, 1)
 
-      //tổng thuế VAT của tất cả các sản phẩm
-      orderCreateNew.VAT = orderCreateNew.order_details.reduce(
-        (total, current) => total + +current.VAT_Product,
-        0
-      )
-
       // tổng tiền của tất cả sản phẩm
       orderCreateNew.sumCostPaid = orderCreateNew.order_details.reduce(
         (total, current) => total + current.sumCost,
@@ -293,7 +214,6 @@ export default function ImportInventory() {
       //tổng tiền khách hàng phải trả
       orderCreateNew.moneyToBePaidByCustomer =
         orderCreateNew.sumCostPaid +
-        orderCreateNew.VAT +
         (orderCreateNew.isDelivery ? orderCreateNew.deliveryCharges : 0)
 
       //discount có 2 loại
@@ -333,7 +253,7 @@ export default function ImportInventory() {
     },
     {
       title: 'Số lượng tồn',
-      dataIndex: 'quantity_inventory',
+      dataIndex: 'inventory_quantity',
     },
     {
       title: 'Số lượng nhập',
@@ -341,14 +261,13 @@ export default function ImportInventory() {
         const InputQuantity = () => (
           <InputNumber
             style={{ width: 70 }}
-            onBlur={(e) => {
-              const value = e.target.value.replaceAll(',', '')
+            onBlur={(event) => {
+              const value = event.target.value.replaceAll(',', '')
               const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
               _editProductInOrder('quantity', +value, indexProduct)
             }}
-            defaultValue={record.quantity || 1}
+            defaultValue={record.quantity}
             min={1}
-            max={record.total_quantity}
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
             placeholder="Nhập số lượng nhập"
@@ -367,10 +286,10 @@ export default function ImportInventory() {
             onBlur={(e) => {
               const value = e.target.value.replaceAll(',', '')
               const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
-              _editProductInOrder('price', +value, indexProduct)
+              _editProductInOrder('import_price', +value, indexProduct)
             }}
-            defaultValue={record.price || 1}
-            min={1}
+            defaultValue={record.import_price}
+            min={0}
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
             placeholder="Nhập đơn giá nhập"
@@ -379,6 +298,10 @@ export default function ImportInventory() {
 
         return <InputPrice />
       },
+    },
+    {
+      title: 'Tổng tiền',
+      render: (text, record) => record.sumCost && formatCash(record.sumCost || 0),
     },
     {
       title: '',
@@ -419,12 +342,18 @@ export default function ImportInventory() {
       setLoadingProduct(true)
       const branchId = dataUser && dataUser.data ? dataUser.data.branch_id : ''
       const res = await getProducts({ branch_id: branchId, merge: true, detach: true })
+      console.log(res)
       if (res.status === 200) {
-        const productsSearchNew = res.data.data.map((e) => e.variants)
+        const productsSearchNew = res.data.data.map((e) => ({
+          ...e.variants,
+          import_price: e.import_price_default || 0,
+          quantity: 1,
+          inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
+          sumCost: e.import_price_default || 0,
+        }))
 
         const query = new URLSearchParams(location.search)
         const _id = query.get('_id')
-        console.log(_id)
         if (_id) {
           const productFind = productsSearchNew.find((e) => e._id === _id)
           console.log(productFind)

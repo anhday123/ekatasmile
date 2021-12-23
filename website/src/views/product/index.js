@@ -553,8 +553,8 @@ export default function Product() {
                 if (p.length) delete paramsFilter[p[0]]
 
                 setValueDateSearch(null)
-                delete paramsFilter.startDate
-                delete paramsFilter.endDate
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
 
                 if (isOpenSelect) toggleOpenSelect()
 
@@ -624,14 +624,14 @@ export default function Product() {
                 </>
               )}
             >
-              <Option value="today">Today</Option>
-              <Option value="yesterday">Yesterday</Option>
-              <Option value="this_week">This week</Option>
-              <Option value="last_week">Last week</Option>
-              <Option value="this_month">This month</Option>
-              <Option value="last_month">Last Month</Option>
-              <Option value="this_year">This year</Option>
-              <Option value="last_year">Last year</Option>
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
             </Select>
           </div>
           {/* <Col
