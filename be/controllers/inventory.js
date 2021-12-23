@@ -583,55 +583,21 @@ module.exports._updateImportOrder = async (req, res, next) => {
     }
 };
 
-module.exports._transportOrderFile = async (req, res, next) => {
+module.exports._getTransportOrder = async (req, res, next) => {
     try {
-        let [order_id, price_id, location_id] = await Promise.all([
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'TransportOrders' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Prices' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-        ]);
     } catch (err) {
         next(err);
     }
 };
 
-module.exports._transportOrderFile = async (req, res, next) => {
+module.exports._createTransportOrder = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._createTransportOrderFile = async (req, res, next) => {
     try {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
@@ -935,6 +901,13 @@ module.exports._transportOrderFile = async (req, res, next) => {
             })
         );
         res.send({ success: true, message: 'Chuyển hàng thành công!' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._updateTransportOrder = async (req, res, next) => {
+    try {
     } catch (err) {
         next(err);
     }
