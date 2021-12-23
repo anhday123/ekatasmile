@@ -58,10 +58,9 @@ let getOverviewC = async (req, res, next) => {
         orders.map((order) => {
             if (order) {
                 order.order_details.map((detail) => {
-                    total_base_price += Number(detail.base_price || 0) * Number(detail.quantity);
+                    total_base_price += Number(detail.total_base_price || 0);
                     total_sales += Number(detail.total_cost || 0);
-                    total_profit +=
-                        Number(detail.final_cost || 0) - Number(detail.base_price || 0) * Number(detail.quantity);
+                    total_profit += Number(detail.final_cost || 0) - Number(detail.total_base_price || 0);
                 });
             }
         });
