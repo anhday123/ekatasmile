@@ -254,6 +254,109 @@ module.exports._createImportOrder = async (req, res, next) => {
             creator_id: req.user.user_id,
             active: true,
         };
+        if (order.status != 'COMPLETE') {
+            order['completer_id'] = Number(req.user.user_id);
+            order['complete_date'] = moment().tz(TIMEZONE).format();
+            let [price_id, location_id] = await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .findOne({ name: 'Prices' })
+                    .then((doc) => {
+                        if (doc && doc.value) {
+                            return doc.value;
+                        }
+                        return 0;
+                    })
+                    .catch((err) => {
+                        throw new Error(`500: ${err}`);
+                    }),
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .findOne({ name: 'Locations' })
+                    .then((doc) => {
+                        if (doc && doc.value) {
+                            return doc.value;
+                        }
+                        return 0;
+                    })
+                    .catch((err) => {
+                        throw new Error(`500: ${err}`);
+                    }),
+            ]);
+            let prices = [];
+            let locations = [];
+            order.products.map((product) => {
+                price_id++;
+                let _price = {
+                    business_id: Number(order.business_id),
+                    price_id: Number(price_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    import_price: Number(product.import_price),
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                };
+                prices.push(_price);
+                location_id++;
+                let _location = {
+                    business_id: Number(_order.business_id),
+                    location_id: Number(location_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    price_id: Number(price_id),
+                    type: (() => {
+                        if (order.import_location && order.import_location.branch_id) {
+                            return 'BRANCH';
+                        }
+                        if (order.import_location && order.import_location.store_id) {
+                            return 'STORE';
+                        }
+                        return '';
+                    })(),
+                    inventory_id: (() => {
+                        if (order.import_location && order.import_location.branch_id) {
+                            return order.import_location.branch_id;
+                        }
+                        if (order.import_location && order.import_location.store_id) {
+                            return order.import_location.store_id;
+                        }
+                        return 0;
+                    })(),
+                    name: (() => {
+                        if (order.import_location_info && order.import_location_info.branch_id) {
+                            return order.import_location_info.name;
+                        }
+                        return '';
+                    })(),
+                    quantity: product.quantity,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                };
+                locations.push(_location);
+            });
+            await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .updateOne(
+                        { name: 'Locations' },
+                        { $set: { name: 'Locations', value: location_id } },
+                        { upsert: true }
+                    ),
+                client.db(DB).collection('Prices').insertMany(prices),
+                client.db(DB).collection('Locations').insertMany(locations),
+            ]);
+        }
         await Promise.all([
             client
                 .db(DB)
@@ -281,6 +384,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         }
         let excelData = XLSX.read(req.file.buffer, {
             type: 'buffer',
+            cellDates: true,
         });
         let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         let productSkus = [];
