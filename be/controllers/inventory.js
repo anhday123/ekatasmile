@@ -285,6 +285,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                         throw new Error(`500: ${err}`);
                     }),
             ]);
+            let variants = [];
             let prices = [];
             let locations = [];
             order.products.map((product) => {
@@ -300,6 +301,10 @@ module.exports._createImportOrder = async (req, res, next) => {
                     creator_id: Number(req.user.user_id),
                     active: true,
                 };
+                variants.push({
+                    variant_id: Number(product.variant_id),
+                    import_price_default: Number(product.import_price),
+                });
                 prices.push(_price);
                 location_id++;
                 let _location = {
@@ -357,6 +362,14 @@ module.exports._createImportOrder = async (req, res, next) => {
                 client.db(DB).collection('Locations').insertMany(locations),
             ]);
         }
+        await Promise.all(
+            variants.map((eVariant) => {
+                return client
+                    .db(DB)
+                    .collection('Variants')
+                    .updateOne({ variant_id: eVariant.variant_id }, { $set: eVariant });
+            })
+        );
         await Promise.all([
             client
                 .db(DB)

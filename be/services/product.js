@@ -205,6 +205,14 @@ module.exports.getProductS = async (req, res, next) => {
                             as: 'locations',
                         },
                     },
+                    {
+                        $lookup: {
+                            from: 'Prices',
+                            let: { variantId: '$variant_id' },
+                            pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
+                            as: 'base_prices',
+                        },
+                    },
                 ],
                 as: 'variants',
             },
