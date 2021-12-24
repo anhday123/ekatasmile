@@ -308,7 +308,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                 prices.push(_price);
                 location_id++;
                 let _location = {
-                    business_id: Number(_order.business_id),
+                    business_id: Number(order.business_id),
                     location_id: Number(location_id),
                     product_id: Number(product.product_id),
                     variant_id: Number(product.variant_id),
