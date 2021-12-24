@@ -45,7 +45,10 @@ module.exports._create = async (req, res, next) => {
         req.body.name = String(req.body.name || '')
             .trim()
             .toUpperCase();
-        let payment = await client.db(DB).collection('PaymentMethods').findOne({ name: req.body.name });
+        let payment = await client
+            .db(DB)
+            .collection('PaymentMethods')
+            .findOne({ business_id: req.user.business_id, name: req.body.name });
         if (payment) {
             throw new Error(`400: Phương thức thanh toán đã tồn tại!`);
         }
@@ -61,11 +64,11 @@ module.exports._create = async (req, res, next) => {
             });
         payment_method_id++;
         let _paymentMethod = {
+            business_id: req.user.business_id,
             payment_method_id: Number(payment_method_id),
             code: String(payment_method_id).padStart(6, '0'),
             name: req.body.name,
             slug_name: removeUnicode(String(req.body.name), true),
-            business_ids: req.body.business_ids,
             create_date: moment().tz(TIMEZONE).format(),
             last_update: moment().tz(TIMEZONE).format(),
             creator_id: Number(req.user.user_id),
@@ -110,6 +113,7 @@ module.exports._update = async (req, res, next) => {
             active: _paymentMethod.active,
         };
         let exists = await client.db(DB).findOne({
+            business_id: req.user.business_id,
             payment_method_id: { $ne: _paymentMethod.payment_method_id },
             name: _paymentMethod.name,
         });

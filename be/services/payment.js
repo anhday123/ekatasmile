@@ -11,13 +11,14 @@ let _get = async (req, res, next) => {
         if (req.query.payment_id) {
             aggregateQuery.push({ $match: { payment_id: Number(req.query.payment_id) } });
         }
+        if (req.user) {
+            aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
+        }
         if (req.query.business_id) {
-            let ids = req.query.business_id.split('---').map((eId) => {
-                if (eId) {
-                    return eId;
-                }
-            });
-            aggregateQuery.push({ $match: { business_ids: { $in: ids } } });
+            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
+        }
+        if (req.query.creator_id) {
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
         if (req.query['today'] != undefined) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
