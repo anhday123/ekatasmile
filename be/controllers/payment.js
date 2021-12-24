@@ -42,6 +42,13 @@ module.exports._create = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${properties}!`);
             }
         });
+        req.body.name = String(req.body.name || '')
+            .trim()
+            .toUpperCase();
+        let payment = await client.db(DB).collection('PaymentMethods').findOne({ name: req.body.name });
+        if (payment) {
+            throw new Error(`400: Phương thức thanh toán đã tồn tại!`);
+        }
         let payment_method_id = await client
             .db(DB)
             .collection('AppSetting')
@@ -94,14 +101,21 @@ module.exports._update = async (req, res, next) => {
         _paymentMethod = {
             payment_method_id: Number(_paymentMethod.payment_method_id),
             code: Number(_paymentMethod.code),
-            name: _paymentMethod.name,
-            slug_name: removeUnicode(String(_paymentMethod.name), true),
+            name: String(_paymentMethod.name).toUpperCase(),
+            slug_name: removeUnicode(String(_paymentMethod.name), true).toLowerCase(),
             business_ids: _paymentMethod.business_ids,
             create_date: _paymentMethod.create_date,
             last_update: moment().tz(TIMEZONE).format(),
             creator_id: Number(_paymentMethod.user_id),
             active: _paymentMethod.active,
         };
+        let exists = await client.db(DB).findOne({
+            payment_method_id: { $ne: _paymentMethod.payment_method_id },
+            name: _paymentMethod.name,
+        });
+        if (exists) {
+            throw new Error(`400: Phương thức thanh toán đã tồn tại!`);
+        }
         req['body'] = _paymentMethod;
         await paymentService._update(req, res, next);
     } catch (err) {
