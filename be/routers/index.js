@@ -32,5 +32,6 @@ router.use(`/compare`, require(`./compare`));
 router.use(`/channel`, require(`./channel`));
 router.use(`/inventory`, require(`./inventory`));
 router.use(`/upload`, require(`./upload`));
+router.use(`/payment`, require(`./payment`));
 
 module.exports = router;
