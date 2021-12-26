@@ -37,20 +37,14 @@ let getStoreS = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -202,10 +196,7 @@ let addStoreS = async (req, res, next) => {
             await client
                 .db(DB)
                 .collection(`Users`)
-                .updateOne(
-                    { user_id: Number(req.user.user_id) },
-                    { $set: { store_id: Number(req._insert.store_id) } }
-                );
+                .updateOne({ user_id: Number(req.user.user_id) }, { $set: { store_id: Number(req._insert.store_id) } });
         } catch (err) {
             console.log(err);
         }
@@ -257,7 +248,7 @@ let updateStoreS = async (req, res, next) => {
         await client
             .db(DB)
             .collection('Locations')
-            .updateMany({ inventory_id: Number(req.params.store_id) }, { name: req._update.name });
+            .updateMany({ inventory_id: Number(req.params.store_id) }, { $set: { name: req._update.name } });
         try {
             let _action = new Action();
             _action.create({
