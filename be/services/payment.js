@@ -72,8 +72,32 @@ let _get = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        if (req.query.name) {
+            aggregateQuery.push({
+                $match: {
+                    slug_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/gi, '(.*?)')}`,
+                        'ig'
+                    ),
+                },
+            });
+        }
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'creator_id',
+                        as: '_creator',
+                    },
+                },
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+            );
+        }
         aggregateQuery.push({
             $project: {
+                slug_name: 0,
                 '_creator.password': 0,
             },
         });
