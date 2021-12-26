@@ -88,7 +88,7 @@ let _get = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: 'creator_id',
+                        foreignField: 'user_id',
                         as: '_creator',
                     },
                 },
@@ -109,7 +109,7 @@ let _get = async (req, res, next) => {
             aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         }
         // lấy data từ database
-        let [suppliers, counts] = await Promise.all([
+        let [payments, counts] = await Promise.all([
             client.db(DB).collection(`PaymentMethods`).aggregate(aggregateQuery).toArray(),
             client
                 .db(DB)
@@ -120,7 +120,7 @@ let _get = async (req, res, next) => {
         res.send({
             success: true,
             count: counts[0] ? counts[0].counts : 0,
-            data: suppliers,
+            data: payments,
         });
     } catch (err) {
         next(err);
