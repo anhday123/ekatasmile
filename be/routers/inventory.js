@@ -13,6 +13,9 @@ router.route(`/import/create`).post(auth, inventory._createImportOrder);
 router.route(`/import/create/file`).post(auth, upload.single('file'), inventory._createImportOrderFile);
 router.route(`/import/update/:order_id`).patch(auth, inventory._updateImportOrder);
 
+router.route(`/transport`).get(auth, inventory._getTransportOrder);
+router.route(`/transport/create`).post(auth, inventory._createTransportOrder);
 router.route(`/transport/file`).post(auth, upload.single('file'), inventory._createTransportOrderFile);
+router.route(`/transport/update/:order_id`).patch(auth, inventory._updateTransportOrder);
 
 module.exports = router;
