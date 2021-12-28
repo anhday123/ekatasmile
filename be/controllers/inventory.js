@@ -1433,6 +1433,115 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
 
 module.exports._updateTransportOrder = async (req, res, next) => {
     try {
+        req.params.order_id = Number(req.params.order_id);
+        let order = await client.db(DB).collection('TransportOrders').findOne(req.params);
+        delete req.body._id;
+        delete req.body.order_id;
+        let _order = { ...order, ...req.body };
+        _order = {
+            business_id: Number(_order.business_id),
+            order_id: _order.order_id,
+            code: _order.code,
+            export_location: _order.export_location,
+            export_location_info: _order.export_location_info,
+            import_location: _order.import_location,
+            import_location_info: _order.import_location_info,
+            products: _order.products,
+            total_cost: _order.total_cost,
+            total_discount: _order.total_discount,
+            cod: _order.cod,
+            final_cost: _order.final_cost,
+            total_quantity: _order.total_quantity,
+            files: _order.files,
+            // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+            status: _order.status,
+            note: _order.note,
+            verify_date: _order.verify_date,
+            verifier_id: _order.verifier_id,
+            complete_date: _order.complete_date,
+            completer_id: _order.completer_id,
+            create_date: _order.create_date,
+            creator_id: _order.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            active: _order.active,
+        };
+        if (_order.status == 'VERIFY' && order.status != 'VERIFY') {
+            _order['verifier_id'] = Number(req.user.user_id);
+            _order['verify_date'] = moment().tz(TIMEZONE).format();
+        }
+        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+            _order['completer_id'] = Number(req.user.user_id);
+            _order['complete_date'] = moment().tz(TIMEZONE).format();
+            let [location_id] = await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .findOne({ name: 'Locations' })
+                    .then((doc) => {
+                        if (doc && doc.value) {
+                            return doc.value;
+                        }
+                        return 0;
+                    })
+                    .catch((err) => {
+                        throw new Error(`500: ${err}`);
+                    }),
+            ]);
+            let locations = [];
+            _order.products.map((product) => {
+                location_id++;
+                let _location = {
+                    business_id: Number(_order.business_id),
+                    location_id: Number(location_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    price_id: Number(price_id),
+                    type: (() => {
+                        if (_order.import_location && _order.import_location.branch_id) {
+                            return 'BRANCH';
+                        }
+                        if (_order.import_location && _order.import_location.store_id) {
+                            return 'STORE';
+                        }
+                        return '';
+                    })(),
+                    inventory_id: (() => {
+                        if (_order.import_location && _order.import_location.branch_id) {
+                            return _order.import_location.branch_id;
+                        }
+                        if (_order.import_location && _order.import_location.store_id) {
+                            return _order.import_location.store_id;
+                        }
+                        return 0;
+                    })(),
+                    name: (() => {
+                        if (_order.import_location_info && _order.import_location_info.branch_id) {
+                            return _order.import_location_info.name;
+                        }
+                        return '';
+                    })(),
+                    quantity: product.quantity,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                };
+                locations.push(_location);
+            });
+            await Promise.all([
+                client
+                    .db(DB)
+                    .collection('AppSetting')
+                    .updateOne(
+                        { name: 'Locations' },
+                        { $set: { name: 'Locations', value: location_id } },
+                        { upsert: true }
+                    ),
+                client.db(DB).collection('Locations').insertMany(locations),
+            ]);
+        }
+        await client.db(DB).collection('TransportOrders').updateOne(req.params, { $set: _order });
+        res.send({ success: true, data: _order });
     } catch (err) {
         next(err);
     }
