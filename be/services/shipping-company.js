@@ -31,20 +31,14 @@ let getShippingCompanyS = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -105,7 +99,7 @@ let getShippingCompanyS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: 'business_id',
+                        foreignField: 'user_id',
                         as: '_business',
                     },
                 },
@@ -118,7 +112,7 @@ let getShippingCompanyS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: 'creator_id',
+                        foreignField: 'user_id',
                         as: '_creator',
                     },
                 },
@@ -190,10 +184,7 @@ let addShippingCompanyS = async (req, res, next) => {
 
 let updateShippingCompanyS = async (req, res, next) => {
     try {
-        await client
-            .db(DB)
-            .collection(`ShippingCompanies`)
-            .findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`ShippingCompanies`).findOneAndUpdate(req.params, { $set: req._update });
         try {
             let _action = new Action();
             _action.create({

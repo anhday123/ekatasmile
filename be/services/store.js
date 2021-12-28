@@ -105,7 +105,7 @@ let getStoreS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'user_id',
                         as: '_business',
                     },
                 },

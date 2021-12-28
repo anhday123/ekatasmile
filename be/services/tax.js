@@ -32,20 +32,14 @@ let getTaxS = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -76,7 +70,7 @@ let getTaxS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: '_id',
+                        foreignField: 'user_id',
                         as: '_business',
                     },
                 },
@@ -89,7 +83,7 @@ let getTaxS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: '_id',
+                        foreignField: 'user_id',
                         as: '_creator',
                     },
                 },

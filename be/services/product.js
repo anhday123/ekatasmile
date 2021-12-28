@@ -261,7 +261,7 @@ module.exports.getProductS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'business_id',
-                        foreignField: 'business_id',
+                        foreignField: 'user_id',
                         as: '_business',
                     },
                 },
@@ -274,7 +274,7 @@ module.exports.getProductS = async (req, res, next) => {
                     $lookup: {
                         from: 'Users',
                         localField: 'creator_id',
-                        foreignField: 'creator_id',
+                        foreignField: 'user_id',
                         as: '_creator',
                     },
                 },
