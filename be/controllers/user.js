@@ -112,24 +112,33 @@ let addUserC = async (req, res, next) => {
             .findOne({
                 $or: [{ username: req.body.username }, { email: req.body.email }],
             });
-        let userMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Users' });
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
-        let user_id = (() => {
-            if (userMaxId) {
-                if (userMaxId.value) {
-                    return Number(userMaxId.value);
+        let user_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'Users' })
+            .then((doc) => {
+                if (doc) {
+                    if (doc.value) {
+                        return Number(doc.value);
+                    }
                 }
-            }
-            return 0;
-        })();
+                return 0;
+            });
+        let role = await client.db(DB).collection('Roles').findOne({ role_id: req.body.role_id });
         user_id++;
         _user.create({
             ...req.body,
             ...{
                 user_id: Number(user_id),
-                business_id: Number(req.user.business_id),
+                business_id: (() => {
+                    if (role && /business/.test(role.name)) {
+                        return Number(user_id);
+                    }
+                    return Number(req.user.business_id);
+                })(),
                 company_name: String(req.user.company_name),
                 company_website: String(req.user.company_website),
                 create_date: new Date(),
