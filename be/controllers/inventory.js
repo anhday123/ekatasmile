@@ -1495,7 +1495,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     location_id: Number(location_id),
                     product_id: Number(product.product_id),
                     variant_id: Number(product.variant_id),
-                    price_id: Number(price_id),
+                    price_id: Number(product.price_id || 0),
                     type: (() => {
                         if (_order.import_location && _order.import_location.branch_id) {
                             return 'BRANCH';
