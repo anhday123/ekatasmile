@@ -49,6 +49,12 @@ let addShippingCompanyC = async (req, res, next) => {
                 active: true,
             },
         });
+        if (_shippingCompany.default) {
+            await client
+                .db(DB)
+                .collection('Taxes')
+                .updateMany({ business_id: _shippingCompany.business_id }, { $set: { default: false } });
+        }
         await client
             .db(DB)
             .collection('AppSetting')
@@ -87,6 +93,12 @@ let updateShippingCompanyC = async (req, res, next) => {
         }
         _shippingCompany.create(shippingCompany);
         _shippingCompany.update(req.body);
+        if (_shippingCompany.default) {
+            await client
+                .db(DB)
+                .collection('Taxes')
+                .updateMany({ business_id: _shippingCompany.business_id }, { $set: { default: false } });
+        }
         req['_update'] = _shippingCompany;
         await shippingCompanyService.updateShippingCompanyS(req, res, next);
     } catch (err) {
