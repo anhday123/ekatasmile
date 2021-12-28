@@ -195,7 +195,7 @@ let forgotPassword = async (req, res, next) => {
     }
 };
 
-module.exports._delete = async (req, res, next) => {
+let _delete = async (req, res, next) => {
     try {
         await client
             .db(DB)
@@ -216,4 +216,5 @@ module.exports = {
     addUserC,
     updateUserC,
     forgotPassword,
+    _delete,
 };
