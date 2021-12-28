@@ -8,6 +8,6 @@ router.route(`/getdeal`).get(auth, deal.getDealC);
 router.route(`/adddeal`).post(auth, deal.addDealC);
 router.route(`/updatedeal/:deal_id`).patch(auth, deal.updateDealC);
 router.route(`/updatesaleofvalue`).patch(auth, deal.updateSaleOff);
-router.route(`/deletedeal`).delete(auth, deal.deleteDealC);
+router.route(`/delete`).delete(auth, deal._delete);
 
 module.exports = router;

@@ -26,10 +26,7 @@ let addShippingCompanyC = async (req, res, next) => {
                 business_id: Number(req.user.business_id),
                 name: req.body.name,
             });
-        let shippingCompanyMaxId = await client
-            .db(DB)
-            .collection('AppSetting')
-            .findOne({ name: 'ShippingCompanies' });
+        let shippingCompanyMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'ShippingCompanies' });
         if (shippingCompany) {
             throw new Error(`400: Đối tác vận chuyển đã tồn tại!`);
         }
@@ -92,6 +89,21 @@ let updateShippingCompanyC = async (req, res, next) => {
         _shippingCompany.update(req.body);
         req['_update'] = _shippingCompany;
         await shippingCompanyService.updateShippingCompanyS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`ShippingCompanies`)
+            .deleteMany({ shipping_company_id: { $in: req.body.shipping_company_id } });
+        res.send({
+            success: true,
+            message: 'Xóa đơn vị vận chuyển thành công!',
+        });
     } catch (err) {
         next(err);
     }

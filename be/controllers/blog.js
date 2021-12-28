@@ -87,13 +87,12 @@ let updateBlogC = async (req, res, next) => {
     }
 };
 
-let deleteBlogC = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
-        let blogIds = req.body.blog_id;
         await client
             .db(DB)
-            .collection('Blogs')
-            .deleteMany({ blog_id: { $in: blogIds } });
+            .collection(`Blogs`)
+            .deleteMany({ blog_id: { $in: req.body.blog_id } });
         res.send({
             success: true,
             message: 'Xóa bài viết thành công!',
@@ -107,5 +106,4 @@ module.exports = {
     getBlogC,
     createBlogC,
     updateBlogC,
-    deleteBlogC,
 };

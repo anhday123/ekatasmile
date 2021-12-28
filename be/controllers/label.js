@@ -90,6 +90,21 @@ let updateLabelC = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Labels`)
+            .deleteMany({ label_id: { $in: req.body.label_id } });
+        res.send({
+            success: true,
+            message: 'Xóa bài viết thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getLabelC,
     addLabelC,

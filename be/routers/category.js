@@ -7,6 +7,6 @@ const { auth } = require(`../middleware/jwt`);
 router.route(`/getcategory`).get(auth, category.getCategoryC);
 router.route(`/addcategory`).post(auth, category.addCategoryC);
 router.route(`/updatecategory/:category_id`).patch(auth, category.updateCategoryC);
-router.route(`/deletecategory`).delete(auth, category.deleteCategoryC);
+router.route(`/delete`).delete(auth, category._delete);
 
 module.exports = router;

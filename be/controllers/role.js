@@ -92,6 +92,21 @@ let updateRoleC = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Roles`)
+            .deleteMany({ role_id: { $in: req.body.role_id } });
+        res.send({
+            success: true,
+            message: 'Xóa vai trò thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getRoleC,
     addRoleC,

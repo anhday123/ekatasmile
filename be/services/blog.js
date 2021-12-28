@@ -28,10 +28,7 @@ let getBlogS = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({
                 $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -49,10 +46,7 @@ let getBlogS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: {
                     sub_tag: {
-                        $in: new RegExp(
-                            `${removeUnicode(req.query.tag, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                            'ig'
-                        ),
+                        $in: new RegExp(`${removeUnicode(req.query.tag, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                     },
                 },
             });
@@ -137,6 +131,8 @@ let updateBlogS = async (req, res, next) => {
         next(err);
     }
 };
+
+
 
 module.exports = {
     createBlogS,

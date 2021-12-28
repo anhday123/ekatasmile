@@ -7,6 +7,6 @@ const { auth } = require(`../middleware/jwt`);
 router.route(`/create`).post(auth, brand.createBrandC);
 router.route(`/update/:brand_id`).patch(auth, brand.updateBrandC);
 router.route(`/`).get(auth, brand.getBrandC);
-router.route(`/delete`).delete(auth, brand.deleteBrandC);
+router.route(`/delete`).delete(auth, brand._delete);
 
 module.exports = router;

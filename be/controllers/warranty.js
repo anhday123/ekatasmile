@@ -52,11 +52,7 @@ let addWarrantyC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Warranties' },
-                { $set: { name: 'Warranties', value: warranty_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: warranty_id } }, { upsert: true });
         req[`_insert`] = _warranty;
         await warrantyService.addWarrantyS(req, res, next);
     } catch (err) {
@@ -89,6 +85,21 @@ let updateWarrantyC = async (req, res, next) => {
         _warranty.update(req.body);
         req['_update'] = _warranty;
         await warrantyService.updateWarrantyS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Warranties`)
+            .deleteMany({ warranty_id: { $in: req.body.warranty_id } });
+        res.send({
+            success: true,
+            message: 'Xóa chương trình bảo hành thành công!',
+        });
     } catch (err) {
         next(err);
     }

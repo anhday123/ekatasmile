@@ -51,11 +51,7 @@ let addCustomerC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Customers' },
-                { $set: { name: 'Customers', value: customer_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: customer_id } }, { upsert: true });
         req[`_insert`] = _customer;
         await customerService.addCustomerS(req, res, next);
     } catch (err) {
@@ -89,6 +85,21 @@ let updateCustomerC = async (req, res, next) => {
         _customer.update(req.body);
         req['_update'] = _customer;
         await customerService.updateCustomerS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Customers`)
+            .deleteMany({ customer_id: { $in: req.body.customer_id } });
+        res.send({
+            success: true,
+            message: 'Xóa khách hàng thành công!',
+        });
     } catch (err) {
         next(err);
     }

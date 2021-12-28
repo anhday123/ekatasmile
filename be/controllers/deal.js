@@ -92,21 +92,15 @@ let updateDealC = async (req, res, next) => {
     }
 };
 
-let deleteDealC = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
-        req['_delete'] = req.query.deal_id.split(',');
-        if (req._delete.length > 0) {
-            req._delete = req._delete.map((id) => {
-                return Number(id);
-            });
-        }
         await client
             .db(DB)
             .collection(`Deals`)
-            .deleteMany({ deal_id: { $in: req._delete } });
+            .deleteMany({ deal_id: { $in: req.body.deal_id } });
         res.send({
             success: true,
-            message: 'Xóa ưu đãi thành công!',
+            message: 'Xóa bài viết thành công!',
         });
     } catch (err) {
         next(err);
@@ -132,6 +126,5 @@ module.exports = {
     getDealC,
     addDealC,
     updateDealC,
-    deleteDealC,
     updateSaleOff,
 };

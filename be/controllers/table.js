@@ -98,6 +98,21 @@ let updateTableC = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Tables`)
+            .deleteMany({ table_id: { $in: req.body.table_id } });
+        res.send({
+            success: true,
+            message: 'Xóa bàn thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getTableC,
     addTableC,

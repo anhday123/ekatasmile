@@ -195,6 +195,21 @@ let forgotPassword = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Users`)
+            .deleteMany({ user_id: { $in: req.body.user_id } });
+        res.send({
+            success: true,
+            message: 'Xóa người dùng thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getUserC,
     registerC,

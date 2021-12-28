@@ -90,6 +90,21 @@ let updateStoreC = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Stores`)
+            .deleteMany({ store_id: { $in: req.body.store_id } });
+        res.send({
+            success: true,
+            message: 'Xóa cửa hàng thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getStoreC,
     addStoreC,

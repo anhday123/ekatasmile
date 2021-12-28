@@ -52,11 +52,7 @@ let addBranchC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Branchs' },
-                { $set: { name: 'Branchs', value: branch_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: branch_id } }, { upsert: true });
         req[`_insert`] = _branch;
         await branchService.addBranchS(req, res, next);
     } catch (err) {
@@ -90,6 +86,21 @@ let updateBranchC = async (req, res, next) => {
         _branch.update(req.body);
         req[`_update`] = _branch;
         await branchService.updateBranchS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Branchs`)
+            .deleteMany({ branch_id: { $in: req.body.branch_id } });
+        res.send({
+            success: true,
+            message: 'Xóa chi nhánh thành công!',
+        });
     } catch (err) {
         next(err);
     }

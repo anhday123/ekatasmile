@@ -53,11 +53,7 @@ let addCategoryC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Categories' },
-                { $set: { name: 'Categories', value: category_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: category_id } }, { upsert: true });
         req[`_insert`] = _category;
         await categoryService.addCategoryS(req, res, next);
     } catch (err) {
@@ -96,25 +92,16 @@ let updateCategoryC = async (req, res, next) => {
     }
 };
 
-let deleteCategoryC = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
-        let category_ids = req.query.category_id.split('---').map((id) => {
-            return Number(id);
-        });
-        let categories = await client
+        await client
             .db(DB)
-            .collection('Categories')
-            .find({ $or: [{ category_id: { $in: category_ids } }, { parent_id: { $in: category_ids } }] })
-            .toArray();
-        req['_delete'] = categories.map((category) => {
-            if (category) {
-                if (category.category_id) {
-                    return Number(category.category_id);
-                }
-            }
-            return 0;
+            .collection(`Categories`)
+            .deleteMany({ category_id: { $in: req.body.category_id } });
+        res.send({
+            success: true,
+            message: 'Xóa bài viết thành công!',
         });
-        await categoryService.deleteCategoryS(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -124,5 +111,4 @@ module.exports = {
     getCategoryC,
     addCategoryC,
     updateCategoryC,
-    deleteCategoryC,
 };

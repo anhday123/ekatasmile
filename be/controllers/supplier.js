@@ -52,11 +52,7 @@ let addSupplierC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Suppliers' },
-                { $set: { name: 'Suppliers', value: supplier_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplier_id } }, { upsert: true });
         req[`_insert`] = _supplier;
         await supplierService.addSupplierS(req, res, next);
     } catch (err) {
@@ -90,6 +86,21 @@ let updateSupplierC = async (req, res, next) => {
         _supplier.update(req.body);
         req['_update'] = _supplier;
         await supplierService.updateSupplierS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Suppliers`)
+            .deleteMany({ supplier_id: { $in: req.body.supplier_id } });
+        res.send({
+            success: true,
+            message: 'Xóa nhà cung cấp thành công!',
+        });
     } catch (err) {
         next(err);
     }

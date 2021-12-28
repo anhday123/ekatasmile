@@ -55,11 +55,7 @@ let addPromotionC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Promotions' },
-                { $set: { name: 'Promotions', value: promotion_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Promotions' }, { $set: { name: 'Promotions', value: promotion_id } }, { upsert: true });
         req[`_insert`] = _promotion;
         await promotionService.addPromotionS(req, res, next);
     } catch (err) {
@@ -125,6 +121,21 @@ let checkVoucherC = async (req, res, next) => {
         } else {
             throw new Error(`400: Voucher không tồn tại hoặc đã được sử dụngs!`);
         }
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Promotions`)
+            .deleteMany({ promotion_id: { $in: req.body.promotion_id } });
+        res.send({
+            success: true,
+            message: 'Xóa chương trình khuyến mãi thành công!',
+        });
     } catch (err) {
         next(err);
     }

@@ -87,14 +87,12 @@ let updateBrandC = async (req, res, next) => {
     }
 };
 
-let deleteBrandC = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
-        let brandIds = req.body.brand_id;
-        console.log(brandIds);
         await client
             .db(DB)
-            .collection('Brands')
-            .deleteMany({ brand_id: { $in: brandIds } });
+            .collection(`Brands`)
+            .deleteMany({ brand_id: { $in: req.body.brand_id } });
         res.send({
             success: true,
             message: 'Xóa thương hiệu thành công!',
@@ -108,5 +106,4 @@ module.exports = {
     getBrandC,
     createBrandC,
     updateBrandC,
-    deleteBrandC,
 };

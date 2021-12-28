@@ -52,11 +52,7 @@ let addToppingC = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'Toppings' },
-                { $set: { name: 'Toppings', value: topping_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'Toppings' }, { $set: { name: 'Toppings', value: topping_id } }, { upsert: true });
         req[`_insert`] = _topping;
         await toppingService.addToppingS(req, res, next);
     } catch (err) {
@@ -89,6 +85,21 @@ let updateToppingC = async (req, res, next) => {
         _topping.update(req.body);
         req['_update'] = _topping;
         await toppingService.updateToppingS(req, res, next);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Toppings`)
+            .deleteMany({ topping_id: { $in: req.body.topping_id } });
+        res.send({
+            success: true,
+            message: 'Xóa topping thành công!',
+        });
     } catch (err) {
         next(err);
     }

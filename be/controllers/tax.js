@@ -90,6 +90,21 @@ let updateTaxC = async (req, res, next) => {
     }
 };
 
+module.exports._delete = async (req, res, next) => {
+    try {
+        await client
+            .db(DB)
+            .collection(`Taxes`)
+            .deleteMany({ tax_id: { $in: req.body.tax_id } });
+        res.send({
+            success: true,
+            message: 'Xóa thuế thành công!',
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getTaxC,
     addTaxC,
