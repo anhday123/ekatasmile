@@ -968,6 +968,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
                 status: 'DRAFT',
                 note: req.body.note || '',
+                tags: req.body.tags || [],
+                slug_tags: [],
                 payment_info: req.body.payment_info,
                 delivery_time: req.body.delivery_time || '',
                 verify_date: '',
