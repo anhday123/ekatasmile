@@ -26,18 +26,21 @@ let addTaxC = async (req, res, next) => {
                 business_id: Number(req.user.business_id),
                 name: req.body.name,
             });
-        let taxMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Taxes' });
         if (tax) {
             throw new Error(`400: Thuế đã tồn tại!`);
         }
-        let tax_id = (() => {
-            if (taxMaxId) {
-                if (taxMaxId.value) {
-                    return Number(taxMaxId.value);
+        let tax_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'Taxes' })
+            .then((doc) => {
+                if (doc) {
+                    if (doc.value) {
+                        return Number(doc.value);
+                    }
                 }
-            }
-            return 0;
-        })();
+                return 0;
+            });
         tax_id++;
         _tax.create({
             ...req.body,
@@ -49,6 +52,12 @@ let addTaxC = async (req, res, next) => {
                 active: true,
             },
         });
+        if (_tax.default) {
+            await client
+                .db(DB)
+                .collection('Taxes')
+                .updateMany({ business_id: _tax.business_id }, { $set: { default: false } });
+        }
         await client
             .db(DB)
             .collection('AppSetting')
@@ -83,6 +92,12 @@ let updateTaxC = async (req, res, next) => {
         }
         _tax.create(tax);
         _tax.update(req.body);
+        if (_tax.default) {
+            await client
+                .db(DB)
+                .collection('Taxes')
+                .updateMany({ business_id: _tax.business_id }, { $set: { default: false } });
+        }
         req['_update'] = _tax;
         await taxService.updateTaxS(req, res, next);
     } catch (err) {
