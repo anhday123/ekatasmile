@@ -22,6 +22,7 @@ class ShippingCompany {
         this.sub_district = removeUnicode(this.district, true).toLowerCase();
         this.province = data.province || '';
         this.sub_province = removeUnicode(this.province, true).toLowerCase();
+        this.default = data.default || false;
         this.create_date = new Date(data.create_date);
         this.creator_id = Number(data.creator_id);
         this.active = data.active;
