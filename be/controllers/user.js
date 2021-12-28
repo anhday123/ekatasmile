@@ -134,24 +134,23 @@ let addUserC = async (req, res, next) => {
             ...{
                 user_id: Number(user_id),
                 business_id: (() => {
-                    if (role && /business/.test(role.name)) {
+                    if (role && /business/gi.test(role.sub_name)) {
                         return Number(user_id);
                     }
                     return Number(req.user.business_id);
                 })(),
                 company_name: (() => {
-                    if (role && /business/.test(role.name)) {
+                    if (role && /business/gi.test(role.sub_name)) {
                         return String(req.body.company_name || '');
                     }
                     return String(req.user.company_name);
                 })(),
                 company_website: (() => {
-                    if (role && /business/.test(role.name)) {
+                    if (role && /business/gi.test(role.sub_name)) {
                         return String(req.body.company_website || '');
                     }
                     return String(req.user.company_website);
                 })(),
-
                 create_date: new Date(),
                 last_login: new Date(),
                 exp: '',
