@@ -1101,11 +1101,11 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     .db(DB)
                     .collection('AppSetting')
                     .updateOne(
-                        { name: 'ImportOrders' },
-                        { $set: { name: 'ImportOrders', value: order_id } },
+                        { name: 'TransportOrders' },
+                        { $set: { name: 'TransportOrders', value: order_id } },
                         { upsert: true }
                     ),
-                client.db(DB).collection('ImportOrders').insertOne(order),
+                client.db(DB).collection('TransportOrders').insertOne(order),
             ]);
             res.send({
                 success: true,
