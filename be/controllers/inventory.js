@@ -969,6 +969,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 status: 'DRAFT',
                 note: req.body.note || '',
                 payment_info: req.body.payment_info,
+                delivery_time: req.body.delivery_time || '',
                 verify_date: '',
                 verifier_id: '',
                 complete_date: '',
