@@ -1,0 +1,27 @@
+let a = {
+    business_id: 'Number(req.user.business_id)',
+    order_id: order_id,
+    code: 1000000 + order_id,
+    import_location: req.body.import_location,
+    import_location_info: importLocation,
+    products: req.body.products || [],
+    total_cost: req.body.total_cost || total_cost,
+    total_discount: req.body.total_discount || total_discount,
+    cod: req.body.cod,
+    final_cost: req.body.final_cost || final_cost,
+    total_quantity: req.body.total_quantity || total_quantity,
+    files: req.body.files,
+    // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+    status: 'DRAFT',
+    note: req.body.note || '',
+    payment_info: req.body.payment_info,
+    verify_date: '',
+    verifier_id: '',
+    complete_date: '',
+    completer_id: '',
+    create_date: moment().tz(TIMEZONE).format(),
+    creator_id: req.user.user_id,
+    last_update: moment().tz(TIMEZONE).format(),
+    active: true,
+};
+console.log(JSON.stringify(a));
