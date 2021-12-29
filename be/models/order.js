@@ -95,7 +95,9 @@ class Order {
             return data.shipping_company_id;
         })();
         this.shipping_info = data.shipping_info || '';
-        this.voucher = data.voucher || '';
+        this.voucher = data.voucher || {
+            
+        };
         this.promotion = data.promotion || {};
         this.total_cost = data.total_cost || 0;
         this.total_tax = data.total_tax || 0;
@@ -103,6 +105,7 @@ class Order {
         this.final_cost = data.final_cost || 0;
         this.customer_paid = data.customer_paid || 0;
         this.customer_debt = data.customer_debt || 0;
+        // UNPAID || PAID || REFUND
         this.payment_status =
             data.payment_status ||
             (() => {

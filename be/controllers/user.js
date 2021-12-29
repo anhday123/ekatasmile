@@ -8,6 +8,8 @@ const userService = require(`../services/user`);
 const bcrypt = require(`../libs/bcrypt`);
 const mail = require(`../libs/nodemailer`);
 const { User } = require('../models/user');
+const { Branch } = require('../models/branch');
+const { Store } = require('../models/store');
 
 let getUserC = async (req, res, next) => {
     try {
@@ -31,7 +33,47 @@ let registerC = async (req, res, next) => {
                 $or: [{ username: req.body.username }, { email: req.body.email }],
             });
         let role = await client.db(DB).collection('Roles').findOne({ name: 'BUSINESS' });
-        let userMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Users' });
+        let [user_id, branch_id, store_id] = await Promise.all([
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Users' })
+                .then((doc) => {
+                    if (doc) {
+                        if (doc.value) {
+                            return Number(doc.value);
+                        }
+                    }
+                    return 0;
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Branchs' })
+                .then((doc) => {
+                    if (doc) {
+                        if (doc.value) {
+                            return Number(doc.value);
+                        }
+                    }
+                    return 0;
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Stores' })
+                .then((doc) => {
+                    if (doc) {
+                        if (doc.value) {
+                            return Number(doc.value);
+                        }
+                    }
+                    return 0;
+                }),
+        ]).catch((err) => {
+            throw new Error('Kiểm tra thông tin id không thành công!');
+        });
+
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
@@ -63,15 +105,32 @@ let registerC = async (req, res, next) => {
                 Create by Demo Team.
             </div>`
         );
-        let user_id = (() => {
-            if (userMaxId) {
-                if (userMaxId.value) {
-                    return Number(userMaxId.value);
-                }
-            }
-            return 0;
-        })();
         user_id++;
+        branch_id++;
+        store_id++;
+
+        let _branch = new Branch();
+        _branch.create({
+            business_id: Number(user_id),
+            branch_id: Number(branch_id),
+            name: 'Chi nhánh mặc định',
+            creator_id: Number(user_id),
+        });
+
+        let _store = new Store();
+        _store.create({
+            business_id: Number(user_id),
+            branch_id: Number(branch_id),
+            store_id: Number(store_id),
+            name: 'Cửa hàng mặc định',
+            creator_id: Number(user_id),
+        });
+        await Promise.all([
+            client.db(DB).collection('Branchs').insertOne(_branch),
+            client.db(DB).collection('Stores').insertOne(_branch),
+        ]).catch((err) => {
+            throw new Error('Tạo cửa hàng hoặc chi nhánh không thành công!');
+        });
         _user.create({
             ...req.body,
             ...{
@@ -80,7 +139,9 @@ let registerC = async (req, res, next) => {
                 role_id: Number(role.role_id),
                 otp_code: otpCode,
                 otp_timelife: new Date(moment().add(process.env.OTP_TIMELIFE, `minutes`).format()),
-                is_new: true,
+                branch_id: Number(branch_id),
+                store_id: Number(store_id),
+                is_new: false,
                 create_date: new Date(),
                 last_login: new Date(),
                 exp: new Date(moment().add(10, 'days').format()),
@@ -88,10 +149,21 @@ let registerC = async (req, res, next) => {
                 active: false,
             },
         });
-        await client
-            .db(DB)
-            .collection('AppSetting')
-            .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: user_id } }, { upsert: true });
+        await Promise.all([
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: user_id } }, { upsert: true }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: branch_id } }, { upsert: true }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne({ name: 'Stores' }, { $set: { name: 'Stores', value: store_id } }, { upsert: true }),
+        ]);
+
         req[`_insert`] = _user;
         await userService.addUserS(req, res, next);
     } catch (err) {

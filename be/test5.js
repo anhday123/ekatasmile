@@ -37,7 +37,7 @@ let order = {
     ],
     shipping_company_id: '',
     shipping_info: {
-        ship_code: 'SHIPCODE',
+        tracking_number: 'SHIPCODE',
         to_name: 'Phan Đăng Lưu',
         to_phone: '0967845619',
         to_address: 'C7C/18H Phạm Hùng',
@@ -56,7 +56,8 @@ let order = {
         return_province_code: 202,
         return_postcode_code: 727010,
         return_country_code: 'VN',
-        cod: 20000,
+        fee_shipping: 20000,
+        cod: 3020000,
         delivery_time: '2021-09-30T00:00:00+07:00',
         complete_time: '2021-10-30T00:00:00+07:00',
     },
@@ -68,6 +69,8 @@ let order = {
     final_cost: 1350000,
     customer_paid: 1350000,
     customer_debt: 0,
+    // pending - need-pay - paid - refund
+    financial_status: 'pending',
     bill_status: 'DRAFT',
     ship_status: 'DRAFT',
     note: 'note',
