@@ -1452,10 +1452,9 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         let order = await client.db(DB).collection('TransportOrders').findOne(req.params);
         delete req.body._id;
         delete req.body.order_id;
-        let _order = { ...order, ...req.body };
         let productIds = [];
         let variantIds = [];
-        _order.products.map((product) => {
+        req.body.products.map((product) => {
             productIds.push(product.product_id);
             variantIds.push(product.variant_id);
         });
@@ -1485,7 +1484,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         let total_discount = 0;
         let final_cost = 0;
         let total_quantity = 0;
-        _order.products = _order.products.map((product) => {
+        req.body.products = req.body.products.map((product) => {
             total_cost += product.quantity * product.import_price;
             total_discount += product.discount || 0;
             final_cost += product.quantity * product.import_price - product.discount || 0;
@@ -1496,6 +1495,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 variant_info: _variants[product.variant_id],
             };
         });
+        let _order = { ...order, ...req.body };
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,
