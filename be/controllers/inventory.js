@@ -718,7 +718,10 @@ module.exports._updateImportOrder = async (req, res, next) => {
 
 module.exports._deleteImportOrder = async (req, res, next) => {
     try {
-        await client.db(DB).collection('ImportOrders').deleteMany({ order_id: req.body.order_id });
+        await client
+            .db(DB)
+            .collection('ImportOrders')
+            .deleteMany({ order_id: { $in: req.body.order_id } });
         res.send({ success: true, message: 'Xóa phiếu nhập hàng thành công!' });
     } catch (err) {
         next(err);
@@ -1450,6 +1453,49 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
+        let productIds = [];
+        let variantIds = [];
+        _order.products.map((product) => {
+            productIds.push(product.product_id);
+            variantIds.push(product.variant_id);
+        });
+        productIds = [...new Set(productIds)];
+        variantIds = [...new Set(variantIds)];
+        let [products, variants] = await Promise.all([
+            client
+                .db(DB)
+                .collection('Products')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+            client
+                .db(DB)
+                .collection('Variants')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+        ]);
+        let _products = {};
+        products.map((product) => {
+            _products[String(product.product_id)] = product;
+        });
+        let _variants = {};
+        variants.map((variant) => {
+            _variants[String(variant.variant_id)] = variant;
+        });
+        let total_cost = 0;
+        let total_discount = 0;
+        let final_cost = 0;
+        let total_quantity = 0;
+        _order.products = _order.products.map((product) => {
+            total_cost += product.quantity * product.import_price;
+            total_discount += product.discount || 0;
+            final_cost += product.quantity * product.import_price - product.discount || 0;
+            total_quantity += product.quantity;
+            return {
+                ...product,
+                product_info: _products[product.product_id],
+                variant_info: _variants[product.variant_id],
+            };
+        });
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,
@@ -1561,7 +1607,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
 
 module.exports._deleteTransportOrder = async (req, res, next) => {
     try {
-        await client.db(DB).collection('TransportOrders').deleteMany({ order_id: req.body.order_id });
+        await client
+            .db(DB)
+            .collection('TransportOrders')
+            .deleteMany({ order_id: { $in: req.body.order_id } });
         res.send({ success: true, message: 'Xóa phiếu chuyển hàng thành công!' });
     } catch (err) {
         next(err);
