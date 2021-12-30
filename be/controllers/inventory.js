@@ -34,7 +34,7 @@ module.exports._getImportOrder = async (req, res, next) => {
             aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
         }
         if (req.query.code) {
-            aggregateQuery.push({ $match: { code: Number(req.query.code) } });
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.query.branch_id) {
             aggregateQuery.push({ $match: { 'import_location.branch_id': Number(req.query.branch_id) } });
@@ -238,7 +238,7 @@ module.exports._createImportOrder = async (req, res, next) => {
         let order = {
             business_id: Number(req.user.business_id),
             order_id: order_id,
-            code: 1000000 + order_id,
+            code: req.body.code || String(order_id).padStart(6, '0'),
             import_location: req.body.import_location,
             import_location_info: importLocation,
             products: req.body.products || [],
@@ -246,21 +246,29 @@ module.exports._createImportOrder = async (req, res, next) => {
             total_cost: req.body.total_cost || total_cost,
             total_tax: req.body.total_tax || 0,
             total_discount: req.body.total_discount || total_discount,
-            shipping_cost: req.body.shipping_cost,
+            fee_shipping: req.body.fee_shipping,
             final_cost: req.body.final_cost || final_cost,
             note: req.body.note || '',
             files: req.body.files,
+            tags: req.body.tags || [],
+            slug_tags: [],
             // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
-            status: 'DRAFT',
+            status: req.body.status || 'DRAFT',
             payment_info: req.body.payment_info || [],
-            // UNPAID - PAYING - PAID
+            // UNPAID - PAYING - PAID - REFUND
             payment_status: req.body.payment_status || 'PAID',
-            verify_date: '',
-            verifier_id: '',
-            complete_date: '',
-            completer_id: '',
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
+            verify_date: '',
+            verifier_id: '',
+            delivery_date: '',
+            deliverer_id: '',
+            complete_date: '',
+            completer_id: '',
+            cancel_date: '',
+            canceler_id: '',
+            order_creator_id: req.body.order_creator_id,
+            receiver_id: req.body.receiver_id,
             last_update: moment().tz(TIMEZONE).format(),
             active: true,
         };
@@ -584,21 +592,33 @@ module.exports._updateImportOrder = async (req, res, next) => {
             import_location: _order.import_location,
             import_location_info: _order.importLocation,
             products: _order.products,
-            total_cost: _order.total_cost,
-            total_discount: _order.total_discount,
-            code: _order.cod,
-            final_cost: _order.final_cost,
             total_quantity: _order.total_quantity,
-            files: _order.files,
-            // DRAFT - VERIFY - COMPLETE - CANCEL
-            status: _order.status,
+            total_cost: _order.total_cost,
+            total_tax: _order.total_tax,
+            total_discount: _order.total_discount,
+            shipping_cost: _order.shipping_cost,
+            final_cost: _order.final_cost,
             note: _order.note,
-            verify_date: _order.verify_date,
-            verifier_id: _order.verifier_id,
-            complete_date: _order.complete_date,
-            completer_id: _order.completer_id,
+            files: _order.files,
+            tags: _order.tags,
+            slug_tags: _order.slug_tags,
+            // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+            status: _order.status,
+            payment_info: _order.payment_info,
+            // UNPAID - PAYING - PAID - REFUND
+            payment_status: _order.payment_status,
             create_date: _order.create_date,
             creator_id: _order.creator_id,
+            verify_date: _order.verify_date,
+            verifier_id: _order.verifier_id,
+            delivery_date: _order.delivery_date,
+            deliverer_id: _order.deliverer_id,
+            complete_date: _order.complete_date,
+            completer_id: _order.completer_id,
+            cancel_date: _order.cancel_date,
+            canceler_id: _order.canceler_id,
+            order_creator_id: _order.order_creator_id,
+            receiver_id: _order.receiver_id,
             last_update: moment().tz(TIMEZONE).format(),
             active: _order.active,
         };
@@ -736,7 +756,7 @@ module.exports._getTransportOrder = async (req, res, next) => {
                 aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
             }
             if (req.query.code) {
-                aggregateQuery.push({ $match: { code: Number(req.query.code) } });
+                aggregateQuery.push({ $match: { code: String(req.query.code) } });
             }
             if (req.query.export_location_name) {
                 aggregateQuery.push({
@@ -968,7 +988,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
             let order = {
                 business_id: Number(req.user.business_id),
                 order_id: order_id,
-                code: 1000000 + order_id,
+                code: req.body.code || String(order_id).padStart(6, '0'),
                 export_location: req.body.export_location,
                 export_location_info: exportLocation,
                 import_location: req.body.import_location,
@@ -977,22 +997,26 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 total_quantity: req.body.total_quantity || total_quantity,
                 shipping_cost: req.body.shipping_cost,
                 final_cost: req.body.final_cost || final_cost,
-                files: req.body.files,
                 note: req.body.note || '',
+                files: req.body.files,
                 tags: req.body.tags || [],
                 slug_tags: [],
                 // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
-                status: 'DRAFT',
+                status: req.body.status || 'DRAFT',
                 payment_info: req.body.payment_info || [],
                 // UNPAID - PAYING - PAID
                 payment_status: req.body.payment_status || 'PAID',
                 delivery_time: req.body.delivery_time || '',
-                verify_date: '',
-                verifier_id: '',
-                complete_date: '',
-                completer_id: '',
                 create_date: moment().tz(TIMEZONE).format(),
                 creator_id: req.user.user_id,
+                verify_date: '',
+                verifier_id: '',
+                delivery_date: '',
+                deliverer_id: '',
+                complete_date: '',
+                completer_id: '',
+                cancel_date: '',
+                canceler_id: '',
                 last_update: moment().tz(TIMEZONE).format(),
                 active: true,
             };
@@ -1512,7 +1536,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             total_quantity: _order.total_quantity,
             files: _order.files,
             // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
-            status: _order.status,
+            status: String(_order.status).toUpperCase(),
             note: _order.note,
             verify_date: _order.verify_date,
             verifier_id: _order.verifier_id,
@@ -1597,6 +1621,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     ),
                 client.db(DB).collection('Locations').insertMany(locations),
             ]);
+        }
+        if (_order.status == 'CANCEL' && order.status != 'CANCEL') {
+            _order['verifier_id'] = Number(req.user.user_id);
+            _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
         await client.db(DB).collection('TransportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
