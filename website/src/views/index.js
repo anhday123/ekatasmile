@@ -9,16 +9,14 @@ import Authentication from 'components/authentication'
 
 //views
 import Login from './login'
-import ReportImport from './report-import'
-import User from './user'
 import ProductCheck from './product-check'
 import OrderList from './order-list'
-import ReportFinancial from './report-financial'
+import SalesReport from './sales-report'
 import ReportInventory from './report-inventory'
 import ShippingControl from './shipping-control'
 import Guarantee from './guarantee'
 import ShippingProduct from './shipping-product'
-import Business from './business'
+import ClientManagement from './client-management'
 import Branch from './branch'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
@@ -32,14 +30,11 @@ import Overview from './overview'
 import Sell from './sell'
 import Store from './store'
 import ActivityDiary from './activity-diary'
-import UserAdd from './actions/user/add'
-import BusinessView from './actions/business/view'
-import UserUpdate from './actions/user/update'
+
 import NotFound from './not-found/404'
 import TaxAdd from './actions/tax/add'
 import TaxUpdate from './actions/tax/update'
-import BranchView from './actions/branch/view'
-import ShippingProductAdd from './actions/shipping-product/add'
+import ShippingProductForm from './shipping-product/shipping-product-form'
 import OrderCreate from './order-create'
 import VertifyAccount from './vertify-account'
 import Categories from './categories'
@@ -57,7 +52,6 @@ import Customer from './customer'
 import Supplier from './supplier'
 import Promotion from './promotion'
 import Role from './role'
-import ShippingProductView from './actions/shipping-product/view'
 import ShippingControlAdd from './actions/shipping-control/add'
 import ShippingControlView from './actions/shipping-control/view'
 import ProductUpdate from './actions/product/update'
@@ -71,27 +65,18 @@ import ProductCheckView from './actions/product-check/view'
 import OrderCreateShippingAdd from './actions/order-create-shipping/add'
 import StoreAdd from './actions/store/add'
 import EmployeeView from './actions/employee/view'
-import ShippingUpdate from './actions/shipping/update'
-import ShippingView from './actions/shipping/view'
-import ShippingAdd from './actions/shipping/add'
 
-import CustomerView from './actions/customer/view'
 import RevenueCostView from './actions/revenue-cost/view'
 import ReportFinancialView from './actions/sale-detail/view'
-import CustomerUpdate from './actions/shipping/update'
-import SupplierUpdate from './actions/supplier/update'
+
 import InventoryAdd from './actions/inventory/add'
 import ProductAdd from './actions/product/add'
 import EmployeeAdd from './actions/employee/add'
 import EmployeeEdit from './actions/employee/edit'
 import CustomerAdd from './actions/customer/add'
-import SupplierAdd from './actions/supplier/add'
 import GuaranteeAdd from './actions/guarantee/add'
-import SupplierInformation from './actions/supplier/information'
-import SupplierView from './actions/supplier/view'
 import PromotionAdd from './actions/promotion/add'
 import RoleAdd from './actions/role/add'
-import DeliveryUpdate from './actions/shipping-product/update'
 import CustomerOrderList from './customerOrderList'
 import CustoemrOrderDetail from './customerOrderList/components/orderDetail'
 import Point from './point'
@@ -107,13 +92,6 @@ import ImportInventory from './import-inventory'
 
 const DEFINE_ROUTER = [
   {
-    path: ROUTES.REPORT_IMPORT,
-    Component: () => <ReportImport />,
-    title: 'Báo cáo nhập hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
     path: ROUTES.REPORT_FINANCIAL_VIEW,
     Component: () => <ReportFinancialView />,
     title: 'Báo cáo chi tiết bán hàng',
@@ -124,13 +102,6 @@ const DEFINE_ROUTER = [
     path: ROUTES.REPORT_REVENUE_VIEW,
     Component: () => <RevenueCostView />,
     title: 'Báo cáo chi phí doanh thu',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.USER,
-    Component: () => <User />,
-    title: 'Quản lý người dùng',
     permissions: [],
     exact: true,
   },
@@ -163,9 +134,9 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
-    path: ROUTES.REPORT_FINANCIAL,
-    Component: () => <ReportFinancial />,
-    title: 'Báo cáo tài chính',
+    path: ROUTES.SALES_REPORT,
+    Component: () => <SalesReport />,
+    title: 'Báo cáo bán hàng',
     permissions: [],
     exact: true,
   },
@@ -206,9 +177,9 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
-    path: ROUTES.BUSINESS,
-    Component: () => <Business />,
-    title: 'Business',
+    path: ROUTES.CLIENT_MANAGEMENT,
+    Component: () => <ClientManagement />,
+    title: 'Quản lý client',
     permissions: [],
     exact: true,
   },
@@ -299,7 +270,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.PAYMENT,
     Component: () => <Payment />,
-    title: 'QL hình thức thanh toán',
+    title: 'Quản lý hình thức thanh toán',
     permissions: [],
     exact: true,
   },
@@ -320,14 +291,14 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.SHIPPING,
     Component: () => <Shipping />,
-    title: 'QL đối tác vận chuyển',
+    title: 'Quản lý đối tác vận chuyển',
     permissions: [],
     exact: true,
   },
   {
     path: ROUTES.CUSTOMER,
     Component: () => <Customer />,
-    title: 'QL khách hàng',
+    title: 'Quản lý khách hàng',
     permissions: [],
     exact: true,
   },
@@ -354,15 +325,8 @@ const DEFINE_ROUTER = [
   },
   {
     path: ROUTES.SHIPPING_PRODUCT_ADD,
-    Component: () => <ShippingProductAdd />,
-    title: 'Thêm quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SHIPPING_PRODUCT_UPDATE,
-    Component: () => <DeliveryUpdate />,
-    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
+    Component: () => <ShippingProductForm />,
+    title: 'Thêm phiếu chuyển hàng',
     permissions: [],
     exact: true,
   },
@@ -489,27 +453,6 @@ const AUTH_ROUTER = [
     permissions: [],
   },
   {
-    path: ROUTES.USER_ADD,
-    Component: () => <UserAdd />,
-    title: 'Thêm người dùng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.BUSINESS_VIEW,
-    Component: () => <BusinessView />,
-    title: 'Xem chi tiết business',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.USER_UPDATE,
-    Component: () => <UserUpdate />,
-    title: 'Cập nhật thông tin người dùng',
-    permissions: [],
-    exact: true,
-  },
-  {
     path: ROUTES.TAX_ADD,
     Component: () => <TaxAdd />,
     title: 'Thêm thuế',
@@ -523,22 +466,6 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.BRANCH_VIEW,
-    Component: () => <BranchView />,
-    title: 'Xem chi tiết chi nhánh',
-    permissions: [],
-    exact: true,
-  },
-
-  {
-    path: ROUTES.SHIPPING_PRODUCT_VIEW,
-    Component: () => <ShippingProductView />,
-    title: 'Xem thông tin chi tiết quản lý chuyển hàng',
-    permissions: [],
-    exact: true,
-  },
-
   {
     path: ROUTES.SHIPPING_CONTROL_ADD,
     Component: () => <ShippingControlAdd />,
@@ -617,48 +544,6 @@ const AUTH_ROUTER = [
     exact: true,
   },
   {
-    path: ROUTES.SHIPPING_UPDATE,
-    Component: () => <ShippingUpdate />,
-    title: 'Cập nhật thông tin quản lý đối tác vận chuyển',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SHIPPING_VIEW,
-    Component: () => <ShippingView />,
-    title: 'Xem thông tin chi tiết đối tác vận chuyển',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SHIPPING_ADD,
-    Component: () => <ShippingAdd />,
-    title: 'Thêm đối tác đối tác vận chuyển',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.CUSTOMER_VIEW,
-    Component: () => <CustomerView />,
-    title: 'Xem thông tin chi tiết khách hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.CUSTOMER_UPDATE,
-    Component: () => <CustomerUpdate />,
-    title: 'Cập nhật thông tin khách hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SUPPLIER_UPDATE,
-    Component: () => <SupplierUpdate />,
-    title: 'Cập nhật thông tin nhà cung cấp',
-    permissions: [],
-    exact: true,
-  },
-  {
     path: ROUTES.EMPLOYEE_ADD,
     Component: () => <EmployeeAdd />,
     title: 'Thêm nhân viên',
@@ -676,27 +561,6 @@ const AUTH_ROUTER = [
     path: ROUTES.CUSTOMER_ADD,
     Component: () => <CustomerAdd />,
     title: 'Thêm khách hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SUPPLIER_ADD,
-    Component: () => <SupplierAdd />,
-    title: 'Thêm nhà cung cấp',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SUPPLIER_INFORMATION,
-    Component: () => <SupplierInformation />,
-    title: 'Xem thông tin nhà cung cấp',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SUPPLIER_VIEW,
-    Component: () => <SupplierView />,
-    title: 'Xem thông tin chi tiết nhà cung cấp',
     permissions: [],
     exact: true,
   },

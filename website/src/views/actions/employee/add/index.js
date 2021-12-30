@@ -11,7 +11,7 @@ import { Select, notification, Row, Input, Space, Form, Checkbox, Button, InputN
 //apis
 import { apiFilterCity, getAllBranch } from 'apis/branch'
 import { apiProvince } from 'apis/information'
-import { apiAllRole, apiAllUser } from 'apis/user'
+import { getRoles, getUsers } from 'apis/user'
 import { apiUpdateEmployee } from 'apis/employee'
 import { getAllStore } from 'apis/store'
 
@@ -97,7 +97,7 @@ export default function EmployeeAdd(props) {
   const apiAllUserData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllUser()
+      const res = await getUsers()
 
       if (res.status === 200) {
         const username = localStorage.getItem('username')
@@ -205,7 +205,7 @@ export default function EmployeeAdd(props) {
   const apiAllRoleData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRole()
+      const res = await getRoles()
       if (res.status === 200) {
         setPermission(res.data.data)
 

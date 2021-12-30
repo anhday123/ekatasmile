@@ -7,7 +7,14 @@ import { Row, Button, Modal, Upload, message, notification, Table } from 'antd'
 //icons
 import { DownloadOutlined } from '@ant-design/icons'
 
-export default function ImportFile({ title, fileTemplated, upload, txt = 'Nhập excel', reload }) {
+export default function ImportFile({
+  title,
+  fileTemplated,
+  upload,
+  txt = 'Nhập excel',
+  reload,
+  size = 'default',
+}) {
   const typingTimeoutRef = useRef()
 
   const [visible, setVisible] = useState(false)
@@ -47,10 +54,17 @@ export default function ImportFile({ title, fileTemplated, upload, txt = 'Nhập
 
   return (
     <>
-      <Button type="primary" icon={<DownloadOutlined />} onClick={toggle}>
+      <Button size={size} type="primary" icon={<DownloadOutlined />} onClick={toggle}>
         {txt}
       </Button>
-      <Modal width={780} title={title} visible={visible} onCancel={toggle} footer={null}>
+      <Modal
+        style={{ top: 20 }}
+        width={780}
+        title={title}
+        visible={visible}
+        onCancel={toggle}
+        footer={null}
+      >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <a
             download
@@ -118,12 +132,12 @@ export default function ImportFile({ title, fileTemplated, upload, txt = 'Nhập
           <Row style={{ marginTop: 30 }} justify="end">
             <Table
               sticky
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 'max-content', y: 325 }}
               size="small"
               style={{ width: '100%', display: !fileUpload && 'none', marginBottom: 20 }}
               dataSource={dataView}
               columns={columns.map((column) => {
-                return { ...column, width: column.title.length * 15 }
+                return { ...column, width: column.title.length * 30 }
               })}
               pagination={false}
             />

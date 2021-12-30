@@ -23,7 +23,7 @@ import {
 import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 import { apiFilterRoleEmployee } from 'apis/employee'
-import { apiAllRole, apiSearch, updateUser } from 'apis/user'
+import { getRoles, getUsers, updateUser } from 'apis/user'
 import { apiFilterCity, getAllBranch } from 'apis/branch'
 import { apiDistrict, apiProvince } from 'apis/information'
 import EmployeeAdd from '../actions/employee/add'
@@ -84,7 +84,7 @@ export default function Employee() {
   const apiAllEmployeeData = async (params) => {
     try {
       setLoading(true)
-      const res = await apiSearch({
+      const res = await getUsers({
         page: pagination.page,
         page_size: pagination.page_size,
         ...params,
@@ -331,7 +331,7 @@ export default function Employee() {
   const apiAllRoleData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllRole()
+      const res = await getRoles()
 
       if (res.status === 200) {
         setPermission(res.data.data)

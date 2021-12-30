@@ -31,7 +31,7 @@ import columnsOrder from './columnsOrder'
 
 //apis
 import { apiAllOrder, deleteOrders } from 'apis/order'
-import { apiAllUser } from 'apis/user'
+import { getUsers } from 'apis/user'
 
 const { RangePicker } = DatePicker
 export default function OrderList() {
@@ -173,7 +173,7 @@ export default function OrderList() {
 
   const _getEmployees = async () => {
     try {
-      const res = await apiAllUser()
+      const res = await getUsers()
       if (res.status === 200) setEmployees(res.data.data)
       console.log(res)
     } catch (error) {

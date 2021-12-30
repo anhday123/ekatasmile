@@ -1,10 +1,8 @@
 .promotion_manager {
   display: flex;
-  justify-content: center;
   background-color: white;
   margin: 1rem;
   padding: 1rem;
-  align-items: center;
   flex-direction: column;
 }
 .show-attention {
@@ -62,12 +60,7 @@
   align-items: center;
   width: 100%;
 }
-.promotion_manager_button {
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-  align-items: center;
-}
+
 .information_store_modal {
   display: flex;
   justify-content: flex-start;

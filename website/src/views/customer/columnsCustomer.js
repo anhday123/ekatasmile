@@ -9,7 +9,7 @@ const columns = [
   { title: 'Tổng chi tiêu tại cửa hàng' },
   { title: 'Ngày tạo', key: 'create_date' },
   { title: 'Ngày sinh', key: 'birthday' },
-  { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
+  { title: 'Địa chỉ', key: 'address' },
 ]
 
 export default columns

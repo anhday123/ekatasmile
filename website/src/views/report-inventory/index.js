@@ -1,5 +1,7 @@
 import styles from './../report-inventory/report-inventory.module.scss'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+
+import TitlePage from 'components/title-page'
 import {
   Popconfirm,
   Input,
@@ -17,7 +19,7 @@ import {
 
 import { FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
-import { compare } from 'utils'
+import { compare, formatCash } from 'utils'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -26,6 +28,7 @@ export default function ReportInventory() {
   const { Search } = Input
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [data, setData] = useState([])
 
   const modal2VisibleModal = (modal2Visible) => {
     setModal2Visible(modal2Visible)
@@ -42,154 +45,111 @@ export default function ReportInventory() {
   const columns = [
     {
       title: 'STT',
-      render: (text, record, index) => ++index,
-      align: 'center',
-      width: 70,
+      key: 'stt',
+      render: (text, record, index) => index + 1,
     },
     {
-      title: 'Sản phẩm',
+      title: 'Mã hàng',
+      dataIndex: 'code',
+    },
+    {
+      title: 'Tên hàng',
       dataIndex: 'name',
-      align: 'center',
-      sorter: (a, b) => 0,
     },
     {
-      title: 'Mã SKU',
-      align: 'center',
-      sorter: (a, b) => 0,
+      title: 'ĐVT',
+      dataIndex: 'unit',
     },
     {
-      title: 'Chi nhánh mặc định',
-      align: 'center',
+      title: 'Nhóm',
+      dataIndex: 'group',
+    },
+    {
+      title: 'Kho 1',
+      key: 'warehouse',
       children: [
         {
-          title: 'Tồn kho',
-          dataIndex: 'age',
-          key: 'age',
-          align: 'center',
-          sorter: (a, b) => 0,
+          title: 'Số lượng',
+          dataIndex: 'quantity',
+          key: 'quantity',
         },
         {
-          title: 'Giá trị tồn kho',
-          dataIndex: 'age',
-          key: 'age',
-          align: 'center',
-          sorter: (a, b) => 0,
-        },
-        {
-          title: 'Giá vốn',
-          dataIndex: 'age',
-          key: 'age',
-          align: 'center',
-          sorter: (a, b) => 0,
-        },
-        {
-          title: 'Tỷ trọng (%)',
-          dataIndex: 'age',
-          key: 'age',
-          align: 'center',
-          sorter: (a, b) => 0,
+          title: 'Thành tiền',
+          dataIndex: 'cost',
+          key: 'cost',
         },
       ],
     },
     {
-      title: 'Hệ thống',
-      align: 'center',
+      title: 'Kho 2',
+      key: 'warehouse',
       children: [
         {
-          title: 'Số lượng tồn kho',
-          dataIndex: 'companyAddress',
-          key: 'companyAddress',
-          sorter: (a, b) => 0,
+          title: 'Số lượng',
+          dataIndex: 'quantity',
+          key: 'quantity',
         },
         {
-          title: 'Giá trị tồn kho',
-          dataIndex: 'companyName',
-          key: 'companyName',
-          sorter: (a, b) => 0,
+          title: 'Thành tiền',
+          dataIndex: 'cost',
+          key: 'cost',
         },
       ],
     },
   ]
-  const data = []
-  for (let i = 0; i < 100; i++) {
-    data.push({
-      key: i,
-      name: 'John Brown',
-      sku: i + 1,
-      street: 'Lake Park',
-      building: 'C',
-      number: 2035,
-      companyAddress: 'Lake Street 42',
-      companyName: 'SoftLake Co',
-    })
-  }
-
+  useEffect(() => {
+    const data = []
+    for (let i = 0; i < 100; i++) {
+      data.push({
+        code: Math.floor(Math.random() * 10000),
+        name: 'Mặt Hàng A',
+        unit: 'C',
+        group: 'A',
+        quantity: Math.floor(Math.random() * 15),
+        cost: formatCash(Math.floor(Math.random() * 1000000)),
+      })
+    }
+    setData([...data])
+  }, [])
+  const dateFormat = 'YYYY/MM/DD'
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div className={styles['promotion_manager_title']}>Báo cáo tồn kho</div>
-        </div>
-        <Row
-          style={{
-            width: '100%',
-            marginBottom: 40,
-            marginTop: 20,
-          }}
-        >
-          <DatePicker size="large" className="br-15__date-picker" style={{ width: 300 }} />
+        <TitlePage title="Báo cáo tồn kho"></TitlePage>
+        <Row style={{ marginBottom: 10, marginTop: 20 }}>
+          <DatePicker.RangePicker
+            placeholder="Lọc theo ngày"
+            style={{ width: 350 }}
+            size="large"
+            defaultValue={[moment('2021/11/01', dateFormat), moment('2021/12/01', dateFormat)]}
+            format={dateFormat}
+          />
         </Row>
 
         <Table
+          size="small"
           style={{ width: '100%' }}
-          bordered
           pagination={{
             position: ['bottomLeft'],
           }}
           // rowSelection={rowSelection}
           columns={columns}
-          summary={(pageData) => {
-            return (
-              <Table.Summary fixed>
-                <Table.Summary.Row>
-                  <Table.Summary.Cell>
-                    <Text style={{ fontWeight: 650 }}>Tổng</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell></Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text style={{ fontWeight: 650 }}>300</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text style={{ fontWeight: 650 }}>3000000</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text></Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text style={{ fontWeight: 650 }}>123123232</Text>
-                  </Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text style={{ fontWeight: 650 }}>760000000</Text>
-                  </Table.Summary.Cell>
-                </Table.Summary.Row>
-              </Table.Summary>
-            )
-          }}
           dataSource={data}
+          summary={(pageData) => (
+            <Table.Summary.Row>
+              <Table.Summary.Cell>
+                <h4>Tổng</h4>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>100</Table.Summary.Cell>
+              <Table.Summary.Cell>{formatCash(4500000)}</Table.Summary.Cell>
+              <Table.Summary.Cell>100</Table.Summary.Cell>
+              <Table.Summary.Cell>{formatCash(5500000)}</Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
         />
       </div>
     </>

@@ -10,7 +10,6 @@ export default function ImportModal(props) {
     actionComponent,
     importLoading,
   } = props
-  console.log(dataSource)
   return (
     <Modal
       title={<a href={downTemplate}>template.xlsx</a>}
@@ -21,12 +20,7 @@ export default function ImportModal(props) {
       centered
     >
       <Row style={{ marginBottom: 15 }}>{actionComponent}</Row>
-      <Table
-        columns={columns}
-        size="small"
-        loading={importLoading}
-        dataSource={dataSource}
-      />
+      <Table columns={columns} size="small" loading={importLoading} dataSource={dataSource} />
     </Modal>
   )
 }

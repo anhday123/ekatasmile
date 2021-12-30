@@ -1,114 +1,42 @@
 import React, { useState, useEffect } from 'react'
-
-import {
-  Input,
-  Button,
-  Row,
-  Col,
-  notification,
-  Select,
-  Modal,
-  Form,
-  Upload,
-  Divider,
-} from 'antd'
-
-import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import { ACTION, regexPhone } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
+
+//antd
+import { Input, Button, Row, Col, notification, Select, Modal, Form, Upload, Divider } from 'antd'
+
+//icons
+import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //apis
 import { apiProvince } from 'apis/information'
 import { apiFilterCity, getAllBranch } from 'apis/branch'
-import { addStore, getAllStore } from 'apis/store'
+import { addStore, updateStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
 import { getAllLabel, addLabel } from 'apis/label'
 
-const { Option } = Select
-const { Dragger } = Upload
-export default function StoreInformationAdd({ reloadData }) {
+export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
   const dispatch = useDispatch()
   const [form] = Form.useForm()
   const branchId = useSelector((state) => state.branch.branchId)
 
   const [branchList, setBranchList] = useState([])
-  const [imageStore, setImageStore] = useState('')
-  const [fileImageStore, setFileImageStore] = useState(null)
+  const [image, setImage] = useState('')
   const [inputLabel, setInputLabel] = useState('')
   const [labels, setLabels] = useState([])
 
-  const [modal3Visible, setModal3Visible] = useState(false)
-  const modal3VisibleModal = (modal3Visible) => {
-    setModal3Visible(modal3Visible)
-  }
+  const [districtMain, setDistrictMain] = useState([])
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const [provinces, setProvinces] = useState([])
 
-  function getBase64(img, callback) {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => callback(reader.result))
-    reader.readAsDataURL(img)
-  }
+  const [visible, setVisible] = useState(false)
 
-  const openNotificationSuccessStore = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 5,
-      description: 'Thêm thông tin cửa hàng thành công.',
-    })
-  }
-
-  const openNotificationForgetImageError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Tên cửa hàng đã tồn tại.',
-    })
-  }
-
-  const addStoreData = async (body) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      console.log(body)
-      const res = await addStore(body)
-      console.log(res)
-      if (res.status === 200) {
-        dispatch({
-          type: ACTION.LOGIN,
-          data: {
-            accessToken: res.data.accessToken,
-            refreshToken: res.data.refreshToken,
-          },
-        })
-        await reloadData() //reload data khi tao store thanh cong
-
-        openNotificationSuccessStore()
-        modal3VisibleModal(false)
-
-        setImageStore('')
-        form.resetFields()
-      } else {
-        openNotificationForgetImageError()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
-  const onFinish = async () => {
-    //validated form
-    let isValidated = true
+  const _addOrUpdateStore = async () => {
     try {
       await form.validateFields()
-      isValidated = true
-    } catch (error) {
-      isValidated = false
-    }
 
-    if (!isValidated) return
-
-    try {
       const formData = form.getFieldsValue()
+      dispatch({ type: ACTION.LOADING, data: true })
 
       //check validated phone
       if (!regexPhone.test(formData.phone)) {
@@ -116,25 +44,54 @@ export default function StoreInformationAdd({ reloadData }) {
         return
       }
 
-      dispatch({ type: ACTION.LOADING, data: true })
-
-      let imgStore = ''
-      if (fileImageStore) imgStore = await uploadFile(fileImageStore)
-
       const body = {
         ...formData,
-        logo: imgStore,
+        logo: image,
         latitude: '',
         longtitude: '',
         address: formData.address || '',
         label_id: formData.label || '',
       }
-      dispatch({ type: ACTION.LOADING, data: false })
 
-      addStoreData(body)
-    } catch (error) {
+      let res
+      if (infoStoreUpdate) res = await updateStore(body, infoStoreUpdate.store_id)
+      else res = await addStore(body)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          reloadData()
+          notification.success({
+            message: `${infoStoreUpdate ? 'Cập nhật' : 'Tạo'} cửa hàng thành công`,
+          })
+          setVisible(false)
+        } else
+          notification.error({
+            message:
+              res.data.message ||
+              `${infoStoreUpdate ? 'Cập nhật' : 'Tạo'} cửa hàng thất bại, vui lòng thử lại!`,
+          })
+      } else
+        notification.error({
+          message:
+            res.data.message ||
+            `${infoStoreUpdate ? 'Cập nhật' : 'Tạo'} cửa hàng thất bại, vui lòng thử lại!`,
+        })
       dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
       console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
+  const _onUploadFile = async (file) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const url = await uploadFile(file)
+      setImage(url)
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
 
@@ -146,7 +103,6 @@ export default function StoreInformationAdd({ reloadData }) {
         description: '',
       }
       const res = await addLabel(body)
-      console.log(res)
       if (res.status === 200) {
         let arrayLabelNew = [...labels]
         arrayLabelNew.push(res.data.data)
@@ -165,29 +121,34 @@ export default function StoreInformationAdd({ reloadData }) {
     }
   }
 
-  const [provinces, setProvinces] = useState([])
   const apiProvinceData = async () => {
     try {
       const res = await apiProvince()
-      console.log(res)
       if (res.status === 200) {
-        setProvinces(res.data.data)
+        if (res.data.data && res.data.data.length) {
+          setProvinces(res.data.data)
+
+          //default value
+          if (!infoStoreUpdate) form.setFieldsValue({ province: res.data.data[0].province_name })
+        }
       }
     } catch (error) {
       console.log(error)
     }
   }
 
-  const [districtMain, setDistrictMain] = useState([])
-  const [districtsDefault, setDistrictsDefault] = useState([])
   const apiFilterCityData = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiFilterCity()
-      console.log(res)
       if (res.status === 200) {
-        setDistrictMain(res.data.data)
-        setDistrictsDefault(res.data.data)
+        if (res.data.data && res.data.data.length) {
+          setDistrictMain(res.data.data)
+          setDistrictsDefault(res.data.data)
+
+          //default value
+          if (!infoStoreUpdate) form.setFieldsValue({ district: res.data.data[0].district_name })
+        }
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -218,43 +179,38 @@ export default function StoreInformationAdd({ reloadData }) {
     }
   }
 
+  //reset
   useEffect(() => {
-    if (!modal3Visible) {
+    if (!visible) {
       form.resetFields()
-      setImageStore('')
-      setFileImageStore(null)
     } else {
+      console.log(infoStoreUpdate)
+      if (infoStoreUpdate) {
+        form.setFieldsValue({ ...infoStoreUpdate })
+        setImage(infoStoreUpdate.logo || '')
+      }
+
       form.setFieldsValue({ branch_id: branchId })
     }
-  }, [modal3Visible])
+  }, [visible])
 
   useEffect(() => {
     apiProvinceData()
     apiFilterCityData()
-  }, [])
-
-  useEffect(() => {
     getBranch()
     getLabel()
   }, [])
 
   return (
     <>
-      <Button
-        size="large"
-        icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-        type="primary"
-        onClick={() => modal3VisibleModal(true)}
-      >
-        Thêm cửa hàng
-      </Button>
+      <div onClick={() => setVisible(true)}>{children}</div>
       <Modal
-        title="Thêm cửa hàng"
+        title={infoStoreUpdate ? 'Cập nhật cửa hàng' : 'Thêm cửa hàng'}
         centered
         width={850}
         footer={null}
-        visible={modal3Visible}
-        onCancel={() => modal3VisibleModal(false)}
+        visible={visible}
+        onCancel={() => setVisible(false)}
       >
         <Form form={form} layout="vertical">
           <Upload
@@ -264,14 +220,11 @@ export default function StoreInformationAdd({ reloadData }) {
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             onChange={(info) => {
               if (info.file.status === 'done') info.file.status = 'done'
-              setFileImageStore(info.file.originFileObj)
-              getBase64(info.file.originFileObj, (imageUrl) =>
-                setImageStore(imageUrl)
-              )
             }}
+            data={_onUploadFile}
           >
-            {imageStore ? (
-              <img src={imageStore} alt="avatar" style={{ width: '100%' }} />
+            {image ? (
+              <img src={image} alt="avatar" style={{ width: '100%' }} />
             ) : (
               <div>
                 <PlusOutlined />
@@ -283,37 +236,26 @@ export default function StoreInformationAdd({ reloadData }) {
             <Form.Item
               name="name"
               label="Tên cửa hàng"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tên cửa hàng!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 350 }}
-                placeholder="Nhập tên cửa hàng"
-              />
+              <Input size="large" style={{ width: 350 }} placeholder="Nhập tên cửa hàng" />
             </Form.Item>
             <Form.Item
               name="province"
               label="Tỉnh/Thành phố"
-              rules={[
-                { required: true, message: 'Vui lòng chọn tỉnh/thành phố!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố!' }]}
             >
               <Select
                 style={{ width: 350 }}
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn tỉnh/thành phố"
                 onChange={(value) => {
                   if (value) {
-                    const districtsNew = districtsDefault.filter(
-                      (e) => e.province_name === value
-                    )
+                    const districtsNew = districtsDefault.filter((e) => e.province_name === value)
                     setDistrictMain([...districtsNew])
                   } else setDistrictMain([...districtsDefault])
                 }}
@@ -332,11 +274,7 @@ export default function StoreInformationAdd({ reloadData }) {
               label="Liên hệ"
               rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 350 }}
-                placeholder="Nhập liên hệ"
-              />
+              <Input size="large" style={{ width: 350 }} placeholder="Nhập liên hệ" />
             </Form.Item>
             <Form.Item
               name="district"
@@ -348,8 +286,7 @@ export default function StoreInformationAdd({ reloadData }) {
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn quận/huyện"
               >
@@ -372,8 +309,7 @@ export default function StoreInformationAdd({ reloadData }) {
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn chi nhánh"
               >
@@ -386,10 +322,10 @@ export default function StoreInformationAdd({ reloadData }) {
             </Form.Item>
             <Form.Item name="label_id" label="Label">
               <Select
+                allowClear
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 style={{ width: 350 }}
                 size="large"
@@ -439,24 +375,13 @@ export default function StoreInformationAdd({ reloadData }) {
           </Row>
           <Row>
             <Form.Item name="address" label="Địa chỉ">
-              <Input
-                size="large"
-                style={{ width: 350 }}
-                placeholder="Nhập địa chỉ"
-              />
+              <Input size="large" style={{ width: 350 }} placeholder="Nhập địa chỉ" />
             </Form.Item>
           </Row>
         </Form>
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Button size="large" type="primary" onClick={onFinish}>
-            Thêm
+        <Row justify="end">
+          <Button size="large" type="primary" onClick={_addOrUpdateStore}>
+            {infoStoreUpdate ? 'Cập nhật' : 'Thêm'}
           </Button>
         </Row>
       </Modal>

@@ -19,21 +19,22 @@ import {
   Modal,
   Checkbox,
   Space,
+  Popconfirm,
 } from 'antd'
 
 //icons
-import { PlusCircleOutlined } from '@ant-design/icons'
+import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //components
-import CustomerInfo from './components/customerInfo'
 import CustomerUpdate from 'views/actions/customer/update'
 import CustomerAdd from 'views/actions/customer/add'
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
 import columnsCustomer from './columnsCustomer'
+import TitlePage from 'components/title-page'
 
 //apis
-import { getCustomer, updateCustomer } from 'apis/customer'
+import { getCustomer, deleteCustomers } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -41,27 +42,25 @@ export default function Customer() {
   const typingTimeoutRef = useRef(null)
 
   const [columns, setColumns] = useState([])
-  const [page, setPage] = useState(1)
-  const [page_size, setPage_size] = useState(20)
   const [countCustomer, setCountCustomer] = useState(0)
-  const [paramsFilter, setParamsFilter] = useState({})
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [customerList, setCustomerList] = useState([])
+  const [customers, setCustomers] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
   const [infoCustomer, setInfoCustomer] = useState({})
   const [showCreate, setShowCreate] = useState(false)
-  const [customerFilter, setCustomerFilter] = useState({
-    search: '',
-    date: [],
-    category: undefined,
-  })
+
   const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
-  const [customerListUpdate, setCustomerListUpdate] = useState([])
+  const [customerUpdate, setCustomerUpdate] = useState({})
   const [valueSearch, setValueSearch] = useState('')
   const [optionSearch, setOptionSearch] = useState('name')
-  const [valueDate, setValueDate] = useState(null)
-  const [valueTypeCustomer, setValueTypeCustomer] = useState()
+
+  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
+  const [isOpenSelect, setIsOpenSelect] = useState(false)
+  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
 
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -70,155 +69,20 @@ export default function Customer() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-      setPage(1)
+
       if (value) paramsFilter.name = value
       else delete paramsFilter.name
 
-      getAllCustomer({ page: 1, page_size, ...paramsFilter })
-      setParamsFilter({ ...paramsFilter })
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
 
-  function onChangeDate(date, dateStrings) {
-    if (date) {
-      setValueDate(date)
-      paramsFilter.from_date = dateStrings[0]
-      paramsFilter.to_date = dateStrings[1]
-    } else {
-      setValueDate(null)
-      delete paramsFilter.from_date
-      delete paramsFilter.to_date
-    }
-    setPage(1)
-    getAllCustomer({ page: 1, page_size, ...paramsFilter })
-    setParamsFilter({ ...paramsFilter })
-  }
-
   function onChangeTypeCustomer(value) {
-    setPage(1)
-    setValueTypeCustomer(value)
     if (value) paramsFilter.type = value
     else delete paramsFilter.type
-    getAllCustomer({ page: 1, page_size, ...paramsFilter })
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ page: 1, ...paramsFilter })
   }
 
-  const columnsPromotion = [
-    {
-      title: 'Mã khách hàng',
-      dataIndex: 'code',
-      key: 0,
-      width: 150,
-
-      sorter: (a, b) => compare(a, b, 'code'),
-    },
-    {
-      title: 'Tên khách hàng',
-      width: 150,
-      key: 1,
-      render(data) {
-        return data.first_name + ' ' + data.last_name
-      },
-      sorter: (a, b) =>
-        compareCustom(`${a.first_name} ${a.last_name}`, `${b.first_name} ${b.last_name}`),
-    },
-    {
-      title: 'Loại khách hàng',
-      dataIndex: 'type',
-      key: 2,
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'type'),
-    },
-    {
-      title: 'Liên hệ',
-      dataIndex: 'phone',
-      key: 3,
-      width: 150,
-      sorter: (a, b) => compare(a, b, 'phone'),
-    },
-    {
-      title: 'Tổng số đơn hàng',
-      dataIndex: '',
-      key: 4,
-      render: (data) => (
-        <Link to={ROUTES.CUSTOMER_ORDER_LIST} style={{ fontWeight: 500 }}>
-          5
-        </Link>
-      ),
-      sorter: (a, b) => compare(a, b, ''),
-    },
-    {
-      title: 'Điểm tích lũy',
-      dataIndex: '',
-      key: 5,
-      render: (data) => 5,
-      sorter: (a, b) => compare(a, b, ''),
-    },
-    {
-      title: 'Số điểm đã dùng',
-      dataIndex: '',
-      key: 6,
-      render: (data) => 5,
-      sorter: (a, b) => compare(a, b, ''),
-    },
-    {
-      title: 'Tổng chi tiêu tại cửa hàng',
-      dataIndex: '',
-      key: 7,
-      render: (data) => formatCash(1000000),
-      sorter: (a, b) => compare(a, b, ''),
-    },
-    {
-      title: 'Ngày tạo',
-      key: 8,
-      dataIndex: 'create_date',
-      render: (data) => moment(data).format('DD/MM/YYYY'),
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
-      title: 'Ngày sinh',
-      key: 9,
-      dataIndex: 'birthday',
-      render: (data) => moment(data).format('DD/MM/YYYY'),
-      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
-    },
-    {
-      title: 'Địa chỉ',
-      key: 10,
-      dataIndex: 'address',
-      sorter: (a, b) => compare(a, b, 'address'),
-    },
-  ]
-
-  const deleteMultiCustomer = async () => {
-    try {
-      setTableLoading(true)
-      const res = await Promise.all(
-        selectedRowKeys.map((e) => {
-          return updateCustomer(e, { active: false })
-        })
-      )
-      if (res.reduce((a, b) => a && b.data.success, true)) {
-        notification.success({
-          message: 'Thành công',
-          description: 'Xóa khách hàng thành công',
-        })
-        getAllCustomer()
-      }
-      setTableLoading(false)
-    } catch (e) {
-      notification.error({
-        message: 'Thất bại',
-        description: 'Xóa khách hàng thất bại',
-      })
-      setTableLoading(false)
-      console.log(e)
-    }
-  }
-
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
   }
@@ -226,13 +90,14 @@ export default function Customer() {
     selectedRowKeys,
     onChange: onSelectChange,
   }
-  const getAllCustomer = async (params) => {
-    setTableLoading(true)
+  const _getCustomers = async () => {
     try {
-      const res = await getCustomer(params)
+      setTableLoading(true)
+      setSelectedRowKeys([])
+      const res = await getCustomer(paramsFilter)
       console.log(res)
       if (res.status === 200) {
-        setCustomerList(res.data.data.filter((e) => e.active))
+        setCustomers(res.data.data.filter((e) => e.active))
         setCountCustomer(res.data.count)
       }
       setTableLoading(false)
@@ -242,39 +107,46 @@ export default function Customer() {
     }
   }
 
-  const clearFilter = () => {
-    getAllCustomer({ page: 1, page_size })
-    setValueSearch('')
-    setValueDate(null)
-    setValueTypeCustomer()
-    setParamsFilter({})
+  const _deleteCustomers = async () => {
+    try {
+      setTableLoading(true)
+      const res = await deleteCustomers(selectedRowKeys)
+      console.log(res)
+      setTableLoading(false)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getCustomers()
+          notification.success({ message: 'Xóa khách hàng thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xóa khách hàng thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xóa khách hàng thất bại, vui lòng thử lại!',
+        })
+    } catch (error) {
+      console.log(error)
+      setTableLoading(false)
+    }
   }
-  const openUpdateDrawer = () => {
-    var tmp = []
-    selectedRowKeys.forEach((e) => {
-      var customer = customerList.find((c) => c.customer_id === e)
-      if (customer) tmp.push(customer)
-    })
-    setCustomerListUpdate(tmp)
-    setTimeout(() => {
-      setCustomerUpdateDrawer(true)
-    }, 300)
+
+  const clearFilter = () => {
+    setValueSearch('')
+    setParamsFilter({ page: 1, page_size: 20 })
+    setValueDateTimeSearch({})
+    setValueTime()
+    setValueDateSearch(null)
   }
 
   useEffect(() => {
-    getAllCustomer({ page, page_size, ...paramsFilter })
-  }, [])
+    _getCustomers()
+  }, [paramsFilter])
 
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <Row
-          wrap={false}
-          justify="space-between"
-          align="middle"
-          style={{ borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem' }}
-        >
-          <div style={{ fontSize: 19, fontWeight: 600 }}>Quản lý khách hàng</div>
+        <TitlePage title="Quản lý khách hàng">
           <Permission permissions={[PERMISSIONS.them_khach_hang]}>
             <Button
               size="large"
@@ -285,11 +157,13 @@ export default function Customer() {
               Thêm khách hàng
             </Button>
           </Permission>
-        </Row>
-        <Row justify="space-between" align="middle">
-          <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={9}>
+        </TitlePage>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={11} lg={11} xl={11}>
             <Row wrap={false} style={{ width: '100%' }}>
               <Input
+                size="large"
                 style={{ width: '100%' }}
                 placeholder="Tìm kiếm theo tên"
                 value={valueSearch}
@@ -297,6 +171,7 @@ export default function Customer() {
                 allowClear
               />
               <Select
+                size="large"
                 style={{ width: 160 }}
                 value={optionSearch}
                 onChange={(value) => setOptionSearch(value)}
@@ -307,71 +182,176 @@ export default function Customer() {
               </Select>
             </Row>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={6}>
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                className="br-15__date-picker"
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                value={valueDate}
-                onChange={onChangeDate}
-              />
-            </div>
+          <Col xs={24} sm={24} md={11} lg={11} xl={6}>
+            <Select
+              size="large"
+              open={isOpenSelect}
+              onBlur={() => {
+                if (isOpenSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!isOpenSelect) toggleOpenSelect()
+              }}
+              allowClear
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Lọc theo thời gian nhập kho"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={valueTime}
+              onChange={async (value) => {
+                setValueTime(value)
+
+                paramsFilter.page = 1
+
+                //xoa params search date hien tai
+                const p = Object.keys(valueDateTimeSearch)
+                if (p.length) delete paramsFilter[p[0]]
+
+                setValueDateSearch(null)
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
+
+                if (isOpenSelect) toggleOpenSelect()
+
+                if (value) {
+                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                  setParamsFilter({ ...paramsFilter, ...searchDate })
+                  setValueDateTimeSearch({ ...searchDate })
+                } else {
+                  setParamsFilter({ ...paramsFilter })
+                  setValueDateTimeSearch({})
+                }
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <RangePicker
+                    onFocus={() => {
+                      if (!isOpenSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (isOpenSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
+
+                      if (isOpenSelect) toggleOpenSelect()
+
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
+
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
+
+                        setValueDateSearch(null)
+                        setValueTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                    style={{ width: '100%' }}
+                  />
+                  {menu}
+                </>
+              )}
+            >
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
+            </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Lọc theo loại khách hàng"
-                value={valueTypeCustomer}
-                onChange={onChangeTypeCustomer}
-                allowClear
-              >
-                <Option value="TIỀM NĂNG">Khách hàng tiềm năng</Option>
-                <Option value="VÃNG LAI">Khách hàng vãng lai</Option>
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+            <Select
+              size="large"
+              style={{ width: '100%' }}
+              placeholder="Lọc theo loại khách hàng"
+              value={paramsFilter.type}
+              onChange={onChangeTypeCustomer}
+              allowClear
+            >
+              <Option value="TIỀM NĂNG">Khách hàng tiềm năng</Option>
+              <Option value="VÃNG LAI">Khách hàng vãng lai</Option>
+            </Select>
           </Col>
         </Row>
-        <Row style={{ width: '100%', marginTop: 20 }} gutter={[10, 20]} justify="space-between">
-          {(selectedRowKeys && selectedRowKeys.length > 0 && (
-            <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-              <Col>
-                <Button size="large" type="primary" onClick={openUpdateDrawer}>
-                  Cập nhật
-                </Button>
-                <Button
-                  size="large"
-                  type="primary"
-                  style={{
-                    background: 'red',
-                    border: 'none',
-                    marginLeft: 15,
-                    width: 95,
-                  }}
-                  onClick={deleteMultiCustomer}
-                >
-                  Xóa
-                </Button>
-              </Col>
-            </Permission>
-          )) || <Col></Col>}
-          <Row justify="end">
-            <Space>
-              <Button onClick={clearFilter} type="primary" size="large">
-                Xóa bộ lọc
+        <Row style={{ width: '100%', marginTop: 20, marginBottom: 5 }} justify="space-between">
+          <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+            <Popconfirm
+              title="Bạn có muốn xóa khách hàng này không?"
+              cancelText="Từ chối"
+              okText="Đồng ý"
+              onConfirm={_deleteCustomers}
+            >
+              <Button
+                danger
+                size="large"
+                type="primary"
+                style={{ width: 100, visibility: !selectedRowKeys.length && 'hidden' }}
+              >
+                Xóa
               </Button>
-              <SettingColumns
-                columnsDefault={columnsCustomer}
-                setColumns={setColumns}
-                columns={columns}
-                nameColumn="columnsCustomer"
-              />
-            </Space>
-          </Row>
+            </Popconfirm>
+          </Permission>
+          <Space>
+            <Button
+              style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
+              onClick={clearFilter}
+              type="primary"
+              size="large"
+            >
+              Xóa bộ lọc
+            </Button>
+            <Button
+              icon={<DownloadOutlined />}
+              style={{
+                backgroundColor: 'green',
+                borderColor: 'green',
+                display: !selectedRowKeys.length && 'none',
+              }}
+              type="primary"
+              size="large"
+            >
+              Xuất file excel
+            </Button>
+            <SettingColumns
+              columnsDefault={columnsCustomer}
+              setColumns={setColumns}
+              columns={columns}
+              nameColumn="columnsCustomer"
+            />
+          </Space>
         </Row>
 
         <Table
@@ -386,8 +366,8 @@ export default function Customer() {
                 render: (text, record) => (
                   <a
                     onClick={() => {
-                      setInfoCustomer(record)
-                      modal2VisibleModal(true)
+                      setCustomerUpdateDrawer(true)
+                      setCustomerUpdate(record)
                     }}
                   >
                     {record.code}
@@ -400,52 +380,52 @@ export default function Customer() {
                 render: (text, record) => record.first_name + ' ' + record.last_name,
               }
 
-            // if (column.key === 'create_date')
-            //   return {
-            //     ...column,
-            //     render: (text, record) =>
-            //       record.create_date && moment(record.create_date).moment('DD-MM-YYYY HH:mm'),
-            //   }
+            if (column.key === 'create_date')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
+              }
 
-            // if (column.key === 'birthday')
-            //   return {
-            //     ...column,
-            //     render: (text, record) =>
-            //       record.birthday && moment(record.birthday).moment('DD-MM-YYYY HH:mm'),
-            //   }
+            if (column.key === 'birthday')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.birthday && moment(record.birthday).format('DD-MM-YYYY HH:mm'),
+              }
+
+            if (column.key === 'address')
+              return {
+                ...column,
+                render: (text, record) =>
+                  `${record.address && record.address + ', '}${
+                    record.district && record.district + ', '
+                  }${record.province && record.province}`,
+              }
 
             return column
           })}
-          dataSource={customerList}
+          dataSource={customers}
           size="small"
           pagination={{
             position: ['bottomLeft'],
-            current: page,
-            defaultPageSize: 20,
-            pageSizeOptions: [20, 30, 50, 100],
+            current: paramsFilter.page,
+            pageSize: paramsFilter.page_size,
+            pageSizeOptions: [20, 30, 40, 50, 70, 100],
             showQuickJumper: true,
             onChange: (page, pageSize) => {
-              setSelectedRowKeys([])
-              setPage(page)
-              setPage_size(pageSize)
-              getAllCustomer({ page, page_size: pageSize, ...paramsFilter })
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize })
             },
             total: countCustomer,
           }}
         />
       </div>
-      <CustomerInfo
-        visible={modal2Visible}
-        onCancel={() => modal2VisibleModal(false)}
-        infoCustomer={infoCustomer}
-      />
+
       <CustomerUpdate
-        customerData={customerListUpdate}
+        customerData={[customerUpdate]}
         visible={customerUpdateDrawer}
-        onClose={() => {
-          setCustomerUpdateDrawer(false)
-        }}
-        reload={() => getAllCustomer({ page, page_size, ...paramsFilter })}
+        onClose={() => setCustomerUpdateDrawer(false)}
+        reload={_getCustomers}
       />
       <Drawer
         visible={showCreate}
@@ -453,10 +433,7 @@ export default function Customer() {
         width="75%"
         title="Thêm khách hàng"
       >
-        <CustomerAdd
-          reload={() => getAllCustomer({ page: 1, page_size, ...paramsFilter })}
-          close={() => setShowCreate(false)}
-        />
+        <CustomerAdd reload={_getCustomers} close={() => setShowCreate(false)} />
       </Drawer>
     </>
   )

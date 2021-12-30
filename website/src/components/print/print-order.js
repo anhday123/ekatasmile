@@ -52,6 +52,21 @@ export default class PrintOrder extends React.PureComponent {
                 }, ${data.deliveryAddress.to_province || ''}`}
             </p>
           </Row>
+          <Row wrap={false} align="middle">
+            <p style={{ marginBottom: 0 }}>Tên cửa hàng: </p>
+            <p style={{ fontWeight: 700, marginBottom: 0, marginLeft: 4 }}>
+              {data.sale_location && (data.sale_location.name || '')}
+            </p>
+          </Row>
+          <Row wrap={false} align="middle">
+            <p style={{ marginBottom: 0 }}>Địa chỉ cửa hàng: </p>
+            <p style={{ fontWeight: 700, marginBottom: 0, marginLeft: 4 }}>
+              {data.sale_location &&
+                `${data.sale_location.address || ''}, ${data.sale_location.district || ''}, ${
+                  data.sale_location.province || ''
+                }`}
+            </p>
+          </Row>
         </div>
         <Divider dashed />
         <Row justify="space-between" wrap={false} style={{ borderBottom: '1px solid gray' }}>

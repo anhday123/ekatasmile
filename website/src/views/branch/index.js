@@ -1,12 +1,12 @@
 import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, PERMISSIONS } from 'consts/index'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import moment from 'moment'
-import { Link } from 'react-router-dom'
+import { compare } from 'utils'
 
 //icons
-import { ArrowLeftOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //antd
 import {
@@ -19,57 +19,40 @@ import {
   notification,
   Select,
   Table,
-  Form,
   Button,
-  Space,
-  Modal,
-  Upload,
-  Typography,
+  Popover,
 } from 'antd'
 
 //components
-import BranchAdd from 'components/branch/branch-add'
-import BranchView from 'views/actions/branch/view'
+import BranchForm from './branch-form'
 import Permission from 'components/permission'
+import TitlePage from 'components/title-page'
+import SettingColumns from 'components/setting-columns'
+import columnsBranch from './columns'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
-import { getAllStore } from 'apis/store'
-import { apiUpdateBranch, getAllBranch } from 'apis/branch'
-import { uploadFile } from 'apis/upload'
-import { getPointSetting } from 'apis/point'
-import { compare } from 'utils'
+import { getAllBranch, apiUpdateBranch } from 'apis/branch'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
-const { Text } = Typography
 export default function Branch() {
   const typingTimeoutRef = useRef(null)
 
+  const [columns, setColumns] = useState([])
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
-  const [data, setData] = useState({})
-  const [viewBranch, setViewBranch] = useState(false)
-  const [stores, setStores] = useState([])
-  const [branchs, setBranchs] = useState([])
+  const [branches, setBranches] = useState([])
   const [countBranch, setCountBranch] = useState(0)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [page, setPage] = useState(1)
-  const [page_size, setPage_size] = useState(20)
-  const [paramsFilter, setParamsFilter] = useState({})
-  const [formUpdateBranch] = Form.useForm()
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [districts, setDistricts] = useState([])
+  const [provinces, setProvinces] = useState([])
   const [districtsDefault, setDistrictsDefault] = useState([])
-  const [poin, setPoint] = useState({})
-
-  function getBase64(img, callback) {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => callback(reader.result))
-    reader.readAsDataURL(img)
-  }
-
+  const [valueSearch, setValueSearch] = useState('')
   const [valueDate, setValueDate] = useState(null)
+
   function onChangeDate(date, dateStrings) {
-    setPage(1)
     if (date) {
       setValueDate(date)
       paramsFilter.from_date = dateStrings[0]
@@ -79,11 +62,9 @@ export default function Branch() {
       delete paramsFilter.from_date
       delete paramsFilter.to_date
     }
-
-    setParamsFilter({ ...paramsFilter })
-    getAllBranchData({ page: 1, page_size, ...paramsFilter })
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
-  const [valueSearch, setValueSearch] = useState('')
+
   const onSearch = (e) => {
     setValueSearch(e.target.value)
     if (typingTimeoutRef.current) {
@@ -91,325 +72,51 @@ export default function Branch() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-      setPage(1)
+
       if (value) paramsFilter.search = value
       else delete paramsFilter.search
 
-      getAllBranchData({ page: 1, page_size, ...paramsFilter })
-      setParamsFilter({ ...paramsFilter })
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
-  const columnsBranch = [
-    {
-      title: 'Mã chi nhánh',
-      dataIndex: 'code',
-      render: (text, record) => (
-        <div
-          onClick={() => {
-            setData(record)
-            setViewBranch(true)
-          }}
-          style={{ color: '#007ACC', cursor: 'pointer' }}
-        >
-          {text}
-        </div>
-      ),
-      sorter: (a, b) => compare(a, b, 'code'),
-    },
-    {
-      title: 'Tên chi nhánh',
-      dataIndex: 'name',
-      sorter: (a, b) => compare(a, b, 'name'),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-      render: (text) => (text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''),
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-    },
-    {
-      title: 'Liên hệ',
-      dataIndex: 'phone',
-      sorter: (a, b) => compare(a, b, 'phone'),
-    },
-    {
-      title: 'Địa chỉ',
-      dataIndex: 'address',
-      sorter: (a, b) => compare(a, b, 'address'),
-    },
-    {
-      title: 'Loại kho',
-      dataIndex: 'warehouse_type',
-      sorter: (a, b) => compare(a, b, 'warehouse_type'),
-    },
-    {
-      title: 'Dùng điểm',
-      dataIndex: 'use_point',
-      render: (text) => (text ? 'Có' : 'Không'),
-    },
-    {
-      title: 'Tích điểm',
-      dataIndex: 'accumulate_point',
-      render: (text) => (text ? 'Có' : 'Không'),
-    },
-    {
-      title: 'Hành động',
-      dataIndex: 'active',
-      fixed: 'right',
-      render: (text, record) => (
-        <Space size="large">
-          {/* <Switch
-            defaultChecked={text}
-            onChange={(e) => onChangeSwitch(e, record)}
-          /> */}
-          <Permission permissions={[PERMISSIONS.cap_nhat_chi_nhanh]}>
-            <ModalUpdateBranch record={record} />
-          </Permission>
-        </Space>
-      ),
-    },
-  ]
 
-  const ModalUpdateBranch = ({ record }) => {
-    const [visibleUpdateBranch, setVisibleUpdateBranch] = useState(false)
-    const [imageBranch, setImageBranch] = useState('')
-    const [fileImageBranch, setFileImageBranch] = useState(null)
-
-    const toggleUpdateBranch = () => setVisibleUpdateBranch(!visibleUpdateBranch)
-
-    useEffect(() => {
-      if (!visibleUpdateBranch) {
-        formUpdateBranch.resetFields()
-        setImageBranch('')
-        setFileImageBranch(null)
-      } else {
-        setImageBranch(record.logo)
-        formUpdateBranch.setFieldsValue({
-          name: record.name,
-          address: record.address,
-          phone: record.phone,
-          province: record.province,
-          store: record.store_id,
-          district: record.district,
-          warehouse_type: record.warehouse_type,
-        })
-      }
-    }, [visibleUpdateBranch])
-
-    return (
-      <>
-        <EditOutlined
-          style={{ color: '#1890FF', fontSize: 18, cursor: 'pointer' }}
-          onClick={toggleUpdateBranch}
-        />
-        <Modal
-          width={750}
-          title="Cập nhật chi nhánh"
-          visible={visibleUpdateBranch}
-          onCancel={toggleUpdateBranch}
-          onOk={async () => {
-            const formData = formUpdateBranch.getFieldValue()
-
-            let urlImageBranch
-            if (fileImageBranch) {
-              dispatch({ type: ACTION.LOADING, data: true })
-              urlImageBranch = await uploadFile(fileImageBranch)
-              dispatch({ type: ACTION.LOADING, data: false })
-            }
-
-            let body = {
-              name: formData.name,
-              address: formData.address,
-              phone: formData.phone,
-              province: formData.province,
-              district: formData.district,
-              warehouse_type: formData.warehouse_type,
-            }
-
-            if (urlImageBranch) body.logo = urlImageBranch || ''
-
-            apiUpdateInfoBranch(body, record.branch_id)
-          }}
-        >
-          Hình ảnh
-          <Upload
-            showUploadList={false}
-            name="avatar"
-            listType="picture-card"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            onChange={(info) => {
-              if (info.file.status === 'done') info.file.status = 'done'
-              setFileImageBranch(info.file.originFileObj)
-              getBase64(info.file.originFileObj, (imageUrl) => setImageBranch(imageUrl))
-            }}
-          >
-            {imageBranch ? (
-              <img src={imageBranch} alt="" style={{ width: '100%' }} />
-            ) : (
-              <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
-              </div>
-            )}
-          </Upload>
-          <Form form={formUpdateBranch} layout="vertical">
-            <Row justify="space-between" align="middle">
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
-                  name="name"
-                  label="Tên chi nhánh"
-                  rules={[{ required: true, message: 'Vui lòng nhập tên chi nhánh' }]}
-                >
-                  <Input size="large" placeholder="Nhập tên chi nhánh" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item name="address" label="Địa chỉ">
-                  <Input size="large" placeholder="Nhập địa chỉ" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row justify="space-between" align="middle">
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
-                  name="phone"
-                  label="Liên hệ"
-                  rules={[{ required: true, message: 'Vui lòng nhập liên hệ' }]}
-                >
-                  <Input size="large" placeholder="Nhập liên hệ" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
-                  name="province"
-                  label="Tỉnh/thành phố"
-                  rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}
-                >
-                  <Select
-                    allowClear
-                    size="large"
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn tỉnh/thành phố"
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {provinces.map((values, index) => {
-                      return (
-                        <Option value={values.province_name} key={index}>
-                          {values.province_name}
-                        </Option>
-                      )
-                    })}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row justify="space-between" align="middle">
-              <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
-                  name="warehouse_type"
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Loại kho</div>}
-                  rules={[{ required: true, message: 'Giá trị rỗng!' }]}
-                >
-                  <Select
-                    size="large"
-                    showSearch
-                    style={{ width: '100%' }}
-                    placeholder="Chọn quận huyện"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    <Option value="sở hữu">Kho sở hữu</Option>
-                    <Option value="dịch vụ">Kho thuê dịch vụ</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-                <Form.Item
-                  name="district"
-                  label="Quận/huyện"
-                  rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}
-                >
-                  <Select
-                    allowClear
-                    size="large"
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    placeholder="Chọn quận/huyện"
-                  >
-                    {districts.map((values, index) => {
-                      return (
-                        <Option value={values.district_name} key={index}>
-                          {values.district_name}
-                        </Option>
-                      )
-                    })}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
-      </>
-    )
-  }
-
-  const openNotificationUpdateMulti = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Cập nhật thông tin chi nhánh <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
-
-  const openNotificationError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Lỗi cập nhật thông tin chi nhánh.',
-    })
-  }
-
-  const apiUpdateInfoBranch = async (object, id) => {
+  const _editBranch = async (body, id) => {
     try {
-      setLoading(true)
-      const res = await apiUpdateBranch(object, id)
-      console.log('body', object)
-      console.log('result', res)
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await apiUpdateBranch(body, id)
+      console.log(res)
       if (res.status === 200) {
-        await getAllBranchData({ page: 1, page_size, ...paramsFilter })
-        setSelectedRowKeys([])
-        notification.success({
-          message: 'Cập nhật thông tin chi nhánh thành công!',
+        if (res.data.success) {
+          dispatch({
+            type: ACTION.LOGIN,
+            data: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
+          })
+          _getBranches()
+          notification.success({ message: 'Cập nhật thành công' })
+        } else
+          notification.error({
+            message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
         })
-      } else {
-        openNotificationError()
-      }
-      setLoading(false)
+
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
       console.log(error)
-      setLoading(false)
     }
   }
 
-  const getAllBranchData = async (params) => {
+  const _getBranches = async () => {
     try {
       setLoading(true)
-      console.log(params)
-      const res = await getAllBranch(params)
+      setSelectedRowKeys([])
+      const res = await getAllBranch({ ...paramsFilter, _creator: true })
       console.log(res)
       if (res.status === 200) {
-        setBranchs(res.data.data)
+        setBranches(res.data.data)
         setCountBranch(res.data.count)
       }
       setLoading(false)
@@ -418,30 +125,13 @@ export default function Branch() {
     }
   }
 
-  const getAllStoreData = async () => {
-    try {
-      setLoading(true)
-      const res = await getAllStore()
-      console.log('store', res)
-      if (res.status === 200) {
-        setStores(res.data.data)
-      }
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
+  const onClickClear = async () => {
+    setParamsFilter({ page: 1, page_size: 20 })
+    setValueSearch('')
+    setValueDate(null)
   }
 
-  const onClickClear = async () => {
-    await getAllBranchData({ page: 1, page_size })
-    setParamsFilter({})
-    setValueSearch('')
-    setPage(1)
-    setValueDate(null)
-    setSelectedRowKeys([])
-  }
-  const [districts, setDistricts] = useState([])
-  const apiDistrictData = async () => {
+  const _getDistricts = async () => {
     try {
       const res = await apiDistrict()
       if (res.status === 200) {
@@ -452,8 +142,7 @@ export default function Branch() {
       console.log(error)
     }
   }
-  const [provinces, setProvinces] = useState([])
-  const apiProvinceData = async () => {
+  const _getProvinces = async () => {
     try {
       const res = await apiProvince()
       if (res.status === 200) {
@@ -463,104 +152,57 @@ export default function Branch() {
       console.log(error)
     }
   }
-  const getPoint = async () => {
-    try {
-      const res = await getPointSetting()
-      setPoint(res.data.data && res.data.data[0])
-    } catch (err) {
-      console.log(err)
-    }
-  }
 
   useEffect(() => {
-    apiProvinceData()
-    getAllStoreData()
-    getAllBranchData({ page, page_size })
-    apiDistrictData()
-    getPoint()
-  }, [])
+    _getBranches()
+  }, [paramsFilter])
 
-  function onChangeSwitch(checked, record) {
-    apiUpdateInfoBranch({ active: checked, store: record.store.store_id }, record.branch_id)
-  }
+  useEffect(() => {
+    _getProvinces()
+    _getDistricts()
+  }, [])
 
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              color: 'black',
-              fontWeight: '600',
-              fontSize: '1rem',
-              marginLeft: '0.5rem',
-            }}
-            className={styles['supplier_add_back']}
-          >
-            Danh sách kho
-          </div>
+        <TitlePage title="Danh sách kho">
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
-            <BranchAdd reload={getAllBranchData} />
+            <BranchForm reloadData={_getBranches}>
+              <Button size="large" icon={<PlusCircleOutlined />} type="primary">
+                Thêm chi nhánh
+              </Button>
+            </BranchForm>
           </Permission>
-        </div>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                style={{ width: '100%' }}
-                name="name"
-                value={valueSearch}
-                enterButton
-                onChange={onSearch}
-                className={styles['orders_manager_content_row_col_search']}
-                placeholder="Tìm kiếm theo mã, theo tên"
-                allowClear
-                prefix={<SearchOutlined />}
-              />
-            </div>
+        </TitlePage>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Input
+              size="large"
+              style={{ width: '100%' }}
+              name="name"
+              value={valueSearch}
+              enterButton
+              onChange={onSearch}
+              placeholder="Tìm kiếm theo mã, theo tên"
+              allowClear
+              prefix={<SearchOutlined />}
+            />
           </Col>
-          <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                value={valueDate}
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                onChange={onChangeDate}
-              />
-            </div>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <RangePicker
+              size="large"
+              className="br-15__date-picker"
+              value={valueDate}
+              style={{ width: '100%' }}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              onChange={onChangeDate}
+            />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               allowClear
               size="large"
@@ -573,19 +215,17 @@ export default function Branch() {
               }
               value={paramsFilter.warehouse_type}
               onChange={(value) => {
-                setPage(1)
                 if (value) paramsFilter.warehouse_type = value
                 else delete paramsFilter.warehouse_type
 
-                getAllBranchData({ page: 1, page_size, ...paramsFilter })
-                setParamsFilter({ ...paramsFilter })
+                setParamsFilter({ ...paramsFilter, page: 1 })
               }}
             >
               <Option value="so huu">Kho sở hữu</Option>
               <Option value="dich vu">Kho thuê dịch vụ</Option>
             </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               allowClear
               size="large"
@@ -598,7 +238,6 @@ export default function Branch() {
               }
               value={paramsFilter.province}
               onChange={(value) => {
-                setPage(1)
                 if (value) {
                   paramsFilter.province = value
                   const districtsByProvince = districtsDefault.filter(
@@ -610,16 +249,19 @@ export default function Branch() {
                   setDistricts([...districtsDefault])
                 }
 
-                getAllBranchData({ page: 1, page_size, ...paramsFilter })
-                setParamsFilter({ ...paramsFilter })
+                setParamsFilter({ ...paramsFilter, page: 1 })
               }}
             >
               {provinces.map((values, index) => {
-                return <Option value={values.province_name}>{values.province_name}</Option>
+                return (
+                  <Option value={values.province_name} key={index}>
+                    {values.province_name}
+                  </Option>
+                )
               })}
             </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               allowClear
               size="large"
@@ -632,12 +274,10 @@ export default function Branch() {
               }
               value={paramsFilter.district}
               onChange={(value) => {
-                setPage(1)
                 if (value) paramsFilter.district = value
                 else delete paramsFilter.district
 
-                getAllBranchData({ page: 1, page_size, ...paramsFilter })
-                setParamsFilter({ ...paramsFilter })
+                setParamsFilter({ ...paramsFilter, page: 1 })
               }}
             >
               {districts.map((values, index) => {
@@ -649,70 +289,124 @@ export default function Branch() {
               })}
             </Select>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          ></Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Button
+              style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
+              onClick={onClickClear}
+              type="primary"
+              size="large"
+            >
+              Xóa tất cả lọc
+            </Button>
+          </Col>
         </Row>
-        <Row></Row>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-            marginTop: '1rem',
-          }}
-        >
-          <Button onClick={onClickClear} type="primary" size="large">
-            Xóa tất cả lọc
+
+        <Row justify="space-between" style={{ marginTop: 15 }}>
+          <Button
+            type="primary"
+            size="large"
+            style={{ visibility: !selectedRowKeys.length && 'hidden', width: 100 }}
+            danger
+          >
+            Xóa
           </Button>
-        </div>
-
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
-          }}
-        >
-          <Table
-            rowKey="_id"
-            size="small"
-            loading={loading}
-            columns={columnsBranch}
-            dataSource={branchs}
-            pagination={{
-              position: ['bottomLeft'],
-              current: page,
-              defaultPageSize: 20,
-              pageSizeOptions: [20, 30, 50, 100],
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setSelectedRowKeys([])
-                setPage(page)
-                setPage_size(pageSize)
-                getAllBranchData({ page, page_size: pageSize, ...paramsFilter })
-              },
-              total: countBranch,
-            }}
+          <SettingColumns
+            columnsDefault={columnsBranch}
+            columns={columns}
+            setColumns={setColumns}
+            nameColumn="columnsBranch"
           />
-        </div>
-      </div>
+        </Row>
 
-      <Drawer
-        visible={viewBranch}
-        onClose={() => setViewBranch(false)}
-        title="Chi tiết chi nhánh"
-        width="75%"
-        bodyStyle={{ padding: 0 }}
-      >
-        <BranchView data={data} />
-      </Drawer>
+        <Table
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys),
+          }}
+          style={{ width: '100%', marginTop: 5 }}
+          rowKey="branch_id"
+          size="small"
+          loading={loading}
+          columns={columns.map((column) => {
+            if (column.key === 'code')
+              return {
+                ...column,
+                sorter: (a, b) => compare(a, b, 'code'),
+                render: (text, record) => (
+                  <BranchForm reloadData={_getBranches} record={record}>
+                    <a>{record.code}</a>
+                  </BranchForm>
+                ),
+              }
+            if (column.key === 'name') return { ...column, sorter: (a, b) => compare(a, b, 'name') }
+            if (column.key === 'create_date')
+              return {
+                ...column,
+                render: (text) => (text ? moment(text).format('YYYY-MM-DD HH:mm') : ''),
+                sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+              }
+            if (column.key === 'phone')
+              return { ...column, sorter: (a, b) => compare(a, b, 'phone') }
+            if (column.key === 'image')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <Popover
+                    content={
+                      <img src={record.logo || ''} alt="" style={{ width: 350, height: 350 }} />
+                    }
+                  >
+                    <img
+                      src={record.logo || ''}
+                      alt=""
+                      style={{ width: 80, height: 80, objectFit: 'cover' }}
+                    />
+                  </Popover>
+                ),
+              }
+            if (column.key === 'address')
+              return {
+                ...column,
+                render: (text, record) =>
+                  `${record.address && record.address + ', '}${
+                    record.district && record.district + ', '
+                  }${record.province && record.province}`,
+              }
+            if (column.key === 'creator')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record._creator && record._creator.first_name + ' ' + record._creator.last_name,
+                sorter: (a, b) =>
+                  (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
+                  (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
+              }
+            if (column.key === 'action')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <Switch
+                    checked={record.active}
+                    onChange={(checked) => _editBranch({ active: checked }, record.branch_id)}
+                  />
+                ),
+              }
+
+            return column
+          })}
+          dataSource={branches}
+          pagination={{
+            position: ['bottomLeft'],
+            current: paramsFilter.page,
+            pageSize: paramsFilter.page_size,
+            pageSizeOptions: [20, 30, 50, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) =>
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+            total: countBranch,
+          }}
+        />
+      </div>
     </>
   )
 }

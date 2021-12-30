@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import styles from './add.module.scss'
 import {
   Select,
@@ -11,82 +13,99 @@ import {
   Radio,
   InputNumber,
 } from 'antd'
-import { addCustomer } from 'apis/customer'
-import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { apiDistrict, apiProvince } from 'apis/information'
 import moment from 'moment'
-import jwt_decode from 'jwt-decode'
+import { ACTION } from 'consts'
+
+//apis
+import { apiDistrict, apiProvince } from 'apis/information'
+import { addCustomer } from 'apis/customer'
 
 const { Option } = Select
-export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
+export default function CustomerAdd({ close, reload, text = 'Thêm' }) {
   const [form] = Form.useForm()
-
-  const [gender, setGender] = useState('male')
-  const [birthday, setBirthday] = useState(null)
   const dispatch = useDispatch()
-  const [location, setLocation] = useState({ province: [], district: [] })
-  const storeCurrent = JSON.parse(localStorage.getItem('storeSell'))
 
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Thêm khách hàng thành công.',
-    })
-  }
+  const [districts, setDistricts] = useState([])
+  const [provinces, setProvinces] = useState([])
 
   const onFinish = async (values) => {
     try {
-      dispatch({ type: 'LOADING', data: true })
-      const obj = {
-        gender,
-        first_name: values.first_name,
-        last_name: values.last_name,
-        phone: values.phone,
-        type: values.type || '',
-        birthday: birthday || '',
+      dispatch({ type: ACTION.LOADING, data: true })
+      const body = {
+        ...values,
+        first_name: values.first_name || '',
+        birthday: values.birthday ? new Date(values.birthday).toString() : null,
         address: values.address || '',
         province: values.province || '',
         district: values.district || '',
         balance: [],
       }
-      console.log(JSON.stringify(obj))
-      const res = await addCustomer(obj)
+      const res = await addCustomer(body)
       console.log('result', res)
-      if (res.status == 200 && res.data.data) {
-        await reload()
-        openNotification()
-        close()
-        form.resetFields()
+      if (res.status === 200) {
+        if (res.data.success) {
+          reload()
+          notification.success({ message: 'Thêm khách hàng thành công' })
+          close()
+          initForm()
+        } else
+          notification.error({
+            message: res.data.message || 'Thêm khách hàng thất bại, vui lòng thử lại!',
+          })
       } else
         notification.error({
-          message: 'Thất bại!',
-          description: res.data.message,
+          message: res.data.message || 'Thêm khách hàng thất bại, vui lòng thử lại!',
         })
-      dispatch({ type: 'LOADING', data: false })
-    } catch (e) {
-      console.log(e)
-      dispatch({ type: 'LOADING', data: false })
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const getAddress = async (api, callback, key, params) => {
+
+  const initForm = () => {
+    form.setFieldsValue({
+      type: 'VÃNG LAI',
+      gender: 'male',
+      birthday: moment(new Date('1991-01-01')),
+      district: districts[0] && districts[0].district_name,
+      province: provinces[0] && provinces[0].province_name,
+    })
+  }
+
+  const _getDistricts = async () => {
     try {
-      const res = await api(params)
-      console.log(res)
-      if (res.status == 200) {
-        callback((e) => {
-          return { ...e, [key]: res.data.data }
-        })
+      const res = await apiDistrict()
+      if (res.status === 200) {
+        setDistricts(res.data.data)
+        if (res.data.data && res.data.data.length)
+          form.setFieldsValue({ district: res.data.data[0].district_name })
       }
-    } catch (e) {
-      console.log(e)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const _getProvinces = async () => {
+    try {
+      const res = await apiProvince()
+      if (res.status === 200) {
+        setProvinces(res.data.data)
+        if (res.data.data && res.data.data.length)
+          form.setFieldsValue({ province: res.data.data[0].province_name })
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
   useEffect(() => {
-    getAddress(apiProvince, setLocation, 'province')
-    getAddress(apiDistrict, setLocation, 'district')
+    _getDistricts()
+    _getProvinces()
+
+    initForm()
   }, [])
+
   return (
     <>
       <div className={styles['supplier_add']}>
@@ -123,11 +142,7 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
             </Col>
 
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item
-                name="type"
-                label="Loại khách hàng"
-                rules={[{ required: true, message: 'Vui lòng chọn loại khách hàng' }]}
-              >
+              <Form.Item name="type" label="Loại khách hàng">
                 <Select defaultValue="VÃNG LAI" placeholder="Chọn loại khách hàng" size="large">
                   <Option value="TIỀM NĂNG">Tiềm năng</Option>
                   <Option value="VÃNG LAI">Vãng lai</Option>
@@ -136,17 +151,12 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
             </Col>
 
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item name="birthday" label="Ngày sinh">
+              <Form.Item rules={[{ type: 'object' }]} name="birthday" label="Ngày sinh">
                 <DatePicker
-                  defaultValue={moment(new Date('1995-01-01'))}
                   placeholder="Chọn ngày sinh"
                   size="large"
                   className="br-15__date-picker"
                   style={{ width: '100%' }}
-                  onChange={(date, dateString) => {
-                    if (date) setBirthday(dateString)
-                    else setBirthday(null)
-                  }}
                 />
               </Form.Item>
             </Col>
@@ -160,7 +170,7 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Tỉnh/thành phố" name="province">
                 <Select
-                  defaultValue={storeCurrent && storeCurrent.province}
+                  allowClear
                   size="large"
                   placeholder="Chọn tỉnh/thành phố"
                   showSearch
@@ -168,12 +178,11 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
-                  onChange={(value) =>
-                    getAddress(apiDistrict, setLocation, 'district', { province_name: value })
-                  }
                 >
-                  {location.province.map((e) => (
-                    <Option value={e.province_name}>{e.province_name}</Option>
+                  {provinces.map((e, index) => (
+                    <Option value={e.province_name} key={index}>
+                      {e.province_name}
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -182,7 +191,7 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Quận/huyện" name="district">
                 <Select
-                  defaultValue={storeCurrent && storeCurrent.district}
+                  allowClear
                   size="large"
                   placeholder="Chọn quận/huyện"
                   showSearch
@@ -191,27 +200,26 @@ export default function CustomerAdd({ close, reload, text = 'Lưu' }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {location.district.map((e) => (
-                    <Option value={e.district_name}>{e.district_name}</Option>
+                  {districts.map((e, index) => (
+                    <Option value={e.district_name} key={index}>
+                      {e.district_name}
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
             </Col>
           </Row>
           <Row>
-            <Radio.Group defaultValue={gender} onChange={(e) => setGender(e.target.value)}>
-              <Radio value="male">Nam</Radio>
-              <Radio value="female">Nữ</Radio>
-            </Radio.Group>
+            <Form.Item name="gender" label="Giới tính">
+              <Radio.Group>
+                <Radio value="male">Nam</Radio>
+                <Radio value="female">Nữ</Radio>
+              </Radio.Group>
+            </Form.Item>
           </Row>
           <Row justify="end">
             <Form.Item>
-              <Button
-                style={{ width: '7.5rem', backgroundColor: '#0877DE' }}
-                type="primary"
-                htmlType="submit"
-                size="large"
-              >
+              <Button style={{ width: 100 }} type="primary" htmlType="submit" size="large">
                 {text}
               </Button>
             </Form.Item>

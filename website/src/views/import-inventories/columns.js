@@ -13,11 +13,11 @@ const columns = [
   },
   {
     title: 'Tổng tiền (VND)',
-    key: 'total_cost',
+    key: 'final_cost',
   },
   {
-    title: 'Số tiền thanh toán (VND)',
-    key: 'final_cost',
+    title: 'Số tiền đã thanh toán (VND)',
+    key: 'payment_amount',
   },
   {
     title: 'Tổng số lượng nhập',

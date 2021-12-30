@@ -6,6 +6,7 @@ import { useHistory, Link, BrowserRouter } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { formatCash, encryptText } from 'utils'
 import TienThoi from 'utils/tienthoi'
+import { Resizable, ResizableBox } from 'react-resizable'
 import {
   ACTION,
   BILL_STATUS_ORDER,
@@ -811,7 +812,7 @@ export default function Sell() {
       <Modal
         onOk={() => {
           setVisibleConfirmCreateOrder(false)
-          _createOrderOrPay()
+          _createOrder()
         }}
         cancelText="Thoát"
         okText="Đồng ý"
@@ -856,10 +857,10 @@ export default function Sell() {
     const isValidated = _validatedBeforeCreateOrderOrPay()
     if (!isValidated) return
 
-    _createOrderOrPay()
+    _createOrder()
   }
 
-  const _createOrderOrPay = async () => {
+  const _createOrder = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       let shipping = {}
@@ -1164,8 +1165,8 @@ export default function Sell() {
                 </div>
               )}
             >
-              {productsSearch.map((data) => (
-                <Select.Option value={data.title} key={data.title}>
+              {productsSearch.map((data, index) => (
+                <Select.Option value={data.title} key={data.title + index + ''}>
                   <Row
                     align="middle"
                     wrap={false}

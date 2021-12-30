@@ -1,68 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react'
-import styles from './shipping.module.scss'
-import { ACTION, PERMISSIONS } from 'consts'
+import React, { useEffect, useState, useRef } from 'react'
+
+import styles from './client-management.module.scss'
 import moment from 'moment'
+import { compare } from 'utils'
 import { useDispatch } from 'react-redux'
+import { ACTION } from 'consts'
 
 //antd
-import {
-  notification,
-  Input,
-  Button,
-  Row,
-  Col,
-  Table,
-  Select,
-  DatePicker,
-  Space,
-  Popconfirm,
-} from 'antd'
-
-// icons
-import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { Popconfirm, Input, Row, Col, Select, Table, Button, notification, DatePicker } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllShipping, deleteShippings } from 'apis/shipping'
+import { getUsers, deleteUsers } from 'apis/user'
 import { apiDistrict, apiProvince } from 'apis/information'
 
 //components
-import Permission from 'components/permission'
 import TitlePage from 'components/title-page'
-import columnsShipping from './columns'
-import SettingColumns from 'components/setting-columns'
-import ShippingForm from './shipping-form'
+import ClientForm from './client-form'
 
 const { Option } = Select
-export default function Shipping() {
-  const dispatch = useDispatch()
+export default function ClientManagement() {
   const typingTimeoutRef = useRef(null)
+  const dispatch = useDispatch()
 
+  const [users, setUsers] = useState([])
+  const [countUser, setCountUser] = useState([])
   const [loading, setLoading] = useState(false)
-  const [countShipping, setCountShipping] = useState(0)
-  const [shippings, setShippings] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [columns, setColumns] = useState([])
-  const [districts, setDistricts] = useState([])
-  const [provinces, setProvinces] = useState([])
-  const [valueSearch, setValueSearch] = useState('')
+  const [Address, setAddress] = useState({ province: [], district: [] })
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-
-  const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
+  const [valueDateSearch, setValueDateSearch] = useState(null)
+  const [valueSearch, setValueSearch] = useState('')
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+  const [isOpenSelect, setIsOpenSelect] = useState(false)
+  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
 
   const _onFilter = (attribute = '', value = '') => {
     if (value) paramsFilter[attribute] = value
     else delete paramsFilter[attribute]
-    paramsFilter.page = 1 //reset page
-    setParamsFilter({ ...paramsFilter })
-  }
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
   const onSearch = (e) => {
@@ -74,52 +51,50 @@ export default function Shipping() {
     typingTimeoutRef.current = setTimeout(() => {
       if (value) paramsFilter.name = value
       else delete paramsFilter.name
-      paramsFilter.page = 1
-      setParamsFilter({ ...paramsFilter })
+
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 650)
   }
 
-  const _getShippings = async () => {
-    try {
-      setLoading(true)
-      setSelectedRowKeys([])
-      const res = await apiAllShipping(paramsFilter)
-      console.log(res)
-      if (res.status === 200) {
-        setCountShipping(res.data.count)
-        setShippings(res.data.data)
-      }
-
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
-  const _deleteShippings = async () => {
-    try {
-      setLoading(true)
-      const res = await deleteShippings(selectedRowKeys)
-      console.log(res)
-      if (res.status === 200) {
-        if (res.data.success) {
-          _getShippings()
-          notification.success({ message: `Xóa đối tác vận chuyển thành công` })
-        } else
-          notification.error({
-            message: res.data.message || `Xóa đối tác vận chuyển thất bại, vui lòng thử lại`,
-          })
-      } else
-        notification.error({
-          message: res.data.message || `Xóa đối tác vận chuyển thất bại, vui lòng thử lại`,
-        })
-
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setLoading(false)
-    }
-  }
+  const columnsClient = [
+    {
+      title: 'Tên client',
+      render: (text, record) => (
+        <ClientForm record={record} reloadData={_getUsers}>
+          <a>{record.first_name + ' ' + record.last_name}</a>
+        </ClientForm>
+      ),
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'phone',
+      sorter: (a, b) => compare(a, b, 'phone'),
+    },
+    {
+      title: 'Địa chỉ',
+      render: (text, record) =>
+        `${record.address && record.address + ', '}${record.district && record.district + ', '}${
+          record.province && record.province
+        }`,
+    },
+    {
+      title: 'Ngày sinh',
+      dataIndex: 'birthday',
+      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
+      render: (data) => data && moment(data).format('DD/MM/YYYY'),
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      sorter: (a, b) => compare(a, b, 'email'),
+    },
+    {
+      title: 'Thời gian đăng kí',
+      dataIndex: 'create_date',
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      render: (data) => data && moment(data).format('DD/MM/YYYY HH:mm'),
+    },
+  ]
 
   const _clearFilters = () => {
     setParamsFilter({ page: 1, page_size: 20 })
@@ -129,104 +104,140 @@ export default function Shipping() {
     setValueDateSearch(null)
   }
 
-  const _getDistricts = async () => {
+  const onSelectChange = (selectedRowKeys) => {
+    setSelectedRowKeys(selectedRowKeys)
+  }
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  }
+
+  const _deleteUsers = async () => {
     try {
-      const res = await apiDistrict()
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await deleteUsers(selectedRowKeys)
+      dispatch({ type: ACTION.LOADING, data: false })
+
       console.log(res)
-      if (res.status === 200) setDistricts(res.data.data)
-    } catch (error) {
-      console.log(error)
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: 'Xóa khách hàng thành công' })
+          _getUsers()
+        } else
+          notification.error({
+            message: res.data.message || 'Xóa khách hàng không thất bại, vui lòng thử lại',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xóa khách hàng không thất bại, vui lòng thử lại',
+        })
+    } catch (err) {
+      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(err)
     }
   }
-
-  const _getProvinces = async () => {
+  const _getUsers = async () => {
     try {
-      const res = await apiProvince()
-      if (res.status === 200) setProvinces(res.data.data)
-    } catch (error) {
-      console.log(error)
+      setLoading(true)
+      setSelectedRowKeys([])
+      const res = await getUsers(paramsFilter)
+      console.log(res)
+      if (res.status === 200) {
+        //chỉ lấy danh sách role business
+        setUsers(res.data.data.filter((e) => e.role_id === 2))
+        setCountUser(res.data.count)
+      }
+      setLoading(false)
+    } catch (e) {
+      setLoading(false)
+      console.log(e)
+    }
+  }
+  const getAddress = async (api, callback, key, params) => {
+    try {
+      const res = await api(params)
+      if (res.status === 200) {
+        callback((e) => {
+          return { ...e, [key]: res.data.data }
+        })
+      }
+    } catch (e) {
+      console.log(e)
     }
   }
 
   useEffect(() => {
-    _getShippings()
-  }, [paramsFilter])
-
-  useEffect(() => {
-    _getDistricts()
-    _getProvinces()
+    getAddress(apiProvince, setAddress, 'province')
+    getAddress(apiDistrict, setAddress, 'district')
   }, [])
 
+  useEffect(() => {
+    _getUsers()
+  }, [paramsFilter])
   return (
     <>
-      <div className={`${styles['shipping_manager']} ${styles['card']}`}>
-        <TitlePage title="Đối tác vận chuyển">
-          <ShippingForm reloadData={_getShippings}>
-            <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
-              <Button icon={<PlusCircleOutlined />} type="primary" size="large">
-                Thêm đối tác
-              </Button>
-            </Permission>
-          </ShippingForm>
+      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+        <TitlePage title="Quản lý client">
+          <ClientForm reloadData={_getUsers}>
+            <Button type="primary" size="large">
+              Tạo client
+            </Button>
+          </ClientForm>
         </TitlePage>
-
-        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19 }}>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+        <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Input
-              prefix={<SearchOutlined />}
-              size="large"
-              style={{ width: '100%' }}
-              value={valueSearch}
-              enterButton
-              onChange={onSearch}
-              placeholder="Tìm kiếm theo tên vận chuyển"
               allowClear
+              prefix={<SearchOutlined />}
+              placeholder="Tìm kiếm tên client"
+              onChange={onSearch}
+              value={valueSearch}
+              size="large"
             />
           </Col>
-
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               allowClear
               size="large"
-              showSearch
               style={{ width: '100%' }}
-              placeholder="Lọc theo tỉnh/thành phố"
+              placeholder="Chọn tỉnh/thành phố"
+              showSearch
+              onChange={(value) => _onFilter('province', value)}
+              value={paramsFilter.province}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              value={paramsFilter.province}
-              onChange={(value) => _onFilter('province', value)}
             >
-              {provinces.map((values, index) => {
-                return <Option value={values.province_name}>{values.province_name}</Option>
-              })}
+              {Address.province.map((e, index) => (
+                <Option value={e.province_name} key={index}>
+                  {e.province_name}
+                </Option>
+              ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               allowClear
               size="large"
               showSearch
               style={{ width: '100%' }}
-              placeholder="Lọc theo quận/huyện"
+              placeholder="Chọn quận/huyện"
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
               value={paramsFilter.district}
               onChange={(value) => _onFilter('district', value)}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
             >
-              {districts.map((values, index) => {
-                return (
-                  <Option value={values.district_name} key={index}>
-                    {values.district_name}
-                  </Option>
-                )
-              })}
+              {Address.district.map((e, index) => (
+                <Option value={e.district_name} key={index}>
+                  {e.district_name}
+                </Option>
+              ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               size="large"
               open={isOpenSelect}
@@ -337,78 +348,35 @@ export default function Shipping() {
             </Select>
           </Col>
         </Row>
+        <Row style={{ width: '100%', marginTop: 15 }} justify="space-between">
+          <div style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
+            <Popconfirm
+              title="Bạn có muốn xóa các client này ?"
+              okText="Yes"
+              cancelText="No"
+              onConfirm={_deleteUsers}
+            >
+              <Button size="large" type="primary" danger>
+                Xóa client
+              </Button>
+            </Popconfirm>
+          </div>
 
-        <Row justify="space-between" wrap={false} style={{ marginBottom: 8 }}>
-          <Popconfirm
-            okText="Đồng ý"
-            cancelText="Từ chối"
-            onConfirm={_deleteShippings}
-            title="Bạn có muốn xóa các đối tác này không ?"
+          <Button
+            style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
+            size="large"
+            onClick={_clearFilters}
+            type="primary"
           >
-            {/* <Permission permissions={[PERMISSIONS.xoa_doi_tac_van_chuyen]}> */}
-            <Button
-              size="large"
-              type="primary"
-              danger
-              style={{ visibility: !selectedRowKeys.length && 'hidden' }}
-            >
-              Xóa đối tác
-            </Button>
-            {/* </Permission> */}
-          </Popconfirm>
-
-          <Space>
-            <Button
-              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-              onClick={_clearFilters}
-              type="primary"
-              size="large"
-            >
-              Xóa bộ lọc
-            </Button>
-            <SettingColumns
-              nameColumn="columnsShipping"
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsShipping}
-            />
-          </Space>
+            Xóa bộ lọc
+          </Button>
         </Row>
 
         <Table
-          size="small"
-          rowKey="shipping_company_id"
           loading={loading}
           rowSelection={rowSelection}
-          columns={columns.map((column) => {
-            if (column.key === 'code')
-              return {
-                ...column,
-                render: (text, record) => (
-                  <ShippingForm record={record} reloadData={_getShippings}>
-                    <a>{record.code}</a>
-                  </ShippingForm>
-                ),
-              }
-            if (column.key === 'create_date')
-              return {
-                ...column,
-                render: (text, record) =>
-                  record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
-              }
-            if (column.key === 'address')
-              return {
-                ...column,
-                render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
-                  }${record.province && record.province}`,
-              }
-
-            return column
-          })}
-          dataSource={shippings}
-          scroll={{ y: 500, width: '100%', marginTop: 10 }}
+          rowKey="user_id"
+          size="small"
           pagination={{
             position: ['bottomLeft'],
             current: paramsFilter.page,
@@ -420,8 +388,11 @@ export default function Shipping() {
               paramsFilter.page_size = pageSize
               setParamsFilter({ ...paramsFilter })
             },
-            total: countShipping,
+            total: countUser,
           }}
+          columns={columnsClient}
+          dataSource={users}
+          style={{ width: '100%', marginTop: 10 }}
         />
       </div>
     </>

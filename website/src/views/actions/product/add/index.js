@@ -999,7 +999,13 @@ export default function ProductAdd() {
                 />
                 Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} phiên bản
               </Row>
-              <div style={{ display: isProductHasVariants ? '' : 'none', width: '100%' }}>
+              <div
+                style={{
+                  display: isProductHasVariants ? '' : 'none',
+                  width: '100%',
+                  marginTop: 35,
+                }}
+              >
                 <div
                   style={{
                     marginBottom: 16,

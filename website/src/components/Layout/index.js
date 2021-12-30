@@ -20,7 +20,6 @@ import {
   BackTop,
   Affix,
   Avatar,
-  Image,
   Badge,
   Empty,
   Row,
@@ -30,49 +29,36 @@ import {
 import {
   MenuOutlined,
   GoldOutlined,
-  BankOutlined,
   ApartmentOutlined,
   MenuFoldOutlined,
-  DollarCircleOutlined,
   LogoutOutlined,
   GiftOutlined,
   CarOutlined,
   UserAddOutlined,
   RotateLeftOutlined,
-  TagsOutlined,
   SettingOutlined,
   ControlOutlined,
   ClusterOutlined,
   PlusOutlined,
-  AlertOutlined,
-  AccountBookOutlined,
   PartitionOutlined,
   FormOutlined,
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
   ShoppingCartOutlined,
-  FileDoneOutlined,
-  SketchOutlined,
-  ForkOutlined,
   BarChartOutlined,
   TransactionOutlined,
-  ContactsOutlined,
   HomeOutlined,
-  BgColorsOutlined,
   AreaChartOutlined,
 } from '@ant-design/icons'
-import FastfoodIcon from '@material-ui/icons/Fastfood'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import GraphicEqIcon from '@material-ui/icons/GraphicEq'
-import ReplyAllIcon from '@material-ui/icons/ReplyAll'
 
 //components
 import Permission from 'components/permission'
 
 //apis
-import { apiAllRole, updateUser, apiSearch } from 'apis/user'
-import { getAllStore } from 'apis/store'
+import { getRoles, updateUser, getUsers } from 'apis/user'
 import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
@@ -118,7 +104,7 @@ const BaseLayout = (props) => {
 
   const getInfoUser = async () => {
     try {
-      const res = await apiSearch({ user_id: dataUser.data.user_id })
+      const res = await getUsers({ user_id: dataUser.data.user_id })
       console.log(res)
       if (res.status === 200) {
         if (res.data.data.length) setUser({ ...res.data.data[0] })
@@ -193,7 +179,7 @@ const BaseLayout = (props) => {
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.STORE,
-          title: 'Quản lí cửa hàng',
+          title: 'Quản lý cửa hàng',
           permissions: [],
         },
       ],
@@ -249,7 +235,7 @@ const BaseLayout = (props) => {
         {
           icon: <RotateLeftOutlined />,
           path: ROUTES.SHIPPING_PRODUCT,
-          title: 'Chuyển hàng',
+          title: 'Phiếu chuyển hàng',
           permissions: [],
         },
       ],
@@ -332,12 +318,6 @@ const BaseLayout = (props) => {
           permissions: [],
         },
         {
-          icon: <ReplyAllIcon />,
-          path: ROUTES.REPORT_IMPORT,
-          title: 'Báo cáo nhập hàng',
-          permissions: [],
-        },
-        {
           icon: (
             <svg
               style={{ width: 14, height: 14 }}
@@ -381,8 +361,8 @@ const BaseLayout = (props) => {
               ></path>
             </svg>
           ),
-          path: ROUTES.REPORT_FINANCIAL,
-          title: 'Báo cáo tài chính',
+          path: ROUTES.SALES_REPORT,
+          title: 'Báo cáo bán hàng',
           permissions: [],
         },
       ],
@@ -407,12 +387,6 @@ const BaseLayout = (props) => {
         },
       ],
     },
-    // {
-    //   path: ROUTES.BUSINESS,
-    //   title: 'Quản lý doanh nghiệp',
-    //   permissions: [PERMISSIONS.business_management],
-    //   icon: <ApartmentOutlined />,
-    // },
 
     {
       path: ROUTES.CONFIGURATION_STORE,
@@ -536,7 +510,7 @@ const BaseLayout = (props) => {
   }
   const apiAllRoleData = async () => {
     try {
-      const res = await apiAllRole()
+      const res = await getRoles()
       if (res.status === 200) {
         setRole(res.data.data)
       }
@@ -616,6 +590,7 @@ const BaseLayout = (props) => {
       </Menu.Item>
     </Menu>
   )
+
   const modal1VisibleModal = (modal1Visible) => {
     setModal1Visible(modal1Visible)
     const data = form.getFieldValue()
@@ -635,6 +610,7 @@ const BaseLayout = (props) => {
       data.address = login.objectUsername.address
     }
   }
+
   const updateUserData = async (object, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -983,6 +959,16 @@ const BaseLayout = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
+          <Menu.Item
+            style={{
+              display: dataUser && dataUser.data.role_id !== 1 && 'none',
+              fontSize: '0.8rem',
+            }}
+            key={ROUTES.CLIENT_MANAGEMENT}
+            icon={<ApartmentOutlined />}
+          >
+            <Link to={ROUTES.CLIENT_MANAGEMENT}>Quản lý client</Link>
+          </Menu.Item>
           <Menu.Item onClick={onSignOut} key="9" icon={!collapsed && <LogoutOutlined />}>
             <Link
               to={ROUTES.LOGIN}

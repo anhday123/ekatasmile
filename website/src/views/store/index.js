@@ -21,11 +21,10 @@ import {
 } from 'antd'
 
 //icons
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //components
-import StoreInformationView from 'components/store/store-information-view'
-import StoreInformationAdd from 'components/store/store-information-add'
+import StoreForm from 'components/store/store-information-add'
 import Permission from 'components/permission'
 
 //apis
@@ -41,17 +40,11 @@ export default function Store() {
   const typingTimeoutRef = useRef(null)
 
   const [users, setUsers] = useState([])
-  const [arrayUpdate, setArrayUpdate] = useState([])
-  const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [visibleUpdate, setVisibleUpdate] = useState(false)
   const [store, setStore] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [countStore, setCountStore] = useState(0)
-  const [paramsFilter, setParamsFilter] = useState({
-    page: 1,
-    page_size: 20,
-  })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
 
   const [valueDateFilter, setValueDateFilter] = useState(null)
   function onChangeDate(dates, dateStrings) {
@@ -131,15 +124,16 @@ export default function Store() {
   }
 
   const contentImage = (data) => (
-    <div>
-      <img src={data} style={{ width: '25rem', height: '15rem', objectFit: 'contain' }} alt="" />
-    </div>
+    <img src={data} style={{ width: '25rem', height: '15rem', objectFit: 'contain' }} alt="" />
   )
   const columns = [
     {
       title: 'Mã cửa hàng',
-      dataIndex: 'code',
-      render: (text, record) => <StoreInformationView recordData={record} />,
+      render: (text, record) => (
+        <StoreForm infoStoreUpdate={record} reloadData={_getStores}>
+          <a>{record.code}</a>
+        </StoreForm>
+      ),
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
@@ -182,19 +176,16 @@ export default function Store() {
       sorter: (a, b) => compare(a, b, 'phone'),
     },
     {
-      title: 'Quận/huyện',
-      dataIndex: 'district',
-      sorter: (a, b) => compare(a, b, 'district'),
-    },
-    {
-      title: 'Thành phố',
-      dataIndex: 'province',
-      sorter: (a, b) => compare(a, b, 'province'),
+      title: 'Địa chỉ',
+      render: (text, record) =>
+        `${record.address && record.address + ', '}${record.district && record.district + ', '}${
+          record.province && record.province
+        }`,
     },
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
-      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD') : ''),
+      render: (text, record) => (text ? moment(text).format('DD-MM-YYYY HH:mm') : ''),
       sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
@@ -218,65 +209,27 @@ export default function Store() {
     },
   ]
 
-  const onClose = () => {
-    setVisible(false)
-  }
-  const onCloseUpdate = () => {
-    setVisibleUpdate(false)
-  }
-
-  const openNotificationErrorStoreRegexPhone = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: `${data} phải là số và có độ dài là 10`,
-    })
-  }
-  const openNotificationErrorStoreRegex = (data) => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: `${data} phải là số`,
-    })
-  }
-  const openNotificationSuccessStoreUpdate = (data) => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: (
-        <div>
-          Cập nhật thông tin cửa hàng <b>{data}</b> thành công
-        </div>
-      ),
-    })
-  }
-
   const onClickClear = async () => {
-    Object.keys(paramsFilter).map((e) => delete paramsFilter[e])
-    paramsFilter.page = 1
-    paramsFilter.page_size = 20
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
     setValueDateFilter(null)
     setSelectedRowKeys([])
   }
 
+  const [provinceMain, setProvinceMain] = useState([])
   const [districtMain, setDistrictMain] = useState([])
   const apiDistrictData = async (params) => {
     try {
       const res = await apiDistrict(params)
-      console.log(res)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
       // if (res.status === 200) setUsers(res.data);
     } catch (error) {}
   }
-  const [provinceMain, setProvinceMain] = useState([])
   const apiProvinceData = async () => {
     try {
       const res = await apiProvince()
-      console.log(res)
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
@@ -306,32 +259,23 @@ export default function Store() {
 
   return (
     <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-      <div
-        style={{
-          display: 'flex',
-          borderBottom: '1px solid rgb(236, 226, 226)',
-          paddingBottom: '0.75rem',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        <div style={{ fontWeight: '600', fontSize: '1.2rem', width: 150 }}>Quản lý cửa hàng</div>
-        <div className={styles['promotion_manager_button']}>
-          <Permission permissions={[PERMISSIONS.them_cua_hang]}>
-            <StoreInformationAdd reloadData={_getStores} />
-          </Permission>
-        </div>
-      </div>
-
       <Row
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-        }}
+        wrap={false}
+        align="middle"
+        justify="space-between"
+        style={{ borderBottom: '1px solid rgb(236, 226, 226)', paddingBottom: '0.75rem' }}
       >
+        <div style={{ fontWeight: '600', fontSize: '1.2rem' }}>Quản lý cửa hàng</div>
+        {/* <Permission permissions={[PERMISSIONS.them_cua_hang]}> */}
+        <StoreForm reloadData={_getStores}>
+          <Button size="large" icon={<PlusCircleOutlined />} type="primary">
+            Thêm cửa hàng
+          </Button>
+        </StoreForm>
+        {/* </Permission> */}
+      </Row>
+
+      <Row justify="space-between">
         <Col style={{ marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
           <Input
             size="large"
@@ -441,46 +385,35 @@ export default function Store() {
       </Row>
       <Row
         justify="end"
-        style={{
-          width: '100%',
-          marginTop: 15,
-          display: Object.keys(paramsFilter).length < 3 && 'none',
-        }}
+        style={{ marginTop: 15, display: Object.keys(paramsFilter).length < 3 && 'none' }}
       >
         <Button onClick={onClickClear} type="primary" size="large">
           Xóa tất cả lọc
         </Button>
       </Row>
-      <div
-        style={{
-          width: '100%',
-          marginTop: '1rem',
-          border: '1px solid rgb(243, 234, 234)',
+
+      <Table
+        size="small"
+        rowKey="_id"
+        loading={loading}
+        columns={columns}
+        dataSource={store}
+        style={{ width: '100%', marginTop: 20 }}
+        pagination={{
+          position: ['bottomLeft'],
+          current: paramsFilter.page,
+          defaultPageSize: 20,
+          pageSizeOptions: [20, 30, 50, 100],
+          showQuickJumper: true,
+          onChange: (page, pageSize) => {
+            setSelectedRowKeys([])
+            paramsFilter.page = page
+            paramsFilter.page_size = pageSize
+            setParamsFilter({ ...paramsFilter })
+          },
+          total: countStore,
         }}
-      >
-        <Table
-          size="small"
-          rowKey="_id"
-          loading={loading}
-          columns={columns}
-          dataSource={store}
-          style={{ width: '100%' }}
-          pagination={{
-            position: ['bottomLeft'],
-            current: paramsFilter.page,
-            defaultPageSize: 20,
-            pageSizeOptions: [20, 30, 50, 100],
-            showQuickJumper: true,
-            onChange: (page, pageSize) => {
-              setSelectedRowKeys([])
-              paramsFilter.page = page
-              paramsFilter.page_size = pageSize
-              _getStores({ ...paramsFilter })
-            },
-            total: countStore,
-          }}
-        />
-      </div>
+      />
     </div>
   )
 }

@@ -86,12 +86,12 @@
   height: 150px !important;
 }
 
-/* custom upload antd */
-
-.ant-upload-select-picture-card {
-  width: 85px !important;
-  height: 85px !important;
+.upload-shipping > .ant-upload {
+  width: 125px !important;
+  height: 125px !important;
 }
+
+/* custom upload antd */
 
 .ant-upload-list-item-actions {
   display: flex !important;

@@ -31,7 +31,8 @@ import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
 import columnsProduct from './columns'
 import ExportProduct from 'components/ExportCSV/ExportProduct'
-import ImportProducts from 'components/import-products'
+import TitlePage from 'components/title-page'
+import ImportCSV from 'components/ImportCSV'
 
 //icons
 import { PlusCircleOutlined } from '@ant-design/icons'
@@ -41,7 +42,7 @@ import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
-import { getProducts, updateProduct, deleteProducts } from 'apis/product'
+import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
 import { compare } from 'utils'
 
 const { Option } = Select
@@ -137,8 +138,7 @@ export default function Product() {
       if (value) paramsFilter[optionSearchName] = value
       else delete paramsFilter[optionSearchName]
 
-      paramsFilter.page = 1
-      setParamsFilter({ ...paramsFilter })
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
 
@@ -154,13 +154,13 @@ export default function Product() {
     }
   }
 
-  const getAllProduct = async (params) => {
+  const _getProducts = async () => {
     setLoading(true)
     setSelectedRowKeys([])
     setProducts([])
 
     try {
-      const res = await getProducts({ ...params, store: true })
+      const res = await getProducts({ ...paramsFilter, store: true })
 
       console.log(res)
       if (res.status === 200) {
@@ -175,7 +175,7 @@ export default function Product() {
   }
 
   useEffect(() => {
-    getAllProduct({ ...paramsFilter })
+    _getProducts()
   }, [paramsFilter])
 
   useEffect(() => {
@@ -248,7 +248,7 @@ export default function Product() {
                   await Promise.all(listPromise)
                   setLoading(false)
                   toggle()
-                  await getAllProduct({ ...paramsFilter })
+                  await _getProducts()
                   notification.success({
                     message: `Cập nhật thành công danh mục vào các sản phẩm thành công!`,
                   })
@@ -277,7 +277,7 @@ export default function Product() {
       console.log(res)
       if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
       else notification.error({ message: 'Xoá sản phẩm thất bại!' })
-      await getAllProduct({ ...paramsFilter })
+      await _getProducts()
       setSelectedRowKeys([])
       setLoading(false)
     } catch (error) {
@@ -336,12 +336,13 @@ export default function Product() {
     })
     paramsFilter.page = 1
     paramsFilter.page_size = 20
-    await getAllProduct({ ...paramsFilter })
     setParamsFilter({ ...paramsFilter })
     setValueSearch('')
     setStoreId()
     setSelectedRowKeys([])
     setValueTime()
+    setValueDateTimeSearch({})
+    setValueDateSearch(null)
   }
 
   const _updateProduct = async (body, id) => {
@@ -352,7 +353,7 @@ export default function Product() {
       if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
       else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
 
-      await getAllProduct({ ...paramsFilter })
+      await _getProducts()
 
       setLoading(false)
     } catch (error) {
@@ -405,72 +406,48 @@ export default function Product() {
   return (
     <>
       <div className={`${styles['view_product']} ${styles['card']}`}>
-        <Row
-          style={{
-            display: 'flex',
-            paddingBottom: '1rem',
-            paddingTop: '1rem',
-            borderBottom: '1px solid rgb(236, 228, 228)',
-            justifyContent: 'space-between',
-            width: '100%',
-            alignItems: 'center',
-          }}
-        >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
-            <h3 style={{ marginBottom: 0 }}>Danh sách sản phẩm</h3>
-          </Col>
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={12} xl={12}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Space>
-                <ImportProducts reload={() => getAllProduct({ ...paramsFilter })} />
-                <ExportProduct
-                  fileName="Products"
-                  name="Export Sản Phẩm"
-                  getProductsExport={_getProductsToExport}
-                />
-                <Permission permissions={[PERMISSIONS.them_san_pham]}>
-                  <Link to={ROUTES.PRODUCT_ADD}>
-                    <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-                      Thêm sản phẩm
-                    </Button>
-                  </Link>
-                </Permission>
-              </Space>
-            </div>
-          </Col>
-        </Row>
+        <TitlePage title="Danh sách sản phẩm">
+          <Space>
+            <ImportCSV
+              size="large"
+              txt="Import sản phẩm"
+              upload={importProduct}
+              title="Nhập sản phẩm bằng file excel"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/28/4f5990e3-7325-4188-b09b-758b55b6148e/templated products import 4.xlsx"
+              reload={_getProducts}
+            />
 
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+            <ExportProduct
+              fileName="Products"
+              name="Export Sản Phẩm"
+              getProductsExport={_getProductsToExport}
+            />
+            <Permission permissions={[PERMISSIONS.them_san_pham]}>
+              <Link to={ROUTES.PRODUCT_ADD}>
+                <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
+                  Thêm sản phẩm
+                </Button>
+              </Link>
+            </Permission>
+          </Space>
+        </TitlePage>
+
+        <Row gutter={[16, 16]} style={{ marginTop: '1rem' }}>
+          <Col xs={24} sm={24} md={24} lg={11} xl={10}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
-                <Col span={14}>
+                <Col span={16}>
                   <Input
                     size="large"
                     style={{ width: '100%' }}
                     name="name"
                     value={valueSearch}
                     onChange={onSearch}
-                    className={styles['orders_manager_content_row_col_search']}
                     placeholder="Tìm kiếm theo mã, theo tên"
                     allowClear
                   />
                 </Col>
-                <Col span={7}>
+                <Col span={8}>
                   <Select
                     size="large"
                     showSearch
@@ -493,7 +470,7 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
+          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
             <TreeSelect
               size="large"
               style={{ width: '100%' }}
@@ -524,7 +501,7 @@ export default function Product() {
             </TreeSelect>
           </Col>
 
-          <div style={{ width: 455, marginTop: '1rem' }}>
+          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
             <Select
               size="large"
               open={isOpenSelect}
@@ -633,50 +610,40 @@ export default function Product() {
               <Option value="this_year">Năm này</Option>
               <Option value="last_year">Năm trước</Option>
             </Select>
-          </div>
-          {/* <Col
-            style={{
-              width: '100%',
-              marginTop: '1rem',
-            }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
-            <Select
-              size="large"
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo cửa hàng"
-              allowClear
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.store_id}
-              onChange={onChangeStore}
-            >
-              {stores.map((store, index) => {
-                return (
-                  <Option value={store.store_id} key={index}>
-                    {store.name}
-                  </Option>
-                )
-              })}
-            </Select>
-          </Col> */}
+          </Col>
         </Row>
 
-        <Row
-          justify="end"
-          style={{
-            marginTop: '30px',
-            width: '100%',
-            marginBottom: '1rem',
-          }}
-        >
+        <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
+          <Space size="middle" style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
+            {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+                <Button
+                  size="large"
+                  onClick={() => {
+                    history.push({
+                      pathname: ROUTES.SHIPPING_PRODUCT_ADD,
+                      state: arrayProductShipping,
+                    })
+                  }}
+                  type="primary"
+                >
+                  Chuyển hàng
+                </Button>
+              </Permission> */}
+            <UpdateCategoryProducts />
+            <Permission permission={[PERMISSIONS.xoa_san_pham]}>
+              <Popconfirm
+                title="Bạn có muốn xoá các sản phẩm này?"
+                okText="Đồng ý"
+                cancelText="Từ chối"
+                onConfirm={_deleteProducts}
+              >
+                <Button style={{ minWidth: 100 }} size="large" type="primary" danger>
+                  Xoá
+                </Button>
+              </Popconfirm>
+            </Permission>
+          </Space>
+
           <Space>
             <Button
               style={{
@@ -696,164 +663,119 @@ export default function Product() {
             />
           </Space>
         </Row>
-        {selectedRowKeys && selectedRowKeys.length > 0 ? (
-          <Row style={{ width: '100%', marginBottom: 10 }}>
-            <Space size="middle">
-              {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
-                <Button
-                  size="large"
-                  onClick={() => {
-                    history.push({
-                      pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                      state: arrayProductShipping,
-                    })
-                  }}
-                  type="primary"
-                >
-                  Chuyển hàng
-                </Button>
-              </Permission> */}
-              <UpdateCategoryProducts />
-              <Permission permission={[PERMISSIONS.xoa_san_pham]}>
-                <Popconfirm
-                  title="Bạn có muốn xoá các sản phẩm này?"
-                  okText="Đồng ý"
-                  cancelText="Từ chối"
-                  onConfirm={_deleteProducts}
-                >
-                  <Button size="large" type="primary" danger>
-                    Xoá
-                  </Button>
-                </Popconfirm>
-              </Permission>
-            </Space>
-          </Row>
-        ) : (
-          ''
-        )}
 
-        <div className={styles['view_product_table']}>
-          <Table
-            style={{ width: '100%' }}
-            rowSelection={{
-              selectedRowKeys,
-              onChange: onSelectChange,
-            }}
-            rowKey="product_id"
-            expandable={{
-              expandedRowRender: (record) => {
-                return (
-                  <div
-                    style={{
-                      marginTop: 25,
-                      marginBottom: 25,
-                    }}
-                  >
-                    <Table
-                      style={{ width: '100%' }}
-                      pagination={false}
-                      columns={columnsVariant}
-                      dataSource={record.variants}
-                      size="small"
-                    />
-                  </div>
-                )
-              },
-              expandedRowKeys: selectedRowKeys,
-              expandIconColumnIndex: -1,
-            }}
-            columns={columns.map((column) => {
-              if (column.key === 'name-product')
-                return {
-                  ...column,
-                  render: (text, record) =>
-                    record.active ? (
-                      <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
-                    ) : (
-                      text
-                    ),
-                  sorter: (a, b) => compare(a, b, 'name'),
-                }
-
-              if (column.key === 'sku')
-                return {
-                  ...column,
-                  sorter: (a, b) => compare(a, b, 'sku'),
-                }
-
-              if (column.key === 'category')
-                return {
-                  ...column,
-                  sorter: (a, b) =>
-                    compareCustom(
-                      a._category ? a._category.name : '',
-                      b._category ? b._category.name : ''
-                    ),
-                  render: (text, record) =>
-                    record._categories &&
-                    record._categories.map((category, index) => (
-                      <Tag key={index} closable={false}>
-                        {category.name}
-                      </Tag>
-                    )),
-                }
-
-              if (column.key === 'supplier')
-                return {
-                  ...column,
-                  sorter: (a, b) =>
-                    compareCustom(
-                      a.supplier ? a.supplier.name : '',
-                      b.supplier ? b.supplier.name : ''
-                    ),
-                  render: (text, record) => {
-                    const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
-                    if (supplier) return supplier.name
-                    else return ''
-                  },
-                }
-
-              if (column.key === 'create_date')
-                return {
-                  ...column,
-                  sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-
-                  render: (text, record) =>
-                    record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
-                }
-
-              if (column.key === 'active')
-                return {
-                  ...column,
-                  render: (text, record) => (
-                    <Switch
-                      defaultChecked={record.active}
-                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
-                    />
+        <Table
+          style={{ width: '100%' }}
+          rowSelection={{ selectedRowKeys, onChange: onSelectChange }}
+          rowKey="product_id"
+          expandable={{
+            expandedRowRender: (record) => {
+              return (
+                <div style={{ marginTop: 25, marginBottom: 25 }}>
+                  <Table
+                    style={{ width: '100%' }}
+                    pagination={false}
+                    columns={columnsVariant}
+                    dataSource={record.variants}
+                    size="small"
+                  />
+                </div>
+              )
+            },
+            expandedRowKeys: selectedRowKeys,
+            expandIconColumnIndex: -1,
+          }}
+          columns={columns.map((column) => {
+            if (column.key === 'name-product')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.active ? (
+                    <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
+                  ) : (
+                    text
                   ),
-                }
+                sorter: (a, b) => compare(a, b, 'name'),
+              }
 
-              return column
-            })}
-            loading={loading}
-            dataSource={products}
-            size="small"
-            pagination={{
-              position: ['bottomLeft'],
-              current: paramsFilter.page,
-              defaultPageSize: 20,
-              pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setSelectedRowKeys([])
-                paramsFilter.page = page
-                paramsFilter.page_size = pageSize
-                getAllProduct({ ...paramsFilter })
-              },
-              total: countProduct,
-            }}
-          />
-        </div>
+            if (column.key === 'sku')
+              return {
+                ...column,
+                sorter: (a, b) => compare(a, b, 'sku'),
+              }
+
+            if (column.key === 'category')
+              return {
+                ...column,
+                sorter: (a, b) =>
+                  compareCustom(
+                    a._category ? a._category.name : '',
+                    b._category ? b._category.name : ''
+                  ),
+                render: (text, record) =>
+                  record._categories &&
+                  record._categories.map((category, index) => (
+                    <Tag key={index} closable={false}>
+                      {category.name}
+                    </Tag>
+                  )),
+              }
+
+            if (column.key === 'supplier')
+              return {
+                ...column,
+                sorter: (a, b) =>
+                  compareCustom(
+                    a.supplier ? a.supplier.name : '',
+                    b.supplier ? b.supplier.name : ''
+                  ),
+                render: (text, record) => {
+                  const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
+                  if (supplier) return supplier.name
+                  else return ''
+                },
+              }
+
+            if (column.key === 'create_date')
+              return {
+                ...column,
+                sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+
+                render: (text, record) =>
+                  record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
+              }
+
+            if (column.key === 'active')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <Switch
+                    defaultChecked={record.active}
+                    onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
+                  />
+                ),
+              }
+
+            return column
+          })}
+          loading={loading}
+          dataSource={products}
+          size="small"
+          pagination={{
+            position: ['bottomLeft'],
+            current: paramsFilter.page,
+            defaultPageSize: 20,
+            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              setSelectedRowKeys([])
+              paramsFilter.page = page
+              paramsFilter.page_size = pageSize
+              setParamsFilter({ ...paramsFilter })
+            },
+            total: countProduct,
+          }}
+        />
       </div>
     </>
   )

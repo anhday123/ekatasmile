@@ -1,5 +1,12 @@
-import styles from './../shipping-product/shipping-product.module.scss'
-import React, { useEffect, useState } from 'react'
+import styles from './shipping-product.module.scss'
+import React, { useEffect, useState, useRef } from 'react'
+
+import { PERMISSIONS, ROUTES } from 'consts'
+import { Link, useHistory } from 'react-router-dom'
+import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
+import moment from 'moment'
+import { compare, compareCustom } from 'utils'
+
 import {
   Input,
   Button,
@@ -8,52 +15,54 @@ import {
   DatePicker,
   Select,
   Table,
-  notification,
-  Drawer,
-  Typography,
   Space,
+  Popconfirm,
+  notification,
 } from 'antd'
-
-import { PERMISSIONS } from 'consts'
-
-import { Link, useHistory } from 'react-router-dom'
-import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
-import moment from 'moment'
-import { getDelivery, UpdateDelivery } from '../../apis/delivery'
 
 //components
 import ImportModal from 'components/ExportCSV/importModal'
 import exportToCSV from 'components/ExportCSV/export'
-import ChangeStatusModal from 'components/shipping-product/changeStatus'
 import Permission from 'components/permission'
-import ShippingProductAdd from 'views/actions/shipping-product/add'
-import { compare, compareCustom } from 'utils'
+import TitlePage from 'components/title-page'
 
-import { ROUTES } from 'consts'
+//apis
+import { getAllBranch } from 'apis/branch'
+import { getAllStore } from 'apis/store'
+import { getTransportOrders, deleteTransportOrders } from 'apis/transport'
+
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function ShippingProduct() {
+  const history = useHistory()
+  const typingTimeoutRef = useRef(null)
+
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
-  const [totalRecord, setTotalRecord] = useState(0)
-  const [deliveryList, setDeliveryList] = useState([])
+  const [branches, setBranches] = useState([])
+  const [stores, setStores] = useState([])
+
+  const [totalTransportOrder, setTotalTransportOrder] = useState(0)
+  const [transportOrders, setTransportOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
-  const [showMultiUpdate, setShowMultiUpdate] = useState(false)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const [showCreate, setShowCreate] = useState(false)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const history = useHistory()
+  const [valueSearch, setValueSearch] = useState('')
+  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
 
-  const getAllDelivery = async (params) => {
+  const _getTransportOrders = async () => {
     try {
       setLoading(true)
-      const res = await getDelivery(params)
+      setSelectedRowKeys([])
+      const res = await getTransportOrders(paramsFilter)
       console.log(res)
       if (res.status === 200) {
-        setDeliveryList(res.data.data)
-        setTotalRecord(res.data.count)
+        setTransportOrders(res.data.data)
+        setTotalTransportOrder(res.data.count)
       }
       setLoading(false)
     } catch (e) {
@@ -61,73 +70,112 @@ export default function ShippingProduct() {
       setLoading(false)
     }
   }
-  const updateMultiDelivery = async (data) => {
+
+  const _deleteTransportOrders = async () => {
     try {
-      if (data) {
-        const res = await Promise.all(
-          selectedRowKeys.map((e) => {
-            return UpdateDelivery(e, { status: data })
-          })
-        )
-        if (res.reduce((a, b) => a && b.data.success, true)) {
-          notification.success({ message: 'Cập nhật thành công' })
-          getAllDelivery({ ...paramsFilter })
-          setShowMultiUpdate(false)
-        }
-      } else setShowMultiUpdate(false)
-    } catch (e) {
-      console.log(e)
+      setLoading(true)
+      const res = await deleteTransportOrders(selectedRowKeys)
+      setLoading(false)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getTransportOrders()
+          notification.success({ message: 'Xóa phiếu chuyển hàng thành công!' })
+        } else
+          notification.error({ message: res.data.message || 'Xóa phiếu chuyển hàng thành công!' })
+      } else
+        notification.error({ message: res.data.message || 'Xóa phiếu chuyển hàng thành công!' })
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
     }
   }
 
-  const onSearch = (value) => {
-    setParamsFilter({ ...paramsFilter, search: value.target.value })
+  const _onFilters = (attribute = '', value = '') => {
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
+
+    setParamsFilter({ ...paramsFilter, page: 1 })
+  }
+
+  const onSearch = (e) => {
+    setValueSearch(e.target.value)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value
+
+      if (value) paramsFilter.code = value
+      else delete paramsFilter.code
+
+      paramsFilter.setParamsFilter({ ...paramsFilter, page: 1 })
+    }, 750)
   }
 
   const columnsPromotion = [
     {
       title: 'STT',
-      width: 50,
+      width: 60,
       render: (data, record, index) => index + 1,
     },
     {
       title: 'Mã phiếu',
       dataIndex: 'code',
+      render: (text, record) => (
+        <a onClick={() => history.push({ pathname: ROUTES.SHIPPING_PRODUCT_ADD, state: record })}>
+          {text}
+        </a>
+      ),
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
       title: 'Nơi chuyển',
-      dataIndex: 'from',
+      render: (text, record) => record.export_location_info && record.export_location_info.name,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
+      render: (text) =>
+        (text === 'DRAFT' && 'Lưu nháp') ||
+        (text === 'VERIFY' && 'Xác nhận') ||
+        (text === 'SHIPPING' && 'Đang chuyển') ||
+        (text === 'COMPLETE' && 'Hoàn thành') ||
+        (text === 'CANCEL' && 'Hủy'),
+      sorter: (a, b) => compare(a, b, 'status'),
     },
     {
       title: 'Nơi nhận',
-      dataIndex: 'to',
+      render: (text, record) => record.import_location_info && record.import_location_info.name,
     },
     {
       title: 'Ngày nhận',
-      dataIndex: 'create_date',
-      // render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      // sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      dataIndex: 'verify_date',
+      render: (data) => data && moment(data).format('DD-MM-YYYY hh:mm'),
+      sorter: (a, b) => moment(a.verify_date).unix() - moment(b.verify_date).unix(),
     },
     {
       title: 'Ngày chuyển',
-      dataIndex: 'ship_time',
-      // render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
-      // sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+      dataIndex: 'delivery_time',
+      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      sorter: (a, b) => moment(a.delivery_time).unix() - moment(b.delivery_time).unix(),
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'create_date',
+      render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Nhân viên tạo',
       dataIndex: '_creator',
-      // sorter: (a, b) =>
-      //   compareCustom(
-      //     a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
-      //     b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
-      //   ),
-      // render: (text) => text && text.first_name + ' ' + text.last_name,
+      sorter: (a, b) =>
+        compareCustom(
+          a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
+          b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
+        ),
+      render: (text) => text && text.first_name + ' ' + text.last_name,
     },
   ]
 
@@ -140,7 +188,7 @@ export default function ShippingProduct() {
   }
   const ExportExcel = () => {
     exportToCSV(
-      deliveryList.map((e) => {
+      transportOrders.map((e) => {
         return {
           code: e.code,
           status: e.status,
@@ -156,158 +204,107 @@ export default function ShippingProduct() {
   }
   const ExportButton = () => <Button onClick={ExportExcel}>Xuất excel</Button>
 
-  const changeRange = (date, dateString) => {
-    setParamsFilter({ ...paramsFilter, from_date: dateString[0], to_date: dateString[1] })
+  const _getBranches = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
-  const changeTimeOption = (value) => {
-    switch (value) {
-      case 'to_day':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().format('YYYY-MM-DD'),
-          to_date: moment().format('YYYY-MM-DD'),
-        })
-        break
-      case 'yesterday':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
-          to_date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
-        })
-        break
-      case 'this_week':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().startOf('week').format('YYYY-MM-DD'),
-          to_date: moment().endOf('week').format('YYYY-MM-DD'),
-        })
-        break
-      case 'last_week':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
-          to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
-        })
-        break
-      case 'this_month':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().startOf('month').format('YYYY-MM-DD'),
-          to_date: moment().format('YYYY-MM-DD'),
-        })
-        break
-      case 'last_month':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
-          to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
-        })
-        break
-      case 'this_year':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().startOf('years').format('YYYY-MM-DD'),
-          to_date: moment().endOf('years').format('YYYY-MM-DD'),
-        })
-        break
-      case 'last_year':
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
-          to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
-        })
-        break
-      default:
-        setParamsFilter({
-          ...paramsFilter,
-          from_date: moment().startOf('month').format('YYYY-MM-DD'),
-          to_date: moment().format('YYYY-MM-DD'),
-        })
-        break
+  const _getStores = async () => {
+    try {
+      const res = await getAllStore()
+      if (res.status === 200)
+        // cho store id âm để phân biệt với branch
+        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
+    } catch (error) {
+      console.log(error)
     }
   }
 
   useEffect(() => {
-    let data = []
-    const status = ['Chờ Chuyển', 'Đang Chuyển', 'Đã Hủy', 'Hoàn Thành']
-    for (let i = 0; i < 40; i++)
-      data.push({
-        code: Math.floor(Math.random() * 500000),
-        from: 'Cửa hàng 48',
-        status: status[Math.floor(Math.random() * 3)],
-        to: 'Nguyên Văn Trỗi',
-        create_date: moment(new Date()).format('DD-MM-YYYY HH:mm'),
-        ship_time: '04-12-2021 12:00',
-        _creator: 'Van Hoang',
-      })
-
-    setDeliveryList([...data])
+    _getBranches()
+    _getStores()
   }, [])
 
   useEffect(() => {
-    getAllDelivery({ ...paramsFilter })
+    _getTransportOrders()
   }, [paramsFilter])
+
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div className={styles['promotion_manager_title']}>Quản lý chuyển hàng</div>
-          {/* <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                onClick={() => history.push(ROUTES.SHIPPING_PRODUCT_ADD)}
-              >
-                Tạo phiếu chuyển hàng
-              </Button>
-            </Permission>
-          </div> */}
-        </div>
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Input size="large" placeholder="Tìm kiếm theo mã" onChange={onSearch} allowClear />
-            </div>
+        <TitlePage title="Quản lý phiếu chuyển hàng">
+          <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+            <Button
+              size="large"
+              icon={<PlusCircleOutlined />}
+              type="primary"
+              onClick={() => history.push(ROUTES.SHIPPING_PRODUCT_ADD)}
+            >
+              Tạo phiếu chuyển hàng
+            </Button>
+          </Permission>
+        </TitlePage>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Input
+              value={valueSearch}
+              size="large"
+              placeholder="Tìm kiếm theo mã phiếu"
+              onChange={onSearch}
+              allowClear
+            />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
               size="large"
               open={isOpenSelect}
-              defaultValue="this_month"
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
               }}
               onClick={() => {
                 if (!isOpenSelect) toggleOpenSelect()
               }}
-              style={{ width: 380 }}
-              placeholder="Choose time"
               allowClear
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Lọc theo thời gian nhập kho"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={valueTime}
               onChange={async (value) => {
+                setValueTime(value)
+
+                paramsFilter.page = 1
+
+                //xoa params search date hien tai
+                const p = Object.keys(valueDateTimeSearch)
+                if (p.length) delete paramsFilter[p[0]]
+
+                setValueDateSearch(null)
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
+
                 if (isOpenSelect) toggleOpenSelect()
-                changeTimeOption(value)
+
+                if (value) {
+                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                  setParamsFilter({ ...paramsFilter, ...searchDate })
+                  setValueDateTimeSearch({ ...searchDate })
+                } else {
+                  setParamsFilter({ ...paramsFilter })
+                  setValueDateTimeSearch({})
+                }
               }}
               dropdownRender={(menu) => (
-                <div>
+                <>
                   <RangePicker
                     onFocus={() => {
                       if (!isOpenSelect) toggleOpenSelect()
@@ -315,46 +312,158 @@ export default function ShippingProduct() {
                     onBlur={() => {
                       if (isOpenSelect) toggleOpenSelect()
                     }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
+
+                      if (isOpenSelect) toggleOpenSelect()
+
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
+
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
+
+                        setValueDateSearch(null)
+                        setValueTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
                     style={{ width: '100%' }}
-                    onChange={changeRange}
                   />
                   {menu}
-                </div>
+                </>
               )}
             >
-              <Option value="to_day">Today</Option>
-              <Option value="yesterday">Yesterday</Option>
-              <Option value="this_week">This week</Option>
-              <Option value="last_week">Last week</Option>
-              <Option value="last_month">Last month</Option>
-              <Option value="this_month">This month</Option>
-              <Option value="this_year">This year</Option>
-              <Option value="last_year">Last year</Option>
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
             </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                allowClear
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Lọc theo trạng thái"
-                value={paramsFilter.status}
-                onChange={(e) => setParamsFilter({ ...paramsFilter, status: e })}
-              >
-                <Option value="processing">Chờ chuyển</Option>
-                <Option value="shipping">Đang chuyển</Option>
-                <Option value="cancel">Đã hủy</Option>
-                <Option value="complete">Hoàn thành</Option>
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Select
+              allowClear
+              size="large"
+              style={{ width: '100%' }}
+              placeholder="Lọc theo trạng thái"
+              value={paramsFilter.status}
+              onChange={(value) => _onFilters('status', value)}
+            >
+              <Option value="DRAFT">Lưu nháp</Option>
+              <Option value="VERIFY">Xác nhận</Option>
+              <Option value="SHIPPING">Đang chuyển</Option>
+              <Option value="COMPLETE">Hoàn thành</Option>
+              <Option value="CANCEL">Hủy</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Select
+              allowClear
+              size="large"
+              placeholder="Lọc theo nơi chuyển"
+              style={{ width: '100%' }}
+              onChange={(value) => _onFilters('export_location_name', value)}
+            >
+              <Select.OptGroup label="Kho" key="branch">
+                {branches.map((e) => (
+                  <Select.Option value={e.name} key={e.name + e.branch_id + ''}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select.OptGroup>
+              <Select.OptGroup label="Cửa hàng" key="store">
+                {stores.map((e) => (
+                  <Select.Option value={e.name} key={e.name + e.store_id + ''}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select.OptGroup>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Select
+              allowClear
+              size="large"
+              placeholder="Lọc theo nơi nhận"
+              style={{ width: '100%' }}
+              onChange={(value) => _onFilters('import_location_name', value)}
+            >
+              <Select.OptGroup label="Kho" key="branch">
+                {branches.map((e) => (
+                  <Select.Option value={e.name} key={e.name + e.branch_id + ''}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select.OptGroup>
+              <Select.OptGroup label="Cửa hàng" key="store">
+                {stores.map((e) => (
+                  <Select.Option value={e.name} key={e.name + e.store_id + ''}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select.OptGroup>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Button
+              size="large"
+              onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
+              style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
+              type="primary"
+            >
+              Xóa bộ lọc
+            </Button>
           </Col>
         </Row>
-        <Row justify="end" style={{ marginTop: 30 }}>
+        <Row justify="space-between" style={{ marginTop: 10 }}>
+          <Row style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
+            <Popconfirm
+              onConfirm={_deleteTransportOrders}
+              title="Bạn có muốn xóa phiếu chuyển hàng này không?"
+            >
+              <Button danger style={{ width: 100 }} size="large" type="primary">
+                Xóa
+              </Button>
+            </Popconfirm>
+          </Row>
           <Space>
-            {/* <Button size="large" type="primary" >
-              Xóa bộ lọc
-            </Button> */}
+            <Button
+              type="primary"
+              size="large"
+              icon={<FileExcelOutlined />}
+              // onClick={() => setExportVisible(true)}
+            >
+              Nhập excel
+            </Button>
             <Button
               size="large"
               icon={<FileExcelOutlined />}
@@ -368,63 +477,38 @@ export default function ShippingProduct() {
             </Button>
           </Space>
         </Row>
-        <Row style={{ width: '100%' }}>
-          {selectedRowKeys.length ? (
-            <Permission permissions={[PERMISSIONS.cap_nhat_trang_thai_phieu_chuyen_hang]}>
-              <Button size="large" type="primary" onClick={() => setShowMultiUpdate(true)}>
-                Cập nhật trạng thái
-              </Button>
-            </Permission>
-          ) : (
-            ''
-          )}
-        </Row>
 
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
+        <Table
+          size="small"
+          rowSelection={rowSelection}
+          loading={loading}
+          columns={columnsPromotion}
+          rowKey="order_id"
+          pagination={{
+            position: ['bottomLeft'],
+            current: paramsFilter.page,
+            pageSize: paramsFilter.page_size,
+            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              setSelectedRowKeys([])
+              paramsFilter.page = page
+              paramsFilter.page_size = pageSize
+              setParamsFilter({ ...paramsFilter })
+            },
+            total: totalTransportOrder,
           }}
-        >
-          <Table
-            size="small"
-            rowSelection={rowSelection}
-            loading={loading}
-            columns={columnsPromotion}
-            rowKey="delivery_id"
-            pagination={{
-              page: paramsFilter.page,
-              pageSize: paramsFilter.page_size,
-              onChange: (page, pageSize) =>
-                setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
-              total: totalRecord,
-            }}
-            dataSource={deliveryList}
-            style={{ width: '100%' }}
-          />
-        </div>
+          dataSource={transportOrders}
+          style={{ width: '100%', marginTop: 10 }}
+        />
       </div>
-      <Drawer
-        visible={showCreate}
-        width="75%"
-        onClose={() => setShowCreate(false)}
-        title="Tạo phiếu chuyển hàng"
-        bodyStyle={{ padding: 0 }}
-      >
-        <ShippingProductAdd close={() => setShowCreate(false)} />
-      </Drawer>
+
       <ImportModal
         visible={exportVisible}
         onCancel={() => setExportVisible(false)}
-        dataSource={deliveryList}
+        dataSource={transportOrders}
         columns={columnsPromotion}
         actionComponent={<ExportButton />}
-      />
-      <ChangeStatusModal
-        onCancel={() => setShowMultiUpdate(false)}
-        onOk={updateMultiDelivery}
-        visible={showMultiUpdate}
       />
     </>
   )

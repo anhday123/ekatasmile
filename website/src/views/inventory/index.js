@@ -29,7 +29,7 @@ import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
 import columnsProduct from './columns'
 import ExportProduct from 'components/ExportCSV/ExportProduct'
-import ImportProducts from 'components/import-products'
+import ImportCSV from 'components/ImportCSV'
 
 //icons
 import { PlusCircleOutlined } from '@ant-design/icons'
@@ -39,7 +39,7 @@ import { apiAllWarranty } from 'apis/warranty'
 import { apiAllSupplier } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
-import { getProducts, updateProduct, deleteProducts } from 'apis/product'
+import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
 import { compare } from 'utils'
 
 const { Option } = Select
@@ -74,8 +74,7 @@ export default function Product() {
   const apiAllCategoryData = async () => {
     try {
       const res = await getCategories()
-      if (res.status === 200)
-        setCategories(res.data.data.filter((e) => e.active))
+      if (res.status === 200) setCategories(res.data.data.filter((e) => e.active))
     } catch (error) {
       console.log(error)
     }
@@ -179,13 +178,13 @@ export default function Product() {
     }
   }
 
-  const getAllProduct = async (params) => {
+  const _getProducts = async () => {
     setLoading(true)
     setSelectedRowKeys([])
     setProducts([])
 
     try {
-      const res = await getProducts({ ...params, branch: true })
+      const res = await getProducts({ ...paramsFilter, branch: true })
 
       console.log(res)
       if (res.status === 200) {
@@ -222,7 +221,7 @@ export default function Product() {
   }
 
   useEffect(() => {
-    getAllProduct({ ...paramsFilter })
+    _getProducts()
   }, [paramsFilter])
 
   useEffect(() => {
@@ -288,20 +287,15 @@ export default function Product() {
                 try {
                   setLoading(true)
 
-                  const listPromise = selectedRowKeys.map(
-                    async (product_id) => {
-                      const res = await updateProduct(
-                        { category_id: categoryId },
-                        product_id
-                      )
-                      return res
-                    }
-                  )
+                  const listPromise = selectedRowKeys.map(async (product_id) => {
+                    const res = await updateProduct({ category_id: categoryId }, product_id)
+                    return res
+                  })
 
                   await Promise.all(listPromise)
                   setLoading(false)
                   toggle()
-                  await getAllProduct({ ...paramsFilter })
+                  await _getProducts()
                   notification.success({
                     message: `Cập nhật thành công ${selectedRowKeys.length} sản phẩm vào danh mục ${categoryName}`,
                   })
@@ -328,10 +322,9 @@ export default function Product() {
       setLoading(true)
       const res = await deleteProducts(selectedRowKeys.join('---'))
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Xoá sản phẩm thành công!' })
+      if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
       else notification.error({ message: 'Xoá sản phẩm thất bại!' })
-      await getAllProduct({ ...paramsFilter })
+      await _getProducts()
       setSelectedRowKeys([])
       setLoading(false)
     } catch (error) {
@@ -373,11 +366,7 @@ export default function Product() {
         disabled
       >
         {record.image && record.image.length ? (
-          <Popover
-            style={{ top: 300 }}
-            placement="top"
-            content={ContentZoomImage(record.image[0])}
-          >
+          <Popover style={{ top: 300 }} placement="top" content={ContentZoomImage(record.image[0])}>
             <img src={record.image[0]} alt="" style={{ width: '100%' }} />
           </Popover>
         ) : (
@@ -394,7 +383,6 @@ export default function Product() {
     })
     paramsFilter.page = 1
     paramsFilter.page_size = 20
-    await getAllProduct({ ...paramsFilter })
     setParamsFilter({ ...paramsFilter })
     setValueSearch('')
     setStoreId()
@@ -407,12 +395,10 @@ export default function Product() {
       setLoading(true)
       let res = await updateProduct(body, id)
       console.log(res)
-      if (res.status === 200)
-        notification.success({ message: 'Cập nhật thành công!' })
-      else
-        notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
+      if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
+      else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
 
-      await getAllProduct({ ...paramsFilter })
+      await _getProducts()
 
       setLoading(false)
     } catch (error) {
@@ -484,24 +470,10 @@ export default function Product() {
             alignItems: 'center',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <h3 style={{ marginBottom: 0 }}>Danh sách sản phẩm</h3>
           </Col>
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={12} xl={12}>
             <div
               style={{
                 display: 'flex',
@@ -511,8 +483,13 @@ export default function Product() {
               }}
             >
               <Space>
-                <ImportProducts
-                  reload={() => getAllProduct({ ...paramsFilter })}
+                <ImportCSV
+                  size="large"
+                  txt="Import sản phẩm"
+                  upload={importProduct}
+                  title="Nhập sản phẩm bằng file excel"
+                  fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/28/4f5990e3-7325-4188-b09b-758b55b6148e/templated products import 4.xlsx"
+                  reload={_getProducts}
                 />
                 <ExportProduct
                   fileName="Products"
@@ -521,11 +498,7 @@ export default function Product() {
                 />
                 <Permission permissions={[PERMISSIONS.them_san_pham]}>
                   <Link to={ROUTES.INVENTORY_ADD}>
-                    <Button
-                      size="large"
-                      type="primary"
-                      icon={<PlusCircleOutlined />}
-                    >
+                    <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
                       Thêm sản phẩm
                     </Button>
                   </Link>
@@ -543,14 +516,7 @@ export default function Product() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={24}
-            lg={11}
-            xl={11}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={24} lg={11} xl={11}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={14}>
@@ -578,9 +544,7 @@ export default function Product() {
                       setOptionSearchName(value)
                     }}
                     filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     <Option value="name">Tên sản phẩm</Option>
@@ -651,8 +615,7 @@ export default function Product() {
                 placeholder="Tìm kiếm theo thời gian"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 value={valueTime}
                 onChange={async (value) => {
@@ -881,11 +844,7 @@ export default function Product() {
                   ...column,
                   render: (text, record) =>
                     record.active ? (
-                      <Link
-                        to={{ pathname: ROUTES.INVENTORY_ADD, state: record }}
-                      >
-                        {text}
-                      </Link>
+                      <Link to={{ pathname: ROUTES.INVENTORY_ADD, state: record }}>{text}</Link>
                     ) : (
                       text
                     ),
@@ -902,9 +861,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) => {
-                    const category = categories.find(
-                      (c) => c.category_id === record.category_id
-                    )
+                    const category = categories.find((c) => c.category_id === record.category_id)
                     if (category) return category.name
                     else return ''
                   },
@@ -914,9 +871,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) => {
-                    const supplier = suppliers.find(
-                      (c) => c.supplier_id === record.supplier_id
-                    )
+                    const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
                     if (supplier) return supplier.name
                     else return ''
                   },
@@ -925,22 +880,19 @@ export default function Product() {
               if (column.key === 'sum-count')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumQuantity && formatCash(record.sumQuantity),
+                  render: (text, record) => record.sumQuantity && formatCash(record.sumQuantity),
                 }
 
               if (column.key === 'base-price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumBasePrice && formatCash(record.sumBasePrice),
+                  render: (text, record) => record.sumBasePrice && formatCash(record.sumBasePrice),
                 }
 
               if (column.key === 'sale-price')
                 return {
                   ...column,
-                  render: (text, record) =>
-                    record.sumSalePrice && formatCash(record.sumSalePrice),
+                  render: (text, record) => record.sumSalePrice && formatCash(record.sumSalePrice),
                 }
 
               if (column.key === 'import-price')
@@ -954,8 +906,7 @@ export default function Product() {
                 return {
                   ...column,
                   render: (text, record) =>
-                    record.create_date &&
-                    moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
+                    record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm:ss'),
                 }
 
               if (column.key === 'active')
@@ -964,12 +915,7 @@ export default function Product() {
                   render: (text, record) => (
                     <Switch
                       defaultChecked={record.active}
-                      onClick={() =>
-                        _updateProduct(
-                          { active: !record.active },
-                          record.product_id
-                        )
-                      }
+                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
                     />
                   ),
                 }
@@ -989,7 +935,7 @@ export default function Product() {
                 setSelectedRowKeys([])
                 paramsFilter.page = page
                 paramsFilter.page_size = pageSize
-                getAllProduct({ ...paramsFilter })
+                _getProducts({ ...paramsFilter })
               },
               total: countProduct,
             }}

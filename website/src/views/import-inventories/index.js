@@ -3,7 +3,7 @@ import styles from './import-inventory.module.scss'
 import moment from 'moment'
 import { formatCash } from 'utils'
 import { BILL_STATUS_ORDER, ROUTES } from 'consts'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
 //components
 import columnsImportInventories from './columns'
@@ -24,6 +24,8 @@ import { apiAllSupplier } from 'apis/supplier'
 import { getProducts } from 'apis/product'
 
 export default function ImportInventories() {
+  const history = useHistory()
+
   const [ordersInventory, setOrdersInventory] = useState([])
   const [countOrder, setCountOrder] = useState(0)
   const [selectRowsKey, setSelectRowKeys] = useState([])
@@ -107,17 +109,17 @@ export default function ImportInventories() {
       },
       {
         title: 'Mô tả',
-        dataIndex: 'description',
+        dataIndex: 'note',
       },
     ]
 
     return (
       <>
-        <div style={{ color: '#6074E2', cursor: 'pointer' }} href="" onClick={toggle}>
+        <div style={{ color: '#6074E2', cursor: 'pointer' }} onClick={toggle}>
           Tải xuống
         </div>
         <Modal
-          width={1050}
+          width="80%"
           footer={
             <Row justify="end">
               <Button
@@ -128,10 +130,10 @@ export default function ImportInventories() {
                     Tên: product.name || '',
                     SKU: product.sku || '',
                     'Số lượng': product.sale_quantity && formatCash(product.sale_quantity || 0),
-                    'Chiều rộng': product.width || '',
-                    'Cân nặng': product.weight || '',
-                    'Chiều dài': product.length || '',
-                    'Chiều cao': product.height || '',
+                    'Chiều rộng': product.width || 0,
+                    'Cân nặng': product.weight || 0,
+                    'Chiều dài': product.length || 0,
+                    'Chiều cao': product.height || 0,
                     'Đơn vị': product.unit || '',
                     Files: product.files.join(', '),
                     Tags: product.tags.join(', '),
@@ -149,11 +151,13 @@ export default function ImportInventories() {
           title="Danh sách sản phẩm"
           onCancel={toggle}
           visible={visible}
+          style={{ top: 20 }}
         >
           <Table
             dataSource={products}
             size="small"
             style={{ width: '100%' }}
+            scroll={{ y: '60vh' }}
             pagination={false}
             columns={columnsProduct}
           />
@@ -238,9 +242,13 @@ export default function ImportInventories() {
   const _getOrdersImportInventory = async () => {
     try {
       setLoading(true)
+      setSelectRowKeys([])
       const res = await getOrdersImportInventory(paramsFilter)
       console.log(res)
-      if (res.status === 200) setOrdersInventory(res.data.data)
+      if (res.status === 200) {
+        setCountOrder(res.data.count)
+        setOrdersInventory(res.data.data)
+      }
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -252,7 +260,6 @@ export default function ImportInventories() {
     try {
       setLoadingBranches(true)
       const res = await getAllBranch()
-      console.log(res)
       if (res.status === 200) setBranches(res.data.data)
       setLoadingBranches(false)
     } catch (error) {
@@ -264,7 +271,6 @@ export default function ImportInventories() {
   const _getSuppliers = async () => {
     try {
       const res = await apiAllSupplier()
-      console.log(res)
       if (res.status === 200) setSuppliers(res.data.data)
     } catch (error) {
       console.log(error)
@@ -285,171 +291,168 @@ export default function ImportInventories() {
       <Row
         justify="space-between"
         wrap={false}
-        style={{ fontSize: 17, borderBottom: '1px solid #ece2e2' }}
+        style={{ fontSize: 17, paddingBottom: 20, borderBottom: '1px solid #ece2e2' }}
       >
         <h3>Nhập kho</h3>
         <Link to={ROUTES.IMPORT_INVENTORY}>
-          <Button type="primary">Tạo đơn nhập kho</Button>
+          <Button size="large" type="primary">
+            Tạo đơn nhập kho
+          </Button>
         </Link>
       </Row>
       <div style={{ marginTop: 20 }}>
         <Space>
-          <div>
-            <div>Lọc theo địa điểm nhập hàng</div>
-            <Select
-              value={paramsFilter.branch_id}
-              onChange={(value) => _onFilter('branch_id', value)}
-              notFoundContent={loadingBranches ? <Spin /> : null}
-              style={{ width: 250 }}
-              placeholder="Chọn địa điểm nhập hàng"
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          <Select
+            size="large"
+            value={paramsFilter.branch_id}
+            onChange={(value) => _onFilter('branch_id', value)}
+            notFoundContent={loadingBranches ? <Spin /> : null}
+            style={{ width: 260 }}
+            placeholder="Lọc theo địa điểm nhập hàng"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {branches.map((branch, index) => (
+              <Select.Option value={branch.branch_id} key={index}>
+                {branch.name}
+              </Select.Option>
+            ))}
+          </Select>
+
+          <Select
+            size="large"
+            open={isOpenSelect}
+            onBlur={() => {
+              if (isOpenSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!isOpenSelect) toggleOpenSelect()
+            }}
+            allowClear
+            showSearch
+            style={{ width: 280 }}
+            placeholder="Lọc theo ngày mua hàng"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={valueTime}
+            onChange={async (value) => {
+              setValueTime(value)
+
+              paramsFilter.page = 1
+
+              //xoa params search date hien tai
+              const p = Object.keys(valueDateTimeSearch)
+              if (p.length) delete paramsFilter[p[0]]
+
+              setValueDateSearch(null)
+              delete paramsFilter.from_date
+              delete paramsFilter.to_date
+
+              if (isOpenSelect) toggleOpenSelect()
+
+              if (value) {
+                const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                setParamsFilter({ ...paramsFilter, ...searchDate })
+                setValueDateTimeSearch({ ...searchDate })
+              } else {
+                setParamsFilter({ ...paramsFilter })
+                setValueDateTimeSearch({})
               }
-            >
-              {branches.map((branch, index) => (
-                <Select.Option value={branch.branch_id} key={index}>
-                  {branch.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <DatePicker.RangePicker
+                  onFocus={() => {
+                    if (!isOpenSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (isOpenSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-          <div>
-            <div>Lọc theo ngày mua hàng</div>
-            <Select
-              open={isOpenSelect}
-              onBlur={() => {
-                if (isOpenSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!isOpenSelect) toggleOpenSelect()
-              }}
-              allowClear
-              showSearch
-              style={{ width: 280 }}
-              placeholder="Chọn ngày mua hàng"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={valueTime}
-              onChange={async (value) => {
-                setValueTime(value)
+                    if (isOpenSelect) toggleOpenSelect()
 
-                paramsFilter.page = 1
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                //xoa params search date hien tai
-                const p = Object.keys(valueDateTimeSearch)
-                if (p.length) delete paramsFilter[p[0]]
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                setValueDateSearch(null)
-                delete paramsFilter.from_date
-                delete paramsFilter.to_date
+                      setValueDateSearch(null)
+                      setValueTime()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setValueTime(`${dateFirst} -> ${dateLast}`)
 
-                if (isOpenSelect) toggleOpenSelect()
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                if (value) {
-                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                  setParamsFilter({ ...paramsFilter, ...searchDate })
-                  setValueDateTimeSearch({ ...searchDate })
-                } else {
-                  setParamsFilter({ ...paramsFilter })
-                  setValueDateTimeSearch({})
-                }
-              }}
-              dropdownRender={(menu) => (
-                <>
-                  <DatePicker.RangePicker
-                    onFocus={() => {
-                      if (!isOpenSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (isOpenSelect) toggleOpenSelect()
-                    }}
-                    value={valueDateSearch}
-                    onChange={(dates, dateStrings) => {
-                      //khi search hoac filter thi reset page ve 1
-                      paramsFilter.page = 1
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                  style={{ width: '100%' }}
+                />
+                {menu}
+              </>
+            )}
+          >
+            <Select.Option value="today">Hôm nay</Select.Option>
+            <Select.Option value="yesterday">Hôm qua</Select.Option>
+            <Select.Option value="this_week">Tuần này</Select.Option>
+            <Select.Option value="last_week">Tuần trước</Select.Option>
+            <Select.Option value="this_month">Tháng này</Select.Option>
+            <Select.Option value="last_month">Tháng trước</Select.Option>
+            <Select.Option value="this_year">Năm này</Select.Option>
+            <Select.Option value="last_year">Năm trước</Select.Option>
+          </Select>
 
-                      if (isOpenSelect) toggleOpenSelect()
-
-                      //nếu search date thì xoá các params date
-                      delete paramsFilter.to_day
-                      delete paramsFilter.yesterday
-                      delete paramsFilter.this_week
-                      delete paramsFilter.last_week
-                      delete paramsFilter.last_month
-                      delete paramsFilter.this_month
-                      delete paramsFilter.this_year
-                      delete paramsFilter.last_year
-
-                      //Kiểm tra xem date có được chọn ko
-                      //Nếu ko thì thoát khỏi hàm, tránh cash app
-                      //và get danh sách order
-                      if (!dateStrings[0] && !dateStrings[1]) {
-                        delete paramsFilter.from_date
-                        delete paramsFilter.to_date
-
-                        setValueDateSearch(null)
-                        setValueTime()
-                      } else {
-                        const dateFirst = dateStrings[0]
-                        const dateLast = dateStrings[1]
-                        setValueDateSearch(dates)
-                        setValueTime(`${dateFirst} -> ${dateLast}`)
-
-                        dateFirst.replace(/-/g, '/')
-                        dateLast.replace(/-/g, '/')
-
-                        paramsFilter.from_date = dateFirst
-                        paramsFilter.to_date = dateLast
-                      }
-
-                      setParamsFilter({ ...paramsFilter })
-                    }}
-                    style={{ width: '100%' }}
-                  />
-                  {menu}
-                </>
-              )}
-            >
-              <Select.Option value="today">Hôm nay</Select.Option>
-              <Select.Option value="yesterday">Hôm qua</Select.Option>
-              <Select.Option value="this_week">Tuần này</Select.Option>
-              <Select.Option value="last_week">Tuần trước</Select.Option>
-              <Select.Option value="this_month">Tháng này</Select.Option>
-              <Select.Option value="last_month">Tháng trước</Select.Option>
-              <Select.Option value="this_year">Năm này</Select.Option>
-              <Select.Option value="last_year">Năm trước</Select.Option>
-            </Select>
-          </div>
-
-          <div>
-            <div>Lọc theo trạng thái</div>
-            <Select
-              style={{ width: 250 }}
-              placeholder="Chọn trạng thái"
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.status}
-              onChange={(value) => _onFilter('status', value)}
-            >
-              <Select.Option value="DRAFT">Lưu nháp</Select.Option>
-              <Select.Option value="VERIFY">Xác nhận đơn hàng</Select.Option>
-              <Select.Option value="COMPLETE">Hoàn thành</Select.Option>
-              <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
-            </Select>
-          </div>
+          <Select
+            size="large"
+            style={{ width: 250 }}
+            placeholder="Lọc theo trạng thái"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={paramsFilter.status}
+            onChange={(value) => _onFilter('status', value)}
+          >
+            <Select.Option value="DRAFT">Lưu nháp</Select.Option>
+            <Select.Option value="VERIFY">Xác nhận đơn hàng</Select.Option>
+            <Select.Option value="COMPLETE">Hoàn thành</Select.Option>
+            <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
+          </Select>
 
           <Button
+            size="large"
             onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
-            style={{ display: Object.keys(paramsFilter).length === 2 && 'none', marginTop: 20 }}
+            style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
             danger
             type="primary"
           >
@@ -462,6 +465,7 @@ export default function ImportInventories() {
         <Row justify="end" wrap={false}>
           <Space>
             <Button
+              size="large"
               onClick={toggleProductsToSupplier}
               icon={<VerticalAlignTopOutlined />}
               style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
@@ -469,6 +473,7 @@ export default function ImportInventories() {
               Xuất excel
             </Button>
             <Modal
+              style={{ top: 20 }}
               footer={null}
               title="Xuất file excel sản phẩm từ nhà cung cấp"
               width={920}
@@ -520,17 +525,20 @@ export default function ImportInventories() {
                 columns={columnsProductsToSupplier}
                 pagination={false}
                 style={{ width: '100%' }}
-                scroll={{ y: 370 }}
+                scroll={{ y: 450 }}
               />
             </Modal>
             {selectRowsKey.length !== 0 ? (
               <Space>
-                <Button type="primary">In hóa đơn</Button>
+                <Button size="large" type="primary">
+                  In hóa đơn
+                </Button>
               </Space>
             ) : (
               ''
             )}
             <ImportCSV
+              size="large"
               upload={uploadOrdersImportInventory}
               reload={_getOrdersImportInventory}
               title="Nhập đơn hàng bằng file excel"
@@ -538,7 +546,7 @@ export default function ImportInventories() {
             />
             <SettingColumns
               btn={
-                <Button icon={<SettingOutlined />} type="primary">
+                <Button size="large" icon={<SettingOutlined />} type="primary">
                   Điều chỉnh cột
                 </Button>
               }
@@ -561,7 +569,18 @@ export default function ImportInventories() {
           dataSource={ordersInventory}
           columns={columns.map((column) => {
             if (column.key === 'code')
-              return { ...column, render: (text, record) => <a>#{record.code}</a> }
+              return {
+                ...column,
+                render: (text, record) => (
+                  <a
+                    onClick={() =>
+                      history.push({ pathname: ROUTES.IMPORT_INVENTORY, state: record })
+                    }
+                  >
+                    #{record.code}
+                  </a>
+                ),
+              }
             if (column.key === 'location')
               return {
                 ...column,
@@ -574,15 +593,16 @@ export default function ImportInventories() {
                 render: (text, record) =>
                   record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
               }
-            if (column.key === 'total_cost')
-              return {
-                ...column,
-                render: (text, record) => record.total_cost && formatCash(record.total_cost || 0),
-              }
             if (column.key === 'final_cost')
               return {
                 ...column,
                 render: (text, record) => record.final_cost && formatCash(record.final_cost || 0),
+              }
+            if (column.key === 'payment_amount')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.payment_amount && formatCash(record.payment_amount || 0),
               }
             if (column.key === 'total_quantity')
               return {
@@ -626,7 +646,17 @@ export default function ImportInventories() {
                 ...column,
                 render: (text, record) => (
                   <ModalDownloadProducts
-                    products={record.products ? record.products.map((e) => e.product_info) : []}
+                    products={
+                      record.products
+                        ? record.products.map((e) => ({
+                            ...e.product_info,
+                            quantity: e.quantity,
+                            files: record.files,
+                            tags: record.tags,
+                            note: record.note,
+                          }))
+                        : []
+                    }
                   />
                 ),
               }

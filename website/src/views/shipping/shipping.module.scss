@@ -1,62 +1,17 @@
 .shipping_manager {
   display: flex;
-  justify-content: center;
-  align-items: center;
   margin: 1rem;
   background-color: white;
   padding: 1rem 1rem 1rem 1rem;
   flex-direction: column;
 }
-.shipping_manager_search {
-  display: flex;
-  justify-content: flex-start;
-  align-content: center;
-  width: 100%;
-  margin-bottom: 1rem;
-}
-.shipping_manager_shipping {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.shipping_manager_shipping_customer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0 0 0 0;
-  width: 100%;
-}
-.shipping_manager_search_col_search {
-  width: 100%;
-}
-.shipping_manager_search_col_select {
-  width: 100%;
-}
-.shipping_manager_search_col {
-  width: 100%;
-  // margin-bottom: 1rem;
-}
-.shipping_manager_shipping_col {
-  width: 100%;
-  margin-bottom: 1.25rem;
-  background-color: white;
-}
-.shipping_manager_shipping_col_bot {
-  width: 100%;
-  margin-top: 1.25rem;
-  background-color: white;
-}
+
 .shipping_manager_shipping_col_img {
   width: 8rem;
   height: 8rem;
   object-fit: contain;
 }
-.shipping_manager_shipping_col_img_update {
-  width: 8rem;
-  height: 8rem;
-  object-fit: contain;
-}
+
 .shipping_manager_shipping_col_parent {
   display: flex;
   justify-content: center;
@@ -64,91 +19,7 @@
   align-items: center;
   width: 12.5rem;
 }
-.shipping_manager_total {
-  background-color: #333333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-  flex-direction: column;
-  width: 100%;
-  line-height: 1.5rem;
-}
-.shipping_manager_bill {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-  flex-direction: column;
-  width: 100%;
-  line-height: 1.5rem;
-  background-color: #faad14;
-}
-.shipping_manager_customer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-  flex-direction: column;
-  width: 100%;
-  line-height: 1.5rem;
-  background-color: #007bff;
-}
-.shipping_manager_pay {
-  background-color: #f5222d;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-  flex-direction: column;
-  width: 100%;
-  line-height: 1.5rem;
-}
-.shipping_manager_customer,
-.shipping_manager_pay,
-.shipping_manager_bill,
-.shipping_manager_total > div {
-  font-size: 1rem;
-  color: white;
-  font-weight: 600;
-}
-.status {
-  color: #3a8500;
-  font-weight: 600;
-  cursor: pointer;
-}
-.shipping_manager_button {
-  display: flex;
-  justify-content: flex-start;
-  align-content: center;
-  width: 100%;
-  margin-top: 1rem;
-}
-.shipping_manager_table {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  border: 1px solid rgb(226, 214, 214);
-  // margin-top: 1rem;
-  background-color: white;
-  width: 100%;
-  max-width: 100%;
-  overflow: auto;
-}
-.shipping_manager_table_child {
-  width: 100%;
-  background-color: white;
-}
-.shipping_manager_title {
-  display: flex;
-  justify-content: flex-start;
-  align-content: center;
-  width: 100%;
-  color: black;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
+
 .shipping_manager_shipping_col_parent:hover {
   transform: scale(1.1);
 }

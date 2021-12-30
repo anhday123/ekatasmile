@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 
-import { Modal, Row, Button, InputNumber, Space, Popconfirm, Input } from 'antd'
+//antd
+import { Modal, Row, Button, InputNumber, Space, Popconfirm, Input, Select } from 'antd'
+
+//icons
 import {
   IdcardOutlined,
   UsergroupDeleteOutlined,
@@ -10,6 +13,9 @@ import {
 } from '@ant-design/icons'
 
 import { formatCash } from 'utils'
+
+//apis
+import { getPayments } from 'apis/payment'
 
 export default function PaymentMethods({
   editInvoice,
@@ -21,6 +27,7 @@ export default function PaymentMethods({
 }) {
   const toggle = () => setVisible(!visible)
 
+  const [paymentsMethod, setPaymentsMethod] = useState([])
   const [payments, setPayments] = useState([])
   const [costPaid, setCostPaid] = useState(0)
   const [excessCash, setExcessCash] = useState(0)
@@ -37,12 +44,14 @@ export default function PaymentMethods({
     setPayments([...paymentsNew])
   }
 
-  const _addPaymentMethod = (payment) => {
-    let paymentsNew = [...payments]
-    if (!paymentsNew.find((p) => p.method === payment)) {
-      paymentsNew.push({ method: payment, value: 0 })
-      setPayments([...paymentsNew])
-    }
+  const _addPaymentMethod = (pMethod) => {
+    setPayments([
+      ...pMethod.map((payment) => {
+        const findPaymentMethod = payments.find((e) => e.method === payment)
+        if (findPaymentMethod) return { ...findPaymentMethod }
+        else return { method: payment, value: 0 }
+      }),
+    ])
   }
 
   const _removePaymentMethod = (index) => {
@@ -68,6 +77,21 @@ export default function PaymentMethods({
     toggle()
     setPayments(invoices[indexInvoice].payments && invoices[indexInvoice].payments)
   }
+
+  const _getPayments = async () => {
+    try {
+      const res = await getPayments()
+      console.log(res)
+      if (res.status === 200)
+        setPaymentsMethod(res.data.data.filter((e) => e.active).map((e) => e.name))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    _getPayments()
+  }, [])
 
   useEffect(() => {
     if (visible) {
@@ -120,55 +144,24 @@ export default function PaymentMethods({
           </Row>
 
           <Row wrap={false} justify="space-between" align="middle">
-            <Button
-              onClick={() => _addPaymentMethod('COD')}
-              icon={<UsergroupDeleteOutlined />}
-              style={{
-                color: 'white',
-                backgroundColor: '#3579FE',
-                borderColor: '#3579FE',
-                borderRadius: 5,
-                display: invoices[indexInvoice].isDelivery && 'none',
-              }}
-            >
-              COD
-            </Button>
-            <Button
-              onClick={() => _addPaymentMethod('Quẹt thẻ')}
-              icon={<IdcardOutlined />}
-              style={{
-                backgroundColor: '#3579FE',
-                borderColor: '#3579FE',
-                borderRadius: 5,
-                color: 'white',
-              }}
-            >
-              Quẹt thẻ
-            </Button>
-            <Button
-              onClick={() => _addPaymentMethod('Tiền mặt')}
-              icon={<DollarOutlined />}
-              style={{
-                color: 'white',
-                backgroundColor: '#3579FE',
-                borderColor: '#3579FE',
-                borderRadius: 5,
-              }}
-            >
-              Tiền mặt
-            </Button>
-            <Button
-              onClick={() => _addPaymentMethod('Chuyển khoản')}
-              icon={<CreditCardOutlined />}
-              style={{
-                backgroundColor: '#3579FE',
-                borderColor: '#3579FE',
-                borderRadius: 5,
-                color: 'white',
-              }}
-            >
-              Chuyển khoản
-            </Button>
+            {
+              <Select
+                value={payments.map((e) => e.method)}
+                placeholder="Chọn hình thức thanh toán"
+                style={{ width: '100%' }}
+                mode="multiple"
+                allowClear
+                onSelect={(value) => console.log(value)}
+                onDeselect={(value) => console.log(value)}
+                onChange={_addPaymentMethod}
+              >
+                {paymentsMethod.map((paymentMethod, index) => (
+                  <Select.Option value={paymentMethod} key={index}>
+                    {paymentMethod}
+                  </Select.Option>
+                ))}
+              </Select>
+            }
           </Row>
           <Space direction="vertical" style={{ width: '100%' }}>
             {payments.map((payment, index) => {
