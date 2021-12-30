@@ -716,6 +716,15 @@ module.exports._updateImportOrder = async (req, res, next) => {
     }
 };
 
+module.exports._deleteImportOrder = async (req, res, next) => {
+    try {
+        await client.db(DB).collection('ImportOrders').deleteMany({ order_id: req.body.order_id });
+        res.send({ success: true, message: 'Xóa phiếu nhập hàng thành công!' });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports._getTransportOrder = async (req, res, next) => {
     try {
         try {
@@ -1545,6 +1554,15 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         }
         await client.db(DB).collection('TransportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._deleteTransportOrder = async (req, res, next) => {
+    try {
+        await client.db(DB).collection('TransportOrders').deleteMany({ order_id: req.body.order_id });
+        res.send({ success: true, message: 'Xóa phiếu chuyển hàng thành công!' });
     } catch (err) {
         next(err);
     }
