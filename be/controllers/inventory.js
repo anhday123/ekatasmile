@@ -595,7 +595,18 @@ module.exports._updateImportOrder = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);
         let order = await client.db(DB).collection('ImportOrders').findOne(req.params);
+        const importAt = (() => {
+            if (req.body.import_location && req.body.import_location.branch_id) {
+                return 'Branchs';
+            }
+            return 'Stores';
+        })();
+        let importLocation = await client.db(DB).collection(importAt).findOne(req.body.import_location);
+        if (!importLocation) {
+            throw new Error('400: Địa điểm nhập hàng không chính xác!');
+        }
         delete req.body._id;
+        delete req.body.order_id;
         let _order = { ...order, ...req.body };
         let payment_amount = (() => {
             let result = 0;
@@ -610,12 +621,13 @@ module.exports._updateImportOrder = async (req, res, next) => {
             }
             return result;
         })();
+
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,
             code: _order.code,
             import_location: _order.import_location,
-            import_location_info: _order.importLocation,
+            import_location_info: importLocation,
             products: _order.products,
             total_quantity: _order.total_quantity,
             total_cost: _order.total_cost,
