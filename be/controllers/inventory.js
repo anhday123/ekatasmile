@@ -272,7 +272,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             active: true,
         };
-        if (order.status != 'COMPLETE') {
+        if (order.status == 'COMPLETE') {
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
             let [price_id, location_id] = await Promise.all([
