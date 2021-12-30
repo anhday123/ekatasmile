@@ -235,6 +235,17 @@ module.exports._createImportOrder = async (req, res, next) => {
                 variant_info: _variants[product.variant_id],
             };
         });
+        let payment_amount = (() => {
+            let result = 0;
+            if (req.body.payment_info && Array.isArray(req.body.payment_info) && req.body.payment_info.length > 0) {
+                req.body.payment_info = req.body.payment_info.map((payment) => {
+                    result += payment.paid_amount || 0;
+                    payment['payment_date'] = moment().tz(TIMEZONE).format();
+                    return payment;
+                });
+            }
+            return result;
+        })();
         let order = {
             business_id: Number(req.user.business_id),
             order_id: order_id,
@@ -255,6 +266,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
             status: req.body.status || 'DRAFT',
             payment_info: req.body.payment_info || [],
+            payment_amount: req.body.payment_amount || payment_amount,
             // UNPAID - PAYING - PAID - REFUND
             payment_status: req.body.payment_status || 'PAID',
             create_date: moment().tz(TIMEZONE).format(),
@@ -585,6 +597,19 @@ module.exports._updateImportOrder = async (req, res, next) => {
         let order = await client.db(DB).collection('ImportOrders').findOne(req.params);
         delete req.body._id;
         let _order = { ...order, ...req.body };
+        let payment_amount = (() => {
+            let result = 0;
+            if (_order.payment_info && Array.isArray(_order.payment_info) && _order.payment_info.length > 0) {
+                _order.payment_info = _order.payment_info.map((payment) => {
+                    result += payment.paid_amount || 0;
+                    if (!payment['payment_date']) {
+                        payment['payment_date'] = moment().tz(TIMEZONE).format();
+                    }
+                    return payment;
+                });
+            }
+            return result;
+        })();
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,
@@ -605,6 +630,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
             status: _order.status,
             payment_info: _order.payment_info,
+            payment_amount: payment_amount,
             // UNPAID - PAYING - PAID - REFUND
             payment_status: _order.payment_status,
             create_date: _order.create_date,
