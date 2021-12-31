@@ -801,13 +801,13 @@ module.exports.importFileC = async (req, res, next) => {
                 };
             }
             if (eRow['thuoctinh1(*)']) {
-                if (!_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]]) {
+                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]) {
                     attribute_id++;
                     let _attribute = {
                         business_id: req.user.business_id,
                         attribute_id: attribute_id,
                         product_id: _products[eRow['masanpham']].product_id,
-                        option: eRow['thuoctinh1(*)'],
+                        option: eRow['thuoctinh1(*)'].toUpperCase(),
                         values: [],
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: req.user.user_id,
@@ -816,26 +816,25 @@ module.exports.importFileC = async (req, res, next) => {
                         slug_option: removeUnicode(String(eRow['thuoctinh1(*)']), true).toLowerCase(),
                         slug_values: [],
                     };
-                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]] =
-                        _attribute;
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`] = _attribute;
                 }
-                if (_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]]) {
-                    _attributes[
-                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]
-                    ].values.push(eRow['giatri1(*)']);
-                    _attributes[
-                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]
-                    ].slug_values.push(removeUnicode(String(eRow['giatri1(*)']), true).toLowerCase());
+                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]) {
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`].values.push(
+                        eRow['giatri1(*)'].toUpperCase()
+                    );
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`].slug_values.push(
+                        removeUnicode(String(eRow['giatri1(*)']), true).toLowerCase()
+                    );
                 }
             }
             if (eRow['thuoctinh2']) {
-                if (!_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]]) {
+                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]) {
                     attribute_id++;
                     let _attribute = {
                         business_id: req.user.business_id,
                         attribute_id: attribute_id,
                         product_id: _products[eRow['masanpham']].product_id,
-                        option: eRow['thuoctinh2'],
+                        option: eRow['thuoctinh2'].toUpperCase(),
                         values: [],
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: req.user.user_id,
@@ -844,15 +843,15 @@ module.exports.importFileC = async (req, res, next) => {
                         slug_option: removeUnicode(String(eRow['thuoctinh2']), true).toLowerCase(),
                         slug_values: [],
                     };
-                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]] = _attribute;
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`] = _attribute;
                 }
-                if (_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]]) {
-                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]].values.push(
-                        eRow['giatri2']
+                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]) {
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`].values.push(
+                        eRow['giatri2'].toUpperCase()
                     );
-                    _attributes[
-                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]
-                    ].slug_values.push(removeUnicode(String(eRow['giatri2']), true).toLowerCase());
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`].slug_values.push(
+                        removeUnicode(String(eRow['giatri2']), true).toLowerCase()
+                    );
                 }
             }
             if (!_variants[eRow['maphienban']]) {
@@ -918,7 +917,6 @@ module.exports.importFileC = async (req, res, next) => {
                         let result = [];
                         let i = 0;
                         do {
-                            console.log(i);
                             let bulkPrice = {};
                             if (i == 0) {
                                 if (eRow[`soluongsiapdung`]) {
@@ -951,6 +949,10 @@ module.exports.importFileC = async (req, res, next) => {
                 };
             }
         });
+        for (let i in _attributes) {
+            _attributes[i].values = [...new Set(_attributes[i].values)];
+            _attributes[i].slug_values = [...new Set(_attributes[i].slug_values)];
+        }
         if (Object.values(_products).length > 0) {
             let insert = await client.db(DB).collection('Products').insertMany(Object.values(_products));
             if (!insert.insertedIds) {
