@@ -231,7 +231,7 @@ let createStatusOrderC = async (req, res, next) => {
     try {
         if(req.body.data == undefined)
         throw new Error('400: vui lòng truyền biến data');
-       await client.db(DB).collection(`EnumStatusOrder`).insertMany(req.body.data).toArray();
+       await client.db(DB).collection(`EnumStatusOrder`).insertMany(req.body.data);
        return res.send({success:true,mess:"Add Enum status success"});
     } catch (err) {
         next(err);
@@ -253,7 +253,7 @@ let createReasonRefundOrderC = async (req, res, next) => {
     try {
         if(req.body.data == undefined)
         throw new Error('400: vui lòng truyền biến data');
-       await client.db(DB).collection(`EnumReasonRefund`).insertMany(req.body.data).toArray();
+       await client.db(DB).collection(`EnumReasonRefund`).insertMany(req.body.data);
        return res.send({success:true,mess:"Add Enum status success"});
     } catch (err) {
         next(err);
