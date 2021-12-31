@@ -218,8 +218,54 @@ let updateOrderS = async (req, res, next) => {
     }
 };
 
+let getAllStatusOrderC = async (req, res, next) => {
+    try {
+       var data =  await client.db(DB).collection(`EnumStatusOrder`).find({}).toArray();
+       return res.send({success:true,data:data});
+    } catch (err) {
+        next(err);
+    }
+};
+
+let createStatusOrderC = async (req, res, next) => {
+    try {
+        if(req.body.data == undefined)
+        throw new Error('400: vui lòng truyền biến data');
+       await client.db(DB).collection(`EnumStatusOrder`).insertMany(req.body.data).toArray();
+       return res.send({success:true,mess:"Add Enum status success"});
+    } catch (err) {
+        next(err);
+    }
+};
+
+
+
+let getAllReasonRefundOrderC = async (req, res, next) => {
+    try {
+       var data =  await client.db(DB).collection(`EnumReasonRefund`).find({}).toArray();
+       return res.send({success:true,data:data});
+    } catch (err) {
+        next(err);
+    }
+};
+
+let createReasonRefundOrderC = async (req, res, next) => {
+    try {
+        if(req.body.data == undefined)
+        throw new Error('400: vui lòng truyền biến data');
+       await client.db(DB).collection(`EnumReasonRefund`).insertMany(req.body.data).toArray();
+       return res.send({success:true,mess:"Add Enum status success"});
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getOrderS,
     addOrderS,
     updateOrderS,
+    getAllStatusOrderC,
+    createStatusOrderC,
+    getAllReasonRefundOrderC,
+    createReasonRefundOrderC
 };
