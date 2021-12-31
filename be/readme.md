@@ -22,15 +22,15 @@
 
 # AdminOrder:
 
--   mongodb://salemanager:salemanager%40123456@103.81.87.65:27017/admin?authSource=SaleManager&readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false
+-   mongodb://salemanager:salemanager%40123456@103.81.87.65:27017/
 
 # POS-system:
 
--   mongodb://possytem:possytem123@194.233.78.9:27017/admin?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false
+-   mongodb://possytem:possytem123@194.233.78.9:27017/
 
 # B2B
 
--   mongodb://dangluu%40:%40Luu123456@194.233.82.28:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false
+-   mongodb://dangluu%40:%40Luu123456@194.233.82.28:27017/
 
 # Deploy
 

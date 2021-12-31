@@ -1,4 +1,4 @@
-module.exports.verifyMail = (otpCode, uid) => {
+module.exports.verifyMail = (otpCode, verifyLink) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -115,7 +115,7 @@ module.exports.verifyMail = (otpCode, uid) => {
                         Xin chân thành cám ơn!
                     </p>
 
-                    <a href="https://quantribanhang.viesoftware.vn/vertifyaccount?uid=${uid}" class="verify_link"><button class="top_button">Xác thực tài khoản</button></a>
+                    <a href="${verifyLink}" class="verify_link"><button class="top_button">Xác thực tài khoản</button></a>
                 </div>
             </div>
         </body>

@@ -1,5 +1,4 @@
 const moment = require(`moment-timezone`);
-const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
@@ -82,7 +81,7 @@ let registerC = async (req, res, next) => {
         }
         let otpCode = String(Math.random()).substr(2, 6);
         let vertifyId = crypto.randomBytes(10).toString(`hex`);
-        let vertifyLink = `https://quantribanhang.viesoftware.vn/vertifyaccount?uid=${String(vertifyId)}`;
+        let vertifyLink = `https://quantribanhang.viesoftware.vn/vertifyaccount?uid=${vertifyId}`;
         let link = await client
             .db(DB)
             .collection('VertifyLinks')

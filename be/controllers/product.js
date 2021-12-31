@@ -896,11 +896,21 @@ module.exports.importFileC = async (req, res, next) => {
         origins.map((eOrigin) => {
             _origins[eOrigin.slug_name] = eOrigin;
         });
-        let [product_id, variant_id, supplier_id, category_id, brand_id] = await Promise.all([
+        let [product_id, attribute_id, variant_id, supplier_id, category_id, brand_id] = await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
                 .findOne({ name: 'Products' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .findOne({ name: 'Attributes' })
                 .then((doc) => {
                     if (doc && doc.value) {
                         return doc.value;
@@ -1041,10 +1051,10 @@ module.exports.importFileC = async (req, res, next) => {
             }
         }
         let _products = {};
+        let _attributes = {};
         let _variants = {};
         rows.map((eRow) => {
             if (!_products[eRow['masanpham']]) {
-                console.log('create product');
                 product_id++;
                 _products[eRow['masanpham']] = {
                     business_id: req.user.business_id,
@@ -1105,13 +1115,67 @@ module.exports.importFileC = async (req, res, next) => {
                     })(),
                 };
             }
+            if (eRow['thuoctinh1(*)']) {
+                if (!_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]]) {
+                    attribute_id++;
+                    let _attribute = {
+                        business_id: req.user.business_id,
+                        attribute_id: attribute_id,
+                        product_id: _products[eRow['masanpham']].product_id,
+                        option: eRow['thuoctinh1(*)'],
+                        values: [],
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        active: true,
+                        slug_option: removeUnicode(String(eRow['thuoctinh1(*)']), true).toLowerCase(),
+                        slug_values: [],
+                    };
+                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]] =
+                        _attribute;
+                }
+                if (_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]]) {
+                    _attributes[
+                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]
+                    ].values.push(eRow['giatri1(*)']);
+                    _attributes[
+                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]
+                    ].slug_values.push(removeUnicode(String(eRow['giatri1(*)']), true).toLowerCase());
+                }
+            }
+            if (eRow['thuoctinh2']) {
+                if (!_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]]) {
+                    attribute_id++;
+                    let _attribute = {
+                        business_id: req.user.business_id,
+                        attribute_id: attribute_id,
+                        product_id: _products[eRow['masanpham']].product_id,
+                        option: eRow['thuoctinh2'],
+                        values: [],
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        active: true,
+                        slug_option: removeUnicode(String(eRow['thuoctinh2']), true).toLowerCase(),
+                        slug_values: [],
+                    };
+                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]] = _attribute;
+                }
+                if (_attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]]) {
+                    _attributes[eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]].values.push(
+                        eRow['giatri2']
+                    );
+                    _attributes[
+                        eRow[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]
+                    ].slug_values.push(removeUnicode(String(eRow['giatri2']), true).toLowerCase());
+                }
+            }
             if (!_variants[eRow['maphienban']]) {
-                console.log('create variant');
                 variant_id++;
                 _variants[eRow['maphienban']] = {
                     business_id: req.user.business_id,
                     variant_id: variant_id,
-                    product_id: _products[eRow['masanpham']]?.product_id,
+                    product_id: _products[eRow['masanpham']].product_id,
                     code: String(product_id).padStart(6, '0'),
                     title: eRow['tenphienban'] || '',
                     slug_title: removeUnicode(String(eRow['tenphienban']), true).toLowerCase(),

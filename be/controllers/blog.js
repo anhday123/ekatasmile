@@ -15,35 +15,42 @@ let getBlogC = async (req, res, next) => {
 
 let createBlogC = async (req, res, next) => {
     try {
-        let _blog = new Blog();
-        _blog.validateInput(req.body);
+        ['title', 'content'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
         req.body.title = String(req.body.title).trim().toUpperCase();
         let blog = await client.db(DB).collection(`Blogs`).findOne({
             title: req.body.title,
         });
-        let blogMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Blogs' });
         if (blog) {
             throw new Error(`400: Bài viết đã tồn tại!`);
         }
-        let blog_id = (() => {
-            if (blogMaxId) {
-                if (blogMaxId.value) {
-                    return Number(blogMaxId.value);
+        let blog_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'Blogs' })
+            .then((doc) => {
+                if (doc) {
+                    if (doc.value) {
+                        return Number(doc.value);
+                    }
                 }
-            }
-            return 0;
-        })();
+                return 0;
+            });
+
         blog_id++;
-        _blog.create({
-            ...req.body,
-            ...{
-                blog_id: Number(blog_id),
-                business_id: Number(req.user.business_id),
-                create_date: new Date(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            },
-        });
+        let _blog = {
+            business_id: req.user.business_id,
+            blog_id: blog_id,
+            code: String(blog_id).padStart(6, '0'),
+            title: req.body.title,
+            blog_category_id: req.body.blog_category_id,
+            image: req.body.image,
+            content: req.body.content,
+            tags: req.body.tags || [],
+        };
         await client
             .db(DB)
             .collection('AppSetting')
