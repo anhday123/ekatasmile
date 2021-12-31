@@ -1,10 +1,3 @@
-require(`dotenv`).config();
-const client = require('./config/mongodb');
-const DB = process.env.DATABASE;
 const moment = require('moment-timezone');
 
-(async () => {
-    await client.db(DB).collection('Locations').deleteMany();
-
-    console.log('done');
-})();
+console.log(moment(1640887560222).format());

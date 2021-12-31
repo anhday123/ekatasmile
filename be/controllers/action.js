@@ -5,14 +5,10 @@ const DB = process.env.DATABASE;
 
 const actionService = require(`../services/action`);
 
-let getActionC = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
-        await actionService.getActionS(req, res, next);
+        await actionService._get(req, res, next);
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getActionC,
 };

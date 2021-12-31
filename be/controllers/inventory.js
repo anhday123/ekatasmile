@@ -1206,14 +1206,13 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         }
         let excelData = XLSX.read(req.file.buffer, {
             type: 'buffer',
+            cellDates: true,
         });
         let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         let productSkus = [];
         let variantSkus = [];
-        let exportBranchNames = [];
-        let exportStoreNames = [];
-        let importBranchNames = [];
-        let importStoreNames = [];
+        let branchNames = [];
+        let storeNames = [];
         excelProducts = excelProducts.map((eProduct) => {
             let _product = {};
             for (let i in eProduct) {
@@ -1221,7 +1220,6 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             }
             productSkus.push(_product['masanpham']);
             variantSkus.push(_product['maphienban']);
-
             _product['noixuathang'] = (() => {
                 if (removeUnicode(_product['noixuathang'], true).toLowerCase() == 'chinhanh') {
                     return 'BRANCH';
@@ -1231,12 +1229,11 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 }
             })();
             if (_product['noixuathang'] == 'BRANCH') {
-                exportBranchNames.push(_product['tennoixuat'].trim().toUpperCase());
+                branchNames.push(_product['tennoixuat'].trim().toUpperCase());
             }
             if (_product['noixuathang'] == 'STORE') {
-                exportStoreNames.push(_product['tennoixuat'].trim().toUpperCase());
+                storeNames.push(_product['tennoixuat'].trim().toUpperCase());
             }
-
             _product['noinhaphang'] = (() => {
                 if (removeUnicode(_product['noinhaphang'], true).toLowerCase() == 'chinhanh') {
                     return 'BRANCH';
@@ -1246,21 +1243,18 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 }
             })();
             if (_product['noinhaphang'] == 'BRANCH') {
-                importBranchNames.push(_product['tennoinhap'].trim().toUpperCase());
+                branchNames.push(_product['tennoinhap'].trim().toUpperCase());
             }
             if (_product['noinhaphang'] == 'STORE') {
-                importStoreNames.push(_product['tennoinhap'].trim().toUpperCase());
+                storeNames.push(_product['tennoinhap'].trim().toUpperCase());
             }
-
             return _product;
         });
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
-        exportBranchNames = [...new Set(exportBranchNames)];
-        exportStoreNames = [...new Set(exportStoreNames)];
-        importBranchNames = [...new Set(importBranchNames)];
-        importStoreNames = [...new Set(importStoreNames)];
-        let [products, variants, exportBranchs, exportStores, importBranchs, importStores] = await Promise.all([
+        branchNames = [...new Set(branchNames)];
+        storeNames = [...new Set(storeNames)];
+        let [products, variants, branchs, stores] = await Promise.all([
             client
                 .db(DB)
                 .collection('Products')
@@ -1274,22 +1268,12 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             client
                 .db(DB)
                 .collection('Branchs')
-                .find({ business_id: Number(req.user.business_id), name: { $in: exportBranchNames } })
+                .find({ business_id: Number(req.user.business_id), name: { $in: branchNames } })
                 .toArray(),
             client
                 .db(DB)
                 .collection('Stores')
-                .find({ business_id: Number(req.user.business_id), name: { $in: exportStoreNames } })
-                .toArray(),
-            client
-                .db(DB)
-                .collection('Branchs')
-                .find({ business_id: Number(req.user.business_id), name: { $in: importBranchNames } })
-                .toArray(),
-            client
-                .db(DB)
-                .collection('Stores')
-                .find({ business_id: Number(req.user.business_id), name: { $in: importStoreNames } })
+                .find({ business_id: Number(req.user.business_id), name: { $in: storeNames } })
                 .toArray(),
         ]);
         let _products = {};
@@ -1304,29 +1288,17 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             _variants[eVariant.sku] = eVariant;
             _variantIds.push(eVariant.variant_id);
         });
-        let _exportBranchs = {};
-        let _exportBranchIds = [];
-        exportBranchs.map((eBranch) => {
-            _exportBranchs[eBranch.name] = eBranch;
-            _exportBranchIds.push(eBranch.branch_id);
+        let _branchs = {};
+        let _branchIds = [];
+        branchs.map((eBranch) => {
+            _branchs[eBranch.name] = eBranch;
+            _branchIds.push(eBranch.branch_id);
         });
-        let _exportStores = {};
-        let _exportStoreIds = [];
-        exportStores.map((eStore) => {
-            _exportStores[eStore.name] = eStore;
-            _exportStoreIds.push(eStore.store_id);
-        });
-        let _importBranchs = {};
-        let _importBranchIds = [];
-        importBranchs.map((eBranch) => {
-            _importBranchs[eBranch.name] = eBranch;
-            _importBranchIds.push(eBranch.branch_id);
-        });
-        let _importStores = {};
-        let _importStoreIds = [];
-        importStores.map((eStore) => {
-            _importStores[eStore.name] = eStore;
-            _importStoreIds.push(eStore.store_id);
+        let _stores = {};
+        let _storeIds = [];
+        stores.map((eStore) => {
+            _stores[eStore.name] = eStore;
+            _storeIds.push(eStore.store_id);
         });
         let sortQuery = (() => {
             if (req.user.price_recipe == 'FIFO') {
@@ -1340,7 +1312,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 .collection('Locations')
                 .find({
                     type: 'BRANCH',
-                    inventory_id: { $in: _exportBranchIds },
+                    inventory_id: { $in: _branchIds },
                     product_id: { $in: _productIds },
                     variant_id: { $in: _variantIds },
                 })
@@ -1351,7 +1323,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 .collection('Locations')
                 .find({
                     type: 'STORE',
-                    inventory_id: { $in: _exportStoreIds },
+                    inventory_id: { $in: _storeIds },
                     product_id: { $in: _productIds },
                     variant_id: { $in: _variantIds },
                 })

@@ -95,9 +95,7 @@ class Order {
             return data.shipping_company_id;
         })();
         this.shipping_info = data.shipping_info || '';
-        this.voucher = data.voucher || {
-            
-        };
+        this.voucher = data.voucher || {};
         this.promotion = data.promotion || {};
         this.total_cost = data.total_cost || 0;
         this.total_tax = data.total_tax || 0;
@@ -114,7 +112,7 @@ class Order {
                 }
                 return 'UNPAID';
             })();
-        // DRAFT - RECEIVED - PROCESSING - COMPLETE - CANCEL // - REFUND
+        // DRAFT  - PROCESSING - COMPLETE - CANCEL // - REFUND
         this.bill_status = data.bill_status || 'DRAFT';
         // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
         this.ship_status = data.ship_status || 'DRAFT';

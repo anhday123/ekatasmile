@@ -1,18 +1,20 @@
 const moment = require(`moment-timezone`);
-const bcrypt = require(`../libs/bcrypt`);
-const jwt = require(`../libs/jwt`);
-const mail = require(`../libs/otp`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
-let loginC = async (req, res, next) => {
+const bcrypt = require(`../libs/bcrypt`);
+const jwt = require(`../libs/jwt`);
+const mail = require(`../libs/nodemailer`);
+const { otpMail } = require('../templates/otpMail');
+
+module.exports._login = async (req, res, next) => {
     try {
-        if (!req.body.username) {
-            throw new Error('400: username không được để trống!');
-        }
-        if (!req.body.password) {
-            throw new Error('400: password không được để trống!');
-        }
+        ['username', 'password'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
         req.body.username = req.body.username.toLowerCase();
         let [user] = await client
             .db(DB)
@@ -61,16 +63,13 @@ let loginC = async (req, res, next) => {
             throw new Error(`400: Mật khẩu không chính xác!`);
         }
         delete user.password;
-        // console.log(user);
-        // user.branch_id = String(user.branch_id);
-        // user.store_id = String(user.store_id);
         let [accessToken, refreshToken, _update] = await Promise.all([
-            jwt.createToken(user),
-            jwt.createToken(user),
+            jwt.createToken(user, 24 * 60 * 60),
+            jwt.createToken(user, 30 * 24 * 60 * 60),
             client
                 .db(DB)
                 .collection(`Users`)
-                .findOneAndUpdate({ user_id: Number(user.user_id) }, { $set: { last_login: new Date() } }),
+                .updateOne({ user_id: Number(user.user_id) }, { $set: { last_login: moment().tz(TIMEZONE).format() } }),
         ]);
         res.send({
             success: true,
@@ -84,15 +83,17 @@ let loginC = async (req, res, next) => {
     }
 };
 
-let refreshTokenC = async (req, res, next) => {
+module.exports._refreshToken = async (req, res, next) => {
     try {
-        if (!req.body.refreshToken) {
-            throw new Error(`400: refreshToken không được để trống!`);
-        }
+        ['refreshToken'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
         try {
             let decoded = await jwt.verifyToken(req.body.refreshToken);
-            let userData = decoded.data;
-            let accessToken = await jwt.createToken(userData);
+            let user = decoded.data;
+            let accessToken = await jwt.createToken(user);
             res.send({ success: true, accessToken });
         } catch (error) {
             throw new Error(`400: Refresh token không chính xác!`);
@@ -102,12 +103,14 @@ let refreshTokenC = async (req, res, next) => {
     }
 };
 
-let checkLinkVertifyC = async (req, res, next) => {
+module.exports._checkVerifyLink = async (req, res, next) => {
     try {
-        if (!req.body.UID) {
-            throw new Error(`400: UID không được để trống!`);
-        }
-        let link = await client.db(DB).collection(`VertifyLinks`).findOne({
+        ['UID'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        let link = await client.db(DB).collection(`VerifyLinks`).findOne({
             UID: req.body.UID,
         });
         if (!link) {
@@ -119,25 +122,29 @@ let checkLinkVertifyC = async (req, res, next) => {
     }
 };
 
-let getOTPC = async (req, res, next) => {
+module.exports._getOTP = async (req, res, next) => {
     try {
-        if (!req.body.username) {
-            throw new Error(`400: Tên tài khoản không được để trống!`);
-        }
+        ['username'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        req.body.username = String(req.body.username).toLowerCase();
         let user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
         if (!user) {
             throw new Error('400: Tài khoản không tồn tại!');
         }
-        let otp = await mail.sendOTP(user.email);
+        let otpCode = String(Math.random()).substr(2, 6);
+        await Promise.all(mail.sendMail(user.email, 'Mã xác thực', otpMail(otpCode)));
         await client
             .db(DB)
             .collection(`Users`)
-            .findOneAndUpdate(
+            .updateOne(
                 { user_id: Number(user.user_id) },
                 {
                     $set: {
                         otp_code: otp.otp_code,
-                        otp_timelife: new Date(moment().add(process.env.OTP_TIMELIFE, 'minutes').format()),
+                        otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
                     },
                 }
             );
@@ -147,15 +154,14 @@ let getOTPC = async (req, res, next) => {
     }
 };
 
-let vertifyOTPC = async (req, res, next) => {
+module.exports._verifyOTP = async (req, res, next) => {
     try {
-        if (!req.body.username) {
-            throw new Error(`400: username không được để trống!`);
-        }
-        if (!req.body.otp_code) {
-            throw new Error(`400: otp_code không được để trống!`);
-        }
-        req.body.username = req.body.username.trim().toLowerCase();
+        ['username', 'otp_code'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        req.body.username = req.body.username.toLowerCase();
         let user = await client
             .db(DB)
             .collection('Users')
@@ -201,12 +207,4 @@ let vertifyOTPC = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    loginC,
-    refreshTokenC,
-    checkLinkVertifyC,
-    getOTPC,
-    vertifyOTPC,
 };

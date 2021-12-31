@@ -1,16 +1,18 @@
 const jwt = require(`jsonwebtoken`);
 const key = require('./key');
-// const key = process.env.TOKEN_KEY;
 
-let createToken = (data) => {
+let createToken = (data, timeLife) => {
     const payload = {
         ...data,
     };
+    if (!timeLife) {
+        timeLife = 24 * 60 * 60;
+    }
     return new Promise((resolve, reject) => {
         jwt.sign(
             {
                 data: payload,
-                exp: Math.floor(Date.now() / 1000) + 24 * 360000,
+                exp: Math.floor(Date.now() / 1000) + timeLife,
             },
             key.PRIVATEKEY,
             { algorithm: 'RS256' },

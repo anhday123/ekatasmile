@@ -1,10 +1,9 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const blogService = require(`../services/blog`);
-const { Blog } = require('../models/blog');
 
 let getBlogC = async (req, res, next) => {
     try {

@@ -10,7 +10,7 @@ let _connect = new Promise(async (resolve, reject) => {
     await client.connect().catch((err) => {
         reject(err);
     });
-    resolve(`Successfull database connect!`);
+    resolve(`Successful database connect!`);
 });
 
 _connect.then(async (message) => {
