@@ -211,75 +211,13 @@ module.exports.addProductC = async (req, res, next) => {
 
 module.exports.updateProductC = async (req, res, next) => {
     try {
-        let tmp = req.body;
-        req.body.products = [tmp];
-        let supplierIds = [];
-        let productSkus = [];
-        req.body.products.map((product) => {
-            if (product.supplier_id) {
-                supplierIds.push(Number(product.supplier_id));
-            }
-            if (product.sku) {
-                productSkus.push(
-                    String(product.sku || '')
-                        .trim()
-                        .toUpperCase()
-                );
+        ['products'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let [suppliers, products] = await Promise.all([
-            client
-                .db(DB)
-                .collection('Suppliers')
-                .find({ supplier_id: { $in: supplierIds } })
-                .toArray(),
-            client
-                .db(DB)
-                .collection(`Products`)
-                .find({
-                    business_id: Number(req.user.business_id),
-                    sku: { $in: productSkus },
-                })
-                .toArray(),
-        ]);
-        let _suppliers = {};
-        suppliers.map((eSupplier) => {
-            _suppliers[String(eSupplier.supplier_id)] = eSupplier;
-        });
-        let _products = {};
-        products.map((eProduct) => {
-            _products[String(eProduct.sku)] = eProduct;
-        });
-        let productIds = [];
-        products.map((eProduct) => {
-            productIds.push(Number(eProduct.product_id));
-        });
-        let [attributes, variants] = await Promise.all([
-            client
-                .db(DB)
-                .collection(`Attributes`)
-                .find({
-                    product_id: { $in: productIds },
-                })
-                .toArray(),
-            client
-                .db(DB)
-                .collection(`Variants`)
-                .find({
-                    product_id: { $in: productIds },
-                })
-                .toArray(),
-        ]);
-        let _attributes = {};
-        attributes.map((eAttribute) => {
-            _attributes[`${eAttribute.product_id}-${eAttribute.option}`] = eAttribute;
-        });
-        let _variants = {};
-        variants.map((eVariant) => {
-            _variants[`${eVariant.product_id}-${eVariant.sku}`] = eVariant;
-        });
-
-        let [product_id, attribute_id, variant_id, price_id] = await Promise.all([
+        [req.body] = req.body.products;
+        let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
@@ -289,9 +227,6 @@ module.exports.updateProductC = async (req, res, next) => {
                         return doc.value;
                     }
                     return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
                 }),
             client
                 .db(DB)
@@ -302,11 +237,8 @@ module.exports.updateProductC = async (req, res, next) => {
                         return doc.value;
                     }
                     return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
                 }),
-            await client
+            client
                 .db(DB)
                 .collection('AppSetting')
                 .findOne({ name: 'Variants' })
@@ -315,356 +247,113 @@ module.exports.updateProductC = async (req, res, next) => {
                         return doc.value;
                     }
                     return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
                 }),
-            await client
+            client
                 .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Prices' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-        ]);
-
-        req['_newProducts'] = [];
-        req['_newAttributes'] = [];
-        req['_newVariants'] = [];
-        req['_newPrices'] = [];
-        req['_oldProducts'] = [];
-        req['_oldAttributes'] = [];
-        req['_oldVariants'] = [];
-        req.body.products.map((eProduct) => {
-            delete eProduct._id;
-            delete eProduct.business_id;
-            delete eProduct.product_id;
-            delete eProduct.create_date;
-            delete eProduct.last_update;
-            delete eProduct.creator_id;
-            if (_products[eProduct.sku]) {
-                let _product = { ..._products[eProduct.sku], ...eProduct };
-                _product = {
-                    business_id: Number(_product.business_id || 0),
-                    product_id: Number(_product.product_id || 0),
-                    sku: _product.sku || '',
-                    name: _product.name || '',
-                    slug_name: String(removeUnicode(_product.name || '', true)).toLowerCase(),
-                    slug: String(removeUnicode(_product.name || '', false)).replace(/\s/g, '-'),
-                    supplier_id: _product.supplier_id || [],
-                    category_id: _product.category_id || [],
-                    tax_id: _product.tax_id || [],
-                    warranties: _product.warranties || [],
-                    length: _product.length || 0,
-                    width: _product.width || 0,
-                    height: _product.height || 0,
-                    weight: _product.weight || 0,
-                    unit: _product.unit || '',
-                    brand: _product.brand || '',
-                    origin_code: _product.origin_code || '',
-                    status: _product.status || '',
-                    description: _product.description || '',
-                    tags: _product.tags || [],
-                    files: _product.files || [],
-                    sale_quantity: _product.sale_quantity,
-                    create_date: _product.create_date,
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: _product.creator_id,
-                    active: true,
-                };
-                req['_oldProducts'].push(_product);
-                eProduct.attributes.map((eAttribute) => {
-                    delete eAttribute._id;
-                    delete eAttribute.business_id;
-                    delete eAttribute.attribute_id;
-                    delete eAttribute.product_id;
-                    delete eAttribute.create_date;
-                    delete eAttribute.last_update;
-                    delete eAttribute.creator_id;
-                    eAttribute.options = String(eAttribute.options).trim().toUpperCase();
-                    if (_attributes[`${_product.product_id}-${eAttribute.option}`]) {
-                        let _attribute = {
-                            ..._attributes[`${_product.product_id}-${eAttribute.option}`],
-                            ...eAttribute,
-                        };
-                        _attribute = {
-                            business_id: Number(_attribute.business_id),
-                            attribute_id: Number(_attribute.attribute_id),
-                            product_id: Number(_product.product_id),
-                            option: String(_attribute.option).toUpperCase(),
-                            slug_option: String(removeUnicode(_attribute.option, true)).toLowerCase(),
-                            values: (() => {
-                                return _attribute.values.map((eValue) => {
-                                    return String(eValue).toUpperCase();
-                                });
-                            })(),
-                            slug_values: (() => {
-                                return _attribute.values.map((eValue) => {
-                                    return String(removeUnicode(eValue, true)).toLowerCase();
-                                });
-                            })(),
-                            create_date: _attribute.create_date,
-                            last_update: moment().tz(TIMEZONE).format(),
-                            creator_id: Number(_attribute.creator_id),
-                            active: true,
-                        };
-                        req['_oldAttributes'].push(_attribute);
-                    }
-                    if (!_attributes[`${_product.product_id}-${eAttribute.option}`]) {
-                        attribute_id++;
-                        let _attribute = {
-                            business_id: Number(req.user.user_id),
-                            attribute_id: Number(attribute_id),
-                            product_id: Number(_product.product_id),
-                            option: String(eAttribute.option).toUpperCase(),
-                            slug_option: String(removeUnicode(eAttribute.option, true)).toLowerCase(),
-                            values: (() => {
-                                return eAttribute.values.map((eValue) => {
-                                    return String(eValue).toUpperCase();
-                                });
-                            })(),
-                            slug_values: (() => {
-                                return eAttribute.values.map((eValue) => {
-                                    return String(removeUnicode(eValue, true)).toLowerCase();
-                                });
-                            })(),
-                            create_date: moment().tz(TIMEZONE).format(),
-                            last_update: moment().tz(TIMEZONE).format(),
-                            creator_id: Number(req.user.user_id),
-                            active: true,
-                        };
-                        req['_newAttributes'].push(_attribute);
-                    }
-                });
-                eProduct.variants.map((eVariant) => {
-                    delete eVariant._id;
-                    delete eVariant.business_id;
-                    delete eVariant.variant_id;
-                    delete eVariant.product_id;
-                    delete eVariant.create_date;
-                    delete eVariant.last_update;
-                    delete eVariant.creator_id;
-                    if (_variants[`${_product.product_id}-${eVariant.sku}`]) {
-                        let _variant = { ..._variants[`${_product.product_id}-${eVariant.sku}`], ...eVariant };
-                        _variant = {
-                            business_id: Number(_product.business_id),
-                            variant_id: Number(_variant.variant_id),
-                            product_id: Number(_product.product_id),
-                            title: _variant.title || '',
-                            slug_title: String(removeUnicode(_variant.title || '', true)).toLowerCase(),
-                            sku: _variant.sku || '',
-                            image: _variant.image || [],
-                            options: _variant.options || [],
-                            ...(() => {
-                                if (_variant.options && _variant.options > 0) {
-                                    let options = {};
-                                    for (let i = 0; i <= _variant.options; i++) {
-                                        options[`option${i + 1}`] = _variant.options[i];
-                                    }
-                                    return options;
-                                }
-                                return {};
-                            })(),
-                            supplier: (() => {
-                                if (_suppliers[eProduct.supplier_id] && _suppliers[eProduct.supplier_id].name) {
-                                    return _suppliers[eProduct.supplier_id].name;
-                                }
-                                return '';
-                            })(),
-                            import_price_default: eVariant.import_price,
-                            price: _variant.price,
-                            bulk_price: Number(_variant.bulk_price || _variant.price),
-                            bulk_quantity: Number(_variant.bulk_quantity || 1),
-                            create_date: _variant.create_date,
-                            last_update: moment().tz(TIMEZONE).format(),
-                            creator_id: Number(_variant.creator_id),
-                            active: true,
-                        };
-                        if (eVariant.import_price) {
-                            price_id++;
-                            let _price = {
-                                business_id: Number(req.user.business_id),
-                                price_id: Number(price_id),
-                                product_id: Number(_product.product_id),
-                                variant_id: Number(_variant.variant_id),
-                                import_price: Number(eVariant.import_price),
-                                create_date: moment().tz(TIMEZONE).format(),
-                                last_update: moment().tz(TIMEZONE).format(),
-                                creator_id: Number(req.user.user_id),
-                                active: true,
-                            };
-                            req['_newPrices'].push(_price);
-                        }
-                        req['_oldVariants'].push(_variant);
-                    }
-                    if (!_variants[`${_product.product_id}-${eVariant.sku}`]) {
-                        variant_id++;
-                        let _variant = {
-                            business_id: Number(req.user.business_id),
-                            variant_id: Number(variant_id),
-                            product_id: Number(_product.product_id),
-                            title: eVariant.title || '',
-                            slug_title: String(removeUnicode(eVariant.title || '', true)).toLowerCase(),
-                            sku: eVariant.sku || '',
-                            image: eVariant.image || [],
-                            options: eVariant.options || [],
-                            ...(() => {
-                                if (eVariant.options && eVariant.options > 0) {
-                                    let options = {};
-                                    for (let i = 0; i <= eVariant.options; i++) {
-                                        options[`option${i + 1}`] = eVariant.options[i];
-                                    }
-                                    return options;
-                                }
-                                return {};
-                            })(),
-                            supplier: (() => {
-                                if (_suppliers[_product.supplier_id] && _suppliers[_product.supplier_id].name) {
-                                    return _suppliers[_product.supplier_id].name;
-                                }
-                                return '';
-                            })(),
-                            import_price_default: eVariant.import_price,
-                            price: eVariant.price,
-                            bulk_price: Number(eVariant.bulk_price || eVariant.price),
-                            bulk_quantity: Number(eVariant.bulk_quantity || 1),
-                            create_date: eVariant.create_date,
-                            last_update: moment().tz(TIMEZONE).format(),
-                            creator_id: Number(eVariant.creator_id),
-                            active: true,
-                        };
-                        if (eVariant.import_price) {
-                            price_id++;
-                            let _price = {
-                                business_id: Number(req.user.business_id),
-                                price_id: Number(price_id),
-                                product_id: Number(_product.product_id),
-                                variant_id: Number(_variant.variant_id),
-                                import_price: Number(eVariant.import_price),
-                                create_date: moment().tz(TIMEZONE).format(),
-                                last_update: moment().tz(TIMEZONE).format(),
-                                creator_id: Number(req.user.user_id),
-                                active: true,
-                            };
-                            req['_newPrices'].push(_price);
-                        }
-                        eVariant = _variant;
-                        req['_newVariants'].push(_variant);
-                    }
-                });
-            }
-            if (!_products[eProduct.sku]) {
-                product_id++;
-                let _product = {
-                    business_id: Number(req.user.business_id || 0),
-                    product_id: Number(product_id || 0),
-                    sku: eProduct.sku || '',
-                    name: eProduct.name || '',
-                    slug_name: String(removeUnicode(eProduct.name || '', true)).toLowerCase(),
-                    slug: String(removeUnicode(eProduct.slug || '', false)).replace(/\s/g, '-'),
-                    supplier_id: eProduct.supplier_id || [],
-                    category_id: eProduct.category_id || [],
-                    tax_id: eProduct.tax_id || [],
-                    warranties: eProduct.warranties || [],
-                    length: eProduct.length || 0,
-                    width: eProduct.width || 0,
-                    height: eProduct.height || 0,
-                    weight: eProduct.weight || 0,
-                    unit: eProduct.unit || '',
-                    origin_code: eProduct.origin_code || '',
-                    description: eProduct.description || '',
-                    tags: eProduct.tags || [],
-                    files: eProduct.files || [],
-                    sale_quantity: eProduct.sale_quantity || 0,
+                .collection('Suppliers')
+                .findOne({ supplier_id: Number(req.body.supplier_id) }),
+        ]).catch((err) => {
+            throw new Error(err.message);
+        });
+        product_id++;
+        req['_product'] = {
+            business_id: Number(req.user.business_id),
+            product_id: Number(product_id),
+            name: String(req.body.name).toUpperCase(),
+            sku: String(req.body.sku).toUpperCase(),
+            slug: removeUnicode(String(req.body.name || ''), false).replace(/\s/g, '-'),
+            supplier_id: req.body.supplier_id || [],
+            category_id: req.body.category_id || [],
+            tax_id: req.body.tax_id || [],
+            warranties: req.body.warranties || [],
+            image: req.body.image || [],
+            length: req.body.length || 0,
+            width: req.body.width || 0,
+            height: req.body.height || 0,
+            weight: req.body.weight || 0,
+            unit: req.body.unit || '',
+            brand_id: req.body.brand_id || 0,
+            origin_code: req.body.origin_code || '',
+            status: req.body.status || '',
+            description: req.body.description || '',
+            tags: req.body.tags || [],
+            files: req.body.files || [],
+            sale_quantity: req.body.sale_quantity || 0,
+            create_date: moment().tz(TIMEZONE).format(),
+            last_update: moment().tz(TIMEZONE).format(),
+            creator_id: Number(req.user.user_id),
+            active: true,
+            slug_name: removeUnicode(String(req.body.name || ''), true).toLowerCase(),
+            slug_tags: (() => {
+                if (req.body.tags) {
+                    return req.body.tags.map((tag) => {
+                        return removeUnicode(String(tag), true).toLowerCase();
+                    });
+                }
+            })(),
+        };
+        req['_attributes'] = [];
+        req.body.attributes.map((eAttribute) => {
+            if (eAttribute) {
+                attribute_id++;
+                req._attributes.push({
+                    attribute_id: Number(attribute_id),
+                    product_id: Number(product_id),
+                    option: String(eAttribute.option).toUpperCase(),
+                    values: (() => {
+                        return eAttribute.values.map((eValue) => {
+                            return String(eValue).toUpperCase();
+                        });
+                    })(),
                     create_date: moment().tz(TIMEZONE).format(),
                     last_update: moment().tz(TIMEZONE).format(),
                     creator_id: Number(req.user.user_id),
                     active: true,
-                };
-                req['_newProducts'].push(_product);
-                eProduct.attributes.map((eAttribute) => {
-                    attribute_id++;
-                    let _attribute = {
-                        business_id: Number(req.user.user_id),
-                        attribute_id: Number(attribute_id),
-                        product_id: Number(_product.product_id),
-                        option: String(eAttribute.option).toUpperCase(),
-                        slug_option: String(removeUnicode(eAttribute.option, true)).toLowerCase(),
-                        values: (() => {
-                            return eAttribute.values.map((eValue) => {
-                                return String(eValue).toUpperCase();
-                            });
-                        })(),
-                        slug_values: (() => {
-                            return eAttribute.values.map((eValue) => {
-                                return String(removeUnicode(eValue, true)).toLowerCase();
-                            });
-                        })(),
-                        create_date: moment().tz(TIMEZONE).format(),
-                        last_update: moment().tz(TIMEZONE).format(),
-                        creator_id: Number(req.user.user_id),
-                        active: true,
-                    };
-                    req['_newAttributes'].push(_attribute);
+                    slug_option: removeUnicode(String(eAttribute.option), true).toLowerCase(),
+                    slug_values: (() => {
+                        return eAttribute.values.map((eValue) => {
+                            return removeUnicode(String(eValue), true).toLowerCase();
+                        });
+                    })(),
                 });
-                eProduct.variants.map((eVariant) => {
-                    variant_id++;
-                    let _variant = {
-                        business_id: Number(req.user.business_id),
-                        variant_id: Number(variant_id),
-                        product_id: Number(_product.product_id),
-                        title: eVariant.title || '',
-                        slug_title: String(removeUnicode(eVariant.title || '', true)).toLowerCase(),
-                        sku: eVariant.sku || '',
-                        image: eVariant.image || [],
-                        options: eVariant.options || [],
-                        ...(() => {
-                            if (eVariant.options && eVariant.options > 0) {
-                                let options = {};
-                                for (let i = 0; i <= eVariant.options; i++) {
-                                    options[`option${i + 1}`] = eVariant.options[i];
-                                }
-                                return options;
+            }
+        });
+        req['_variants'] = [];
+        req.body.variants.map((eVariant) => {
+            if (eVariant) {
+                variant_id++;
+                req._variants.push({
+                    variant_id: Number(variant_id),
+                    product_id: Number(product_id),
+                    title: String(eVariant.title).toUpperCase(),
+                    sku: String(eVariant.sku).toUpperCase(),
+                    image: eVariant.image || [],
+                    options: eVariant.options || [],
+                    ...(() => {
+                        if (eVariant.options && eVariant.options > 0) {
+                            let options = {};
+                            for (let i = 0; i <= eVariant.options; i++) {
+                                options[`option${i + 1}`] = eVariant.options[i];
                             }
-                            return {};
-                        })(),
-                        supplier: (() => {
-                            if (_suppliers[eProduct.supplier_id] && _suppliers[eProduct.supplier_id].name) {
-                                return _suppliers[eProduct.supplier_id].name;
-                            }
-                            return '';
-                        })(),
-                        import_price_default: eVariant.import_price,
-                        price: eVariant.price,
-                        bulk_price: Number(eVariant.bulk_price || eVariant.price),
-                        bulk_quantity: Number(eVariant.bulk_quantity || 1),
-                        create_date: moment().tz(TIMEZONE).format(),
-                        last_update: moment().tz(TIMEZONE).format(),
-                        creator_id: Number(req.user.user_id),
-                        active: true,
-                    };
-                    if (eVariant.import_price) {
-                        price_id++;
-                        let _price = {
-                            business_id: Number(req.user.business_id),
-                            price_id: Number(price_id),
-                            product_id: Number(_product.product_id),
-                            variant_id: Number(_variant.variant_id),
-                            import_price: Number(eVariant.import_price),
-                            create_date: moment().tz(TIMEZONE).format(),
-                            last_update: moment().tz(TIMEZONE).format(),
-                            creator_id: Number(req.user.user_id),
-                            active: true,
-                        };
-                        req['_newPrices'].push(_price);
-                    }
-                    req['_newVariants'].push(_variant);
+                            return options;
+                        }
+                        return {};
+                    })(),
+                    supplier: ((supplier) => {
+                        if (supplier && supplier.name) {
+                            return supplier.name;
+                        }
+                        return '';
+                    })(supplier),
+                    import_price_default: eVariant.import_price || 0,
+                    price: eVariant.price,
+                    enable_bulk_price: eVariant.enable_bulk_price || false,
+                    bulk_prices: eVariant.bulk_prices,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
+                    slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
                 });
             }
         });
@@ -685,10 +374,6 @@ module.exports.updateProductC = async (req, res, next) => {
                 .db(DB)
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
         ]);
         await productService.updateProductS(req, res, next);
     } catch (err) {
@@ -1270,6 +955,12 @@ module.exports.importFileC = async (req, res, next) => {
             let insert = await client.db(DB).collection('Products').insertMany(Object.values(_products));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo sản phẩm thất bại!`);
+            }
+        }
+        if (Object.values(_attributes).length > 0) {
+            let insert = await client.db(DB).collection('Attributes').insertMany(Object.values(_attributes));
+            if (!insert.insertedIds) {
+                throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
             }
         }
         if (Object.values(_variants).length > 0) {
