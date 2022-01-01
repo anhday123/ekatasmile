@@ -90,7 +90,7 @@ module.exports.addProductC = async (req, res, next) => {
             name: String(req.body.name).toUpperCase(),
             sku: String(req.body.sku).toUpperCase(),
             slug: removeUnicode(String(req.body.name || ''), false).replace(/\s/g, '-'),
-            supplier_id: req.body.supplier_id || [],
+            supplier_id: req.body.supplier_id || 0,
             category_id: req.body.category_id || [],
             tax_id: req.body.tax_id || [],
             warranties: req.body.warranties || [],
@@ -211,23 +211,31 @@ module.exports.addProductC = async (req, res, next) => {
 
 module.exports.updateProductC = async (req, res, next) => {
     try {
-        ['products'].map((e) => {
-            if (!req.body[e]) {
-                throw new Error(`400: Thiếu thuộc tính ${e}!`);
-            }
-        });
-        [req.body] = req.body.products;
-        let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .findOne({ name: 'Products' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+        req.params.product_id = Number(req.params.product_id);
+        let [product] = await client
+            .db(DB)
+            .collection('Products')
+            .aggregate([
+                { $match: { product_id: Number(req.params.product_id) } },
+                {
+                    $lookup: {
+                        from: 'Attributes',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productIds'] } } }],
+                        as: 'attributes',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productIds'] } } }],
+                        as: 'variants',
+                    },
+                },
+            ])
+            .toArray();
+        let [attribute_id, variant_id] = await Promise.all([
             client
                 .db(DB)
                 .collection('AppSetting')
@@ -248,57 +256,96 @@ module.exports.updateProductC = async (req, res, next) => {
                     }
                     return 0;
                 }),
-            client
-                .db(DB)
-                .collection('Suppliers')
-                .findOne({ supplier_id: Number(req.body.supplier_id) }),
         ]).catch((err) => {
             throw new Error(err.message);
         });
-        product_id++;
-        req['_product'] = {
-            business_id: Number(req.user.business_id),
-            product_id: Number(product_id),
-            name: String(req.body.name).toUpperCase(),
-            sku: String(req.body.sku).toUpperCase(),
-            slug: removeUnicode(String(req.body.name || ''), false).replace(/\s/g, '-'),
-            supplier_id: req.body.supplier_id || [],
-            category_id: req.body.category_id || [],
-            tax_id: req.body.tax_id || [],
-            warranties: req.body.warranties || [],
-            image: req.body.image || [],
-            length: req.body.length || 0,
-            width: req.body.width || 0,
-            height: req.body.height || 0,
-            weight: req.body.weight || 0,
-            unit: req.body.unit || '',
-            brand_id: req.body.brand_id || 0,
-            origin_code: req.body.origin_code || '',
-            status: req.body.status || '',
-            description: req.body.description || '',
-            tags: req.body.tags || [],
-            files: req.body.files || [],
-            sale_quantity: req.body.sale_quantity || 0,
-            create_date: moment().tz(TIMEZONE).format(),
+        delete req.body._id;
+        delete req.body.product_id;
+        delete req.body.code;
+        delete req.body.sale_quantity;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _product = { ...product, ...req.body };
+        _product = {
+            business_id: _product.business_id,
+            product_id: _product.product_id,
+            code: _product.code,
+            name: String(_product.name).toUpperCase(),
+            sku: String(_product.sku).toUpperCase(),
+            slug: removeUnicode(String(_product.name || ''), false).replace(/\s/g, '-'),
+            supplier_id: _product.supplier_id || 0,
+            category_id: _product.category_id || [],
+            tax_id: _product.tax_id || [],
+            warranties: _product.warranties || [],
+            image: _product.image || [],
+            length: _product.length || 0,
+            width: _product.width || 0,
+            height: _product.height || 0,
+            weight: _product.weight || 0,
+            unit: _product.unit || '',
+            brand_id: _product.brand_id || 0,
+            origin_code: _product.origin_code || '',
+            status: _product.status || '',
+            description: _product.description || '',
+            tags: _product.tags || [],
+            files: _product.files || [],
+            sale_quantity: _product.sale_quantity || 0,
+            create_date: _product.create_date,
             last_update: moment().tz(TIMEZONE).format(),
-            creator_id: Number(req.user.user_id),
-            active: true,
-            slug_name: removeUnicode(String(req.body.name || ''), true).toLowerCase(),
+            creator_id: _product.creator_id,
+            active: _product.active,
+            slug_name: removeUnicode(String(_product.name || ''), true).toLowerCase(),
             slug_tags: (() => {
-                if (req.body.tags) {
-                    return req.body.tags.map((tag) => {
+                if (_product.tags) {
+                    return _product.tags.map((tag) => {
                         return removeUnicode(String(tag), true).toLowerCase();
                     });
                 }
             })(),
         };
-        req['_attributes'] = [];
+        let _attributes = [];
         req.body.attributes.map((eAttribute) => {
-            if (eAttribute) {
+            let exists = false;
+            for (let i in product.attributes) {
+                if (String(eAttribute.option).toUpperCase() == String(product.attributes[i].option).toUpperCase()) {
+                    exists = true;
+                }
+            }
+            if (exists) {
+                delete eAttribute._id;
+                delete eAttribute.business_id;
+                delete eAttribute.attribute_id;
+                delete eAttribute.product_id;
+                delete eAttribute.create_date;
+                delete eAttribute.creator_id;
+                let _attribute = { ...product.attributes[i], ...eAttribute };
+                _attribute = {
+                    business_id: _attribute.business_id,
+                    attribute_id: _attribute.attribute_id,
+                    product_id: _attribute.product_id,
+                    option: String(_attribute.option).toUpperCase(),
+                    values: (() => {
+                        return _attribute.values.map((eValue) => {
+                            return String(eValue).toUpperCase();
+                        });
+                    })(),
+                    create_date: _attribute.create_date,
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: _attribute.creator_id,
+                    active: _attribute.active,
+                    slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
+                    slug_values: (() => {
+                        return _attribute.values.map((eValue) => {
+                            return removeUnicode(String(eValue), true).toLowerCase();
+                        });
+                    })(),
+                };
+                _attributes.push(_attribute);
+            } else {
                 attribute_id++;
-                req._attributes.push({
-                    attribute_id: Number(attribute_id),
-                    product_id: Number(product_id),
+                let _attribute = {
+                    attribute_id: attribute_id,
+                    product_id: _product.product_id,
                     option: String(eAttribute.option).toUpperCase(),
                     values: (() => {
                         return eAttribute.values.map((eValue) => {
@@ -315,10 +362,9 @@ module.exports.updateProductC = async (req, res, next) => {
                             return removeUnicode(String(eValue), true).toLowerCase();
                         });
                     })(),
-                });
+                };
             }
         });
-        req['_variants'] = [];
         req.body.variants.map((eVariant) => {
             if (eVariant) {
                 variant_id++;
@@ -748,7 +794,7 @@ module.exports.importFileC = async (req, res, next) => {
                     sku: eRow['masanpham'],
                     name: eRow['tensanpham'],
                     slug: removeUnicode(String(eRow['tensanpham']), false).replace(/\s/g, '-').toLowerCase(),
-                    supplier_id: [_suppliers[eRow['_nhacungcap']]?.supplier_id],
+                    supplier_id: _suppliers[eRow['_nhacungcap']]?.supplier_id,
                     category_id: [_categories[eRow['_tenthuonghieu']]?.category_id],
                     tax_id: (() => {
                         if (eRow['_thueapdung']) {

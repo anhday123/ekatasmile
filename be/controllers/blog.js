@@ -5,7 +5,7 @@ const DB = process.env.DATABASE;
 
 const blogService = require(`../services/blog`);
 
-let getBlogC = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
         await blogService.getBlogS(req, res, next);
     } catch (err) {
@@ -13,7 +13,7 @@ let getBlogC = async (req, res, next) => {
     }
 };
 
-let createBlogC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
         ['title', 'content'].map((e) => {
             if (!req.body[e]) {
@@ -62,7 +62,7 @@ let createBlogC = async (req, res, next) => {
     }
 };
 
-let updateBlogC = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.blog_id = Number(req.params.blog_id);
         let _blog = new Blog();
@@ -93,7 +93,7 @@ let updateBlogC = async (req, res, next) => {
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
             .db(DB)
@@ -106,11 +106,4 @@ let _delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getBlogC,
-    createBlogC,
-    updateBlogC,
-    _delete,
 };

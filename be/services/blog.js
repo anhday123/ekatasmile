@@ -14,10 +14,61 @@ let getBlogS = async (req, res, next) => {
         if (req.query.business_id) {
             aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
         }
+        if (req.query.category_id) {
+            let categoryIds = req.query.category_id.split('---').map((eId) => {
+                return Number(eId);
+            });
+            aggregateQuery.push({ $match: { $in: categoryIds } });
+        }
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -42,7 +93,7 @@ let getBlogS = async (req, res, next) => {
                 },
             });
         }
-        if (req.query.tag) {
+        if (req.query.tags) {
             aggregateQuery.push({
                 $match: {
                     sub_tag: {
@@ -131,8 +182,6 @@ let updateBlogS = async (req, res, next) => {
         next(err);
     }
 };
-
-
 
 module.exports = {
     createBlogS,
