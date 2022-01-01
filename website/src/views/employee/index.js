@@ -497,6 +497,7 @@ export default function Employee() {
         <Row wrap={false} align="middle" justify="space-between" style={{ marginTop: 20 }}>
           <Row wrap={false}>
             <Input
+              size="large"
               style={{ width: 280 }}
               value={filter.search}
               onChange={(e) => setFilter({ ...filter, search: e.target.value })}
@@ -504,6 +505,7 @@ export default function Employee() {
               allowClear
             />
             <Select
+              size="large"
               value={optionSearch}
               onChange={(value) => setOptionSearch(value)}
               style={{ width: 150 }}
@@ -514,6 +516,7 @@ export default function Employee() {
             </Select>
           </Row>
           <RangePicker
+            size="large"
             className="br-15__date-picker"
             // value={filter.from_date ? [moment(filter.from_date), moment(filter.to_date)] : []}
             style={{ width: 240 }}
@@ -530,6 +533,7 @@ export default function Employee() {
             // }
           />
           <Select
+            size="large"
             showSearch
             style={{ width: 210 }}
             placeholder="Lọc theo chức vụ"
@@ -547,7 +551,12 @@ export default function Employee() {
               return <Option value={values.role_id}>{values.name}</Option>
             })}
           </Select>
-          <Select showSearch style={{ width: 230 }} placeholder="Lọc theo địa điểm làm việc">
+          <Select
+            size="large"
+            showSearch
+            style={{ width: 230 }}
+            placeholder="Lọc theo địa điểm làm việc"
+          >
             {stores.map((store) => (
               <Select.Option value={store.store_id}>{store.name}</Select.Option>
             ))}
@@ -557,7 +566,7 @@ export default function Employee() {
           </Select>
         </Row>
 
-        <div className={styles['employee_manager_bottom']}>
+        <div>
           <div
             style={{
               display: 'flex',
@@ -591,18 +600,17 @@ export default function Employee() {
           ) : (
             ''
           )}
-          <div className={styles['employee_manager_bottom_table']}>
-            <Table
-              size="small"
-              rowKey="user_id"
-              columns={columns}
-              rowSelection={rowSelection}
-              loading={loading}
-              dataSource={employee}
-              scroll={{ y: 500 }}
-              pagination={{ onChange: changePagi }}
-            />
-          </div>{' '}
+          <Table
+            style={{ width: '100%' }}
+            size="small"
+            rowKey="user_id"
+            columns={columns}
+            rowSelection={rowSelection}
+            loading={loading}
+            dataSource={employee}
+            scroll={{ y: 500 }}
+            pagination={{ onChange: changePagi }}
+          />
         </div>
       </div>
 

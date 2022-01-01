@@ -58,8 +58,7 @@ import { apiAllTax } from 'apis/tax'
 
 //components
 import Permission from 'components/permission'
-import AddCustomer from 'views/actions/customer/add'
-import CustomerUpdate from 'views/actions/customer/update'
+import CustomerForm from 'views/customer/customer-form'
 import ChangeDelivery from './change-delivery'
 import ModalPromotion from './promotion'
 
@@ -352,30 +351,26 @@ export default function OrderCreateShipping() {
     }
   }
 
-  const ModalAddCustomer = () => {
+  const ModalCustomerForm = ({ children, record }) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-
     return (
       <>
-        <Tooltip placement="bottom" title="Thêm mới khách hàng">
-          <PlusSquareFilled
-            onClick={toggle}
-            style={{
-              fontSize: 34,
-              color: '#0362BA',
-              cursor: 'pointer',
-            }}
-          />
-        </Tooltip>
+        <div onClick={toggle}>{children}</div>
         <Modal
+          style={{ top: 20 }}
           onCancel={toggle}
-          width={700}
+          width={800}
           footer={null}
-          title="Thêm khách hàng mới"
+          title={`${record ? 'Cập nhật' : 'Tạo'} khách hàng`}
           visible={visible}
         >
-          <AddCustomer text="Thêm" reload={_getCustomers} />
+          <CustomerForm
+            record={record}
+            close={toggle}
+            text={record ? 'Lưu' : 'Tạo'}
+            reload={_getCustomers}
+          />
         </Modal>
       </>
     )
@@ -699,7 +694,13 @@ export default function OrderCreateShipping() {
                 </Select>
 
                 <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-                  <ModalAddCustomer />
+                  <ModalCustomerForm>
+                    <Tooltip placement="bottom" title="Thêm mới khách hàng">
+                      <PlusSquareFilled
+                        style={{ fontSize: 34, color: '#0362BA', cursor: 'pointer' }}
+                      />
+                    </Tooltip>
+                  </ModalCustomerForm>
                 </Permission>
               </Row>
 
@@ -714,33 +715,18 @@ export default function OrderCreateShipping() {
                 <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
                 <div style={{ width: '100%' }}>
                   <Row wrap={false} align="middle">
-                    <p
-                      style={{
-                        fontWeight: 600,
-                        marginRight: 5,
-                        color: '#1890ff',
-                        marginBottom: 0,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setVisibleCustomerUpdate(true)}
-                    >
-                      {customerInfo && customerInfo.first_name + ' ' + customerInfo.last_name}
-                    </p>
-                    <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-                      {customerInfo ? (
-                        <CustomerUpdate
-                          customerData={[customerInfo]}
-                          visible={visibleCustomerUpdate}
-                          onClose={() => setVisibleCustomerUpdate(false)}
-                          reload={() => {
-                            _getCustomerAfterEditCustomer()
-                            _getCustomers()
-                          }}
-                        />
-                      ) : (
-                        <div></div>
-                      )}
-                    </Permission>
+                    {customerInfo ? (
+                      <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                        <ModalCustomerForm>
+                          <a style={{ fontWeight: 600, marginRight: 5 }}>
+                            {customerInfo && customerInfo.first_name + ' ' + customerInfo.last_name}
+                          </a>
+                        </ModalCustomerForm>
+                      </Permission>
+                    ) : (
+                      <div></div>
+                    )}
+
                     <span style={{ fontWeight: 500 }}> - {customerInfo && customerInfo.phone}</span>
                   </Row>
                   <Row wrap={false} justify="space-between" align="middle">

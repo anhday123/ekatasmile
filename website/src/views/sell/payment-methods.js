@@ -4,13 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Row, Button, InputNumber, Space, Popconfirm, Input, Select } from 'antd'
 
 //icons
-import {
-  IdcardOutlined,
-  UsergroupDeleteOutlined,
-  CreditCardOutlined,
-  DollarOutlined,
-  DeleteOutlined,
-} from '@ant-design/icons'
+import { DeleteOutlined } from '@ant-design/icons'
 
 import { formatCash } from 'utils'
 
@@ -29,6 +23,8 @@ export default function PaymentMethods({
 
   const [paymentsMethod, setPaymentsMethod] = useState([])
   const [payments, setPayments] = useState([])
+  const [paymentMethodDefault, setPaymentMethodDefault] = useState({}) //hình thức thanh toán mặc định
+
   const [costPaid, setCostPaid] = useState(0)
   const [excessCash, setExcessCash] = useState(0)
 
@@ -82,8 +78,20 @@ export default function PaymentMethods({
     try {
       const res = await getPayments()
       console.log(res)
-      if (res.status === 200)
-        setPaymentsMethod(res.data.data.filter((e) => e.active).map((e) => e.name))
+      if (res.status === 200) {
+        let paymentMethodDefault = ''
+
+        setPaymentsMethod(
+          res.data.data
+            .filter((e) => e.active)
+            .map((e) => {
+              if (e.default) paymentMethodDefault = e.name
+              return e.name
+            })
+        )
+        if (paymentMethodDefault)
+          setPaymentMethodDefault({ method: paymentMethodDefault, value: 0 })
+      }
     } catch (error) {
       console.log(error)
     }
@@ -95,7 +103,8 @@ export default function PaymentMethods({
 
   useEffect(() => {
     if (visible) {
-      setPayments([...invoices[indexInvoice].payments])
+      if (!invoices[indexInvoice].payments.length) setPayments([paymentMethodDefault])
+      else setPayments([...invoices[indexInvoice].payments])
 
       if (invoices[indexInvoice].isDelivery) setCostPaid(invoices[indexInvoice].prepay)
       else setCostPaid(invoices[indexInvoice].moneyGivenByCustomer)

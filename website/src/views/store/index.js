@@ -1,10 +1,10 @@
-import styles from './../store/store.module.scss'
+import styles from './store.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import noimage from 'assets/img/noimage.jpg'
-import { Link } from 'react-router-dom'
+import { compare } from 'utils'
 
 //antd
 import {
@@ -21,17 +21,16 @@ import {
 } from 'antd'
 
 //icons
-import { ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined } from '@ant-design/icons'
 
 //components
-import StoreForm from 'components/store/store-information-add'
+import StoreForm from './store-form'
 import Permission from 'components/permission'
 
 //apis
 import { apiDistrict, apiProvince } from 'apis/information'
-import { apiSearch, getAllStore, updateStore } from 'apis/store'
+import { getAllStore, updateStore } from 'apis/store'
 import { apiAllEmployee } from 'apis/employee'
-import { compare } from 'utils'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -111,6 +110,7 @@ export default function Store() {
   const _getStores = async (params) => {
     try {
       setLoading(true)
+      setSelectedRowKeys([])
       const res = await getAllStore({ ...params, _creator: true })
       console.log(res)
       if (res.status === 200) {
@@ -143,16 +143,7 @@ export default function Store() {
         text ? (
           <Popover content={() => contentImage(text)}>
             <div>
-              <img
-                src={text}
-                style={{
-                  width: '7.5rem',
-                  cursor: 'pointer',
-                  height: '5rem',
-                  objectFit: 'contain',
-                }}
-                alt=""
-              />
+              <img src={text} style={{ width: 70, height: 70, objectFit: 'cover' }} alt="" />
             </div>
           </Popover>
         ) : (
@@ -402,11 +393,10 @@ export default function Store() {
         pagination={{
           position: ['bottomLeft'],
           current: paramsFilter.page,
-          defaultPageSize: 20,
+          pageSize: paramsFilter.page_size,
           pageSizeOptions: [20, 30, 50, 100],
           showQuickJumper: true,
           onChange: (page, pageSize) => {
-            setSelectedRowKeys([])
             paramsFilter.page = page
             paramsFilter.page_size = pageSize
             setParamsFilter({ ...paramsFilter })

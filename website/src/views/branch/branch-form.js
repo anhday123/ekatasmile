@@ -82,10 +82,6 @@ export default function BranchAdd({ reloadData, children, record }) {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          dispatch({
-            type: ACTION.LOGIN,
-            data: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
-          })
           reloadData()
           notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} kho thành công` })
           setVisible(false)
@@ -109,10 +105,8 @@ export default function BranchAdd({ reloadData, children, record }) {
   const _getProvinces = async () => {
     try {
       const res = await apiProvince()
+      if (res.status === 200) setProvinces(res.data.data)
 
-      if (res.status === 200) {
-        setProvinces(res.data.data)
-      }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
