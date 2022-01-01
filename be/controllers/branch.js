@@ -8,7 +8,7 @@ const { Branch } = require('../models/branch');
 
 let getBranchC = async (req, res, next) => {
     try {
-        await branchService.getBranchS(req, res, next);
+        await branchService._get(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -54,7 +54,7 @@ let addBranchC = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: branch_id } }, { upsert: true });
         req[`_insert`] = _branch;
-        await branchService.addBranchS(req, res, next);
+        await branchService._create(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -85,7 +85,7 @@ let updateBranchC = async (req, res, next) => {
         _branch.create(branch);
         _branch.update(req.body);
         req[`_update`] = _branch;
-        await branchService.updateBranchS(req, res, next);
+        await branchService._update(req, res, next);
     } catch (err) {
         next(err);
     }

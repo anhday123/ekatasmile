@@ -247,7 +247,7 @@ module.exports._get = async (req, res, next) => {
     }
 };
 
-let addBranchS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
         let _branch = await client.db(DB).collection(`Branchs`).insertOne(req._insert);
         if (!_branch.insertedId) {
@@ -317,7 +317,7 @@ let addBranchS = async (req, res, next) => {
     }
 };
 
-let updateBranchS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
         await client
@@ -343,10 +343,4 @@ let updateBranchS = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getBranchS,
-    addBranchS,
-    updateBranchS,
 };
