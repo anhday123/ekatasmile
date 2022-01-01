@@ -25,7 +25,7 @@ const columns = [
   },
   {
     title: 'Địa chỉ',
-    dataIndex: 'address',
+    key: 'address',
   },
   {
     title: 'Người tạo',

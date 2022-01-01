@@ -169,7 +169,7 @@ export default function Branch() {
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
             <BranchForm reloadData={_getBranches}>
               <Button size="large" icon={<PlusCircleOutlined />} type="primary">
-                Thêm chi nhánh
+                Thêm kho
               </Button>
             </BranchForm>
           </Permission>

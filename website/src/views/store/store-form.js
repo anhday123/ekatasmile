@@ -3,10 +3,10 @@ import { ACTION, regexPhone } from 'consts/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 //antd
-import { Input, Button, Row, Col, notification, Select, Modal, Form, Upload, Divider } from 'antd'
+import { Input, Button, Row, notification, Select, Modal, Form, Upload, Divider } from 'antd'
 
 //icons
-import { PlusOutlined, PlusCircleOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { apiProvince } from 'apis/information'
@@ -139,7 +139,6 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
 
   const apiFilterCityData = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
       const res = await apiFilterCity()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
@@ -150,10 +149,8 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
           if (!infoStoreUpdate) form.setFieldsValue({ district: res.data.data[0].district_name })
         }
       }
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
     }
   }
 

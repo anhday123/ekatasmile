@@ -21,7 +21,7 @@ import KeyboardEventHandler from 'react-keyboard-event-handler'
 import ReactToPrint, { useReactToPrint } from 'react-to-print'
 
 //components
-import AddCustomer from 'views/actions/customer/add'
+import CustomerForm from 'views/customer/customer-form'
 import FilterProductsByCategory from './filter-by-category'
 import FilterProductsBySku from './filter-by-sku'
 import ModalKeyboardShortCuts from './keyboard-shortcuts'
@@ -32,7 +32,6 @@ import ModalOrdersReturn from './orders-returns'
 import ModalChangeStore from './change-store'
 import ModalDeliveryAddress from './delivery-address'
 import ModalInfoSeller from './info-seller'
-import CustomerUpdate from 'views/actions/customer/update'
 import HeaderGroupButton from './header-group-button'
 import PrintOrder from 'components/print/print-order'
 
@@ -113,6 +112,8 @@ export default function Sell() {
   const [visiblePayments, setVisiblePayments] = useState(false)
   const [visibleCreateCustomer, setVisibleCreateCustomer] = useState(false)
   const toggleCustomer = () => setVisibleCreateCustomer(!visibleCreateCustomer)
+  const [visibleUpdateCustomer, setVisibleUpdateCustomer] = useState(false)
+  const toggleUpdateCustomer = () => setVisibleUpdateCustomer(!visibleUpdateCustomer)
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
@@ -761,13 +762,40 @@ export default function Sell() {
           />
         </Tooltip>
         <Modal
+          style={{ top: 20 }}
           onCancel={toggleCustomer}
-          width={700}
+          width={800}
           footer={null}
           title="Thêm khách hàng mới"
           visible={visibleCreateCustomer}
         >
-          <AddCustomer text="Thêm" reload={_getCustomers} />
+          <CustomerForm close={toggleCustomer} text="Thêm" reload={_getCustomers} />
+        </Modal>
+      </>
+    )
+  }
+
+  const ModalUpdateCustomer = ({ children, record }) => {
+    return (
+      <>
+        <div onClick={toggleUpdateCustomer}>{children}</div>
+        <Modal
+          style={{ top: 20 }}
+          onCancel={toggleUpdateCustomer}
+          width={800}
+          footer={null}
+          title="Cập nhật khách hàng"
+          visible={visibleUpdateCustomer}
+        >
+          <CustomerForm
+            record={record}
+            close={toggleUpdateCustomer}
+            text="Lưu"
+            reload={() => {
+              _getCustomerAfterEditCustomer()
+              _getCustomers()
+            }}
+          />
         </Modal>
       </>
     )
@@ -1587,6 +1615,7 @@ export default function Sell() {
                     justify="space-between"
                     wrap={false}
                     onClick={(e) => {
+                      console.log(customer)
                       _editInvoice('deliveryAddress', customer)
                       _editInvoice('customer', customer)
                       _editInvoice(
@@ -1626,44 +1655,26 @@ export default function Sell() {
           <Row
             wrap={false}
             align="middle"
-            style={{
-              display: !invoices[indexInvoice].customer && 'none',
-              marginTop: 15,
-            }}
+            style={{ display: !invoices[indexInvoice].customer && 'none', marginTop: 15 }}
           >
             <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
             <div style={{ width: '100%' }}>
               <Row wrap={false} align="middle">
-                <p
-                  style={{
-                    fontWeight: 600,
-                    marginRight: 5,
-                    color: '#1890ff',
-                    marginBottom: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setVisibleCustomerUpdate(true)}
-                >
-                  {invoices[indexInvoice].customer &&
-                    invoices[indexInvoice].customer.first_name +
-                      ' ' +
-                      invoices[indexInvoice].customer.last_name}
-                </p>
-                <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-                  {invoices[indexInvoice].customer ? (
-                    <CustomerUpdate
-                      customerData={[invoices[indexInvoice].customer]}
-                      visible={visibleCustomerUpdate}
-                      onClose={() => setVisibleCustomerUpdate(false)}
-                      reload={() => {
-                        _getCustomerAfterEditCustomer()
-                        _getCustomers()
-                      }}
-                    />
-                  ) : (
-                    <div></div>
-                  )}
-                </Permission>
+                {invoices[indexInvoice].customer ? (
+                  <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                    <ModalUpdateCustomer record={invoices[indexInvoice].customer}>
+                      <a style={{ fontWeight: 600, marginRight: 5, color: '#1890ff' }}>
+                        {invoices[indexInvoice].customer &&
+                          invoices[indexInvoice].customer.first_name +
+                            ' ' +
+                            invoices[indexInvoice].customer.last_name}
+                      </a>
+                    </ModalUpdateCustomer>
+                  </Permission>
+                ) : (
+                  <div></div>
+                )}
+
                 <span style={{ fontWeight: 500 }}>
                   {' '}
                   - {invoices[indexInvoice].customer && invoices[indexInvoice].customer.phone}

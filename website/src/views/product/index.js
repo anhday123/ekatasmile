@@ -35,7 +35,7 @@ import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
 //icons
-import { PlusCircleOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons'
 
 //apis
 import { apiAllWarranty } from 'apis/warranty'
@@ -44,6 +44,7 @@ import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
 import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
 import { compare } from 'utils'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -83,7 +84,7 @@ export default function Product() {
   const columnsVariant = [
     {
       title: 'Hình ảnh',
-      render: (text, record) => <ImageProductVariable record={record} />,
+      key: 'image',
     },
     {
       title: 'Phiên bản',
@@ -94,9 +95,17 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Giá bán',
-      dataIndex: 'price',
-      render: (text) => text && formatCash(text),
+      title: 'Giá bán lẻ',
+      render: (text, record) => formatCash(record.price || 0),
+    },
+    {
+      title: 'Giá bán sỉ',
+      render: (text, record) =>
+        record.bulk_prices.map((e) => (
+          <Row>
+            {e.min_quantity_apply} - {e.max_quantity_apply}: {formatCash(e.price || 0)}
+          </Row>
+        )),
     },
   ]
 
@@ -308,27 +317,103 @@ export default function Product() {
     )
   }
 
-  const ImageProductVariable = ({ record }) => {
+  const ImagesVariant = ({ record, product }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const [images, setImages] = useState(record.image || [])
+    const [imagesView, setImagesView] = useState(record.image || [])
+
+    const [loading, setLoading] = useState(false)
+
+    const _uploadFile = async (file) => {
+      setLoading(true)
+      const url = await uploadFile(file)
+      setImages([...images, url])
+      const fileNames = url.split('/')
+      const fileName = fileNames[fileNames.length - 1]
+      setImagesView([
+        ...imagesView,
+        { uid: imagesView.length, name: fileName, status: 'done', url: url, thumbUrl: url },
+      ])
+      setLoading(false)
+    }
+
+    useEffect(() => {
+      if (visible) {
+        setImages(record.image || [])
+        setImagesView(
+          record.image
+            ? record.image.map((image, index) => {
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
+            : []
+        )
+      }
+    }, [visible])
+
     return (
-      <Upload
-        name="avatar"
-        listType="picture-card"
-        className="avatar-uploader"
-        showUploadList={false}
-        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-        disabled
-      >
-        {record.image && record.image.length ? (
-          <Popover style={{ top: 300 }} placement="top" content={ContentZoomImage(record.image[0])}>
-            <img src={record.image[0]} alt="" style={{ width: '100%' }} />
-          </Popover>
-        ) : (
-          <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
-        )}
-      </Upload>
+      <>
+        <div onClick={toggle} className={styles['variant-image']}>
+          {record.image && record.image.length ? (
+            <img src={record.image[0] || IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
+          ) : (
+            <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
+          )}
+        </div>
+        <Modal
+          footer={
+            <Row justify="end">
+              <Space>
+                <Button style={{ minWidth: 100 }} onClick={toggle}>
+                  Đóng
+                </Button>
+                <Button
+                  onClick={async () => {
+                    const body = {
+                      variants: product.variants.map((e) => {
+                        if (e.variant_id === record.variant_id) return { ...e, image: images }
+                        return e
+                      }),
+                    }
+                    await _updateProduct(body, product.product_id)
+                    toggle()
+                  }}
+                  style={{ minWidth: 100 }}
+                  type="primary"
+                >
+                  Lưu
+                </Button>
+              </Space>
+            </Row>
+          }
+          width={700}
+          onCancel={toggle}
+          title="Cập nhật hình ảnh"
+          visible={visible}
+        >
+          <Upload.Dragger
+            fileList={imagesView}
+            listType="picture"
+            data={_uploadFile}
+            name="file"
+            multiple
+            onChange={(info) => {
+              if (info.file.status !== 'done') info.file.status = 'done'
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              {loading ? <LoadingOutlined /> : <InboxOutlined />}
+            </p>
+            <p className="ant-upload-text">Nhấp hoặc hình ảnh vào khu vực này để tải lên</p>
+            <p className="ant-upload-hint">Hỗ trợ hình ảnh .PNG, .JPG,...</p>
+          </Upload.Dragger>
+        </Modal>
+      </>
     )
   }
-  /*image product */
 
   const onClickClear = async () => {
     Object.keys(paramsFilter).map((key) => {
@@ -350,11 +435,18 @@ export default function Product() {
       setLoading(true)
       let res = await updateProduct(body, id)
       console.log(res)
-      if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
-      else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
+      if (res.status === 200) {
+        if (res.data.success) notification.success({ message: 'Cập nhật thành công!' })
+        else
+          notification.error({
+            message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+        })
 
       await _getProducts()
-
       setLoading(false)
     } catch (error) {
       console.log(error)
@@ -387,14 +479,6 @@ export default function Product() {
 
   const [optionSearchName, setOptionSearchName] = useState('name')
 
-  const onChangeStore = (storeId) => {
-    if (storeId) paramsFilter.store_id = storeId
-    else delete paramsFilter.store_id
-
-    paramsFilter.page = 1
-    setParamsFilter({ ...paramsFilter })
-  }
-
   const onChangeCategoryValue = (id) => {
     if (id) paramsFilter.category_id = id.join('---')
     else delete paramsFilter.category_id
@@ -413,7 +497,7 @@ export default function Product() {
               txt="Import sản phẩm"
               upload={importProduct}
               title="Nhập sản phẩm bằng file excel"
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/28/4f5990e3-7325-4188-b09b-758b55b6148e/templated products import 4.xlsx"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/31/bc03caef-25ad-4767-bad3-d9d41459b0ef/ImportProductAO.xlsx"
               reload={_getProducts}
             />
 
@@ -675,7 +759,17 @@ export default function Product() {
                   <Table
                     style={{ width: '100%' }}
                     pagination={false}
-                    columns={columnsVariant}
+                    columns={columnsVariant.map((column) => {
+                      if (column.key === 'image')
+                        return {
+                          ...column,
+                          render: (text, recordVariant) => (
+                            <ImagesVariant record={recordVariant} product={record} />
+                          ),
+                        }
+
+                      return column
+                    })}
                     dataSource={record.variants}
                     size="small"
                   />
@@ -691,7 +785,7 @@ export default function Product() {
                 ...column,
                 render: (text, record) =>
                   record.active ? (
-                    <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
+                    <Link to={{ pathname: ROUTES.PRODUCT_UPDATE, state: record }}>{text}</Link>
                   ) : (
                     text
                   ),

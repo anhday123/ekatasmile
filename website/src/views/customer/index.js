@@ -16,21 +16,19 @@ import {
   Table,
   notification,
   Drawer,
-  Modal,
-  Checkbox,
   Space,
   Popconfirm,
+  Modal,
 } from 'antd'
 
 //icons
 import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //components
-import CustomerUpdate from 'views/actions/customer/update'
-import CustomerAdd from 'views/actions/customer/add'
+import CustomerForm from './customer-form'
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
-import columnsCustomer from './columnsCustomer'
+import columnsCustomer from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
@@ -44,15 +42,13 @@ export default function Customer() {
   const [columns, setColumns] = useState([])
   const [countCustomer, setCountCustomer] = useState(0)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [customers, setCustomers] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
-  const [infoCustomer, setInfoCustomer] = useState({})
-  const [showCreate, setShowCreate] = useState(false)
 
-  const [customerUpdateDrawer, setCustomerUpdateDrawer] = useState(false)
-  const [customerUpdate, setCustomerUpdate] = useState({})
+  const [visibleCustomer, setVisibleCustomer] = useState(false)
+  const toggleCustomer = () => setVisibleCustomer(!visibleCustomer)
+  const [customers, setCustomers] = useState([])
+
   const [valueSearch, setValueSearch] = useState('')
   const [optionSearch, setOptionSearch] = useState('name')
 
@@ -86,10 +82,35 @@ export default function Customer() {
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
   }
+
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   }
+
+  const ModalCustomer = ({ children, record }) => {
+    return (
+      <>
+        <div onClick={toggleCustomer}>{children}</div>
+        <Modal
+          style={{ top: 20 }}
+          onCancel={toggleCustomer}
+          width={800}
+          footer={null}
+          title={`${record ? 'Cập nhật' : 'Tạo'} khách hàng`}
+          visible={visibleCustomer}
+        >
+          <CustomerForm
+            record={record}
+            close={toggleCustomer}
+            text={record ? 'Lưu' : 'Tạo'}
+            reload={_getCustomers}
+          />
+        </Modal>
+      </>
+    )
+  }
+
   const _getCustomers = async () => {
     try {
       setTableLoading(true)
@@ -148,14 +169,15 @@ export default function Customer() {
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
         <TitlePage title="Quản lý khách hàng">
           <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-            <Button
-              size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-              onClick={() => setShowCreate(true)}
-            >
-              Thêm khách hàng
-            </Button>
+            <ModalCustomer>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+              >
+                Thêm khách hàng
+              </Button>
+            </ModalCustomer>
           </Permission>
         </TitlePage>
 
@@ -364,14 +386,9 @@ export default function Customer() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <a
-                    onClick={() => {
-                      setCustomerUpdateDrawer(true)
-                      setCustomerUpdate(record)
-                    }}
-                  >
-                    {record.code}
-                  </a>
+                  <ModalCustomer record={record}>
+                    <a>{record.code}</a>
+                  </ModalCustomer>
                 ),
               }
             if (column.key === 'name')
@@ -420,21 +437,6 @@ export default function Customer() {
           }}
         />
       </div>
-
-      <CustomerUpdate
-        customerData={[customerUpdate]}
-        visible={customerUpdateDrawer}
-        onClose={() => setCustomerUpdateDrawer(false)}
-        reload={_getCustomers}
-      />
-      <Drawer
-        visible={showCreate}
-        onClose={() => setShowCreate(false)}
-        width="75%"
-        title="Thêm khách hàng"
-      >
-        <CustomerAdd reload={_getCustomers} close={() => setShowCreate(false)} />
-      </Drawer>
     </>
   )
 }
