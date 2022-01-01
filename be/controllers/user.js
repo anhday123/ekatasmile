@@ -176,12 +176,11 @@ let addUserC = async (req, res, next) => {
         _user.validateInput(req.body);
         req.body.username = String(req.body.username).trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
-        req.body.email = String(req.body.email).trim().toLowerCase();
         let user = await client
             .db(DB)
             .collection('Users')
             .findOne({
-                $or: [{ username: req.body.username }, { email: req.body.email }],
+                $or: [{ username: req.body.username }],
             });
         if (user) {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
