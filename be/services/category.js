@@ -306,8 +306,8 @@ module.exports._get = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: categories,
             count: counts[0] ? counts[0].counts : 0,
+            data: categories,
         });
     } catch (err) {
         next(err);

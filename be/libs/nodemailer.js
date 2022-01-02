@@ -1,16 +1,19 @@
 let nodemail = require(`nodemailer`);
 
-let transporter = nodemail.createTransport({
-    host: `smtp.gmail.com`,
-    port: 465,
+let transporter = nodemail.createTransport({    
+    host: "smtpout.secureserver.net",  
     secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-    },
+    secureConnection: false, // TLS requires secureConnection to be false
     tls: {
-        rejectUnauthorized: false,
+        ciphers:'SSLv3'
     },
+    requireTLS:true,
+    port: 465,
+    debug: true,
+    auth: {
+        user: "support@networkdemo.site",
+        pass: "u$65lxw0d8" 
+    }
 });
 
 const sendMail = (address, subject, content) => {
