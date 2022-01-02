@@ -276,7 +276,7 @@ module.exports._create = async (req, res, next) => {
         req.body.username = String(req.body.username).trim().toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
         let user = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Users')
             .findOne({
                 $or: [{ username: req.body.username }],
@@ -285,7 +285,7 @@ module.exports._create = async (req, res, next) => {
             throw new Error('400: Username hoặc Email đã được sử dụng!');
         }
         let user_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Users' })
             .then((doc) => {
@@ -313,21 +313,21 @@ module.exports._create = async (req, res, next) => {
             address: req.body.address,
             district: req.body.district,
             province: req.body.province,
-            branch_id: branch_id,
-            store_id: store_id,
+            branch_id: req.body.branch_id,
+            store_id: req.body.store_id,
             last_login: moment().tz(TIMEZONE).format(),
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
-            active: false,
+            active: true,
             slug_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`, true).toLowerCase(),
             slug_address: removeUnicode(`${req.body.address}`, true).toLowerCase(),
             slug_district: removeUnicode(`${req.body.district}`, true).toLowerCase(),
             slug_province: removeUnicode(`${req.body.province}`, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: user_id } }, { upsert: true });
         req[`body`] = _user;
@@ -339,7 +339,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        let user = await client.db(DB).collection('Users').findOne(req.params);
+        let user = await client.db(req.user.database).collection('Users').findOne(req.params);
         if (!user) {
             throw new Error(`400: Người dùng không tồn tại!`);
         }
@@ -378,7 +378,7 @@ module.exports._update = async (req, res, next) => {
             slug_province: removeUnicode(`${req.body.province}`, true).toLowerCase(),
         };
         req['body'] = _user;
-        await userService.updateUserS(req, res, next);
+        await userService._update(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -387,7 +387,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Users`)
             .deleteMany({ user_id: { $in: req.body.user_id } });
         res.send({
