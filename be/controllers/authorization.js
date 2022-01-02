@@ -122,6 +122,7 @@ module.exports._register = async (req, res, next) => {
             tax_code: req.body.tax_code || '',
             career_id: req.body.career_id,
             price_recipe: req.body.price_recipe || 'FIFO',
+            verify_with: req.body.verify_with || 'phone',
             last_login: moment().tz(TIMEZONE).format(),
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: user_id,
