@@ -55,7 +55,7 @@ module.exports._register = async (req, res, next) => {
         if (user) {
             throw new Error(`400: Số điện thoại đã được sử dụng!`);
         }
-        const DB = `${req.body.business_name}`;
+        const DB = `${req.body.prefix}DB`;
         let [business_id, system_user_id] = await Promise.all([
             client
                 .db(SDB)
