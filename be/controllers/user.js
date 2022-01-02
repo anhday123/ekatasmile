@@ -147,7 +147,7 @@ module.exports._register = async (req, res, next) => {
             branch_id: branch_id,
             store_id: store_id,
             otp_code: otpCode,
-            otp_timelife: moment().tz(TIMEZONE).format(),
+            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
             last_login: moment().tz(TIMEZONE).format(),
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: user_id,
