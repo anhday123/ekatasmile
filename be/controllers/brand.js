@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let brand = await client.db(DB).collection(`Brands`).findOne({
+        let brand = await client.db(req.user.database).collection(`Brands`).findOne({
             name: req.body.name,
         });
         if (brand) {
             throw new Error(`400: Thương hiệu đã tồn tại!`);
         }
         let brand_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Brands' })
             .then((doc) => {
@@ -82,7 +82,7 @@ module.exports._create = async (req, res, next) => {
             })(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brand_id } }, { upsert: true });
         req[`_insert`] = _brand;
@@ -96,13 +96,13 @@ module.exports._update = async (req, res, next) => {
     try {
         req.params.brand_id = Number(req.params.brand_id);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let brand = await client.db(DB).collection(`Brands`).findOne(req.params);
+        let brand = await client.db(req.user.database).collection(`Brands`).findOne(req.params);
         if (!brand) {
             throw new Error(`400: Bài viết không tồn tại!`);
         }
         if (req.body.title) {
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Brands`)
                 .findOne({
                     brand_id: { $ne: brand.brand_id },
@@ -155,7 +155,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Brands`)
             .deleteMany({ brand_id: { $in: req.body.brand_id } });
         res.send({

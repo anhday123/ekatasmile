@@ -282,9 +282,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [users, counts] = await Promise.all([
-            client.db(DB).collection(`Users`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Users`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Users`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -301,7 +301,7 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let insert = await client.db(DB).collection(`Users`).insertOne(req.body);
+        let insert = await client.db(req.user.database).collection(`Users`).insertOne(req.body);
         if (!insert.insertedId) {
             throw new Error(`500: Tạo user thất bại!`);
         }
@@ -319,7 +319,7 @@ module.exports._create = async (req, res, next) => {
                 slug_properties: 'taikhoan',
                 name: 'taotaikhoan',
             };
-            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
+            await Promise.all([client.db(req.user.database).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
@@ -331,7 +331,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Users`).updateOne(req.params, { $set: req.body });
+        await client.db(req.user.database).collection(`Users`).updateOne(req.params, { $set: req.body });
         delete req._update.password;
         try {
             let _action = {
@@ -346,13 +346,13 @@ module.exports._update = async (req, res, next) => {
                 slug_properties: 'taikhoan',
                 name: 'capnhattaikhoan',
             };
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await client.db(req.user.database).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
         if (req.body.user_id == req.body.business_id) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Users')
                 .updateMany(
                     {
@@ -368,7 +368,7 @@ module.exports._update = async (req, res, next) => {
                 );
         }
         let [user] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Users`)
             .aggregate([
                 { $match: { user_id: Number(req.user.user_id) } },

@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let tax = await client.db(DB).collection(`Taxes`).findOne({
+        let tax = await client.db(req.user.database).collection(`Taxes`).findOne({
             name: req.body.name,
         });
         if (tax) {
             throw new Error(`400: Thuế đã tồn tại!`);
         }
         let tax_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Taxes' })
             .then((doc) => {
@@ -73,12 +73,12 @@ module.exports._create = async (req, res, next) => {
         };
         if (_tax.default) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Taxes')
                 .updateMany({}, { $set: { default: false } });
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Taxes' }, { $set: { name: 'Taxes', value: tax_id } }, { upsert: true });
         req[`body`] = _tax;
@@ -90,14 +90,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.tax_id = Number(req.params.tax_id);
-        let tax = await client.db(DB).collection(`Taxes`).findOne(req.params);
+        let tax = await client.db(req.user.database).collection(`Taxes`).findOne(req.params);
         if (!tax) {
             throw new Error(`400: Thuế không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Taxs`)
                 .findOne({
                     tax_id: { $ne: tax.tax_id },
@@ -129,7 +129,7 @@ module.exports._update = async (req, res, next) => {
         };
         if (_tax.default) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Taxes')
                 .updateMany({}, { $set: { default: false } });
         }
@@ -143,7 +143,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Taxes`)
             .deleteMany({ tax_id: { $in: req.body.tax_id } });
         res.send({

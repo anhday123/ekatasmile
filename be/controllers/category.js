@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let category = await client.db(DB).collection(`Categories`).findOne({
+        let category = await client.db(req.user.database).collection(`Categories`).findOne({
             name: req.body.name,
         });
         if (category) {
             throw new Error(`400: Nhóm sản phẩm đã tồn tại!`);
         }
         let category_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Categories' })
             .then((doc) => {
@@ -74,12 +74,12 @@ module.exports._create = async (req, res, next) => {
         };
         if (req.body.products) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Products`)
                 .updateMany({ product_id: { $in: products } }, { $set: { category_id: category_id } });
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: category_id } }, { upsert: true });
         req[`body`] = _category;
@@ -93,13 +93,13 @@ module.exports._update = async (req, res, next) => {
     try {
         req.params.category_id = Number(req.params.category_id);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let category = await client.db(DB).collection(`Categories`).findOne(req.params);
+        let category = await client.db(req.user.database).collection(`Categories`).findOne(req.params);
         if (!category) {
             throw new Error(`400: Nhóm sản phẩm không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Categories`)
                 .findOne({
                     category_id: { $ne: category.category_id },
@@ -142,7 +142,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Categories`)
             .deleteMany({ category_id: { $in: req.body.category_id } });
         res.send({

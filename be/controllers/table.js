@@ -39,7 +39,7 @@ module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
         req.body.position = String(req.body.position).trim().toUpperCase();
-        let table = await client.db(DB).collection(`Tables`).findOne({
+        let table = await client.db(req.user.database).collection(`Tables`).findOne({
             store_id: req.body.store_id,
             position: req.body.position,
             name: req.body.name,
@@ -48,7 +48,7 @@ module.exports._create = async (req, res, next) => {
             throw new Error(`400: Bàn tại vị trí này đã tồn tại!`);
         }
         let table_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Tables' })
             .then((doc) => {
@@ -76,7 +76,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(req.body.name, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Tables' }, { $set: { name: 'Tables', value: table_id } }, { upsert: true });
         req[`body`] = _table;
@@ -91,14 +91,14 @@ module.exports._update = async (req, res, next) => {
         if (req.body.position) {
             req.body.position = String(req.body.position).trim().toUpperCase();
         }
-        let table = await client.db(DB).collection(`Tables`).findOne(req.params);
+        let table = await client.db(req.user.database).collection(`Tables`).findOne(req.params);
         if (!table) {
             throw new Error(`400: Bàn không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Tables`)
                 .findOne({
                     table_id: { $ne: Number(table.table_id) },
@@ -143,7 +143,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Tables`)
             .deleteMany({ table_id: { $in: req.body.table_id } });
         res.send({

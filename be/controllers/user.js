@@ -1,7 +1,7 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
-const SDB = process.env.DATABASE;
+const SDB = process.env.DATABASE; // System Database
 
 const userService = require(`../services/user`);
 
@@ -88,18 +88,12 @@ module.exports._register = async (req, res, next) => {
         let otpCode = String(Math.random()).substr(2, 6);
         let verifyId = crypto.randomBytes(10).toString(`hex`);
         let verifyLink = `https://quantribanhang.viesoftware.vn/vertifyaccount?uid=${verifyId}`;
-        let link = await client
-            .db(DB)
-            .collection('VertifyLinks')
-            .insertOne({
-                username: req.body.username,
-                UID: String(verifyId),
-                verify_link: verifyLink,
-                verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
-            });
-        if (!link.insertedId) {
-            throw new Error('Tạo tài khoản thất bại!');
-        }
+        let _verifyLink = {
+            username: req.body.username,
+            UID: String(verifyId),
+            verify_link: verifyLink,
+            verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
+        };
         await mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink));
         let user_id = 0;
         let role_id = 0;
@@ -131,6 +125,53 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: user_id,
             active: true,
+        };
+        let _user = {
+            user_id: user_id,
+            system_user_id: system_user_id,
+            code: String(user_id).padStart(6, '0'),
+            business_id: business_id,
+            username: req.body.username,
+            password: req.body.password,
+            system_role_id: 2,
+            role_id: role_id,
+            email: req.body.email,
+            phone: req.body.phone,
+            avatar: req.body.avatar,
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            birth_day: req.body.birth_day,
+            address: req.body.address,
+            district: req.body.district,
+            province: req.body.province,
+            branch_id: branch_id,
+            store_id: store_id,
+            otp_code: otpCode,
+            otp_timelife: moment().tz(TIMEZONE).format(),
+            last_login: moment().tz(TIMEZONE).format(),
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: user_id,
+            active: false,
+            slug_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`, true).toLowerCase(),
+            slug_address: removeUnicode(`${req.body.address}`, true).toLowerCase(),
+            slug_district: removeUnicode(`${req.body.district}`, true).toLowerCase(),
+            slug_province: removeUnicode(`${req.body.province}`, true).toLowerCase(),
+        };
+        let _role = {
+            role_id: role_id,
+            code: String(role_id).padStart(6, '0'),
+            name: 'ADMIN',
+            permission_list: [],
+            menu_list: [],
+            default: true,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: 0,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: 0,
+            active: true,
+            slug_name: 'admin',
         };
         let _branch = {
             branch_id: branch_id,
@@ -187,54 +228,10 @@ module.exports._register = async (req, res, next) => {
             slug_district: '',
             slug_province: '',
         };
-        let _role = {
-            role_id: role_id,
-            code: String(role_id).padStart(6, '0'),
-            name: 'ADMIN',
-            permission_list: [],
-            menu_list: [],
-            default: true,
-            create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 0,
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 0,
-            active: true,
-            slug_name: 'admin',
-        };
-        let _user = {
-            user_id: user_id,
-            system_user_id: system_user_id,
-            code: String(user_id).padStart(6, '0'),
-            business_id: business_id,
-            username: req.body.username,
-            password: req.body.password,
-            system_role_id: 2,
-            role_id: role_id,
-            email: req.body.email,
-            phone: req.body.phone,
-            avatar: req.body.avatar,
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            birth_day: req.body.birth_day,
-            address: req.body.address,
-            district: req.body.district,
-            province: req.body.province,
-            branch_id: branch_id,
-            store_id: store_id,
-            last_login: moment().tz(TIMEZONE).format(),
-            create_date: moment().tz(TIMEZONE).format(),
-            creator_id: user_id,
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: user_id,
-            active: false,
-            slug_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`, true).toLowerCase(),
-            slug_address: removeUnicode(`${req.body.address}`, true).toLowerCase(),
-            slug_district: removeUnicode(`${req.body.district}`, true).toLowerCase(),
-            slug_province: removeUnicode(`${req.body.province}`, true).toLowerCase(),
-        };
         await Promise.all([
             client.db(SDB).collection('Business').insertOne(_business),
             client.db(SDB).collection('Users').insertOne(_user),
+            client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
             client.db(DB).collection('Users').insertOne(_user),
             client.db(DB).collection('Roles').insertOne(_role),
             client.db(DB).collection('Branchs').insertOne(_branch),

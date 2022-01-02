@@ -47,7 +47,7 @@ module.exports.addProductC = async (req, res, next) => {
         [req.body] = req.body.products;
         let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Products' })
                 .then((doc) => {
@@ -57,7 +57,7 @@ module.exports.addProductC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Attributes' })
                 .then((doc) => {
@@ -67,7 +67,7 @@ module.exports.addProductC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Variants' })
                 .then((doc) => {
@@ -77,7 +77,7 @@ module.exports.addProductC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Suppliers')
                 .findOne({ supplier_id: Number(req.body.supplier_id) }),
         ]).catch((err) => {
@@ -187,11 +187,11 @@ module.exports.addProductC = async (req, res, next) => {
         });
         await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Attributes' },
@@ -199,7 +199,7 @@ module.exports.addProductC = async (req, res, next) => {
                     { upsert: true }
                 ),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
         ]);
@@ -213,7 +213,7 @@ module.exports.updateProductC = async (req, res, next) => {
     try {
         req.params.product_id = Number(req.params.product_id);
         let [product] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Products')
             .aggregate([
                 { $match: { product_id: Number(req.params.product_id) } },
@@ -237,7 +237,7 @@ module.exports.updateProductC = async (req, res, next) => {
             .toArray();
         let [attribute_id, variant_id] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Attributes' })
                 .then((doc) => {
@@ -247,7 +247,7 @@ module.exports.updateProductC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Variants' })
                 .then((doc) => {
@@ -405,11 +405,11 @@ module.exports.updateProductC = async (req, res, next) => {
         });
         await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Attributes' },
@@ -417,7 +417,7 @@ module.exports.updateProductC = async (req, res, next) => {
                     { upsert: true }
                 ),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
         ]);
@@ -457,7 +457,7 @@ module.exports.getAllUnitProductC = async (req, res, next) => {
 module.exports.addFeedbackC = async (req, res, next) => {
     try {
         let _feedback = new Feedback();
-        let feedbackMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Feedbacks' });
+        let feedbackMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Feedbacks' });
         let feedback_id = (() => {
             if (feedbackMaxId) {
                 if (feedbackMaxId.value) {
@@ -485,7 +485,7 @@ module.exports.deleteFeedbackC = async (req, res, next) => {
             return Number(id);
         });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Feedbacks')
             .deleteMany({ feedback_id: { $in: feedback_ids } });
         res.send({ success: true, message: 'Xóa phản hồi thành công!' });
@@ -555,7 +555,7 @@ module.exports.importFileC = async (req, res, next) => {
         originSlugs = [...new Set(originSlugs)];
         let [categories, suppliers, taxes, warranties, brands, origins] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Categories')
                 .find({
                     business_id: req.user.business_id,
@@ -563,7 +563,7 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Suppliers')
                 .find({
                     business_id: req.user.business_id,
@@ -571,7 +571,7 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Taxes')
                 .find({
                     business_id: req.user.business_id,
@@ -579,7 +579,7 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Warranties')
                 .find({
                     business_id: req.user.business_id,
@@ -587,7 +587,7 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Brands')
                 .find({
                     business_id: req.user.business_id,
@@ -595,7 +595,7 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Origins')
                 .find({
                     business_id: req.user.business_id,
@@ -629,7 +629,7 @@ module.exports.importFileC = async (req, res, next) => {
         });
         let [product_id, attribute_id, variant_id, supplier_id, category_id, brand_id] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Products' })
                 .then((doc) => {
@@ -639,7 +639,7 @@ module.exports.importFileC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Attributes' })
                 .then((doc) => {
@@ -649,7 +649,7 @@ module.exports.importFileC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Variants' })
                 .then((doc) => {
@@ -659,7 +659,7 @@ module.exports.importFileC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Suppliers' })
                 .then((doc) => {
@@ -669,7 +669,7 @@ module.exports.importFileC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Categories' })
                 .then((doc) => {
@@ -679,7 +679,7 @@ module.exports.importFileC = async (req, res, next) => {
                     return 0;
                 }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Brands' })
                 .then((doc) => {
@@ -764,19 +764,19 @@ module.exports.importFileC = async (req, res, next) => {
             }
         });
         if (insertSuppliers.length > 0) {
-            let insert = await client.db(DB).collection('Suppliers').insertMany(insertSuppliers);
+            let insert = await client.db(req.user.database).collection('Suppliers').insertMany(insertSuppliers);
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo nhà cung cấp thất bại!`);
             }
         }
         if (insertCategories.length > 0) {
-            let insert = await client.db(DB).collection('Categories').insertMany(insertCategories);
+            let insert = await client.db(req.user.database).collection('Categories').insertMany(insertCategories);
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo nhóm sản phẩm thất bại!`);
             }
         }
         if (insertBrands.length > 0) {
-            let insert = await client.db(DB).collection('Brands').insertMany(insertBrands);
+            let insert = await client.db(req.user.database).collection('Brands').insertMany(insertBrands);
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo thương hiệu sản phẩm thất bại!`);
             }
@@ -1000,34 +1000,34 @@ module.exports.importFileC = async (req, res, next) => {
             _attributes[i].slug_values = [...new Set(_attributes[i].slug_values)];
         }
         if (Object.values(_products).length > 0) {
-            let insert = await client.db(DB).collection('Products').insertMany(Object.values(_products));
+            let insert = await client.db(req.user.database).collection('Products').insertMany(Object.values(_products));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo sản phẩm thất bại!`);
             }
         }
         if (Object.values(_attributes).length > 0) {
-            let insert = await client.db(DB).collection('Attributes').insertMany(Object.values(_attributes));
+            let insert = await client.db(req.user.database).collection('Attributes').insertMany(Object.values(_attributes));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
             }
         }
         if (Object.values(_variants).length > 0) {
-            let insert = await client.db(DB).collection('Variants').insertMany(Object.values(_variants));
+            let insert = await client.db(req.user.database).collection('Variants').insertMany(Object.values(_variants));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo phiên bản sản phẩm thất bại!`);
             }
         }
         await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Suppliers' },
@@ -1035,7 +1035,7 @@ module.exports.importFileC = async (req, res, next) => {
                     { upsert: true }
                 ),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Categories' },
@@ -1043,7 +1043,7 @@ module.exports.importFileC = async (req, res, next) => {
                     { upsert: true }
                 ),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brand_id } }, { upsert: true }),
         ]);
@@ -1063,11 +1063,11 @@ module.exports.AddUnitProductC = async (req, res, next) => {
         req.body.created_date = moment().tz(timezone).format();
         req.body.updated_date = moment().tz(timezone).format();
 
-        let app = await client.db(DB).collection('AppSetting').findOne({ name: 'Unit' });
+        let app = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Unit' });
 
         req.body.unit_product_id = parseInt(app.value) + 1;
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne(
                 { name: 'Unit' },

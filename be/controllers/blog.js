@@ -43,14 +43,14 @@ module.exports._create = async (req, res, next) => {
             }
         });
         req.body.title = String(req.body.title).trim().toUpperCase();
-        let blog = await client.db(DB).collection(`Blogs`).findOne({
+        let blog = await client.db(req.user.database).collection(`Blogs`).findOne({
             title: req.body.title,
         });
         if (blog) {
             throw new Error(`400: Bài viết đã tồn tại!`);
         }
         let blog_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Blogs' })
             .then((doc) => {
@@ -87,7 +87,7 @@ module.exports._create = async (req, res, next) => {
             })(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Blogs' }, { $set: { name: 'Blogs', value: blog_id } }, { upsert: true });
         req[`body`] = _blog;
@@ -101,13 +101,13 @@ module.exports._update = async (req, res, next) => {
     try {
         req.params.blog_id = Number(req.params.blog_id);
         req.body.title = String(req.body.title).trim().toUpperCase();
-        let blog = await client.db(DB).collection(`Blogs`).findOne(req.params);
+        let blog = await client.db(req.user.database).collection(`Blogs`).findOne(req.params);
         if (!blog) {
             throw new Error(`400: Bài viết không tồn tại!`);
         }
         if (req.body.title) {
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Blogs`)
                 .findOne({
                     business_id: req.user.business_id,
@@ -159,7 +159,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Blogs`)
             .deleteMany({ blog_id: { $in: req.body.blog_id } });
         res.send({

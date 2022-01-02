@@ -348,9 +348,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [products, counts] = await Promise.all([
-            client.db(DB).collection(`Products`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Products`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Products`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -368,14 +368,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         let result = req._product;
-        let insertProduct = await client.db(DB).collection('Products').insertOne(req._product);
+        let insertProduct = await client.db(req.user.database).collection('Products').insertOne(req._product);
         if (!insertProduct.insertedId) {
             throw new Error('500: Tạo sản phẩm thất bại');
         }
         let insertAttributes = await (() => {
             result.attributes = req.attributes;
             if (req._attributes && req._attributes.length > 0) {
-                return client.db(DB).collection('Attributes').insertMany(req._attributes);
+                return client.db(req.user.database).collection('Attributes').insertMany(req._attributes);
             }
             return [];
         })();
@@ -385,7 +385,7 @@ module.exports._create = async (req, res, next) => {
         let insertVariants = await (() => {
             result.variants = req._variants;
             if (req._variants && req._variants.length > 0) {
-                return client.db(DB).collection('Variants').insertMany(req._variants);
+                return client.db(req.user.database).collection('Variants').insertMany(req._variants);
             }
             return [];
         })();
@@ -406,21 +406,21 @@ module.exports._update = async (req, res, next) => {
         let result = [];
         if (req._newProducts && Array.isArray(req._newProducts) && req._newProducts.length > 0) {
             result.push(req._newProducts);
-            let insert = await client.db(DB).collection('Products').insertMany(req._newProducts);
+            let insert = await client.db(req.user.database).collection('Products').insertMany(req._newProducts);
             if (!insert.insertedIds) {
                 throw new Error('500: Tạo sản phẩm thất bại!');
             }
         }
         if (req._newAttributes && Array.isArray(req._newAttributes) && req._newAttributes.length > 0) {
             result.push(req._newAttributes);
-            let insert = await client.db(DB).collection('Attributes').insertMany(req._newAttributes);
+            let insert = await client.db(req.user.database).collection('Attributes').insertMany(req._newAttributes);
             if (!insert.insertedIds) {
                 throw new Error('500: Tạo sản thuộc tính sản phẩm bại!');
             }
         }
         if (req._newVariants && Array.isArray(req._newVariants) && req._newVariants.length > 0) {
             result.push(req._newVariants);
-            let insert = await client.db(DB).collection('Variants').insertMany(req._newVariants);
+            let insert = await client.db(req.user.database).collection('Variants').insertMany(req._newVariants);
             if (!insert.insertedIds) {
                 throw new Error('500: Tạo phiên bản sản phẩm thất bại!');
             }
@@ -430,7 +430,7 @@ module.exports._update = async (req, res, next) => {
             await Promise.all(
                 req._oldProducts.map((product) => {
                     return client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('Products')
                         .updateOne({ product_id: product.product_id }, { $set: product });
                 })
@@ -441,7 +441,7 @@ module.exports._update = async (req, res, next) => {
             await Promise.all(
                 req._oldAttributes.map((attribute) => {
                     return client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('Attributes')
                         .updateOne({ attribute_id: attribute.attribute_id }, { $set: attribute });
                 })
@@ -452,7 +452,7 @@ module.exports._update = async (req, res, next) => {
             await Promise.all(
                 req._oldVariants.map((variant) => {
                     return client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('Variants')
                         .updateOne({ variant_id: variant.variant_id }, { $set: variant });
                 })
@@ -460,7 +460,7 @@ module.exports._update = async (req, res, next) => {
         }
         if (req._newPrices && Array.isArray(req._newPrices) && req._newPrices.length > 0) {
             result.push(req._newPrices);
-            let insert = await client.db(DB).collection('Prices').insertMany(req._newPrices);
+            let insert = await client.db(req.user.database).collection('Prices').insertMany(req._newPrices);
             if (!insert.insertedIds) {
                 throw new Error('500: Tạo giá nhập sản phẩm thất bại!');
             }
@@ -485,13 +485,13 @@ module.exports._getAllAttributes = async (req, res, next) => {
             mongoQuery['name'] = 'BRANCH';
             mongoQuery['inventory_id'] = Number(req.query.branch_id);
         }
-        let locations = await client.db(DB).collection('Locations').find(mongoQuery).toArray();
+        let locations = await client.db(req.user.database).collection('Locations').find(mongoQuery).toArray();
         let productIds = locations.map((location) => {
             return location.product_id;
         });
         productIds = [...new Set(productIds)];
         let attributes = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Attributes')
             .find({ product_id: { $in: productIds } })
             .toArray();
@@ -517,7 +517,7 @@ module.exports._getAllAttributes = async (req, res, next) => {
 
 module.exports._createFeedback = async (req, res, next) => {
     try {
-        let _insert = await client.db(DB).collection(`Feedbacks`).insertOne(req._insert);
+        let _insert = await client.db(req.user.database).collection(`Feedbacks`).insertOne(req._insert);
         if (!_insert.insertedId) {
             throw new Error('500: Thêm nhận xét thất bại!');
         }
@@ -548,14 +548,14 @@ module.exports.getAllUnitProductS = async (req, res, next) => {
         req.query.page_size = parseInt(req.query.page_size);
 
         var result = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('UnitProducts')
             .find(mongoQuery)
             .skip((req.query.page - 1) * req.query.page_size)
             .limit(req.query.page_size)
             .toArray();
 
-        var count = await client.db(DB).collection('UnitProducts').find(mongoQuery).count();
+        var count = await client.db(req.user.database).collection('UnitProducts').find(mongoQuery).count();
 
         res.send({ success: true, count: count, data: result });
     } catch (err) {
@@ -565,7 +565,7 @@ module.exports.getAllUnitProductS = async (req, res, next) => {
 
 module.exports.AddUnitProductS = async (req, res, next) => {
     try {
-        await client.db(DB).collection('UnitProducts').insertOne(req.body);
+        await client.db(req.user.database).collection('UnitProducts').insertOne(req.body);
 
         res.send({ success: true, mess: 'Add Success' });
     } catch (err) {

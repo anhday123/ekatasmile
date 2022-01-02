@@ -37,14 +37,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let warranty = await client.db(DB).collection(`Warranties`).findOne({
+        let warranty = await client.db(req.user.database).collection(`Warranties`).findOne({
             name: req.body.name,
         });
         if (warranty) {
             throw new Error(`400: Chương trình bảo hành đã tồn tại!`);
         }
         let warranty_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Warranties' })
             .then((doc) => {
@@ -71,7 +71,7 @@ module.exports._create = async (req, res, next) => {
             sub_type: removeUnicode(req.body.type, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: warranty_id } }, { upsert: true });
         req[`body`] = _warranty;
@@ -83,14 +83,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.warranty_id = Number(req.params.warranty_id);
-        let warranty = await client.db(DB).collection(`Warranties`).findOne(req.params);
+        let warranty = await client.db(req.user.database).collection(`Warranties`).findOne(req.params);
         if (!warranty) {
             throw new Error(`400: Chương trình bảo hành không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Warranties`)
                 .findOne({
                     warranty_id: { $ne: warranty.warranty_id },
@@ -132,7 +132,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Warranties`)
             .deleteMany({ warranty_id: { $in: req.body.warranty_id } });
         res.send({

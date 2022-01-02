@@ -259,9 +259,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [stores, counts] = await Promise.all([
-            client.db(DB).collection(`Stores`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Stores`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Stores`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -278,7 +278,7 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let insert = await client.db(DB).collection(`Stores`).insertOne(req.body);
+        let insert = await client.db(req.user.database).collection(`Stores`).insertOne(req.body);
         if (!insert.insertedId) {
             throw new Error(`500: Tạo cửa hàng thất bại!`);
         }
@@ -296,9 +296,9 @@ module.exports._create = async (req, res, next) => {
                 name: 'taocuahang',
             };
             await Promise.all([
-                client.db(DB).collection(`Actions`).insertOne(_action),
+                client.db(req.user.database).collection(`Actions`).insertOne(_action),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection(`Users`)
                     .updateOne({ user_id: req.user.user_id }, { $set: { store_id: req.body.store_id } }),
             ]);
@@ -306,7 +306,7 @@ module.exports._create = async (req, res, next) => {
             console.log(err);
         }
         let [user] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Users`)
             .aggregate([
                 { $match: { user_id: Number(req.user.user_id) } },
@@ -368,9 +368,9 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Stores`).updateOne(req.params, { $set: req.body });
+        await client.db(req.user.database).collection(`Stores`).updateOne(req.params, { $set: req.body });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Locations')
             .updateMany({ inventory_id: Number(req.params.store_id) }, { $set: { name: req.body.name } });
         try {
@@ -386,7 +386,7 @@ module.exports._update = async (req, res, next) => {
                 slug_properties: 'cuahang',
                 name: 'capnhatcuahang',
             };
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await client.db(req.user.database).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }

@@ -36,14 +36,14 @@ module.exports._get = async (req, res, next) => {
 };
 module.exports._create = async (req, res, next) => {
     try {
-        let customer = await client.db(DB).collection(`Customers`).findOne({
+        let customer = await client.db(req.user.database).collection(`Customers`).findOne({
             phone: req.body.phone,
         });
         if (customer) {
             throw new Error(`400: Số điện thoại đã tồn tại!`);
         }
         let customer_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Customers' })
             .then((doc) => {
@@ -85,7 +85,7 @@ module.exports._create = async (req, res, next) => {
             slug_province: removeUnicode(String(req.body.province), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: customer_id } }, { upsert: true });
         req[`body`] = _customer;
@@ -99,13 +99,13 @@ module.exports._update = async (req, res, next) => {
     try {
         req.params.customer_id = Number(req.params.customer_id);
         req.body.phone = String(req.body.phone).trim().toUpperCase();
-        let customer = await client.db(DB).collection(`Customers`).findOne(req.params);
+        let customer = await client.db(req.user.database).collection(`Customers`).findOne(req.params);
         if (!customer) {
             throw new Error(`400: Khách hàng không tồn tại!`);
         }
         if (req.body.phone) {
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Customers`)
                 .findOne({
                     customer_id: { $ne: customer.customer_id },
@@ -162,7 +162,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Customers`)
             .deleteMany({ customer_id: { $in: req.body.customer_id } });
         res.send({

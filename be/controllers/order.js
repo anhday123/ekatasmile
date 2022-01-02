@@ -57,7 +57,7 @@ let addOrderC = async (req, res, next) => {
         req['saleAt'] = saleAt;
         req.body['sale_location'] = await (async () => {
             if (saleAt) {
-                let result = await client.db(DB).collection(saleAt.collection).findOne(saleAt.location);
+                let result = await client.db(req.user.database).collection(saleAt.collection).findOne(saleAt.location);
                 return result;
             }
             return {};
@@ -68,7 +68,7 @@ let addOrderC = async (req, res, next) => {
             });
         })();
         let products = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Products')
             .aggregate([
                 { $match: { product_id: { $in: productIds } } },
@@ -93,7 +93,7 @@ let addOrderC = async (req, res, next) => {
         })();
         req['variantIds'] = variantIds;
         let variants = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Variants')
             .aggregate([{ $match: { variant_id: { $in: variantIds } } }])
             .toArray();
@@ -102,14 +102,14 @@ let addOrderC = async (req, res, next) => {
             _variants[String(variant.variant_id)] = variant;
         });
         req.body['customer'] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Customers')
             .findOne({ customer_id: Number(req.body.customer_id) });
         if (req.body.customer) {
             delete req.body.customer.password;
         }
         req.body['employee'] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Users')
             .findOne({ user_id: Number(req.body.employee_id) });
         if (req.body.employee) {
@@ -125,7 +125,7 @@ let addOrderC = async (req, res, next) => {
             return { create_date: -1 };
         })();
         let locations = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Locations')
             .find({
                 variant_id: { $in: req.variantIds },
@@ -144,7 +144,7 @@ let addOrderC = async (req, res, next) => {
             }
         });
         let prices = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Prices')
             .find({ variant_id: { $in: req.variantIds } })
             .toArray();
@@ -205,7 +205,7 @@ let addOrderC = async (req, res, next) => {
         if ((req.body.voucher && req.body.voucher != '') || (req.body.promotion_id && req.body.promotion_id != '')) {
             if (req.body.voucher && req.body.voucher != '') {
                 let promotion = await client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Promotions')
                     .findOne({ promotion_code: req.body.voucher.split('_')[0] });
                 if (!promotion) {
@@ -221,7 +221,7 @@ let addOrderC = async (req, res, next) => {
                     });
                     if (checkVoucher) {
                         await client
-                            .db(DB)
+                            .db(req.user.database)
                             .collection('Promotion')
                             .updateOne({ promotion_id: promotion.promotion_id }, { $set: promotion });
                         // delete promotion.vouchers;
@@ -233,7 +233,7 @@ let addOrderC = async (req, res, next) => {
             }
             if (req.body.promotion_id) {
                 let promotion = await client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Promotions')
                     .findOne({ promotion_id: Number(req.body.promotion_id) });
                 if (!promotion) {
@@ -244,7 +244,7 @@ let addOrderC = async (req, res, next) => {
         } else {
             req.body.promotion = {};
         }
-        let maxOrderId = await client.db(DB).collection('AppSetting').findOne({ name: 'Orders' });
+        let maxOrderId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Orders' });
         let order_id = (() => {
             if (maxOrderId) {
                 if (maxOrderId.value) {
@@ -267,14 +267,14 @@ let addOrderC = async (req, res, next) => {
         await new Promise(async (resolve, reject) => {
             for (let i in _update) {
                 await client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Locations')
                     .updateOne({ location_id: Number(_update[i].location_id) }, { $set: _update[i] });
             }
             resolve();
         });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: order_id } }, { upsert: true });
         req[`_insert`] = _order;
@@ -287,7 +287,7 @@ let updateOrderC = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);
         let _order = new Order();
-        let order = await client.db(DB).collection(`Orders`).findOne(req.params);
+        let order = await client.db(req.user.database).collection(`Orders`).findOne(req.params);
         if (!order) {
             throw new Error(`400: Đơn hàng không tồn tại!`);
         }
@@ -303,7 +303,7 @@ let updateOrderC = async (req, res, next) => {
 let _delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Orders')
             .deleteMany({ order_id: { $in: req.body.order_id } });
         res.send({ success: true, message: 'Xóa đơn hàng thành công!' });

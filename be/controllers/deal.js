@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let deal = await client.db(DB).collection(`Deals`).findOne({
+        let deal = await client.db(req.user.database).collection(`Deals`).findOne({
             name: req.body.name,
         });
         if (deal) {
             throw new Error(`400: Chương trình giảm giá đã tồn tại!`);
         }
         let deal_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Deals' })
             .then((doc) => {
@@ -95,7 +95,7 @@ module.exports._create = async (req, res, next) => {
             slug_saleoff_type: removeUnicode(String(req.body.saleoff_type), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Deals' }, { $set: { name: 'Deals', value: deal_id } }, { upsert: true });
         req[`body`] = _deal;
@@ -108,14 +108,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.deal_id = Number(req.params.deal_id);
-        let deal = await client.db(DB).collection(`Deals`).findOne(req.params);
+        let deal = await client.db(req.user.database).collection(`Deals`).findOne(req.params);
         if (!deal) {
             throw new Error(`400: Chương trình giảm giá không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Deals`)
                 .findOne({
                     deal_id: { $ne: Number(deal.deal_id) },
@@ -165,7 +165,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Deals`)
             .deleteMany({ deal_id: { $in: req.body.deal_id } });
         res.send({
@@ -180,7 +180,7 @@ module.exports._delete = async (req, res, next) => {
 module.exports._updateSaleOff = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Deals')
             .updateMany(
                 { deal_id: { $in: req.body.deal_id } },

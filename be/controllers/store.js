@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let store = await client.db(DB).collection(`Stores`).findOne({
+        let store = await client.db(req.user.database).collection(`Stores`).findOne({
             name: req.body.name,
         });
         if (store) {
             throw new Error(`400: Cửa hàng đã tồn tại!`);
         }
         let store_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Stores' })
             .then((doc) => {
@@ -79,7 +79,7 @@ module.exports._create = async (req, res, next) => {
             slug_province: removeUnicode(req.body.province, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Stores' }, { $set: { name: 'Stores', value: store_id } }, { upsert: true });
         req[`body`] = _store;
@@ -92,14 +92,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.store_id = Number(req.params.store_id);
-        let store = await client.db(DB).collection(`Stores`).findOne(req.params);
+        let store = await client.db(req.user.database).collection(`Stores`).findOne(req.params);
         if (!store) {
             throw new Error(`400: Cửa hàng không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Stores`)
                 .findOne({
                     store_id: { $ne: store.store_id },
@@ -148,7 +148,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Stores`)
             .deleteMany({ store_id: { $in: req.body.store_id } });
         res.send({

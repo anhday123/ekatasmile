@@ -158,9 +158,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [actions, counts] = await Promise.all([
-            client.db(DB).collection(`Actions`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Actions`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Actions`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),

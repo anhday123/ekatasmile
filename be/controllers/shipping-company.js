@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne({
+        let shippingCompany = await client.db(req.user.database).collection(`ShippingCompanies`).findOne({
             name: req.body.name,
         });
         if (shippingCompany) {
             throw new Error(`400: Đối tác vận chuyển đã tồn tại!`);
         }
         let shipping_company_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'ShippingCompanies' })
             .then((doc) => {
@@ -79,12 +79,12 @@ module.exports._create = async (req, res, next) => {
         };
         if (_shippingCompany.default) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Taxes')
                 .updateMany({}, { $set: { default: false } });
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne(
                 { name: 'ShippingCompanies' },
@@ -100,14 +100,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.shipping_company_id = Number(req.params.shipping_company_id);
-        let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne(req.params);
+        let shippingCompany = await client.db(req.user.database).collection(`ShippingCompanies`).findOne(req.params);
         if (!shippingCompany) {
             throw new Error(`400: Đối tác vận chuyển không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`ShippingCompanies`)
                 .findOne({
                     shipping_company_id: { $ne: shippingCompany.shipping_company_id },
@@ -146,7 +146,7 @@ module.exports._update = async (req, res, next) => {
         };
         if (_shippingCompany.default) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Taxes')
                 .updateMany({}, { $set: { default: false } });
         }
@@ -160,7 +160,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`ShippingCompanies`)
             .deleteMany({ shipping_company_id: { $in: req.body.shipping_company_id } });
         res.send({

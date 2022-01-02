@@ -41,14 +41,14 @@ module.exports._create = async (req, res, next) => {
         req.body.email = String(req.body.email || '')
             .trim()
             .toLowerCase();
-        let branch = await client.db(DB).collection(`Branchs`).findOne({
+        let branch = await client.db(req.user.database).collection(`Branchs`).findOne({
             name: req.body.name,
         });
         if (branch) {
             throw new Error(`400: Chi nhánh đã tồn tại!`);
         }
         let branch_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Branchs' })
             .then((doc) => {
@@ -89,7 +89,7 @@ module.exports._create = async (req, res, next) => {
             slug_province: removeUnicode(String(req.body.province), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: branch_id } }, { upsert: true });
         req[`body`] = _branch;
@@ -103,13 +103,13 @@ module.exports._update = async (req, res, next) => {
     try {
         req.params.branch_id = Number(req.params.branch_id);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let branch = await client.db(DB).collection(`Branchs`).findOne(req.params);
+        let branch = await client.db(req.user.database).collection(`Branchs`).findOne(req.params);
         if (!branch) {
             throw new Error(`400: Chi nhánh không tồn tại!`);
         }
         if (req.body.name) {
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Branchs`)
                 .findOne({
                     branch_id: { $ne: req.params.branch_id },
@@ -167,7 +167,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Branchs`)
             .deleteMany({ branch_id: { $in: req.body.branch_id } });
         res.send({

@@ -21,14 +21,14 @@ let getSettingC = async (req, res, next) => {
             mongoQuery['branchs'] = { $in: [String(req.query.branch_id)] };
         }
         let [_setting, _user] = await Promise.all([
-            client.db(DB).collection('PointSettings').findOne({ business_id: token.business_id }),
-            client.db(DB).collection(`Users`).findOne({ business_id: token.business_id }),
+            client.db(req.user.database).collection('PointSettings').findOne({ business_id: token.business_id }),
+            client.db(req.user.database).collection(`Users`).findOne({ business_id: token.business_id }),
         ]);
 
         if (_setting) {
             _setting['_business'] = _user;
         } else {
-            let _counts = await client.db(DB).collection(`PointSettings`).countDocuments();
+            let _counts = await client.db(req.user.database).collection(`PointSettings`).countDocuments();
             let setting = {
                 point_setting_id: String(Number(_counts) + 1),
                 business_id: token.business_id,
@@ -39,7 +39,7 @@ let getSettingC = async (req, res, next) => {
                 point_rate: 0,
                 currency_rate: 0,
             };
-            _setting = await client.db(DB).collection(`PointSettings`).insertOne(setting);
+            _setting = await client.db(req.user.database).collection(`PointSettings`).insertOne(setting);
             if (!_setting.insertedId) {
                 throw new Error(`500: Failed create point setting!`);
             }
@@ -54,7 +54,7 @@ let getSettingC = async (req, res, next) => {
 let updateSettingC = async (req, res, next) => {
     try {
         let token = req.tokenData.data;
-        let _setting = client.db(DB).collection('PointSettings').findOne({ business_id: token.business_id });
+        let _setting = client.db(req.user.database).collection('PointSettings').findOne({ business_id: token.business_id });
         if (!_setting) {
             throw new Error(`400: Business is not exists!`);
         }
@@ -68,7 +68,7 @@ let updateSettingC = async (req, res, next) => {
             }
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Branchs')
                     .updateMany(
                         {
@@ -78,7 +78,7 @@ let updateSettingC = async (req, res, next) => {
                         { $set: { accumulate_point: true } }
                     ),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Branchs')
                     .updateMany(
                         {
@@ -98,7 +98,7 @@ let updateSettingC = async (req, res, next) => {
             }
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Branchs')
                     .updateMany(
                         {
@@ -108,7 +108,7 @@ let updateSettingC = async (req, res, next) => {
                         { $set: { use_point: true } }
                     ),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Branchs')
                     .updateMany(
                         {
@@ -130,7 +130,7 @@ let updateSettingC = async (req, res, next) => {
         delete req.body.point_setting_id;
         delete req.body._business;
         req['_update'] = { ..._setting, ...req.body };
-        await client.db(DB).collection('PointSettings').findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(req.user.database).collection('PointSettings').findOneAndUpdate(req.params, { $set: req._update });
         res.send({ success: true, data: req._update });
     } catch (err) {
         next(err);

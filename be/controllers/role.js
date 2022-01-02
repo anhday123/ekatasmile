@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let role = await client.db(DB).collection(`Roles`).findOne({
+        let role = await client.db(req.user.database).collection(`Roles`).findOne({
             name: req.body.name,
         });
         if (role) {
             throw new Error(`400: Vai trò đã tồn tại!`);
         }
         let role_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Roles' })
             .then((doc) => {
@@ -70,7 +70,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(req.body.name, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Roles' }, { $set: { name: 'Roles', value: role_id } }, { upsert: true });
         req[`body`] = _role;
@@ -82,14 +82,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.role_id = Number(req.params.role_id);
-        let role = await client.db(DB).collection(`Roles`).findOne(req.params);
+        let role = await client.db(req.user.database).collection(`Roles`).findOne(req.params);
         if (!role) {
             throw new Error(`400: Vai trò không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Roles`)
                 .findOne({
                     role_id: { $ne: role.role_id },
@@ -129,7 +129,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Roles`)
             .deleteMany({ role_id: { $in: req.body.role_id } });
         res.send({

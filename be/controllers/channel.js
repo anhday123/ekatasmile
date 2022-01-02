@@ -57,7 +57,7 @@ module.exports._create = async (req, res, next) => {
             }
         });
         let channel_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Channels' })
             .then((doc) => {
@@ -91,7 +91,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Channels' }, { $set: { name: 'Channels', value: channel_id } }, { upsert: true });
         req[`body`] = _channel;
@@ -103,7 +103,7 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.channel_id = Number(req.params.channel_id);
-        let site = await client.db(DB).collection(`Channels`).findOne(req.params);
+        let site = await client.db(req.user.database).collection(`Channels`).findOne(req.params);
         if (!site) {
             throw new Error(`400: Kênh không tồn tại!`);
         }
@@ -145,7 +145,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Channels')
             .deleteMany({ channel_id: { $in: req.body.channel_id } });
         res.send({ success: true, data: 'Xóa kênh thành công!' });

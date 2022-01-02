@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let topping = await client.db(DB).collection(`Toppings`).findOne({
+        let topping = await client.db(req.user.database).collection(`Toppings`).findOne({
             name: req.body.name,
         });
         if (topping) {
             throw new Error(`400: Topping đã tồn tại!`);
         }
         let topping_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Toppings' })
             .then((doc) => {
@@ -71,7 +71,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(req.body.name, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Toppings' }, { $set: { name: 'Toppings', value: topping_id } }, { upsert: true });
         req[`body`] = _topping;
@@ -83,14 +83,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.topping_id = Number(req.params.topping_id);
-        let topping = await client.db(DB).collection(`Toppings`).findOne(req.params);
+        let topping = await client.db(req.user.database).collection(`Toppings`).findOne(req.params);
         if (!topping) {
             throw new Error(`400: Topping không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Toppings`)
                 .findOne({
                     topping_id: { $ne: topping.topping_id },
@@ -130,7 +130,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Toppings`)
             .deleteMany({ topping_id: { $in: req.body.topping_id } });
         res.send({

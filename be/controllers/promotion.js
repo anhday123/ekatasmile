@@ -50,14 +50,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let promotion = await client.db(DB).collection(`Promotions`).findOne({
+        let promotion = await client.db(req.user.database).collection(`Promotions`).findOne({
             name: req.body.name,
         });
         if (promotion) {
             throw new Error(`400: Chương trình khuyến mãi đã tồn tại!`);
         }
         let promotion_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Promotions' })
             .then((doc) => {
@@ -97,7 +97,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(name, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Promotions' }, { $set: { name: 'Promotions', value: promotion_id } }, { upsert: true });
         req[`body`] = _promotion;
@@ -110,14 +110,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.promotion_id = Number(req.params.promotion_id);
-        let promotion = await client.db(DB).collection(`Promotions`).findOne(req.params);
+        let promotion = await client.db(req.user.database).collection(`Promotions`).findOne(req.params);
         if (!promotion) {
             throw new Error(`400: Chương trình khuyến mãi không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Promotions`)
                 .findOne({
                     promotion_id: { $ne: promotion.promotion_id },
@@ -169,7 +169,7 @@ module.exports._checkVoucher = async (req, res, next) => {
             throw new Error(`400: Voucher không được để trống!`);
         }
         let promotion = await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Promotions`)
             .findOne({
                 business_id: Number(req.user.business_id),
@@ -198,7 +198,7 @@ module.exports._checkVoucher = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Promotions`)
             .deleteMany({ promotion_id: { $in: req.body.promotion_id } });
         res.send({

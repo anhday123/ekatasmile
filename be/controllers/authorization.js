@@ -75,8 +75,8 @@ module.exports._login = async (req, res, next) => {
         }
         delete user.password;
         let [accessToken, refreshToken, _update] = await Promise.all([
-            jwt.createToken(user, 24 * 60 * 60),
-            jwt.createToken(user, 30 * 24 * 60 * 60),
+            jwt.createToken({ ...user, database: DB }, 24 * 60 * 60),
+            jwt.createToken({ ...user, database: DB }, 30 * 24 * 60 * 60),
             client
                 .db(DB)
                 .collection(`Users`)
@@ -174,23 +174,38 @@ module.exports._verifyOTP = async (req, res, next) => {
         });
         req.body.username = req.body.username.toLowerCase();
         let user = await client
-            .db(DB)
+            .db(SDB)
             .collection('Users')
             .findOne({
                 username: req.body.username,
                 otp_code: req.body.otp_code,
-                otp_timelife: { $gte: new Date() },
+                otp_timelife: { $gte: moment().tz(TIMEZONE).format() },
             });
         if (!user) {
             throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
         }
         if (user.active == false) {
             await client
-                .db(DB)
+                .db(SDB)
                 .collection('Users')
                 .updateOne(
                     {
-                        user_id: Number(user.user_id),
+                        system_user_id: user.system_user_id,
+                    },
+                    {
+                        $set: {
+                            otp_code: false,
+                            otp_timelife: false,
+                            active: true,
+                        },
+                    }
+                );
+            await client
+                .db(`${req.body.username}Database`)
+                .collection('Users')
+                .updateOne(
+                    {
+                        system_user_id: user.system_user_id,
                     },
                     {
                         $set: {

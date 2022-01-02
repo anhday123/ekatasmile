@@ -227,9 +227,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [orders, counts] = await Promise.all([
-            client.db(DB).collection(`Orders`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Orders`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Orders`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -246,7 +246,7 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let insert = await client.db(DB).collection(`Orders`).insertOne(req.body);
+        let insert = await client.db(req.user.database).collection(`Orders`).insertOne(req.body);
         if (!insert.insertedId) {
             throw new Error('500: Lỗi hệ thống, tạo đơn hàng thất bại!');
         }
@@ -263,7 +263,7 @@ module.exports._create = async (req, res, next) => {
                 slug_properties: 'donhang',
                 name: 'taodonhang',
             };
-            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
+            await Promise.all([client.db(req.user.database).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
@@ -275,7 +275,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Promotions`).updateOne(req.params, { $set: req.body });
+        await client.db(req.user.database).collection(`Promotions`).updateOne(req.params, { $set: req.body });
         try {
             let _action = {
                 business_id: req.user.business_id,
@@ -289,7 +289,7 @@ module.exports._update = async (req, res, next) => {
                 slug_properties: 'donhang',
                 name: 'capnhatdonhang',
             };
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await client.db(req.user.database).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }

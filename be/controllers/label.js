@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let label = await client.db(DB).collection(`Labels`).findOne({
+        let label = await client.db(req.user.database).collection(`Labels`).findOne({
             name: req.body.name,
         });
         if (label) {
             throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
         }
         let label_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Labels' })
             .then((doc) => {
@@ -69,7 +69,7 @@ module.exports._create = async (req, res, next) => {
             slug_name: removeUnicode(name, true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Labels' }, { $set: { name: 'Labels', value: label_id } }, { upsert: true });
         req[`body`] = _label;
@@ -82,14 +82,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.label_id = Number(req.params.label_id);
-        let label = await client.db(DB).collection(`Labels`).findOne(req.params);
+        let label = await client.db(req.user.database).collection(`Labels`).findOne(req.params);
         if (!label) {
             throw new Error(`400: Nhóm cửa hàng không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Labels`)
                 .findOne({
                     label_id: { $ne: label.label_id },
@@ -128,7 +128,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Labels`)
             .deleteMany({ label_id: { $in: req.body.label_id } });
         res.send({

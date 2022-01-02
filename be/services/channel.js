@@ -191,9 +191,9 @@ module.exports._get = async (req, res, next) => {
         }
         // lấy data từ database
         let [channels, counts] = await Promise.all([
-            client.db(DB).collection(`Channels`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Channels`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Channels`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -210,7 +210,7 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let insert = await client.db(DB).collection(`Channels`).insertOne(req.body);
+        let insert = await client.db(req.user.database).collection(`Channels`).insertOne(req.body);
         if (!insert.insertedId) {
             throw new Error('500: Thêm kênh bán hàng trực tuyến thất bại!');
         }
@@ -227,7 +227,7 @@ module.exports._create = async (req, res, next) => {
                 slug_properties: 'kenhbanhangtructuyen',
                 name: 'taokenhbanhangtructuyen',
             };
-            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
+            await Promise.all([client.db(req.user.database).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
@@ -239,7 +239,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Channels`).updateOne(req.params, { $set: req.body });
+        await client.db(req.user.database).collection(`Channels`).updateOne(req.params, { $set: req.body });
         try {
             let _action = {
                 business_id: req.user.business_id,
@@ -253,7 +253,7 @@ module.exports._update = async (req, res, next) => {
                 slug_properties: 'kenhbanhangtructuyen',
                 name: 'capnhatkenhbanhangtructuyen',
             };
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            await client.db(req.user.database).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
@@ -265,7 +265,7 @@ module.exports._update = async (req, res, next) => {
 
 module.exports._getPlatform = async (req, res, next) => {
     try {
-        let platforms = await client.db(DB).collection('Platforms').find().toArray();
+        let platforms = await client.db(req.user.database).collection('Platforms').find().toArray();
         res.send({ success: true, data: platforms });
     } catch (err) {
         next(err);

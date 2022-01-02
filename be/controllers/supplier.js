@@ -38,14 +38,14 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let supplier = await client.db(DB).collection(`Suppliers`).findOne({
+        let supplier = await client.db(req.user.database).collection(`Suppliers`).findOne({
             name: req.body.name,
         });
         if (supplier) {
             throw new Error(`400: Nhà cung cấp đã tồn tại!`);
         }
         let supplier_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'Suppliers' })
             .then((doc) => {
@@ -76,7 +76,7 @@ module.exports._create = async (req, res, next) => {
             slug_province: removeUnicode(String(req.body.province), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplier_id } }, { upsert: true });
         req[`_insert`] = _supplier;
@@ -89,14 +89,14 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.supplier_id = Number(req.params.supplier_id);
-        let supplier = await client.db(DB).collection(`Suppliers`).findOne(req.params);
+        let supplier = await client.db(req.user.database).collection(`Suppliers`).findOne(req.params);
         if (!supplier) {
             throw new Error(`400: Nhà cung cấp không tồn tại!`);
         }
         if (req.body.name) {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Suppliers`)
                 .findOne({
                     supplier_id: { $ne: supplier.supplier_id },
@@ -142,7 +142,7 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Suppliers`)
             .deleteMany({ supplier_id: { $in: req.body.supplier_id } });
         res.send({

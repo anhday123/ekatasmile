@@ -147,9 +147,9 @@ module.exports._getImportOrder = async (req, res, next) => {
 
         // lấy data từ database
         let [orders, counts] = await Promise.all([
-            client.db(DB).collection(`ImportOrders`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`ImportOrders`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`ImportOrders`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -168,7 +168,7 @@ module.exports._createImportOrder = async (req, res, next) => {
     try {
         let [order_id] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'ImportOrders' })
                 .then((doc) => {
@@ -188,7 +188,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             }
             return 'Stores';
         })();
-        let importLocation = await client.db(DB).collection(importAt).findOne(req.body.import_location);
+        let importLocation = await client.db(req.user.database).collection(importAt).findOne(req.body.import_location);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
@@ -202,12 +202,12 @@ module.exports._createImportOrder = async (req, res, next) => {
         variantIds = [...new Set(variantIds)];
         let [products, variants] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Products')
                 .find({ product_id: { $in: productIds } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Variants')
                 .find({ product_id: { $in: productIds } })
                 .toArray(),
@@ -289,7 +289,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             order['complete_date'] = moment().tz(TIMEZONE).format();
             let [price_id, location_id] = await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'Prices' })
                     .then((doc) => {
@@ -302,7 +302,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                         throw new Error(`500: ${err}`);
                     }),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'Locations' })
                     .then((doc) => {
@@ -372,19 +372,19 @@ module.exports._createImportOrder = async (req, res, next) => {
             });
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
                         { name: 'Locations' },
                         { $set: { name: 'Locations', value: location_id } },
                         { upsert: true }
                     ),
-                client.db(DB).collection('Prices').insertMany(prices),
-                client.db(DB).collection('Locations').insertMany(locations),
+                client.db(req.user.database).collection('Prices').insertMany(prices),
+                client.db(req.user.database).collection('Locations').insertMany(locations),
             ]);
         }
         let variantUpdates = [];
@@ -397,21 +397,21 @@ module.exports._createImportOrder = async (req, res, next) => {
         await Promise.all(
             variantUpdates.map((eVariant) => {
                 return client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Variants')
                     .updateOne({ variant_id: eVariant.variant_id }, { $set: eVariant });
             })
         );
         await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'ImportOrders' },
                     { $set: { name: 'ImportOrders', value: order_id } },
                     { upsert: true }
                 ),
-            client.db(DB).collection('ImportOrders').insertOne(order),
+            client.db(req.user.database).collection('ImportOrders').insertOne(order),
         ]);
         res.send({
             success: true,
@@ -465,22 +465,22 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         storeNames = [...new Set(storeNames)];
         let [products, variants, branchs, stores] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Products')
                 .find({ business_id: Number(req.user.business_id), sku: { $in: productSkus } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Variants')
                 .find({ business_id: Number(req.user.business_id), sku: { $in: variantSkus } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Branchs')
                 .find({ business_id: Number(req.user.business_id), name: { $in: branchNames } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Stores')
                 .find({ business_id: Number(req.user.business_id), name: { $in: storeNames } })
                 .toArray(),
@@ -504,7 +504,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
 
         let [order_id] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'ImportOrders' })
                 .then((doc) => {
@@ -574,12 +574,12 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             }
         });
         let orders = Object.values(_orders);
-        let insert = await client.db(DB).collection('ImportOrders').insertMany(orders);
+        let insert = await client.db(req.user.database).collection('ImportOrders').insertMany(orders);
         if (!insert.insertedIds) {
             throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: order_id } }, { upsert: true }),
             res.send({
@@ -594,14 +594,14 @@ module.exports._createImportOrderFile = async (req, res, next) => {
 module.exports._updateImportOrder = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);
-        let order = await client.db(DB).collection('ImportOrders').findOne(req.params);
+        let order = await client.db(req.user.database).collection('ImportOrders').findOne(req.params);
         const importAt = (() => {
             if (req.body.import_location && req.body.import_location.branch_id) {
                 return 'Branchs';
             }
             return 'Stores';
         })();
-        let importLocation = await client.db(DB).collection(importAt).findOne(req.body.import_location);
+        let importLocation = await client.db(req.user.database).collection(importAt).findOne(req.body.import_location);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
@@ -669,7 +669,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['complete_date'] = moment().tz(TIMEZONE).format();
             let [price_id, location_id] = await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'Prices' })
                     .then((doc) => {
@@ -682,7 +682,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
                         throw new Error(`500: ${err}`);
                     }),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'Locations' })
                     .then((doc) => {
@@ -752,22 +752,22 @@ module.exports._updateImportOrder = async (req, res, next) => {
             });
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
                         { name: 'Locations' },
                         { $set: { name: 'Locations', value: location_id } },
                         { upsert: true }
                     ),
-                client.db(DB).collection('Prices').insertMany(prices),
-                client.db(DB).collection('Locations').insertMany(locations),
+                client.db(req.user.database).collection('Prices').insertMany(prices),
+                client.db(req.user.database).collection('Locations').insertMany(locations),
             ]);
         }
-        await client.db(DB).collection('ImportOrders').updateOne(req.params, { $set: _order });
+        await client.db(req.user.database).collection('ImportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
     } catch (err) {
         next(err);
@@ -777,7 +777,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
 module.exports._deleteImportOrder = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('ImportOrders')
             .deleteMany({ order_id: { $in: req.body.order_id } });
         res.send({ success: true, message: 'Xóa phiếu nhập hàng thành công!' });
@@ -919,9 +919,9 @@ module.exports._getTransportOrder = async (req, res, next) => {
 
             // lấy data từ database
             let [orders, counts] = await Promise.all([
-                client.db(DB).collection(`TransportOrders`).aggregate(aggregateQuery).toArray(),
+                client.db(req.user.database).collection(`TransportOrders`).aggregate(aggregateQuery).toArray(),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection(`TransportOrders`)
                     .aggregate([...countQuery, { $count: 'counts' }])
                     .toArray(),
@@ -944,7 +944,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
         try {
             let [order_id] = await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'TransportOrders' })
                     .then((doc) => {
@@ -971,8 +971,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 return 'Stores';
             })();
             let [exportLocation, importLocation] = await Promise.all([
-                client.db(DB).collection(exportAt).findOne(req.body.export_location),
-                client.db(DB).collection(importAt).findOne(req.body.import_location),
+                client.db(req.user.database).collection(exportAt).findOne(req.body.export_location),
+                client.db(req.user.database).collection(importAt).findOne(req.body.import_location),
             ]);
             if (!exportLocation) {
                 throw new Error('400: Địa điểm xuất hàng không chính xác!');
@@ -990,12 +990,12 @@ module.exports._createTransportOrder = async (req, res, next) => {
             variantIds = [...new Set(variantIds)];
             let [products, variants] = await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Products')
                     .find({ product_id: { $in: productIds } })
                     .toArray(),
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Variants')
                     .find({ product_id: { $in: productIds } })
                     .toArray(),
@@ -1063,7 +1063,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 order['complete_date'] = moment().tz(TIMEZONE).format();
                 let [price_id, location_id] = await Promise.all([
                     client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('AppSetting')
                         .findOne({ name: 'Prices' })
                         .then((doc) => {
@@ -1076,7 +1076,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                             throw new Error(`500: ${err}`);
                         }),
                     client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('AppSetting')
                         .findOne({ name: 'Locations' })
                         .then((doc) => {
@@ -1146,19 +1146,19 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 });
                 await Promise.all([
                     client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('AppSetting')
                         .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
                     client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('AppSetting')
                         .updateOne(
                             { name: 'Locations' },
                             { $set: { name: 'Locations', value: location_id } },
                             { upsert: true }
                         ),
-                    client.db(DB).collection('Prices').insertMany(prices),
-                    client.db(DB).collection('Locations').insertMany(locations),
+                    client.db(req.user.database).collection('Prices').insertMany(prices),
+                    client.db(req.user.database).collection('Locations').insertMany(locations),
                 ]);
             }
             let variantUpdates = [];
@@ -1171,21 +1171,21 @@ module.exports._createTransportOrder = async (req, res, next) => {
             await Promise.all(
                 variantUpdates.map((eVariant) => {
                     return client
-                        .db(DB)
+                        .db(req.user.database)
                         .collection('Variants')
                         .updateOne({ variant_id: eVariant.variant_id }, { $set: eVariant });
                 })
             );
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
                         { name: 'TransportOrders' },
                         { $set: { name: 'TransportOrders', value: order_id } },
                         { upsert: true }
                     ),
-                client.db(DB).collection('TransportOrders').insertOne(order),
+                client.db(req.user.database).collection('TransportOrders').insertOne(order),
             ]);
             res.send({
                 success: true,
@@ -1256,22 +1256,22 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         storeNames = [...new Set(storeNames)];
         let [products, variants, branchs, stores] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Products')
                 .find({ business_id: Number(req.user.business_id), sku: { $in: productSkus } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Variants')
                 .find({ business_id: Number(req.user.business_id), sku: { $in: variantSkus } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Branchs')
                 .find({ business_id: Number(req.user.business_id), name: { $in: branchNames } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Stores')
                 .find({ business_id: Number(req.user.business_id), name: { $in: storeNames } })
                 .toArray(),
@@ -1308,7 +1308,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         })();
         let [branchLocations, storeLocations] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Locations')
                 .find({
                     type: 'BRANCH',
@@ -1319,7 +1319,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 .sort(sortQuery)
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Locations')
                 .find({
                     type: 'STORE',
@@ -1354,7 +1354,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         });
         let [location_id] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Locations' })
                 .then((doc) => {
@@ -1465,11 +1465,11 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 }
             }
         });
-        let insert = await client.db(DB).collection('Locations').insertMany(importLocations);
+        let insert = await client.db(req.user.database).collection('Locations').insertMany(importLocations);
         await Promise.all(
             exportLocations.map((location) => {
                 return client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Locations')
                     .updateOne({ location_id: location.location_id }, { $set: location });
             })
@@ -1483,7 +1483,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
 module.exports._updateTransportOrder = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);
-        let order = await client.db(DB).collection('TransportOrders').findOne(req.params);
+        let order = await client.db(req.user.database).collection('TransportOrders').findOne(req.params);
         delete req.body._id;
         delete req.body.order_id;
         let productIds = [];
@@ -1496,12 +1496,12 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         variantIds = [...new Set(variantIds)];
         let [products, variants] = await Promise.all([
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Products')
                 .find({ product_id: { $in: productIds } })
                 .toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection('Variants')
                 .find({ product_id: { $in: productIds } })
                 .toArray(),
@@ -1566,7 +1566,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             _order['complete_date'] = moment().tz(TIMEZONE).format();
             let [location_id] = await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .findOne({ name: 'Locations' })
                     .then((doc) => {
@@ -1622,21 +1622,21 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             });
             await Promise.all([
                 client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
                         { name: 'Locations' },
                         { $set: { name: 'Locations', value: location_id } },
                         { upsert: true }
                     ),
-                client.db(DB).collection('Locations').insertMany(locations),
+                client.db(req.user.database).collection('Locations').insertMany(locations),
             ]);
         }
         if (_order.status == 'CANCEL' && order.status != 'CANCEL') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
-        await client.db(DB).collection('TransportOrders').updateOne(req.params, { $set: _order });
+        await client.db(req.user.database).collection('TransportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
     } catch (err) {
         next(err);
@@ -1646,7 +1646,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
 module.exports._deleteTransportOrder = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('TransportOrders')
             .deleteMany({ order_id: { $in: req.body.order_id } });
         res.send({ success: true, message: 'Xóa phiếu chuyển hàng thành công!' });
