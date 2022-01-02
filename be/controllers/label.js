@@ -1,96 +1,131 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const labelService = require(`../services/label`);
-const { Label } = require('../models/label');
 
-let getLabelC = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
-        await labelService.getLabelS(req, res, next);
+        await labelService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let addLabelC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _label = new Label();
-        _label.validateInput(req.body);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let label = await client
-            .db(DB)
-            .collection(`Labels`)
-            .findOne({
-                business_id: Number(req.user.business_id),
-                name: req.body.name,
-            });
-        let labelMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Labels' });
+        let label = await client.db(DB).collection(`Labels`).findOne({
+            name: req.body.name,
+        });
         if (label) {
             throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
         }
-        let label_id = (() => {
-            if (labelMaxId) {
-                if (labelMaxId.value) {
-                    return Number(labelMaxId.value);
+        let label_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'Labels' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return Number(doc.value);
                 }
-            }
-            return 0;
-        })();
+                return 0;
+            });
         label_id++;
-        _label.create({
-            ...req.body,
-            ...{
-                label_id: Number(label_id),
-                business_id: Number(req.user.user_id),
-                create_date: new Date(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            },
-        });
+        let _label = {
+            label_id: label_id,
+            code: String(label_id).padStart(6, '0'),
+            name: req.body.name,
+            description: req.body.description || '',
+            default: req.body.default || false,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(name, true).toLowerCase(),
+        };
         await client
             .db(DB)
             .collection('AppSetting')
             .updateOne({ name: 'Labels' }, { $set: { name: 'Labels', value: label_id } }, { upsert: true });
-        req[`_insert`] = _label;
+        req[`body`] = _label;
         await labelService.addLabelS(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let updateLabelC = async (req, res, next) => {
+
+module.exports._update = async (req, res, next) => {
     try {
         req.params.label_id = Number(req.params.label_id);
-        let _label = new Label();
-        req.body.name = String(req.body.name).trim().toUpperCase();
         let label = await client.db(DB).collection(`Labels`).findOne(req.params);
         if (!label) {
             throw new Error(`400: Nhóm cửa hàng không tồn tại!`);
         }
         if (req.body.name) {
+            req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
                 .db(DB)
                 .collection(`Labels`)
                 .findOne({
-                    business_id: Number(req.user.business_id),
-                    label_id: { $ne: Number(label.label_id) },
+                    label_id: { $ne: label.label_id },
                     name: req.body.name,
                 });
             if (check) {
                 throw new Error(`400: Nhóm cửa hàng đã tồn tại!`);
             }
         }
-        _label.create(label);
-        _label.update(req.body);
-        req['_update'] = _label;
+        delete req.body._id;
+        delete req.body.label_id;
+        delete req.body.code;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _label = { ...label, ...req.body };
+        _label = {
+            label_id: _label.label_id,
+            code: _label.code,
+            name: _label.name,
+            description: _label.description,
+            default: _label.default || false,
+            create_date: _label.create_date,
+            creator_id: _label.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(_label.name, true).toLowerCase(),
+        };
+        req['body'] = _label;
         await labelService.updateLabelS(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
             .db(DB)
@@ -103,11 +138,4 @@ let _delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getLabelC,
-    addLabelC,
-    updateLabelC,
-    _delete,
 };

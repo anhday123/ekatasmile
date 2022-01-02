@@ -1,17 +1,39 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
-const { ForecastService } = require('aws-sdk');
 
-let getOrderS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.order_id) {
             aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -25,38 +47,82 @@ let getOrderS = async (req, res, next) => {
         if (req.query.customer_id) {
             aggregateQuery.push({ $match: { customer_id: Number(req.query.customer_id) } });
         }
-        if (req.query.code) {
-            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        if (req.query.customer_code) {
+            aggregateQuery.push({ $match: { 'customer.code': Number(req.query.customer_code) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query.creator_id) {
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
+        }
+        if (req.query.bill_status) {
+            aggregateQuery.push({
+                $match: { bill_status: removeUnicode(String(req.query.bill_status), true).toUpperCase() },
+            });
+        }
+        if (req.query.shipping_status) {
+            aggregateQuery.push({
+                $match: { bill_status: removeUnicode(String(req.query.shipping_status), true).toUpperCase() },
+            });
+        }
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
-        // lấy các thuộc tính tùy chọn khác
-        if (req.query._business) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'business_id',
-                        foreignField: 'user_id',
-                        as: '_business',
-                    },
-                },
-                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
-            );
-        }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.chanel) {
-            aggregateQuery.push({ $match: { chanel: new RegExp(removeUnicode(req.query.chanel, true), 'ig') } });
+            aggregateQuery.push({ $match: { slug_chanel: new RegExp(removeUnicode(req.query.chanel, true), 'ig') } });
         }
         if (req.query.product_name) {
             aggregateQuery.push({
                 $match: {
-                    'order_details.sub_title': {
+                    'order_details.slug_title': {
                         $in: [
                             new RegExp(
                                 `${removeUnicode(req.query.product_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
@@ -81,13 +147,10 @@ let getOrderS = async (req, res, next) => {
                 },
             });
         }
-        if (req.query.customer_code) {
-            aggregateQuery.push({ $match: { 'customer.code': Number(req.query.customer_code) } });
-        }
         if (req.query.customer_name) {
             aggregateQuery.push({
                 $match: {
-                    'customer.sub_name': new RegExp(
+                    'customer.slug_name': new RegExp(
                         `${removeUnicode(req.query.customer_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -107,37 +170,52 @@ let getOrderS = async (req, res, next) => {
         if (req.query.employee_name) {
             aggregateQuery.push({
                 $match: {
-                    'employee.sub_name': new RegExp(
+                    'employee.slug_name': new RegExp(
                         `${removeUnicode(req.query.employee_name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
                 },
             });
         }
-        if (req.query.bill_status) {
-            aggregateQuery.push({
-                $match: {
-                    bill_status: new RegExp(
-                        `${removeUnicode(req.query.bill_status, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+        // lấy các thuộc tính tùy chọn khác
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'user_id',
+                        as: '_business',
+                    },
                 },
-            });
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+            );
         }
-        if (req.query.shipping_status) {
-            aggregateQuery.push({
-                $match: {
-                    shipping_status: new RegExp(
-                        `${removeUnicode(req.query.shipping_status, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'user_id',
+                        as: '_creator',
+                    },
                 },
-            });
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+            );
         }
-
         aggregateQuery.push({
             $project: {
                 '_business.password': 0,
+                '_business.slug_name': 0,
+                '_business.slug_address': 0,
+                '_business.slug_district': 0,
+                '_business.slug_province': 0,
+                '_creator.password': 0,
+                '_creator.slug_name': 0,
+                '_creator.slug_address': 0,
+                '_creator.slug_district': 0,
+                '_creator.slug_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -158,57 +236,34 @@ let getOrderS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: orders,
             count: counts[0] ? counts[0].counts : 0,
+            data: orders,
         });
     } catch (err) {
         next(err);
     }
 };
 
-let addOrderS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _order = await client.db(DB).collection(`Orders`).insertOne(req._insert);
-        if (!_order.insertedId) {
+        let insert = await client.db(DB).collection(`Orders`).insertOne(req.body);
+        if (!insert.insertedId) {
             throw new Error('500: Lỗi hệ thống, tạo đơn hàng thất bại!');
         }
-        
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
-                properties: 'Order',
-                name: 'Thêm đơn hàng mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
-        } catch (err) {
-            console.log(err);
-        }
-        res.send({ success: true, data: req._insert });
-    } catch (err) {
-        next(err);
-    }
-};
-
-let updateOrderS = async (req, res, next) => {
-    try {
-        await client.db(DB).collection(`Promotions`).updateMany(req.params, { $set: req._update });
-        try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Promotion',
-                name: 'Cập nhật thông tin đơn hàng',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Đơn hàng',
+                name: 'Tạo đơn hàng',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'donhang',
+                name: 'taodonhang',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
@@ -218,8 +273,28 @@ let updateOrderS = async (req, res, next) => {
     }
 };
 
-module.exports = {
-    getOrderS,
-    addOrderS,
-    updateOrderS,
+module.exports._update = async (req, res, next) => {
+    try {
+        await client.db(DB).collection(`Promotions`).updateOne(req.params, { $set: req.body });
+        try {
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Đơn hàng',
+                name: 'Cập nhật đơn hàng',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'donhang',
+                name: 'capnhatdonhang',
+            };
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req.body });
+    } catch (err) {
+        next(err);
+    }
 };

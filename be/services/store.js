@@ -1,18 +1,42 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
 const jwt = require(`../libs/jwt`);
 
-let getStoreS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.store_id) {
             aggregateQuery.push({ $match: { store_id: Number(req.query.store_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.query.branch_id) {
             aggregateQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
@@ -26,7 +50,52 @@ let getStoreS = async (req, res, next) => {
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -34,24 +103,20 @@ let getStoreS = async (req, res, next) => {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code) {
-            aggregateQuery.push({
-                $match: {
-                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
-                },
-            });
-        }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
+                    slug_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
                 },
             });
         }
         if (req.query.address) {
             aggregateQuery.push({
                 $match: {
-                    sub_address: new RegExp(
+                    slug_address: new RegExp(
                         `${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -61,7 +126,7 @@ let getStoreS = async (req, res, next) => {
         if (req.query.district) {
             aggregateQuery.push({
                 $match: {
-                    sub_district: new RegExp(
+                    slug_district: new RegExp(
                         `${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -71,7 +136,7 @@ let getStoreS = async (req, res, next) => {
         if (req.query.province) {
             aggregateQuery.push({
                 $match: {
-                    sub_province: new RegExp(
+                    slug_province: new RegExp(
                         `${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -89,7 +154,7 @@ let getStoreS = async (req, res, next) => {
                             ),
                         },
                         {
-                            sub_name: new RegExp(
+                            slug_name: new RegExp(
                                 `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
                                 'ig'
                             ),
@@ -99,6 +164,19 @@ let getStoreS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        if (req.query._branch) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+            );
+        }
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -140,13 +218,36 @@ let getStoreS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                sub_name: 0,
-                sub_address: 0,
-                sub_district: 0,
-                sub_province: 0,
+                slug_name: 0,
+                slug_address: 0,
+                slug_district: 0,
+                slug_province: 0,
+                '_branch.slug_name': 0,
+                '_branch.slug_warehouse_type': 0,
+                '_branch.slug_address': 0,
+                '_branch.slug_district': 0,
+                '_branch.slug_province': 0,
                 '_business.password': 0,
+                '_business.otp_code': 0,
+                '_business.otp_timelife': 0,
+                '_business.sub_name': 0,
+                '_business.sub_address': 0,
+                '_business.sub_district': 0,
+                '_business.sub_province': 0,
                 '_creator.password': 0,
+                '_creator.otp_code': 0,
+                '_creator.otp_timelife': 0,
+                '_creator.sub_name': 0,
+                '_creator.sub_address': 0,
+                '_creator.sub_district': 0,
+                '_creator.sub_province': 0,
                 '_employees.password': 0,
+                '_employees.otp_code': 0,
+                '_employees.otp_timelife': 0,
+                '_employees.sub_name': 0,
+                '_employees.sub_address': 0,
+                '_employees.sub_district': 0,
+                '_employees.sub_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -167,36 +268,40 @@ let getStoreS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: stores,
             count: counts[0] ? counts[0].counts : 0,
+            data: stores,
         });
     } catch (err) {
         next(err);
     }
 };
 
-let addStoreS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let store = await client.db(DB).collection(`Stores`).insertOne(req._insert);
-        if (!store.insertedId) {
-            throw new Error(`500: Lỗi hệ thống, tạo cửa hàng thất bại!`);
+        let insert = await client.db(DB).collection(`Stores`).insertOne(req.body);
+        if (!insert.insertedId) {
+            throw new Error(`500: Tạo cửa hàng thất bại!`);
         }
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
-                properties: 'Store',
-                name: 'Thêm cửa hàng mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
-            await client
-                .db(DB)
-                .collection(`Users`)
-                .updateOne({ user_id: Number(req.user.user_id) }, { $set: { store_id: Number(req._insert.store_id) } });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Cửa hàng',
+                name: 'Tạo cửa hàng',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'cuahang',
+                name: 'taocuahang',
+            };
+            await Promise.all([
+                client.db(DB).collection(`Actions`).insertOne(_action),
+                client
+                    .db(DB)
+                    .collection(`Users`)
+                    .updateOne({ user_id: req.user.user_id }, { $set: { store_id: req.body.store_id } }),
+            ]);
         } catch (err) {
             console.log(err);
         }
@@ -232,46 +337,61 @@ let addStoreS = async (req, res, next) => {
                     },
                 },
                 { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        '_role.slug_name': 0,
+                        '_branch.slug_name': 0,
+                        '_branch.slug_warehouse_type': 0,
+                        '_branch.slug_address': 0,
+                        '_branch.slug_ward': 0,
+                        '_branch.slug_district': 0,
+                        '_branch.slug_province': 0,
+                        '_store.slug_name': 0,
+                        '_store.slug_address': 0,
+                        '_store.slug_ward': 0,
+                        '_store.slug_district': 0,
+                        '_store.slug_province': 0,
+                    },
+                },
             ])
             .toArray();
         delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([jwt.createToken(user), jwt.createToken(user)]);
+        let [accessToken, refreshToken] = await Promise.all([
+            jwt.createToken(user, 24 * 60 * 60),
+            jwt.createToken(user, 30 * 24 * 60 * 60),
+        ]);
         res.send({ success: true, data: req._insert, accessToken, refreshToken });
     } catch (err) {
         next(err);
     }
 };
 
-let updateStoreS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Stores`).updateOne(req.params, { $set: req._update });
+        await client.db(DB).collection(`Stores`).updateOne(req.params, { $set: req.body });
         await client
             .db(DB)
             .collection('Locations')
-            .updateMany({ inventory_id: Number(req.params.store_id) }, { $set: { name: req._update.name } });
+            .updateMany({ inventory_id: Number(req.params.store_id) }, { $set: { name: req.body.name } });
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Store',
-                name: 'Cập nhật thông tin cửa hàng',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Cửa hàng',
+                name: 'Cập nhật cửa hàng',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'cuahang',
+                name: 'capnhatcuahang',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getStoreS,
-    addStoreS,
-    updateStoreS,
 };

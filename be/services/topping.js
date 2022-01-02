@@ -1,16 +1,39 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
-let getToppingS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...
         if (req.query.topping_id) {
             aggregateQuery.push({ $match: { topping_id: Number(req.query.topping_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -21,7 +44,52 @@ let getToppingS = async (req, res, next) => {
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date'] != undefined) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date'] != undefined) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -92,9 +160,21 @@ let getToppingS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                sub_name: 0,
+                slug_name: 0,
                 '_business.password': 0,
+                '_business.otp_code': 0,
+                '_business.otp_timelife': 0,
+                '_business.sub_name': 0,
+                '_business.sub_address': 0,
+                '_business.sub_district': 0,
+                '_business.sub_province': 0,
                 '_creator.password': 0,
+                '_creator.otp_code': 0,
+                '_creator.otp_timelife': 0,
+                '_creator.sub_name': 0,
+                '_creator.sub_address': 0,
+                '_creator.sub_district': 0,
+                '_creator.sub_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -115,67 +195,65 @@ let getToppingS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: toppings,
             count: counts[0] ? counts[0].counts : 0,
+            data: toppings,
         });
     } catch (err) {
         next(err);
     }
 };
 
-let addToppingS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _topping = await client.db(DB).collection(`Toppings`).insertOne(req._insert);
-        if (!_topping.insertedId) {
+        let insert = await client.db(DB).collection(`Toppings`).insertOne(req.body);
+        if (!insert.insertedId) {
             throw new Error('500: Thêm topping thất bại!');
         }
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
                 properties: 'Topping',
-                name: 'Thêm topping mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+                name: 'Tạo topping',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'topping',
+                name: 'taotopping',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: _topping.ops[0] });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateToppingS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Toppings`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Toppings`).updateOne(req.params, { $set: req.body });
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
                 properties: 'Topping',
-                name: 'Cập nhật thông tin topping',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
+                name: 'Cập nhật topping',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'topping',
+                name: 'capnhattopping',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getToppingS,
-    addToppingS,
-    updateToppingS,
 };

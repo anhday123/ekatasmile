@@ -1,68 +1,103 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const customerService = require(`../services/customer`);
-const { Customer } = require('../models/customer');
 
-let getCustomerC = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
-        await customerService.getCustomerS(req, res, next);
+        await customerService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-
-let addCustomerC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _customer = new Customer();
-        _customer.validateInput(req.body);
-        let customer = await client
-            .db(DB)
-            .collection(`Customers`)
-            .findOne({
-                business_id: Number(req.user.business_id),
-                phone: req.body.phone,
-            });
-        let customerMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Customers' });
+        let customer = await client.db(DB).collection(`Customers`).findOne({
+            phone: req.body.phone,
+        });
         if (customer) {
             throw new Error(`400: Số điện thoại đã tồn tại!`);
         }
-        let customer_id = (() => {
-            if (customerMaxId) {
-                if (customerMaxId.value) {
-                    return Number(customerMaxId.value);
+        let customer_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'Customers' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return Number(doc.value);
                 }
-            }
-            return 0;
-        })();
+
+                return 0;
+            });
         customer_id++;
-        _customer.create({
-            ...req.body,
-            ...{
-                customer_id: Number(customer_id),
-                business_id: Number(req.user.business_id),
-                create_date: new Date(),
-                creator_id: Number(req.user.user_id),
-                active: true,
+        let _customer = {
+            customer_id: customer_id,
+            code: String(customer_id).padStart(6, '0'),
+            phone: String(req.body.phone),
+            type: req.body.type || 'Tiềm năng',
+            first_name: (req.body.first_name || '').trim(),
+            last_name: (req.body.last_name.trim() || '').trim(),
+            gender: req.body.gender || '',
+            birthday: req.body.birthday || '',
+            address: req.body.address || '',
+            district: req.body.district || '',
+            province: req.body.province || '',
+            balance: req.body.balance || {
+                available: 0,
+                point: 0,
+                debt: 0,
+                freezing: 0,
             },
-        });
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(String(req.body.first_name + req.body.last_name), true).toLowerCase(),
+            slug_type: removeUnicode(String(req.body.type), true).toLowerCase(),
+            slug_gender: removeUnicode(String(req.body.gender), true).toLowerCase(),
+            slug_address: removeUnicode(String(req.body.address), true).toLowerCase(),
+            slug_district: removeUnicode(String(req.body.district), true).toLowerCase(),
+            slug_province: removeUnicode(String(req.body.province), true).toLowerCase(),
+        };
         await client
             .db(DB)
             .collection('AppSetting')
             .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: customer_id } }, { upsert: true });
-        req[`_insert`] = _customer;
-        await customerService.addCustomerS(req, res, next);
+        req[`body`] = _customer;
+        await customerService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let updateCustomerC = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.customer_id = Number(req.params.customer_id);
-        let _customer = new Customer();
         req.body.phone = String(req.body.phone).trim().toUpperCase();
         let customer = await client.db(DB).collection(`Customers`).findOne(req.params);
         if (!customer) {
@@ -73,23 +108,58 @@ let updateCustomerC = async (req, res, next) => {
                 .db(DB)
                 .collection(`Customers`)
                 .findOne({
-                    business_id: Number(req.user.business_id),
-                    customer_id: { $ne: Number(customer.customer_id) },
+                    customer_id: { $ne: customer.customer_id },
                     phone: req.body.phone,
                 });
             if (check) {
                 throw new Error(`400: Số điện thoại đã tồn tại!`);
             }
         }
-        _customer.create(customer);
-        _customer.update(req.body);
-        req['_update'] = _customer;
+        delete req.body._id;
+        delete req.body.customer_id;
+        delete req.body.code;
+        delete req.body.phone;
+        delete req.body.balance;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _customer = { ...customer, ...req.body };
+        _customer = {
+            customer_id: _customer.customer_id,
+            code: _customer.code,
+            phone: _customer.phone,
+            type: _customer.type || 'Tiềm năng',
+            first_name: (_customer.first_name || '').trim(),
+            last_name: (_customer.last_name.trim() || '').trim(),
+            gender: _customer.gender || '',
+            birthday: _customer.birthday || '',
+            address: _customer.address || '',
+            district: _customer.district || '',
+            province: _customer.province || '',
+            balance: _customer.balance || {
+                available: 0,
+                point: 0,
+                debt: 0,
+                freezing: 0,
+            },
+            create_date: _customer.create_date,
+            creator_id: _customer.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _customer.active,
+            slug_name: removeUnicode(_customer.first_name + _customer.last_name, true).toLowerCase(),
+            slug_type: removeUnicode(_customer.type, true).toLowerCase(),
+            slug_gender: removeUnicode(_customer.gender, true).toLowerCase(),
+            slug_address: removeUnicode(_customer.address, true).toLowerCase(),
+            slug_district: removeUnicode(_customer.district, true).toLowerCase(),
+            slug_province: removeUnicode(_customer.province, true).toLowerCase(),
+        };
+        req['body'] = _customer;
         await customerService.updateCustomerS(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
             .db(DB)
@@ -102,11 +172,4 @@ let _delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getCustomerC,
-    addCustomerC,
-    updateCustomerC,
-    _delete,
 };

@@ -2,11 +2,30 @@ const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
-module.exports.getProductS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
@@ -14,6 +33,12 @@ module.exports.getProductS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: { product_id: Number(req.query.product_id) },
             });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
+        if (req.query.slug) {
+            aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
         }
         if (req.user) {
             aggregateQuery.push({
@@ -41,9 +66,6 @@ module.exports.getProductS = async (req, res, next) => {
             aggregateQuery.push({
                 $match: { supplier_id: Number(req.query.supplier_id) },
             });
-        }
-        if (req.query.slug) {
-            aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
         }
         if (req.query['today'] != undefined) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
@@ -98,13 +120,6 @@ module.exports.getProductS = async (req, res, next) => {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code) {
-            aggregateQuery.push({
-                $match: {
-                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
-                },
-            });
-        }
         if (req.query.sku) {
             aggregateQuery.push({
                 $match: {
@@ -115,7 +130,10 @@ module.exports.getProductS = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    slug: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
+                    slug_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
                 },
             });
         }
@@ -292,7 +310,15 @@ module.exports.getProductS = async (req, res, next) => {
                 'attributes.slug_values': 0,
                 'variants.slug_title': 0,
                 '_business.password': 0,
+                '_business.slug_name': 0,
+                '_business.slug_address': 0,
+                '_business.slug_district': 0,
+                '_business.slug_province': 0,
                 '_creator.password': 0,
+                '_creator.slug_name': 0,
+                '_creator.slug_address': 0,
+                '_creator.slug_district': 0,
+                '_creator.slug_province': 0,
             },
         });
         let sortQuery = (() => {
@@ -331,39 +357,51 @@ module.exports.getProductS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: products,
             count: counts[0] ? counts[0].counts : 0,
+            data: products,
         });
     } catch (err) {
         next(err);
     }
 };
 
-module.exports.addProductS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
+        let result = req._product;
         let insertProduct = await client.db(DB).collection('Products').insertOne(req._product);
+        if (!insertProduct.insertedId) {
+            throw new Error('500: Tạo sản phẩm thất bại');
+        }
         let insertAttributes = await (() => {
+            result.attributes = req.attributes;
             if (req._attributes && req._attributes.length > 0) {
                 return client.db(DB).collection('Attributes').insertMany(req._attributes);
             }
             return [];
         })();
+        if (!insertAttributes.insertedIds) {
+            throw new Error('500: Tạo thuộc tính sản phẩm thất bại');
+        }
         let insertVariants = await (() => {
+            result.variants = req._variants;
             if (req._variants && req._variants.length > 0) {
                 return client.db(DB).collection('Variants').insertMany(req._variants);
             }
             return [];
         })();
+        if (!insertVariants.insertedIds) {
+            throw new Error('500: Tạo phiên bản sản phẩm thất bại');
+        }
         res.send({
             success: true,
-            data: { insertProducts: req._product, insertAttributes: req._attributes, insertVariants: req._variants },
+            data: result,
         });
     } catch (err) {
         next(err);
     }
 };
 
-module.exports.updateProductS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         let result = [];
         if (req._newProducts && Array.isArray(req._newProducts) && req._newProducts.length > 0) {
@@ -436,31 +474,7 @@ module.exports.updateProductS = async (req, res, next) => {
     }
 };
 
-module.exports.deleteProductS = async (req, res, next) => {
-    try {
-        await client
-            .db(DB)
-            .collection('Products')
-            .deleteMany({ product_id: { $in: req._delete } });
-        await client
-            .db(DB)
-            .collection('Attributes')
-            .deleteMany({ product_id: { $in: req._delete } });
-        await client
-            .db(DB)
-            .collection('Variants')
-            .deleteMany({ product_id: { $in: req._delete } });
-        await client
-            .db(DB)
-            .collection('Locations')
-            .deleteMany({ product_id: { $in: req._delete } });
-        res.send({ success: true, message: 'Xoá sản phẩm thành công!' });
-    } catch (err) {
-        next(err);
-    }
-};
-
-module.exports.getAllAtttributeS = async (req, res, next) => {
+module.exports._getAllAttributes = async (req, res, next) => {
     try {
         let mongoQuery = {};
         if (req.query.store_id) {
@@ -472,17 +486,14 @@ module.exports.getAllAtttributeS = async (req, res, next) => {
             mongoQuery['inventory_id'] = Number(req.query.branch_id);
         }
         let locations = await client.db(DB).collection('Locations').find(mongoQuery).toArray();
-        let product_ids = locations.map((location) => {
-            return String(location.product_id);
+        let productIds = locations.map((location) => {
+            return location.product_id;
         });
-        product_ids = [...new Set(product_ids)];
-        product_ids = product_ids.map((product_id) => {
-            return Number(product_id);
-        });
+        productIds = [...new Set(productIds)];
         let attributes = await client
             .db(DB)
             .collection('Attributes')
-            .find({ product_id: { $in: product_ids } })
+            .find({ product_id: { $in: productIds } })
             .toArray();
         let _attributes = {};
         attributes.map((attribute) => {
@@ -504,7 +515,7 @@ module.exports.getAllAtttributeS = async (req, res, next) => {
     }
 };
 
-module.exports.addFeedbackS = async (req, res, next) => {
+module.exports._createFeedback = async (req, res, next) => {
     try {
         let _insert = await client.db(DB).collection(`Feedbacks`).insertOne(req._insert);
         if (!_insert.insertedId) {

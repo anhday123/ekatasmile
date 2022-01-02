@@ -1,59 +1,87 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const shippingCompanyService = require(`../services/shipping-company`);
-const { ShippingCompany } = require(`../models/shipping-company`);
 
-let getShippingCompanyC = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
-        await shippingCompanyService.getShippingCompanyS(req, res, next);
+        await shippingCompanyService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let addShippingCompanyC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _shippingCompany = new ShippingCompany();
-        _shippingCompany.validateInput(req.body);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let shippingCompany = await client
-            .db(DB)
-            .collection(`ShippingCompanies`)
-            .findOne({
-                business_id: Number(req.user.business_id),
-                name: req.body.name,
-            });
-        let shippingCompanyMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'ShippingCompanies' });
+        let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne({
+            name: req.body.name,
+        });
         if (shippingCompany) {
             throw new Error(`400: Đối tác vận chuyển đã tồn tại!`);
         }
-        let shipping_company_id = (() => {
-            if (shippingCompanyMaxId) {
-                if (shippingCompanyMaxId.value) {
-                    return Number(shippingCompanyMaxId.value);
+        let shipping_company_id = await client
+            .db(DB)
+            .collection('AppSetting')
+            .findOne({ name: 'ShippingCompanies' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return Number(doc.value);
                 }
-            }
-            return 0;
-        })();
+
+                return 0;
+            });
         shipping_company_id++;
-        _shippingCompany.create({
-            ...req.body,
-            ...{
-                shipping_company_id: Number(shipping_company_id),
-                business_id: Number(req.user.business_id),
-                create_date: new Date(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            },
-        });
+        let _shippingCompany = {
+            shipping_company_id: shipping_company_id,
+            code: String(shipping_company_id).padStart(6, '0'),
+            name: req.body.name,
+            image: req.body.image || '',
+            phone: req.body.phone || '',
+            zipcode: req.body.zipcode || '',
+            address: req.body.address || '',
+            district: req.body.district || '',
+            province: req.body.province || '',
+            default: req.body.default || false,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            sub_name: removeUnicode(req.body.name, true).toLowerCase(),
+            sub_address: removeUnicode(req.body.address, true).toLowerCase(),
+            sub_district: removeUnicode(req.body.district, true).toLowerCase(),
+            sub_province: removeUnicode(req.body.province, true).toLowerCase(),
+        };
         if (_shippingCompany.default) {
             await client
                 .db(DB)
                 .collection('Taxes')
-                .updateMany({ business_id: _shippingCompany.business_id }, { $set: { default: false } });
+                .updateMany({}, { $set: { default: false } });
         }
         await client
             .db(DB)
@@ -63,41 +91,64 @@ let addShippingCompanyC = async (req, res, next) => {
                 { $set: { name: 'ShippingCompanies', value: shipping_company_id } },
                 { upsert: true }
             );
-        req[`_insert`] = _shippingCompany;
-        await shippingCompanyService.addShippingCompanyS(req, res, next);
+        req[`body`] = _shippingCompany;
+        await shippingCompanyService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let updateShippingCompanyC = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.shipping_company_id = Number(req.params.shipping_company_id);
-        let _shippingCompany = new ShippingCompany();
-        req.body.name = String(req.body.name).trim().toUpperCase();
         let shippingCompany = await client.db(DB).collection(`ShippingCompanies`).findOne(req.params);
         if (!shippingCompany) {
             throw new Error(`400: Đối tác vận chuyển không tồn tại!`);
         }
         if (req.body.name) {
+            req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
                 .db(DB)
                 .collection(`ShippingCompanies`)
                 .findOne({
-                    business_id: Number(req.user.business_id),
-                    shipping_company_id: { $ne: Number(shippingCompany.shipping_company_id) },
+                    shipping_company_id: { $ne: shippingCompany.shipping_company_id },
                     name: req.body.name,
                 });
             if (check) {
                 throw new Error(`400: Đối tác vận chuyển đã tồn tại!`);
             }
         }
-        _shippingCompany.create(shippingCompany);
-        _shippingCompany.update(req.body);
+        delete req.body._id;
+        delete req.body.shipping_company_id;
+        delete req.body.code;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _shippingCompany = { ...shippingCompany, ...req.body };
+        _shippingCompany = {
+            shipping_company_id: _shippingCompany.shipping_company_id,
+            code: _shippingCompany.code,
+            name: _shippingCompany.name,
+            image: _shippingCompany.image || '',
+            phone: _shippingCompany.phone || '',
+            zipcode: _shippingCompany.zipcode || '',
+            address: _shippingCompany.address || '',
+            district: _shippingCompany.district || '',
+            province: _shippingCompany.province || '',
+            default: _shippingCompany.default || false,
+            create_date: _shippingCompany.create_date,
+            creator_id: _shippingCompany.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _shippingCompany.active,
+            sub_name: removeUnicode(_shippingCompany.name, true).toLowerCase(),
+            sub_address: removeUnicode(_shippingCompany.address, true).toLowerCase(),
+            sub_district: removeUnicode(_shippingCompany.district, true).toLowerCase(),
+            sub_province: removeUnicode(_shippingCompany.province, true).toLowerCase(),
+        };
         if (_shippingCompany.default) {
             await client
                 .db(DB)
                 .collection('Taxes')
-                .updateMany({ business_id: _shippingCompany.business_id }, { $set: { default: false } });
+                .updateMany({}, { $set: { default: false } });
         }
         req['_update'] = _shippingCompany;
         await shippingCompanyService.updateShippingCompanyS(req, res, next);
@@ -106,7 +157,7 @@ let updateShippingCompanyC = async (req, res, next) => {
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
             .db(DB)
@@ -119,11 +170,4 @@ let _delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getShippingCompanyC,
-    addShippingCompanyC,
-    updateShippingCompanyC,
-    _delete,
 };

@@ -1,11 +1,31 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
-let getCategoryS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
@@ -16,6 +36,9 @@ let getCategoryS = async (req, res, next) => {
         if (req.query.category_id) {
             aggregateQuery.push({ $match: { category_id: Number(req.query.category_id) } });
         }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
         }
@@ -25,7 +48,52 @@ let getCategoryS = async (req, res, next) => {
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -33,17 +101,13 @@ let getCategoryS = async (req, res, next) => {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code) {
-            aggregateQuery.push({
-                $match: {
-                    code: new RegExp(`${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
-                },
-            });
-        }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
+                    slug_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
                 },
             });
         }
@@ -58,7 +122,7 @@ let getCategoryS = async (req, res, next) => {
                             ),
                         },
                         {
-                            sub_name: new RegExp(
+                            slug_name: new RegExp(
                                 `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
                                 'ig'
                             ),
@@ -68,17 +132,19 @@ let getCategoryS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Products',
-                    localField: 'category_id',
-                    foreignField: 'category_id',
-                    as: '_products',
+        if (req.query._products) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Products',
+                        localField: 'category_id',
+                        foreignField: 'category_id',
+                        as: '_products',
+                    },
                 },
-            },
-            { $addFields: { product_quantity: { $size: '$_products' } } }
-        );
+                { $addFields: { product_quantity: { $size: '$_products' } } }
+            );
+        }
         aggregateQuery.push({
             $lookup: {
                 from: 'Categories',
@@ -149,24 +215,24 @@ let getCategoryS = async (req, res, next) => {
                 as: 'children_category',
             },
         });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Deals',
-                let: { categoryId: '$category_id' },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [{ $in: ['$$categoryId', '$category_list'] }, { $eq: ['$type', 'category'] }],
+        if (req.query._deals) {
+            aggregateQuery.push({
+                $lookup: {
+                    from: 'Deals',
+                    let: { categoryId: '$category_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $in: ['$$categoryId', '$category_list'] }, { $eq: ['$type', 'category'] }],
+                                },
                             },
                         },
-                    },
-                ],
-                as: '_deals',
-            },
-        });
-        aggregateQuery.push({ $addFields: { 'children_category._deals': '$_deals' } });
-        aggregateQuery.push({ $addFields: { 'children_category.children_category._deals': '$_deals' } });
+                    ],
+                    as: '_deals',
+                },
+            });
+        }
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -195,13 +261,31 @@ let getCategoryS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                sub_name: 0,
+                slug_name: 0,
                 _products: 0,
+                'children_category.slug_name': 0,
                 'children_category._products': 0,
-                'children_category._business.password': 0,
                 'children_category._creator.password': 0,
+                'children_category._creator.otp_code': 0,
+                'children_category._creator.otp_timelife': 0,
+                'children_category._creator.sub_name': 0,
+                'children_category._creator.sub_address': 0,
+                'children_category._creator.sub_district': 0,
+                'children_category._creator.sub_province': 0,
                 '_business.password': 0,
+                '_business.otp_code': 0,
+                '_business.otp_timelife': 0,
+                '_business.sub_name': 0,
+                '_business.sub_address': 0,
+                '_business.sub_district': 0,
+                '_business.sub_province': 0,
                 '_creator.password': 0,
+                '_creator.otp_code': 0,
+                '_creator.otp_timelife': 0,
+                '_creator.sub_name': 0,
+                '_creator.sub_address': 0,
+                '_creator.sub_district': 0,
+                '_creator.sub_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -230,96 +314,57 @@ let getCategoryS = async (req, res, next) => {
     }
 };
 
-let addCategoryS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _category = await client.db(DB).collection(`Categories`).insertOne(req._insert);
-        if (!_category.insertedId) {
-            throw new Error('500: Lỗi hệ thống, tạo phân loại sản phẩm thất bại!');
-        }
-        if (req.body.products) {
-            await client
-                .db(DB)
-                .collection(`Products`)
-                .updateMany(
-                    { product_id: { $in: products } },
-                    { $set: { category_id: Number(req._insert.category_id) } }
-                );
+        let insert = await client.db(DB).collection(`Categories`).insertOne(req.body);
+        if (!insert.insertedId) {
+            throw new Error('500: Tạo nhóm sản phẩm thất bại!');
         }
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
-                properties: 'Category',
-                name: 'Thêm phân loại sản phẩm mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Nhóm sản phẩm',
+                name: 'Tạo nhóm sản phẩm',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'nhomsanpham',
+                name: 'taonhomsanpham',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._insert });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateCategoryS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Categories`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Categories`).updateOne(req.params, { $set: req.body });
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Category',
-                name: 'Cập nhật phân loại sản phẩm',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Nhóm sản phẩm',
+                name: 'Cập nhật nhóm sản phẩm',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'nhomsanpham',
+                name: 'capnhatnhomsanpham',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-let deleteCategoryS = async (req, res, next) => {
-    try {
-        await client
-            .db(DB)
-            .collection(`Categories`)
-            .deleteMany({ category_id: { $in: req._delete } });
-        try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Delete',
-                properties: 'Category',
-                name: 'Xóa phân loại sản phẩm',
-                data: req._delete,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
-        } catch (err) {
-            console.log(err);
-        }
-        res.send({ success: true, message: 'Xóa phân loại sản phẩm thành công!', data: req._delete });
-    } catch (err) {
-        next(err);
-    }
-};
-
-module.exports = {
-    addCategoryS,
-    getCategoryS,
-    updateCategoryS,
-    deleteCategoryS,
 };

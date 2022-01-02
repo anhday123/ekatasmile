@@ -9,7 +9,7 @@ let removeUnicode = (text, removeSpace) => {
         trả về chuỗi ko dấu tiếng việt ko khoảng trắng
     */
     if (typeof text != 'string') {
-        throw new Error('Type of text input must be string!');
+        return '';
     }
     if (removeSpace && typeof removeSpace != 'boolean') {
         throw new Error('Type of removeSpace input must be boolean!');
@@ -25,12 +25,18 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-let getBlogS = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.blog_id) {
             aggregateQuery.push({ $match: { blog_id: Number(req.query.blog_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
+        if (req.query.slug) {
+            aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
         }
         if (req.query.business_id) {
             aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
@@ -183,29 +189,57 @@ let getBlogS = async (req, res, next) => {
     }
 };
 
-let createBlogS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let blog = await client.db(DB).collection(`Blogs`).insertOne(req._insert);
+        let blog = await client.db(DB).collection(`Blogs`).insertOne(req.body);
         if (!blog.insertedId) {
             throw new Error('500: Lỗi hệ thống, thêm bài viết thất bại!');
         }
-        res.send({ success: true, data: req._insert });
+        try {
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Bài viết',
+                name: 'Tạo bài viết',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'baiviet',
+                name: 'taobaiviet',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateBlogS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Blogs`).findOneAndUpdate(req.params, { $set: req._update });
-        res.send({ success: true, data: req._update });
+        await client.db(DB).collection(`Blogs`).updateOne(req.params, { $set: req.body });
+        try {
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Bài viết',
+                name: 'Cập nhật bài viết',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'baiviet',
+                name: 'capnhatbaiviet',
+            };
+            await client.db(DB).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    createBlogS,
-    getBlogS,
-    updateBlogS,
 };

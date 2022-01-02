@@ -11,7 +11,7 @@ let removeUnicode = (text, removeSpace) => {
         trả về chuỗi ko dấu tiếng việt ko khoảng trắng
     */
     if (typeof text != 'string') {
-        throw new Error('Type of text input must be string!');
+        return '';
     }
     if (removeSpace && typeof removeSpace != 'boolean') {
         throw new Error('Type of removeSpace input must be boolean!');
@@ -217,8 +217,26 @@ module.exports._get = async (req, res, next) => {
                 slug_district: 0,
                 slug_province: 0,
                 '_business.password': 0,
+                '_business.otp_code': 0,
+                '_business.otp_timelife': 0,
+                '_business.sub_name': 0,
+                '_business.sub_address': 0,
+                '_business.sub_district': 0,
+                '_business.sub_province': 0,
                 '_creator.password': 0,
+                '_creator.otp_code': 0,
+                '_creator.otp_timelife': 0,
+                '_creator.sub_name': 0,
+                '_creator.sub_address': 0,
+                '_creator.sub_district': 0,
+                '_creator.sub_province': 0,
                 '_employees.password': 0,
+                '_employees.otp_code': 0,
+                '_employees.otp_timelife': 0,
+                '_employees.sub_name': 0,
+                '_employees.sub_address': 0,
+                '_employees.sub_district': 0,
+                '_employees.sub_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -239,8 +257,8 @@ module.exports._get = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: branchs,
             count: counts[0] ? counts[0].counts : 0,
+            data: branchs,
         });
     } catch (err) {
         next(err);
@@ -249,29 +267,30 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let _branch = await client.db(DB).collection(`Branchs`).insertOne(req._insert);
-        if (!_branch.insertedId) {
-            throw new Error('500: Lỗi hệ thống, tạo chi nhánh thất bại!');
+        let insert = await client.db(DB).collection(`Branchs`).insertOne(req.body);
+        if (!insert.insertedId) {
+            throw new Error('500: Tạo chi nhánh thất bại!');
         }
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
-                properties: 'Branch',
-                name: 'Thêm chi nhánh mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
-            await client
-                .db(DB)
-                .collection(`Users`)
-                .updateOne(
-                    { user_id: Number(req.user.user_id) },
-                    { $set: { branch_id: Number(req._insert.branch_id) } }
-                );
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Chi nhánh',
+                name: 'Tạo chi nhánh',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'chinhanh',
+                name: 'taochinhanh',
+            };
+            await Promise.all([
+                client.db(DB).collection(`Actions`).insertOne(_action),
+                client
+                    .db(DB)
+                    .collection(`Users`)
+                    .updateOne({ user_id: req.user.user_id }, { $set: { branch_id: req.body.branch_id } }),
+            ]);
         } catch (err) {
             console.log(err);
         }
@@ -307,10 +326,29 @@ module.exports._create = async (req, res, next) => {
                     },
                 },
                 { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        '_role.slug_name': 0,
+                        '_branch.slug_name': 0,
+                        '_branch.slug_warehouse_type': 0,
+                        '_branch.slug_address': 0,
+                        '_branch.slug_ward': 0,
+                        '_branch.slug_district': 0,
+                        '_branch.slug_province': 0,
+                        '_store.slug_name': 0,
+                        '_store.slug_address': 0,
+                        '_store.slug_ward': 0,
+                        '_store.slug_district': 0,
+                        '_store.slug_province': 0,
+                    },
+                },
             ])
             .toArray();
         delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([jwt.createToken(user), jwt.createToken(user)]);
+        let [accessToken, refreshToken] = await Promise.all([
+            jwt.createToken(user, 24 * 60 * 60),
+            jwt.createToken(user, 30 * 24 * 60 * 60),
+        ]);
         res.send({ success: true, data: req._insert, accessToken, refreshToken });
     } catch (err) {
         next(err);
@@ -319,27 +357,29 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Branchs`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Branchs`).updateOne(req.params, { $set: req.body });
         await client
             .db(DB)
             .collection('Locations')
-            .updateMany({ inventory_id: Number(req.params.branch_id) }, { $set: { name: req._update.name } });
+            .updateMany({ inventory_id: Number(req.params.branch_id) }, { $set: { name: req.body.name } });
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Branch',
-                name: 'Cập nhật thông tin chi nhánh',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Chi nhánh',
+                name: 'Cập nhật chi nhánh',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'chinhanh',
+                name: 'capnhatchinhanh',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }

@@ -1,18 +1,41 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
 const jwt = require(`../libs/jwt`);
 
-let getUserS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.user_id) {
             aggregateQuery.push({ $match: { user_id: Number(req.query.user_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -32,7 +55,52 @@ let getUserS = async (req, res, next) => {
         if (req.query.role_id) {
             aggregateQuery.push({ $match: { role_id: Number(req.query.role_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date'] != undefined) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date'] != undefined) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -43,14 +111,17 @@ let getUserS = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
+                    slug_name: new RegExp(
+                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
+                        'ig'
+                    ),
                 },
             });
         }
         if (req.query.address) {
             aggregateQuery.push({
                 $match: {
-                    sub_address: new RegExp(
+                    slug_address: new RegExp(
                         `${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -60,7 +131,7 @@ let getUserS = async (req, res, next) => {
         if (req.query.district) {
             aggregateQuery.push({
                 $match: {
-                    sub_district: new RegExp(
+                    slug_district: new RegExp(
                         `${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -70,7 +141,7 @@ let getUserS = async (req, res, next) => {
         if (req.query.province) {
             aggregateQuery.push({
                 $match: {
-                    sub_province: new RegExp(
+                    slug_province: new RegExp(
                         `${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -88,13 +159,7 @@ let getUserS = async (req, res, next) => {
                             ),
                         },
                         {
-                            sub_name: new RegExp(
-                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                                'ig'
-                            ),
-                        },
-                        {
-                            phone: new RegExp(
+                            slug_name: new RegExp(
                                 `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
                                 'ig'
                             ),
@@ -171,14 +236,41 @@ let getUserS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                sub_name: 0,
+                slug_name: 0,
                 password: 0,
-                sub_address: 0,
-                sub_district: 0,
-                sub_province: 0,
+                slug_address: 0,
+                slug_district: 0,
+                slug_province: 0,
+                '_branch.slug_name': 0,
+                '_branch.slug_warehouse_type': 0,
+                '_branch.slug_address': 0,
+                '_branch.slug_district': 0,
+                '_branch.slug_province': 0,
+                '_store.slug_name': 0,
+                '_store.slug_address': 0,
+                '_store.slug_district': 0,
+                '_store.slug_province': 0,
                 '_business.password': 0,
+                '_business.otp_code': 0,
+                '_business.otp_timelife': 0,
+                '_business.sub_name': 0,
+                '_business.sub_address': 0,
+                '_business.sub_district': 0,
+                '_business.sub_province': 0,
                 '_creator.password': 0,
+                '_creator.otp_code': 0,
+                '_creator.otp_timelife': 0,
+                '_creator.sub_name': 0,
+                '_creator.sub_address': 0,
+                '_creator.sub_district': 0,
+                '_creator.sub_province': 0,
                 '_employees.password': 0,
+                '_employees.otp_code': 0,
+                '_employees.otp_timelife': 0,
+                '_employees.sub_name': 0,
+                '_employees.sub_address': 0,
+                '_employees.sub_district': 0,
+                '_employees.sub_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -199,84 +291,78 @@ let getUserS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: users,
             count: counts[0] ? counts[0].counts : 0,
+            data: users,
         });
     } catch (err) {
         next(err);
     }
 };
 
-let addUserS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let user = await client.db(DB).collection(`Users`).insertOne(req._insert);
-        if (!user.insertedId) {
+        let insert = await client.db(DB).collection(`Users`).insertOne(req.body);
+        if (!insert.insertedId) {
             throw new Error(`500: Tạo user thất bại!`);
         }
-        delete req._insert.password;
+        delete req.body.password;
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req._insert.business_id),
-                type: 'Add',
-                properties: 'Users',
-                name: 'Đăng ký người dùng mới',
-                data: req._insert,
-                performer_id: (() => {
-                    if (req.user) {
-                        return Number(req.user.user_id);
-                    }
-                    return Number(req._insert.user_id);
-                })(),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            let _action = {
+                business_id: req.user?.business_id || req.body.user_id,
+                type: 'Tạo',
+                properties: 'Tài khoản',
+                name: 'Tạo tài khoản',
+                data: req.body,
+                performer_id: req.user?.user_id || req.body.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'taikhoan',
+                name: 'taotaikhoan',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._insert });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateUserS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Users`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Users`).updateOne(req.params, { $set: req.body });
         delete req._update.password;
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Users',
-                name: 'Cập nhật thông tin người dùng',
-                data: req._update,
-                performer_id: (() => {
-                    if (req.user) {
-                        return Number(req.user.user_id);
-                    }
-                    return Number(req._update.user_id);
-                })(),
-                date: new Date(),
-            });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Tài khoản',
+                name: 'Cập nhật tài khoản',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'taikhoan',
+                name: 'capnhattaikhoan',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        if (req._update.user_id == req._update.business_id) {
+        if (req.body.user_id == req.body.business_id) {
             await client
                 .db(DB)
                 .collection('Users')
                 .updateMany(
                     {
-                        business_id: Number(req._update.user_id),
+                        business_id: Number(req.body.user_id),
                     },
                     {
                         $set: {
-                            price_recipe: req._update.price_recipe,
-                            company_name: req._update.company_name,
-                            company_website: req._update.company_website,
+                            price_recipe: req.body.price_recipe,
+                            company_name: req.body.company_name,
+                            company_website: req.body.company_website,
                         },
                     }
                 );
@@ -285,7 +371,7 @@ let updateUserS = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { user_id: Number(req._update.user_id) } },
+                { $match: { user_id: Number(req.user.user_id) } },
                 {
                     $lookup: {
                         from: 'Roles',
@@ -313,21 +399,34 @@ let updateUserS = async (req, res, next) => {
                     },
                 },
                 { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        slug_name: 0,
+                        password: 0,
+                        slug_address: 0,
+                        slug_district: 0,
+                        slug_province: 0,
+                        '_role.slug_name': 0,
+                        '_branch.slug_name': 0,
+                        '_branch.slug_warehouse_type': 0,
+                        '_branch.slug_address': 0,
+                        '_branch.slug_district': 0,
+                        '_branch.slug_province': 0,
+                        '_store.slug_name': 0,
+                        '_store.slug_address': 0,
+                        '_store.slug_district': 0,
+                        '_store.slug_province': 0,
+                    },
+                },
             ])
             .toArray();
         delete user.password;
         let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(user, process.env.ACCESS_TOKEN_LIFE),
-            jwt.createToken(user, process.env.REFRESH_TOKEN_LIFE),
+            jwt.createToken(user, 24 * 60 * 60),
+            jwt.createToken(user, 30 * 24 * 60 * 60),
         ]);
-        res.send({ success: true, data: req._update, accessToken, refreshToken });
+        res.send({ success: true, data: req.body, accessToken, refreshToken });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getUserS,
-    addUserS,
-    updateUserS,
 };

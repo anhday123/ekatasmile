@@ -5,6 +5,28 @@ const DB = process.env.DATABASE;
 
 const blogService = require(`../services/blog`);
 
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
 module.exports._get = async (req, res, next) => {
     try {
         await blogService.getBlogS(req, res, next);
@@ -42,20 +64,33 @@ module.exports._create = async (req, res, next) => {
 
         blog_id++;
         let _blog = {
-            business_id: req.user.business_id,
             blog_id: blog_id,
             code: String(blog_id).padStart(6, '0'),
             title: req.body.title,
             blog_category_id: req.body.blog_category_id,
-            image: req.body.image,
+            images: req.body.images,
             content: req.body.content,
             tags: req.body.tags || [],
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_title: removeUnicode(String(req.body.title), true),
+            slug_tags: (() => {
+                if (req.body.tags && Array.isArray(req.body.tags) && req.body.tags.length > 0) {
+                    return req.body.tags.map((tag) => {
+                        return removeUnicode(String(tag), true).toLowerCase();
+                    });
+                }
+                return [];
+            })(),
         };
         await client
             .db(DB)
             .collection('AppSetting')
             .updateOne({ name: 'Blogs' }, { $set: { name: 'Blogs', value: blog_id } }, { upsert: true });
-        req[`_insert`] = _blog;
+        req[`body`] = _blog;
         await blogService.createBlogS(req, res, next);
     } catch (err) {
         next(err);
@@ -65,7 +100,6 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.blog_id = Number(req.params.blog_id);
-        let _blog = new Blog();
         req.body.title = String(req.body.title).trim().toUpperCase();
         let blog = await client.db(DB).collection(`Blogs`).findOne(req.params);
         if (!blog) {
@@ -76,17 +110,46 @@ module.exports._update = async (req, res, next) => {
                 .db(DB)
                 .collection(`Blogs`)
                 .findOne({
-                    business_id: Number(req.user.business_id),
-                    blog_id: { $ne: Number(blog.blog_id) },
+                    business_id: req.user.business_id,
+                    blog_id: { $ne: blog.blog_id },
                     title: req.body.title,
                 });
             if (check) {
-                throw new Error(`400: Bài viết đã tồn tại!`);
+                throw new Error(`400: Đã tồn tại bài viết trùng tên!`);
             }
         }
-        _blog.create(blog);
-        _blog.update(req.body);
-        req['_update'] = _blog;
+        delete req.body._id;
+        delete req.body.business_id;
+        delete req.body.blog_id;
+        delete req.body.code;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _blog = { ...blog, ...req.body };
+        _blog = {
+            business_id: _blog.business_id,
+            blog_id: _blog.blog_id,
+            code: _blog.code,
+            title: _blog.title,
+            blog_category_id: _blog.blog_category_id,
+            images: _blog.images,
+            content: _blog.content,
+            tags: _blog.tags || [],
+            create_date: _blog.create_date,
+            creator_id: _blog.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _blog.active,
+            slug_title: removeUnicode(_blog.title),
+            slug_tags: (() => {
+                if (_blog.tags && Array.isArray(_blog.tags) && _blog.tags.length > 0) {
+                    return _blog.tags.map((tag) => {
+                        return removeUnicode(String(tag), true).toLowerCase();
+                    });
+                }
+                return [];
+            })(),
+        };
+        req['body'] = _blog;
         await blogService.updateBlogS(req, res, next);
     } catch (err) {
         next(err);

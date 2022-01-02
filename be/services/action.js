@@ -9,7 +9,7 @@ let removeUnicode = (text, removeSpace) => {
         trả về chuỗi ko dấu tiếng việt ko khoảng trắng
     */
     if (typeof text != 'string') {
-        throw new Error('Type of text input must be string!');
+        return '';
     }
     if (removeSpace && typeof removeSpace != 'boolean') {
         throw new Error('Type of removeSpace input must be boolean!');

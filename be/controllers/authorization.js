@@ -1,7 +1,7 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
-const DB = process.env.DATABASE;
+const SDB = process.env.DATABASE;
 
 const bcrypt = require(`../libs/bcrypt`);
 const jwt = require(`../libs/jwt`);
@@ -15,7 +15,18 @@ module.exports._login = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        req.body.username = req.body.username.toLowerCase();
+        let [prefix, username] = req.body.username.split('_');
+        const DB = await client
+            .db(SDB)
+            .collection('Business')
+            .findOne({ prefix: prefix })
+            .then((doc) => {
+                if (doc && doc.database_name) {
+                    return doc.database_name;
+                }
+                throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
+            });
+        req.body.username = username.toLowerCase();
         let [user] = await client
             .db(DB)
             .collection(`Users`)

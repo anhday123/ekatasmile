@@ -1,16 +1,39 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
-const { Action } = require('../models/action');
 
-let getDealS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.deal_id) {
             aggregateQuery.push({ $match: { deal_id: Number(req.query.deal_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.user) {
             aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
@@ -21,7 +44,52 @@ let getDealS = async (req, res, next) => {
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -29,20 +97,10 @@ let getDealS = async (req, res, next) => {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
-        if (req.query.code) {
-            aggregateQuery.push({
-                $match: {
-                    code: new RegExp(
-                        `${removeUnicode(req.query.code, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
-                },
-            });
-        }
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    sub_name: new RegExp(
+                    slug_name: new RegExp(
                         `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -52,7 +110,7 @@ let getDealS = async (req, res, next) => {
         if (req.query.type) {
             aggregateQuery.push({
                 $match: {
-                    sub_type: new RegExp(
+                    slug_type: new RegExp(
                         `${removeUnicode(req.query.type, false).replace(/(\s){1,}/g, '(.*?)')}`,
                         'ig'
                     ),
@@ -70,7 +128,7 @@ let getDealS = async (req, res, next) => {
                             ),
                         },
                         {
-                            sub_name: new RegExp(
+                            slug_name: new RegExp(
                                 `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
                                 'ig'
                             ),
@@ -80,42 +138,56 @@ let getDealS = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Categories',
-                let: { categoryIds: '$category_list' },
-                pipeline: [
-                    { $match: { $expr: { $in: ['$category_id', '$$categoryIds'] } } },
-                    {
-                        $lookup: {
-                            from: 'Categories',
-                            let: { categoryId: '$category_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } }],
-                            as: 'children_category',
+        if (req.query._list) {
+            aggregateQuery.push({
+                $lookup: {
+                    from: 'Categories',
+                    let: { categoryIds: '$category_list' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$category_id', '$$categoryIds'] } } },
+                        {
+                            $lookup: {
+                                from: 'Categories',
+                                let: { categoryId: '$category_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$parent_id', '$$categoryId'] } } }],
+                                as: 'children_category',
+                            },
                         },
-                    },
-                ],
-                as: '_categories',
-            },
-        });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Products',
-                let: { productIds: '$product_list' },
-                pipeline: [
-                    { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
-                    {
-                        $lookup: {
-                            from: 'Variants',
-                            let: { productId: '$product_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                            as: 'variants',
+                        ...(() => {
+                            if (req.query._list_page && req.query._list_page_size) {
+                                return [{ $skip: (page - 1) * page_size }, { $limit: page_size }];
+                            }
+                            return [];
+                        })(),
+                    ],
+                    as: '_categories',
+                },
+            });
+            aggregateQuery.push({
+                $lookup: {
+                    from: 'Products',
+                    let: { productIds: '$product_list' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
+                        {
+                            $lookup: {
+                                from: 'Variants',
+                                let: { productId: '$product_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                                as: 'variants',
+                            },
                         },
-                    },
-                ],
-                as: '_products',
-            },
-        });
+                        ...(() => {
+                            if (req.query._list_page && req.query._list_page_size) {
+                                return [{ $skip: (page - 1) * page_size }, { $limit: page_size }];
+                            }
+                            return [];
+                        })(),
+                    ],
+                    as: '_products',
+                },
+            });
+        }
         if (req.query._business) {
             aggregateQuery.push(
                 {
@@ -144,9 +216,19 @@ let getDealS = async (req, res, next) => {
         }
         aggregateQuery.push({
             $project: {
-                sub_name: 0,
+                slug_name: 0,
+                '_categories.slug_name': 0,
+                '_products.slug_name': 0,
                 '_business.password': 0,
+                '_business.slug_name': 0,
+                '_business.slug_address': 0,
+                '_business.slug_district': 0,
+                '_business.slug_province': 0,
                 '_creator.password': 0,
+                '_creator.slug_name': 0,
+                '_creator.slug_address': 0,
+                '_creator.slug_district': 0,
+                '_creator.slug_province': 0,
             },
         });
         let countQuery = [...aggregateQuery];
@@ -167,67 +249,65 @@ let getDealS = async (req, res, next) => {
         ]);
         res.send({
             success: true,
-            data: deals,
             count: counts[0] ? counts[0].counts : 0,
+            data: deals,
         });
     } catch (err) {
         next(err);
     }
 };
 
-let addDealS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let deal = await client.db(DB).collection(`Deals`).insertOne(req._insert);
-        if (!deal.insertedId) {
-            throw new Error('500: Lỗi hệ thống, thêm chương trình giảm giá thất bại!');
+        let insert = await client.db(DB).collection(`Deals`).insertOne(req.body);
+        if (!insert.insertedId) {
+            throw new Error('500: Tạo ưu đãi thất bại!');
         }
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Add',
-                properties: 'Deal',
-                name: 'Thêm chương trình giảm giá mới',
-                data: req._insert,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
-            await client.db(DB).collection(`Actions`).insertOne(_action);
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Ưu đãi',
+                name: 'Tạo ưu đãi',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'uudai',
+                name: 'taouudai',
+            };
+            await Promise.all([client.db(DB).collection(`Actions`).insertOne(_action)]);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._insert });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateDealS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Deals`).findOneAndUpdate(req.params, { $set: req._update });
+        await client.db(DB).collection(`Deals`).updateOne(req.params, { $set: req.body });
         try {
-            let _action = new Action();
-            _action.create({
-                business_id: Number(req.user.business_id),
-                type: 'Update',
-                properties: 'Deal',
-                name: 'Cập nhật thông tin chương trình giảm giá',
-                data: req._update,
-                performer_id: Number(req.user.user_id),
-                date: new Date(),
-            });
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Ưu đãi',
+                name: 'Cập nhật ưu đãi',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'uudai',
+                name: 'capnhatuudai',
+            };
             await client.db(DB).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    addDealS,
-    getDealS,
-    updateDealS,
 };

@@ -1,8 +1,7 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { relative } = require('../utils/filter');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -10,7 +9,7 @@ let removeUnicode = (text, removeSpace) => {
         trả về chuỗi ko dấu tiếng việt ko khoảng trắng
     */
     if (typeof text != 'string') {
-        throw new Error('Type of text input must be string!');
+        return '';
     }
     if (removeSpace && typeof removeSpace != 'boolean') {
         throw new Error('Type of removeSpace input must be boolean!');
@@ -26,7 +25,7 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-let getWardC = async (req, res, next) => {
+module.exports._getWard = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         if (req.query.ward_code) {
@@ -54,7 +53,7 @@ let getWardC = async (req, res, next) => {
     }
 };
 
-let getDistrictC = async (req, res, next) => {
+module.exports._getDistrict = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         if (req.query.district_id) {
@@ -77,7 +76,7 @@ let getDistrictC = async (req, res, next) => {
     }
 };
 
-let getProvinceC = async (req, res, next) => {
+module.exports._getProvince = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         if (req.query.province_id) {
@@ -93,7 +92,7 @@ let getProvinceC = async (req, res, next) => {
     }
 };
 
-let getCountryC = async (req, res, next) => {
+module.exports._getCountry = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         if (req.query.code) {
@@ -107,11 +106,4 @@ let getCountryC = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getWardC,
-    getDistrictC,
-    getProvinceC,
-    getCountryC,
 };
