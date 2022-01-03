@@ -56,7 +56,7 @@ module.exports._create = async (req, res, next) => {
         warranty_id++;
         let _warranty = {
             warranty_id: warranty_id,
-            code: String(topping_id).padStart(6, '0'),
+            code: String(warranty_id).padStart(6, '0'),
             name: req.body.name,
             type: String(req.body.type || ''),
             time: Number(req.body.time || 0),

@@ -27,7 +27,6 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-
 module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
@@ -40,12 +39,6 @@ module.exports._get = async (req, res, next) => {
         }
         if (req.query.branch_id) {
             aggregateQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
-        }
-        if (req.user) {
-            aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
-        }
-        if (req.query.business_id) {
-            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
         }
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });

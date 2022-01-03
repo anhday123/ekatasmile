@@ -72,8 +72,9 @@ module.exports._create = async (req, res, next) => {
             images: req.body.images || [],
             default: req.body.default || false,
             create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
-            creator_id: Number(req.user.user_id),
+            updater_id: req.user.user_id,
             active: true,
         };
         if (_paymentMethod.default == true) {
@@ -118,8 +119,9 @@ module.exports._update = async (req, res, next) => {
             images: _paymentMethod.images,
             default: _paymentMethod.default,
             create_date: _paymentMethod.create_date,
-            last_update: moment().tz(TIMEZONE).format(),
             creator_id: Number(_paymentMethod.user_id),
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
             active: _paymentMethod.active,
         };
         let exists = await client
@@ -148,7 +150,11 @@ module.exports._update = async (req, res, next) => {
 
 module.exports._delete = async (req, res, next) => {
     try {
-        let counts = await client.db(req.user.database).collection('PaymentMethods').find({ business_id: req.user.user_id }).count();
+        let counts = await client
+            .db(req.user.database)
+            .collection('PaymentMethods')
+            .find({ business_id: req.user.user_id })
+            .count();
         if (counts <= req.body.payment_method_id.length) {
             throw new Error('400: Không thể xóa hết phương thức thanh toán!');
         }

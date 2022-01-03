@@ -38,12 +38,6 @@ module.exports._get = async (req, res, next) => {
         if (req.query.store_id) {
             aggregateQuery.push({ $match: { store_id: Number(req.query.store_id) } });
         }
-        if (req.user) {
-            aggregateQuery.push({ $match: { business_id: Number(req.user.business_id) } });
-        }
-        if (req.query.business_id) {
-            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
-        }
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }

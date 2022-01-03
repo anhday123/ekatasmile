@@ -31,9 +31,6 @@ module.exports._get = async (req, res, next) => {
         if (req.user) {
             aggregateQuery.push({ business_id: Number(req.user.business_id) });
         }
-        if (req.query.business_id) {
-            aggregateQuery.push({ business_id: Number(req.query.business_id) });
-        }
         if (req.query.performer_id) {
             aggregateQuery.push({ performer_id: Number(req.query.performer_id) });
         }

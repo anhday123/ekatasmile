@@ -38,9 +38,6 @@ module.exports._get = async (req, res, next) => {
         if (req.query.slug) {
             aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
         }
-        if (req.query.business_id) {
-            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
-        }
         if (req.query.category_id) {
             let categoryIds = req.query.category_id.split('---').map((eId) => {
                 return Number(eId);
