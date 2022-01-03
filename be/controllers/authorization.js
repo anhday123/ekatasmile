@@ -11,6 +11,7 @@ const { verifyMail } = require('../templates/verifyMail');
 const { sendSMS } = require('../libs/sendSMS');
 
 const crypto = require('crypto');
+const { off } = require('process');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -356,30 +357,28 @@ module.exports._register = async (req, res, next) => {
 
 module.exports._login = async (req, res, next) => {
     try {
-        ['password'].map((e) => {
+        ['username', 'password'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        if (!req.body.phone && !req.body.username) {
-            throw new Error('400: Thiếu thuộc tính username hoặc phone!');
+        let [prefix, username] = req.body.username.split('_');
+
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
+        if (!business) {
+            throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
         }
-        let [prefix, phone] = req.body.phone.split('_');
-        const DB = await client
-            .db(SDB)
-            .collection('Business')
-            .findOne({ prefix: prefix })
-            .then((doc) => {
-                if (doc && doc.database_name) {
-                    return doc.database_name;
-                }
-                throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
-            });
+        const DB = (() => {
+            if (business && business.database_name) {
+                return business.database_name;
+            }
+            throw new Error('400: Tên dại diện doanh nghiệp không chính xác!');
+        })();
         let [user] = await client
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { phone: phone } },
+                { $match: { $or: [{ username: username }, { phone: username }] } },
                 {
                     $lookup: {
                         from: 'Roles',
@@ -542,7 +541,7 @@ module.exports._getOTP = async (req, res, next) => {
 
 module.exports._verifyOTP = async (req, res, next) => {
     try {
-        ['phone', 'otp_code'].map((e) => {
+        ['username', 'otp_code'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
@@ -551,7 +550,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             .db(SDB)
             .collection('Users')
             .findOne({
-                phone: req.body.phone,
+                $or: [{ username: req.body.username }, { phone: req.body.username }],
                 otp_code: req.body.otp_code,
                 otp_timelife: { $gte: moment().tz(TIMEZONE).format() },
             });
