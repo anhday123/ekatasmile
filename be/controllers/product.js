@@ -85,7 +85,6 @@ module.exports.addProductC = async (req, res, next) => {
         });
         product_id++;
         req['_product'] = {
-            business_id: Number(req.user.business_id),
             product_id: Number(product_id),
             name: String(req.body.name).toUpperCase(),
             sku: String(req.body.sku).toUpperCase(),
@@ -267,7 +266,6 @@ module.exports.updateProductC = async (req, res, next) => {
         delete req.body.creator_id;
         let _product = { ...product, ...req.body };
         _product = {
-            business_id: _product.business_id,
             product_id: _product.product_id,
             code: _product.code,
             name: String(_product.name).toUpperCase(),
@@ -320,7 +318,6 @@ module.exports.updateProductC = async (req, res, next) => {
                 delete eAttribute.creator_id;
                 let _attribute = { ...product.attributes[i], ...eAttribute };
                 _attribute = {
-                    business_id: _attribute.business_id,
                     attribute_id: _attribute.attribute_id,
                     product_id: _attribute.product_id,
                     option: String(_attribute.option).toUpperCase(),
@@ -558,7 +555,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Categories')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: categorySlugs },
                 })
                 .toArray(),
@@ -566,7 +562,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Suppliers')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: supplierSlugs },
                 })
                 .toArray(),
@@ -574,7 +569,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Taxes')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: taxSlugs },
                 })
                 .toArray(),
@@ -582,7 +576,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Warranties')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: warrantySlugs },
                 })
                 .toArray(),
@@ -590,7 +583,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Brands')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: brandSlugs },
                 })
                 .toArray(),
@@ -598,7 +590,6 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Origins')
                 .find({
-                    business_id: req.user.business_id,
                     slug_name: { $in: originSlugs },
                 })
                 .toArray(),
@@ -696,7 +687,6 @@ module.exports.importFileC = async (req, res, next) => {
             if (!_suppliers[eRow['_nhacungcap']]) {
                 supplier_id++;
                 let _supplier = {
-                    business_id: req.user.business_id,
                     supplier_id: supplier_id,
                     code: String(supplier_id).padStart(6, '0'),
                     name: String(eRow['nhacungcap']).trim().toUpperCase(),
@@ -721,7 +711,6 @@ module.exports.importFileC = async (req, res, next) => {
             if (!_categories[eRow['_tendanhmuc']]) {
                 category_id++;
                 let _category = {
-                    business_id: req.user.business_id,
                     category_id: category_id,
                     code: String(category_id).padStart(6, '0'),
                     name: String(eRow['tendanhmuc']).trim().toUpperCase(),
@@ -742,7 +731,6 @@ module.exports.importFileC = async (req, res, next) => {
             if (!_brands[eRow['_tenthuonghieu']]) {
                 brand_id++;
                 let _brand = {
-                    business_id: req.user.business_id,
                     brand_id: brand_id,
                     code: String(brand_id).padStart(6, '0'),
                     name: String(eRow['tenthuonghieu']).trim().toUpperCase(),
@@ -788,7 +776,6 @@ module.exports.importFileC = async (req, res, next) => {
             if (!_products[eRow['masanpham']]) {
                 product_id++;
                 _products[eRow['masanpham']] = {
-                    business_id: req.user.business_id,
                     product_id: product_id,
                     code: String(product_id).padStart(6, '0'),
                     sku: eRow['masanpham'],
@@ -850,7 +837,6 @@ module.exports.importFileC = async (req, res, next) => {
                 if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]) {
                     attribute_id++;
                     let _attribute = {
-                        business_id: req.user.business_id,
                         attribute_id: attribute_id,
                         product_id: _products[eRow['masanpham']].product_id,
                         option: eRow['thuoctinh1(*)'].toUpperCase(),
@@ -877,7 +863,6 @@ module.exports.importFileC = async (req, res, next) => {
                 if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]) {
                     attribute_id++;
                     let _attribute = {
-                        business_id: req.user.business_id,
                         attribute_id: attribute_id,
                         product_id: _products[eRow['masanpham']].product_id,
                         option: eRow['thuoctinh2'].toUpperCase(),
@@ -903,7 +888,6 @@ module.exports.importFileC = async (req, res, next) => {
             if (!_variants[eRow['maphienban']]) {
                 variant_id++;
                 _variants[eRow['maphienban']] = {
-                    business_id: req.user.business_id,
                     variant_id: variant_id,
                     product_id: _products[eRow['masanpham']].product_id,
                     code: String(product_id).padStart(6, '0'),
@@ -1006,7 +990,10 @@ module.exports.importFileC = async (req, res, next) => {
             }
         }
         if (Object.values(_attributes).length > 0) {
-            let insert = await client.db(req.user.database).collection('Attributes').insertMany(Object.values(_attributes));
+            let insert = await client
+                .db(req.user.database)
+                .collection('Attributes')
+                .insertMany(Object.values(_attributes));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
             }
