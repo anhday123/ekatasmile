@@ -110,7 +110,7 @@ module.exports._register = async (req, res, next) => {
         let otpCode = String(Math.random()).substr(2, 6);
         if (req.body.username && req.body.email) {
             let verifyId = crypto.randomBytes(10).toString(`hex`);
-            let verifyLink = `https://quantribanhang.viesoftware.vn/verifyaccount?uid=${verifyId}`;
+            let verifyLink = `https://quantribanhang.viesoftware.vn/verify-account?uid=${verifyId}`;
             let _verifyLink = {
                 username: req.body.username,
                 UID: String(verifyId),
