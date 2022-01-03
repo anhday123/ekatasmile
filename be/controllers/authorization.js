@@ -57,7 +57,7 @@ module.exports._register = async (req, res, next) => {
             .toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
         if (/^((viesoftware)|(admin))$/gi.test(req.body.prefix)) {
-            throw new Error(`400: Tên doanh nghiệp đã được sử dụng!`);
+            throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp của hệ thống!`);
         }
         let [business, user] = await Promise.all([
             client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix }),
@@ -108,7 +108,7 @@ module.exports._register = async (req, res, next) => {
             throw new Error('Kiểm tra thông tin doanh nghiệp không thành công!');
         });
         let otpCode = String(Math.random()).substr(2, 6);
-        if (req.body.username) {
+        if (req.body.username && req.body.email) {
             let verifyId = crypto.randomBytes(10).toString(`hex`);
             let verifyLink = `https://quantribanhang.viesoftware.vn/verifyaccount?uid=${verifyId}`;
             let _verifyLink = {
