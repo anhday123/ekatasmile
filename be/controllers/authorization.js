@@ -66,9 +66,9 @@ module.exports._register = async (req, res, next) => {
                 .collection('Users')
                 .findOne({
                     $or: [
-                        { phone: req.body.phone, phone: { $ne: '' } },
-                        { username: req.body.username, username: { $ne: '' } },
-                        { email: req.body.email, email: { $ne: '' } },
+                        { phone: { $ne: '', $eq: req.body.phone } },
+                        { username: { $ne: '', $eq: req.body.username } },
+                        { email: { $ne: '', $eq: req.body.email } },
                     ],
                 }),
         ]);
