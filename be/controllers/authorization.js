@@ -469,7 +469,7 @@ module.exports._checkVerifyLink = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let link = await client.db(DB).collection(`VerifyLinks`).findOne({
+        let link = await client.db(SDB).collection(`VerifyLinks`).findOne({
             UID: req.body.UID,
         });
         if (!link) {
