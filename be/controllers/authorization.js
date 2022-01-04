@@ -145,10 +145,10 @@ module.exports._register = async (req, res, next) => {
                 if (req.body.verify_with) {
                     return String(req.body.verify_with).toUpperCase();
                 }
-                if (req.body.phone) {
+                if (req.body.username) {
                     return 'PHONE';
                 }
-                if (req.body.username) {
+                if (req.body.email) {
                     return 'EMAIL';
                 }
                 return 'PHONE';
