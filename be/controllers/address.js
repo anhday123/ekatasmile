@@ -1,7 +1,7 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
-const DB = process.env.DATABASE;
+const SDB = process.env.DATABASE;
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -46,7 +46,7 @@ module.exports._getWard = async (req, res, next) => {
         if (req.query.province_name) {
             aggregateQuery.push({ slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') });
         }
-        let wards = await client.db(DB).collection(`Wards`).aggregate(aggregateQuery).toArray();
+        let wards = await client.db(SDB).collection(`Wards`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: wards });
     } catch (err) {
         next(err);
@@ -68,7 +68,7 @@ module.exports._getDistrict = async (req, res, next) => {
         if (req.query.province_name) {
             aggregateQuery.push({ slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') });
         }
-        let districts = await client.db(DB).collection(`Districts`).aggregate(aggregateQuery).toArray();
+        let districts = await client.db(SDB).collection(`Districts`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: districts });
     } catch (err) {
         console.log(err);
@@ -85,7 +85,7 @@ module.exports._getProvince = async (req, res, next) => {
         if (req.query.province_name) {
             aggregateQuery.push({ slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') });
         }
-        let provinces = await client.db(DB).collection(`Provinces`).aggregate(aggregateQuery).toArray();
+        let provinces = await client.db(SDB).collection(`Provinces`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: provinces });
     } catch (err) {
         next(err);
@@ -101,7 +101,7 @@ module.exports._getCountry = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({ slug_name: new RegExp(removeUnicode(req.query.name, true), 'gi') });
         }
-        let countries = await client.db(DB).collection(`Countries`).aggregate(aggregateQuery).toArray();
+        let countries = await client.db(SDB).collection(`Countries`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: countries });
     } catch (err) {
         next(err);

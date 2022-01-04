@@ -302,10 +302,6 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('Branchs').insertOne(_branch),
             client.db(DB).collection('Stores').insertOne(_store),
             client.db(DB).collection('Waranties').insertOne(_warranty),
-            client.db(DB).collection('Wards').insertMany(_wards),
-            client.db(DB).collection('Districts').insertMany(_districts),
-            client.db(DB).collection('Provinces').insertMany(_provinces),
-            client.db(DB).collection('Countries').insertMany(_countries),
         ]).catch((err) => {
             throw new Error('Tạo tài khoản không thành công!');
         });
