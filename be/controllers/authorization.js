@@ -349,7 +349,8 @@ module.exports._register = async (req, res, next) => {
                 .collection('AppSetting')
                 .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: store_id } }, { upsert: true }),
         ]);
-        res.send({ success: true, data: _user });
+        delete _user.password;
+        res.send({ success: true, data: _user, verify_with: _business.verify_with });
     } catch (err) {
         next(err);
     }
