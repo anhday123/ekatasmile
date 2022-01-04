@@ -13,10 +13,6 @@ const { sendSMS } = require('../libs/sendSMS');
 const crypto = require('crypto');
 const { _permissions } = require('../templates/permissions');
 const { _menus } = require('../templates/menus');
-const { _wards } = require('../templates/wardVN');
-const { _districts } = require('../templates/districtVN');
-const { _provinces } = require('../templates/provinceVN');
-const { _countries } = require('../templates/countries');
 
 let removeUnicode = (text, removeSpace) => {
     /*
