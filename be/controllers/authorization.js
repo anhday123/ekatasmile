@@ -37,19 +37,13 @@ let removeUnicode = (text, removeSpace) => {
 
 module.exports._register = async (req, res, next) => {
     try {
-        ['business_name', 'email', 'password'].map((e) => {
+        ['business_name', 'username', 'email', 'password'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        if (!req.body.phone && !req.body.username) {
-            throw new Error(`400: Thiếu username hoặc phone`);
-        }
         req.body.prefix = removeUnicode(req.body.business_name, true).toLowerCase();
         req.body.username = String(req.body.username || '')
-            .trim()
-            .toLowerCase();
-        req.body.phone = String(req.body.phone || '')
             .trim()
             .toLowerCase();
         req.body.email = String(req.body.email || '')
@@ -65,11 +59,7 @@ module.exports._register = async (req, res, next) => {
                 .db(SDB)
                 .collection('Users')
                 .findOne({
-                    $or: [
-                        { username: { $ne: '', $eq: req.body.username } },
-                        { phone: { $ne: '', $eq: req.body.phone } },
-                        { email: { $ne: '', $eq: req.body.email } },
-                    ],
+                    $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
                 }),
         ]);
         if (business) {
@@ -122,9 +112,9 @@ module.exports._register = async (req, res, next) => {
                 client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
             ]);
         }
-        if (req.body.phone) {
+        if (req.body.username) {
             let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
-            sendSMS([req.body.phone], verifyMessage, 2, 'VIESOFTWARE');
+            sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         }
         business_id++;
         system_user_id++;
@@ -174,7 +164,6 @@ module.exports._register = async (req, res, next) => {
             code: String(user_id).padStart(6, '0'),
             business_id: business_id,
             username: req.body.username,
-            phone: req.body.phone,
             password: req.body.password,
             system_role_id: 2,
             role_id: role_id,
@@ -379,7 +368,7 @@ module.exports._login = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { $or: [{ username: username }, { phone: username }] } },
+                { $match: { username: username } },
                 {
                     $lookup: {
                         from: 'Roles',
@@ -423,7 +412,6 @@ module.exports._login = async (req, res, next) => {
         }
         delete user.password;
         let [accessToken, refreshToken, _update] = await Promise.all([
-            jwt.createToken({ ...user, database: DB }, 24 * 60 * 60),
             jwt.createToken({ ...user, database: DB }, 30 * 24 * 60 * 60),
             client
                 .db(DB)
@@ -483,36 +471,27 @@ module.exports._checkVerifyLink = async (req, res, next) => {
 
 module.exports._getOTP = async (req, res, next) => {
     try {
-        ['phone'].map((e) => {
+        ['username'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let [prefix, phone] = req.body.phone.split('_');
-        const DB = await client
-            .db(SDB)
-            .collection('Business')
-            .findOne({ prefix: prefix })
-            .then((doc) => {
-                if (doc && doc.database_name) {
-                    return doc.database_name;
-                }
-                throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
-            });
         let user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
         if (!user) {
             throw new Error('400: Tài khoản không tồn tại!');
         }
+        let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
+        const DB = business.database_name;
         let otpCode = String(Math.random()).substr(2, 6);
         let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
-        sendSMS([phone], verifyMessage, 2, 'VIESOFTWARE');
+        sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         // let otpCode = String(Math.random()).substr(2, 6);
         // await Promise.all(mail.sendMail(user.email, 'Mã xác thực', otpMail(otpCode)));
         await client
             .db(DB)
             .collection(`Users`)
             .updateOne(
-                { user_id: Number(user.user_id) },
+                { system_user_id: Number(user.system_user_id) },
                 {
                     $set: {
                         otp_code: otpCode,
@@ -520,20 +499,18 @@ module.exports._getOTP = async (req, res, next) => {
                     },
                 }
             );
-        if (user.system_user_id) {
-            await client
-                .db(SDB)
-                .collection(`Users`)
-                .updateOne(
-                    { system_user_id: Number(user.system_user_id) },
-                    {
-                        $set: {
-                            otp_code: otpCode,
-                            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
-                        },
-                    }
-                );
-        }
+        await client
+            .db(SDB)
+            .collection(`Users`)
+            .updateOne(
+                { system_user_id: Number(user.system_user_id) },
+                {
+                    $set: {
+                        otp_code: otpCode,
+                        otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
+                    },
+                }
+            );
         res.send({ success: true, data: `Gửi OTP đến số điện thoại thành công!` });
     } catch (err) {
         next(err);
@@ -551,7 +528,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             .db(SDB)
             .collection('Users')
             .findOne({
-                $or: [{ username: req.body.username }, { phone: req.body.username }],
+                username: req.body.username,
                 otp_code: req.body.otp_code,
                 otp_timelife: { $gte: moment().tz(TIMEZONE).format() },
             });
@@ -560,61 +537,20 @@ module.exports._verifyOTP = async (req, res, next) => {
         }
         let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
         const DB = business.database_name;
+        delete user.password;
         if (user.active == false) {
-            await client
-                .db(SDB)
-                .collection('Users')
-                .updateOne(
-                    {
-                        system_user_id: user.system_user_id,
-                    },
-                    {
-                        $set: {
-                            otp_code: false,
-                            otp_timelife: false,
-                            active: true,
-                        },
-                    }
-                );
-            await client
-                .db(DB)
-                .collection('Users')
-                .updateOne(
-                    {
-                        system_user_id: user.system_user_id,
-                    },
-                    {
-                        $set: {
-                            otp_code: false,
-                            otp_timelife: false,
-                            active: true,
-                        },
-                    }
-                );
-            res.send({ success: true, message: 'Kích hoạt tài khoản thành công!' });
+            user.otp_code = false;
+            user.otp_timelife = false;
+            user.active = true;
+            await client.db(SDB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
+            await client.db(DB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
+            let accessToken = await jwt.createToken(user, 30 * 24 * 60 * 60);
+            res.send({ success: true, message: 'Kích hoạt tài khoản thành công!', data: { accessToken: accessToken } });
         } else {
-            await client
-                .db(SDB)
-                .collection('Users')
-                .updateOne(
-                    {
-                        system_user_id: Number(user.system_user_id),
-                    },
-                    {
-                        $set: { otp_code: true, otp_timelife: true },
-                    }
-                );
-            await client
-                .db(DB)
-                .collection('Users')
-                .updateOne(
-                    {
-                        system_user_id: Number(user.system_user_id),
-                    },
-                    {
-                        $set: { otp_code: true, otp_timelife: true },
-                    }
-                );
+            user.otp_code = true;
+            user.otp_timelife = true;
+            await client.db(SDB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
+            await client.db(DB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
             res.send({ success: true, message: `Mã OTP chính xác, xác thực thành công!` });
         }
     } catch (err) {
@@ -624,35 +560,26 @@ module.exports._verifyOTP = async (req, res, next) => {
 
 module.exports._recoveryPassword = async (req, res, next) => {
     try {
-        ['phone', 'password'].map((e) => {
+        ['username', 'password'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let [prefix, phone] = req.body.phone.split('_');
-        const DB = await client
-            .db(SDB)
-            .collection('Business')
-            .findOne({ prefix: prefix })
-            .then((doc) => {
-                if (doc && doc.database_name) {
-                    return doc.database_name;
-                }
-                throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
-            });
-        let user = await client.db(DB).collection('Users').findOne({
-            phone: phone,
+        let user = await client.db(SDB).collection('Users').findOne({
+            username: username,
             otp_code: true,
             otp_timelife: true,
         });
         if (!user) {
             throw new Error(`400: Tài khoản chưa được xác thực OTP!`);
         }
+        let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
+        const DB = business.database_name;
         await client
             .db(DB)
             .collection('Users')
             .updateOne(
-                { phone: phone },
+                { username: req.body.username },
                 { $set: { password: bcrypt.hash(req.body.password), otp_code: false, otp_timelife: false } }
             );
         if (user.system_user_id) {
@@ -660,7 +587,7 @@ module.exports._recoveryPassword = async (req, res, next) => {
                 .db(SDB)
                 .collection('Users')
                 .updateOne(
-                    { phone: phone },
+                    { username: req.body.username },
                     { $set: { password: bcrypt.hash(req.body.password), otp_code: false, otp_timelife: false } }
                 );
         }
