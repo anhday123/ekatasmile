@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from 'react'
 
 //antd
-import {
-  Button,
-  Modal,
-  Row,
-  Form,
-  Input,
-  Select,
-  Divider,
-  Upload,
-  notification,
-} from 'antd'
+import { Button, Modal, Row, Form, Input, Select, Divider, Upload, notification } from 'antd'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { ACTION, regexPhone } from 'consts'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getProvinces, getDistricts } from 'apis/address'
 import { addStore } from 'apis/store'
 import { addBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
-import { updateUser } from 'apis/user'
+import { updateEmployee } from 'apis/employee'
 import { addLabel, getAllLabel } from 'apis/label'
 
 //icons
@@ -93,9 +83,9 @@ function ModalIntro() {
     }
   }
 
-  const getProvinceData = async () => {
+  const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         setProvinces(res.data.data)
       }
@@ -104,9 +94,9 @@ function ModalIntro() {
     }
   }
 
-  const getDistrictStore = async (params) => {
+  const _getDistrictsStore = async (query) => {
     try {
-      const res = await apiDistrict(params)
+      const res = await getDistricts(query)
       if (res.status === 200) {
         setDistrictsStore(res.data.data)
       }
@@ -115,9 +105,9 @@ function ModalIntro() {
     }
   }
 
-  const getDistrictBranch = async (params) => {
+  const _getDistrictsBranch = async (query) => {
     try {
-      const res = await apiDistrict(params)
+      const res = await getDistricts(query)
       console.log(res)
       if (res.status === 200) {
         setDistrictsBranch(res.data.data)
@@ -144,10 +134,7 @@ function ModalIntro() {
       const dataBranch = formBranch.getFieldValue()
 
       //validated phone
-      if (
-        !regexPhone.test(dataBranch.phone) ||
-        !regexPhone.test(dataStore.phone)
-      ) {
+      if (!regexPhone.test(dataBranch.phone) || !regexPhone.test(dataStore.phone)) {
         notification.error({ message: 'Số điện thoại liên hệ không hợp lệ!' })
         return
       }
@@ -193,7 +180,7 @@ function ModalIntro() {
           notification.success({
             message: 'Chúc mừng bạn đã tạo chi nhánh và cửa hàng thành công',
           })
-          const resUser = await updateUser(
+          const resUser = await updateEmployee(
             {
               is_new: false,
               branch_id: resBranch.data.data.branch_id,
@@ -239,9 +226,9 @@ function ModalIntro() {
   }, [dataUser])
 
   useEffect(() => {
-    getProvinceData()
-    getDistrictStore({ search: 'Hồ Chí Minh' })
-    getDistrictBranch({ search: 'Hồ Chí Minh' })
+    _getProvinces()
+    _getDistrictsStore({ search: 'Hồ Chí Minh' })
+    _getDistrictsBranch({ search: 'Hồ Chí Minh' })
     getLabelData()
   }, [])
 
@@ -270,9 +257,7 @@ function ModalIntro() {
             onChange={(info) => {
               if (info.file.status === 'done') info.file.status = 'done'
               setFileImageBranch(info.file.originFileObj)
-              getBase64(info.file.originFileObj, (imageUrl) =>
-                setImageBranch(imageUrl)
-              )
+              getBase64(info.file.originFileObj, (imageUrl) => setImageBranch(imageUrl))
             }}
           >
             {imageBranch ? (
@@ -288,33 +273,24 @@ function ModalIntro() {
             <Form.Item
               name="name"
               label="Tên chi nhánh"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tên chi nhánh!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên chi nhánh!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 250 }}
-                placeholder="Nhập tên chi nhánh"
-              />
+              <Input size="large" style={{ width: 250 }} placeholder="Nhập tên chi nhánh" />
             </Form.Item>
             <Form.Item
               name="province"
               label="Tỉnh/Thành phố"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tỉnh/thành phố!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố!' }]}
             >
               <Select
                 style={{ width: 250 }}
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                onChange={(value) => getDistrictBranch({ search: value })}
+                onChange={(value) => _getDistrictsBranch({ search: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -330,11 +306,7 @@ function ModalIntro() {
               label="Liên hệ"
               rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 250 }}
-                placeholder="Nhập liên hệ"
-              />
+              <Input size="large" style={{ width: 250 }} placeholder="Nhập liên hệ" />
             </Form.Item>
             <Form.Item
               name="district"
@@ -346,8 +318,7 @@ function ModalIntro() {
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn quận/huyện"
               >
@@ -370,9 +341,7 @@ function ModalIntro() {
             onChange={(info) => {
               if (info.file.status === 'done') info.file.status = 'done'
               setFileImageStore(info.file.originFileObj)
-              getBase64(info.file.originFileObj, (imageUrl) =>
-                setImageStore(imageUrl)
-              )
+              getBase64(info.file.originFileObj, (imageUrl) => setImageStore(imageUrl))
             }}
           >
             {imageStore ? (
@@ -388,33 +357,24 @@ function ModalIntro() {
             <Form.Item
               name="name"
               label="Tên cửa hàng"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tên cửa hàng!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 250 }}
-                placeholder="Nhập tên cửa hàng"
-              />
+              <Input size="large" style={{ width: 250 }} placeholder="Nhập tên cửa hàng" />
             </Form.Item>
             <Form.Item
               name="province"
               label="Tỉnh/Thành phố"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tỉnh/thành phố!' },
-              ]}
+              rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố!' }]}
             >
               <Select
                 style={{ width: 250 }}
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn tỉnh/thành phố"
-                onChange={(value) => getDistrictStore({ search: value })}
+                onChange={(value) => _getDistrictsStore({ search: value })}
               >
                 {provinces.map((value, index) => (
                   <Select.Option value={value.province_name} key={index}>
@@ -430,11 +390,7 @@ function ModalIntro() {
               label="Liên hệ"
               rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
             >
-              <Input
-                size="large"
-                style={{ width: 250 }}
-                placeholder="Nhập liên hệ"
-              />
+              <Input size="large" style={{ width: 250 }} placeholder="Nhập liên hệ" />
             </Form.Item>
             <Form.Item
               name="district"
@@ -446,8 +402,7 @@ function ModalIntro() {
                 size="large"
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 placeholder="Chọn quận/huyện"
               >
@@ -464,8 +419,7 @@ function ModalIntro() {
               <Select
                 showSearch
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 style={{ width: 250 }}
                 size="large"
@@ -522,11 +476,7 @@ function ModalIntro() {
         </Row>
       </Modal>
       <Modal
-        title={
-          <div style={{ fontWeight: 600, fontSize: 19 }}>
-            Chào mừng đến với Admin Order
-          </div>
-        }
+        title={<div style={{ fontWeight: 600, fontSize: 19 }}>Chào mừng đến với Admin Order</div>}
         centered
         width={580}
         footer={
@@ -565,9 +515,9 @@ function ModalIntro() {
             />
           </div>
           <div style={{ color: 'black', fontSize: '1.1rem', fontWeight: 400 }}>
-            Chào mừng bạn đến với tính năng bán tại cửa hàng. Hãy tạo một chi
-            nhánh và một cửa hàng để bắt đầu việc kinh doanh cùng{' '}
-            <span style={{ fontWeight: 700 }}>Admin Order</span> nhé!!!
+            Chào mừng bạn đến với tính năng bán tại cửa hàng. Hãy tạo một chi nhánh và một cửa hàng
+            để bắt đầu việc kinh doanh cùng <span style={{ fontWeight: 700 }}>Admin Order</span>{' '}
+            nhé!!!
           </div>
         </div>
       </Modal>

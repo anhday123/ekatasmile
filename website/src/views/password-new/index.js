@@ -1,9 +1,7 @@
-import styles from './../password-new/password-new.module.scss'
-import 'antd/dist/antd.css'
+import styles from './password-new.module.scss'
 import React, { useEffect } from 'react'
 import { Link, useLocation, useHistory } from 'react-router-dom'
-import pgc from 'assets/img/logo.png'
-import { changePasswordMain } from 'apis/changePassword'
+import { resetPassword } from 'apis/auth'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
 import { Form, Input, Button, notification, Row, Col } from 'antd'
@@ -20,7 +18,7 @@ export default function PasswordNew() {
   const changePasswordData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await changePasswordMain(object)
+      const res = await resetPassword(object)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -102,15 +100,10 @@ export default function PasswordNew() {
             Tạo mật khẩu mới
           </div>
           <div className={styles['login_forget_title']}>
-            Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký
-            tự đặc biệt.
+            Mật khẩu phải giống nhau, tối thiểu 8 ký tự, chứa chữ hoặc số và ký tự đặc biệt.
           </div>
         </div>
-        <Form
-          className={styles['login_bottom']}
-          form={form}
-          onFinish={onFinishRegister}
-        >
+        <Form className={styles['login_bottom']} form={form} onFinish={onFinishRegister}>
           <Form.Item
             className={styles['login_bottom_password']}
             name="passwordRegister"

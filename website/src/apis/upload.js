@@ -5,20 +5,6 @@ import AWS from 'aws-sdk'
 import { v4 as uuidv4 } from 'uuid'
 import { removeAccents } from 'utils'
 
-export const uploadImg = (formData) =>
-  axios.post('https://ecom-fulfill.com/api/fileupload/single', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-
-export const uploadImgs = (formData) =>
-  axios.post('https://workroom.viesoftware.vn:6060/api/uploadfile/google/multifile', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-
 /* config upload S3 */
 const wasabiEndpoint = new AWS.Endpoint(process.env.REACT_APP_S3_URL)
 const ENDPOINT_URL_IMAGE = `${process.env.REACT_APP_S3_URL}/admin-order/`

@@ -7,9 +7,9 @@ import { Form, Drawer, Row, Col, Button, Input, Select, Upload, notification, Ch
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getDistricts, getProvinces } from 'apis/address'
 import { uploadFile } from 'apis/upload'
-import { apiCreateShipping, apiUpdateShipping } from 'apis/shipping'
+import { addShipping, updateShipping } from 'apis/shipping'
 
 const { Option } = Select
 export default function ShippingForm({ children, reloadData, record }) {
@@ -32,8 +32,8 @@ export default function ShippingForm({ children, reloadData, record }) {
       const body = { ...dataForm, image: image || '' }
 
       let res
-      if (record) res = await apiUpdateShipping(body, record.shipping_company_id)
-      else res = await apiCreateShipping(body)
+      if (record) res = await updateShipping(body, record.shipping_company_id)
+      else res = await addShipping(body)
       console.log(res)
 
       if (res.status === 200) {
@@ -76,7 +76,7 @@ export default function ShippingForm({ children, reloadData, record }) {
 
   const _getDistricts = async (value) => {
     try {
-      const res = await apiDistrict({ search: value })
+      const res = await getDistricts({ search: value })
       if (res.status === 200) {
         setDistricts(res.data.data)
       }
@@ -87,7 +87,7 @@ export default function ShippingForm({ children, reloadData, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)

@@ -58,7 +58,8 @@ import GraphicEqIcon from '@material-ui/icons/GraphicEq'
 import Permission from 'components/permission'
 
 //apis
-import { getRoles, updateUser, getUsers } from 'apis/user'
+import { updateEmployee, getEmployees } from 'apis/employee'
+import { getRoles } from 'apis/role'
 import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
@@ -73,7 +74,6 @@ const BaseLayout = (props) => {
   const WIDTH_MENU_OPEN = 230
   const WIDTH_MENU_CLOSE = 160
 
-  const [username, setUsername] = useState('')
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
   const [appLanguage, setAppLanguage] = useState('VN')
@@ -82,7 +82,7 @@ const BaseLayout = (props) => {
   const dataUser = localStorage.getItem('accessToken')
     ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
-
+  console.log(dataUser)
   const [form] = Form.useForm()
   const [role, setRole] = useState([])
   const [modal1Visible, setModal1Visible] = useState(false)
@@ -104,7 +104,7 @@ const BaseLayout = (props) => {
 
   const getInfoUser = async () => {
     try {
-      const res = await getUsers({ user_id: dataUser.data.user_id })
+      const res = await getEmployees({ user_id: dataUser.data.user_id })
       console.log(res)
       if (res.status === 200) {
         if (res.data.data.length) setUser({ ...res.data.data[0] })
@@ -528,9 +528,6 @@ const BaseLayout = (props) => {
 
   useEffect(() => {
     if (localStorage.getItem('openKey')) setOpenKeys([localStorage.getItem('openKey')])
-
-    const username = localStorage.getItem('username')
-    setUsername(username)
   }, [])
   const content = (
     <div className={styles['user_information']}>
@@ -614,7 +611,7 @@ const BaseLayout = (props) => {
   const updateUserData = async (object, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await updateUser(object, id)
+      const res = await updateEmployee(object, id)
       console.log(res)
       if (res.status === 200) {
         await getInfoUser()
@@ -752,7 +749,7 @@ const BaseLayout = (props) => {
 
   const changeBranch = async (value) => {
     dispatch({ type: 'SET_BRANCH_ID', data: value })
-    updateUser({ branch_id: value }, user.user_id)
+    updateEmployee({ branch_id: value }, user.user_id)
   }
 
   useEffect(() => {
@@ -1056,11 +1053,13 @@ const BaseLayout = (props) => {
                         <div>
                           {appLanguage == 'VN' ? (
                             <img
+                              alt=""
                               src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
                               width="30"
                             />
                           ) : (
                             <img
+                              alt=""
                               src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
                               width="30"
                             />
@@ -1080,67 +1079,32 @@ const BaseLayout = (props) => {
                     </Dropdown>
                   </div>
                   <Dropdown overlay={content} trigger="click">
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div style={{ padding: '0 0.75rem 0 0.5rem' }}>
-                        {(user && user.avatar === ' ') || !user.avatar ? (
-                          <Avatar
-                            style={{
-                              color: '#FFF',
-                              backgroundColor: '#FDAA3E',
-                            }}
-                          >
-                            {username ? (
-                              <span style={{ textTransform: 'capitalize' }}>{username[0]}</span>
-                            ) : (
-                              <span style={{ textTransform: 'capitalize' }}>
-                                {login.username[0]}
-                              </span>
-                            )}
-                          </Avatar>
-                        ) : (
-                          <Avatar src={user.avatar} />
-                        )}
-                      </div>
-                      <div className={styles['navbar_right_left_name']}>
-                        <div
-                          style={{
-                            color: '#FFF',
-                            fontWeight: '600',
-                            fontSize: '1rem',
-                          }}
-                        >
-                          {username ? (
-                            <span style={{ textTransform: 'capitalize' }}>{username}</span>
-                          ) : (
-                            <span style={{ textTransform: 'capitalize' }}>{login.username}</span>
-                          )}{' '}
-                          &nbsp; <CarretDown />
-                        </div>
-                      </div>
-                    </div>
+                    <Row align="middle">
+                      <Avatar
+                        src={dataUser && (dataUser.data.avatar || '')}
+                        style={{ color: '#FFF', backgroundColor: '#FDAA3E' }}
+                      />
+                      <span
+                        style={{
+                          textTransform: 'capitalize',
+                          marginLeft: 5,
+                          color: 'white',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {dataUser &&
+                          (dataUser.data.first_name || '') + ' ' + (dataUser.data.last_name || '')}
+                      </span>
+                    </Row>
                   </Dropdown>
                 </div>
               </Row>
             </Col>
           </Row>
         </Affix>
-        <Row>
-          <Col
-            style={{
-              backgroundColor: '#f0f2f5',
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            {props.children}
-          </Col>
-        </Row>
+        <div style={{ backgroundColor: '#f0f2f5', width: '100%', height: '100%' }}>
+          {props.children}
+        </div>
       </Layout>
     </Layout>
   )

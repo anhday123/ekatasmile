@@ -20,7 +20,7 @@ import { SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 //apis
 import { getOrdersImportInventory, uploadOrdersImportInventory } from 'apis/inventory'
 import { getAllBranch } from 'apis/branch'
-import { apiAllSupplier } from 'apis/supplier'
+import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
 
 export default function ImportInventories() {
@@ -270,7 +270,7 @@ export default function ImportInventories() {
 
   const _getSuppliers = async () => {
     try {
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) setSuppliers(res.data.data)
     } catch (error) {
       console.log(error)

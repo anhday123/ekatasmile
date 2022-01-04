@@ -1,9 +1,7 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const apiCreateShipping = (body) => post('/shippingcompany/addshippingcompany', body)
-export const apiAllShipping = (params) => get('/shippingcompany/getshippingcompany', params)
-export const apiSearchShipping = (params) => get('/shippingcompany/getshippingcompany', params)
-export const apiUpdateShipping = (body, id) =>
-  patch(`/shippingcompany/updateshippingcompany/${id}`, body)
+export const addShipping = (body) => post('/shippingcompany/add', body)
+export const getShippings = (query) => get('/shippingcompany', query)
+export const updateShipping = (body, id) => patch(`/shippingcompany/update/${id}`, body)
 export const deleteShippings = (ids) =>
   destroy('/shippingcompany/delete', { shipping_company_id: ids })

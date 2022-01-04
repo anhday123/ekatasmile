@@ -1,4 +1,4 @@
-import styles from './../role/role.module.scss'
+import styles from './role.module.scss'
 import React, { useState, useEffect } from 'react'
 import { ACTION, PERMISSIONS, ROLE_DEFAULT } from 'consts'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,12 +16,7 @@ import {
   Tree,
 } from 'antd'
 
-import {
-  apiAddRole,
-  apiAllRolePermission,
-  apiUpdateRole,
-  apiUpdateRolePermission,
-} from 'apis/role'
+import { addRole, getRoles, updateRole } from 'apis/role'
 
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
 import Permission from 'components/permission'
@@ -74,10 +69,7 @@ export default function Role() {
     },
     {
       pParent: 'quan_li_chuyen_hang',
-      pChildren: [
-        'tao_phieu_chuyen_hang',
-        'cap_nhat_trang_thai_phieu_chuyen_hang',
-      ],
+      pChildren: ['tao_phieu_chuyen_hang', 'cap_nhat_trang_thai_phieu_chuyen_hang'],
     },
     {
       pParent: 'quan_li_nha_cung_cap',
@@ -178,14 +170,14 @@ export default function Role() {
       description: 'Cập nhật quyền thành công',
     })
   }
-  const apiUpdateRolePermissionData = async (body) => {
+  const _updatePermission = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       console.log(body)
-      const res = await apiUpdateRolePermission(body, key)
+      const res = await updateRole(body, key)
       console.log(res)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         openNotificationUpdateRole()
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -209,7 +201,7 @@ export default function Role() {
         body.menu_list = role.menu_list
       }
 
-      apiUpdateRolePermissionData(body)
+      _updatePermission(body)
     }
   }
   const onCheck = (checkedKeys, info) => {
@@ -221,9 +213,7 @@ export default function Role() {
     if (role) {
       let body = { active: true }
       if (typePermission === 'permission_list') {
-        const itemIndex = role.permission_list.findIndex(
-          (e) => e === permissionAdd
-        )
+        const itemIndex = role.permission_list.findIndex((e) => e === permissionAdd)
         if (itemIndex !== -1) role.permission_list.splice(itemIndex, 1)
 
         body.permission_list = role.permission_list
@@ -234,20 +224,20 @@ export default function Role() {
         body.menu_list = role.menu_list
       }
 
-      apiUpdateRolePermissionData(body)
+      _updatePermission(body)
     }
   }
 
   const [rolePermission, setRolePermission] = useState([])
-  const apiAllRolePermissionData = async () => {
+  const _getRoles = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRolePermission(
-        dataUser.data._role.name === 'ADMIN' && { default: true }
+      const res = await getRoles(
+        dataUser && dataUser.data._role.name === 'ADMIN' && { default: true }
       )
-      if (res.status === 200) {
-        setRolePermission([...res.data.data])
-      }
+      console.log(res)
+      if (res.status === 200) setRolePermission([...res.data.data])
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -269,18 +259,16 @@ export default function Role() {
   const openNotificationAddRoleDelete = (e) => {
     notification.success({
       message: 'Thành công',
-      description: e
-        ? `Kích hoạt vai trò thành công`
-        : 'Vô hiệu hóa vai trò thành công',
+      description: e ? `Kích hoạt vai trò thành công` : 'Vô hiệu hóa vai trò thành công',
     })
   }
   const [name, setName] = useState('')
-  const apiUpdateRoleData = async (object, id, e) => {
+  const _updateRole = async (object, id, e) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateRole(object, id)
+      const res = await updateRole(object, id)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         openNotificationAddRoleDelete(e)
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -289,13 +277,13 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const apiAddRoleData = async (object) => {
+  const _addRole = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAddRole(object)
+      const res = await addRole(object)
       console.log(res)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         onClose()
         openNotificationAddRole()
 
@@ -333,7 +321,7 @@ export default function Role() {
         permission_list: permissionAdd,
         menu_list: menuAdd,
       }
-      apiAddRoleData(object)
+      _addRole(object)
     } else {
       openNotificationAddRoleError()
     }
@@ -345,21 +333,13 @@ export default function Role() {
       permission_list: [...rolePermission[index].permission_list],
       menu_list: [...rolePermission[index].menu_list],
     }
-    apiUpdateRoleData(object, id, e)
+    _updateRole(object, id, e)
   }
   // initial data tree
-  const getTitle = (
-    permissionAdd,
-    typePermission,
-    values,
-    color = '#EC7100'
-  ) => {
+  const getTitle = (permissionAdd, typePermission, values, color = '#EC7100') => {
     return (
       <Checkbox
-        defaultChecked={[
-          ...values.permission_list,
-          ...values.menu_list,
-        ].includes(permissionAdd)}
+        defaultChecked={[...values.permission_list, ...values.menu_list].includes(permissionAdd)}
         onClick={(e) => {
           if (e.target.checked) addPermission(permissionAdd, typePermission)
           else removePermission(permissionAdd, typePermission)
@@ -392,19 +372,11 @@ export default function Role() {
           }
         }
         return {
-          title: getTitle(
-            p.pParent,
-            typePermission ? 'menu_list' : 'permission_list',
-            roleProps
-          ),
+          title: getTitle(p.pParent, typePermission ? 'menu_list' : 'permission_list', roleProps),
           key: p.pParent,
           children:
             p.pChildren &&
-            generateTreeData(
-              p.pChildren,
-              roleProps,
-              typeof p.pChildren[0] === 'string' ? 0 : 1
-            ),
+            generateTreeData(p.pChildren, roleProps, typeof p.pChildren[0] === 'string' ? 0 : 1),
         }
       })
   }
@@ -412,25 +384,19 @@ export default function Role() {
     return data
       .filter((e) =>
         [
-          ...JSON.parse(localStorage.menu_list),
-          ...JSON.parse(localStorage.permission_list),
+          dataUser && dataUser.data._role.menu_list,
+          dataUser && dataUser.data._role.permission_list,
         ].includes(e.pParent || e)
       )
       .map((p) => {
         if (typeof p === 'string') {
           return {
-            title: (
-              <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>
-            ),
+            title: <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>,
             key: `permission.${p}`,
           }
         }
         return {
-          title: (
-            <span style={{ color: '#EC7100' }}>
-              {rolesTranslate(p.pParent)}
-            </span>
-          ),
+          title: <span style={{ color: '#EC7100' }}>{rolesTranslate(p.pParent)}</span>,
           key: `menu.${p.pParent}`,
           children: p.pChildren && generateCreateTreeData(p.pChildren),
         }
@@ -438,7 +404,7 @@ export default function Role() {
   }
 
   useEffect(() => {
-    apiAllRolePermissionData()
+    _getRoles()
   }, [])
 
   return (
@@ -466,14 +432,7 @@ export default function Role() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={11} xl={11}>
             <div
               style={{
                 color: 'black',
@@ -485,14 +444,7 @@ export default function Role() {
               Quản lý phân quyền
             </div>
           </Col>
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={11} xl={11}>
             <Permission permissions={[PERMISSIONS.tao_quyen]}>
               <div
                 onClick={showDrawer}
@@ -510,15 +462,14 @@ export default function Role() {
             </Permission>
           </Col>
         </Row>
+
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
               if (
                 values.name === 'ADMIN' ||
-                (values.name === 'BUSINESS' &&
-                  dataUser.data._role.name !== 'ADMIN') ||
-                (values.name === 'EMPLOYEE' &&
-                  dataUser.data._role.name !== 'ADMIN')
+                (values.name === 'BUSINESS' && dataUser.data._role.name !== 'ADMIN') ||
+                (values.name === 'EMPLOYEE' && dataUser.data._role.name !== 'ADMIN')
               )
                 return ''
 
@@ -535,9 +486,7 @@ export default function Role() {
                     >
                       <Switch
                         defaultChecked={values.active}
-                        onChange={(e) =>
-                          onClickDeleteDisable(e, values.role_id, index)
-                        }
+                        onChange={(e) => onClickDeleteDisable(e, values.role_id, index)}
                       />
                     </div>
                   }

@@ -18,6 +18,7 @@ import {
   Space,
   Popconfirm,
   notification,
+  Tag,
 } from 'antd'
 
 //components
@@ -25,6 +26,8 @@ import ImportModal from 'components/ExportCSV/importModal'
 import exportToCSV from 'components/ExportCSV/export'
 import Permission from 'components/permission'
 import TitlePage from 'components/title-page'
+import SettingColumns from 'components/setting-columns'
+import columnsProduct from './columns'
 
 //apis
 import { getAllBranch } from 'apis/branch'
@@ -36,11 +39,19 @@ const { RangePicker } = DatePicker
 export default function ShippingProduct() {
   const history = useHistory()
   const typingTimeoutRef = useRef(null)
+  const STATUS = {
+    DRAFT: { name: 'Lưu nháp', color: 'magenta' },
+    VERIFY: { name: 'Xác nhận', color: 'cyan' },
+    SHIPPING: { name: 'Đang chuyển', color: 'gold' },
+    COMPLETE: { name: 'Hoàn thành', color: 'green' },
+    CANCEL: { name: 'Hủy', color: 'red' },
+  }
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
   const [branches, setBranches] = useState([])
   const [stores, setStores] = useState([])
+  const [columns, setColumns] = useState([])
 
   const [totalTransportOrder, setTotalTransportOrder] = useState(0)
   const [transportOrders, setTransportOrders] = useState([])
@@ -135,25 +146,15 @@ export default function ShippingProduct() {
       render: (text, record) => record.export_location_info && record.export_location_info.name,
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      render: (text) =>
-        (text === 'DRAFT' && 'Lưu nháp') ||
-        (text === 'VERIFY' && 'Xác nhận') ||
-        (text === 'SHIPPING' && 'Đang chuyển') ||
-        (text === 'COMPLETE' && 'Hoàn thành') ||
-        (text === 'CANCEL' && 'Hủy'),
-      sorter: (a, b) => compare(a, b, 'status'),
-    },
-    {
-      title: 'Nơi nhận',
-      render: (text, record) => record.import_location_info && record.import_location_info.name,
-    },
-    {
       title: 'Ngày nhận',
       dataIndex: 'verify_date',
       render: (data) => data && moment(data).format('DD-MM-YYYY hh:mm'),
       sorter: (a, b) => moment(a.verify_date).unix() - moment(b.verify_date).unix(),
+    },
+
+    {
+      title: 'Nơi nhận',
+      render: (text, record) => record.import_location_info && record.import_location_info.name,
     },
     {
       title: 'Ngày chuyển',
@@ -161,6 +162,7 @@ export default function ShippingProduct() {
       render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
       sorter: (a, b) => moment(a.delivery_time).unix() - moment(b.delivery_time).unix(),
     },
+
     {
       title: 'Ngày tạo',
       dataIndex: 'create_date',
@@ -176,6 +178,17 @@ export default function ShippingProduct() {
           b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
         ),
       render: (text) => text && text.first_name + ' ' + text.last_name,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      render: (text) =>
+        (text === 'DRAFT' && 'Lưu nháp') ||
+        (text === 'VERIFY' && 'Xác nhận') ||
+        (text === 'SHIPPING' && 'Đang chuyển') ||
+        (text === 'COMPLETE' && 'Hoàn thành') ||
+        (text === 'CANCEL' && 'Hủy'),
+      sorter: (a, b) => compare(a, b, 'status'),
     },
   ]
 
@@ -475,6 +488,12 @@ export default function ShippingProduct() {
             >
               Xuất excel
             </Button>
+            <SettingColumns
+              columnsDefault={columnsProduct}
+              nameColumn="columnsShippingProduct"
+              columns={columns}
+              setColumns={setColumns}
+            />
           </Space>
         </Row>
 
@@ -482,7 +501,72 @@ export default function ShippingProduct() {
           size="small"
           rowSelection={rowSelection}
           loading={loading}
-          columns={columnsPromotion}
+          columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return { ...column, render: (data, record, index) => index + 1 }
+            if (column.key === 'code')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <a
+                    onClick={() =>
+                      history.push({ pathname: ROUTES.SHIPPING_PRODUCT_ADD, state: record })
+                    }
+                  >
+                    {text}
+                  </a>
+                ),
+                sorter: (a, b) => compare(a, b, 'code'),
+              }
+            if (column.key === 'export_location')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.export_location_info && record.export_location_info.name,
+              }
+            if (column.key === 'import_location')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.import_location_info && record.import_location_info.name,
+              }
+            if (column.key === 'verify_date')
+              return {
+                ...column,
+                render: (data) => data && moment(data).format('DD-MM-YYYY hh:mm'),
+                sorter: (a, b) => moment(a.verify_date).unix() - moment(b.verify_date).unix(),
+              }
+            if (column.key === 'delivery_time')
+              return {
+                ...column,
+                render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+                sorter: (a, b) => moment(a.delivery_time).unix() - moment(b.delivery_time).unix(),
+              }
+            if (column.key === 'create_date')
+              return {
+                ...column,
+                render: (data) => moment(data).format('DD-MM-YYYY hh:mm'),
+                sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+              }
+            if (column.key === '_creator')
+              return {
+                ...column,
+                sorter: (a, b) =>
+                  compareCustom(
+                    a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
+                    b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
+                  ),
+                render: (text) => text && text.first_name + ' ' + text.last_name,
+              }
+            if (column.key === 'status')
+              return {
+                ...column,
+                render: (text) => <Tag color={STATUS[text].color}>{STATUS[text].name}</Tag>,
+                sorter: (a, b) => compare(a, b, 'status'),
+              }
+
+            return column
+          })}
           rowKey="order_id"
           pagination={{
             position: ['bottomLeft'],
@@ -490,12 +574,8 @@ export default function ShippingProduct() {
             pageSize: paramsFilter.page_size,
             pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
             showQuickJumper: true,
-            onChange: (page, pageSize) => {
-              setSelectedRowKeys([])
-              paramsFilter.page = page
-              paramsFilter.page_size = pageSize
-              setParamsFilter({ ...paramsFilter })
-            },
+            onChange: (page, pageSize) =>
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
             total: totalTransportOrder,
           }}
           dataSource={transportOrders}
@@ -503,13 +583,13 @@ export default function ShippingProduct() {
         />
       </div>
 
-      <ImportModal
+      {/* <ImportModal
         visible={exportVisible}
         onCancel={() => setExportVisible(false)}
         dataSource={transportOrders}
         columns={columnsPromotion}
         actionComponent={<ExportButton />}
-      />
+      /> */}
     </>
   )
 }

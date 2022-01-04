@@ -19,9 +19,9 @@ import {
 } from 'antd'
 import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
 import moment from 'moment'
-import { getPromoton, updatePromotion } from '../../apis/promotion'
-import { getAllBranch } from '../../apis/branch'
-import { apiFilterRoleEmployee } from 'apis/employee'
+import { getPromotions, updatePromotion } from 'apis/promotion'
+import { getAllBranch } from 'apis/branch'
+import { getEmployees } from 'apis/employee'
 import { useDispatch } from 'react-redux'
 import { PERMISSIONS } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
@@ -185,7 +185,7 @@ export default function Promotion() {
 
   const _getUserList = async () => {
     try {
-      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      const res = await getEmployees({ page: 1, page_size: 1000 })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -201,7 +201,7 @@ export default function Promotion() {
   const getPromotions = async (params) => {
     try {
       setLoading(true)
-      const res = await getPromoton({ ...params, ...pagination, _creator: true })
+      const res = await getPromotions({ ...params, ...pagination, _creator: true })
       console.log(res)
       if (res.status === 200) {
         setListPromotion(res.data.data)

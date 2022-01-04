@@ -48,8 +48,8 @@ import { getProducts } from 'apis/product'
 import { getAllBranch } from 'apis/branch'
 import { getAllStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
-import { apiAllSupplier } from 'apis/supplier'
-import { getUsers } from 'apis/user'
+import { getSuppliers } from 'apis/supplier'
+import { getEmployees } from 'apis/employee'
 import { createOrderImportInventory, updateOrderImportInventory } from 'apis/inventory'
 
 //components
@@ -318,7 +318,7 @@ export default function ImportInventory() {
 
   const _getUsers = async () => {
     try {
-      const res = await getUsers()
+      const res = await getEmployees()
       if (res.status === 200) {
         setUsers(res.data.data)
 
@@ -425,7 +425,7 @@ export default function ImportInventory() {
 
   const _getSuppliers = async () => {
     try {
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) setSuppliers(res.data.data)
     } catch (error) {
       console.log(error)

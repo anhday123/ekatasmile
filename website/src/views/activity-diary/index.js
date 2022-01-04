@@ -1,10 +1,7 @@
-import styles from './../activity-diary/activity-diary.module.scss'
+import styles from './activity-diary.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
-import {
-  apiAllActivityDiary,
-  apiSearchActivityDiary,
-} from './../../apis/activity-diary'
+import { getActions } from 'apis/action'
 import {
   notification,
   message,
@@ -77,7 +74,7 @@ export default function ActivityDiary() {
   const apiSearchData = async (value) => {
     try {
       setLoading(true)
-      const res = await apiSearchActivityDiary({ search: value })
+      const res = await getActions({ search: value })
 
       if (res.status === 200) setActivityDiary(res.data.data)
       setLoading(false)
@@ -100,7 +97,7 @@ export default function ActivityDiary() {
     if (data === 1) {
       try {
         setLoading(true)
-        const res = await apiSearchActivityDiary({ type: value })
+        const res = await getActions({ type: value })
         console.log(res)
         if (res.status === 200) setActivityDiary(res.data.data)
         setLoading(false)
@@ -110,7 +107,7 @@ export default function ActivityDiary() {
     } else {
       try {
         setLoading(true)
-        const res = await apiSearchActivityDiary({ properties: value })
+        const res = await getActions({ properties: value })
         console.log(res)
         if (res.status === 200) setActivityDiary(res.data.data)
         setLoading(false)
@@ -145,9 +142,7 @@ export default function ActivityDiary() {
       dataIndex: 'performer',
       width: 150,
       render: (text, record) =>
-        record.performer &&
-        record.performer.first_name &&
-        record.performer.last_name
+        record.performer && record.performer.first_name && record.performer.last_name
           ? `${record.performer.first_name} ${record.performer.last_name}`
           : '',
       sorter: (a, b) =>
@@ -166,8 +161,7 @@ export default function ActivityDiary() {
       title: 'Thời gian thao tác',
       dataIndex: 'date',
       width: 150,
-      render: (text, record) =>
-        text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : '',
+      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : ''),
       sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
     {
@@ -175,9 +169,7 @@ export default function ActivityDiary() {
       dataIndex: 'username',
       width: 150,
       render: (text, record) =>
-        record.bussiness_id && record.bussiness_id.username
-          ? record.bussiness_id.username
-          : '',
+        record.bussiness_id && record.bussiness_id.username ? record.bussiness_id.username : '',
       sorter: (a, b) => compare(a, b, 'username'),
     },
     {
@@ -192,8 +184,7 @@ export default function ActivityDiary() {
       title: 'Quận/huyện',
       dataIndex: 'district',
       width: 150,
-      render: (text, record) =>
-        record.data && record.data.district ? record.data.district : '',
+      render: (text, record) => (record.data && record.data.district ? record.data.district : ''),
       sorter: (a, b) => compare(a, b, 'district'),
     },
     {
@@ -238,7 +229,7 @@ export default function ActivityDiary() {
     try {
       setLoading(TramOutlined)
 
-      const res = await apiSearchActivityDiary({
+      const res = await getActions({
         from_date: start,
         to_date: end,
       })
@@ -282,7 +273,7 @@ export default function ActivityDiary() {
   const apiAllActivityDiaryData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllActivityDiary()
+      const res = await getActions()
 
       if (res.status === 200) {
         setActivityDiary(res.data.data)
@@ -348,9 +339,7 @@ export default function ActivityDiary() {
             }}
             to={ROUTES.CONFIGURATION_STORE}
           >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-            />
+            <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div
               style={{
                 color: 'black',
@@ -372,14 +361,7 @@ export default function ActivityDiary() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Input
                 size="large"
@@ -394,14 +376,7 @@ export default function ActivityDiary() {
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -416,23 +391,13 @@ export default function ActivityDiary() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 onChange={onChangeDate}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
                 size="large"
@@ -441,8 +406,7 @@ export default function ActivityDiary() {
                 placeholder="Chọn thao tác"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 value={type ? type : 'default'}
                 onChange={(event) => {
@@ -458,14 +422,7 @@ export default function ActivityDiary() {
               </Select>
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <Select
                 size="large"
@@ -474,8 +431,7 @@ export default function ActivityDiary() {
                 placeholder="Chọn thao tác"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 value={properties ? properties : 'default'}
                 onChange={(event) => {

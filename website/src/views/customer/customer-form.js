@@ -17,7 +17,7 @@ import moment from 'moment'
 import { ACTION } from 'consts'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getDistricts, getProvinces } from 'apis/address'
 import { addCustomer, updateCustomer } from 'apis/customer'
 
 const { Option } = Select
@@ -81,7 +81,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistricts(res.data.data)
         if (res.data.data && res.data.data.length && !record)
@@ -93,7 +93,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
   }
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         setProvinces(res.data.data)
         if (res.data.data && res.data.data.length && !record)

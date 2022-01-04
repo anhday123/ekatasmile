@@ -31,8 +31,8 @@ import SettingColumns from 'components/setting-columns'
 import columnsBranch from './columns'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
-import { getAllBranch, apiUpdateBranch } from 'apis/branch'
+import { getDistricts, getProvinces } from 'apis/address'
+import { getAllBranch, updateBranch } from 'apis/branch'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -83,7 +83,7 @@ export default function Branch() {
   const _editBranch = async (body, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateBranch(body, id)
+      const res = await updateBranch(body, id)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -133,7 +133,7 @@ export default function Branch() {
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistricts(res.data.data)
         setDistrictsDefault(res.data.data)
@@ -144,7 +144,7 @@ export default function Branch() {
   }
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         setProvinces(res.data.data)
       }

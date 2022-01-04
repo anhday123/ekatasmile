@@ -49,12 +49,11 @@ import {
 import noData from 'assets/icons/no-data.png'
 
 //apis
-import { apiOrderVoucher } from 'apis/order'
-import { apiCheckPromotion, getPromoton } from 'apis/promotion'
-import { apiProductSeller, getProducts } from 'apis/product'
-import { getAllCustomer } from 'apis/customer'
+import { getPromotions } from 'apis/promotion'
+import { getProducts } from 'apis/product'
+import { getCustomers } from 'apis/customer'
 import { getAllStore } from 'apis/store'
-import { apiAllTax } from 'apis/tax'
+import { getTaxs } from 'apis/tax'
 
 //components
 import Permission from 'components/permission'
@@ -379,7 +378,7 @@ export default function OrderCreateShipping() {
   const _getCustomerAfterEditCustomer = async () => {
     try {
       setLoadingCustomer(true)
-      const res = await getAllCustomer({ customer_id: customerInfo.customer_id })
+      const res = await getCustomers({ customer_id: customerInfo.customer_id })
       if (res.status === 200) if (res.data.data.length) setCustomerInfo(res.data.data[0])
       setLoadingCustomer(false)
     } catch (error) {
@@ -551,7 +550,7 @@ export default function OrderCreateShipping() {
   const _getCustomers = async () => {
     try {
       setLoadingCustomer(true)
-      const res = await getAllCustomer()
+      const res = await getCustomers()
       if (res.status === 200) setCustomers(res.data.data)
       console.log(res)
       setLoadingCustomer(false)
@@ -605,8 +604,8 @@ export default function OrderCreateShipping() {
     _getStores()
     _getProductsSearch()
 
-    getData(apiAllTax, setTaxList)
-    getData(getPromoton, setPromotionList)
+    getData(getTaxs, setTaxList)
+    getData(getPromotions, setPromotionList)
   }, [])
 
   return (

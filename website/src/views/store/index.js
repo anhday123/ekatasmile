@@ -28,9 +28,9 @@ import StoreForm from './store-form'
 import Permission from 'components/permission'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getDistricts, getProvinces } from 'apis/address'
 import { getAllStore, updateStore } from 'apis/store'
-import { apiAllEmployee } from 'apis/employee'
+import { getEmployees } from 'apis/employee'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -209,18 +209,18 @@ export default function Store() {
 
   const [provinceMain, setProvinceMain] = useState([])
   const [districtMain, setDistrictMain] = useState([])
-  const apiDistrictData = async (params) => {
+  const apiDistrictData = async (query) => {
     try {
-      const res = await apiDistrict(params)
+      const res = await getDistricts(query)
       if (res.status === 200) {
         setDistrictMain(res.data.data)
       }
       // if (res.status === 200) setUsers(res.data);
     } catch (error) {}
   }
-  const apiProvinceData = async () => {
+  const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         setProvinceMain(res.data.data)
       }
@@ -229,7 +229,7 @@ export default function Store() {
 
   const _getUsers = async () => {
     try {
-      const res = await apiAllEmployee()
+      const res = await getEmployees()
       console.log(res)
       if (res.status === 200) {
         setUsers(res.data.data)
@@ -238,7 +238,7 @@ export default function Store() {
   }
 
   useEffect(() => {
-    apiProvinceData()
+    _getProvinces()
     _getUsers()
   }, [])
 
@@ -275,7 +275,6 @@ export default function Store() {
             value={valueSearch}
             enterButton
             onChange={onSearch}
-            className={styles['orders_manager_content_row_col_search']}
             placeholder="Tìm kiếm theo mã, theo tên"
             allowClear
           />

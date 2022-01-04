@@ -32,7 +32,7 @@ import columnsCustomer from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getCustomer, deleteCustomers } from 'apis/customer'
+import { getCustomers, deleteCustomers } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -115,7 +115,7 @@ export default function Customer() {
     try {
       setTableLoading(true)
       setSelectedRowKeys([])
-      const res = await getCustomer(paramsFilter)
+      const res = await getCustomers(paramsFilter)
       console.log(res)
       if (res.status === 200) {
         setCustomers(res.data.data.filter((e) => e.active))

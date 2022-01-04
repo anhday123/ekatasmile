@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { Form, Drawer, Row, Col, Button, Input, Select, notification, Checkbox } from 'antd'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
-import { apiAddSupplier, apiUpdateSupplier } from 'apis/supplier'
+import { getDistricts, getProvinces } from 'apis/address'
+import { addSupplier, updateSupplier } from 'apis/supplier'
 
 const { Option } = Select
 export default function SupplierForm({ children, reloadData, record }) {
@@ -27,8 +27,8 @@ export default function SupplierForm({ children, reloadData, record }) {
       const body = { ...dataForm }
 
       let res
-      if (record) res = await apiUpdateSupplier(body, record.supplier_id)
-      else res = await apiAddSupplier(body)
+      if (record) res = await updateSupplier(body, record.supplier_id)
+      else res = await addSupplier(body)
       console.log(res)
 
       if (res.status === 200) {
@@ -59,7 +59,7 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const _getDistricts = async (value) => {
     try {
-      const res = await apiDistrict({ search: value })
+      const res = await getDistricts({ search: value })
       if (res.status === 200) {
         setDistricts(res.data.data)
       }
@@ -70,7 +70,7 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)

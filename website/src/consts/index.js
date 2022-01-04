@@ -55,8 +55,8 @@ export const ROUTES = {
   CLIENT_MANAGEMENT: '/client-management',
   BRANCH_MANAGEMENT: '/branch-management',
   CONFIGURATION_STORE: '/configuration-store',
-  VERTIFY_ACCOUNT: '/vertifyaccount',
   OTP: '/otp',
+  VERIFY_ACCOUNT: '/verify-account',
   PASSWORD_NEW: '/password-new',
   FORGET_PASSWORD: '/forget-password',
   OVERVIEW: '/overview',
@@ -82,8 +82,6 @@ export const ROUTES = {
   ROLE: '/role',
   SHIPPING_CONTROL_ADD: '/actions/shipping-control/add',
   SHIPPING_CONTROL_VIEW: '/actions/shipping-control/view',
-  INVENTORY_VIEW: '/actions/inventory/view',
-  INVENTORY_UPDATE: '/actions/inventory/update',
   ACCUMULATE_POINT_SETTING_VIEW: '/actions/accumulate-point-setting/view',
   CARD_ACCUMULATE_POINT_ADD: '/actions/card-accumulate-point/add',
   ACCUMULATE_POINT_EDIT_ADDD: '/actions/accumulate-point-edit/add',
@@ -91,14 +89,11 @@ export const ROUTES = {
   PRODUCT_CHECK_ADD: '/actions/product-check/add',
   PRODUCT_CHECK_VIEW: '/actions/product-check/view',
   ORDER_CREATE_SHIPPING_ADD: '/actions/order-create-shipping/add',
-  EMPLOYEE_VIEW: '/actions/employee/view',
   REPORT_FINANCIAL_VIEW: '/actions/sale-detail/view',
   REPORT_REVENUE_VIEW: '/actions/revenue-cost/view',
   INVENTORY_ADD: '/actions/inventory/add',
   PRODUCT_ADD: '/product/add',
   PRODUCT_UPDATE: '/product/update',
-  EMPLOYEE_ADD: '/actions/employee/add',
-  EMPLOYEE_EDIT: '/actions/employee/edit',
   PROMOTION_ADD: '/actions/promotion/add',
   ROLE_ADD: '/actions/role/add',
   GUARANTEE_ADD: '/actions/guarantee/add',
@@ -194,7 +189,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.1.8'
+export const VERSION_APP = '1.1.12'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

@@ -4,24 +4,14 @@ import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
 
 //antd
-import {
-  Row,
-  Form,
-  Upload,
-  Select,
-  InputNumber,
-  Input,
-  Checkbox,
-  Button,
-  notification,
-} from 'antd'
+import { Row, Form, Upload, InputNumber, Input, Checkbox, Button, notification } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { uploadFile } from 'apis/upload'
-import { apiAddCategory, apiUpdateCategory } from 'apis/category'
+import { addCategory, updateCategory } from 'apis/category'
 
 export default function Category() {
   const history = useHistory()
@@ -55,17 +45,14 @@ export default function Category() {
 
       let res
 
-      if (location.state)
-        res = await apiUpdateCategory(body, location.state.category_id)
-      else res = await apiAddCategory(body)
+      if (location.state) res = await updateCategory(body, location.state.category_id)
+      else res = await addCategory(body)
 
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({
-            message: `${
-              location.state ? 'Cập nhật' : 'Tạo'
-            } danh mục thành công!`,
+            message: `${location.state ? 'Cập nhật' : 'Tạo'} danh mục thành công!`,
           })
           history.push(ROUTES.CATEGORIES)
         } else
@@ -121,9 +108,7 @@ export default function Category() {
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             onChange={(info) => {
               if (info.file.status !== 'done') info.file.status = 'done'
-              getBase64(info.file.originFileObj, (imageUrl) =>
-                setImageView(imageUrl)
-              )
+              getBase64(info.file.originFileObj, (imageUrl) => setImageView(imageUrl))
               setFileUpload(info.file.originFileObj)
             }}
           >
@@ -150,27 +135,15 @@ export default function Category() {
             name="priority"
             label="Độ ưu tiên"
           >
-            <InputNumber
-              placeholder="Nhập độ ưu tiên"
-              style={{ width: '50%' }}
-            />
+            <InputNumber placeholder="Nhập độ ưu tiên" style={{ width: '50%' }} />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea
-              rows={4}
-              placeholder="Nhập mô tả"
-              style={{ width: '50%' }}
-            />
+            <Input.TextArea rows={4} placeholder="Nhập mô tả" style={{ width: '50%' }} />
           </Form.Item>
           <Form.Item valuePropName="checked" name="default">
             <Checkbox>Chọn làm mặc định</Checkbox>
           </Form.Item>
-          <Button
-            onClick={_addOrUpdateCategory}
-            type="primary"
-            size="large"
-            style={{ width: 120 }}
-          >
+          <Button onClick={_addOrUpdateCategory} type="primary" size="large" style={{ width: 120 }}>
             {location.state ? 'Lưu' : 'Tạo'}
           </Button>
         </Form>

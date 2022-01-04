@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 // style
-import styles from './../brand/brand.module.scss'
+import styles from './brand.module.scss'
 
 // moment
 import moment from 'moment'
@@ -19,12 +19,12 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteBrand, getBrand } from 'apis/brand'
+import { deleteBrand, getBrands } from 'apis/brand'
 
 // html react parser
 import parse from 'html-react-parser'
 import { compare, compareCustom } from 'utils'
-import { apiFilterRoleEmployee } from 'apis/employee'
+import { getEmployees } from 'apis/employee'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -122,7 +122,7 @@ export default function Brand() {
   const _getBrand = async () => {
     try {
       setLoadingTable(true)
-      const res = await getBrand({ ...paramsFilter, _creator: true })
+      const res = await getBrands({ ...paramsFilter, _creator: true })
       setBrandList(res.data.data)
       setCountPage(res.data.count)
       console.log(res)
@@ -134,7 +134,7 @@ export default function Brand() {
 
   const _getUserList = async () => {
     try {
-      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      const res = await getEmployees({ page: 1, page_size: 1000 })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {

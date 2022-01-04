@@ -9,8 +9,8 @@ import { Input, Button, Row, notification, Select, Modal, Form, Upload, Divider 
 import { PlusOutlined } from '@ant-design/icons'
 
 //apis
-import { apiProvince } from 'apis/information'
-import { apiFilterCity, getAllBranch } from 'apis/branch'
+import { getProvinces, getDistricts } from 'apis/address'
+import { getAllBranch } from 'apis/branch'
 import { addStore, updateStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
 import { getAllLabel, addLabel } from 'apis/label'
@@ -121,9 +121,9 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
     }
   }
 
-  const apiProvinceData = async () => {
+  const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
           setProvinces(res.data.data)
@@ -137,9 +137,9 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
     }
   }
 
-  const apiFilterCityData = async () => {
+  const _getDistricts = async () => {
     try {
-      const res = await apiFilterCity()
+      const res = await getDistricts()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
           setDistrictMain(res.data.data)
@@ -165,7 +165,7 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
     }
   }
 
-  const getBranch = async () => {
+  const _getAllBranch = async () => {
     try {
       const res = await getAllBranch()
       if (res.data.success) {
@@ -192,9 +192,9 @@ export default function StoreForm({ reloadData, children, infoStoreUpdate }) {
   }, [visible])
 
   useEffect(() => {
-    apiProvinceData()
-    apiFilterCityData()
-    getBranch()
+    _getProvinces()
+    _getDistricts()
+    _getAllBranch()
     getLabel()
   }, [])
 
