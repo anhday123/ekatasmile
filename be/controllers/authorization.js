@@ -172,7 +172,7 @@ module.exports._register = async (req, res, next) => {
             avatar: req.body.avatar || '',
             first_name: req.body.first_name || '',
             last_name: req.body.last_name || '',
-            birth_day: req.body.birth_day || '',
+            birth_day: req.body.birth_day || moment().tz(TIMEZONE).format(),
             address: req.body.address || '',
             district: req.body.district || '',
             province: req.body.province || '',
