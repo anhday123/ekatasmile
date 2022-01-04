@@ -538,14 +538,49 @@ module.exports._verifyOTP = async (req, res, next) => {
         }
         let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
         const DB = business.database_name;
-        delete user.password;
+        let [_user] = await client
+            .db(DB)
+            .collection(`Users`)
+            .aggregate([
+                { $match: { username: username } },
+                {
+                    $lookup: {
+                        from: 'Roles',
+                        localField: 'role_id',
+                        foreignField: 'role_id',
+                        as: '_role',
+                    },
+                },
+                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+            ])
+            .toArray();
         if (user.active == false) {
             user.otp_code = false;
             user.otp_timelife = false;
             user.active = true;
+            _user = { ..._user, ...user };
+            delete _user.password;
             await client.db(SDB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
             await client.db(DB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
-            let accessToken = await jwt.createToken(user, 30 * 24 * 60 * 60);
+            let accessToken = await jwt.createToken(_user, 30 * 24 * 60 * 60);
             res.send({ success: true, message: 'Kích hoạt tài khoản thành công!', data: { accessToken: accessToken } });
         } else {
             user.otp_code = true;
