@@ -11,7 +11,12 @@ const { verifyMail } = require('../templates/verifyMail');
 const { sendSMS } = require('../libs/sendSMS');
 
 const crypto = require('crypto');
-const { off } = require('process');
+const { _permissions } = require('../templates/permissions');
+const { _menus } = require('../templates/menus');
+const { _wards } = require('../templates/wardVN');
+const { _districts } = require('../templates/districtVN');
+const { _provinces } = require('../templates/provinceVN');
+const { _countries } = require('../templates/countries');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -194,8 +199,8 @@ module.exports._register = async (req, res, next) => {
             role_id: role_id,
             code: String(role_id).padStart(6, '0'),
             name: 'ADMIN',
-            permission_list: [],
-            menu_list: [],
+            permission_list: _permissions,
+            menu_list: _menus,
             default: true,
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: 0,
@@ -297,6 +302,10 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('Branchs').insertOne(_branch),
             client.db(DB).collection('Stores').insertOne(_store),
             client.db(DB).collection('Waranties').insertOne(_warranty),
+            client.db(DB).collection('Wards').insertMany(_wards),
+            client.db(DB).collection('Districts').insertMany(_districts),
+            client.db(DB).collection('Provinces').insertMany(_provinces),
+            client.db(DB).collection('Countries').insertMany(_countries),
         ]).catch((err) => {
             throw new Error('Tạo tài khoản không thành công!');
         });
