@@ -35,8 +35,8 @@ import ImportCSV from 'components/ImportCSV'
 import { PlusCircleOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllWarranty } from 'apis/warranty'
-import { apiAllSupplier } from 'apis/supplier'
+import { getWarranties } from 'apis/warranty'
+import { getSuppliers } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
 import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
@@ -123,10 +123,10 @@ export default function Product() {
     },
   ]
 
-  const apiAllSupplierData = async () => {
+  const _getSuppliers = async () => {
     try {
       setLoading(true)
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) {
         setSuppliers(res.data.data)
       }
@@ -225,9 +225,9 @@ export default function Product() {
   }, [paramsFilter])
 
   useEffect(() => {
-    apiAllSupplierData()
+    _getSuppliers()
     apiAllCategoryData()
-    apiAllWarrantyData()
+    _getWarranties()
     getStores()
   }, [])
 
@@ -407,10 +407,10 @@ export default function Product() {
     }
   }
 
-  const apiAllWarrantyData = async () => {
+  const _getWarranties = async () => {
     try {
       setLoading(true)
-      const res = await apiAllWarranty()
+      const res = await getWarranties()
       if (res.status === 200) {
         setWarranty(res.data.data)
       }
@@ -931,12 +931,8 @@ export default function Product() {
               defaultPageSize: 20,
               pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
               showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setSelectedRowKeys([])
-                paramsFilter.page = page
-                paramsFilter.page_size = pageSize
-                _getProducts({ ...paramsFilter })
-              },
+              onChange: (page, pageSize) =>
+                _getProducts({ ...paramsFilter, page: page, page_size: pageSize }),
               total: countProduct,
             }}
           />

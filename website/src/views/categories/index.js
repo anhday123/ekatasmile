@@ -25,9 +25,9 @@ import {
 import { DeleteOutlined, SearchOutlined, PlusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
-import { getCategories, apiAddCategory, deleteCategories } from 'apis/category'
+import { getCategories, addCategory, deleteCategories } from 'apis/category'
 import { uploadFile } from 'apis/upload'
-import { apiFilterRoleEmployee } from 'apis/employee'
+import { getEmployees } from 'apis/employee'
 
 import { compare, compareCustom } from 'utils'
 
@@ -49,7 +49,7 @@ export default function Category() {
   const [valueFilterTime, setValueFilterTime] = useState()
   const [openSelect, setOpenSelect] = useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null)
-  const [userList,setUserList]=useState([])
+  const [userList, setUserList] = useState([])
   const [valueUserFilter, setValueUserFilter] = useState(null)
 
   function getBase64(img, callback) {
@@ -60,7 +60,7 @@ export default function Category() {
 
   const _getUserList = async () => {
     try {
-      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      const res = await getEmployees({ page: 1, page_size: 1000 })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -125,7 +125,7 @@ export default function Category() {
   const _addCategory = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAddCategory(body)
+      const res = await addCategory(body)
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
       if (res.status === 200) {
@@ -425,9 +425,9 @@ export default function Category() {
     { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
   ]
 
-  useEffect(()=>{
+  useEffect(() => {
     _getUserList()
-  },[])
+  }, [])
 
   useEffect(() => {
     _getCategories(paramsFilter)
@@ -456,21 +456,21 @@ export default function Category() {
             placeholder="Tìm kiếm theo tên hoặc theo mã"
           />
           <Select
-              onChange={onChangeUserFilter}
-              value={valueUserFilter}
-              style={{ width: 200 }}
-              placeholder="Tìm kiếm theo người tạo"
-              allowClear
-              showSearch
-            >
-              {userList.map((item, index) => {
-                return (
-                  <Option value={item.user_id}>
-                    {item.first_name} {item.last_name}
-                  </Option>
-                )
-              })}
-            </Select>
+            onChange={onChangeUserFilter}
+            value={valueUserFilter}
+            style={{ width: 200 }}
+            placeholder="Tìm kiếm theo người tạo"
+            allowClear
+            showSearch
+          >
+            {userList.map((item, index) => {
+              return (
+                <Option value={item.user_id}>
+                  {item.first_name} {item.last_name}
+                </Option>
+              )
+            })}
+          </Select>
           <Select
             value={valueFilterTime}
             allowClear

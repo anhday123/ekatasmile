@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //apis
-import { getAllCustomer } from 'apis/customer'
+import { getCustomers } from 'apis/customer'
 
 //antd
 import {
@@ -249,7 +249,7 @@ export default function ReceiptsAndPayment() {
 
   const _getCustomers = async () => {
     try {
-      const res = await getAllCustomer()
+      const res = await getCustomers()
       console.log(res)
       if (res.status === 200) setCustomers(res.data.data)
     } catch (error) {

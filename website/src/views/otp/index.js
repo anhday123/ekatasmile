@@ -1,200 +1,150 @@
-import styles from './../otp/otp.module.scss'
-import 'antd/dist/antd.css'
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
-import { apiOTPForgetPassword, apiOTPMain } from 'apis/otp'
-import { Link, useHistory, useLocation } from 'react-router-dom'
-import pgc from 'assets/img/logo.png'
-import { Form, Input, Button, notification, Row, Col } from 'antd'
 import store from 'assets/img/store.png'
+import { verify, getOtp } from 'apis/auth'
+import { useHistory, useLocation } from 'react-router-dom'
+import { Form, Input, Button, notification, Row, Col } from 'antd'
+import jwt_decode from 'jwt-decode'
 
 export default function OTP() {
   const dispatch = useDispatch()
   let history = useHistory()
   let location = useLocation()
-  var username = location.state && location.state.username
-  console.log(username)
-  const apiOTP = async (otp) => {
+  const [form] = Form.useForm()
+
+  const username = location.state && location.state.username
+  const phone = location.state && location.state.phone
+
+  const _verifyAccount = async () => {
     try {
+      await form.validateFields()
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiOTPMain(otp)
+      const dataForm = form.getFieldsValue()
+      var body = { username: phone || username, otp_code: dataForm.otp }
+      const res = await verify(body)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          openNotificationOTPSuccess()
-          if (location.state.action === 'REGISTER') history.push(ROUTES.LOGIN)
-          else
-            history.push({
-              pathname: ROUTES.PASSWORD_NEW,
-              state: { username },
-            })
-        }
-      } else {
-        openNotificationOTPError()
-      }
+          dispatch({ type: ACTION.LOGIN, data: res.data.data })
+
+          //luu branch id len redux
+          const dataUser = jwt_decode(res.data.data.accessToken)
+          dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
+
+          notification.success({ message: 'Xác thực otp thành công' })
+          history.push(ROUTES.OVERVIEW)
+        } else
+          notification.error({
+            message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
+        })
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const onFinish = (values) => {
-    var body = {
-      username: username,
-      otp_code: values.otp,
-    }
-    apiOTP(body)
-  }
 
-  const openNotificationOTPSuccess = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: 'Xác nhận mã otp thành công',
-    })
-  }
-  const openNotificationOTPError = () => {
-    notification.error({
-      duration: 3,
-      description: 'Mã OTP không chính xác hoặc đã hết hạn.',
-    })
-  }
-
-  const openNotificationOTPErrorResendError = () => {
-    notification.error({
-      message: 'Thất bại',
-      duration: 3,
-      description: 'Gửi lại mã thất bại. Xin vui lòng thử lại.',
-    })
-  }
-  const openNotificationOTPErrorResend = () => {
-    notification.success({
-      message: 'Thành công',
-      duration: 3,
-      description: `Mã OTP đã được gửi lại vào gmail của bạn`,
-    })
-  }
-  const apiOTPForgetPasswordData = async (object) => {
+  const _resendOtp = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiOTPForgetPassword(object)
-      console.log(res)
+      const res = await getOtp(phone)
       if (res.status === 200) {
-        openNotificationOTPErrorResend()
-      } else {
-        openNotificationOTPErrorResendError()
-      }
-
+        if (res.data.success)
+          notification.success({ message: 'Gửi lại otp thành công, vui lòng kiểm tra lại' })
+        else notification.error({ message: 'Gửi lại otp thất bại, vui lòng thử lại' })
+      } else notification.error({ message: 'Gửi lại otp thất bại, vui lòng thử lại' })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
     }
-  }
-  const onClickOTP = () => {
-    const object = {
-      username: username,
-    }
-    apiOTPForgetPasswordData(object)
   }
 
   useEffect(() => {
-    if (!location.state) history.goBack()
+    if (!location.state) history.push(ROUTES.LOGIN)
   }, [])
 
   return (
-    <Row
-      style={{
-        display: 'flex',
-        height: '100%',
-        backgroundColor: '#5B6BE8',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Col style={{ width: '100%' }} xs={24} sm={24} md={24} lg={24} xl={8}>
-        <div className={styles['confirm_otp']}>
-          <div
-            style={{ color: 'white', fontSize: '1.5rem', fontWeight: '700' }}
-          >
-            Xác minh mã OTP
+    <Row align="middle" style={{ backgroundColor: '#5B6BE8' }}>
+      <Col xs={24} sm={24} md={24} lg={24} xl={10}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            color: 'white',
+            paddingLeft: '10%',
+            paddingRight: '10%',
+          }}
+        >
+          <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>Xác minh mã OTP</div>
+          <div>
+            {location.state && location.state.phone
+              ? `Mã otp đã được gửi vào số điện thoại ${
+                  location.state && <b>{location.state.phone}</b>
+                }`
+              : 'Mã otp đã được gửi vào email của bạn'}
           </div>
-          <div>Mã xác minh đã được gửi qua gmail mà bạn đã đăng ký</div>
-
-          <div>Vui lòng nhập OTP</div>
-        </div>
-        <Form onFinish={onFinish} className={styles['confirm_otp_input']}>
-          <Form.Item
-            name="otp"
-            rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}
-          >
-            <Input
-              style={{
-                textAlign: 'center',
-                display: 'flex',
-                justifyContent: 'center',
-                color: 'black',
-              }}
-              maxLength="6"
-              placeholder=""
-            />
-          </Form.Item>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '22.5rem',
-            }}
-          >
-            <div>
-              Bạn chưa nhận được mã?{' '}
-              <a
-                onClick={onClickOTP}
+          <Form form={form} style={{ marginTop: 15, width: '100%' }}>
+            <Form.Item name="otp" rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}>
+              <Input
+                size="large"
+                onPressEnter={_verifyAccount}
+                style={{ textAlign: 'center' }}
+                maxLength="6"
+                placeholder="Nhập mã xác thực otp"
+              />
+            </Form.Item>
+            <Row
+              wrap={false}
+              align="middle"
+              style={{ display: location.state && !location.state.phone && 'none', color: 'white' }}
+            >
+              <div>Bạn chưa nhận được mã? </div>
+              <p
+                onClick={_resendOtp}
                 style={{
+                  marginBottom: 0,
+                  cursor: 'pointer',
                   marginLeft: '0.5rem',
-                  color: 'white',
                   fontWeight: 700,
                 }}
               >
                 Gửi lại OTP
-              </a>
-            </div>
-          </div>
-          <div className={styles['login_bottom_left_button_parent']}>
-            <Form.Item style={{ width: '100%' }}>
-              <Button
-                type="primary"
-                style={{
-                  width: '100%',
-                  borderColor: 'black',
-                  backgroundColor: 'black',
-                  borderRadius: 40,
-                }}
-                htmlType="submit"
-              >
-                Xác thực
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
+              </p>
+            </Row>
+          </Form>
+          <Button
+            size="large"
+            type="primary"
+            style={{
+              width: '100%',
+              borderColor: 'black',
+              backgroundColor: 'black',
+              borderRadius: 40,
+              marginTop: 5,
+            }}
+            onClick={_verifyAccount}
+          >
+            Xác thực
+          </Button>
+        </div>
       </Col>
-      <Col
-        style={{ width: '100%', height: '100vh', backgroundColor: 'white' }}
-        xs={24}
-        sm={24}
-        md={24}
-        lg={24}
-        xl={16}
-      >
+      <Col xs={24} sm={24} md={24} lg={24} xl={14}>
         <img
           src={store}
           style={{
             width: '100%',
-            paddingBottom: '4rem',
             height: '100vh',
             objectFit: 'contain',
+            backgroundColor: 'white',
           }}
           alt=""
         />

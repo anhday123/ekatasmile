@@ -49,9 +49,9 @@ import {
 
 //apis
 import { getCategories } from 'apis/category'
-import { apiAllSupplier } from 'apis/supplier'
+import { getSuppliers } from 'apis/supplier'
 import { uploadFiles, uploadFile } from 'apis/upload'
-import { apiAllWarranty } from 'apis/warranty'
+import { getWarranties } from 'apis/warranty'
 import { updateProduct, addProduct } from 'apis/product'
 
 export default function ProductAdd() {
@@ -204,10 +204,10 @@ export default function ProductAdd() {
     reader.readAsDataURL(img)
   }
 
-  const apiAllSupplierData = async () => {
+  const _getSuppliers = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
           const dataNew = res.data.data.filter((value) => value.active)
@@ -361,7 +361,7 @@ export default function ProductAdd() {
   }
 
   const [categories, setCategories] = useState([])
-  const apiAllCategoryData = async () => {
+  const _getCategories = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getCategories()
@@ -698,10 +698,10 @@ export default function ProductAdd() {
     },
   ]
 
-  const apiAllWarrantyData = async () => {
+  const _getWarranties = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllWarranty()
+      const res = await getWarranties()
       if (res.status === 200) {
         setWarranties(res.data.data)
       }
@@ -763,9 +763,9 @@ export default function ProductAdd() {
   }
 
   useEffect(() => {
-    apiAllSupplierData()
-    apiAllWarrantyData()
-    apiAllCategoryData()
+    _getSuppliers()
+    _getWarranties()
+    _getCategories()
   }, [])
 
   //get width device

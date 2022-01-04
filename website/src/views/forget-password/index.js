@@ -1,4 +1,4 @@
-import styles from './../forget-password/forget-password.module.scss'
+import styles from './forget-password.module.scss'
 import React from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import pgc from 'assets/img/logo.png'
@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
 import { Form, Input, Button, notification, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import { apiOTPForgetPassword } from '../../apis/otp'
+import { verify } from 'apis/auth'
 import store from 'assets/img/store.png'
 
 export default function ForgetPassword() {
@@ -23,7 +23,7 @@ export default function ForgetPassword() {
   const apiForgetPasswordData = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiOTPForgetPassword(object)
+      const res = await verify(object)
 
       if (res.status === 200) {
         if (res.data.success) {
@@ -75,11 +75,7 @@ export default function ForgetPassword() {
             Nhập tài khoản của bạn để đặt lại mật khẩu
           </div>
         </div>
-        <Form
-          className={styles['login_bottom']}
-          form={form}
-          onFinish={onFinishRegister}
-        >
+        <Form className={styles['login_bottom']} form={form} onFinish={onFinishRegister}>
           <Form.Item
             className={styles['login_bottom_email']}
             name="usernameRegister"

@@ -38,8 +38,8 @@ import ImportCSV from 'components/ImportCSV'
 import { PlusCircleOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllWarranty } from 'apis/warranty'
-import { apiAllSupplier } from 'apis/supplier'
+import { getWarranties } from 'apis/warranty'
+import { getSuppliers } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
 import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
@@ -109,10 +109,10 @@ export default function Product() {
     },
   ]
 
-  const apiAllSupplierData = async () => {
+  const _getSuppliers = async () => {
     try {
       setLoading(true)
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) {
         setSuppliers(res.data.data)
       }
@@ -188,9 +188,9 @@ export default function Product() {
   }, [paramsFilter])
 
   useEffect(() => {
-    apiAllSupplierData()
+    _getSuppliers()
     apiAllCategoryData()
-    apiAllWarrantyData()
+    _getWarranties()
     getStores()
   }, [])
 
@@ -454,10 +454,10 @@ export default function Product() {
     }
   }
 
-  const apiAllWarrantyData = async () => {
+  const _getWarranties = async () => {
     try {
       setLoading(true)
-      const res = await apiAllWarranty()
+      const res = await getWarranties()
       if (res.status === 200) {
         setWarranty(res.data.data)
       }
@@ -699,20 +699,6 @@ export default function Product() {
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
           <Space size="middle" style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
-            {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
-                <Button
-                  size="large"
-                  onClick={() => {
-                    history.push({
-                      pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                      state: arrayProductShipping,
-                    })
-                  }}
-                  type="primary"
-                >
-                  Chuyển hàng
-                </Button>
-              </Permission> */}
             <UpdateCategoryProducts />
             <Permission permission={[PERMISSIONS.xoa_san_pham]}>
               <Popconfirm

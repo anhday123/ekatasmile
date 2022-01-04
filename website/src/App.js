@@ -16,13 +16,10 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (localStorage.getItem('accessToken') && localStorage.getItem('refreshToken')) {
+    if (localStorage.getItem('accessToken')) {
       dispatch({
         type: ACTION.LOGIN,
-        data: {
-          accessToken: localStorage.getItem('accessToken'),
-          refreshToken: localStorage.getItem('refreshToken'),
-        },
+        data: { accessToken: localStorage.getItem('accessToken') },
       })
 
       const dataUser = jwt_decode(localStorage.getItem('accessToken'))

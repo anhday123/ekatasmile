@@ -35,7 +35,7 @@ export default function ConfigurationStore() {
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={24} md={11} lg={8} xl={8}>
               <Link to={ROUTES.EMPLOYEE}>
-                <Row>
+                <Row wrap={false}>
                   <div
                     className={styles['wrap-icon']}
                     style={{
@@ -79,7 +79,7 @@ export default function ConfigurationStore() {
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={24} md={11} lg={8} xl={8}>
               <Link to={ROUTES.GUARANTEE}>
-                <Row>
+                <Row wrap={false}>
                   <div
                     className={styles['wrap-icon']}
                     style={{
@@ -113,7 +113,7 @@ export default function ConfigurationStore() {
             </Col>
             <Col xs={24} sm={24} md={11} lg={8} xl={8}>
               <Link to={ROUTES.TAX}>
-                <Row>
+                <Row wrap={false}>
                   <div
                     className={styles['wrap-icon']}
                     style={{
@@ -147,7 +147,7 @@ export default function ConfigurationStore() {
             </Col>
             <Col xs={24} sm={24} md={11} lg={8} xl={8}>
               <Link to={ROUTES.PAYMENT}>
-                <Row>
+                <Row wrap={false}>
                   <div
                     className={styles['wrap-icon']}
                     style={{
@@ -187,7 +187,7 @@ export default function ConfigurationStore() {
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={11} md={11} lg={8} xl={8}>
               <Link to={ROUTES.IMPORT_REPORT_FILE}>
-                <Row>
+                <Row wrap={false}>
                   <div
                     className={styles['wrap-icon']}
                     style={{

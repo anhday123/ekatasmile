@@ -29,6 +29,7 @@ import ForgetPassword from './forget-password'
 import Overview from './overview'
 import Sell from './sell'
 import Store from './store'
+import VerifyAccount from './verify-account'
 import ActivityDiary from './activity-diary'
 
 import NotFound from './not-found/404'
@@ -36,7 +37,6 @@ import TaxAdd from './actions/tax/add'
 import TaxUpdate from './actions/tax/update'
 import ShippingProductForm from './shipping-product/shipping-product-form'
 import OrderCreate from './order-create'
-import VertifyAccount from './vertify-account'
 import Categories from './categories'
 import Category from './category'
 import ImportExportFile from './import-export-file'
@@ -56,21 +56,14 @@ import Role from './role'
 import ShippingControlAdd from './actions/shipping-control/add'
 import ShippingControlView from './actions/shipping-control/view'
 
-import InventoryView from './actions/inventory/view'
-import InventoryUpdate from './actions/inventory/update'
-
 import ProductCheckAdd from './actions/product-check/add'
 import ProductCheckView from './actions/product-check/view'
 import OrderCreateShippingAdd from './actions/order-create-shipping/add'
-import EmployeeView from './actions/employee/view'
 
 import RevenueCostView from './actions/revenue-cost/view'
 import ReportFinancialView from './actions/sale-detail/view'
 
 import InventoryAdd from './actions/inventory/add'
-
-import EmployeeAdd from './actions/employee/add'
-import EmployeeEdit from './actions/employee/edit'
 
 import GuaranteeAdd from './actions/guarantee/add'
 import PromotionAdd from './actions/promotion/add'
@@ -110,6 +103,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+
   {
     path: ROUTES.PRODUCT_ADD,
     Component: () => <ProductForm />,
@@ -289,7 +283,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.EMPLOYEE,
     Component: () => <Employee />,
-    title: 'Quản lý nhân sự',
+    title: 'Quản lý nhân viên',
     permissions: [],
     exact: true,
   },
@@ -444,6 +438,13 @@ const AUTH_ROUTER = [
     permissions: [],
   },
   {
+    path: ROUTES.VERIFY_ACCOUNT,
+    Component: () => <VerifyAccount />,
+    title: 'Xác thực tài khoản',
+    permissions: [],
+    exact: true,
+  },
+  {
     path: ROUTES.PASSWORD_NEW,
     Component: () => <PasswordNew />,
     exact: true,
@@ -485,21 +486,6 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-
-  {
-    path: ROUTES.INVENTORY_VIEW,
-    Component: () => <InventoryView />,
-    title: 'Xem chi tiết kho',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.INVENTORY_UPDATE,
-    Component: () => <InventoryUpdate />,
-    title: 'Cập nhật thông tin kho',
-    permissions: [],
-    exact: true,
-  },
   {
     path: ROUTES.PRODUCT_CHECK_ADD,
     Component: () => <ProductCheckAdd />,
@@ -521,28 +507,6 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-
-  {
-    path: ROUTES.EMPLOYEE_VIEW,
-    Component: () => <EmployeeView />,
-    title: 'Xem chi tiết thông tin nhân viên',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.EMPLOYEE_ADD,
-    Component: () => <EmployeeAdd />,
-    title: 'Thêm nhân viên',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.EMPLOYEE_EDIT,
-    Component: () => <EmployeeEdit />,
-    title: 'Cập nhật thông tin nhân viên',
-    permissions: [],
-    exact: true,
-  },
   {
     path: ROUTES.PROMOTION_ADD,
     Component: () => <PromotionAdd />,
@@ -557,13 +521,7 @@ const AUTH_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.VERTIFY_ACCOUNT,
-    Component: () => <VertifyAccount />,
-    title: 'Xác thực tài khoản',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.SELL,
     Component: () => <Sell />,

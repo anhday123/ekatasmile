@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Form, Modal, Row, Input, Select, InputNumber, Spin } from 'antd'
 
 //apis
-import { apiProvince, apiDistrict } from 'apis/information'
+import { apiProvince, apiDistrict } from 'apis/address'
 
 export default function DeliveryAddress({ setDeliveryAddress, address }) {
   const [form] = Form.useForm()

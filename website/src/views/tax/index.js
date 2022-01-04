@@ -1,6 +1,6 @@
-import styles from './../tax/tax.module.scss'
+import styles from './tax.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -19,17 +19,8 @@ import {
   Drawer,
   Checkbox,
 } from 'antd'
-import {
-  PlusCircleOutlined,
-  EditOutlined,
-  ArrowLeftOutlined,
-} from '@ant-design/icons'
-import {
-  apiAddTax,
-  apiAllTax,
-  apiSearchTax,
-  apiUpdateTax,
-} from '../../apis/tax'
+import { PlusCircleOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { addTax, getTaxs, updateTax } from 'apis/tax'
 import Permission from 'components/permission'
 import { compare } from 'utils'
 const { RangePicker } = DatePicker
@@ -89,7 +80,7 @@ export default function Tax() {
     try {
       setLoading(true)
 
-      const res = await apiSearchTax({ name: value })
+      const res = await getTaxs({ name: value })
 
       if (res.status === 200) setTax(res.data.data)
       setLoading(false)
@@ -133,7 +124,7 @@ export default function Tax() {
   const apiAllTaxData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllTax()
+      const res = await getTaxs()
       console.log(res)
       if (res.status === 200) {
         setTax(res.data.data)
@@ -149,7 +140,7 @@ export default function Tax() {
   const apiAddTaxData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiAddTax(object)
+      const res = await addTax(object)
       if (res.status === 200) {
         await apiAllTaxData()
         setVisible(false)
@@ -196,17 +187,14 @@ export default function Tax() {
   const openNotificationDeleteSupplier = (data) => {
     notification.success({
       message: 'Thành công',
-      description:
-        data === 2
-          ? 'Vô hiệu hóa thuế thành công.'
-          : 'Kích hoạt thuế thành công',
+      description: data === 2 ? 'Vô hiệu hóa thuế thành công.' : 'Kích hoạt thuế thành công',
     })
   }
   const apiUpdateTaxDataStatus = async (object, id, data) => {
     try {
       setLoading(true)
 
-      const res = await apiUpdateTax(object, id)
+      const res = await updateTax(object, id)
       if (res.status === 200) {
         await apiAllTaxData()
         openNotificationDeleteSupplier(data)
@@ -228,7 +216,7 @@ export default function Tax() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiUpdateTax(object, id)
+      const res = await updateTax(object, id)
 
       if (res.status === 200) {
         await apiAllTaxData()
@@ -248,7 +236,7 @@ export default function Tax() {
     try {
       setLoading(true)
 
-      const res = await apiSearchTax({ from_date: start, to_date: end })
+      const res = await getTaxs({ from_date: start, to_date: end })
       if (res.status === 200) {
         setTax(res.data.data)
       }
@@ -296,8 +284,7 @@ export default function Tax() {
             const object = {
               name: values.name,
               value: values.value,
-              description:
-                values && values.description ? values.description : '',
+              description: values && values.description ? values.description : '',
             }
             apiUpdateTaxData(object, values.tax_id)
           }
@@ -313,9 +300,7 @@ export default function Tax() {
               name: values.name,
               value: arrayUpdate[0].value,
               description:
-                arrayUpdate[0] && arrayUpdate[0].description
-                  ? arrayUpdate[0].description
-                  : '',
+                arrayUpdate[0] && arrayUpdate[0].description ? arrayUpdate[0].description : '',
             }
             apiUpdateTaxData(object, values.tax_id)
           }
@@ -374,9 +359,7 @@ export default function Tax() {
             }}
             to={ROUTES.CONFIGURATION_STORE}
           >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-            />
+            <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
             <div
               style={{
                 color: 'black',
@@ -421,14 +404,7 @@ export default function Tax() {
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginLeft: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -443,10 +419,7 @@ export default function Tax() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 onChange={onChangeDate}
               />
@@ -490,16 +463,12 @@ export default function Tax() {
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
                       <Text>
-                        <div style={{ color: 'black', fontWeight: '600' }}>
-                          Tổng cộng:
-                        </div>
+                        <div style={{ color: 'black', fontWeight: '600' }}>Tổng cộng:</div>
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>
-                        <div
-                          style={{ color: 'black', fontWeight: '600' }}
-                        >{`${totalTax}%`}</div>
+                        <div style={{ color: 'black', fontWeight: '600' }}>{`${totalTax}%`}</div>
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
@@ -536,21 +505,10 @@ export default function Tax() {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tên thuế
-                    </div>
-                  }
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Tên thuế</div>}
                   name="taxName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -558,21 +516,10 @@ export default function Tax() {
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Giá trị
-                    </div>
-                  }
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Giá trị</div>}
                   name="value"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -582,23 +529,14 @@ export default function Tax() {
                     style={{ width: '100%' }}
                     min={0}
                     max={100}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     onChange={onChange}
                   />
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -617,9 +555,7 @@ export default function Tax() {
           </Row>
 
           <Row>
-            <Checkbox onChange={(e) => setDefaultActive(e.target.checked)}>
-              Kích hoạt
-            </Checkbox>
+            <Checkbox onChange={(e) => setDefaultActive(e.target.checked)}>Kích hoạt</Checkbox>
           </Row>
           <div
             style={{
@@ -632,8 +568,8 @@ export default function Tax() {
               width: '100%',
             }}
           >
-            <b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa
-            giá trị thuế khi đã sử dụng thuế đó trong một đơn hàng.
+            <b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa giá trị thuế khi đã
+            sử dụng thuế đó trong một đơn hàng.
           </div>
 
           <Row

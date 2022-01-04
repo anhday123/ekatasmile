@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 // style
-import styles from './../channel/channel.module.scss'
+import styles from './channel.module.scss'
 
 // moment
 import moment from 'moment'
@@ -32,7 +32,7 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { createChannel, deleteChannel, getChannel, getPlatform, updateChannel } from 'apis/channel'
+import { createChannel, deleteChannel, getChannels, getPlatform, updateChannel } from 'apis/channel'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -169,7 +169,7 @@ export default function Channel() {
   const _getChannel = async () => {
     try {
       setLoadingTable(true)
-      const res = await getChannel(paramsFilter)
+      const res = await getChannels(paramsFilter)
       setChannelList(res.data.data)
       setCountPage(res.data.count)
       console.log(res)

@@ -21,8 +21,8 @@ import {
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons'
 
 //apis
-import { apiProvince, apiDistrict } from 'apis/information'
-import { addBranch, apiUpdateBranch } from 'apis/branch'
+import { getProvinces, getDistricts } from 'apis/address'
+import { addBranch, updateBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
@@ -77,7 +77,7 @@ export default function BranchAdd({ reloadData, children, record }) {
       }
 
       let res
-      if (record) res = await apiUpdateBranch(body, record.branch_id)
+      if (record) res = await updateBranch(body, record.branch_id)
       else res = await addBranch(body)
       console.log(res)
       if (res.status === 200) {
@@ -104,7 +104,7 @@ export default function BranchAdd({ reloadData, children, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -115,7 +115,7 @@ export default function BranchAdd({ reloadData, children, record }) {
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistrictMain(res.data.data)
         setDistrictsDefault(res.data.data)

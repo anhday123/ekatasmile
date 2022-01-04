@@ -76,9 +76,9 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { getAllCustomer } from 'apis/customer'
-import { apiAllShipping } from 'apis/shipping'
-import { getProducts, pricesProduct } from 'apis/product'
+import { getCustomers } from 'apis/customer'
+import { getShippings } from 'apis/shipping'
+import { getProducts } from 'apis/product'
 import { addOrder } from 'apis/order'
 
 export default function Sell() {
@@ -992,7 +992,7 @@ export default function Sell() {
   const _getCustomers = async () => {
     try {
       setLoadingCustomer(true)
-      const res = await getAllCustomer()
+      const res = await getCustomers()
       if (res.status === 200) setCustomers(res.data.data)
 
       setLoadingCustomer(false)
@@ -1006,7 +1006,7 @@ export default function Sell() {
     try {
       setLoadingCustomer(true)
 
-      const res = await getAllCustomer({
+      const res = await getCustomers({
         customer_id: invoices[indexInvoice].customer.customer_id,
       })
       if (res.status === 200)
@@ -1028,7 +1028,7 @@ export default function Sell() {
 
   const _getShippingsMethod = async () => {
     try {
-      const res = await apiAllShipping()
+      const res = await getShippings()
       if (res.status === 200) setShippingsMethod(res.data.data)
     } catch (error) {
       console.log(error)
@@ -1090,15 +1090,6 @@ export default function Sell() {
     }
   }
 
-  const _getPricesProduct = async () => {
-    try {
-      const res = await pricesProduct()
-      console.log(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   //lưu invoice lên reducer mỗi khi có sự thay đổi
   useEffect(() => {
     if (invoices) dispatch({ type: 'UPDATE_INVOICE', data: invoices })
@@ -1118,7 +1109,6 @@ export default function Sell() {
   }, [])
 
   useEffect(() => {
-    _getPricesProduct()
     _getInvoicesToReducer()
     _getCustomers()
     _getShippingsMethod()

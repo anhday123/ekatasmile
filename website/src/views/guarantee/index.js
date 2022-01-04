@@ -24,8 +24,8 @@ import {
 import { FileExcelOutlined, PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 
 //apis
-import { addWarranty, apiAllWarranty, updateWarranty } from 'apis/warranty'
-import { apiAllEmployee } from 'apis/employee'
+import { addWarranty, getWarranties, updateWarranty } from 'apis/warranty'
+import { getEmployees } from 'apis/employee'
 
 //components
 import Permission from 'components/permission'
@@ -204,7 +204,7 @@ export default function Guarantee() {
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getWarranty = async (params) => {
     try {
-      const res = await apiAllWarranty({ ...params, ...pagination, _creator: true })
+      const res = await getWarranties({ ...params, ...pagination, _creator: true })
       console.log(res)
       if (res.status == 200) {
         setWarrantyList(res.data.data)
@@ -223,7 +223,7 @@ export default function Guarantee() {
 
   const _getUsers = async () => {
     try {
-      const res = await apiAllEmployee()
+      const res = await getEmployees()
       if (res.status === 200) setUsers(res.data.data)
     } catch (error) {
       console.log(error)

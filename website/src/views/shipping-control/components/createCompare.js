@@ -11,8 +11,8 @@ import {
   notification,
 } from 'antd'
 import { useEffect, useState } from 'react'
-import { addCompare } from '../../../apis/compare'
-import { apiAllShipping } from '../../../apis/shipping'
+import { addCompare } from 'apis/compare'
+import { getShippings } from 'apis/shipping'
 import moment from 'moment'
 export default function CreateCompare(props) {
   const { visible, onClose } = props
@@ -52,7 +52,7 @@ export default function CreateCompare(props) {
   }
   const getTransport = async () => {
     try {
-      const res = await apiAllShipping()
+      const res = await getShippings()
       if (res.data.success) {
         setTransportList(res.data.data)
       }
@@ -65,12 +65,7 @@ export default function CreateCompare(props) {
     getTransport()
   }, [])
   return (
-    <Drawer
-      visible={visible}
-      onClose={onClose}
-      width={1100}
-      title="Tạo đối soát"
-    >
+    <Drawer visible={visible} onClose={onClose} width={1100} title="Tạo đối soát">
       <Form onFinish={onFinish}>
         <Row justify="space-between">
           <Col span={11}>
@@ -82,9 +77,7 @@ export default function CreateCompare(props) {
                     {transportList
                       .filter((e) => e.active)
                       .map((e) => (
-                        <Select.Option value={e.shipping_company_id}>
-                          {e.name}
-                        </Select.Option>
+                        <Select.Option value={e.shipping_company_id}>{e.name}</Select.Option>
                       ))}
                   </Select>
                 </Form.Item>
@@ -118,9 +111,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="transfer_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -134,9 +125,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="real_cod_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -150,9 +139,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="shipping_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -166,9 +153,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="delivery_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -182,9 +167,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="card_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -231,9 +214,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="insurance_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -247,9 +228,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="weight">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>
@@ -263,9 +242,7 @@ export default function CreateCompare(props) {
                 <Form.Item name="warehouse_cost">
                   <InputNumber
                     style={{ width: '100%' }}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                   />
                 </Form.Item>

@@ -22,8 +22,8 @@ import {
 import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllShipping, deleteShippings } from 'apis/shipping'
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getShippings, deleteShippings } from 'apis/shipping'
+import { getProvinces, getDistricts } from 'apis/address'
 
 //components
 import Permission from 'components/permission'
@@ -83,7 +83,7 @@ export default function Shipping() {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await apiAllShipping(paramsFilter)
+      const res = await getShippings(paramsFilter)
       console.log(res)
       if (res.status === 200) {
         setCountShipping(res.data.count)
@@ -131,7 +131,7 @@ export default function Shipping() {
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       console.log(res)
       if (res.status === 200) setDistricts(res.data.data)
     } catch (error) {
@@ -141,7 +141,7 @@ export default function Shipping() {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)

@@ -1,15 +1,17 @@
-import styles from './../shipping-control/shipping-control.module.scss'
+import styles from './shipping-control.module.scss'
 import React, { useEffect, useState } from 'react'
 import { Button, Tabs } from 'antd'
 import { PlusCircleOutlined } from '@ant-design/icons'
-import { getCompare, getSession } from '../../apis/compare'
 import PenddingCompare from './components/penddingCompare'
 import Compared from './components/compared'
 import CompareHistory from './components/compareHistory'
 import CreateCompare from './components/createCompare'
 import Permission from 'components/permission'
-import { getAllBranch } from '../../apis/branch'
 import { PERMISSIONS } from 'consts'
+
+//apis
+import { getAllBranch } from 'apis/branch'
+import { getCompare, getSession } from 'apis/compare'
 
 const { TabPane } = Tabs
 function removeNull(a) {
@@ -90,13 +92,9 @@ export default function ShippingControl() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Đối soát vận chuyển
-          </div>
+          <div className={styles['promotion_manager_title']}>Đối soát vận chuyển</div>
           <div className={styles['promotion_manager_button']}>
-            <Permission
-              permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}
-            >
+            <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
               <Button
                 size="large"
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
@@ -108,17 +106,9 @@ export default function ShippingControl() {
             </Permission>
           </div>
         </div>
-        <Tabs
-          defaultActiveKey="1"
-          style={{ width: '100%' }}
-          onChange={changeTab}
-        >
+        <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Đơn chờ đối soát
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn chờ đối soát</span>}
             key="1"
           >
             <PenddingCompare
@@ -128,25 +118,13 @@ export default function ShippingControl() {
             />
           </TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Đơn đã đối soát thành công
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn đã đối soát thành công</span>}
             key="2"
           >
-            <Compared
-              compareList={compareList}
-              branchList={branchList}
-              setFilter={setFilter}
-            />
+            <Compared compareList={compareList} branchList={branchList} setFilter={setFilter} />
           </TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Lịch sử đối soát
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Lịch sử đối soát</span>}
             key="3"
           >
             <CompareHistory

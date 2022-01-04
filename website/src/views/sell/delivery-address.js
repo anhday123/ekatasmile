@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Form, Modal, Row, Input, Select, InputNumber, Spin } from 'antd'
 
 //apis
-import { apiProvince, apiDistrict } from 'apis/information'
+import { getDistricts, getProvinces } from 'apis/address'
 
 export default function DeliveryAddress({ editInvoice, address }) {
   const [form] = Form.useForm()
@@ -36,7 +36,7 @@ export default function DeliveryAddress({ editInvoice, address }) {
   const _getProvinces = async () => {
     try {
       setLoadingProvince(true)
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
       setLoadingProvince(false)
     } catch (error) {
@@ -48,7 +48,7 @@ export default function DeliveryAddress({ editInvoice, address }) {
   const _getDistricts = async () => {
     try {
       setLoadingDistrict(true)
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistricts(res.data.data)
         setDistrictsDefault(res.data.data)

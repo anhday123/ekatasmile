@@ -8,7 +8,7 @@ import { Form, Drawer, Row, Col, Button, Input, notification, DatePicker, Select
 import { updateEmployee, addEmployee } from 'apis/employee'
 import { getDistricts, getProvinces } from 'apis/address'
 
-export default function ClientForm({ children, reloadData, record }) {
+export default function EmployeeForm({ children, reloadData, record }) {
   const [form] = Form.useForm()
 
   const [province, setProvince] = useState('')
@@ -34,7 +34,7 @@ export default function ClientForm({ children, reloadData, record }) {
         address: dataForm.address || '',
         district: dataForm.district || '',
         province: dataForm.province || '',
-        role_id: 2,
+        role_id: 5,
       }
 
       let res
@@ -47,18 +47,19 @@ export default function ClientForm({ children, reloadData, record }) {
           toggle()
           reloadData()
           notification.success({
-            message: `${record ? 'Cập nhật' : 'Thêm'} client thành công`,
+            message: `${record ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
           })
         } else
           notification.error({
             message:
               res.data.message ||
-              `${record ? 'Cập nhật' : 'Thêm'} client thất bại, vui lòng thử lại`,
+              `${record ? 'Cập nhật' : 'Thêm'} nhân viên thất bại, vui lòng thử lại`,
           })
       } else
         notification.error({
           message:
-            res.data.message || `${record ? 'Cập nhật' : 'Thêm'} client thất bại, vui lòng thử lại`,
+            res.data.message ||
+            `${record ? 'Cập nhật' : 'Thêm'} nhân viên thất bại, vui lòng thử lại`,
         })
       setLoading(false)
     } catch (error) {
@@ -128,7 +129,7 @@ export default function ClientForm({ children, reloadData, record }) {
             </Button>
           </Row>
         }
-        title={`${record ? 'Cập nhật' : 'Thêm'} client`}
+        title={`${record ? 'Cập nhật' : 'Thêm'} nhân viên`}
         placement="right"
         onClose={toggle}
         visible={visible}

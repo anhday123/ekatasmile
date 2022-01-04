@@ -32,9 +32,9 @@ import columnsSupplier from './columns'
 import SettingColumns from 'components/setting-columns'
 
 //apis
-import { apiAllEmployee } from 'apis/employee'
-import { apiDistrict, apiProvince } from 'apis/information'
-import { apiAllSupplier } from 'apis/supplier'
+import { getEmployees } from 'apis/employee'
+import { getProvinces, getDistricts } from 'apis/address'
+import { getSuppliers } from 'apis/supplier'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -89,7 +89,7 @@ export default function Supplier() {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await apiAllSupplier({ ...paramsFilter, _creator: true })
+      const res = await getSuppliers({ ...paramsFilter, _creator: true })
       console.log(res)
       if (res.status === 200) {
         setSuppliers(res.data.data)
@@ -115,10 +115,10 @@ export default function Supplier() {
     setParamsFilter({ page: 1, page_size: 20 })
   }
 
-  const apiDistrictData = async () => {
+  const _getDistricts = async () => {
     try {
       setLoading(true)
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) setDistricts(res.data.data)
 
       setLoading(false)
@@ -126,10 +126,10 @@ export default function Supplier() {
       setLoading(false)
     }
   }
-  const apiProvinceData = async () => {
+  const _getProvinces = async () => {
     try {
       setLoading(true)
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
 
       setLoading(false)
@@ -139,7 +139,7 @@ export default function Supplier() {
   }
   const _getUsers = async () => {
     try {
-      const res = await apiAllEmployee()
+      const res = await getEmployees()
       if (res.status === 200) setUsers(res.data.data)
     } catch (error) {
       console.log(error)
@@ -151,8 +151,8 @@ export default function Supplier() {
   }, [paramsFilter])
 
   useEffect(() => {
-    apiProvinceData()
-    apiDistrictData()
+    _getProvinces()
+    _getDistricts()
     _getUsers()
   }, [])
 
