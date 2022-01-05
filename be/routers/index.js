@@ -33,5 +33,6 @@ router.use(`/channel`, require(`./channel`));
 router.use(`/inventory`, require(`./inventory`));
 router.use(`/upload`, require(`./upload`));
 router.use(`/payment`, require(`./payment`));
+router.use('/report', require('./report'));
 
 module.exports = router;
