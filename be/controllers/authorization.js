@@ -412,7 +412,7 @@ module.exports._login = async (req, res, next) => {
                     verify_with: business.verify_with,
                 },
             });
-            throw new Error(`400: Tài khoản chưa được kích hoạt!`);
+            return;
         }
         if (user.active == `banned`) {
             throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`);
