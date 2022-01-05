@@ -480,7 +480,7 @@ module.exports._getOTP = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let user = await client.db(DB).collection(`Users`).findOne({ username: req.body.username });
+        let user = await client.db(SDB).collection(`Users`).findOne({ username: req.body.username });
         if (!user) {
             throw new Error('400: Tài khoản không tồn tại!');
         }
