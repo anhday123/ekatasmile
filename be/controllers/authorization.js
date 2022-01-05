@@ -412,8 +412,8 @@ module.exports._login = async (req, res, next) => {
             throw new Error(`400: Mật khẩu không chính xác!`);
         }
         delete user.password;
-        let [accessToken, refreshToken, _update] = await Promise.all([
-            jwt.createToken({ ...user, database: DB }, 30 * 24 * 60 * 60),
+        let [accessToken, _update] = await Promise.all([
+            jwt.createToken({ ...user, database: DB, _business: business }, 30 * 24 * 60 * 60),
             client
                 .db(DB)
                 .collection(`Users`)
@@ -423,7 +423,7 @@ module.exports._login = async (req, res, next) => {
             success: true,
             data: {
                 accessToken,
-                refreshToken,
+                verify_with: business.verify_with,
             },
         });
     } catch (err) {
@@ -542,7 +542,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .aggregate([
-                { $match: { username: username } },
+                { $match: { username: req.body.username } },
                 {
                     $lookup: {
                         from: 'Roles',

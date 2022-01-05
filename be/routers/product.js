@@ -8,9 +8,9 @@ const multer = require('multer');
 const _storage = multer.memoryStorage();
 const upload = multer({ storage: _storage });
 
-router.route(`/create`).post(auth, product.addProductC);
-router.route(`/update/:product_id`).patch(auth, product.updateProductC);
-router.route(`/`).get(auth, product.getProductC);
+router.route(`/create`).post(auth, product._create);
+router.route(`/update/:product_id`).patch(auth, product._update);
+router.route(`/`).get(auth, product._get);
 router.route(`/delete`).delete(auth, product.deleteProductC);
 router.route(`/attribute`).get(auth, product.getAllAtttributeC);
 router.route(`/unit`).get(auth, product.getAllUnitProductC);

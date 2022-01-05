@@ -109,6 +109,88 @@ module.exports._get = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Branchs',
+                    localField: 'sale_location.branch_id',
+                    foreignField: 'branch_id',
+                    as: 'branch',
+                },
+            },
+            { $unwind: { path: '$sale_location.branch', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Stores',
+                    localField: 'sale_location.store_id',
+                    foreignField: 'store_id',
+                    as: 'store',
+                },
+            },
+            { $unwind: { path: '$sale_location.store', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Customers',
+                    localField: 'customer_id',
+                    foreignField: 'customer_id',
+                    as: 'customer',
+                },
+            },
+            { $unwind: { path: '$customer', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Customers',
+                    localField: 'customer_id',
+                    foreignField: 'customer_id',
+                    as: 'customer',
+                },
+            },
+            { $unwind: { path: '$customer', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'employee_id',
+                    foreignField: 'user_id',
+                    as: 'employee',
+                },
+            },
+            { $unwind: { path: '$employee', preserveNullAndEmptyArrays: true } }
+        );
+        if (req.query._business) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'business_id',
+                        foreignField: 'user_id',
+                        as: '_business',
+                    },
+                },
+                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+            );
+        }
+        if (req.query._creator) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'creator_id',
+                        foreignField: 'user_id',
+                        as: '_creator',
+                    },
+                },
+                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+            );
+        }
         // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
         if (req.query.chanel) {
             aggregateQuery.push({ $match: { slug_chanel: new RegExp(removeUnicode(req.query.chanel, true), 'ig') } });
@@ -170,33 +252,6 @@ module.exports._get = async (req, res, next) => {
                     ),
                 },
             });
-        }
-        // lấy các thuộc tính tùy chọn khác
-        if (req.query._business) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'business_id',
-                        foreignField: 'user_id',
-                        as: '_business',
-                    },
-                },
-                { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
-            );
-        }
-        if (req.query._creator) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'creator_id',
-                        foreignField: 'user_id',
-                        as: '_creator',
-                    },
-                },
-                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
-            );
         }
         aggregateQuery.push({
             $project: {

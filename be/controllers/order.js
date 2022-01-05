@@ -8,15 +8,15 @@ const { Order, OrderDetail } = require('../models/order');
 
 var CryptoJS = require('crypto-js');
 
-let getOrderC = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
-        await orderService.getOrderS(req, res, next);
+        await orderService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let addOrderC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
         let hmac = req.body.order;
         try {
@@ -55,13 +55,13 @@ let addOrderC = async (req, res, next) => {
             return false;
         })();
         req['saleAt'] = saleAt;
-        req.body['sale_location'] = await (async () => {
-            if (saleAt) {
-                let result = await client.db(req.user.database).collection(saleAt.collection).findOne(saleAt.location);
-                return result;
-            }
-            return {};
-        })();
+        // req.body['sale_location'] = await (async () => {
+        //     if (saleAt) {
+        //         let result = await client.db(req.user.database).collection(saleAt.collection).findOne(saleAt.location);
+        //         return result;
+        //     }
+        //     return {};
+        // })();
         let productIds = (() => {
             return req.body.order_details.map((detail) => {
                 return Number(detail.product_id);
@@ -101,20 +101,6 @@ let addOrderC = async (req, res, next) => {
         variants.map((variant) => {
             _variants[String(variant.variant_id)] = variant;
         });
-        req.body['customer'] = await client
-            .db(req.user.database)
-            .collection('Customers')
-            .findOne({ customer_id: Number(req.body.customer_id) });
-        if (req.body.customer) {
-            delete req.body.customer.password;
-        }
-        req.body['employee'] = await client
-            .db(req.user.database)
-            .collection('Users')
-            .findOne({ user_id: Number(req.body.employee_id) });
-        if (req.body.employee) {
-            delete req.body.employee.password;
-        }
         if (!req.body.order_details || req.body.order_details.length == 0) {
             throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
         }
@@ -278,12 +264,12 @@ let addOrderC = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: order_id } }, { upsert: true });
         req[`_insert`] = _order;
-        await orderService.addOrderS(req, res, next);
+        await orderService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let updateOrderC = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);
         let _order = new Order();
@@ -294,13 +280,13 @@ let updateOrderC = async (req, res, next) => {
         _order.create(order);
         _order.update(req.body);
         req['_update'] = _order;
-        await orderService.updateOrderS(req, res, next);
+        await orderService._update(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
             .db(req.user.database)
@@ -310,11 +296,4 @@ let _delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getOrderC,
-    addOrderC,
-    updateOrderC,
-    _delete,
 };

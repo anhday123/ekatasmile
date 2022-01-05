@@ -29,16 +29,17 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-module.exports.getProductC = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
-        await productService.getProductS(req, res, next);
+        await productService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-module.exports.addProductC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
+        console.log(req.user.database);
         ['products'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
@@ -202,13 +203,13 @@ module.exports.addProductC = async (req, res, next) => {
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
         ]);
-        await productService.addProductS(req, res, next);
+        await productService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-module.exports.updateProductC = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.product_id = Number(req.params.product_id);
         let [product] = await client
@@ -418,7 +419,7 @@ module.exports.updateProductC = async (req, res, next) => {
                 .collection('AppSetting')
                 .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
         ]);
-        await productService.updateProductS(req, res, next);
+        await productService._update(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -426,10 +427,31 @@ module.exports.updateProductC = async (req, res, next) => {
 
 module.exports.deleteProductC = async (req, res, next) => {
     try {
-        req['_delete'] = req.query.product_id.split('---').map((id) => {
-            return Number(id);
-        });
-        await productService.deleteProductS(req, res, next);
+        await client
+            .db(DB)
+            .collection('Products')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        await client
+            .db(DB)
+            .collection('Attributes')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        await client
+            .db(DB)
+            .collection('Variants')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        await client
+            .db(DB)
+            .collection('Prices')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        await client
+            .db(DB)
+            .collection('Locations')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        await client
+            .db(DB)
+            .collection('Feedbacks')
+            .deleteMany({ product_id: { $in: req.body.product_id } });
+        res.send({ success: true, message: 'Xóa sản phẩm thành công!' });
     } catch (err) {
         next(err);
     }
@@ -437,7 +459,7 @@ module.exports.deleteProductC = async (req, res, next) => {
 
 module.exports.getAllAtttributeC = async (req, res, next) => {
     try {
-        await productService.getAllAtttributeS(req, res, next);
+        await productService._getAllAttributes(req, res, next);
     } catch (err) {
         next(err);
     }
