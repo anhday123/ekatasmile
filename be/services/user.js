@@ -344,23 +344,23 @@ module.exports._update = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        if (req.body.user_id == req.body.business_id) {
-            await client
-                .db(req.user.database)
-                .collection('Users')
-                .updateMany(
-                    {
-                        business_id: Number(req.body.user_id),
-                    },
-                    {
-                        $set: {
-                            price_recipe: req.body.price_recipe,
-                            company_name: req.body.company_name,
-                            company_website: req.body.company_website,
-                        },
-                    }
-                );
-        }
+        // if (req.body.user_id == req.body.business_id) {
+        //     await client
+        //         .db(req.user.database)
+        //         .collection('Users')
+        //         .updateMany(
+        //             {
+        //                 business_id: Number(req.body.user_id),
+        //             },
+        //             {
+        //                 $set: {
+        //                     price_recipe: req.body.price_recipe,
+        //                     company_name: req.body.company_name,
+        //                     company_website: req.body.company_website,
+        //                 },
+        //             }
+        //         );
+        // }
         let [user] = await client
             .db(req.user.database)
             .collection(`Users`)
@@ -415,11 +415,8 @@ module.exports._update = async (req, res, next) => {
             ])
             .toArray();
         delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(user, 24 * 60 * 60),
-            jwt.createToken(user, 30 * 24 * 60 * 60),
-        ]);
-        res.send({ success: true, data: req.body, accessToken, refreshToken });
+        let [accessToken] = await Promise.all([jwt.createToken(user, 24 * 60 * 60)]);
+        res.send({ success: true, data: req.body, accessToken });
     } catch (err) {
         next(err);
     }
