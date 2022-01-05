@@ -98,7 +98,7 @@ module.exports._update = async (req, res, next) => {
             req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
                 .db(req.user.database)
-                .collection(`Taxs`)
+                .collection(`Taxes`)
                 .findOne({
                     tax_id: { $ne: tax.tax_id },
                     name: req.body.name,
