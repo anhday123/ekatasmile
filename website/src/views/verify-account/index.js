@@ -15,7 +15,7 @@ export default function VerifyAccount() {
       console.log('res', res)
       if (res.status === 200) {
         if (res.data.success) {
-          history.push({ pathname: ROUTES.OTP, state: { username: res.data.data.username } })
+          history.push({ pathname: ROUTES.OTP, state: res.data.data })
           return
         } else
           notification.error({

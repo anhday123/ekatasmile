@@ -1,7 +1,6 @@
 import React, { cloneElement } from 'react'
-import { Redirect, useHistory } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 import { ROUTES } from 'consts'
-import { notification } from 'antd'
 import jwt_decode from 'jwt-decode'
 
 /**
@@ -11,7 +10,6 @@ import jwt_decode from 'jwt-decode'
  * @param {React.ReactChildren} props.children
  */
 const Authentication = ({ permissions, title, children, ...props }) => {
-  const history = useHistory()
   const payload =
     localStorage.getItem('accessToken') && jwt_decode(localStorage.getItem('accessToken'))
 
