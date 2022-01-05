@@ -403,6 +403,15 @@ module.exports._login = async (req, res, next) => {
             throw new Error(`400: Tài khoản không tồn tại!`);
         }
         if (user.active == false) {
+            res.status(400).send({
+                success: false,
+                message: 'Tài khoản chưa được kích hoạt!',
+                data: {
+                    username: user.username,
+                    email: user.email,
+                    verify_with: business.verify_with,
+                },
+            });
             throw new Error(`400: Tài khoản chưa được kích hoạt!`);
         }
         if (user.active == `banned`) {
@@ -419,13 +428,7 @@ module.exports._login = async (req, res, next) => {
                 .collection(`Users`)
                 .updateOne({ user_id: Number(user.user_id) }, { $set: { last_login: moment().tz(TIMEZONE).format() } }),
         ]);
-        res.send({
-            success: true,
-            data: {
-                accessToken,
-                verify_with: business.verify_with,
-            },
-        });
+        res.send({ success: true, data: { accessToken } });
     } catch (err) {
         next(err);
     }
