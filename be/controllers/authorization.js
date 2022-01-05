@@ -606,7 +606,7 @@ module.exports._recoveryPassword = async (req, res, next) => {
             }
         });
         let user = await client.db(SDB).collection('Users').findOne({
-            username: username,
+            username: req.body.username,
             otp_code: true,
             otp_timelife: true,
         });
