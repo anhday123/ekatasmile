@@ -11,7 +11,7 @@ import store from 'assets/img/store.png'
 import { Row, Col, Form, Input, Button, notification, Select, Tabs } from 'antd'
 
 //apis
-import { register, login } from 'apis/auth'
+import { register, login, getOtp } from 'apis/auth'
 
 export default function Login() {
   const dispatch = useDispatch()
@@ -25,7 +25,21 @@ export default function Login() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await login(body)
+      dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
+
+      //check account have verify
+      if (res.status === 400)
+        if (!res.data.success)
+          if (res.data.data) {
+            await getOtp(res.data.data.username)
+            notification.error({
+              message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',
+            })
+            history.push({ pathname: ROUTES.OTP, state: res.data.data })
+            return
+          }
+
       if (res.status === 200) {
         if (res.data.success) {
           dispatch({ type: ACTION.LOGIN, data: res.data.data })
@@ -44,8 +58,6 @@ export default function Login() {
         notification.error({
           message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',
         })
-
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
@@ -70,7 +82,7 @@ export default function Login() {
         first_name: dataForm.first_name || '',
         email: dataForm.email || '',
         birthday: '',
-        address: dataForm.address || '',
+        address: '',
         ward: '',
         district: '',
         province: '',
@@ -79,7 +91,7 @@ export default function Login() {
         tax_code: '',
         fax: '',
         branch: '',
-        business_areas: dataForm.business_areas || '',
+        business_areas: '',
       }
 
       dispatch({ type: ACTION.LOADING, data: true })
@@ -199,7 +211,15 @@ export default function Login() {
                     <Input size="large" placeholder="Nhập tên doanh nghiệp" />
                   </Form.Item>
                 </Col>
-
+                <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                  <Form.Item
+                    rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+                    label={<div style={{ color: 'white' }}>Tên</div>}
+                    name="last_name"
+                  >
+                    <Input size="large" placeholder="Tên" />
+                  </Form.Item>
+                </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={12}>
                   <Form.Item
                     rules={[{ required: true, message: 'Vui lòng nhập email' }]}
@@ -225,33 +245,6 @@ export default function Login() {
                     rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu' }]}
                   >
                     <Input.Password size="large" type="password" placeholder="Nhập lại mật khẩu" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={12}>
-                  <Form.Item label={<div style={{ color: 'white' }}>Họ</div>} name="first_name">
-                    <Input size="large" placeholder="Họ" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={12}>
-                  <Form.Item
-                    rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
-                    label={<div style={{ color: 'white' }}>Tên</div>}
-                    name="last_name"
-                  >
-                    <Input size="large" placeholder="Tên" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={12}>
-                  <Form.Item label={<div style={{ color: 'white' }}>Địa chỉ</div>} name="address">
-                    <Input size="large" placeholder="Địa chỉ" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={12}>
-                  <Form.Item
-                    label={<div style={{ color: 'white' }}>Lĩnh vực kinh doanh</div>}
-                    name="business_areas"
-                  >
-                    <Select size="large" placeholder="Lĩnh vực kinh doanh"></Select>
                   </Form.Item>
                 </Col>
               </Row>

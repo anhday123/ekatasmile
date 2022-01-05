@@ -1,7 +1,12 @@
 import { VERSION_APP } from 'consts'
 import { message } from 'antd'
-
+import i18n from 'locales/i18n.js'
 import CryptoJS from 'crypto-js'
+
+export const changeLanguage = (language) => {
+  i18n.changeLanguage(language)
+  localStorage.setItem('language', language)
+}
 
 export const compare = (a, b, key, convert) => {
   if (convert)

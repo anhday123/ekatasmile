@@ -6,6 +6,7 @@ import { verify, getOtp } from 'apis/auth'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Form, Input, Button, notification, Row, Col } from 'antd'
 import jwt_decode from 'jwt-decode'
+import delay from 'delay'
 
 export default function OTP() {
   const dispatch = useDispatch()
@@ -13,26 +14,33 @@ export default function OTP() {
   let location = useLocation()
   const [form] = Form.useForm()
 
-  const username = location.state && location.state.username
-  const phone = location.state && location.state.phone
+  const username = location.state && (location.state.username || '')
 
   const _verifyAccount = async () => {
     try {
       await form.validateFields()
       dispatch({ type: ACTION.LOADING, data: true })
       const dataForm = form.getFieldsValue()
-      var body = { username: phone || username, otp_code: dataForm.otp }
+      var body = { username: username, otp_code: dataForm.otp }
       const res = await verify(body)
+      dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
+          notification.success({ message: 'Xác thực otp thành công' })
+
+          if (location.state.action && location.state.action === 'FORGOT_PASSWORD') {
+            history.push({ pathname: ROUTES.PASSWORD_NEW, state: { username } })
+            return
+          }
+
           dispatch({ type: ACTION.LOGIN, data: res.data.data })
 
           //luu branch id len redux
           const dataUser = jwt_decode(res.data.data.accessToken)
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
-          notification.success({ message: 'Xác thực otp thành công' })
+          await delay(500)
           history.push(ROUTES.OVERVIEW)
         } else
           notification.error({
@@ -42,8 +50,6 @@ export default function OTP() {
         notification.error({
           message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
         })
-
-      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
@@ -53,7 +59,7 @@ export default function OTP() {
   const _resendOtp = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await getOtp(phone)
+      const res = await getOtp(username)
       if (res.status === 200) {
         if (res.data.success)
           notification.success({ message: 'Gửi lại otp thành công, vui lòng kiểm tra lại' })
@@ -86,11 +92,13 @@ export default function OTP() {
         >
           <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>Xác minh mã OTP</div>
           <div>
-            {location.state && location.state.phone
-              ? `Mã otp đã được gửi vào số điện thoại ${
-                  location.state && <b>{location.state.phone}</b>
-                }`
-              : 'Mã otp đã được gửi vào email của bạn'}
+            Mã otp đã được gửi vào{' '}
+            {
+              <i>
+                <b>{username}</b>
+              </i>
+            }{' '}
+            của bạn
           </div>
           <Form form={form} style={{ marginTop: 15, width: '100%' }}>
             <Form.Item name="otp" rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}>
@@ -102,11 +110,7 @@ export default function OTP() {
                 placeholder="Nhập mã xác thực otp"
               />
             </Form.Item>
-            <Row
-              wrap={false}
-              align="middle"
-              style={{ display: location.state && !location.state.phone && 'none', color: 'white' }}
-            >
+            <Row wrap={false} align="middle" style={{ color: 'white' }}>
               <div>Bạn chưa nhận được mã? </div>
               <p
                 onClick={_resendOtp}

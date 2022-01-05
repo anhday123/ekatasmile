@@ -3,20 +3,15 @@ import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import { Link, useLocation, useRouteMatch } from 'react-router-dom'
-import { Bell, CarretDown, Plus } from 'utils/icon'
+import { Bell, Plus } from 'utils/icon'
+import jwt_decode from 'jwt-decode'
 
 import {
   Layout,
   Menu,
   Select,
-  Radio,
-  notification,
-  Upload,
   Button,
-  Input,
   Dropdown,
-  Modal,
-  Form,
   BackTop,
   Affix,
   Avatar,
@@ -29,7 +24,6 @@ import {
 import {
   MenuOutlined,
   GoldOutlined,
-  ApartmentOutlined,
   MenuFoldOutlined,
   LogoutOutlined,
   GiftOutlined,
@@ -39,7 +33,6 @@ import {
   SettingOutlined,
   ControlOutlined,
   ClusterOutlined,
-  PlusOutlined,
   PartitionOutlined,
   FormOutlined,
   UserOutlined,
@@ -56,38 +49,32 @@ import GraphicEqIcon from '@material-ui/icons/GraphicEq'
 
 //components
 import Permission from 'components/permission'
+import ModalUpdateUser from './modal-user'
+import DropdownLanguage from 'components/dropdown-language'
 
 //apis
 import { updateEmployee, getEmployees } from 'apis/employee'
-import { getRoles } from 'apis/role'
 import { getAllBranch } from 'apis/branch'
-import { uploadFile } from 'apis/upload'
-
-import jwt_decode from 'jwt-decode'
+import { stubFalse } from 'lodash'
 
 const { Sider } = Layout
 const { Option } = Select
-const { Dragger } = Upload
 const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
+  const dispatch = useDispatch()
   const WIDTH_MENU_OPEN = 230
   const WIDTH_MENU_CLOSE = 160
 
   const [listBranch, setListBranch] = useState([])
   const [user, setUser] = useState({})
-  const [appLanguage, setAppLanguage] = useState('VN')
   const login = useSelector((state) => state.login)
   const branchId = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
     ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
-  console.log(dataUser)
-  const [form] = Form.useForm()
-  const [role, setRole] = useState([])
-  const [modal1Visible, setModal1Visible] = useState(false)
-  const dispatch = useDispatch()
-  const [collapsed, setCollapsed] = useState(location.pathname === ROUTES.SELL ? true : false) //nếu nhấn vào menu bán hàng thì thu gọn menu
+
+  const [collapsed, setCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
   const [openKeys, setOpenKeys] = useState([])
@@ -135,24 +122,28 @@ const BaseLayout = (props) => {
 
   const MENUS = [
     {
+      pathsChild: [],
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
       permissions: [PERMISSIONS.tong_quan],
       icon: <MenuFoldOutlined />,
     },
     {
+      pathsChild: [],
       path: ROUTES.SELL,
       title: 'Bán hàng',
       permissions: [],
       icon: <ShoppingCartOutlined />,
     },
     {
+      pathsChild: [ROUTES.ORDER_CREATE],
       path: ROUTES.ORDER_LIST,
       title: 'Danh sách đơn hàng',
       permissions: [PERMISSIONS.danh_sach_don_hang],
       icon: <NoteAddIcon />,
     },
     {
+      pathsChild: [],
       path: ROUTES.CATEGORIES,
       title: 'Quản lý danh mục',
       permissions: [],
@@ -165,18 +156,21 @@ const BaseLayout = (props) => {
       icon: <FormOutlined />,
       menuItems: [
         {
+          pathsChild: [],
           icon: <GiftOutlined />,
           path: ROUTES.PRODUCT,
           title: 'Sản phẩm cửa hàng',
           permissions: [],
         },
         // {
+        // pathsChild: [],
         //   icon: <BankOutlined />,
         //   path: ROUTES.INVENTORY,
         //   title: 'Sản phẩm ở kho',
         //   permissions: [PERMISSIONS.quan_li_kho],
         // },
         {
+          pathsChild: [],
           icon: <RotateLeftOutlined />,
           path: ROUTES.STORE,
           title: 'Quản lý cửa hàng',
@@ -195,6 +189,7 @@ const BaseLayout = (props) => {
           path: ROUTES.IMPORT_INVENTORIES,
           title: 'Nhập kho',
           permissions: [],
+          pathsChild: [],
         },
         {
           icon: (
@@ -219,14 +214,17 @@ const BaseLayout = (props) => {
           path: ROUTES.BRANCH_MANAGEMENT,
           title: 'Danh sách kho',
           permissions: [],
+          pathsChild: [],
         },
         {
           icon: <AreaChartOutlined />,
           path: ROUTES.PRODUCT,
           title: 'Sản phẩm ở kho',
           permissions: [],
+          pathsChild: [],
         },
         {
+          pathsChild: [],
           icon: <GoldOutlined />,
           path: ROUTES.SUPPLIER,
           title: 'Nhà cung cấp',
@@ -237,6 +235,7 @@ const BaseLayout = (props) => {
           path: ROUTES.SHIPPING_PRODUCT,
           title: 'Phiếu chuyển hàng',
           permissions: [],
+          pathsChild: [],
         },
       ],
     },
@@ -297,9 +296,11 @@ const BaseLayout = (props) => {
     //   path: ROUTES.CONTACT,
     //   title: 'Liên hệ',
     //   permissions: [],
+    // pathsChild: [],
     //   icon: <ContactsOutlined />,
     // },
     {
+      pathsChild: [],
       path: ROUTES.CUSTOMER,
       title: 'Quản lý khách hàng',
       permissions: [PERMISSIONS.quan_li_khach_hang],
@@ -316,6 +317,7 @@ const BaseLayout = (props) => {
           path: ROUTES.RECEIPTS_PAYMENT,
           title: 'Báo cáo thu chi',
           permissions: [],
+          pathsChild: [],
         },
         {
           icon: (
@@ -340,6 +342,7 @@ const BaseLayout = (props) => {
           path: ROUTES.REPORT_INVENTORY,
           title: 'Báo cáo tồn kho',
           permissions: [],
+          pathsChild: [],
         },
         {
           icon: (
@@ -364,6 +367,7 @@ const BaseLayout = (props) => {
           path: ROUTES.SALES_REPORT,
           title: 'Báo cáo bán hàng',
           permissions: [],
+          pathsChild: [],
         },
       ],
     },
@@ -375,12 +379,14 @@ const BaseLayout = (props) => {
       menuItems: [
         {
           icon: <ClusterOutlined />,
+          pathsChild: [],
           path: ROUTES.SHIPPING_CONTROL,
           title: 'Đối soát',
           permissions: [PERMISSIONS.doi_soat_van_chuyen],
         },
         {
           icon: <CarOutlined />,
+          pathsChild: [],
           path: ROUTES.SHIPPING,
           title: 'Đối tác',
           permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
@@ -389,18 +395,21 @@ const BaseLayout = (props) => {
     },
 
     {
+      pathsChild: [],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
       permissions: [PERMISSIONS.cau_hinh_thong_tin],
       icon: <ControlOutlined />,
     },
     {
+      pathsChild: [],
       path: ROUTES.SETTING,
       title: 'Cài đặt',
       permissions: [],
       icon: <SettingOutlined />,
     },
     {
+      pathsChild: [],
       path: ROUTES.ROLE,
       title: 'Phân quyền',
       permissions: [PERMISSIONS.quan_li_phan_quyen],
@@ -437,7 +446,9 @@ const BaseLayout = (props) => {
                   key={e.path}
                   style={{
                     fontSize: '0.8rem',
-                    backgroundColor: location.pathname === e.path && '#e7e9fb',
+                    backgroundColor:
+                      (location.pathname === e.path || e.pathsChild.includes(location.pathname)) &&
+                      '#e7e9fb',
                   }}
                   icon={!collapsed && e.icon}
                 >
@@ -462,7 +473,10 @@ const BaseLayout = (props) => {
                     key={e.path}
                     style={{
                       fontSize: '0.8rem',
-                      backgroundColor: location.pathname === e.path && '#e7e9fb',
+                      backgroundColor:
+                        (location.pathname === e.path ||
+                          e.pathsChild.includes(location.pathname)) &&
+                        '#e7e9fb',
                       color: 'black',
                     }}
                     icon={collapsed && e.icon}
@@ -479,7 +493,9 @@ const BaseLayout = (props) => {
           key={_menu.path}
           style={{
             fontSize: '0.8rem',
-            backgroundColor: location.pathname === _menu.path && '#e7e9fb',
+            backgroundColor:
+              (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
+              '#e7e9fb',
             color: collapsed && 'white',
           }}
           icon={!collapsed && _menu.icon}
@@ -502,25 +518,6 @@ const BaseLayout = (props) => {
     </Permission>
   )
 
-  const openNotification = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Chỉnh sửa thông tin cá nhân thành công',
-    })
-  }
-  const apiAllRoleData = async () => {
-    try {
-      const res = await getRoles()
-      if (res.status === 200) {
-        setRole(res.data.data)
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
   const onSignOut = () => {
     dispatch({ type: ACTION.LOGOUT })
     dispatch({ type: 'UPDATE_INVOICE', data: [] })
@@ -529,28 +526,29 @@ const BaseLayout = (props) => {
   useEffect(() => {
     if (localStorage.getItem('openKey')) setOpenKeys([localStorage.getItem('openKey')])
   }, [])
+
   const content = (
     <div className={styles['user_information']}>
-      <div onClick={() => modal1VisibleModal(true)}>
-        <div style={{ color: '#565656', paddingLeft: 10 }}>
-          <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
-          Tài khoản của tôi
-        </div>
-      </div>
-      <Link
-        to={ROUTES.LOGIN}
-        onClick={onSignOut}
-        className={styles['user_information_link']}
-        style={{ color: '#565656', fontWeight: '600', paddingLeft: 10 }}
-      >
+      <ModalUpdateUser user={dataUser && dataUser.data}>
         <div>
-          <ExportOutlined style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }} />
-          Đăng xuất
+          <div style={{ color: '#565656', paddingLeft: 10 }}>
+            <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
+            Tài khoản của tôi
+          </div>
         </div>
-      </Link>
+      </ModalUpdateUser>
+
+      <div>
+        <Link to={ROUTES.LOGIN} onClick={onSignOut} style={{ color: '#565656', paddingLeft: 10 }}>
+          <div>
+            <ExportOutlined style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }} />
+            Đăng xuất
+          </div>
+        </Link>
+      </div>
     </div>
   )
-  const NotifyContent = (props) => (
+  const NotifyContent = () => (
     <div className={styles['notificationBox']}>
       <div className={styles['title']}>Thông báo</div>
       <div className={styles['content']}>
@@ -559,194 +557,6 @@ const BaseLayout = (props) => {
     </div>
   )
 
-  const LanguageDropdown = () => (
-    <Menu>
-      <Menu.Item
-        icon={
-          <img
-            alt=""
-            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
-            width="30"
-          />
-        }
-        onClick={() => setAppLanguage('VN')}
-      >
-        Tiếng việt
-      </Menu.Item>
-      <Menu.Item
-        icon={
-          <img
-            alt=""
-            src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
-            width="30"
-          />
-        }
-        onClick={() => setAppLanguage('EN')}
-      >
-        Tiếng anh
-      </Menu.Item>
-    </Menu>
-  )
-
-  const modal1VisibleModal = (modal1Visible) => {
-    setModal1Visible(modal1Visible)
-    const data = form.getFieldValue()
-    if (user) {
-      data.firstName = user.first_name
-      data.lastName = user.last_name
-      data.phoneNumber = user.phone
-      data.email = user.email
-      data.workPlace = user.company_name
-      data.address = user.address
-    } else {
-      data.firstName = login.objectUsername.first_name
-      data.lastName = login.objectUsername.last_name
-      data.phoneNumber = login.objectUsername.phone
-      data.email = login.objectUsername.email
-      data.workPlace = login.objectUsername.company_name
-      data.address = login.objectUsername.address
-    }
-  }
-
-  const updateUserData = async (object, id) => {
-    try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      const res = await updateEmployee(object, id)
-      console.log(res)
-      if (res.status === 200) {
-        await getInfoUser()
-        modal1VisibleModal(false)
-        openNotification()
-      }
-      dispatch({ type: ACTION.LOADING, data: false })
-    } catch (error) {
-      console.log(error)
-      dispatch({ type: ACTION.LOADING, data: false })
-    }
-  }
-
-  const [list, setList] = useState('')
-  const propsMain = {
-    name: 'file',
-    multiple: true,
-    showUploadList: false,
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-    maxCount: 1,
-    async onChange(info) {
-      var { status } = info.file
-      if (status !== 'done') {
-        status = 'done'
-        if (status === 'done') {
-          const imgLink = await uploadFile(info.file.originFileObj)
-          dispatch({ type: ACTION.LOADING, data: false })
-
-          setList(imgLink)
-        }
-      }
-    },
-  }
-
-  const onFinish = async (values) => {
-    if (list !== 'default') {
-      if (user.avatar !== 'default') {
-        updateUserData(
-          {
-            ...values,
-            role: values.role,
-            phone: values.phoneNumber,
-            email: values.email,
-            store: ' ',
-            branch: ' ',
-            avatar: list,
-            first_name: values && values.firstName ? values.firstName : '',
-            last_name: values && values.lastName ? values.lastName : '',
-            birthday: ' ',
-            address: values && values.address ? values.address : '',
-            ward: ' ',
-            district: ' ',
-            province: ' ',
-            company_name: values.workPlace,
-            company_website: ' ',
-            tax_code: ' ',
-            fax: ' ',
-          },
-          user.user_id
-        )
-      } else {
-        updateUserData(
-          {
-            ...values,
-            role: values.role,
-            phone: values.phoneNumber,
-            email: values.email,
-            branch: ' ',
-            avatar: list,
-            first_name: values.firstName,
-            last_name: values.lastName,
-            birthday: ' ',
-            address: values.address,
-            ward: ' ',
-            district: ' ',
-            province: ' ',
-            company_name: values.workPlace,
-            company_website: ' ',
-            tax_code: ' ',
-            fax: ' ',
-          },
-          login.objectUsername.user_id
-        )
-      }
-    } else {
-      if (user.avatar !== 'default') {
-        updateUserData(
-          {
-            ...values,
-            role: values.role,
-            phone: values.phoneNumber,
-            email: values.email,
-            branch: ' ',
-            avatar: user.avatar,
-            first_name: values && values.firstName ? values.firstName : '',
-            last_name: values && values.lastName ? values.lastName : '',
-            birthday: ' ',
-            address: values && values.address ? values.address : '',
-            ward: ' ',
-            district: ' ',
-            province: ' ',
-            company_name: values.workPlace,
-            company_website: ' ',
-            tax_code: ' ',
-            fax: ' ',
-          },
-          user.user_id
-        )
-      } else {
-        updateUserData(
-          {
-            ...values,
-            role: values.role,
-            phone: values.phoneNumber,
-            email: values.email,
-            branch: ' ',
-            avatar: '',
-            first_name: values.firstName,
-            last_name: values.lastName,
-            birthday: ' ',
-            address: values.address,
-            ward: ' ',
-            district: ' ',
-            province: ' ',
-            company_name: values.workPlace,
-            company_website: ' ',
-            tax_code: ' ',
-            fax: ' ',
-          },
-          login.objectUsername.user_id
-        )
-      }
-    }
-  }
-
   const changeBranch = async (value) => {
     dispatch({ type: 'SET_BRANCH_ID', data: value })
     updateEmployee({ branch_id: value }, user.user_id)
@@ -754,7 +564,6 @@ const BaseLayout = (props) => {
 
   useEffect(() => {
     getInfoUser()
-    apiAllRoleData()
     getAllBranchData()
   }, [])
 
@@ -769,140 +578,6 @@ const BaseLayout = (props) => {
   return (
     <Layout style={{ backgroundColor: 'white', height: '100%' }}>
       <BackTop style={{ right: 10, bottom: 15 }} />
-      <Modal
-        title="Chỉnh sửa thông tin cá nhân"
-        centered
-        footer={null}
-        visible={modal1Visible}
-        onOk={() => modal1VisibleModal(false)}
-        onCancel={() => modal1VisibleModal(false)}
-      >
-        <Form layout="vertical" onFinish={onFinish} form={form}>
-          <Row
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Col
-              style={{ width: '100%', marginBottom: '1rem' }}
-              xs={24}
-              sm={7}
-              md={7}
-              lg={7}
-              xl={7}
-            >
-              <div>
-                <Dragger {...propsMain}>
-                  {list ? (
-                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-                      <img
-                        src={list}
-                        style={{
-                          width: '7.5rem',
-                          height: '5rem',
-                          objectFit: 'contain',
-                        }}
-                        alt=""
-                      />
-                    </p>
-                  ) : user && user.avatar !== ' ' ? (
-                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-                      <img
-                        src={user.avatar}
-                        style={{
-                          width: '7.5rem',
-                          height: '5rem',
-                          objectFit: 'contain',
-                        }}
-                        alt=""
-                      />
-                    </p>
-                  ) : (
-                    <p style={{ marginTop: '1.25rem' }} className="ant-upload-drag-icon">
-                      <PlusOutlined />
-
-                      <div>Thêm ảnh</div>
-                    </p>
-                  )}
-                </Dragger>
-              </div>
-            </Col>
-          </Row>
-          <div className={styles['information_user_modal']}>
-            <div className={styles['information_user_modal']}>
-              <div>Họ</div>
-              <Form.Item name="lastName">
-                <Input placeholder="Nhập họ" />
-              </Form.Item>
-            </div>
-            <div className={styles['information_user_modal']}>
-              <div>Tên</div>
-              <Form.Item name="firstName">
-                <Input placeholder="Nhập tên" />
-              </Form.Item>
-            </div>
-            <div className={styles['information_user_modal']}>
-              <div>Liên hệ</div>
-              <Form.Item name="phoneNumber" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
-                <Input placeholder="Nhập liên hệ" />
-              </Form.Item>
-            </div>
-            <div className={styles['information_user_modal']}>
-              <div>Email</div>
-              <Form.Item name="email" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
-                <Input placeholder="Nhập email" />
-              </Form.Item>
-            </div>
-            <div className={styles['information_user_modal']}>
-              <div>Tên công ty</div>
-              <Form.Item name="workPlace" rules={[{ required: true, message: 'Giá trị rỗng!' }]}>
-                <Input placeholder="Nhập tên công ty" />
-              </Form.Item>
-            </div>
-            {role && role.length > 0 ? (
-              <div className={styles['information_user_modal']}>
-                <div>Chức vụ</div>
-                <Form.Item name="role">
-                  <Radio.Group>
-                    {role &&
-                      role.length > 0 &&
-                      role.map((values, index) => {
-                        return (
-                          <Radio
-                            disabled
-                            style={{
-                              marginRight: '1.5rem',
-                              marginBottom: '1rem',
-                            }}
-                            value={values.role_id}
-                          >
-                            {values.name}
-                          </Radio>
-                        )
-                      })}
-                  </Radio.Group>
-                </Form.Item>
-              </div>
-            ) : (
-              ''
-            )}
-            <div className={styles['information_user_modal']}>
-              <div>Địa chỉ</div>
-              <Form.Item name="address">
-                <Input placeholder="Nhập địa chỉ" />
-              </Form.Item>
-            </div>
-            <Form.Item style={{ width: '100%', marginTop: '1rem' }}>
-              <Button style={{ width: '100%' }} type="primary" htmlType="submit">
-                Cập nhật
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      </Modal>
 
       <Sider
         trigger={null}
@@ -956,7 +631,7 @@ const BaseLayout = (props) => {
           mode="inline"
         >
           {MENUS.map(renderMenuItem)}
-          <Menu.Item
+          {/* <Menu.Item
             style={{
               display: dataUser && dataUser.data.role_id !== 1 && 'none',
               fontSize: '0.8rem',
@@ -965,7 +640,7 @@ const BaseLayout = (props) => {
             icon={<ApartmentOutlined />}
           >
             <Link to={ROUTES.CLIENT_MANAGEMENT}>Quản lý client</Link>
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item onClick={onSignOut} key="9" icon={!collapsed && <LogoutOutlined />}>
             <Link
               to={ROUTES.LOGIN}
@@ -986,120 +661,91 @@ const BaseLayout = (props) => {
       </Sider>
       <Layout style={{ marginLeft: collapsed ? WIDTH_MENU_CLOSE : WIDTH_MENU_OPEN }}>
         <Affix offsetTop={0}>
-          <Row className={styles['background_right_top']}>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <Row wrap={isMobile} justify="space-between" className={styles['navbar']}>
-                <Row
-                  align="middle"
-                  wrap={false}
-                  style={{
-                    width: '100%',
-                    paddingLeft: 5,
-                    paddingRight: 5,
-                    marginTop: 10,
-                    marginBottom: 15,
-                  }}
-                  justify={isMobile && 'space-between'}
+          <Row
+            wrap={isMobile}
+            justify="space-between"
+            align="middle"
+            style={{ backgroundColor: '#5b6be8' }}
+          >
+            <Row
+              align="middle"
+              wrap={false}
+              style={{
+                width: '100%',
+                paddingLeft: 5,
+                paddingRight: 5,
+                marginTop: 10,
+                marginBottom: 15,
+              }}
+              justify={isMobile && 'space-between'}
+            >
+              <div className={styles['navbar_left_parent']}>
+                <MenuOutlined onClick={toggle} style={{ fontSize: '1.4rem', fontWeight: 600 }} />
+              </div>
+              <Permission permissions={[PERMISSIONS.them_cua_hang]}>
+                <Link
+                  to={{ pathname: ROUTES.BRANCH, state: 'show-modal-create-branch' }}
+                  style={{ marginRight: '1rem', cursor: 'pointer' }}
                 >
-                  <div className={styles['navbar_left_parent']}>
-                    <MenuOutlined onClick={toggle} className={styles['header_navbar_left_icon']} />
-                  </div>
-                  <Permission permissions={[PERMISSIONS.them_cua_hang]}>
-                    <Link
-                      to={{
-                        pathname: ROUTES.BRANCH,
-                        state: 'show-modal-create-branch',
-                      }}
-                      style={{ marginRight: '1rem', cursor: 'pointer' }}
-                    >
-                      <Button
-                        type="primary"
-                        size="large"
-                        style={{
-                          backgroundColor: '#FFAB2D',
-                          borderColor: '#FFAB2D',
-                          fontSize: 18,
-                          marginLeft: 10,
-                          display: login.role === 'EMPLOYEE' && 'none',
-                        }}
-                      >
-                        <Plus />
-                      </Button>
-                    </Link>
-                  </Permission>
-                  <Select
-                    disabled={login.role === 'EMPLOYEE' ? true : false}
-                    placeholder="Chọn chi nhánh"
-                    style={{ width: isMobile ? '90%' : 250 }}
+                  <Button
+                    type="primary"
                     size="large"
-                    onChange={changeBranch}
-                    value={branchId || user.branch_id}
+                    style={{
+                      backgroundColor: '#FFAB2D',
+                      borderColor: '#FFAB2D',
+                      fontSize: 18,
+                      marginLeft: 10,
+                      display: login.role === 'EMPLOYEE' && 'none',
+                    }}
                   >
-                    {listBranch.map((e, index) => (
-                      <Option value={e.branch_id} key={index}>
-                        {e.name}
-                      </Option>
-                    ))}
-                  </Select>
+                    <Plus />
+                  </Button>
+                </Link>
+              </Permission>
+              <Select
+                disabled={login.role === 'EMPLOYEE' ? true : false}
+                placeholder="Chọn chi nhánh"
+                style={{ width: isMobile ? '90%' : 250 }}
+                size="large"
+                onChange={changeBranch}
+                value={branchId || user.branch_id}
+              >
+                {listBranch.map((e, index) => (
+                  <Option value={e.branch_id} key={index}>
+                    {e.name}
+                  </Option>
+                ))}
+              </Select>
+            </Row>
+            <Row wrap={false} align="middle" style={{ marginRight: 10 }}>
+              <DropdownLanguage />
+              <div style={{ margin: '0px 15px', marginTop: 6 }}>
+                <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
+                  <Badge count={0} showZero size="small" offset={[-3, 3]}>
+                    <Bell style={{ color: 'rgb(253, 170, 62)', cursor: 'pointer' }} />
+                  </Badge>
+                </Dropdown>
+              </div>
+              <Dropdown overlay={content} trigger="click">
+                <Row align="middle" wrap={false} style={{ cursor: 'pointer' }}>
+                  <Avatar
+                    src={dataUser && (dataUser.data.avatar || '')}
+                    style={{ color: '#FFF', backgroundColor: '#FDAA3E' }}
+                  />
+                  <span
+                    style={{
+                      textTransform: 'capitalize',
+                      marginLeft: 5,
+                      color: 'white',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {dataUser &&
+                      (dataUser.data.first_name || '') + ' ' + (dataUser.data.last_name || '')}
+                  </span>
                 </Row>
-                <div className={styles['navbar_right']}>
-                  <div className={styles['navbar_notification']}>
-                    <Dropdown
-                      overlay={<LanguageDropdown />}
-                      placement="bottomCenter"
-                      trigger="click"
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div>
-                          {appLanguage == 'VN' ? (
-                            <img
-                              alt=""
-                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
-                              width="30"
-                            />
-                          ) : (
-                            <img
-                              alt=""
-                              src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
-                              width="30"
-                            />
-                          )}
-                        </div>
-                        <div style={{ color: '#fff', width: 90 }}>
-                          {appLanguage == 'VN' ? 'Tiếng Việt' : 'Tiếng Anh'} <CarretDown />
-                        </div>
-                      </div>
-                    </Dropdown>
-                  </div>
-                  <div className={styles['navbar_notification']}>
-                    <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
-                      <Badge count={0} showZero size="small" offset={[-3, 3]}>
-                        <Bell style={{ color: 'rgb(253, 170, 62)' }} />
-                      </Badge>
-                    </Dropdown>
-                  </div>
-                  <Dropdown overlay={content} trigger="click">
-                    <Row align="middle">
-                      <Avatar
-                        src={dataUser && (dataUser.data.avatar || '')}
-                        style={{ color: '#FFF', backgroundColor: '#FDAA3E' }}
-                      />
-                      <span
-                        style={{
-                          textTransform: 'capitalize',
-                          marginLeft: 5,
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {dataUser &&
-                          (dataUser.data.first_name || '') + ' ' + (dataUser.data.last_name || '')}
-                      </span>
-                    </Row>
-                  </Dropdown>
-                </div>
-              </Row>
-            </Col>
+              </Dropdown>
+            </Row>
           </Row>
         </Affix>
         <div style={{ backgroundColor: '#f0f2f5', width: '100%', height: '100%' }}>
