@@ -326,7 +326,7 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         await client.db(req.user.database).collection(`Users`).updateOne(req.params, { $set: req.body });
-        delete req._update.password;
+        delete req.body.password;
         try {
             let _action = {
                 business_id: req.user.business_id,
