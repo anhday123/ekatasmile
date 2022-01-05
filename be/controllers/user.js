@@ -105,6 +105,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
+        req.params.user_id = Number(req.params.user_id);
         let user = await client.db(req.user.database).collection('Users').findOne(req.params);
         if (!user) {
             throw new Error(`400: Người dùng không tồn tại!`);

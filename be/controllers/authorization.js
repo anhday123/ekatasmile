@@ -161,6 +161,7 @@ module.exports._register = async (req, res, next) => {
         };
         let _user = {
             system_user_id: system_user_id,
+            system_code: String(system_user_id).padStart(6, '0'),
             user_id: user_id,
             code: String(user_id).padStart(6, '0'),
             business_id: business_id,
