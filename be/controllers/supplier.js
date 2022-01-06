@@ -79,7 +79,7 @@ module.exports._create = async (req, res, next) => {
             .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplier_id } }, { upsert: true });
-        req[`_insert`] = _supplier;
+        req[`body`] = _supplier;
         await supplierService._create(req, res, next);
     } catch (err) {
         next(err);
