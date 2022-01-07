@@ -87,6 +87,7 @@ module.exports._create = async (req, res, next) => {
         product_id++;
         req['_product'] = {
             product_id: Number(product_id),
+            code: String(product_id).padStart(6, '0'),
             name: String(req.body.name).toUpperCase(),
             sku: String(req.body.sku).toUpperCase(),
             slug: removeUnicode(String(req.body.name || ''), false).replace(/\s/g, '-'),
@@ -221,7 +222,7 @@ module.exports._update = async (req, res, next) => {
                     $lookup: {
                         from: 'Attributes',
                         let: { productId: '$product_id' },
-                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productIds'] } } }],
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                         as: 'attributes',
                     },
                 },
@@ -229,7 +230,7 @@ module.exports._update = async (req, res, next) => {
                     $lookup: {
                         from: 'Variants',
                         let: { productId: '$product_id' },
-                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productIds'] } } }],
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                         as: 'variants',
                     },
                 },
@@ -268,7 +269,7 @@ module.exports._update = async (req, res, next) => {
         let _product = { ...product, ...req.body };
         _product = {
             product_id: _product.product_id,
-            code: _product.code,
+            code: _product.code || String(_product.product_id).padStart(6, '0'),
             name: String(_product.name).toUpperCase(),
             sku: String(_product.sku).toUpperCase(),
             slug: removeUnicode(String(_product.name || ''), false).replace(/\s/g, '-'),
@@ -302,44 +303,46 @@ module.exports._update = async (req, res, next) => {
                 }
             })(),
         };
+        req['_product'] = _product;
         let _attributes = [];
+        if (!req.body.attributes) {
+            req.body.attributes = [];
+        }
         req.body.attributes.map((eAttribute) => {
             let exists = false;
             for (let i in product.attributes) {
                 if (String(eAttribute.option).toUpperCase() == String(product.attributes[i].option).toUpperCase()) {
                     exists = true;
+                    delete eAttribute._id;
+                    delete eAttribute.attribute_id;
+                    delete eAttribute.product_id;
+                    delete eAttribute.create_date;
+                    delete eAttribute.creator_id;
+                    let _attribute = { ...product.attributes[i], ...eAttribute };
+                    _attribute = {
+                        attribute_id: _attribute.attribute_id,
+                        product_id: _attribute.product_id,
+                        option: String(_attribute.option).toUpperCase(),
+                        values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return String(eValue).toUpperCase();
+                            });
+                        })(),
+                        create_date: _attribute.create_date,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        creator_id: _attribute.creator_id,
+                        active: _attribute.active,
+                        slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
+                        slug_values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return removeUnicode(String(eValue), true).toLowerCase();
+                            });
+                        })(),
+                    };
+                    _attributes.push(_attribute);
                 }
             }
-            if (exists) {
-                delete eAttribute._id;
-                delete eAttribute.business_id;
-                delete eAttribute.attribute_id;
-                delete eAttribute.product_id;
-                delete eAttribute.create_date;
-                delete eAttribute.creator_id;
-                let _attribute = { ...product.attributes[i], ...eAttribute };
-                _attribute = {
-                    attribute_id: _attribute.attribute_id,
-                    product_id: _attribute.product_id,
-                    option: String(_attribute.option).toUpperCase(),
-                    values: (() => {
-                        return _attribute.values.map((eValue) => {
-                            return String(eValue).toUpperCase();
-                        });
-                    })(),
-                    create_date: _attribute.create_date,
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: _attribute.creator_id,
-                    active: _attribute.active,
-                    slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
-                    slug_values: (() => {
-                        return _attribute.values.map((eValue) => {
-                            return removeUnicode(String(eValue), true).toLowerCase();
-                        });
-                    })(),
-                };
-                _attributes.push(_attribute);
-            } else {
+            if (!exists) {
                 attribute_id++;
                 let _attribute = {
                     attribute_id: attribute_id,
@@ -361,14 +364,66 @@ module.exports._update = async (req, res, next) => {
                         });
                     })(),
                 };
+                _attributes.push(_attribute);
             }
         });
+        req['_attributes'] = _attributes;
+        let _variants = [];
+        if (!req.body.variants) {
+            req.body.variants = [];
+        }
         req.body.variants.map((eVariant) => {
-            if (eVariant) {
+            let exists = false;
+            for (let i in product.variants) {
+                if (String(eVariant.sku).toUpperCase() == String(product.variants[i].sku).toUpperCase()) {
+                    exists = true;
+                    delete eVariant._id;
+                    delete eVariant.variant_id;
+                    delete eVariant.product_id;
+                    delete eVariant.create_date;
+                    delete eVariant.creator_id;
+                    let _variant = { ...product.variants[i], ...eVariant };
+                    _variant = {
+                        variant_id: Number(_variant.variant_id),
+                        product_id: Number(_variant.product_id),
+                        title: String(_variant.title).toUpperCase(),
+                        sku: String(_variant.sku).toUpperCase(),
+                        image: _variant.image || [],
+                        options: _variant.options || [],
+                        ...(() => {
+                            if (_variant.options && _variant.options > 0) {
+                                let options = {};
+                                for (let i = 0; i <= _variant.options; i++) {
+                                    options[`option${i + 1}`] = _variant.options[i];
+                                }
+                                return options;
+                            }
+                            return {};
+                        })(),
+                        supplier: ((supplier) => {
+                            if (supplier && supplier.name) {
+                                return supplier.name;
+                            }
+                            return '';
+                        })(),
+                        import_price_default: _variant.import_price || 0,
+                        price: _variant.price,
+                        enable_bulk_price: _variant.enable_bulk_price || false,
+                        bulk_prices: _variant.bulk_prices,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        last_update: moment().tz(TIMEZONE).format(),
+                        creator_id: Number(req.user.user_id),
+                        active: true,
+                        slug_title: removeUnicode(String(_variant.title), true).toLowerCase(),
+                    };
+                    _variants.push(_variant);
+                }
+            }
+            if (!exists) {
                 variant_id++;
-                req._variants.push({
+                let _variant = {
                     variant_id: Number(variant_id),
-                    product_id: Number(product_id),
+                    product_id: Number(_product.product_id),
                     title: String(eVariant.title).toUpperCase(),
                     sku: String(eVariant.sku).toUpperCase(),
                     image: eVariant.image || [],
@@ -398,14 +453,12 @@ module.exports._update = async (req, res, next) => {
                     creator_id: Number(req.user.user_id),
                     active: true,
                     slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
-                });
+                };
+                _variants.push(_variant);
             }
         });
+        req['_variants'] = _variants;
         await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')

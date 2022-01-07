@@ -393,68 +393,29 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        let result = [];
-        if (req._newProducts && Array.isArray(req._newProducts) && req._newProducts.length > 0) {
-            result.push(req._newProducts);
-            let insert = await client.db(req.user.database).collection('Products').insertMany(req._newProducts);
-            if (!insert.insertedIds) {
-                throw new Error('500: Tạo sản phẩm thất bại!');
-            }
-        }
-        if (req._newAttributes && Array.isArray(req._newAttributes) && req._newAttributes.length > 0) {
-            result.push(req._newAttributes);
-            let insert = await client.db(req.user.database).collection('Attributes').insertMany(req._newAttributes);
-            if (!insert.insertedIds) {
-                throw new Error('500: Tạo sản thuộc tính sản phẩm bại!');
-            }
-        }
-        if (req._newVariants && Array.isArray(req._newVariants) && req._newVariants.length > 0) {
-            result.push(req._newVariants);
-            let insert = await client.db(req.user.database).collection('Variants').insertMany(req._newVariants);
-            if (!insert.insertedIds) {
-                throw new Error('500: Tạo phiên bản sản phẩm thất bại!');
-            }
-        }
-        if (req._oldProducts && Array.isArray(req._oldProducts) && req._oldProducts.length > 0) {
-            result.push(req._oldProducts);
-            await Promise.all(
-                req._oldProducts.map((product) => {
-                    return client
-                        .db(req.user.database)
-                        .collection('Products')
-                        .updateOne({ product_id: product.product_id }, { $set: product });
-                })
-            );
-        }
-        if (req._oldAttributes && Array.isArray(req._oldAttributes) && req._oldAttributes.length > 0) {
-            result.push(req._oldAttributes);
-            await Promise.all(
-                req._oldAttributes.map((attribute) => {
+        let result = { ...req._product, attributes: req._attributes, variants: req._variants };
+        await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('Products')
+                .updateOne({ product_id: req._product.product_id }, { $set: req._product }, { upsert: true }),
+            Promise.all(
+                req._attributes.map((eAttribute) => {
                     return client
                         .db(req.user.database)
                         .collection('Attributes')
-                        .updateOne({ attribute_id: attribute.attribute_id }, { $set: attribute });
+                        .updateOne({ attribute_id: eAttribute.attribute_id }, { $set: eAttribute }, { upsert: true });
                 })
-            );
-        }
-        if (req._oldVariants && Array.isArray(req._oldVariants) && req._oldVariants.length > 0) {
-            result.push(req._oldVariants);
-            await Promise.all(
-                req._oldVariants.map((variant) => {
+            ),
+            Promise.all(
+                req._variants.map((eVariant) => {
                     return client
                         .db(req.user.database)
                         .collection('Variants')
-                        .updateOne({ variant_id: variant.variant_id }, { $set: variant });
+                        .updateOne({ variant_id: eVariant.variant_id }, { $set: eVariant }, { upsert: true });
                 })
-            );
-        }
-        if (req._newPrices && Array.isArray(req._newPrices) && req._newPrices.length > 0) {
-            result.push(req._newPrices);
-            let insert = await client.db(req.user.database).collection('Prices').insertMany(req._newPrices);
-            if (!insert.insertedIds) {
-                throw new Error('500: Tạo giá nhập sản phẩm thất bại!');
-            }
-        }
+            ),
+        ]);
         res.send({
             success: true,
             data: result,
