@@ -24,7 +24,7 @@ export default function Login() {
   const _login = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await login(body)
+      const res = await login({ ...body, username: `quantribanhang_${body.username}` })
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
 
@@ -183,7 +183,7 @@ export default function Login() {
               </Form>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane
+          {/* <Tabs.TabPane
             tab={<div style={{ fontSize: 23, fontWeight: 700, color: 'white' }}>Đăng kí</div>}
             key="register"
           >
@@ -261,7 +261,7 @@ export default function Login() {
                 </Form.Item>
               </Row>
             </Form>
-          </Tabs.TabPane>
+          </Tabs.TabPane> */}
         </Tabs>
       </Col>
 

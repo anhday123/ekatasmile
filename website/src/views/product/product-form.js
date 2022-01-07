@@ -45,6 +45,7 @@ import {
   ReloadOutlined,
   UploadOutlined,
   DeleteOutlined,
+  PlusCircleOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -102,9 +103,10 @@ export default function ProductAdd() {
     const dataForm = form.getFieldsValue()
 
     const initVariant = {
-      image: '',
-      imagePreview: '',
+      image: [],
       price: dataForm.price || 0,
+      bulk_prices: [...bulkPrices],
+      enable_bulk_price: true,
     }
 
     if (attributes.length !== 0) {
@@ -173,14 +175,37 @@ export default function ProductAdd() {
     setVariants([...variantsNew])
   }
 
+  const _addBulkPriceOfVariant = (index) => {
+    const variantsNew = [...variants]
+    const bulkPrice = { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 }
+    variantsNew[index].bulk_prices = [...variantsNew[index].bulk_prices, { ...bulkPrice }]
+    setVariants([...variantsNew])
+  }
+
+  const _enableBulkPriceOfVariant = (value, variant) => {
+    const variantsNew = [...variants]
+    const indexVariant = variantsNew.findIndex((e) => e.title === variant.title)
+    if (indexVariant !== -1) variantsNew[indexVariant].enable_bulk_price = value
+    setVariants([...variantsNew])
+  }
+
+  const _editBulkPriceOfVariant = (value, attribute = '', index, indexBulkPrice) => {
+    const variantsNew = [...variants]
+    variantsNew[index].bulk_prices[indexBulkPrice][attribute] = value
+    setVariants([...variantsNew])
+  }
+
+  const _deleteBulkPriceOfVariant = (index, indexBulkPrice) => {
+    const variantsNew = [...variants]
+    variantsNew[index].bulk_prices.splice(indexBulkPrice, 1)
+    setVariants([...variantsNew])
+  }
+
   const _addBulkPrice = () => {
     const bulkPricesNew = [...bulkPrices]
-    let bulkPrice = {
-      min_quantity_apply: 1,
-      max_quantity_apply: 1,
-      price: 0,
-    }
-    if (bulkPricesNew.length) bulkPrice.min_quantity_apply = bulkPricesNew[0].max_quantity_apply + 1
+    const bulkPrice = { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 }
+    if (bulkPricesNew.length)
+      bulkPrice.min_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 1
 
     bulkPricesNew.push(bulkPrice)
     setBulkPrices([...bulkPricesNew])
@@ -198,20 +223,12 @@ export default function ProductAdd() {
     setBulkPrices([...bulkPricesNew])
   }
 
-  function getBase64(img, callback) {
-    const reader = new FileReader()
-    reader.addEventListener('load', () => callback(reader.result))
-    reader.readAsDataURL(img)
-  }
-
   const _getSuppliers = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getSuppliers()
       if (res.status === 200) {
         if (res.data.data && res.data.data.length) {
-          const dataNew = res.data.data.filter((value) => value.active)
-
           if (!location.state) {
             let supplierDefault = res.data.data.find(
               (supplier) => supplier.active && supplier.default
@@ -221,8 +238,7 @@ export default function ProductAdd() {
               setSupplier(supplierDefault.name)
             } else form.setFieldsValue({ supplier_id: res.data.data[0].supplier_id })
           }
-
-          setSuppliers([...dataNew])
+          setSuppliers(res.data.data)
         }
       }
 
@@ -262,6 +278,7 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const formProduct = form.getFieldsValue()
+      console.log(formProduct)
       //phát sinh sku nếu user ko điền sku
       let valueDefaultSku = ''
       if (!formProduct.sku) {
@@ -293,29 +310,8 @@ export default function ProductAdd() {
 
       if (isProductHasVariants) {
         body.attributes = attributes
-        const promiseUpload = variants.map(async (v) => {
-          if (v.image && Array.isArray(v.image)) {
-            delete v.imagePreview
-            return {
-              ...v,
-              bulk_prices: [],
-              supplier: supplier || '',
-              image: v.image.length && v.image[0] ? [v.image[0]] : [],
-            }
-          } else {
-            const resUpload = await uploadFile(v.image)
-            delete v.imagePreview
-            return {
-              ...v,
-              bulk_prices: [],
-              supplier: supplier || '',
-              image: resUpload ? [resUpload] : [],
-            }
-          }
-        })
 
-        const variantsNew = await Promise.all(promiseUpload)
-
+        const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
         body.variants = variantsNew
       } else {
         const images = location.state ? imagesPreviewProduct : await uploadFiles(imagesProduct)
@@ -334,7 +330,8 @@ export default function ProductAdd() {
           image: images || [],
           supplier: supplier || '',
           price: formProduct.price,
-          bulk_prices: [],
+          enable_bulk_price: formProduct.enable_bulk_price,
+          bulk_prices: bulkPrices,
         }
         body.variants = [bodyOneVariant]
       }
@@ -383,16 +380,13 @@ export default function ProductAdd() {
   }
 
   /* list input variants */
-  const uploadImage = async (file, imagePreview, indexVariant) => {
+  const uploadImage = async (file, indexVariant) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       let variantsNew = [...variants]
 
-      //preview anh tren table
-      if (indexVariant !== -1 && file) {
-        variantsNew[indexVariant].imagePreview = imagePreview //lưu base64
-        variantsNew[indexVariant].image = file //lưu file upload
-      }
+      const url = await uploadFile(file)
+      if (url) variantsNew[indexVariant].image = [url]
 
       setVariants([...variantsNew])
       dispatch({ type: ACTION.LOADING, data: false })
@@ -449,35 +443,25 @@ export default function ProductAdd() {
     )
   }
 
-  const UploadImageProduct = ({ variant }) => {
-    return (
-      <Upload
-        name="avatar"
-        listType="picture-card"
-        className="upload-variant-image"
-        showUploadList={false}
-        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-        data={(file) => {
-          getBase64(file, (url) => {
-            const indexVariant = variants.findIndex((ob) => ob.title === variant.title)
-            uploadImage(file, url, indexVariant)
-          })
-        }}
-      >
-        {variant.imagePreview || variant.image ? (
-          <img
-            src={variant.imagePreview || variant.image[0] || ''}
-            alt=""
-            style={{ width: '100%' }}
-          />
-        ) : (
-          <div>
-            <PlusOutlined />
-          </div>
-        )}
-      </Upload>
-    )
-  }
+  const UploadImageProduct = ({ variant }) => (
+    <Upload
+      name="avatar"
+      listType="picture-card"
+      className="upload-variant-image"
+      showUploadList={false}
+      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+      data={(file) => {
+        const indexVariant = variants.findIndex((ob) => ob.title === variant.title)
+        if (indexVariant !== -1) uploadImage(file, indexVariant)
+      }}
+    >
+      {variant.image && variant.image.length ? (
+        <img src={variant.image[0] || ''} alt="" style={{ width: '100%' }} />
+      ) : (
+        <PlusOutlined />
+      )}
+    </Upload>
+  )
 
   const InputSku = ({ value, variant }) => {
     const [valueSku, setValueSku] = useState(value)
@@ -527,52 +511,61 @@ export default function ProductAdd() {
   const UploadAllVariant = () => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-    const [urlImage, setUrlImage] = useState('')
-    const [file, setFile] = useState(null)
+    const [image, setImage] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const upload = () => {
-      if (file) {
-        const variantsNew = [...variants]
+      const variantsNew = [...variants]
 
-        selectRowKeyVariant.map((key) => {
-          const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
-          variantsNew[indexVariant].imagePreview = urlImage
-          variantsNew[indexVariant].image = file
-        })
+      selectRowKeyVariant.map((key) => {
+        const indexVariant = variantsNew.findIndex((ob) => ob.title === key)
+        variantsNew[indexVariant].image = [image]
+      })
 
-        setVariants([...variantsNew])
-      }
+      setVariants([...variantsNew])
 
       toggle()
     }
 
     //reset
     useEffect(() => {
-      if (!visible) setUrlImage('')
+      if (!visible) setImage('')
     }, [visible])
+
     return (
       <>
         <Button size="large" onClick={toggle} icon={<FileImageOutlined />}>
           Chỉnh sửa ảnh
         </Button>
-        <Modal visible={visible} title="Chọn ảnh" onCancel={toggle} onOk={upload}>
+        <Modal
+          visible={visible}
+          title="Chọn ảnh"
+          onCancel={toggle}
+          onOk={upload}
+          footer={
+            <Row justify="end">
+              <Space>
+                <Button onClick={() => setVisible(false)}>Đóng</Button>
+                <Button loading={loading} type="primary" onClick={upload}>
+                  Lưu
+                </Button>
+              </Space>
+            </Row>
+          }
+        >
           <Upload
             name="avatar"
             listType="picture-card"
             showUploadList={false}
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            data={(file) => {
-              setFile(file)
-              getBase64(file, (url) => setUrlImage(url))
+            data={async (file) => {
+              setLoading(true)
+              const url = await uploadFile(file)
+              if (url) setImage(url || '')
+              setLoading(false)
             }}
           >
-            {urlImage ? (
-              <img src={urlImage} alt="" style={{ width: '100%' }} />
-            ) : (
-              <div>
-                <PlusOutlined />
-              </div>
-            )}
+            {image ? <img src={image} alt="" style={{ width: '100%' }} /> : <PlusOutlined />}
           </Upload>
         </Modal>
       </>
@@ -674,11 +667,98 @@ export default function ProductAdd() {
       </>
     )
   }
-  /* list input variants */
+
+  const BulkPricesOfVariant = ({ variant }) => {
+    const indexVariant = variants.findIndex((e) => e.title === variant.title)
+    return (
+      <Space direction="vertical">
+        {variant.bulk_prices &&
+          variant.bulk_prices.map((bulkPrice, indexBulkPrice) => {
+            const InputMin = () => (
+              <InputNumber
+                onMouseOut={(e) => {
+                  const value = e.target.value.replaceAll(',', '')
+                  if (indexVariant !== -1)
+                    _editBulkPriceOfVariant(
+                      +value,
+                      'min_quantity_apply',
+                      indexVariant,
+                      indexBulkPrice
+                    )
+                }}
+                style={{ width: '100%' }}
+                defaultValue={bulkPrice.min_quantity_apply}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                min={0}
+                placeholder="Nhập số lượng tối thiểu áp dụng"
+              />
+            )
+            const InputMax = () => (
+              <InputNumber
+                onMouseOut={(e) => {
+                  const value = e.target.value.replaceAll(',', '')
+                  if (indexVariant !== -1)
+                    _editBulkPriceOfVariant(
+                      +value,
+                      'max_quantity_apply',
+                      indexVariant,
+                      indexBulkPrice
+                    )
+                }}
+                style={{ width: '100%' }}
+                defaultValue={bulkPrice.max_quantity_apply}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                placeholder="Nhập số lượng tối đa áp dụng"
+              />
+            )
+            const InputPrice = () => (
+              <InputNumber
+                onMouseOut={(e) => {
+                  const value = e.target.value.replaceAll(',', '')
+                  if (indexVariant !== -1)
+                    _editBulkPriceOfVariant(+value, 'price', indexVariant, indexBulkPrice)
+                }}
+                style={{ width: '100%' }}
+                defaultValue={bulkPrice.price}
+                min={0}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                placeholder="Nhập giá sỉ áp dụng"
+              />
+            )
+
+            return (
+              <Space size="middle">
+                <div>
+                  <div>Số lượng tối thiểu</div>
+                  <InputMin />
+                </div>
+                <div>
+                  <div>Số lượng tối đa</div>
+                  <InputMax />
+                </div>
+                <div>
+                  <div>Giá sỉ áp dụng</div>
+                  <InputPrice />
+                </div>
+                <div>
+                  <DeleteOutlined
+                    onClick={() => _deleteBulkPriceOfVariant(indexVariant, indexBulkPrice)}
+                    style={{ color: 'red', fontSize: 17, cursor: 'pointer', marginTop: 26 }}
+                  />
+                </div>
+              </Space>
+            )
+          })}
+      </Space>
+    )
+  }
 
   const columnsVariant = [
     {
-      width: 120,
+      width: 90,
       title: 'Hình ảnh',
       render: (text, record) => <UploadImageProduct variant={record} />,
     },
@@ -688,13 +768,40 @@ export default function ProductAdd() {
     },
     {
       title: 'SKU',
-      width: 300,
       render: (text, record) => <InputSku value={record.sku} variant={record} />,
     },
     {
       title: 'Giá bán',
-      width: 300,
       render: (text, record) => <InputSalePrice value={record.price} variant={record} />,
+    },
+    {
+      title: 'Giá bán sỉ',
+      render: (text, record) => {
+        return (
+          <Space direction="vertical">
+            <Space>
+              <Button
+                type="primary"
+                onClick={() => {
+                  const indexVariant = variants.findIndex((e) => e.title === record.title)
+                  if (indexVariant !== -1) _addBulkPriceOfVariant(indexVariant)
+                }}
+              >
+                Thêm bán giá sỉ
+              </Button>
+              <Row wrap={false}>
+                <Switch
+                  onChange={(checked) => _enableBulkPriceOfVariant(checked, record)}
+                  checked={record.enable_bulk_price}
+                  style={{ marginRight: 4 }}
+                />{' '}
+                <div>Bật giá sỉ</div>
+              </Row>
+            </Space>
+            <BulkPricesOfVariant variant={record} />
+          </Space>
+        )
+      },
     },
   ]
 
@@ -726,8 +833,12 @@ export default function ProductAdd() {
       if (product.variants.length === 1) {
         setIsProductHasVariants(false)
         setImagesPreviewProduct(product.variants[0].image || [])
-        form.setFieldsValue({ ...product.variants[0] })
+        form.setFieldsValue({
+          ...product.variants[0],
+          enable_bulk_price: product.variants[0].enable_bulk_price || false,
+        })
         setSkuProductWithEdit(product.variants[0].sku)
+        setBulkPrices(product.variants[0].bulk_prices || [])
       } else {
         setIsProductHasVariants(true)
         setAttributes([
@@ -735,7 +846,6 @@ export default function ProductAdd() {
             return { option: e.option, values: e.values }
           }),
         ])
-        await delay(1000)
         setVariants([...product.variants])
       }
 
@@ -849,12 +959,7 @@ export default function ProductAdd() {
                     }}
                   />
                 </Form.Item>
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: -17,
-                  }}
-                >
+                <div style={{ position: 'absolute', bottom: -17 }}>
                   <Checkbox
                     checked={isGeneratedSku}
                     onChange={(e) => {
@@ -978,7 +1083,7 @@ export default function ProductAdd() {
             <div style={{ display: !location.state && 'none', marginBottom: 10 }}>
               <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 phiên bản</div>
             </div>
-            <Row justify="space-between" align="middle">
+            <Row justify="space-between">
               <Col xs={24} sm={24} md={10} lg={10} xl={10}>
                 <Form.Item
                   rules={[
@@ -1003,11 +1108,108 @@ export default function ProductAdd() {
                 <a>
                   {dataUser &&
                     dataUser.data &&
+                    dataUser.data.price_recipe &&
                     `* Giá vốn được tính theo công thức ${dataUser.data.price_recipe}`}
                 </a>
               </Col>
-              <Row
-                align="middle"
+
+              <Col xs={24} sm={24} md={14} lg={14} xl={14}>
+                <div>
+                  <Row wrap={false}>
+                    <Form.Item
+                      style={{ marginBottom: 5, marginRight: 25 }}
+                      name="enable_bulk_price"
+                      valuePropName="checked"
+                      initialValue={false}
+                    >
+                      <Space>
+                        <Switch />
+                        Bật giá sỉ
+                      </Space>
+                    </Form.Item>
+                    <Button onClick={_addBulkPrice} type="primary" icon={<PlusOutlined />}>
+                      Thêm giá bán sỉ
+                    </Button>
+                  </Row>
+                  <div style={{ marginTop: 15, marginBottom: 25 }}>
+                    <Space direction="vertical" size="middle">
+                      {bulkPrices.map((bulkPrice, index) => {
+                        const InputMin = () => (
+                          <InputNumber
+                            onBlur={(e) => {
+                              const value = e.target.value.replaceAll(',', '')
+                              _editBulkPrice('min_quantity_apply', +value, index)
+                            }}
+                            style={{ width: '100%' }}
+                            defaultValue={bulkPrice.min_quantity_apply}
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                            min={bulkPrices.length > 1 ? bulkPrice.min_quantity_apply : 0}
+                            placeholder="Nhập số lượng tối thiểu áp dụng"
+                          />
+                        )
+                        const InputMax = () => (
+                          <InputNumber
+                            onBlur={(e) => {
+                              const value = e.target.value.replaceAll(',', '')
+                              _editBulkPrice('max_quantity_apply', +value, index)
+                            }}
+                            style={{ width: '100%' }}
+                            defaultValue={bulkPrice.max_quantity_apply}
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                            placeholder="Nhập số lượng tối đa áp dụng"
+                          />
+                        )
+                        const InputPrice = () => (
+                          <InputNumber
+                            onBlur={(e) => {
+                              const value = e.target.value.replaceAll(',', '')
+                              _editBulkPrice('price', +value, index)
+                            }}
+                            style={{ width: '100%' }}
+                            defaultValue={bulkPrice.price}
+                            min={0}
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                            placeholder="Nhập giá sỉ áp dụng"
+                          />
+                        )
+
+                        return (
+                          <Space size="middle">
+                            <div>
+                              <div>Số lượng tối thiểu áp dụng</div>
+                              <InputMin />
+                            </div>
+                            <div>
+                              <div>Số lượng tối đa áp dụng</div>
+                              <InputMax />
+                            </div>
+                            <div>
+                              <div>Giá sỉ áp dụng</div>
+                              <InputPrice />
+                            </div>
+                            <div>
+                              <DeleteOutlined
+                                onClick={() => _deleteBulkPrice(index)}
+                                style={{
+                                  color: 'red',
+                                  fontSize: 17,
+                                  cursor: 'pointer',
+                                  marginTop: 26,
+                                }}
+                              />
+                            </div>
+                          </Space>
+                        )
+                      })}
+                    </Space>
+                  </div>
+                </div>
+              </Col>
+
+              <div
                 style={{
                   width: '100%',
                   marginTop: 40,
@@ -1025,7 +1227,7 @@ export default function ProductAdd() {
                   }}
                 />
                 Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} phiên bản
-              </Row>
+              </div>
               <div
                 style={{
                   display: isProductHasVariants ? '' : 'none',
@@ -1192,7 +1394,6 @@ export default function ProductAdd() {
                     }}
                     size="small"
                     style={{ width: '100%' }}
-                    scroll={{ x: 'max-content' }}
                   />
                 </div>
               </div>
@@ -1208,112 +1409,33 @@ export default function ProductAdd() {
                 }}
               >
                 Hình ảnh
-                {location.state ? (
-                  <UploadImageWithEditProduct />
-                ) : (
-                  <Upload.Dragger
-                    name="files"
-                    listType="picture"
-                    multiple
-                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                    onChange={(info) => {
-                      if (info.file.status !== 'done') info.file.status = 'done'
-                      let imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                      setImagesProduct([...imagesProductNew])
-                    }}
-                  >
-                    <p className="ant-upload-drag-icon">
-                      <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-                    <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
-                  </Upload.Dragger>
-                )}
+                <div>
+                  {location.state ? (
+                    <UploadImageWithEditProduct />
+                  ) : (
+                    <Upload.Dragger
+                      name="files"
+                      listType="picture"
+                      multiple
+                      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                      onChange={(info) => {
+                        if (info.file.status !== 'done') info.file.status = 'done'
+                        let imagesProductNew = info.fileList.map((e) => e.originFileObj)
+                        setImagesProduct([...imagesProductNew])
+                      }}
+                    >
+                      <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                      </p>
+                      <p className="ant-upload-text">
+                        Nhấp hoặc kéo tệp vào khu vực này để tải lên
+                      </p>
+                      <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
+                    </Upload.Dragger>
+                  )}
+                </div>
               </Col>
             </Row>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Giá bán sỉ" key="3">
-            <div>
-              <Form.Item name="enable_bulk_price" valuePropName="checked">
-                <Space>
-                  <Switch />
-                  Bật giá sỉ
-                </Space>
-              </Form.Item>
-              <Button onClick={_addBulkPrice} type="primary" icon={<PlusOutlined />}>
-                Thêm giá bán sỉ
-              </Button>
-              <div style={{ marginTop: 15 }}>
-                <Space direction="vertical" size="middle">
-                  {bulkPrices.map((bulkPrice, index) => {
-                    const InputMin = () => (
-                      <InputNumber
-                        onBlur={(e) => {
-                          const value = e.target.value.replaceAll(',', '')
-                          _editBulkPrice('min_quantity_apply', +value, index)
-                        }}
-                        style={{ width: 240 }}
-                        defaultValue={bulkPrice.min_quantity_apply}
-                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                        min={bulkPrices.length > 1 ? bulkPrice.min_quantity_apply : 0}
-                        placeholder="Nhập số lượng tối thiểu áp dụng"
-                      />
-                    )
-                    const InputMax = () => (
-                      <InputNumber
-                        onBlur={(e) => {
-                          const value = e.target.value.replaceAll(',', '')
-                          _editBulkPrice('max_quantity_apply', +value, index)
-                        }}
-                        style={{ width: 240 }}
-                        defaultValue={bulkPrice.max_quantity_apply}
-                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                        placeholder="Nhập số lượng tối đa áp dụng"
-                      />
-                    )
-                    const InputPrice = () => (
-                      <InputNumber
-                        onBlur={(e) => {
-                          const value = e.target.value.replaceAll(',', '')
-                          _editBulkPrice('price', +value, index)
-                        }}
-                        style={{ width: 240 }}
-                        defaultValue={bulkPrice.price}
-                        min={0}
-                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                        placeholder="Nhập giá sỉ áp dụng"
-                      />
-                    )
-
-                    return (
-                      <Space size="middle">
-                        <div>
-                          <div>Số lượng tối thiểu áp dụng</div>
-                          <InputMin />
-                        </div>
-                        <div>
-                          <div>Số lượng tối đa áp dụng</div>
-                          <InputMax />
-                        </div>
-                        <div>
-                          <div>Giá sỉ áp dụng</div>
-                          <InputPrice />
-                        </div>
-                        <div>
-                          <DeleteOutlined
-                            onClick={() => _deleteBulkPrice(index)}
-                            style={{ color: 'red', fontSize: 17, cursor: 'pointer', marginTop: 26 }}
-                          />
-                        </div>
-                      </Space>
-                    )
-                  })}
-                </Space>
-              </div>
-            </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Thông số sản phẩm" key="4">
             <Row justify="space-between" align="middle">
