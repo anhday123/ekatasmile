@@ -369,9 +369,9 @@ module.exports._create = async (req, res, next) => {
             }
             return [];
         })();
-        if (!insertAttributes.insertedIds) {
-            throw new Error('500: Tạo thuộc tính sản phẩm thất bại');
-        }
+        // if (!insertAttributes.insertedIds) {
+        //     throw new Error('500: Tạo thuộc tính sản phẩm thất bại');
+        // }
         let insertVariants = await (() => {
             result.variants = req._variants;
             if (req._variants && req._variants.length > 0) {
@@ -379,9 +379,9 @@ module.exports._create = async (req, res, next) => {
             }
             return [];
         })();
-        if (!insertVariants.insertedIds) {
-            throw new Error('500: Tạo phiên bản sản phẩm thất bại');
-        }
+        // if (!insertVariants.insertedIds) {
+        //     throw new Error('500: Tạo phiên bản sản phẩm thất bại');
+        // }
         res.send({
             success: true,
             data: result,
