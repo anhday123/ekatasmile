@@ -738,6 +738,7 @@ const BaseLayout = (props) => {
                       marginLeft: 5,
                       color: 'white',
                       fontWeight: 600,
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {dataUser &&

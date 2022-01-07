@@ -1,6 +1,6 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const addShipping = (body) => post('/shippingcompany/add', body)
+export const addShipping = (body) => post('/shippingcompany/create', body)
 export const getShippings = (query) => get('/shippingcompany', query)
 export const updateShipping = (body, id) => patch(`/shippingcompany/update/${id}`, body)
 export const deleteShippings = (ids) =>

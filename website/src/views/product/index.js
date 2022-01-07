@@ -81,6 +81,66 @@ export default function Product() {
     }
   }
 
+  const enableBulkPrice = async (product, variant) => {
+    try {
+      setLoading(true)
+
+      const variantsNew = product.variants.map((e) => {
+        if (e.variant_id === variant.variant_id) return variant
+        else return e
+      })
+
+      const body = { variants: variantsNew }
+      const res = await updateProduct(body, product.product_id)
+      console.log(res)
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
+  const ModalViewBulkPrices = ({ bulkPrices }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const columns = [
+      {
+        title: 'Số lượng thấp nhất',
+        render: (text, record) => formatCash(record.min_quantity_apply || 0),
+      },
+      {
+        title: 'Số lượng cao nhất',
+        render: (text, record) => formatCash(record.max_quantity_apply || 0),
+      },
+      {
+        title: 'Giá áp dụng',
+        render: (text, record) => formatCash(record.price || 0),
+      },
+    ]
+
+    return (
+      <>
+        <a onClick={toggle}>Xem giá sỉ</a>
+        <Modal
+          width="50%"
+          title="Danh sách giá sỉ"
+          footer={null}
+          visible={visible}
+          onCancel={toggle}
+        >
+          <Table
+            scroll={{ y: '50vh' }}
+            size="small"
+            pagination={false}
+            columns={columns}
+            dataSource={bulkPrices}
+          />
+        </Modal>
+      </>
+    )
+  }
+
   const columnsVariant = [
     {
       title: 'Hình ảnh',
@@ -101,11 +161,15 @@ export default function Product() {
     {
       title: 'Giá bán sỉ',
       render: (text, record) =>
-        record.bulk_prices.map((e) => (
-          <Row>
-            {e.min_quantity_apply} - {e.max_quantity_apply}: {formatCash(e.price || 0)}
-          </Row>
-        )),
+        record.bulk_prices && record.bulk_prices.length ? (
+          <ModalViewBulkPrices bulkPrices={record.bulk_prices || []} />
+        ) : (
+          ''
+        ),
+    },
+    {
+      title: 'Kích hoạt giá sỉ',
+      key: 'enable_bulk_price',
     },
   ]
 
@@ -113,9 +177,8 @@ export default function Product() {
     try {
       setLoading(true)
       const res = await getSuppliers()
-      if (res.status === 200) {
-        setSuppliers(res.data.data)
-      }
+      console.log(res)
+      if (res.status === 200) setSuppliers(res.data.data)
 
       setLoading(false)
     } catch (error) {
@@ -282,39 +345,26 @@ export default function Product() {
   const _deleteProducts = async () => {
     try {
       setLoading(true)
-      const res = await deleteProducts(selectedRowKeys.join('---'))
+      const res = await deleteProducts({ product_id: selectedRowKeys })
       console.log(res)
-      if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
-      else notification.error({ message: 'Xoá sản phẩm thất bại!' })
-      await _getProducts()
-      setSelectedRowKeys([])
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getProducts()
+          notification.success({ message: 'Xoá sản phẩm thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+        })
+
       setLoading(false)
     } catch (error) {
       setLoading(false)
       console.log(error)
     }
-  }
-
-  /*image product */
-  const ContentZoomImage = (data) => {
-    const [valueBox, setValueBox] = useState(300)
-    return (
-      <div onClick={(e) => e.stopPropagation()}>
-        <img
-          src={data}
-          style={{ width: valueBox, height: valueBox, objectFit: 'contain' }}
-          alt=""
-          onClick={(e) => e.stopPropagation()}
-        />
-        <Slider
-          defaultValue={300}
-          min={100}
-          max={1000}
-          onChange={(value) => setValueBox(value)}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-    )
   }
 
   const ImagesVariant = ({ record, product }) => {
@@ -749,8 +799,20 @@ export default function Product() {
                       if (column.key === 'image')
                         return {
                           ...column,
-                          render: (text, recordVariant) => (
-                            <ImagesVariant record={recordVariant} product={record} />
+                          render: (text, variant) => (
+                            <ImagesVariant record={variant} product={record} />
+                          ),
+                        }
+                      if (column.key === 'enable_bulk_price')
+                        return {
+                          ...column,
+                          render: (text, variant) => (
+                            <Switch
+                              checked={variant.enable_bulk_price}
+                              onChange={(checked) =>
+                                enableBulkPrice(record, { ...variant, enable_bulk_price: checked })
+                              }
+                            />
                           ),
                         }
 

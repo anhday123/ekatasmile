@@ -43,9 +43,9 @@ export default function Setting() {
   ]
 
   let dataMockup = []
-  for (let i = 0; i < 10; i++)
+  for (let i = 0; i < 2; i++)
     dataMockup.push({
-      name: 'Ngôn ngữ' + 1,
+      name: 'Ngôn ngữ ' + i++,
       logo: '',
       file: 'File' + 1,
     })
