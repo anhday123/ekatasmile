@@ -428,27 +428,27 @@ module.exports._update = async (req, res, next) => {
 module.exports.deleteProductC = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Products')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Attributes')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Variants')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Prices')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Locations')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Feedbacks')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         res.send({ success: true, message: 'Xóa sản phẩm thành công!' });
