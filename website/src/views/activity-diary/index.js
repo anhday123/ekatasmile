@@ -18,7 +18,6 @@ import {
 } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
-import { TramOutlined } from '@material-ui/icons'
 import { ROUTES } from 'consts'
 import { compare, compareCustom } from 'utils'
 const { Option } = Select
@@ -227,7 +226,7 @@ export default function ActivityDiary() {
   const [clear, setClear] = useState(-1)
   const apiSearchDateData = async (start, end) => {
     try {
-      setLoading(TramOutlined)
+      setLoading(true)
 
       const res = await getActions({
         from_date: start,

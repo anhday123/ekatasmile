@@ -18,6 +18,11 @@ import Guarantee from './guarantee'
 import ShippingProduct from './shipping-product'
 import ClientManagement from './client-management'
 import Branch from './branch'
+import Reports from './reports'
+import ReportVariant from './report-variant'
+import ReportImportExportInventoryProduct from './report-import-export-inventory-product'
+import ReportImportExportInventoryVariant from './report-import-export-inventory-variant'
+import StockAdjustments from './stock-adjustments'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
 import Setting from './setting'
@@ -146,7 +151,42 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.REPORTS,
+    Component: () => <Reports />,
+    title: 'Báo cáo tổng hợp',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.REPORT_VARIANT,
+    Component: () => <ReportVariant />,
+    title: 'Báo cáo tồn kho theo thuộc tính',
+    permissions: [],
+    exact: true,
+  },
 
+  {
+    path: ROUTES.STOCK_ADJUSTMENTS,
+    Component: () => <StockAdjustments />,
+    title: 'Kiểm hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
+    Component: () => <ReportImportExportInventoryProduct />,
+    title: 'Báo cáo xuất nhập tồn theo sản phẩm',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_VARIANT,
+    Component: () => <ReportImportExportInventoryVariant />,
+    title: 'Báo cáo xuất nhập tồn theo thuộc tính',
+    permissions: [],
+    exact: true,
+  },
   {
     path: ROUTES.SHIPPING_CONTROL,
     Component: () => <ShippingControl />,
@@ -217,6 +257,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+
   {
     path: ROUTES.POINT,
     Component: () => <Point />,

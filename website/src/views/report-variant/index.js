@@ -9,7 +9,7 @@ import { ROUTES } from 'consts'
 import TitlePage from 'components/title-page'
 
 //antd
-import { Input, Col, Row, DatePicker, Table } from 'antd'
+import { Input, Row, DatePicker, Table } from 'antd'
 
 //icons
 import { ArrowLeftOutlined } from '@ant-design/icons'
@@ -19,25 +19,10 @@ import { getReportInventory } from 'apis/report'
 
 export default function ReportInventory() {
   const history = useHistory()
-
   const [reportInventory, setReportInventory] = useState([])
   const [loading, setLoading] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState([])
-  const [countReport, setCountReport] = useState(0)
 
-  const onChangeDate = (date, dateString) => {
-    if (date) {
-      paramsFilter.from_date = dateString[0]
-      paramsFilter.to_date = dateString[1]
-    } else {
-      delete paramsFilter.from_date
-      delete paramsFilter.to_date
-    }
-
-    setParamsFilter({ ...paramsFilter, page: 1 })
-  }
-
-  const columnsDefault = [
+  const [columns, setColumns] = useState([
     {
       title: 'STT',
       key: 'stt',
@@ -58,18 +43,15 @@ export default function ReportInventory() {
     {
       title: 'Nhóm',
     },
-  ]
-
-  const [columns, setColumns] = useState(columnsDefault)
+  ])
 
   const _reportInventory = async () => {
     try {
       setLoading(true)
-      const res = await getReportInventory({ ...paramsFilter })
+      const res = await getReportInventory()
       console.log(res)
       if (res.status === 200) {
-        setCountReport(res.data.count)
-        const columnsNew = [...columnsDefault]
+        const columnsNew = [...columns]
         let reportNew = []
 
         res.data.data.map((e) => {
@@ -81,35 +63,30 @@ export default function ReportInventory() {
 
           e.warehouse.map((w) => {
             if (w.branch) {
-              report[w.branch.name] = w.branch.name || ''
-              report.quantity = w.quantity || 0
-              report.price = w.price || 0
+              report[w.branch.name] = w.branch.name
+              report[w.quantity] = w.quantity
+              report[w.price] = w.price
             }
           })
-
-          reportNew.push(report)
         })
 
         res.data.data.map((e) => {
           e.warehouse.map((item) => {
-            if (item.branch) {
-              const findBranch = columnsNew.find((e) => e.title === item.branch.name)
-              if (!findBranch)
-                columnsNew.push({
-                  title: item.branch ? item.branch.name : '',
-                  children: [
-                    {
-                      title: 'Số lượng',
-                      render: (text, record) =>
-                        record.quantity ? formatCash(record.quantity || 0) : 0,
-                    },
-                    {
-                      title: 'Thành tiền',
-                      render: (text, record) => (record.price ? formatCash(record.price || 0) : 0),
-                    },
-                  ],
-                })
-            }
+            if (item.branch)
+              columnsNew.push({
+                title: item.branch ? item.branch.name : '',
+                children: [
+                  {
+                    title: 'Số lượng',
+                    render: (text, record) =>
+                      record.quantity ? formatCash(record.quantity || 0) : 0,
+                  },
+                  {
+                    title: 'Thành tiền',
+                    render: (text, record) => (record.price ? formatCash(record.price || 0) : 0),
+                  },
+                ],
+              })
           })
         })
 
@@ -125,7 +102,7 @@ export default function ReportInventory() {
 
   useEffect(() => {
     _reportInventory()
-  }, [paramsFilter])
+  }, [])
 
   const dateFormat = 'YYYY/MM/DD'
   return (
@@ -140,38 +117,26 @@ export default function ReportInventory() {
               onClick={() => history.push(ROUTES.REPORTS)}
             >
               <ArrowLeftOutlined style={{ marginRight: 10 }} />
-              Báo cáo tồn kho theo sản phẩm
+              Báo cáo tồn kho thuộc tính
             </Row>
           }
         ></TitlePage>
-        <Row>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-            <DatePicker.RangePicker
-              onChange={onChangeDate}
-              style={{ width: '100%', marginBottom: 20, marginTop: 10 }}
-              size="large"
-              format={dateFormat}
-            />
-          </Col>
+        <Row style={{ marginBottom: 10, marginTop: 20 }}>
+          <DatePicker.RangePicker
+            style={{ width: 350 }}
+            size="large"
+            defaultValue={[moment('2021/11/01', dateFormat), moment('2021/12/01', dateFormat)]}
+            format={dateFormat}
+          />
         </Row>
 
         <Table
-          bordered
           loading={loading}
           size="small"
           style={{ width: '100%' }}
+          pagination={{ position: ['bottomLeft'] }}
           columns={columns}
           dataSource={reportInventory}
-          pagination={{
-            position: ['bottomLeft'],
-            current: paramsFilter.page,
-            defaultPageSize: 20,
-            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
-            showQuickJumper: true,
-            onChange: (page, pageSize) =>
-              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
-            total: countReport,
-          }}
           // summary={(pageData) => (
           //   <Table.Summary.Row>
           //     <Table.Summary.Cell>
