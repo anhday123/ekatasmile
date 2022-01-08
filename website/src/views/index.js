@@ -44,7 +44,6 @@ import ShippingProductForm from './shipping-product/shipping-product-form'
 import OrderCreate from './order-create'
 import Categories from './categories'
 import Category from './category'
-import ImportExportFile from './import-export-file'
 
 import Inventory from './inventory'
 import OfferList from './offer-list'
@@ -269,13 +268,6 @@ const DEFINE_ROUTER = [
     path: ROUTES.ACTIVITY_DIARY,
     Component: () => <ActivityDiary />,
     title: 'Nhật ký hoạt động',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.IMPORT_REPORT_FILE,
-    Component: () => <ImportExportFile />,
-    title: 'Xuất/nhập file',
     permissions: [],
     exact: true,
   },
