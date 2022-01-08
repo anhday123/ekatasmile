@@ -1,10 +1,11 @@
 const express = require(`express`);
 
 const router = express.Router();
-const appinfo = require(`../controllers/appinfo`);
+const appInfo = require(`../controllers/appinfo`);
 const { auth } = require(`../middleware/jwt`);
 
-// router.route(`/appinfo`).get(auth, action._get);
-router.route(`/checkbusiness`).post(auth, appinfo._get);
+router.route(`/`).get(auth, appInfo._getAppInfo);
+router.route(`/update`).patch(auth, appInfo._updateAppInfo);
+router.route(`/checkdomain`).post(auth, appInfo._checkDomain);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const express = require(`express`);
 const router = express.Router();
 
 router.use(`/authorization`, require(`./authorization`));
+router.use(`/appinfo`, require(`./appinfo`));
 router.use(`/business`, require(`./business`));
 router.use(`/address`, require(`./address`));
 router.use(`/user`, require(`./user`));
