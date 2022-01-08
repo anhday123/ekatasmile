@@ -35,3 +35,33 @@
 # Deploy
 
 -   Đưa folder lên server qua git/ssh, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
+
+server {
+    if ($host = *.vdropship.vn) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+        listen 80;
+        listen [::]:80;
+
+        server_name *.vdropship.vn;
+    return 404; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = vdropship.vn) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+        listen 80;
+        listen [::]:80;
+
+        server_name vdropship.vn;
+    return 404; # managed by Certbot
+
+
+}
