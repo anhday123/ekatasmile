@@ -539,7 +539,7 @@ module.exports._getOrderReport = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
-        let orders = await client.db(req.user.database).collection('Orders').aggregate(aggregate).toArray();
+        let orders = await client.db(req.user.database).collection('Orders').aggregate(aggregateQuery).toArray();
         let _products = {};
         let productIds = [];
         orders.map((order) => {
