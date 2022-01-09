@@ -631,7 +631,45 @@ module.exports._recoveryPassword = async (req, res, next) => {
                     { $set: { password: bcrypt.hash(req.body.password), otp_code: false, otp_timelife: false } }
                 );
         }
-        res.send({ success: true, message: 'Khôi phục mật khẩu thành công!' });
+        let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
+        const DB = business.database_name;
+        let [_user] = await client
+            .db(DB)
+            .collection(`Users`)
+            .aggregate([
+                { $match: { username: req.body.username } },
+                {
+                    $lookup: {
+                        from: 'Roles',
+                        localField: 'role_id',
+                        foreignField: 'role_id',
+                        as: '_role',
+                    },
+                },
+                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'branch_id',
+                        foreignField: 'branch_id',
+                        as: '_branch',
+                    },
+                },
+                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'Stores',
+                        localField: 'store_id',
+                        foreignField: 'store_id',
+                        as: '_store',
+                    },
+                },
+                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+            ])
+            .toArray();
+        delete _user.password;
+        let accessToken = await jwt.createToken(_user, 30 * 24 * 60 * 60);
+        res.send({ success: true, message: 'Khôi phục mật khẩu thành công!', data: { accessToken: accessToken } });
     } catch (err) {
         next(err);
     }
