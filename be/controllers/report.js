@@ -153,7 +153,26 @@ module.exports._getIOIReport = async (req, res, next) => {
                 $lookup: {
                     from: 'Products',
                     let: { productId: '$product_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                        {
+                            $lookup: {
+                                from: 'Categories',
+                                let: { categoryId: '$category_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
+                                as: '_categories',
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: 'Suppliers',
+                                let: { supplierId: '$supplier_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$supplier_id', '$$supplierId'] } } }],
+                                as: '_suppliers',
+                            },
+                        },
+                        { $unwind: { path: '$_suppliers', preserveNullAndEmptyArrays: true } },
+                    ],
                     as: 'product',
                 },
             },
@@ -324,17 +343,17 @@ module.exports._getInventoryReport = async (req, res, next) => {
             },
             { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
         );
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Stores',
-                    let: { storeId: '$store_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$store_id', '$$storeId'] } } }],
-                    as: 'store',
-                },
-            },
-            { $unwind: { path: '$store', preserveNullAndEmptyArrays: true } }
-        );
+        // aggregateQuery.push(
+        //     {
+        //         $lookup: {
+        //             from: 'Stores',
+        //             let: { storeId: '$store_id' },
+        //             pipeline: [{ $match: { $expr: { $eq: ['$store_id', '$$storeId'] } } }],
+        //             as: 'store',
+        //         },
+        //     },
+        //     { $unwind: { path: '$store', preserveNullAndEmptyArrays: true } }
+        // );
         if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
             aggregateQuery.push({
                 $group: {
@@ -395,7 +414,26 @@ module.exports._getInventoryReport = async (req, res, next) => {
                 $lookup: {
                     from: 'Products',
                     let: { productId: '$product_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                        {
+                            $lookup: {
+                                from: 'Categories',
+                                let: { categoryId: '$category_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
+                                as: '_categories',
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: 'Suppliers',
+                                let: { supplierId: '$supplier_id' },
+                                pipeline: [{ $match: { $expr: { $eq: ['$supplier_id', '$$supplierId'] } } }],
+                                as: '_suppliers',
+                            },
+                        },
+                        { $unwind: { path: '$_suppliers', preserveNullAndEmptyArrays: true } },
+                    ],
                     as: 'product',
                 },
             },
