@@ -216,17 +216,14 @@ module.exports._get = async (req, res, next) => {
             );
         }
         if (req.query._employees) {
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        let: { businessId: '$business_id' },
-                        pipeline: [{ $match: { $expr: { $eq: ['$business_id', '$$businessId'] } } }],
-                        as: '_employees',
-                    },
+            aggregateQuery.push({
+                $lookup: {
+                    from: 'Users',
+                    let: { businessId: '$business_id' },
+                    pipeline: [{ $match: { $expr: { $eq: ['$business_id', '$$businessId'] } } }],
+                    as: '_employees',
                 },
-                { $unwind: { path: '$_employees', preserveNullAndEmptyArrays: true } }
-            );
+            });
         }
         aggregateQuery.push({
             $project: {
