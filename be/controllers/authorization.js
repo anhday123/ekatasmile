@@ -584,7 +584,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             delete _user.password;
             await client.db(SDB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
             await client.db(DB).collection('Users').updateOne({ system_user_id: user.system_user_id }, { $set: user });
-            let accessToken = await jwt.createToken(_user, 30 * 24 * 60 * 60);
+            let accessToken = await jwt.createToken({ ..._user, database: DB, _business: business }, 30 * 24 * 60 * 60);
             res.send({ success: true, message: 'Kích hoạt tài khoản thành công!', data: { accessToken: accessToken } });
         } else {
             user.otp_code = true;
@@ -666,7 +666,7 @@ module.exports._recoveryPassword = async (req, res, next) => {
             ])
             .toArray();
         delete _user.password;
-        let accessToken = await jwt.createToken(_user, 30 * 24 * 60 * 60);
+        let accessToken = await jwt.createToken({ ..._user, database: DB, _business: business }, 30 * 24 * 60 * 60);
         res.send({ success: true, message: 'Khôi phục mật khẩu thành công!', data: { accessToken: accessToken } });
     } catch (err) {
         next(err);
