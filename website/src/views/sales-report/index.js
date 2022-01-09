@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import styles from './sales-report.module.scss'
-
-import { Row, Col, Button, Select, Table, Modal, DatePicker } from 'antd'
 import moment from 'moment'
 import { formatCash } from 'utils'
-import { CalendarComponent } from '@syncfusion/ej2-react-calendars'
+import { useHistory } from 'react-router-dom'
+import { ROUTES } from 'consts'
+
+//antd
+import { Row, Col, Button, Select, Table, Modal, DatePicker } from 'antd'
+
+//icons
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 //components
 import TitlePage from 'components/title-page'
@@ -13,7 +18,8 @@ import SettingColumns from 'components/setting-columns'
 import columnsSalesReport from './columns'
 
 export default function ReportFinancial() {
-  const [filter, setFilter] = useState()
+  const history = useHistory()
+
   const [columns, setColumns] = useState([])
   const [salesReport, setSalesReport] = useState([])
 
@@ -35,7 +41,26 @@ export default function ReportFinancial() {
   const dateFormat = 'YYYY/MM/DD'
   return (
     <div className={styles['report']}>
-      <TitlePage title="Báo cáo bán hàng"></TitlePage>
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.REPORTS)}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 10 }} />
+            Báo cáo bán hàng
+          </Row>
+        }
+      >
+        <SettingColumns
+          columnsDefault={columnsSalesReport}
+          columns={columns}
+          setColumns={setColumns}
+          nameColumn="columnsSalesReport"
+        />
+      </TitlePage>
 
       <Row gutter={10} style={{ marginTop: 20, marginBottom: 20 }}>
         <DatePicker.RangePicker
@@ -66,15 +91,6 @@ export default function ReportFinancial() {
         <Col>
           <FilterRangeTime filter={filter} setFilter={setFilter} />
         </Col> */}
-      </Row>
-
-      <Row justify="end" style={{ marginBottom: 5 }}>
-        <SettingColumns
-          columnsDefault={columnsSalesReport}
-          columns={columns}
-          setColumns={setColumns}
-          nameColumn="columnsSalesReport"
-        />
       </Row>
 
       <Table

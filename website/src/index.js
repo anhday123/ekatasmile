@@ -9,18 +9,21 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { store, persistor } from './redux/store'
 import 'antd/dist/antd.less'
-
+import viVN from 'antd/lib/locale/vi_VN'
 import i18n from './locales/i18n'
 import { I18nextProvider } from 'react-i18next'
+import { ConfigProvider } from 'antd'
 
 ReactDOM.render(
-  <I18nextProvider i18n={i18n}>
-    <Provider store={store}>
-      <PersistGate loading={<div>loading ...</div>} persistor={persistor}>
-        <App />
-      </PersistGate>
-    </Provider>
-  </I18nextProvider>,
+  <ConfigProvider locale={viVN}>
+    <I18nextProvider i18n={i18n}>
+      <Provider store={store}>
+        <PersistGate loading={<div>loading ...</div>} persistor={persistor}>
+          <App />
+        </PersistGate>
+      </Provider>
+    </I18nextProvider>
+  </ConfigProvider>,
   document.getElementById('root')
 )
 
