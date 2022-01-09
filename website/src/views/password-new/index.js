@@ -42,7 +42,7 @@ export default function PasswordNew() {
           notification.success({ message: 'Thay đổi mật khẩu thành công' })
           const dataUser = jwt_decode(res.data.data.accessToken)
           await delay(300)
-          window.location.href = `https://${dataUser.data.business_name}.vdropship.vn/login`
+          window.location.href = `https://${dataUser.data._business.business_name}.vdropship.vn/login`
         } else
           notification.error({
             message: res.data.message || 'Thay đổi mật khẩu không thành công, vui lòng thử lại',
