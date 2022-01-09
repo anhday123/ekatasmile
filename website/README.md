@@ -1,4 +1,4 @@
 deploy:
-ssh root@quantribanhang.viesoftware.vn
+ssh root@vdropship.vn
 rm -r /var/www/quantribanhang/build
 viesoftware

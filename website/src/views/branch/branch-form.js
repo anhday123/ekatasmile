@@ -83,17 +83,19 @@ export default function BranchAdd({ reloadData, children, record }) {
       if (res.status === 200) {
         if (res.data.success) {
           reloadData()
-          notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} kho thành công` })
+          notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thành công` })
           setVisible(false)
         } else
           notification.error({
             message:
-              res.data.message || `${record ? 'Cập nhật' : 'Thêm'} kho thất bại, vui lòng thử lại!`,
+              res.data.message ||
+              `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thất bại, vui lòng thử lại!`,
           })
       } else
         notification.error({
           message:
-            res.data.message || `${record ? 'Cập nhật' : 'Thêm'} kho thất bại, vui lòng thử lại!`,
+            res.data.message ||
+            `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thất bại, vui lòng thử lại!`,
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -161,7 +163,7 @@ export default function BranchAdd({ reloadData, children, record }) {
             </Button>
           </Row>
         }
-        title={record ? 'Cập nhật kho' : 'Thêm kho'}
+        title={record ? 'Cập nhật chi nhánh' : 'Thêm chi nhánh'}
         centered
         width="70%"
         visible={visible}
@@ -189,11 +191,11 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Tên kho</div>}
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Tên chi nhánh</div>}
                 name="name"
-                rules={[{ required: true, message: 'Vui lòng nhập tên kho' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập tên chi nhánh' }]}
               >
-                <Input size="large" placeholder="Nhập tên kho" />
+                <Input size="large" placeholder="Nhập tên chi nhánh" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -252,19 +254,19 @@ export default function BranchAdd({ reloadData, children, record }) {
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
                 name="warehouse_type"
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại kho</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn loại kho' }]}
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
+                rules={[{ required: true, message: 'Vui lòng chọn loại chi nhánh' }]}
               >
                 <Select
                   size="large"
                   showSearch
-                  placeholder="Chọn quận huyện"
+                  placeholder="Chọn loại chi nhánh"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  <Option value="sở hữu">Kho sở hữu</Option>
-                  <Option value="dịch vụ">Kho thuê dịch vụ</Option>
+                  <Option value="sở hữu">Sở hữu</Option>
+                  <Option value="dịch vụ">Thuê dịch vụ</Option>
                 </Select>
               </Form.Item>
             </Col>

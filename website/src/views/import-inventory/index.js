@@ -223,7 +223,7 @@ export default function ImportInventory() {
         const InputQuantity = () => (
           <InputNumber
             style={{ width: 70 }}
-            onBlur={(event) => {
+            onMouseOut={(event) => {
               const value = event.target.value.replaceAll(',', '')
               const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
               _editProductInOrder('quantity', +value, indexProduct)
@@ -246,7 +246,7 @@ export default function ImportInventory() {
         const InputPrice = () => (
           <InputNumber
             style={{ width: '100%' }}
-            onBlur={(e) => {
+            onMouseOut={(e) => {
               const value = e.target.value.replaceAll(',', '')
               const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
               _editProductInOrder('import_price', +value, indexProduct)
@@ -550,7 +550,7 @@ export default function ImportInventory() {
                   }}
                 >
                   <ArrowLeftOutlined style={{ marginRight: 5 }} />
-                  {location.state ? 'Cập nhật' : 'Tạo'} đơn nhập kho
+                  {location.state ? 'Cập nhật' : 'Tạo'} đơn nhập hàng
                 </Row>
               </Link>
 
@@ -956,16 +956,9 @@ export default function ImportInventory() {
                       setImportLocation({ ...p })
                     }}
                   >
-                    <Select.OptGroup label="Kho" key="branch">
-                      {branches.map((e) => (
-                        <Select.Option value={e.branch_id}>{e.name}</Select.Option>
-                      ))}
-                    </Select.OptGroup>
-                    <Select.OptGroup label="Cửa hàng" key="store">
-                      {stores.map((e) => (
-                        <Select.Option value={e.store_id}>{e.name}</Select.Option>
-                      ))}
-                    </Select.OptGroup>
+                    {branches.map((e) => (
+                      <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
 

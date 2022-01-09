@@ -165,11 +165,11 @@ export default function Branch() {
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <TitlePage title="Danh sách kho">
+        <TitlePage title="Danh sách chi nhánh">
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
             <BranchForm reloadData={_getBranches}>
               <Button size="large" icon={<PlusCircleOutlined />} type="primary">
-                Thêm kho
+                Thêm chi nhánh
               </Button>
             </BranchForm>
           </Permission>
@@ -353,13 +353,13 @@ export default function Branch() {
                 render: (text, record) => (
                   <Popover
                     content={
-                      <img src={record.logo || ''} alt="" style={{ width: 350, height: 350 }} />
+                      <img src={record.logo || ''} alt="" style={{ width: 380, height: 380 }} />
                     }
                   >
                     <img
                       src={record.logo || ''}
                       alt=""
-                      style={{ width: 80, height: 80, objectFit: 'cover' }}
+                      style={{ width: 55, height: 55, objectFit: 'cover' }}
                     />
                   </Popover>
                 ),

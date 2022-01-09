@@ -107,15 +107,15 @@ export default function Category() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          notification.success({ message: 'Xóa danh mục thành công!' })
+          notification.success({ message: 'Xóa nhóm sản phẩm thành công!' })
           _getCategories(paramsFilter)
         } else
           notification.error({
-            message: res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
+            message: res.data.mess || res.data.message || 'Xóa nhóm sản phẩm thất bại!',
           })
       } else
         notification.error({
-          message: res.data.mess || res.data.message || 'Xóa danh mục thất bại!',
+          message: res.data.mess || res.data.message || 'Xóa nhóm sản phẩm thất bại!',
         })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -130,15 +130,15 @@ export default function Category() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          notification.success({ message: 'Tạo danh mục thành công!' })
+          notification.success({ message: 'Tạo nhóm sản phẩm thành công!' })
           _getCategories(paramsFilter)
         } else
           notification.error({
-            message: res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
+            message: res.data.mess || res.data.message || 'Tạo nhóm sản phẩm thất bại!',
           })
       } else
         notification.error({
-          message: res.data.mess || res.data.message || 'Tạo danh mục thất bại!',
+          message: res.data.mess || res.data.message || 'Tạo nhóm sản phẩm thất bại!',
         })
     } catch (error) {
       console.log(error)
@@ -171,11 +171,11 @@ export default function Category() {
             style={{ backgroundColor: 'rgb(253 170 62)', border: 'none' }}
             onClick={toggle}
           >
-            Tạo danh mục con
+            Tạo nhóm sản phẩm con
           </Button>
         ) : (
           <Button type="primary" onClick={toggle}>
-            Tạo danh mục con
+            Tạo nhóm sản phẩm con
           </Button>
         )}
         <Modal
@@ -209,7 +209,7 @@ export default function Category() {
             </Row>
           }
           width={500}
-          title="Tạo danh mục con"
+          title="Tạo nhóm sản phẩm con"
           onCancel={reset}
           visible={visible}
         >
@@ -238,11 +238,11 @@ export default function Category() {
           </div>
           <Form layout="vertical" form={formCategoryChild}>
             <Form.Item
-              rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên nhóm sản phẩm' }]}
               name="name"
-              label="Tên danh mục"
+              label="Tên nhóm sản phẩm"
             >
-              <Input placeholder="Nhập tên danh mục" style={{ width: '100%' }} />
+              <Input placeholder="Nhập tên nhóm sản phẩm" style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item
               rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}
@@ -295,7 +295,7 @@ export default function Category() {
         record.image && <img src={record.image} alt="" style={{ width: 70, height: 70 }} />,
     },
     {
-      title: 'Tên danh mục',
+      title: 'Tên nhóm sản phẩm',
       align: 'center',
       sorter: (a, b) => compare(a, b, 'name'),
 
@@ -304,7 +304,7 @@ export default function Category() {
       ),
     },
     {
-      title: 'Mã danh mục',
+      title: 'Mã nhóm sản phẩm',
       align: 'center',
       dataIndex: 'code',
       sorter: (a, b) => compare(a, b, 'code'),
@@ -345,7 +345,7 @@ export default function Category() {
       render: (text, record) => (
         <Popconfirm
           onConfirm={() => _deleteCategories(record.category_id)}
-          title="Bạn có muốn xóa danh mục con này?"
+          title="Bạn có muốn xóa nhóm sản phẩm con này?"
           okText="Đồng ý"
           cancelText="Từ chối"
         >
@@ -360,11 +360,11 @@ export default function Category() {
         record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
     },
     {
-      title: 'Tên danh mục',
+      title: 'Tên nhóm sản phẩm',
       align: 'center',
       render: (text, record) => record.name || '',
     },
-    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
+    { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
     {
       title: 'Người tạo',
       align: 'center',
@@ -390,7 +390,7 @@ export default function Category() {
       render: (text, record) => (
         <Popconfirm
           onConfirm={() => _deleteCategories(record.category_id)}
-          title="Bạn có muốn xóa danh mục con này?"
+          title="Bạn có muốn xóa nhóm sản phẩm con này?"
           okText="Đồng ý"
           cancelText="Từ chối"
         >
@@ -405,11 +405,11 @@ export default function Category() {
         record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
     },
     {
-      title: 'Tên danh mục',
+      title: 'Tên nhóm sản phẩm',
       align: 'center',
       render: (text, record) => record.name || '',
     },
-    { title: 'Mã danh mục', align: 'center', dataIndex: 'code' },
+    { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
     {
       title: 'Người tạo',
       align: 'center',
@@ -440,9 +440,9 @@ export default function Category() {
         justify="space-between"
         style={{ borderBottom: '0.75px solid #BBBCBD', paddingBottom: 15 }}
       >
-        <h3 style={{ marginBottom: 0, fontWeight: 700, marginRight: 7 }}>Quản lý danh mục</h3>
+        <h3 style={{ marginBottom: 0, fontWeight: 700, marginRight: 7 }}>Quản lý nhóm sản phẩm</h3>
         <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
-          Tạo danh mục
+          Tạo nhóm sản phẩm
         </Button>
       </Row>
       <div style={{ margin: '25px 0' }}>
@@ -568,7 +568,7 @@ export default function Category() {
       </div>
       <Popconfirm
         onConfirm={() => _deleteCategories(selectedRowKeys.join('---'))}
-        title="Bạn có muốn xóa các danh mục này?"
+        title="Bạn có muốn xóa các nhóm sản phẩm này?"
         okText="Đồng ý"
         cancelText="Từ chối"
       >

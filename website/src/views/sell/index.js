@@ -930,6 +930,7 @@ export default function Sell() {
           : '',
         employee_id: dataUser ? dataUser.data.user_id || '' : '',
         order_details: invoices[indexInvoice].order_details.map((item) => {
+          console.log(item)
           return {
             product_id: item.product_id || '',
             variant_id: item.variant_id || '',
