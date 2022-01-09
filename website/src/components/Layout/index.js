@@ -89,7 +89,6 @@ const BaseLayout = (props) => {
   const getInfoUser = async () => {
     try {
       const res = await getEmployees({ user_id: dataUser.data.user_id })
-      console.log(res)
       if (res.status === 200) {
         if (res.data.data.length) setUser({ ...res.data.data[0] })
       }
@@ -138,25 +137,18 @@ const BaseLayout = (props) => {
       icon: <ShoppingOutlined />,
     },
     {
-      icon: <CodeSandboxOutlined />,
-      path: ROUTES.STOCK_ADJUSTMENTS,
-      title: 'Kiểm hàng',
-      permissions: [],
-      pathsChild: [],
-    },
-    {
-      pathsChild: [],
-      path: ROUTES.CATEGORIES,
-      title: 'Danh mục',
-      permissions: [],
-      icon: <SlidersOutlined />,
-    },
-    {
-      pathsChild: [],
+      pathsChild: [ROUTES.PRODUCT_ADD, ROUTES.PRODUCT_UPDATE],
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
       permissions: [],
+    },
+    {
+      pathsChild: [ROUTES.CATEGORY],
+      path: ROUTES.CATEGORIES,
+      title: 'Nhóm sản phẩm',
+      permissions: [],
+      icon: <SlidersOutlined />,
     },
     {
       pathsChild: [],
@@ -170,7 +162,7 @@ const BaseLayout = (props) => {
       path: ROUTES.IMPORT_INVENTORIES,
       title: 'Nhập hàng',
       permissions: [],
-      pathsChild: [],
+      pathsChild: [ROUTES.IMPORT_INVENTORY],
     },
     {
       pathsChild: [],
@@ -179,12 +171,19 @@ const BaseLayout = (props) => {
       title: 'Nhà cung cấp',
       permissions: [PERMISSIONS.quan_li_nha_cung_cap],
     },
+    // {
+    //   icon: <CodeSandboxOutlined />,
+    //   path: ROUTES.STOCK_ADJUSTMENTS,
+    //   title: 'Kiểm hàng',
+    //   permissions: [],
+    //   pathsChild: [],
+    // },
     {
       icon: <RotateLeftOutlined />,
       path: ROUTES.SHIPPING_PRODUCT,
       title: 'Phiếu chuyển hàng',
       permissions: [],
-      pathsChild: [],
+      pathsChild: [ROUTES.SHIPPING_PRODUCT_ADD],
     },
     // {
     //   path: 'offer',
@@ -290,7 +289,13 @@ const BaseLayout = (props) => {
       ],
     },
     {
-      pathsChild: [],
+      pathsChild: [
+        ROUTES.EMPLOYEE,
+        ROUTES.GUARANTEE,
+        ROUTES.TAX,
+        ROUTES.PAYMENT,
+        ROUTES.ACTIVITY_DIARY,
+      ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
       permissions: [PERMISSIONS.cau_hinh_thong_tin],

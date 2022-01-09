@@ -52,7 +52,7 @@ export default function Category() {
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({
-            message: `${location.state ? 'Cập nhật' : 'Tạo'} danh mục thành công!`,
+            message: `${location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm thành công!`,
           })
           history.push(ROUTES.CATEGORIES)
         } else
@@ -60,14 +60,14 @@ export default function Category() {
             message:
               res.data.mess ||
               res.data.message ||
-              `${location.state ? 'Cập nhật' : 'Tạo'} danh mục thất bại!`,
+              `${location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm thất bại!`,
           })
       } else
         notification.error({
           message:
             res.data.mess ||
             res.data.message ||
-            `${location.state ? 'Cập nhật' : 'Tạo'} danh mục thất bại!`,
+            `${location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm thất bại!`,
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -93,7 +93,7 @@ export default function Category() {
         >
           <ArrowLeftOutlined style={{ fontSize: 16 }} />
           <h3 style={{ marginBottom: 0, fontWeight: 700, marginLeft: 7 }}>
-            {location.state ? 'Cập nhật' : 'Tạo'} danh mục
+            {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
           </h3>
         </Row>
       </div>
@@ -124,11 +124,11 @@ export default function Category() {
         </div>
         <Form layout="vertical" form={form}>
           <Form.Item
-            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập tên nhóm sản phẩm' }]}
             name="name"
-            label="Tên danh mục"
+            label="Tên nhóm sản phẩm"
           >
-            <Input placeholder="Nhập tên danh mục" style={{ width: '50%' }} />
+            <Input placeholder="Nhập tên nhóm sản phẩm" style={{ width: '50%' }} />
           </Form.Item>
           <Form.Item
             rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}

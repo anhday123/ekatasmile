@@ -293,10 +293,10 @@ export default function ImportInventories() {
         wrap={false}
         style={{ fontSize: 17, paddingBottom: 20, borderBottom: '1px solid #ece2e2' }}
       >
-        <h3>Nhập kho</h3>
+        <h3>Nhập hàng</h3>
         <Link to={ROUTES.IMPORT_INVENTORY}>
           <Button size="large" type="primary">
-            Tạo đơn nhập kho
+            Tạo đơn nhập hàng
           </Button>
         </Link>
       </Row>

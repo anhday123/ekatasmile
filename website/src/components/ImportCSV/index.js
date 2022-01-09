@@ -66,14 +66,7 @@ export default function ImportFile({
         footer={null}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <a
-            download
-            href={fileTemplated}
-            style={{
-              marginBottom: 15,
-              color: 'blue',
-            }}
-          >
+          <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
             Tải xuống file mẫu
           </a>
           <Upload

@@ -1,11 +1,11 @@
 const columns = [
   {
-    title: 'Mã kho',
+    title: 'Mã chi nhánh',
     dataIndex: 'code',
     key: 'code',
   },
   {
-    title: 'Tên kho',
+    title: 'Tên chi nhánh',
     dataIndex: 'name',
     key: 'name',
   },
