@@ -41,7 +41,7 @@ export default function OTP() {
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
           await delay(300)
-          window.location.href = `https://${dataUser.data.business_name}.vdropship.vn/${ROUTES.OVERVIEW}`
+          window.location.href = `https://${dataUser.data._business.business_name}.vdropship.vn/${ROUTES.OVERVIEW}`
         } else
           notification.error({
             message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
