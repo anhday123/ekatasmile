@@ -51,8 +51,8 @@ module.exports._register = async (req, res, next) => {
             .trim()
             .toLowerCase();
         req.body.password = bcrypt.hash(req.body.password);
-        if (/^((viesoftware)|(admin))$/gi.test(req.body.prefix)) {
-            throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp của hệ thống!`);
+        if (/^((viesoftware)|(admin)|(login))$/gi.test(req.body.prefix)) {
+            throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp này!`);
         }
         let [business, user] = await Promise.all([
             client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix }),

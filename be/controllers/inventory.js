@@ -247,7 +247,6 @@ module.exports._createImportOrder = async (req, res, next) => {
             return result;
         })();
         let order = {
-            business_id: Number(req.user.business_id),
             order_id: order_id,
             code: req.body.code || String(order_id).padStart(6, '0'),
             import_location: req.body.import_location,
@@ -320,7 +319,6 @@ module.exports._createImportOrder = async (req, res, next) => {
             order.products.map((product) => {
                 price_id++;
                 let _price = {
-                    business_id: Number(order.business_id),
                     price_id: Number(price_id),
                     product_id: Number(product.product_id),
                     variant_id: Number(product.variant_id),
@@ -333,7 +331,6 @@ module.exports._createImportOrder = async (req, res, next) => {
                 prices.push(_price);
                 location_id++;
                 let _location = {
-                    business_id: Number(order.business_id),
                     location_id: Number(location_id),
                     product_id: Number(product.product_id),
                     variant_id: Number(product.variant_id),
