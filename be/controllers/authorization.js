@@ -67,7 +67,7 @@ module.exports._register = async (req, res, next) => {
             throw new Error(`400: Tên doanh nghiệp đã được đăng ký!`);
         }
         if (user) {
-            throw new Error(`400: Số điện thoại hoặc tên đăng nhập đã được sử dụng!`);
+            throw new Error(`400: Số điện thoại hoặc email đã được sử dụng!`);
         }
         const DB = `${req.body.prefix}DB`;
         let [business_id, system_user_id] = await Promise.all([
