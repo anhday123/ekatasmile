@@ -631,8 +631,6 @@ module.exports._recoveryPassword = async (req, res, next) => {
                     { $set: { password: bcrypt.hash(req.body.password), otp_code: false, otp_timelife: false } }
                 );
         }
-        let business = await client.db(SDB).collection('Business').findOne({ system_user_id: user.system_user_id });
-        const DB = business.database_name;
         let [_user] = await client
             .db(DB)
             .collection(`Users`)
