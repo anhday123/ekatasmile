@@ -1,3 +1,3 @@
-import { get } from './httpClient'
+import { get, post } from './httpClient'
 
-export const checkDomain = (body) => get('/appinfo/checkdomain', body)
+export const checkDomain = (prefix) => post('/appinfo/checkdomain', { prefix })

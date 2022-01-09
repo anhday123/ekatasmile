@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Link, useLocation, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
+import jwt_decode from 'jwt-decode'
 
 //antd
 import { Form, Input, Button, notification, Row, Col } from 'antd'
@@ -12,6 +13,7 @@ import store from 'assets/img/store.png'
 
 //apis
 import { resetPassword } from 'apis/auth'
+import delay from 'delay'
 
 export default function PasswordNew() {
   const dispatch = useDispatch()
@@ -37,8 +39,10 @@ export default function PasswordNew() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          history.push(ROUTES.LOGIN)
           notification.success({ message: 'Thay đổi mật khẩu thành công' })
+          const dataUser = jwt_decode(res.data.data.accessToken)
+          await delay(300)
+          window.location.href = `https://${dataUser.data.business_name}.vdropship.vn/login`
         } else
           notification.error({
             message: res.data.message || 'Thay đổi mật khẩu không thành công, vui lòng thử lại',
@@ -117,11 +121,11 @@ export default function PasswordNew() {
                 Thay đổi mật khẩu
               </Button>
             </Form.Item>
-            <Row justify="end">
+            {/* <Row justify="end">
               <Link to={ROUTES.LOGIN} style={{ color: 'white' }}>
                 Quay về đăng nhập
               </Link>
-            </Row>
+            </Row> */}
           </Form>
         </div>
       </Col>

@@ -9,6 +9,7 @@ import Authentication from 'components/authentication'
 
 //views
 import Login from './login'
+import Register from './register'
 import ProductCheck from './product-check'
 import OrderList from './order-list'
 import SalesReport from './sales-report'
@@ -461,6 +462,13 @@ const AUTH_ROUTER = [
     Component: () => <Login />,
     exact: true,
     title: 'Login',
+    permissions: [],
+  },
+  {
+    path: ROUTES.REGISTER,
+    Component: () => <Register />,
+    exact: true,
+    title: 'Register',
     permissions: [],
   },
   {

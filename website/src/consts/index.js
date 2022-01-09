@@ -44,6 +44,7 @@ export const SHIP_STATUS_ORDER = {
 
 export const ROUTES = {
   LOGIN: '/login',
+  REGISTER: '/register',
   IMPORT_REPORT_FILE: '/import-report-file',
   PRODUCT_CHECK: '/product-check',
   ORDER_LIST: '/order-list',

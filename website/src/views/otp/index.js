@@ -40,8 +40,8 @@ export default function OTP() {
           const dataUser = jwt_decode(res.data.data.accessToken)
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
-          await delay(500)
-          history.push(ROUTES.OVERVIEW)
+          await delay(300)
+          window.location.href = `https://${dataUser.data.business_name}.vdropship.vn/${ROUTES.OVERVIEW}`
         } else
           notification.error({
             message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
