@@ -210,111 +210,54 @@ export default function ReportInventory() {
 
   const dateFormat = 'YYYY-MM-DD'
   return (
-    <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <TitlePage
-          title={
-            <Row
-              wrap={false}
-              align="middle"
-              style={{ cursor: 'pointer' }}
-              onClick={() => history.push(ROUTES.REPORTS)}
-            >
-              <ArrowLeftOutlined style={{ marginRight: 10 }} />
-              Báo cáo tồn kho theo sản phẩm
-            </Row>
-          }
-        >
-          <Button
-            icon={<VerticalAlignTopOutlined />}
-            onClick={async () => {
-              await _reportInventoryToExport()
-              await delay(300)
-              exportTableToCSV('report-inventory', 'Báo cáo tồn kho theo sản phẩm')
-            }}
-            style={{ backgroundColor: 'green', borderColor: 'green' }}
-            size="large"
-            type="primary"
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.REPORTS)}
           >
-            Xuất excel
-          </Button>
-        </TitlePage>
-        <Row gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-            <DatePicker.RangePicker
-              value={dateFilter}
-              onChange={onChangeDate}
-              style={{ width: '100%' }}
-              size="large"
-              format={dateFormat}
-            />
-          </Col>
-        </Row>
-
-        <div className="report-inventory" style={{ display: 'none' }}>
-          <Table
-            bordered
-            size="small"
+            <ArrowLeftOutlined style={{ marginRight: 10 }} />
+            Báo cáo tồn kho theo sản phẩm
+          </Row>
+        }
+      >
+        <Button
+          icon={<VerticalAlignTopOutlined />}
+          onClick={async () => {
+            await _reportInventoryToExport()
+            await delay(300)
+            exportTableToCSV('report-inventory', 'Báo cáo tồn kho theo sản phẩm')
+          }}
+          style={{ backgroundColor: 'green', borderColor: 'green' }}
+          size="large"
+          type="primary"
+        >
+          Xuất excel
+        </Button>
+      </TitlePage>
+      <Row gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <DatePicker.RangePicker
+            value={dateFilter}
+            onChange={onChangeDate}
             style={{ width: '100%' }}
-            columns={columnsExport}
-            dataSource={reportInventoryToExport}
-            pagination={false}
-            summary={(pageData) => (
-              <Table.Summary.Row>
-                <Table.Summary.Cell>
-                  <div style={{ fontWeight: 700 }}>Tổng</div>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                {warehousesNameExport.map((name) => (
-                  <>
-                    <Table.Summary.Cell>
-                      <div style={{ fontWeight: 700 }}>
-                        {formatCash(
-                          pageData.reduce(
-                            (total, current) =>
-                              total + (current[name] ? current[name].quantity : 0),
-                            0
-                          )
-                        )}
-                      </div>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <div style={{ fontWeight: 700 }}>
-                        {formatCash(
-                          pageData.reduce(
-                            (total, current) => total + (current[name] ? current[name].price : 0),
-                            0
-                          )
-                        )}
-                      </div>
-                    </Table.Summary.Cell>
-                  </>
-                ))}
-              </Table.Summary.Row>
-            )}
+            size="large"
+            format={dateFormat}
           />
-        </div>
+        </Col>
+      </Row>
 
+      <div className="report-inventory" style={{ display: 'none' }}>
         <Table
           bordered
-          loading={loading}
           size="small"
           style={{ width: '100%' }}
-          columns={columns}
-          dataSource={reportInventory}
-          pagination={{
-            position: ['bottomLeft'],
-            current: paramsFilter.page,
-            defaultPageSize: 20,
-            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
-            showQuickJumper: true,
-            onChange: (page, pageSize) =>
-              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
-            total: countReport,
-          }}
+          columns={columnsExport}
+          dataSource={reportInventoryToExport}
+          pagination={false}
           summary={(pageData) => (
             <Table.Summary.Row>
               <Table.Summary.Cell>
@@ -324,7 +267,7 @@ export default function ReportInventory() {
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              {warehousesName.map((name) => (
+              {warehousesNameExport.map((name) => (
                 <>
                   <Table.Summary.Cell>
                     <div style={{ fontWeight: 700 }}>
@@ -352,6 +295,60 @@ export default function ReportInventory() {
           )}
         />
       </div>
-    </>
+
+      <Table
+        bordered
+        loading={loading}
+        size="small"
+        style={{ width: '100%' }}
+        columns={columns}
+        dataSource={reportInventory}
+        pagination={{
+          position: ['bottomLeft'],
+          current: paramsFilter.page,
+          defaultPageSize: 20,
+          pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+          showQuickJumper: true,
+          onChange: (page, pageSize) =>
+            setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+          total: countReport,
+        }}
+        summary={(pageData) => (
+          <Table.Summary.Row>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>Tổng</div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            {warehousesName.map((name) => (
+              <>
+                <Table.Summary.Cell>
+                  <div style={{ fontWeight: 700 }}>
+                    {formatCash(
+                      pageData.reduce(
+                        (total, current) => total + (current[name] ? current[name].quantity : 0),
+                        0
+                      )
+                    )}
+                  </div>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <div style={{ fontWeight: 700 }}>
+                    {formatCash(
+                      pageData.reduce(
+                        (total, current) => total + (current[name] ? current[name].price : 0),
+                        0
+                      )
+                    )}
+                  </div>
+                </Table.Summary.Cell>
+              </>
+            ))}
+          </Table.Summary.Row>
+        )}
+      />
+    </div>
   )
 }

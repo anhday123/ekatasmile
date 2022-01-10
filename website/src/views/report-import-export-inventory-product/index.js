@@ -142,7 +142,7 @@ export default function ReportImportExportInventoryProduct() {
   }, [paramsFilter])
 
   return (
-    <div className={`${styles['report-import-export-inventory']} ${styles['card']}`}>
+    <div className="card">
       <TitlePage
         title={
           <Row

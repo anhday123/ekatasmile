@@ -43,6 +43,10 @@ const columns = [
     dataIndex: 'status',
     key: 'status',
   },
+  {
+    title: 'Hành động',
+    key: 'action',
+  },
 ]
 
 export default columns

@@ -263,7 +263,7 @@ export default function ReceiptsAndPayment() {
   }, [])
 
   return (
-    <div className={styles['card']}>
+    <div className="card">
       <TitlePage
         title={
           <Row

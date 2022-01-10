@@ -6,38 +6,42 @@ const columns = [
   {
     title: 'Mã hàng',
     dataIndex: 'code',
+    key: 'code',
   },
   {
     title: 'Tên hàng',
     dataIndex: 'name',
+    key: 'name',
   },
   {
     title: 'ĐVT',
     dataIndex: 'unit',
+    key: 'unit',
   },
   {
     title: 'Số lượng',
-    dataIndex: 'quantity',
-    key: 'quantity',
+    dataIndex: 'sale_quantity',
+    key: 'sale_quantity',
   },
   {
     title: 'Doanh thu',
-    dataIndex: 'sales',
-    key: 'sales',
+    dataIndex: 'total_revenue',
+    key: 'total_revenue',
   },
   {
     title: 'Giá vốn',
-    dataIndex: 'price_base',
-    key: 'price_base',
+    dataIndex: 'base_price',
+    key: 'base_price',
   },
   {
     title: 'Lợi nhuận gộp',
-    dataIndex: 'profit',
+    dataIndex: 'gross_profit',
+    key: 'gross_profit',
   },
   {
     title: '% Lợi nhuận',
-    dataIndex: 'percent_sales',
-    key: 'percent_sales',
+    dataIndex: 'profit_rate',
+    key: 'profit_rate',
   },
 ]
 

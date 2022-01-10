@@ -36,6 +36,10 @@ const columnsOrder = [
     dataIndex: 'final_cost',
     key: 'final_cost',
   },
+  {
+    title: 'Hành động',
+    key: 'action',
+  },
 ]
 
 export default columnsOrder

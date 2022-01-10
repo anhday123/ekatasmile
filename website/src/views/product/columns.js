@@ -10,7 +10,7 @@ const columnsProduct = [
     key: 'sku',
   },
   {
-    title: 'Danh mục',
+    title: 'Nhóm sản phẩm',
     key: 'category',
   },
   {

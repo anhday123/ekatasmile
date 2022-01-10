@@ -10,15 +10,31 @@ import columnsImportInventories from './columns'
 import SettingColumns from 'components/setting-columns'
 import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
+import TitlePage from 'components/title-page'
 
 //antd
-import { Row, Space, Select, Table, Button, Modal, Spin, DatePicker } from 'antd'
+import {
+  Row,
+  Space,
+  Select,
+  Table,
+  Button,
+  Modal,
+  Spin,
+  DatePicker,
+  Popconfirm,
+  notification,
+} from 'antd'
 
 //icons
-import { SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
+import { DeleteOutlined, SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //apis
-import { getOrdersImportInventory, uploadOrdersImportInventory } from 'apis/inventory'
+import {
+  getOrdersImportInventory,
+  uploadOrdersImportInventory,
+  deleteOrderImportInventory,
+} from 'apis/inventory'
 import { getAllBranch } from 'apis/branch'
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
@@ -239,6 +255,27 @@ export default function ImportInventories() {
     }
   }
 
+  const _deleteOrderImportInventory = async (id) => {
+    try {
+      const res = await deleteOrderImportInventory(id)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getOrdersImportInventory()
+          notification.success({ message: 'Xóa đơn nhập hàng thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xóa đơn nhập hàng thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xóa đơn nhập hàng thất bại, vui lòng thử lại!',
+        })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getOrdersImportInventory = async () => {
     try {
       setLoading(true)
@@ -287,19 +324,12 @@ export default function ImportInventories() {
   }, [paramsFilter])
 
   return (
-    <div className={`${styles['import-inventory-container']} ${styles['card']}`}>
-      <Row
-        justify="space-between"
-        wrap={false}
-        style={{ fontSize: 17, paddingBottom: 20, borderBottom: '1px solid #ece2e2' }}
-      >
-        <h3>Nhập hàng</h3>
-        <Link to={ROUTES.IMPORT_INVENTORY}>
-          <Button size="large" type="primary">
-            Tạo đơn nhập hàng
-          </Button>
-        </Link>
-      </Row>
+    <div className="card">
+      <TitlePage title="Nhập hàng">
+        <Button size="large" type="primary" onClick={() => history.push(ROUTES.IMPORT_INVENTORY)}>
+          Tạo đơn nhập hàng
+        </Button>
+      </TitlePage>
       <div style={{ marginTop: 20 }}>
         <Space>
           <Select
@@ -640,6 +670,18 @@ export default function ImportInventories() {
               return {
                 ...column,
                 render: (text, record) => record.status && BILL_STATUS_ORDER[record.status],
+              }
+            if (column.key === 'action')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <Popconfirm
+                    onConfirm={() => _deleteOrderImportInventory(record.order_id)}
+                    title="Bạn có muốn xóa đơn nhập hàng này không?"
+                  >
+                    <DeleteOutlined style={{ color: 'red', fontSize: 17 }} />
+                  </Popconfirm>
+                ),
               }
             if (column.key === 'products')
               return {

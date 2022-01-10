@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styles from './sales-report.module.scss'
 import moment from 'moment'
-import { formatCash } from 'utils'
+import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
@@ -9,38 +9,102 @@ import { ROUTES } from 'consts'
 import { Row, Col, Button, Select, Table, Modal, DatePicker } from 'antd'
 
 //icons
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //components
 import TitlePage from 'components/title-page'
-import FilterRangeTime from './filterRangeTime'
 import SettingColumns from 'components/setting-columns'
 import columnsSalesReport from './columns'
+import exportToCSV from 'components/ExportCSV/export'
+
+//apis
+import { getReportOrder } from 'apis/report'
 
 export default function ReportFinancial() {
   const history = useHistory()
+  const dateFormat = 'YYYY-MM-DD'
 
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [loading, setLoading] = useState(false)
   const [columns, setColumns] = useState([])
+  const [countReport, setCountReport] = useState(0)
   const [salesReport, setSalesReport] = useState([])
+  const [dateFilter, setDateFilter] = useState()
+
+  const onChangeDate = (date, dateString) => {
+    setDateFilter(date)
+    if (date) {
+      paramsFilter.from_date = dateString[0]
+      paramsFilter.to_date = dateString[1]
+    } else {
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
+    }
+
+    setParamsFilter({ ...paramsFilter, page: 1 })
+  }
+
+  const _getReportOrderToExportExcel = async () => {
+    let reportNew = []
+    try {
+      setLoading(true)
+      const res = await getReportOrder()
+      if (res.status === 200) {
+        res.data.data.map((e, index) => {
+          reportNew.push({
+            STT: index + 1,
+            'Mã hàng': e.product ? e.product.code : '',
+            'Tên hàng': e.product ? e.product.name : '',
+            ĐVT: e.product ? e.product.unit : '',
+            'Số lượng': formatCash(e.sale_quantity || 0),
+            'Doanh thu': formatCash(e.total_revenue || 0),
+            'Giá vốn': formatCash(e.base_price || 0),
+            'Lợi nhuận gộp': formatCash(e.gross_profit || 0),
+            '% Lợi nhuận': formatCash(e.profit_rate || 0),
+          })
+        })
+      }
+      setLoading(false)
+      return reportNew
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+      return reportNew
+    }
+  }
+
+  const _getReportOrder = async () => {
+    try {
+      setLoading(true)
+      const res = await getReportOrder(paramsFilter)
+      if (res.status === 200) {
+        setCountReport(res.data.count)
+        let reportNew = res.data.data.map((e) => ({
+          code: e.product ? e.product.code : '',
+          name: e.product ? e.product.name : '',
+          unit: e.product ? e.product.unit : '',
+          sale_quantity: e.sale_quantity || 0,
+          total_revenue: e.total_revenue || 0,
+          base_price: e.base_price || 0,
+          gross_profit: e.gross_profit || 0,
+          profit_rate: e.profit_rate || 0,
+        }))
+
+        setSalesReport([...reportNew])
+      }
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
 
   useEffect(() => {
-    let data = []
-    for (let i = 0; i < 10; i++)
-      data.push({
-        code: Math.floor(Math.random() * 10000),
-        name: 'Mặt Hàng A',
-        unit: 'C',
-        quantity: Math.floor(Math.random() * 15),
-        sales: formatCash(Math.floor(Math.random() * 1000000)),
-        price_base: formatCash(Math.floor(Math.random() * 100000)),
-        profit: formatCash(Math.floor(Math.random() * 10000)),
-        percent_sales: formatCash(Math.floor(Math.random() * 50)),
-      })
-    setSalesReport(data)
-  }, [])
-  const dateFormat = 'YYYY/MM/DD'
+    _getReportOrder()
+  }, [paramsFilter])
+
   return (
-    <div className={styles['report']}>
+    <div className="card">
       <TitlePage
         title={
           <Row
@@ -49,71 +113,131 @@ export default function ReportFinancial() {
             style={{ cursor: 'pointer' }}
             onClick={() => history.push(ROUTES.REPORTS)}
           >
-            <ArrowLeftOutlined style={{ marginRight: 10 }} />
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
             Báo cáo bán hàng
           </Row>
         }
       >
-        <SettingColumns
+        {/* <SettingColumns
           columnsDefault={columnsSalesReport}
           columns={columns}
           setColumns={setColumns}
           nameColumn="columnsSalesReport"
-        />
+        /> */}
+        <Button
+          icon={<VerticalAlignTopOutlined />}
+          onClick={async () => {
+            const dataExport = await _getReportOrderToExportExcel()
+            exportToCSV(dataExport, 'Báo cáo bán hàng')
+          }}
+          style={{ backgroundColor: 'green', borderColor: 'green' }}
+          size="large"
+          type="primary"
+        >
+          Xuất excel
+        </Button>
       </TitlePage>
 
       <Row gutter={10} style={{ marginTop: 20, marginBottom: 20 }}>
-        <DatePicker.RangePicker
-          placeholder="Lọc theo ngày"
-          style={{ width: 350 }}
-          size="large"
-          defaultValue={[moment('2021/11/01', dateFormat), moment('2021/12/01', dateFormat)]}
-          format={dateFormat}
-        />
-        {/* <Col xs={24} lg={8}>
-          <Select placeholder="Chọn loại phiếu" allowClear style={{ width: '100%' }} size="large">
-            <Select.Option value="chi">Phiếu chi</Select.Option>
-            <Select.Option value="thu">Phiếu chi</Select.Option>
-          </Select>
-        </Col>
-        <Col>
-          <Select
-            placeholder="Chọn hình thức thanh toán"
-            allowClear
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <DatePicker.RangePicker
+            value={dateFilter}
+            onChange={onChangeDate}
             style={{ width: '100%' }}
             size="large"
-          >
-            <Select.Option value="money">Tiền mặt</Select.Option>
-            <Select.Option value="point">Điểm</Select.Option>
-            <Select.Option value="bank">Thẻ ngân hàng</Select.Option>
-          </Select>
+            format={dateFormat}
+          />
         </Col>
-        <Col>
-          <FilterRangeTime filter={filter} setFilter={setFilter} />
-        </Col> */}
       </Row>
 
       <Table
-        columns={columns.map((column) => {
+        columns={columnsSalesReport.map((column) => {
           if (column.key === 'stt') return { ...column, render: (text, record, index) => index + 1 }
+          if (column.key === 'code') return { ...column, sorter: (a, b) => compare(a, b, 'code') }
+          if (column.key === 'name') return { ...column, sorter: (a, b) => compare(a, b, 'name') }
+          if (column.key === 'unit') return { ...column, sorter: (a, b) => compare(a, b, 'unit') }
+          if (column.key === 'sale_quantity')
+            return {
+              ...column,
+              sorter: (a, b) => compare(a, b, 'sale_quantity'),
+              render: (text, record) =>
+                record.sale_quantity && formatCash(record.sale_quantity || 0),
+            }
+          if (column.key === 'total_revenue')
+            return {
+              ...column,
+              sorter: (a, b) => compare(a, b, 'total_revenue'),
+              render: (text, record) =>
+                record.total_revenue && formatCash(record.total_revenue || 0),
+            }
+          if (column.key === 'gross_profit')
+            return {
+              ...column,
+              sorter: (a, b) => compare(a, b, 'gross_profit'),
+              render: (text, record) => record.gross_profit && formatCash(record.gross_profit || 0),
+            }
+          if (column.key === 'base_price')
+            return {
+              ...column,
+              sorter: (a, b) => compare(a, b, 'base_price'),
+              render: (text, record) => record.base_price && formatCash(record.base_price || 0),
+            }
+          if (column.key === 'profit_rate')
+            return {
+              ...column,
+              sorter: (a, b) => compare(a, b, 'profit_rate'),
+              render: (text, record) => record.profit_rate && formatCash(record.profit_rate || 0),
+            }
           return column
         })}
+        loading={loading}
         dataSource={salesReport}
         size="small"
+        bordered
+        pagination={{
+          position: ['bottomLeft'],
+          current: paramsFilter.page,
+          pageSize: paramsFilter.page_size,
+          pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+          showQuickJumper: true,
+          onChange: (page, pageSize) =>
+            setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+          total: countReport,
+        }}
+        style={{ width: '100%' }}
         summary={(pageData) => (
           <Table.Summary.Row>
-            {columns.map((e, index) => {
-              if (e.key === 'stt')
-                return (
-                  <Table.Summary.Cell>
-                    <h4>Tổng</h4>
-                  </Table.Summary.Cell>
-                )
-              if (e.key === 'quantity') return <Table.Summary.Cell>100</Table.Summary.Cell>
-              if (['sales', 'price_base', 'percent_sales'].includes(e.key))
-                return <Table.Summary.Cell>500,500</Table.Summary.Cell>
-              return <Table.Summary.Cell></Table.Summary.Cell>
-            })}
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>Tổng</div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>
+                {formatCash(pageData.reduce((total, current) => total + current.sale_quantity, 0))}
+              </div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>
+                {formatCash(pageData.reduce((total, current) => total + current.total_revenue, 0))}
+              </div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>
+                {formatCash(pageData.reduce((total, current) => total + current.base_price, 0))}
+              </div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>
+                {formatCash(pageData.reduce((total, current) => total + current.gross_profit, 0))}
+              </div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>
+                {pageData.reduce((total, current) => total + current.profit_rate, 0)}
+              </div>
+            </Table.Summary.Cell>
           </Table.Summary.Row>
         )}
       />

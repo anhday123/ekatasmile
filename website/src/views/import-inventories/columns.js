@@ -43,6 +43,10 @@ const columns = [
     title: 'Danh sách sản phẩm',
     key: 'products',
   },
+  {
+    title: 'Hành động',
+    key: 'action',
+  },
 ]
 
 export default columns

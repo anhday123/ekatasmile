@@ -1,7 +1,10 @@
-import styles from './activity-diary.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
-import { getActions } from 'apis/action'
+import { useHistory } from 'react-router-dom'
+import { ROUTES } from 'consts'
+import { compare, compareCustom } from 'utils'
+
+//antd
 import {
   notification,
   message,
@@ -14,56 +17,45 @@ import {
   Modal,
   Popover,
   Button,
-  Typography,
 } from 'antd'
+
+//icons
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import { Link } from 'react-router-dom'
-import { ROUTES } from 'consts'
-import { compare, compareCustom } from 'utils'
+
+//components
+import TitlePage from 'components/title-page'
+
+//apis
+import { getActions } from 'apis/action'
+
 const { Option } = Select
-const { Text } = Typography
 const { RangePicker } = DatePicker
 const columns = [
   {
     title: 'STT',
     dataIndex: 'stt',
-    width: 150,
   },
   {
     title: 'Tên khách hàng',
     dataIndex: 'customerName',
-    width: 150,
   },
   {
     title: 'Mã khách hàng',
     dataIndex: 'customerCode',
-    width: 150,
   },
   {
     title: 'Loại khách hàng',
     dataIndex: 'customerType',
-    width: 150,
   },
   {
     title: 'Liên hệ',
     dataIndex: 'phoneNumber',
-    width: 150,
   },
 ]
 
-const data = []
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    stt: i,
-    customerName: `Nguyễn Văn A ${i}`,
-    customerCode: `PRX ${i}`,
-    customerType: `Tiềm năng ${i}`,
-    phoneNumber: `038494349${i}`,
-  })
-}
 export default function ActivityDiary() {
   const { Search } = Input
+  const history = useHistory()
   const [loading, setLoading] = useState(false)
   const [modal2Visible, setModal2Visible] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -139,7 +131,6 @@ export default function ActivityDiary() {
     {
       title: 'Tên người dùng',
       dataIndex: 'performer',
-      width: 150,
       render: (text, record) =>
         record.performer && record.performer.first_name && record.performer.last_name
           ? `${record.performer.first_name} ${record.performer.last_name}`
@@ -153,20 +144,17 @@ export default function ActivityDiary() {
     {
       title: 'Tên chức năng',
       dataIndex: 'name',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'name'),
     },
     {
       title: 'Thời gian thao tác',
       dataIndex: 'date',
-      width: 150,
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : ''),
       sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
     {
       title: 'Tài khoản',
       dataIndex: 'username',
-      width: 150,
       render: (text, record) =>
         record.bussiness_id && record.bussiness_id.username ? record.bussiness_id.username : '',
       sorter: (a, b) => compare(a, b, 'username'),
@@ -174,7 +162,6 @@ export default function ActivityDiary() {
     {
       title: 'Tên công ty',
       dataIndex: 'city',
-      width: 150,
       render: (text, record) =>
         record.data && record.data.company_name ? record.data.company_name : '',
       sorter: (a, b) => compare(a, b, 'city'),
@@ -182,22 +169,17 @@ export default function ActivityDiary() {
     {
       title: 'Quận/huyện',
       dataIndex: 'district',
-      width: 150,
       render: (text, record) => (record.data && record.data.district ? record.data.district : ''),
       sorter: (a, b) => compare(a, b, 'district'),
     },
     {
       title: 'Thao tác',
       dataIndex: 'type',
-      fixed: 'right',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Giao diện',
       dataIndex: 'properties',
-      fixed: 'right',
-      width: 150,
       sorter: (a, b) => compare(a, b, 'properties'),
     },
   ]
@@ -317,156 +299,105 @@ export default function ActivityDiary() {
   }
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            paddingBottom: '1rem',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Link
-            className={styles['supplier_add_back_parent']}
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
-          >
-            <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
-              }}
-              className={styles['supplier_add_back']}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              style={{ cursor: 'pointer' }}
             >
-              Nhật ký hoạt động
-            </div>
-          </Link>
-        </div>
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                style={{ width: '100%' }}
-                name="name"
-                value={valueSearch}
-                enterButton
-                onChange={onSearch}
-                className={styles['orders_manager_content_row_col_search']}
-                placeholder="Tìm kiếm theo tên"
-                allowClear
-              />
-            </div>
+              <ArrowLeftOutlined />
+              <div style={{ marginLeft: 8 }}>Nhật ký hoạt động</div>
+            </Row>
+          }
+        ></TitlePage>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 15 }}>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+            <Input
+              size="large"
+              style={{ width: '100%' }}
+              name="name"
+              value={valueSearch}
+              enterButton
+              onChange={onSearch}
+              placeholder="Tìm kiếm theo tên"
+              allowClear
+            />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                value={
-                  clear === 1
-                    ? []
-                    : start !== ''
-                    ? [moment(start, dateFormat), moment(end, dateFormat)]
-                    : []
-                }
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                onChange={onChangeDate}
-              />
-            </div>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+            <RangePicker
+              size="large"
+              className="br-15__date-picker"
+              value={
+                clear === 1
+                  ? []
+                  : start !== ''
+                  ? [moment(start, dateFormat), moment(end, dateFormat)]
+                  : []
+              }
+              style={{ width: '100%' }}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              onChange={onChangeDate}
+            />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn thao tác"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                value={type ? type : 'default'}
-                onChange={(event) => {
-                  handleChange(event)
-                }}
-              >
-                <Option value="default">Tất cả thao tác</Option>
-                {unique &&
-                  unique.length > 0 &&
-                  unique.map((values, index) => {
-                    return <Option value={values}>{values}</Option>
-                  })}
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Chọn thao tác"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={type ? type : 'default'}
+              onChange={(event) => {
+                handleChange(event)
+              }}
+            >
+              <Option value="default">Tất cả thao tác</Option>
+              {unique &&
+                unique.length > 0 &&
+                unique.map((values, index) => {
+                  return <Option value={values}>{values}</Option>
+                })}
+            </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn thao tác"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                value={properties ? properties : 'default'}
-                onChange={(event) => {
-                  handleChangeProperties(event)
-                }}
-              >
-                <Option value="default">Tất cả giao diện</Option>
-                {uniqueProperties &&
-                  uniqueProperties.length > 0 &&
-                  uniqueProperties.map((values, index) => {
-                    return <Option value={values}>{values}</Option>
-                  })}
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+            <Select
+              size="large"
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Chọn thao tác"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={properties ? properties : 'default'}
+              onChange={(event) => {
+                handleChangeProperties(event)
+              }}
+            >
+              <Option value="default">Tất cả giao diện</Option>
+              {uniqueProperties &&
+                uniqueProperties.length > 0 &&
+                uniqueProperties.map((values, index) => {
+                  return <Option value={values}>{values}</Option>
+                })}
+            </Select>
           </Col>
         </Row>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-            marginTop: '1rem',
-          }}
-        >
+        <Row justify="end">
           <Button onClick={onClickClear} type="primary" size="large">
             Xóa tất cả lọc
           </Button>
-        </div>
-        <div
-          style={{
-            width: '100%',
-            marginTop: '1rem',
-            border: '1px solid rgb(243, 234, 234)',
-          }}
-        >
+        </Row>
+        <div style={{ width: '100%', marginTop: 5, border: '1px solid rgb(243, 234, 234)' }}>
           <Table
             rowKey="_id"
             loading={loading}
@@ -475,6 +406,7 @@ export default function ActivityDiary() {
             columns={columnsPromotion}
             dataSource={activityDiary}
             scroll={{ y: 500 }}
+            style={{ width: '100%' }}
           />
         </div>
       </div>
@@ -521,13 +453,12 @@ export default function ActivityDiary() {
               overflow: 'auto',
             }}
           >
-            {' '}
             <Table
               size="small"
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}
-              dataSource={data}
+              // dataSource={data}
             />
           </div>
         </div>

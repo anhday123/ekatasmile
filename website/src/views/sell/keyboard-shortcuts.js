@@ -57,10 +57,9 @@ export default function KeyboardShortCuts() {
           borderColor: '#192DA0',
           borderRadius: 5,
           color: 'white',
-          marginRight: 5,
         }}
       >
-        Danh sách phím tắt
+        Phím tắt
       </Button>
       <Modal
         width={800}

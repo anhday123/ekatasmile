@@ -5,6 +5,8 @@ export const getOrdersImportInventory = (params) => get('/inventory/import', par
 export const updateOrderImportInventory = (body, id) =>
   patch('/inventory/import/update/' + id, body)
 export const createOrderImportInventory = (body) => post('/inventory/import/create', body)
+export const deleteOrderImportInventory = (id) =>
+  destroy('/inventory/import/delete', { order_id: [id] })
 export const uploadOrdersImportInventory = (formData) => {
   return axios.post(
     'https://quantribanhang.viesoftware.vn/api/inventory/import/create/file',
