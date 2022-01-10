@@ -406,20 +406,11 @@ export default function ShippingProduct() {
               style={{ width: '100%' }}
               onChange={(value) => _onFilters('export_location_name', value)}
             >
-              <Select.OptGroup label="Kho" key="branch">
-                {branches.map((e) => (
-                  <Select.Option value={e.name} key={e.name + e.branch_id + ''}>
-                    {e.name}
-                  </Select.Option>
-                ))}
-              </Select.OptGroup>
-              <Select.OptGroup label="Cửa hàng" key="store">
-                {stores.map((e) => (
-                  <Select.Option value={e.name} key={e.name + e.store_id + ''}>
-                    {e.name}
-                  </Select.Option>
-                ))}
-              </Select.OptGroup>
+              {branches.map((e, index) => (
+                <Select.Option value={e.name} key={index}>
+                  {e.name}
+                </Select.Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={6}>
@@ -430,20 +421,11 @@ export default function ShippingProduct() {
               style={{ width: '100%' }}
               onChange={(value) => _onFilters('import_location_name', value)}
             >
-              <Select.OptGroup label="Kho" key="branch">
-                {branches.map((e) => (
-                  <Select.Option value={e.name} key={e.name + e.branch_id + ''}>
-                    {e.name}
-                  </Select.Option>
-                ))}
-              </Select.OptGroup>
-              <Select.OptGroup label="Cửa hàng" key="store">
-                {stores.map((e) => (
-                  <Select.Option value={e.name} key={e.name + e.store_id + ''}>
-                    {e.name}
-                  </Select.Option>
-                ))}
-              </Select.OptGroup>
+              {branches.map((e, index) => (
+                <Select.Option value={e.name} key={index}>
+                  {e.name}
+                </Select.Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={6}>
