@@ -32,11 +32,12 @@ module.exports._create = async (req, res, next) => {
         let [orderMaxId] = await Promise.all([
             client.db(req.user.database).collection('AppSetting').findOne({ name: 'Orders' }),
         ]);
-        if (orderMaxId) {
+        let order_id = (() => {
             if (orderMaxId && orderMaxId.value) {
                 return orderMaxId.value;
             }
-        }
+            return 0;
+        })();
         let productIds = [];
         let variantIds = [];
         req.body.order_details.map((detail) => {
@@ -92,8 +93,8 @@ module.exports._create = async (req, res, next) => {
                 quantity: _detail.quantity,
                 total_base_price: _detail.total_base_price || 0,
                 total_cost: _detail.price * _detail.quantity,
-                total_tax: _detail.total_tax || 0,
-                total_discount: _detail.total_discount || 0,
+                tax_amount: _detail.tax_amount || 0,
+                discount: _detail.discount || 0,
                 final_cost: _detail.price * _detail.quantity - _detail.total_tax || 0 - _detail.total_discount || 0,
                 fulfillment_service: '',
                 fulfillment_id: '',
