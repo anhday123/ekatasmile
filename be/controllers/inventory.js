@@ -1300,18 +1300,15 @@ module.exports._createTransportOrder = async (req, res, next) => {
                             }
                             return '';
                         })(),
-                        inventory_id: (() => {
+                        branch_id: (() => {
                             if (order.import_location && order.import_location.branch_id) {
                                 return order.import_location.branch_id;
                             }
+                            return '';
+                        })(),
+                        store_id: (() => {
                             if (order.import_location && order.import_location.store_id) {
                                 return order.import_location.store_id;
-                            }
-                            return 0;
-                        })(),
-                        name: (() => {
-                            if (order.import_location_info && order.import_location_info.branch_id) {
-                                return order.import_location_info.name;
                             }
                             return '';
                         })(),
