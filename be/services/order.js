@@ -116,10 +116,10 @@ module.exports._get = async (req, res, next) => {
                     from: 'Branchs',
                     localField: 'sale_location.branch_id',
                     foreignField: 'branch_id',
-                    as: 'branch',
+                    as: 'sale_location',
                 },
             },
-            { $unwind: { path: '$sale_location.branch', preserveNullAndEmptyArrays: true } }
+            { $unwind: { path: '$sale_location', preserveNullAndEmptyArrays: true } }
         );
         aggregateQuery.push(
             {

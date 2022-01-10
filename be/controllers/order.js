@@ -18,14 +18,14 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        let hmac = req.body.order;
-        try {
-            let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
-            let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-            req.body = JSON.parse(decryptedData);
-        } catch (err) {
-            throw new Error('400: Đơn hàng không chính xác!');
-        }
+        // let hmac = req.body.order;
+        // try {
+        //     let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
+        //     let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+        //     req.body = JSON.parse(decryptedData);
+        // } catch (err) {
+        //     throw new Error('400: Đơn hàng không chính xác!');
+        // }
         if (!req.body.order_details || req.body.order_details.length == 0) {
             throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
         }
@@ -126,29 +126,29 @@ module.exports._create = async (req, res, next) => {
                     return {};
                 }
                 return {
-                    tracking_number: data.tracking_number,
-                    to_name: data.to_name,
-                    to_phone: data.to_phone,
-                    to_address: data.to_address,
-                    to_ward: data.to_ward,
-                    to_district: data.to_district,
-                    to_province: data.to_province,
-                    to_province_code: data.to_province_code,
-                    to_postcode: data.to_postcode,
-                    to_country_code: data.to_country_code,
-                    return_name: data.return_name,
-                    return_phone: data.return_phone,
-                    return_address: data.return_address,
-                    return_ward: data.return_ward,
-                    return_district: data.return_district,
-                    return_province: data.return_province,
-                    return_province_code: data.return_province_code,
-                    return_postcode: data.return_postcode,
-                    return_country_code: data.return_country_code,
-                    fee_shipping: data.fee_shipping,
-                    cod: data.cod,
-                    delivery_time: data.delivery_time,
-                    complete_time: data.complete_time,
+                    tracking_number: data.tracking_number || '',
+                    to_name: data.to_name || '',
+                    to_phone: data.to_phone || '',
+                    to_address: data.to_address || '',
+                    to_ward: data.to_ward || '',
+                    to_district: data.to_district || '',
+                    to_province: data.to_province || '',
+                    to_province_code: data.to_province_code || '',
+                    to_postcode: data.to_postcode || '',
+                    to_country_code: data.to_country_code || '',
+                    return_name: data.return_name || '',
+                    return_phone: data.return_phone || '',
+                    return_address: data.return_address || '',
+                    return_ward: data.return_ward || '',
+                    return_district: data.return_district || '',
+                    return_province: data.return_province || '',
+                    return_province_code: data.return_province_code || '',
+                    return_postcode: data.return_postcode || '',
+                    return_country_code: data.return_country_code || '',
+                    fee_shipping: data.fee_shipping || '',
+                    cod: data.cod || '',
+                    delivery_time: data.delivery_time || '',
+                    complete_time: data.complete_time || '',
                 };
             })(req.body.shipping_info),
             voucher: req.body.voucher,
@@ -183,7 +183,7 @@ module.exports._create = async (req, res, next) => {
             product_handle: '',
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
-            hmac: hmac,
+            // hmac: hmac,
         };
         await client
             .db(req.user.database)
