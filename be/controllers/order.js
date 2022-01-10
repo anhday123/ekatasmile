@@ -183,6 +183,7 @@ module.exports._create = async (req, res, next) => {
             product_handle: '',
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
+            hmac: hmac,
         };
         await client
             .db(req.user.database)
@@ -276,7 +277,7 @@ module.exports._create = async (req, res, next) => {
                 })
             );
         }
-
+        req['body'] = _order;
         await orderService._create(req, res, next);
     } catch (err) {
         next(err);
