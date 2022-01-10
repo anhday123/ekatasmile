@@ -551,7 +551,7 @@ module.exports._getOrderReport = async (req, res, next) => {
                         product: {},
                         sale_quantity: 0,
                         total_revenue: 0,
-                        base_prices: 0,
+                        base_price: 0,
                         gross_profit: 0,
                         profit_rate: 0,
                     };
