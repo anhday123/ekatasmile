@@ -313,7 +313,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(req.user.database).collection(`Promotions`).updateOne(req.params, { $set: req.body });
+        await client.db(req.user.database).collection(`Orders`).updateOne(req.params, { $set: req.body });
         try {
             let _action = {
                 business_id: req.user.business_id,
