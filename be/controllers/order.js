@@ -158,7 +158,7 @@ module.exports._create = async (req, res, next) => {
             total_discount: req.body.total_discount,
             final_cost: req.body.final_cost,
             // UNPAID - PAID - REFUND
-            payment_info: req.body.payment_info,
+            payments: req.body.payments,
             customer_paid: req.body.customer_paid,
             customer_debt: req.body.customer_debt,
             // DRAFT  - PROCESSING - COMPLETE - CANCEL - REFUND

@@ -124,17 +124,6 @@ module.exports._get = async (req, res, next) => {
         aggregateQuery.push(
             {
                 $lookup: {
-                    from: 'Stores',
-                    localField: 'sale_location.store_id',
-                    foreignField: 'store_id',
-                    as: 'store',
-                },
-            },
-            { $unwind: { path: '$sale_location.store', preserveNullAndEmptyArrays: true } }
-        );
-        aggregateQuery.push(
-            {
-                $lookup: {
                     from: 'Customers',
                     localField: 'customer_id',
                     foreignField: 'customer_id',
