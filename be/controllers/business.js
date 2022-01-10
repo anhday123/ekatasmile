@@ -359,43 +359,41 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        let user = await client.db(req.user.database).collection('Users').findOne(req.params);
-        if (!user) {
-            throw new Error(`400: Người dùng không tồn tại!`);
+        let business = await client.db(SDB).collection('Business').findOne(req.params);
+        if (!business) {
+            throw new Error(`400: Doanh nghiệp không tồn tại!`);
         }
         delete req.body._id;
-        delete req.body.user_id;
-        delete req.body.code;
-        delete req.body.username;
+        delete req.body.business_id;
+        delete req.body.system_user_id;
+        delete req.body.database_name;
         delete req.body.create_date;
         delete req.body.creator_id;
-        let _user = { ...user, ...req.body };
-        _user = {
-            user_id: _user.user_id,
-            code: _user.code,
-            username: _user.username,
-            password: _user.password,
-            email: _user.email,
-            phone: _user.phone,
-            avatar: _user.avatar,
-            first_name: _user.first_name,
-            last_name: _user.last_name,
-            birth_day: _user.birth_day,
-            address: _user.address,
-            district: _user.district,
-            province: _user.province,
-            branch_id: _user.branch_id,
-            store_id: _user.store_id,
-            last_login: _user.last_login,
-            create_date: _user.create_date,
-            creator_id: _user.creator_id,
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: req.user.user_id,
-            active: _user.active,
-            slug_name: removeUnicode(`${req.body.first_name}${req.body.last_name}`, true).toLowerCase(),
-            slug_address: removeUnicode(`${req.body.address}`, true).toLowerCase(),
-            slug_district: removeUnicode(`${req.body.district}`, true).toLowerCase(),
-            slug_province: removeUnicode(`${req.body.province}`, true).toLowerCase(),
+        let _business = { ...business, ...req.body };
+        _business = {
+            business_id: _business.business_id,
+            system_user_id: _business.system_user_id,
+            prefix: _business.prefix,
+            business_name: _business.business_name,
+            database_name: _business.database_name,
+            company_name: _business.company_name,
+            company_email: _business.company_email,
+            company_phone: _business.company_phone,
+            company_fax: _business.company_fax,
+            
+            company_website: '',
+            company_address: '',
+            company_district: '',
+            company_province: '',
+            tax_code: '',
+            career_id: '',
+            price_recipe: 'FIFO',
+            verify_with: 'PHONE',
+            create_date: '2022-01-10T00:15:26+07:00',
+            creator_id: 1,
+            last_update: '2022-01-10T00:15:26+07:00',
+            updater_id: 1,
+            active: true,
         };
         req['body'] = _user;
         await businessService._update(req, res, next);

@@ -1739,6 +1739,92 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         if (_order.status == 'VERIFY' && order.status != 'VERIFY') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
+            let sortQuery = (() => {
+                if (req.user.price_recipe == 'FIFO') {
+                    return { create_date: 1 };
+                }
+                return { create_date: -1 };
+            })();
+            let locations = await client
+                .db(req.user.database)
+                .collection('Locations')
+                .find({
+                    variant_id: { $in: variantIds },
+                    branch_id: _order.export_location.branch_id,
+                    quantity: { $gte: 0 },
+                })
+                .sort(sortQuery)
+                .toArray();
+            let _locations = {};
+            locations.map((location) => {
+                if (!_locations[String(location.variant_id)]) {
+                    _locations[String(location.variant_id)] = [];
+                }
+                if (_locations[String(location.variant_id)]) {
+                    _locations[String(location.variant_id)].push(location);
+                }
+            });
+            let prices = await client
+                .db(req.user.database)
+                .collection('Prices')
+                .find({ variant_id: { $in: variantIds } })
+                .toArray();
+            let _prices = {};
+            prices.map((price) => {
+                _prices[String(price.price_id)] = price;
+            });
+            let _updates = [];
+            _order.products = _order.products.map((eProduct) => {
+                if (!_locations[`${eProduct.variant_id}`]) {
+                    throw new Error('400: Sản phẩm trong kho không đủ số lượng!');
+                }
+                let detailQuantity = eProduct.quantity;
+                for (let i in _locations[`${eProduct.variant_id}`]) {
+                    location = _locations[`${eProduct.variant_id}`][i];
+                    if (detailQuantity == 0) {
+                        break;
+                    }
+                    let _basePrice = {
+                        location_id: location.location_id,
+                        branch_id: location.branch_id,
+                        product_id: location.product_id,
+                        variant_id: location.variant_id,
+                        price_id: location.price_id,
+                        quantity: 0,
+                        base_price: (() => {
+                            if (_prices[location.price_id] && _prices[location.price_id].import_price) {
+                                return _prices[location.price_id].import_price;
+                            }
+                            throw new Error('400: Không tìm thấy giá vốn!');
+                        })(),
+                    };
+                    if (detailQuantity <= location.quantity) {
+                        _basePrice.quantity = detailQuantity;
+                        location.quantity -= detailQuantity;
+                        detailQuantity = 0;
+                    }
+                    if (detailQuantity > location.quantity) {
+                        _basePrice.quantity = location.quantity;
+                        detailQuantity -= location.quantity;
+                        location.quantity = 0;
+                    }
+                    eProduct.base_prices.push(_basePrice);
+                    eProduct.total_base_price += location.quantity * _prices[location.price_id].import_price;
+                    _updates.push(location);
+                }
+                if (detailQuantity > 0) {
+                    throw new Error('400: Sản phẩm trong kho không đủ số lượng!');
+                }
+                return eProduct;
+            });
+            await Promise.all(
+                _updates.map((eUpdate) => {
+                    return client
+                        .db(req.user.database)
+                        .collection('Locations')
+                        .updateOne({ location_id: eUpdate.location_id }, { $set: eUpdate });
+                })
+            );
         }
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
             _order['completer_id'] = Number(req.user.user_id);
@@ -1759,14 +1845,13 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     }),
             ]);
             let locations = [];
-            _order.products.map((product) => {
+            _order.products.map((eProduct) => {
                 location_id++;
                 let _location = {
-                    business_id: Number(_order.business_id),
                     location_id: Number(location_id),
-                    product_id: Number(product.product_id),
-                    variant_id: Number(product.variant_id),
-                    price_id: Number(product.price_id || 0),
+                    product_id: Number(eProduct.product_id),
+                    variant_id: Number(eProduct.variant_id),
+                    price_id: Number(eProduct.price_id || 0),
                     type: (() => {
                         if (_order.import_location && _order.import_location.branch_id) {
                             return 'BRANCH';
@@ -1776,22 +1861,19 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                         }
                         return '';
                     })(),
-                    inventory_id: (() => {
+                    branch_id: (() => {
                         if (_order.import_location && _order.import_location.branch_id) {
                             return _order.import_location.branch_id;
                         }
+                        return '';
+                    })(),
+                    store_id: (() => {
                         if (_order.import_location && _order.import_location.store_id) {
                             return _order.import_location.store_id;
                         }
-                        return 0;
-                    })(),
-                    name: (() => {
-                        if (_order.import_location_info && _order.import_location_info.branch_id) {
-                            return _order.import_location_info.name;
-                        }
                         return '';
                     })(),
-                    quantity: product.quantity,
+                    quantity: eProduct.quantity,
                     create_date: moment().tz(TIMEZONE).format(),
                     last_update: moment().tz(TIMEZONE).format(),
                     creator_id: Number(req.user.user_id),
@@ -1814,6 +1896,67 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         if (_order.status == 'CANCEL' && order.status != 'CANCEL') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
+            let _updates = [];
+            _order.products.map((eProduct) => {
+                if (eProduct.base_prices) {
+                    eProduct.base_prices.map((eBasePrice) => {
+                        _updates.push(eBasePrice);
+                    });
+                }
+            });
+            let importOrderMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'ImportOrders' });
+            let importOrderId = (() => {
+                if (importOrderMaxId && importOrderMaxId.value) {
+                    return importOrderMaxId.value;
+                }
+                return 0;
+            })();
+            importOrderId++;
+            let importOrder = {
+                order_id: importOrderId,
+                code: String(importOrderId).padStart(6, '0'),
+                import_location: _order.sale_location.store_id,
+                import_location_info: _order.sale_location,
+                products: _order.products || [],
+                total_quantity: 0,
+                total_cost: 0,
+                total_tax: 0,
+                total_discount: 0,
+                fee_shipping: 0,
+                final_cost: 0,
+                note: 'Phiêu nhập hàng của đơn hàng bị hoàn trả',
+                files: [],
+                tags: [],
+                slug_tags: [],
+                // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+                status: 'DRAFT',
+                payment_info: [],
+                payment_amount: 0,
+                // UNPAID - PAYING - PAID - REFUND
+                payment_status: 'PAID',
+                create_date: moment().tz(TIMEZONE).format(),
+                creator_id: req.user.user_id,
+                verify_date: '',
+                verifier_id: '',
+                delivery_date: '',
+                deliverer_id: '',
+                complete_date: '',
+                completer_id: '',
+                cancel_date: '',
+                canceler_id: '',
+                order_creator_id: req.body.order_creator_id,
+                receiver_id: req.body.receiver_id,
+                last_update: moment().tz(TIMEZONE).format(),
+                active: true,
+            };
+            await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: importOrderId } });
+            await client.db(req.user.database).collection('ImportOrders').insertOne(importOrder);
         }
         await client.db(req.user.database).collection('TransportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
