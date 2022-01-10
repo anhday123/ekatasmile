@@ -78,7 +78,7 @@ export default function ShippingProductAdd() {
         const InputQuantity = () => (
           <InputNumber
             style={{ width: 200 }}
-            onBlur={(e) => {
+            onMouseOut={(e) => {
               let value = e.target.value.replaceAll(',', '')
               _editProductInTransport('quantity', +value, index)
             }}
