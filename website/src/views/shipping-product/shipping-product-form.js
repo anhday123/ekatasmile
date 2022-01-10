@@ -78,7 +78,7 @@ export default function ShippingProductAdd() {
         const InputQuantity = () => (
           <InputNumber
             style={{ width: 200 }}
-            onBlur={(e) => {
+            onMouseOut={(e) => {
               let value = e.target.value.replaceAll(',', '')
               _editProductInTransport('quantity', +value, index)
             }}
@@ -279,38 +279,23 @@ export default function ShippingProductAdd() {
               >
                 <Select
                   showSearch
-                  onChange={(value, option) => {
+                  onChange={(value) => {
                     let p = {}
                     if (value) {
-                      if (+option.key < 0) {
-                        const storeFind = stores.find((e) => e.name === value)
-                        if (storeFind) p.store_id = +storeFind.store_id * -1
-                      } else {
-                        const branchFind = branches.find((e) => e.name === value)
-                        if (branchFind) p.branch_id = branchFind.branch_id
-                      }
+                      const branchFind = branches.find((e) => e.name === value)
+                      if (branchFind) p.branch_id = branchFind.branch_id
                     }
-
                     setExportLocation({ ...p })
                   }}
                   allowClear
                   size="large"
                   placeholder="Chọn nơi chuyển"
                 >
-                  <Select.OptGroup label="Kho" key="branch">
-                    {branches.map((e) => (
-                      <Select.Option value={e.name} key={e.branch_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                  <Select.OptGroup label="Cửa hàng" key="store">
-                    {stores.map((e) => (
-                      <Select.Option value={e.name} key={e.store_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
+                  {branches.map((e, index) => (
+                    <Select.Option value={e.name} key={index}>
+                      {e.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -322,16 +307,11 @@ export default function ShippingProductAdd() {
                 name="import_location"
               >
                 <Select
-                  onChange={(value, option) => {
+                  onChange={(value) => {
                     let p = {}
                     if (value) {
-                      if (+option.key < 0) {
-                        const storeFind = stores.find((e) => e.name === value)
-                        if (storeFind) p.store_id = +storeFind.store_id * -1
-                      } else {
-                        const branchFind = branches.find((e) => e.name === value)
-                        if (branchFind) p.branch_id = branchFind.branch_id
-                      }
+                      const branchFind = branches.find((e) => e.name === value)
+                      if (branchFind) p.branch_id = branchFind.branch_id
                     }
 
                     setImportLocation({ ...p })
@@ -341,20 +321,11 @@ export default function ShippingProductAdd() {
                   size="large"
                   placeholder="Chọn nơi nhận"
                 >
-                  <Select.OptGroup label="Kho" key="branch">
-                    {branches.map((e) => (
-                      <Select.Option value={e.name} key={e.branch_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                  <Select.OptGroup label="Cửa hàng" key="store">
-                    {stores.map((e) => (
-                      <Select.Option value={e.name} key={e.store_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
+                  {branches.map((e, index) => (
+                    <Select.Option value={e.name} key={index}>
+                      {e.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>

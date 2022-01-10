@@ -267,26 +267,11 @@ const BaseLayout = (props) => {
       icon: <LineChartOutlined />,
     },
     {
-      path: 'transport',
-      title: 'Vận chuyển',
-      permissions: [PERMISSIONS.van_chuyen],
-      icon: <TransactionOutlined />,
-      menuItems: [
-        {
-          icon: <ClusterOutlined />,
-          pathsChild: [],
-          path: ROUTES.SHIPPING_CONTROL,
-          title: 'Đối soát',
-          permissions: [PERMISSIONS.doi_soat_van_chuyen],
-        },
-        {
-          icon: <CarOutlined />,
-          pathsChild: [],
-          path: ROUTES.SHIPPING,
-          title: 'Đối tác',
-          permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
-        },
-      ],
+      path: ROUTES.SHIPPING,
+      title: 'Đối tác vận chuyển',
+      permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
+      icon: <CarOutlined />,
+      pathsChild: [],
     },
     {
       pathsChild: [
@@ -554,7 +539,7 @@ const BaseLayout = (props) => {
               }}
             >
               {collapsed && <LogoutOutlined />}
-              Logout
+              Đăng xuất
             </Link>
           </Menu.Item>
         </Menu>

@@ -448,6 +448,7 @@ export default function Category() {
       <div style={{ margin: '25px 0' }}>
         <Space>
           <Input
+            size="large"
             allowClear
             value={valueSearch}
             onChange={_onSearch}
@@ -456,6 +457,7 @@ export default function Category() {
             placeholder="Tìm kiếm theo tên hoặc theo mã"
           />
           <Select
+            size="large"
             onChange={onChangeUserFilter}
             value={valueUserFilter}
             style={{ width: 200 }}
@@ -472,6 +474,7 @@ export default function Category() {
             })}
           </Select>
           <Select
+            size="large"
             value={valueFilterTime}
             allowClear
             style={{ width: 250 }}
