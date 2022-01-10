@@ -250,17 +250,19 @@ module.exports._create = async (req, res, next) => {
                         })(),
                     };
                     if (detailQuantity <= location.quantity) {
+                        eDetail.total_base_price += detailQuantity * _prices[location.price_id].import_price;
                         _basePrice.quantity = detailQuantity;
                         location.quantity -= detailQuantity;
                         detailQuantity = 0;
                     }
                     if (detailQuantity > location.quantity) {
+                        eDetail.total_base_price += location.quantity * _prices[location.price_id].import_price;
                         _basePrice.quantity = location.quantity;
                         detailQuantity -= location.quantity;
                         location.quantity = 0;
                     }
                     eDetail.base_prices.push(_basePrice);
-                    eDetail.total_base_price += location.quantity * _prices[location.price_id].import_price;
+
                     _updates.push(location);
                 }
                 if (detailQuantity > 0) {
@@ -376,7 +378,7 @@ module.exports._update = async (req, res, next) => {
             productIds.push(eDetail.product_id);
             variantIds.push(eDetail.variant_id);
         });
-        if (totalCost != req.body.total_cost) {
+        if (totalCost != _order.total_cost) {
             throw new Error('400: Tổng giá trị đơn hàng không chính xác!');
         }
         let [products, variants] = await Promise.all([

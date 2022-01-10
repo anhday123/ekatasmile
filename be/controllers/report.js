@@ -559,9 +559,9 @@ module.exports._getOrderReport = async (req, res, next) => {
                 if (_products[`${detail.product_id}`]) {
                     _products[`${detail.product_id}`].sale_quantity += detail.quantity;
                     _products[`${detail.product_id}`].total_revenue += detail.quantity * detail.price;
-                    _products[`${detail.product_id}`].base_prices += detail.total_base_prices;
+                    _products[`${detail.product_id}`].base_price += detail.total_base_price;
                     _products[`${detail.product_id}`].gross_profit +=
-                        detail.quantity * detail.price - detail.total_base_prices;
+                        detail.quantity * detail.price - detail.total_base_price;
                 }
             });
         });
