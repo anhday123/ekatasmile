@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
+import styles from './login.module.scss'
 import { useDispatch } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { ACTION, ROUTES } from 'consts'
 import jwt_decode from 'jwt-decode'
-
-//icons
-import store from 'assets/img/store.png'
 
 //antd
 import { Row, Col, Form, Input, Button, notification, Select, Tabs } from 'antd'
@@ -70,14 +68,14 @@ export default function Login() {
   }
 
   return (
-    <Row style={{ backgroundColor: '#5B6BE8' }}>
+    <Row className={styles['login-container']}>
       <Col
         xs={24}
         sm={24}
-        md={24}
-        lg={24}
+        md={14}
+        lg={14}
         xl={10}
-        style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}
+        className={styles['login-content']}
       >
         <Tabs
           className="tabs-login"
@@ -130,14 +128,6 @@ export default function Login() {
             </Row>
           </Tabs.TabPane>
         </Tabs>
-      </Col>
-
-      <Col xs={24} sm={24} md={24} lg={24} xl={14}>
-        <img
-          src={store}
-          style={{ width: '100%', height: '100vh', objectFit: 'contain', backgroundColor: 'white' }}
-          alt=""
-        />
       </Col>
     </Row>
   )

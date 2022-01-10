@@ -26,6 +26,7 @@ function App() {
       let subDomain = domain.split('.vdropship.vn')
       subDomain = subDomain[0].split('//')
 
+      //Khi code comment lại, code xong để lại như cũ
       const res = await checkDomain(subDomain[1])
       console.log(res)
       if (res.status === 200) {
