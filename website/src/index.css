@@ -19,12 +19,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.card-container {
-  padding: 16px;
-  margin: 16px;
-  background-color: white;
-  box-shadow: 0px 12px 23px 0px #5c37990a;
-  border-radius: 1.25rem;
-  border: 0px solid transparent;
+.card {
+  box-shadow: 0 12px 23px 0 #5c37990a;
+  border-radius: 10px;
+  border: 0 solid transparent;
   overflow: hidden;
+  background-color: white;
+  margin: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
 }

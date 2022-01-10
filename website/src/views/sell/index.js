@@ -29,7 +29,7 @@ import ModalPromotion from './promotion-available'
 import Permission from 'components/permission'
 import PaymentMethods from './payment-methods'
 import ModalOrdersReturn from './orders-returns'
-import ModalChangeStore from './change-store'
+import ModalChangeBranch from './change-branch'
 import ModalDeliveryAddress from './delivery-address'
 import ModalInfoSeller from './info-seller'
 import HeaderGroupButton from './header-group-button'
@@ -101,7 +101,7 @@ export default function Sell() {
   const [shippingsMethod, setShippingsMethod] = useState([])
   const [visibleCustomerUpdate, setVisibleCustomerUpdate] = useState(false)
 
-  const [productsAllStore, setProductsAllStore] = useState([])
+  const [productsAllBranch, setProductsAllBranch] = useState([])
   const [productsSearch, setProductsSearch] = useState([])
   const [productsRelated, setProductsRelated] = useState([])
   const [countProducts, setCountProducts] = useState(0)
@@ -117,8 +117,8 @@ export default function Sell() {
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
-  const [infoStore, setInfoStore] = useState(
-    localStorage.getItem('storeSell') ? JSON.parse(localStorage.getItem('storeSell')) : null
+  const [infoBranch, setInfoBranch] = useState(
+    localStorage.getItem('branchSell') ? JSON.parse(localStorage.getItem('branchSell')) : null
   )
 
   //object invoice
@@ -512,9 +512,9 @@ export default function Sell() {
     )
 
     useEffect(() => {
-      for (let i = 0; i < productsAllStore.length; i++) {
-        for (let j = 0; j < productsAllStore[i].variants.length; j++) {
-          const findVariant = productsAllStore[i].variants.find((e) => e._id === product._id)
+      for (let i = 0; i < productsAllBranch.length; i++) {
+        for (let j = 0; j < productsAllBranch[i].variants.length; j++) {
+          const findVariant = productsAllBranch[i].variants.find((e) => e._id === product._id)
           if (findVariant) {
             setLocations([...findVariant.locations])
             break
@@ -662,7 +662,7 @@ export default function Sell() {
     const _getVariantsByProductId = async () => {
       try {
         const res = await getProducts({
-          store_id: infoStore.store_id,
+          branch_id: infoBranch.branch_id,
           merge: true,
           detach: true,
           product_id: product.product_id,
@@ -892,17 +892,17 @@ export default function Sell() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       let shipping = {}
-      console.log(infoStore)
+
       if (invoices[indexInvoice].isDelivery) {
         shipping.shipping_company_id = invoices[indexInvoice].shipping.shipping_company_id || ''
         shipping.shipping_info = {
           ship_code: invoices[indexInvoice].shipping.code || '',
-          to_name: infoStore.name || '',
-          to_phone: infoStore.phone || '',
-          to_address: infoStore.address || '',
+          to_name: infoBranch.name || '',
+          to_phone: infoBranch.phone || '',
+          to_address: infoBranch.address || '',
           to_ward: '',
-          to_district: infoStore.district || '',
-          to_province: infoStore.province || '',
+          to_district: infoBranch.district || '',
+          to_province: infoBranch.province || '',
           to_province_code: '',
           to_postcode: 70000,
           to_country_code: '',
@@ -924,29 +924,31 @@ export default function Sell() {
       }
 
       const body = {
-        sale_location: { store_id: infoStore.store_id || '' },
+        ...shipping,
+        sale_location: { branch_id: infoBranch.branch_id || '' },
         customer_id: invoices[indexInvoice].customer
           ? invoices[indexInvoice].customer.customer_id
           : '',
         employee_id: dataUser ? dataUser.data.user_id || '' : '',
-        order_details: invoices[indexInvoice].order_details.map((item) => {
-          console.log(item)
-          return {
-            product_id: item.product_id || '',
-            variant_id: item.variant_id || '',
-            quantity: item.quantity || '',
-            total_cost: item.sumCost || '',
-            discount: item.VAT_Product || '',
-            final_cost: 4440000 || '',
-          }
-        }),
+        order_details: invoices[indexInvoice].order_details.map((product) => ({
+          product_id: product.product_id || '',
+          variant_id: product.variant_id || '',
+          quantity: product.quantity || 0,
+          price: product.price || 0,
+          total_cost: product.sumCost || 0,
+          discount: product.VAT_Product || 0,
+          final_cost: product.sumCost || 0,
+        })),
         payments: invoices[indexInvoice].payments,
-        ...shipping,
         voucher: invoices[indexInvoice].discount ? invoices[indexInvoice].discount.name || '' : '',
         promotion_id: invoices[indexInvoice].discount
           ? invoices[indexInvoice].discount.promotion_id || ''
           : '',
-        total_cost: invoices[indexInvoice].sumCostPaid || 0,
+        // total_cost: invoices[indexInvoice].sumCostPaid || 0,
+        total_cost: invoices[indexInvoice].order_details.reduce(
+          (total, current) => total + current.sumCost,
+          0
+        ),
         total_tax: invoices[indexInvoice].VAT || 0,
         total_discount:
           invoices[indexInvoice].sumCostPaid - invoices[indexInvoice].moneyToBePaidByCustomer,
@@ -955,7 +957,7 @@ export default function Sell() {
           ? invoices[indexInvoice].prepay || 0
           : invoices[indexInvoice].moneyGivenByCustomer || 0,
         customer_debt: 0,
-        bill_status: BILL_STATUS_ORDER.DRAFT,
+        bill_status: 'COMPLETE',
         ship_status: SHIP_STATUS_ORDER.DRAFT,
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
@@ -968,17 +970,18 @@ export default function Sell() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
+          _getProductsRelated()
+          _getProductsSearch()
+          _getProductsAllBranch()
           _editInvoice('code', res.data.data.code || '')
           handlePrint()
         } else
           notification.error({
-            message:
-              res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+            message: res.data.message || `Tạo đơn hàng thất bại, vui lòng thử lại`,
           })
       } else
         notification.error({
-          message:
-            res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+          message: res.data.message || `Tạo đơn hàng thất bại, vui lòng thử lại`,
         })
 
       if (res.status === 200 && res.data.success) _deleteInvoiceAfterCreateOrder()
@@ -1036,19 +1039,19 @@ export default function Sell() {
     }
   }
 
-  const _getProductsAllStore = async () => {
+  const _getProductsAllBranch = async () => {
     try {
       const res = await getProducts({ merge: true })
-      if (res.status === 200) setProductsAllStore(res.data.data)
+      if (res.status === 200) setProductsAllBranch(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
-  const _getProductsSearch = async (store_id) => {
+  const _getProductsSearch = async (branch_id) => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ store_id, merge: true, detach: true })
+      const res = await getProducts({ branch_id, merge: true, detach: true })
       console.log(res)
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
@@ -1063,7 +1066,7 @@ export default function Sell() {
       setLoadingProductRelated(true)
 
       const res = await getProducts({
-        store_id: infoStore ? infoStore.store_id : '',
+        branch_id: infoBranch ? infoBranch.branch_id : '',
         merge: true,
         detach: true,
         ...params,
@@ -1099,13 +1102,14 @@ export default function Sell() {
   useEffect(() => {
     if (localStorage.getItem('accessToken')) {
       const data = jwt_decode(localStorage.getItem('accessToken'))
-      if (!infoStore) {
-        if (data.data._store) {
-          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
-          setInfoStore(data.data._store)
-          _getProductsSearch(data.data._store.store_id)
+      console.log(data)
+      if (!infoBranch) {
+        if (data.data._branch) {
+          localStorage.setItem('branchSell', JSON.stringify(data.data._branch))
+          setInfoBranch(data.data._branch)
+          _getProductsSearch(data.data._branch.branch_id)
         }
-      } else _getProductsSearch(infoStore.store_id)
+      } else _getProductsSearch(infoBranch.branch_id)
     } else history.push(ROUTES.LOGIN)
   }, [])
 
@@ -1113,7 +1117,7 @@ export default function Sell() {
     _getInvoicesToReducer()
     _getCustomers()
     _getShippingsMethod()
-    _getProductsAllStore()
+    _getProductsAllBranch()
   }, [])
 
   useEffect(() => {
@@ -1313,7 +1317,7 @@ export default function Sell() {
           style={{ width: '100%', marginLeft: 15 }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <ModalChangeStore />
+            <ModalChangeBranch />
             <ModalInfoSeller />
           </div>
           <ModalKeyboardShortCuts />
@@ -1749,8 +1753,7 @@ export default function Sell() {
                 onChange={(value) => _editInvoice('salesChannel', value)}
               >
                 <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
-                <Select.Option value="Cửa hàng">Cửa hàng</Select.Option>
-                <Select.Option value="Kho">Kho</Select.Option>
+                <Select.Option value="Chi nhánh">Chi nhánh</Select.Option>
                 <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
                 <Select.Option value="other">Khác</Select.Option>
               </Select>

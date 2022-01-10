@@ -44,14 +44,8 @@ export default function GuaranteeAdd() {
   }
 
   return (
-    <>
-      <Form
-        onFinish={onFinish}
-        form={form}
-        layout="vertical"
-        onFinishFailed={onFinishFailed}
-        className={`${styles['product_check_add']} ${styles['card']}`}
-      >
+    <div className="card">
+      <Form onFinish={onFinish} form={form} layout="vertical" onFinishFailed={onFinishFailed}>
         <Row
           style={{
             display: 'flex',
@@ -106,9 +100,7 @@ export default function GuaranteeAdd() {
             <Form.Item
               label="Tên bảo hành"
               name="name"
-              rules={[
-                { required: true, message: 'Tên bảo hành không được để trống' },
-              ]}
+              rules={[{ required: true, message: 'Tên bảo hành không được để trống' }]}
             >
               <Input size="large" />
             </Form.Item>
@@ -124,11 +116,7 @@ export default function GuaranteeAdd() {
                 },
               ]}
             >
-              <InputNumber
-                style={{ width: '100%' }}
-                size="large"
-                className="br-15__input"
-              />
+              <InputNumber style={{ width: '100%' }} size="large" className="br-15__input" />
             </Form.Item>
           </Col>
           <Col span={11}>
@@ -158,16 +146,11 @@ export default function GuaranteeAdd() {
             justifyContent: 'flex-end',
           }}
         >
-          <Button
-            size="large"
-            type="primary"
-            htmlType="submit"
-            style={{ width: 120 }}
-          >
+          <Button size="large" type="primary" htmlType="submit" style={{ width: 120 }}>
             Tạo
           </Button>
         </Row>
       </Form>
-    </>
+    </div>
   )
 }

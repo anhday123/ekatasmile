@@ -4,11 +4,12 @@ import styles from './employee.module.scss'
 import moment from 'moment'
 import { compare } from 'utils'
 import { useDispatch } from 'react-redux'
-import { ACTION } from 'consts'
+import { ACTION, ROUTES } from 'consts'
+import { useHistory } from 'react-router-dom'
 
 //antd
 import { Popconfirm, Input, Row, Col, Select, Table, Button, notification, DatePicker } from 'antd'
-import { SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 
 //apis
 import { getEmployees, deleteEmployees } from 'apis/employee'
@@ -21,6 +22,7 @@ import EmployeeForm from './employee-form'
 const { Option } = Select
 export default function Employee() {
   const typingTimeoutRef = useRef(null)
+  const history = useHistory()
   const dispatch = useDispatch()
 
   const [users, setUsers] = useState([])
@@ -174,9 +176,21 @@ export default function Employee() {
   useEffect(() => {
     _getUsers()
   }, [paramsFilter])
+
   return (
-    <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-      <TitlePage title="Quản lý nhân viên">
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            align="middle"
+            onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+            style={{ cursor: 'pointer' }}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
+            <div>Quản lý nhân viên</div>
+          </Row>
+        }
+      >
         <EmployeeForm reloadData={_getUsers}>
           <Button type="primary" size="large">
             Tạo nhân viên

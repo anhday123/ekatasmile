@@ -3,7 +3,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
+import { compare } from 'utils'
+
+//antd
 import {
   DatePicker,
   Switch,
@@ -19,15 +22,24 @@ import {
   Drawer,
   Checkbox,
 } from 'antd'
+
+//icons
 import { PlusCircleOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+
+//apis
 import { addTax, getTaxs, updateTax } from 'apis/tax'
+
+//components
 import Permission from 'components/permission'
-import { compare } from 'utils'
+import TitlePage from 'components/title-page'
+
 const { RangePicker } = DatePicker
 const { Text } = Typography
+const { TextArea } = Input
 export default function Tax() {
+  const history = useHistory()
   const dispatch = useDispatch()
-  const { TextArea } = Input
+
   const [tax, setTax] = useState([])
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
@@ -338,40 +350,19 @@ export default function Tax() {
   ]
   return (
     <>
-      <div className={`${styles['supplier_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(241, 236, 236)',
-            paddingBottom: '1rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Link
-            className={styles['supplier_add_back_parent']}
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
-          >
-            <ArrowLeftOutlined style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }} />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
-              }}
-              className={styles['supplier_add_back']}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              style={{ cursor: 'pointer' }}
             >
-              Quản lý thuế
-            </div>
-          </Link>
+              <ArrowLeftOutlined />
+              <div style={{ marginLeft: 8 }}>Quản lý thuế</div>
+            </Row>
+          }
+        >
           <Permission permissions={[PERMISSIONS.them_thue]}>
             <div onClick={showDrawer}>
               <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
@@ -379,7 +370,8 @@ export default function Tax() {
               </Button>
             </div>
           </Permission>
-        </div>
+        </TitlePage>
+
         <Row
           style={{
             display: 'flex',

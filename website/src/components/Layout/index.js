@@ -60,8 +60,9 @@ const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
-  const WIDTH_MENU_OPEN = 230
+  const WIDTH_MENU_OPEN = 200
   const WIDTH_MENU_CLOSE = 160
+  const HEIGHT_HEADER = 35
 
   const [branches, setBranches] = useState([])
   const [user, setUser] = useState({})
@@ -256,6 +257,7 @@ const BaseLayout = (props) => {
       pathsChild: [
         ROUTES.RECEIPTS_PAYMENT,
         ROUTES.REPORT_INVENTORY,
+        ROUTES.REPORT_VARIANT,
         ROUTES.SALES_REPORT,
         ROUTES.SALES_REPORT,
         ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
@@ -280,6 +282,7 @@ const BaseLayout = (props) => {
         ROUTES.TAX,
         ROUTES.PAYMENT,
         ROUTES.ACTIVITY_DIARY,
+        ROUTES.SHIPPING_CONTROL,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -292,13 +295,6 @@ const BaseLayout = (props) => {
       title: 'Cài đặt',
       permissions: [],
       icon: <SettingOutlined />,
-    },
-    {
-      pathsChild: [],
-      path: ROUTES.ROLE,
-      title: 'Phân quyền',
-      permissions: [PERMISSIONS.quan_li_phan_quyen],
-      icon: <PartitionOutlined />,
     },
   ]
 
@@ -485,24 +481,19 @@ const BaseLayout = (props) => {
             flexDirection: 'column',
             width: '100%',
             display: collapsed ? 'none' : 'flex',
-            maxHeight: 108,
+            paddingTop: 20,
+            paddingBottom: 20,
           }}
         >
           <img
             src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
-            style={{ width: '6rem', objectFit: 'contain', marginTop: 12 }}
+            style={{ width: '6rem', objectFit: 'contain' }}
             alt=""
           />
-          <Row
-            justify="center"
-            style={{ color: 'black', fontSize: '1rem', fontWeight: '600', margin: '7px 0px' }}
-          >
-            {(user && user.company_name) || dataUser.data.company_name}
-          </Row>
         </div>
         <Menu
           style={{
-            height: `calc(100vh - ${collapsed ? 4 : 108}px)`,
+            height: `calc(100vh - ${collapsed ? 4 : 96}px)`,
             overflowY: 'auto',
             overflowX: 'hidden',
           }}
@@ -559,14 +550,15 @@ const BaseLayout = (props) => {
                 width: '100%',
                 paddingLeft: 5,
                 paddingRight: 5,
-                marginTop: 10,
-                marginBottom: 15,
+                paddingTop: 5,
+                paddingBottom: 5,
               }}
               justify={isMobile && 'space-between'}
             >
-              <div className={styles['navbar_left_parent']}>
-                <MenuOutlined onClick={toggle} style={{ fontSize: '1.4rem', fontWeight: 600 }} />
-              </div>
+              <MenuOutlined
+                onClick={toggle}
+                style={{ fontSize: 18, marginRight: 18, color: 'white' }}
+              />
               <Permission permissions={[PERMISSIONS.them_cua_hang]}>
                 <Link
                   to={{ pathname: ROUTES.BRANCH, state: 'show-modal-create-branch' }}
@@ -590,6 +582,7 @@ const BaseLayout = (props) => {
               <Row align="middle">
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
+                  size="small"
                   disabled={login.role === 'EMPLOYEE' ? true : false}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
@@ -604,10 +597,17 @@ const BaseLayout = (props) => {
             </Row>
             <Row wrap={false} align="middle" style={{ marginRight: 10 }}>
               <DropdownLanguage />
-              <div style={{ margin: '0px 15px', marginTop: 6 }}>
+              <div style={{ marginTop: 8, marginRight: 15 }}>
                 <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
                   <Badge count={0} showZero size="small" offset={[-3, 3]}>
-                    <Bell style={{ color: 'rgb(253, 170, 62)', cursor: 'pointer' }} />
+                    <Bell
+                      style={{
+                        color: 'rgb(253, 170, 62)',
+                        cursor: 'pointer',
+                        width: 21,
+                        height: 21,
+                      }}
+                    />
                   </Badge>
                 </Dropdown>
               </div>
@@ -615,7 +615,7 @@ const BaseLayout = (props) => {
                 <Row align="middle" wrap={false} style={{ cursor: 'pointer' }}>
                   <Avatar
                     src={dataUser && (dataUser.data.avatar || '')}
-                    style={{ color: '#FFF', backgroundColor: '#FDAA3E' }}
+                    style={{ color: '#FFF', backgroundColor: '#FDAA3E', width: 27, height: 27 }}
                   />
                   <span
                     style={{
@@ -634,7 +634,13 @@ const BaseLayout = (props) => {
             </Row>
           </Row>
         </Affix>
-        <div style={{ backgroundColor: '#f0f2f5', width: '100%', height: '100%' }}>
+        <div
+          style={{
+            backgroundColor: '#f0f2f5',
+            width: '100%',
+            minHeight: `calc(100vh - ${HEIGHT_HEADER}px)`,
+          }}
+        >
           {props.children}
         </div>
       </Layout>

@@ -4,6 +4,9 @@ import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 
+//components
+import TitlePage from 'components/title-page'
+
 //antd
 import {
   Row,
@@ -434,17 +437,12 @@ export default function Category() {
   }, [paramsFilter])
 
   return (
-    <div className="card-container">
-      <Row
-        align="middle"
-        justify="space-between"
-        style={{ borderBottom: '0.75px solid #BBBCBD', paddingBottom: 15 }}
-      >
-        <h3 style={{ marginBottom: 0, fontWeight: 700, marginRight: 7 }}>Quản lý nhóm sản phẩm</h3>
+    <div className="card">
+      <TitlePage title="Nhóm sản phẩm">
         <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
           Tạo nhóm sản phẩm
         </Button>
-      </Row>
+      </TitlePage>
       <div style={{ margin: '25px 0' }}>
         <Space>
           <Input
@@ -452,7 +450,7 @@ export default function Category() {
             allowClear
             value={valueSearch}
             onChange={_onSearch}
-            style={{ width: 250 }}
+            style={{ width: 300 }}
             prefix={<SearchOutlined />}
             placeholder="Tìm kiếm theo tên hoặc theo mã"
           />
@@ -460,7 +458,7 @@ export default function Category() {
             size="large"
             onChange={onChangeUserFilter}
             value={valueUserFilter}
-            style={{ width: 200 }}
+            style={{ width: 250 }}
             placeholder="Tìm kiếm theo người tạo"
             allowClear
             showSearch
@@ -550,14 +548,14 @@ export default function Category() {
               </>
             )}
           >
-            <Select.Option value="today">Today</Select.Option>
-            <Select.Option value="yesterday">Yesterday</Select.Option>
-            <Select.Option value="this_week">This week</Select.Option>
-            <Select.Option value="last_week">Last week</Select.Option>
-            <Select.Option value="this_month">This month</Select.Option>
-            <Select.Option value="last_month">Last Month</Select.Option>
-            <Select.Option value="this_year">This year</Select.Option>
-            <Select.Option value="last_year">Last year</Select.Option>
+            <Option value="today">Hôm nay</Option>
+            <Option value="yesterday">Hôm qua</Option>
+            <Option value="this_week">Tuần này</Option>
+            <Option value="last_week">Tuần trước</Option>
+            <Option value="this_month">Tháng này</Option>
+            <Option value="last_month">Tháng trước</Option>
+            <Option value="this_year">Năm này</Option>
+            <Option value="last_year">Năm trước</Option>
           </Select>
           <Button
             onClick={_onClearFilters}

@@ -1,8 +1,10 @@
 import styles from './role.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION, PERMISSIONS, ROLE_DEFAULT } from 'consts'
+import { ACTION, PERMISSIONS, ROLE_DEFAULT, ROUTES } from 'consts'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
+//antd
 import {
   Col,
   Row,
@@ -16,14 +18,19 @@ import {
   Tree,
 } from 'antd'
 
+//apis
 import { addRole, getRoles, updateRole } from 'apis/role'
 
+//components
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
 import Permission from 'components/permission'
+import TitlePage from 'components/title-page'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 const { Panel } = Collapse
 export default function Role() {
   const dispatch = useDispatch()
+  const history = useHistory()
   const dataUser = useSelector((state) => state.login.dataUser)
 
   const [visible, setVisible] = useState(false)
@@ -409,59 +416,25 @@ export default function Role() {
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          padding: '1rem',
-          margin: '1rem',
-          backgroundColor: 'white',
-        }}
-        className={styles['card']}
-      >
-        <Row
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(230, 220, 220)',
-            paddingBottom: '1rem',
-            marginBottom: '1rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={11} xl={11}>
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                width: '100%',
-              }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              style={{ cursor: 'pointer' }}
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
               Quản lý phân quyền
-            </div>
-          </Col>
-          <Col style={{ width: '100%' }} xs={24} sm={11} md={11} lg={11} xl={11}>
-            <Permission permissions={[PERMISSIONS.tao_quyen]}>
-              <div
-                onClick={showDrawer}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Button type="primary" size="large">
-                  Tạo quyền
-                </Button>
-              </div>
-            </Permission>
-          </Col>
-        </Row>
+            </Row>
+          }
+        >
+          <Permission permissions={[PERMISSIONS.tao_quyen]}>
+            <Button onClick={showDrawer} type="primary" size="large">
+              Tạo quyền
+            </Button>
+          </Permission>
+        </TitlePage>
 
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">

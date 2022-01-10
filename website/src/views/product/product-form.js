@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 
-import { ACTION } from 'consts'
+import { ACTION, ROUTES } from 'consts'
 import { removeAccents } from 'utils'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { CKEditor } from 'ckeditor4-react'
 import parse from 'html-react-parser'
-import NotSupportMobile from 'components/not-support-mobile'
 import delay from 'delay'
+
+//components
+import NotSupportMobile from 'components/not-support-mobile'
+import TitlePage from 'components/title-page'
 
 //antd
 import {
@@ -66,7 +69,7 @@ export default function ProductAdd() {
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
   const [idsWarranty, setIdsWarranty] = useState([])
-  const [isWarranty, setIsWarranty] = useState(false)
+  const [isWarranty, setIsWarranty] = useState(true)
   const [warranties, setWarranties] = useState([])
   const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
@@ -74,7 +77,7 @@ export default function ProductAdd() {
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
   const [imagesProduct, setImagesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
-  const [isInputInfoProduct, setIsInputInfoProduct] = useState(false)
+  const [isInputInfoProduct, setIsInputInfoProduct] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
   const [productIsHaveDescription, setProductIsHaveDescription] = useState(false)
@@ -261,7 +264,7 @@ export default function ProductAdd() {
     if (!isValidated) return
 
     if (isProductHasVariants && variants.length < 2) {
-      notification.error({ message: 'Vui lòng nhập ít nhất hai phiên bản' })
+      notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
       return
     }
 
@@ -269,7 +272,7 @@ export default function ProductAdd() {
     for (let i = 0; i < variants.length; ++i) {
       if (!variants[i].price) {
         notification.error({
-          message: 'Vui lòng nhập giá bán trong phiên bản!',
+          message: 'Vui lòng nhập giá bán trong thuộc tính!',
         })
         return
       }
@@ -763,7 +766,7 @@ export default function ProductAdd() {
       render: (text, record) => <UploadImageProduct variant={record} />,
     },
     {
-      title: 'Phiên bản',
+      title: 'Thuộc tính',
       dataIndex: 'title',
     },
     {
@@ -894,46 +897,35 @@ export default function ProductAdd() {
   }, [])
 
   return !isMobile ? (
-    <div className={styles['view_product']}>
-      <Affix offsetTop={65} style={{ width: '100%' }}>
-        <Row
-          align="middle"
-          justify="space-between"
-          style={{
-            width: '100%',
-            paddingBottom: 10,
-            paddingTop: 10,
-            borderBottom: '1px solid rgb(235, 226, 226)',
-            backgroundColor: 'white',
-            zIndex: 8888,
-          }}
-        >
-          <a onClick={() => history.goBack()} className={styles['product_manager_title']}>
-            <ArrowLeftOutlined style={{ color: 'black' }} />
-            <div className={styles['product_manager_title_product']}>
-              {location.state ? 'Cập nhật sản phẩm' : 'Thêm mới sản phẩm'}
-            </div>
-          </a>
-          <Space>
-            <Button
-              icon={<ReloadOutlined />}
-              style={{ display: !location.state && 'none' }}
-              size="large"
-              onClick={() => history.go(0)}
-            >
-              Tải lại
-            </Button>
-            <Button
-              icon={<EditOutlined />}
-              size="large"
-              type="primary"
-              onClick={addOrUpdateProduct}
-            >
-              {location.state ? 'Cập nhật' : 'Thêm'}
-            </Button>
-          </Space>
-        </Row>
-      </Affix>
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.PRODUCT)}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
+            <div>{location.state ? 'Cập nhật sản phẩm' : 'Thêm mới sản phẩm'}</div>
+          </Row>
+        }
+      >
+        <Space>
+          <Button
+            icon={<ReloadOutlined />}
+            style={{ display: !location.state && 'none' }}
+            size="large"
+            onClick={() => history.go(0)}
+          >
+            Tải lại
+          </Button>
+          <Button icon={<EditOutlined />} size="large" type="primary" onClick={addOrUpdateProduct}>
+            {location.state ? 'Cập nhật' : 'Thêm'}
+          </Button>
+        </Space>
+      </TitlePage>
+
       <Form form={form} layout="vertical" style={{ width: '100%', marginTop: 15 }}>
         <Tabs defaultActiveKey="1" type="card">
           <Tabs.TabPane tab="Thông tin sản phẩm" key="1">
@@ -973,11 +965,7 @@ export default function ProductAdd() {
                 </div>
               </Col>
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item
-                  label="Nhà cung cấp"
-                  name="supplier_id"
-                  rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp!' }]}
-                >
+                <Form.Item label="Nhà cung cấp" name="supplier_id">
                   <Select
                     showSearch
                     filterOption={(input, option) =>
@@ -1002,16 +990,12 @@ export default function ProductAdd() {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item
-                  label="Danh mục"
-                  name="category_id"
-                  rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-                >
+                <Form.Item label="Nhóm sản phẩm" name="category_id">
                   <TreeSelect
                     size="large"
                     style={{ width: '100%' }}
                     showSearch={false}
-                    placeholder="Chọn danh mục"
+                    placeholder="Chọn nhóm sản phẩm"
                     allowClear
                     multiple
                     treeDefaultExpandAll
@@ -1079,9 +1063,9 @@ export default function ProductAdd() {
               </Col>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Phiên bản" key="2">
+          <Tabs.TabPane tab="Thuộc tính" key="2">
             <div style={{ display: !location.state && 'none', marginBottom: 10 }}>
-              <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 phiên bản</div>
+              <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 thuộc tính</div>
             </div>
             <Row justify="space-between">
               <Col xs={24} sm={24} md={10} lg={10} xl={10}>
@@ -1217,16 +1201,21 @@ export default function ProductAdd() {
                   display: location.state && 'none',
                 }}
               >
-                <Switch
-                  style={{ marginRight: 5 }}
-                  checked={isProductHasVariants}
-                  onChange={(checked) => {
-                    setIsProductHasVariants(checked)
-                    setVariants([])
-                    setAttributes([{ option: '', values: [] }])
-                  }}
-                />
-                Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} phiên bản
+                <div style={{ marginBottom: 8 }}>
+                  <Switch
+                    style={{ marginRight: 5 }}
+                    checked={isProductHasVariants}
+                    onChange={(checked) => {
+                      setIsProductHasVariants(checked)
+                      setVariants([])
+                      setAttributes([{ option: '', values: [] }])
+                    }}
+                  />
+                  Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} thuộc tính
+                </div>
+                <div>
+                  Thêm mới thuộc tính giúp sản phẩm có nhiều sự lựa chọn, như kích cỡ hay màu sắc
+                </div>
               </div>
               <div
                 style={{
@@ -1364,7 +1353,7 @@ export default function ProductAdd() {
                     }}
                   >
                     <div style={{ width: '100%', padding: 16 }}>
-                      <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Phiên bản</h3>
+                      <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Thuộc tính</h3>
                     </div>
                   </div>
                   <div
@@ -1502,6 +1491,36 @@ export default function ProductAdd() {
                   </Form.Item>
                 </Col>
               </Row>
+              <Row style={{ width: '100%', marginTop: 20 }}>
+                <Col xs={24} sm={24} md={9} lg={9} xl={9}>
+                  <Checkbox
+                    style={{ marginBottom: 4 }}
+                    checked={isWarranty}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      if (!checked) setIdsWarranty([])
+
+                      setIsWarranty(checked)
+                    }}
+                  >
+                    Thêm chính sách bảo hành (không bắt buộc)
+                  </Checkbox>
+                  <Select
+                    size="large"
+                    mode="multiple"
+                    style={{ width: '100%', display: !isWarranty && 'none' }}
+                    placeholder="Chọn chính sách bảo hành"
+                    onChange={(value) => setIdsWarranty(value)}
+                    value={idsWarranty}
+                  >
+                    {warranties.map((values, index) => (
+                      <Select.Option value={values.warranty_id} key={index}>
+                        {values.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Col>
+              </Row>
             </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="File đính kèm" key="5">
@@ -1550,37 +1569,6 @@ export default function ProductAdd() {
           </Tabs.TabPane>
         </Tabs>
       </Form>
-
-      <Row style={{ width: '100%', marginTop: 20 }}>
-        <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-          <Checkbox
-            style={{ marginBottom: 4 }}
-            checked={isWarranty}
-            onChange={(e) => {
-              const checked = e.target.checked
-              if (!checked) setIdsWarranty([])
-
-              setIsWarranty(checked)
-            }}
-          >
-            Thêm chính sách bảo hành (không bắt buộc)
-          </Checkbox>
-          <Select
-            size="large"
-            mode="multiple"
-            style={{ width: '100%', display: !isWarranty && 'none' }}
-            placeholder="Chọn chính sách bảo hành"
-            onChange={(value) => setIdsWarranty(value)}
-            value={idsWarranty}
-          >
-            {warranties.map((values, index) => (
-              <Select.Option value={values.warranty_id} key={index}>
-                {values.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-      </Row>
     </div>
   ) : (
     <NotSupportMobile />

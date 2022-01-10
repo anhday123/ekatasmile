@@ -22,7 +22,6 @@ import {
 } from 'antd'
 
 //components
-import ImportModal from 'components/ExportCSV/importModal'
 import exportToCSV from 'components/ExportCSV/export'
 import Permission from 'components/permission'
 import TitlePage from 'components/title-page'
@@ -32,7 +31,7 @@ import columnsProduct from './columns'
 //apis
 import { getAllBranch } from 'apis/branch'
 import { getAllStore } from 'apis/store'
-import { getTransportOrders, deleteTransportOrders } from 'apis/transport'
+import { getTransportOrders, deleteTransportOrders, updateTransportOrder } from 'apis/transport'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -82,6 +81,28 @@ export default function ShippingProduct() {
     }
   }
 
+  const _acceptTransportOrder = async (status = 'VERIFY', id) => {
+    try {
+      const body = { status: status }
+      const res = await updateTransportOrder(body, id)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getTransportOrders()
+          notification.success({ message: 'Cập nhật phiếu chuyển hàng thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Cập nhật phiếu chuyển hàng thất bại, vui lòng thử lại!!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật phiếu chuyển hàng thất bại, vui lòng thử lại!!',
+        })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _deleteTransportOrders = async () => {
     try {
       setLoading(true)
@@ -93,9 +114,13 @@ export default function ShippingProduct() {
           _getTransportOrders()
           notification.success({ message: 'Xóa phiếu chuyển hàng thành công!' })
         } else
-          notification.error({ message: res.data.message || 'Xóa phiếu chuyển hàng thành công!' })
+          notification.error({
+            message: res.data.message || 'Xóa phiếu chuyển hàng thất bại, vui lòng thử lại!',
+          })
       } else
-        notification.error({ message: res.data.message || 'Xóa phiếu chuyển hàng thành công!' })
+        notification.error({
+          message: res.data.message || 'Xóa phiếu chuyển hàng thất bại, vui lòng thử lại!',
+        })
     } catch (error) {
       console.log(error)
       setLoading(false)
@@ -192,12 +217,9 @@ export default function ShippingProduct() {
     },
   ]
 
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
   const rowSelection = {
     selectedRowKeys,
-    onChange: onSelectChange,
+    onChange: (keys) => setSelectedRowKeys(keys),
   }
   const ExportExcel = () => {
     exportToCSV(
@@ -248,7 +270,7 @@ export default function ShippingProduct() {
 
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Quản lý phiếu chuyển hàng">
           <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
             <Button
@@ -546,6 +568,31 @@ export default function ShippingProduct() {
                 render: (text) => <Tag color={STATUS[text].color}>{STATUS[text].name}</Tag>,
                 sorter: (a, b) => compare(a, b, 'status'),
               }
+            if (column.key === 'action')
+              return {
+                ...column,
+                render: (text, record) =>
+                  (record.status === 'VERIFY' && (
+                    <Popconfirm
+                      onConfirm={() => _acceptTransportOrder('COMPLETE', record.order_id)}
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                      title="Bạn có muốn hoàn thành phiếu chuyển hàng này không?"
+                    >
+                      <Button type="primary">Hoàn thành</Button>
+                    </Popconfirm>
+                  )) ||
+                  (record.status === 'DRAFT' && (
+                    <Popconfirm
+                      onConfirm={() => _acceptTransportOrder('VERIFY', record.order_id)}
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                      title="Bạn có muốn xác nhận phiếu chuyển hàng này không?"
+                    >
+                      <Button type="primary">Xác nhận phiếu</Button>
+                    </Popconfirm>
+                  )),
+              }
 
             return column
           })}
@@ -564,14 +611,6 @@ export default function ShippingProduct() {
           style={{ width: '100%', marginTop: 10 }}
         />
       </div>
-
-      {/* <ImportModal
-        visible={exportVisible}
-        onCancel={() => setExportVisible(false)}
-        dataSource={transportOrders}
-        columns={columnsPromotion}
-        actionComponent={<ExportButton />}
-      /> */}
     </>
   )
 }

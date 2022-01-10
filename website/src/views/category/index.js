@@ -3,6 +3,9 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
 
+//components
+import TitlePage from 'components/title-page'
+
 //antd
 import { Row, Form, Upload, InputNumber, Input, Checkbox, Button, notification } from 'antd'
 
@@ -84,19 +87,23 @@ export default function Category() {
   }, [])
 
   return (
-    <div className="card-container">
-      <div style={{ borderBottom: '0.75px solid #BBBCBD', paddingBottom: 15 }}>
-        <Row
-          align="middle"
-          onClick={() => history.push(ROUTES.CATEGORIES)}
-          style={{ cursor: 'pointer', width: 'max-content' }}
-        >
-          <ArrowLeftOutlined style={{ fontSize: 16 }} />
-          <h3 style={{ marginBottom: 0, fontWeight: 700, marginLeft: 7 }}>
-            {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
-          </h3>
-        </Row>
-      </div>
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            align="middle"
+            onClick={() => history.push(ROUTES.CATEGORIES)}
+            style={{ cursor: 'pointer' }}
+          >
+            <ArrowLeftOutlined />
+            <div style={{ marginLeft: 8 }}>{location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm</div>
+          </Row>
+        }
+      >
+        <Button size="large" type="primary" onClick={_addOrUpdateCategory}>
+          {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
+        </Button>
+      </TitlePage>
       <div>
         <div style={{ width: '50%', margin: '25px 0px' }}>
           Hình ảnh
@@ -143,9 +150,6 @@ export default function Category() {
           <Form.Item valuePropName="checked" name="default">
             <Checkbox>Chọn làm mặc định</Checkbox>
           </Form.Item>
-          <Button onClick={_addOrUpdateCategory} type="primary" size="large" style={{ width: 120 }}>
-            {location.state ? 'Lưu' : 'Tạo'}
-          </Button>
         </Form>
       </div>
     </div>

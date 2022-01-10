@@ -165,7 +165,7 @@ export default function Supplier() {
   }
 
   return (
-    <div className={`${styles['supplier_manager']} ${styles['card']}`}>
+    <div className="card">
       <TitlePage title="Quản lý nhà cung cấp">
         <SupplierForm reloadData={_getSuppliers}>
           <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>

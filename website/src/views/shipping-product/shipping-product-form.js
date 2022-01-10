@@ -6,6 +6,9 @@ import { ACTION, IMAGE_DEFAULT, ROUTES } from 'consts'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 
+//components
+import TitlePage from 'components/title-page'
+
 import {
   Select,
   Button,
@@ -142,7 +145,7 @@ export default function ShippingProductAdd() {
           quantity: +e.quantity,
         })),
       }
-      console.log(history.location.state ? 'Cập nhật' : 'Tạo')
+
       let res
       if (history.location.state)
         res = await updateTransportOrder(body, history.location.state.order_id)
@@ -248,26 +251,60 @@ export default function ShippingProductAdd() {
 
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            fontSize: 19,
-            fontWeight: 600,
-            borderBottom: '1px solid rgb(235, 223, 223)',
-            paddingBottom: '1rem',
-          }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              style={{ cursor: 'pointer', width: 'max-content' }}
+              wrap={false}
+              align="middle"
+              onClick={() => history.goBack()}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 7 }} />
+              {history.location.state ? 'Cập nhật' : 'Thêm'} phiếu chuyển hàng
+            </Row>
+          }
         >
-          <Row
-            style={{ cursor: 'pointer', width: 'max-content' }}
-            wrap={false}
-            align="middle"
-            onClick={() => history.goBack()}
-            wrap={false}
-          >
-            <ArrowLeftOutlined style={{ marginRight: 7 }} />
-            {history.location.state ? 'Cập nhật' : 'Thêm'} phiếu chuyển hàng
-          </Row>
-        </div>
+          <Space>
+            <Button
+              style={{ display: history.location.state && 'none' }}
+              size="large"
+              type="primary"
+              onClick={() => _addOrEditTransportOrder()}
+            >
+              Lưu nháp
+            </Button>
+            <Button
+              style={{ display: history.location.state && 'none' }}
+              size="large"
+              type="primary"
+              onClick={() => _addOrEditTransportOrder('COMPLETE')}
+            >
+              Tạo phiếu chuyển hàng và hoàn tất
+            </Button>
+            <Button
+              style={{ display: !history.location.state && 'none' }}
+              size="large"
+              type="primary"
+              onClick={() => _addOrEditTransportOrder()}
+            >
+              Cập nhật
+            </Button>
+            <Button
+              style={{
+                display:
+                  history.location.state && history.location.state.status !== 'COMPLETE'
+                    ? ''
+                    : 'none',
+              }}
+              size="large"
+              type="primary"
+              onClick={() => _addOrEditTransportOrder('COMPLETE')}
+            >
+              Hoàn thành phiếu chuyển
+            </Button>
+          </Space>
+        </TitlePage>
 
         <Form form={form} layout="vertical">
           <Row gutter={[20, 16]} style={{ marginTop: 15 }}>
@@ -455,26 +492,6 @@ export default function ShippingProductAdd() {
             dataSource={productsTransport}
             scroll={{ y: 500 }}
           />
-
-          <Row justify="end" style={{ marginTop: 45, width: '100%' }}>
-            <Space size="large">
-              <Button
-                style={{ display: history.location.state && 'none' }}
-                size="large"
-                type="primary"
-                onClick={() => _addOrEditTransportOrder()}
-              >
-                Lưu nháp
-              </Button>
-              <Button
-                size="large"
-                type="primary"
-                onClick={() => _addOrEditTransportOrder('COMPLETE')}
-              >
-                {history.location.state ? 'Cập nhật' : 'Tạo phiếu chuyển'}
-              </Button>
-            </Space>
-          </Row>
         </Form>
       </div>
     </>

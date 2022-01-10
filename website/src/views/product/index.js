@@ -147,7 +147,7 @@ export default function Product() {
       key: 'image',
     },
     {
-      title: 'Phiên bản',
+      title: 'Thuộc tính',
       dataIndex: 'title',
     },
     {
@@ -270,11 +270,11 @@ export default function Product() {
       <>
         <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
           <Button size="large" onClick={toggle} type="primary">
-            Cập nhật danh mục
+            Cập nhật nhóm sản phẩm
           </Button>
         </Permission>
         <Modal
-          title="Cập nhật danh mục"
+          title="Cập nhật nhóm sản phẩm"
           centered
           width={500}
           footer={null}
@@ -286,7 +286,7 @@ export default function Product() {
             treeDefaultExpandAll
             size="large"
             style={{ width: '100%', marginBottom: 30 }}
-            placeholder="Chọn danh mục"
+            placeholder="Chọn nhóm sản phẩm"
             showSearch={false}
             onChange={(value) => setCategoryIds(value)}
             value={categoryIds}
@@ -322,7 +322,7 @@ export default function Product() {
                   toggle()
                   await _getProducts()
                   notification.success({
-                    message: `Cập nhật thành công danh mục vào các sản phẩm thành công!`,
+                    message: `Cập nhật thành công nhóm sản phẩm vào các sản phẩm thành công!`,
                   })
                 } catch (error) {
                   setLoading(false)
@@ -466,12 +466,7 @@ export default function Product() {
   }
 
   const onClickClear = async () => {
-    Object.keys(paramsFilter).map((key) => {
-      delete paramsFilter[key]
-    })
-    paramsFilter.page = 1
-    paramsFilter.page_size = 20
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
     setStoreId()
     setSelectedRowKeys([])
@@ -539,9 +534,15 @@ export default function Product() {
 
   return (
     <>
-      <div className={`${styles['view_product']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Danh sách sản phẩm">
           <Space>
+            <SettingColumns
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsProduct}
+              nameColumn="columnsProductStore"
+            />
             <ImportCSV
               size="large"
               txt="Import sản phẩm"
@@ -550,7 +551,6 @@ export default function Product() {
               fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/31/bc03caef-25ad-4767-bad3-d9d41459b0ef/ImportProductAO.xlsx"
               reload={_getProducts}
             />
-
             <ExportProduct
               fileName="Products"
               name="Export Sản Phẩm"
@@ -608,7 +608,7 @@ export default function Product() {
             <TreeSelect
               size="large"
               style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo danh mục"
+              placeholder="Tìm kiếm theo nhóm sản phẩm"
               allowClear
               multiple
               showSearch={false}
@@ -748,7 +748,7 @@ export default function Product() {
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
-          <Space size="middle" style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
+          <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
             <Permission permission={[PERMISSIONS.xoa_san_pham]}>
               <Popconfirm
@@ -762,9 +762,6 @@ export default function Product() {
                 </Button>
               </Popconfirm>
             </Permission>
-          </Space>
-
-          <Space>
             <Button
               style={{
                 display: Object.keys(paramsFilter).length <= 2 && 'none',
@@ -775,12 +772,6 @@ export default function Product() {
             >
               Xóa tất cả lọc
             </Button>
-            <SettingColumns
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsProduct}
-              nameColumn="columnsProductStore"
-            />
           </Space>
         </Row>
 

@@ -30,6 +30,7 @@ import { getEmployees } from 'apis/employee'
 //components
 import Permission from 'components/permission'
 import exportToCSV from 'components/ExportCSV/export'
+import TitlePage from 'components/title-page'
 import ImportModal from 'components/ExportCSV/importModal'
 import { convertFields, guarantee } from 'components/ExportCSV/fieldConvert'
 
@@ -233,45 +234,40 @@ export default function Guarantee() {
   useEffect(() => {
     _getUsers()
   }, [])
+
   useEffect(() => {
     getWarranty({ ...removeFalse(filter) })
   }, [filter])
+
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            paddingBottom: '0.75rem',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              wrap={false}
+              align="middle"
+              style={{ cursor: 'pointer' }}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              <div>Quản lý bảo hành</div>
+            </Row>
+          }
         >
-          <Row
-            onClick={() => history.goBack()}
-            wrap={false}
-            align="middle"
-            style={{ width: 200, fontSize: 17, fontWeight: 500, cursor: 'pointer' }}
-          >
-            <ArrowLeftOutlined style={{ marginRight: 8 }} />
-            <div>Quản lý bảo hành</div>
-          </Row>
-          <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
-              <Link to={ROUTES.GUARANTEE_ADD}>
-                <Button
-                  icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                  type="primary"
-                  size="large"
-                >
-                  Tạo phiếu bảo hành
-                </Button>
-              </Link>
-            </Permission>
-          </div>
-        </div>
+          <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
+            <Link to={ROUTES.GUARANTEE_ADD}>
+              <Button
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+                size="large"
+              >
+                Tạo phiếu bảo hành
+              </Button>
+            </Link>
+          </Permission>
+        </TitlePage>
+
         <Row wrap={false} justify="space-between" style={{ marginTop: '1rem' }}>
           <Col xs={24} sm={24} md={11} lg={11} xl={7}>
             <Input

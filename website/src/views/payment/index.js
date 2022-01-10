@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styles from './payment.module.scss'
-import { Link } from 'react-router-dom'
-import { ROUTES, PERMISSIONS, ACTION } from 'consts'
+import { Link, useHistory } from 'react-router-dom'
+import { ROUTES } from 'consts'
 
 //antd
 import {
@@ -23,6 +23,7 @@ import { CreditCardOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-desi
 
 //components
 import Permission from 'components/permission'
+import TitlePage from 'components/title-page'
 
 //apis
 import { getPayments, addPayment, editPayment, deletePayment } from 'apis/payment'
@@ -30,6 +31,7 @@ import moment from 'moment'
 
 export default function Payment() {
   const [form] = Form.useForm()
+  const history = useHistory()
 
   const [id, setId] = useState('')
   const [isEditPayment, setIsEditPayment] = useState(false)
@@ -192,37 +194,26 @@ export default function Payment() {
 
   return (
     <>
-      <div className={`${styles['payment_method']} ${styles['card']}`}>
-        <Row
-          justify="space-between"
-          style={{
-            borderBottom: '1px solid rgb(233, 223, 223)',
-            width: '100%',
-            flexWrap: 'nowrap',
-            paddingBottom: 15,
-          }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              style={{ cursor: 'pointer' }}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              Hình thức thanh toán
+            </Row>
+          }
         >
-          <Link
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-              color: 'black',
-              fontSize: '1rem',
-              fontWeight: '500',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
-          >
-            <ArrowLeftOutlined style={{ fontSize: '1rem', marginRight: 5 }} />
-            Hình thức thanh toán
-          </Link>
           {/* <Permission permissions={[PERMISSIONS.them_hinh_thuc_thanh_toan]}> */}
           <Button size="large" type="primary" onClick={toggle} icon={<CreditCardOutlined />}>
             Thêm hình thức thanh toán
           </Button>
           {/* </Permission> */}
-        </Row>
+        </TitlePage>
+
         <Table
           loading={loading}
           columns={columns}

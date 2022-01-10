@@ -73,8 +73,7 @@ import InventoryAdd from './actions/inventory/add'
 import GuaranteeAdd from './actions/guarantee/add'
 import PromotionAdd from './actions/promotion/add'
 import RoleAdd from './actions/role/add'
-import CustomerOrderList from './customerOrderList'
-import CustoemrOrderDetail from './customerOrderList/components/orderDetail'
+
 import Point from './point'
 import OfferListCreate from './offer-list-create'
 import Blog from './blog'
@@ -123,13 +122,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.CUSTOMER_ORDER_LIST,
-    Component: () => <CustomerOrderList />,
-    title: 'Danh sách đơn hàng',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.ORDER_LIST,
     Component: () => <OrderList />,
@@ -250,14 +243,6 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.CUSTOMER_ORDER_DETAIL,
-    Component: () => <CustoemrOrderDetail />,
-    title: 'Chi tiết hóa đơn',
-    permissions: [],
-    exact: true,
-  },
-
   {
     path: ROUTES.POINT,
     Component: () => <Point />,

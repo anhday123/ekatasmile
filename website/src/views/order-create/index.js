@@ -60,6 +60,7 @@ import Permission from 'components/permission'
 import CustomerForm from 'views/customer/customer-form'
 import ChangeDelivery from './change-delivery'
 import ModalPromotion from './promotion'
+import TitlePage from 'components/title-page'
 
 export default function OrderCreateShipping() {
   let history = useHistory()
@@ -609,598 +610,572 @@ export default function OrderCreateShipping() {
   }, [])
 
   return (
-    <div className={`${styles['order-create-shipping']}`}>
-      <div style={{ background: 'white', padding: '20px' }} className={styles['card']}>
-        <Affix offsetTop={65}>
+    <div className="card">
+      <TitlePage
+        title={
           <Row
-            style={{
-              backgroundColor: 'white',
-              paddingBottom: 20,
-              paddingTop: 10,
-              marginBottom: 30,
-              borderBottom: '1px solid #f5f5f5',
-            }}
-            wrap={false}
-            justify="space-between"
             align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.ORDER_LIST)}
           >
-            <Row
-              align="middle"
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                cursor: 'pointer',
-                width: 'max-content',
-              }}
-              onClick={() => history.push(ROUTES.ORDER_LIST)}
-            >
-              <ArrowLeftOutlined style={{ marginRight: 5 }} />
-              Tạo đơn hàng
-            </Row>
-            <Button size="large" type="primary">
-              Tạo đơn và duyệt (F1)
-            </Button>
+            <ArrowLeftOutlined style={{ marginRight: 5 }} />
+            Tạo đơn hàng
           </Row>
-        </Affix>
-        <Row gutter={30}>
-          <Col span={16}>
-            <div className={styles['block']} style={{ marginBottom: 33 }}>
-              <Row justify="space-between" className={styles['title']}>
-                <div>Thông tin khách hàng</div>
-              </Row>
-              <Row justify="space-between" align="middle" wrap={false}>
-                <Select
-                  notFoundContent={loadingCustomer ? <Spin /> : null}
-                  dropdownClassName="dropdown-select-search-product"
-                  allowClear
-                  showSearch
-                  style={{ width: '100%', marginRight: 20 }}
-                  placeholder="Tìm kiếm khách hàng"
-                >
-                  {customers.map((customer, index) => (
-                    <Select.Option
-                      value={customer.first_name + ' ' + customer.last_name}
-                      key={index}
-                    >
-                      <Row
-                        style={{ padding: '7px 13px' }}
-                        align="middle"
-                        justify="space-between"
-                        wrap={false}
-                        onClick={(e) => {
-                          setCustomerInfo(customer)
-                          setDeliveryAddress(customer)
-                          e.stopPropagation()
-                        }}
-                      >
-                        <div>
-                          <p style={{ fontWeight: 600, marginBottom: 0 }}>
-                            {customer.first_name + ' ' + customer.last_name}
-                          </p>
-                          <p style={{ marginBottom: 0 }}>{customer.phone}</p>
-                        </div>
-                        <CheckOutlined
-                          style={{
-                            color: 'green',
-                            fontSize: 18,
-                            display:
-                              customerInfo && customerInfo._id === customer._id ? '' : 'none',
-                          }}
-                        />
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-
-                <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-                  <ModalCustomerForm>
-                    <Tooltip placement="bottom" title="Thêm mới khách hàng">
-                      <PlusSquareFilled
-                        style={{ fontSize: 34, color: '#0362BA', cursor: 'pointer' }}
-                      />
-                    </Tooltip>
-                  </ModalCustomerForm>
-                </Permission>
-              </Row>
-
-              <Row
-                wrap={false}
-                align="middle"
-                style={{
-                  display: !customerInfo && 'none',
-                  marginTop: 15,
-                }}
+        }
+      >
+        <Button size="large" type="primary">
+          Tạo đơn và duyệt (F1)
+        </Button>
+      </TitlePage>
+      <Row gutter={30} style={{ marginTop: 20 }}>
+        <Col span={16}>
+          <div className={styles['block']} style={{ marginBottom: 33 }}>
+            <Row justify="space-between" className={styles['title']}>
+              <div>Thông tin khách hàng</div>
+            </Row>
+            <Row justify="space-between" align="middle" wrap={false}>
+              <Select
+                notFoundContent={loadingCustomer ? <Spin /> : null}
+                dropdownClassName="dropdown-select-search-product"
+                allowClear
+                showSearch
+                style={{ width: '100%', marginRight: 20 }}
+                placeholder="Tìm kiếm khách hàng"
               >
-                <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
-                <div style={{ width: '100%' }}>
-                  <Row wrap={false} align="middle">
-                    {customerInfo ? (
-                      <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-                        <ModalCustomerForm>
-                          <a style={{ fontWeight: 600, marginRight: 5 }}>
-                            {customerInfo && customerInfo.first_name + ' ' + customerInfo.last_name}
-                          </a>
-                        </ModalCustomerForm>
-                      </Permission>
-                    ) : (
-                      <div></div>
-                    )}
-
-                    <span style={{ fontWeight: 500 }}> - {customerInfo && customerInfo.phone}</span>
-                  </Row>
-                  <Row wrap={false} justify="space-between" align="middle">
-                    <div>
-                      <span style={{ fontWeight: 600 }}>Công nợ: </span>
-                      <span>{customerInfo && customerInfo.debt}</span>
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: 600 }}>Điểm hiện tại: </span>
-                      <span>{customerInfo && customerInfo.point}</span>
-                    </div>
-                  </Row>
-                </div>
-
-                <CloseCircleTwoTone
-                  style={{ cursor: 'pointer', marginLeft: 20, fontSize: 23 }}
-                  onClick={() => {
-                    setDeliveryAddress(null)
-                    setCustomerInfo(null)
-                  }}
-                />
-              </Row>
-
-              <Divider />
-              {deliveryAddress && (
-                <>
-                  <Row justify="space-between">
-                    <span className={styles['payment-title']}>Địa chỉ giao hàng</span>
-                  </Row>
-                  {deliveryAddress && (
-                    <div style={{ fontSize: 14.7 }}>
-                      <div>
-                        {`${deliveryAddress.first_name} ${deliveryAddress.last_name}`} -{' '}
-                        {deliveryAddress.phone}
-                      </div>
-                      <div>
-                        {`${deliveryAddress.address}, ${deliveryAddress.district}, ${deliveryAddress.province}`}
-                      </div>
-                    </div>
-                  )}
-                  <ChangeDelivery
-                    address={deliveryAddress}
-                    setDeliveryAddress={setDeliveryAddress}
-                  />
-                </>
-              )}
-            </div>
-
-            <div className={styles['block']}>
-              <div className={styles['title']}>Sản phẩm</div>
-              <div className="select-product-sell">
-                <Select
-                  notFoundContent={loadingProduct ? <Spin size="small" /> : null}
-                  dropdownClassName="dropdown-select-search-product"
-                  allowClear
-                  showSearch
-                  clearIcon={<CloseOutlined style={{ color: 'black' }} />}
-                  suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
-                  style={{ width: '100%', marginBottom: 15 }}
-                  placeholder="Thêm sản phẩm vào hoá đơn"
-                  dropdownRender={(menu) => (
-                    <div>
-                      <Permission permissions={[PERMISSIONS.them_san_pham]}>
-                        <Row
-                          wrap={false}
-                          align="middle"
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => window.open(ROUTES.PRODUCT_ADD, '_blank')}
-                        >
-                          <div
-                            style={{
-                              paddingLeft: 15,
-                              width: 45,
-                              height: 50,
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <PlusSquareOutlined style={{ fontSize: 19 }} />
-                          </div>
-                          <p style={{ marginLeft: 20, marginBottom: 0, fontSize: 16 }}>
-                            Thêm sản phẩm mới
-                          </p>
-                        </Row>
-                      </Permission>
-                      {menu}
-                    </div>
-                  )}
-                >
-                  {productsSearch.map((data) => (
-                    <Select.Option value={data.title} key={data.title}>
-                      <Row
-                        align="middle"
-                        wrap={false}
-                        style={{ padding: '7px 13px' }}
-                        onClick={(e) => {
-                          _addProductToOrder(data)
-                          e.stopPropagation()
-                        }}
-                      >
-                        <img
-                          src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
-                          alt=""
-                          style={{
-                            minWidth: 40,
-                            minHeight: 40,
-                            maxWidth: 40,
-                            maxHeight: 40,
-                            objectFit: 'cover',
-                          }}
-                        />
-
-                        <div style={{ width: '100%', marginLeft: 15 }}>
-                          <Row wrap={false} justify="space-between">
-                            <span
-                              style={{
-                                maxWidth: 200,
-                                marginBottom: 0,
-                                fontWeight: 600,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                display: '-webkit-box',
-                              }}
-                            >
-                              {data.title}
-                            </span>
-                            <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                              {formatCash(data.price)}
-                            </p>
-                          </Row>
-                          <Row wrap={false} justify="space-between">
-                            <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
-                            <p style={{ marginBottom: 0, color: 'gray' }}>
-                              Có thể bán: {formatCash(data.total_quantity)}
-                            </p>
-                          </Row>
-                        </div>
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </div>
-
-              <Table
-                pagination={false}
-                columns={columns}
-                size="small"
-                dataSource={[...orderCreate.order_details]}
-                locale={{
-                  emptyText: (
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: 200,
+                {customers.map((customer, index) => (
+                  <Select.Option value={customer.first_name + ' ' + customer.last_name} key={index}>
+                    <Row
+                      style={{ padding: '7px 13px' }}
+                      align="middle"
+                      justify="space-between"
+                      wrap={false}
+                      onClick={(e) => {
+                        setCustomerInfo(customer)
+                        setDeliveryAddress(customer)
+                        e.stopPropagation()
                       }}
                     >
-                      <img src={noData} alt="" style={{ width: 90, height: 90 }} />
-                      <h4 style={{ fontSize: 15, color: '#555' }}>
-                        Đơn hàng của bạn chưa có sản phẩm
-                      </h4>
-                    </div>
-                  ),
+                      <div>
+                        <p style={{ fontWeight: 600, marginBottom: 0 }}>
+                          {customer.first_name + ' ' + customer.last_name}
+                        </p>
+                        <p style={{ marginBottom: 0 }}>{customer.phone}</p>
+                      </div>
+                      <CheckOutlined
+                        style={{
+                          color: 'green',
+                          fontSize: 18,
+                          display: customerInfo && customerInfo._id === customer._id ? '' : 'none',
+                        }}
+                      />
+                    </Row>
+                  </Select.Option>
+                ))}
+              </Select>
+
+              <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+                <ModalCustomerForm>
+                  <Tooltip placement="bottom" title="Thêm mới khách hàng">
+                    <PlusSquareFilled
+                      style={{ fontSize: 34, color: '#0362BA', cursor: 'pointer' }}
+                    />
+                  </Tooltip>
+                </ModalCustomerForm>
+              </Permission>
+            </Row>
+
+            <Row
+              wrap={false}
+              align="middle"
+              style={{
+                display: !customerInfo && 'none',
+                marginTop: 15,
+              }}
+            >
+              <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
+              <div style={{ width: '100%' }}>
+                <Row wrap={false} align="middle">
+                  {customerInfo ? (
+                    <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                      <ModalCustomerForm>
+                        <a style={{ fontWeight: 600, marginRight: 5 }}>
+                          {customerInfo && customerInfo.first_name + ' ' + customerInfo.last_name}
+                        </a>
+                      </ModalCustomerForm>
+                    </Permission>
+                  ) : (
+                    <div></div>
+                  )}
+
+                  <span style={{ fontWeight: 500 }}> - {customerInfo && customerInfo.phone}</span>
+                </Row>
+                <Row wrap={false} justify="space-between" align="middle">
+                  <div>
+                    <span style={{ fontWeight: 600 }}>Công nợ: </span>
+                    <span>{customerInfo && customerInfo.debt}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 600 }}>Điểm hiện tại: </span>
+                    <span>{customerInfo && customerInfo.point}</span>
+                  </div>
+                </Row>
+              </div>
+
+              <CloseCircleTwoTone
+                style={{ cursor: 'pointer', marginLeft: 20, fontSize: 23 }}
+                onClick={() => {
+                  setDeliveryAddress(null)
+                  setCustomerInfo(null)
                 }}
-                summary={() => (
-                  <Table.Summary.Row
-                    style={{ display: orderCreate.order_details.length === 0 && 'none' }}
-                  >
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell colSpan={3}>
-                      <div style={{ fontSize: 14.4 }}>
+              />
+            </Row>
+
+            <Divider />
+            {deliveryAddress && (
+              <>
+                <Row justify="space-between">
+                  <span className={styles['payment-title']}>Địa chỉ giao hàng</span>
+                </Row>
+                {deliveryAddress && (
+                  <div style={{ fontSize: 14.7 }}>
+                    <div>
+                      {`${deliveryAddress.first_name} ${deliveryAddress.last_name}`} -{' '}
+                      {deliveryAddress.phone}
+                    </div>
+                    <div>
+                      {`${deliveryAddress.address}, ${deliveryAddress.district}, ${deliveryAddress.province}`}
+                    </div>
+                  </div>
+                )}
+                <ChangeDelivery address={deliveryAddress} setDeliveryAddress={setDeliveryAddress} />
+              </>
+            )}
+          </div>
+
+          <div className={styles['block']}>
+            <div className={styles['title']}>Sản phẩm</div>
+            <div className="select-product-sell">
+              <Select
+                notFoundContent={loadingProduct ? <Spin size="small" /> : null}
+                dropdownClassName="dropdown-select-search-product"
+                allowClear
+                showSearch
+                clearIcon={<CloseOutlined style={{ color: 'black' }} />}
+                suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
+                style={{ width: '100%', marginBottom: 15 }}
+                placeholder="Thêm sản phẩm vào hoá đơn"
+                dropdownRender={(menu) => (
+                  <div>
+                    <Permission permissions={[PERMISSIONS.them_san_pham]}>
+                      <Row
+                        wrap={false}
+                        align="middle"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => window.open(ROUTES.PRODUCT_ADD, '_blank')}
+                      >
+                        <div
+                          style={{
+                            paddingLeft: 15,
+                            width: 45,
+                            height: 50,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <PlusSquareOutlined style={{ fontSize: 19 }} />
+                        </div>
+                        <p style={{ marginLeft: 20, marginBottom: 0, fontSize: 16 }}>
+                          Thêm sản phẩm mới
+                        </p>
+                      </Row>
+                    </Permission>
+                    {menu}
+                  </div>
+                )}
+              >
+                {productsSearch.map((data) => (
+                  <Select.Option value={data.title} key={data.title}>
+                    <Row
+                      align="middle"
+                      wrap={false}
+                      style={{ padding: '7px 13px' }}
+                      onClick={(e) => {
+                        _addProductToOrder(data)
+                        e.stopPropagation()
+                      }}
+                    >
+                      <img
+                        src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
+                        alt=""
+                        style={{
+                          minWidth: 40,
+                          minHeight: 40,
+                          maxWidth: 40,
+                          maxHeight: 40,
+                          objectFit: 'cover',
+                        }}
+                      />
+
+                      <div style={{ width: '100%', marginLeft: 15 }}>
                         <Row wrap={false} justify="space-between">
-                          <div>Tổng tiền ({orderCreate.order_details.length} sản phẩm)</div>
-                          <div>
-                            {orderCreate.sumCostPaid ? formatCash(+orderCreate.sumCostPaid) : 0}
-                          </div>
+                          <span
+                            style={{
+                              maxWidth: 200,
+                              marginBottom: 0,
+                              fontWeight: 600,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: 'vertical',
+                              display: '-webkit-box',
+                            }}
+                          >
+                            {data.title}
+                          </span>
+                          <p style={{ marginBottom: 0, fontWeight: 500 }}>
+                            {formatCash(data.price)}
+                          </p>
                         </Row>
                         <Row wrap={false} justify="space-between">
-                          <div>VAT</div>
-                          <div>{formatCash(orderCreate.VAT || 0)}</div>
-                        </Row>
-                        <Row wrap={false} justify="space-between">
-                          <div>Chiết khấu</div>
-                          <div>
-                            {formatCash(orderCreate.discount ? orderCreate.discount.value : 0)}{' '}
-                            {orderCreate.discount
-                              ? orderCreate.discount.type === 'VALUE'
-                                ? ''
-                                : '%'
-                              : ''}
-                          </div>
-                        </Row>
-                        <Row wrap={false} justify="space-between" align="middle">
-                          <div>Phí giao hàng</div>
-                          <div>
-                            <InputNumber
-                              style={{ minWidth: 120 }}
-                              onBlur={(e) => {
-                                const value = e.target.value.replaceAll(',', '')
-                                _editOrder('deliveryCharges', +value)
-                              }}
-                              min={0}
-                              size="small"
-                              formatter={(value) =>
-                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                              }
-                              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                              defaultValue={orderCreate.deliveryCharges}
-                            />
-                          </div>
-                        </Row>
-                        <Row wrap={false} justify="space-between" style={{ fontWeight: 600 }}>
-                          <div>Khách phải trả</div>
-                          <div>{formatCash(+orderCreate.moneyToBePaidByCustomer || 0)}</div>
+                          <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
+                          <p style={{ marginBottom: 0, color: 'gray' }}>
+                            Có thể bán: {formatCash(data.total_quantity)}
+                          </p>
                         </Row>
                       </div>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                )}
-              />
-            </div>
-            <div className={styles['block']} style={{ marginTop: 30 }}>
-              <Row wrap={false} align="middle" style={{ fontWeight: 600 }}>
-                <CreditCardFilled style={{ fontSize: 17 }} />
-                <div style={{ margin: '0px 5px' }}>XÁC NHẬN THANH TOÁN</div>
-                <Tooltip
-                  title={
-                    <div style={{ textAlign: 'center' }}>
-                      Xác nhận đơn hàng đã được thanh toán thành công hoặc chọn thanh toán sau với
-                      hình thức thanh toán dự kiến. Bạn có thể bỏ qua bước này nếu khách hàng chưa
-                      sẵn sàng thanh toán
-                    </div>
-                  }
-                >
-                  <InfoCircleTwoTone style={{ fontSize: 12 }} />
-                </Tooltip>
-              </Row>
-              <div style={{ marginTop: 10 }}>
-                <Radio.Group
-                  onChange={(e) => _editOrder('type_payment', e.target.value)}
-                  defaultValue={orderCreate.type_payment}
-                >
-                  <Space size="small" direction="vertical">
-                    <Radio value="Thanh toán trước">Khách hàng thanh toán trước</Radio>
-                    <Radio value="Thu cod">Thu COD sau khi giao hàng thành công</Radio>
-                    <Radio value="Thanh toán sau">Thanh toán sau</Radio>
-                  </Space>
-                </Radio.Group>
-              </div>
-              <Divider />
-
-              {orderCreate.type_payment === 'Thanh toán trước' && (
-                <div>
-                  <Row justify="space-between" wrap={false}>
-                    <div style={{ width: '45%' }}>
-                      <div>Hình thức thanh toán</div>
-                      <Select
-                        defaultValue="Quẹt thẻ"
-                        placeholder="Chọn hình thức thanh toán"
-                        style={{ width: '100%' }}
-                      >
-                        <Select.Option value="Quẹt thẻ">Quẹt thẻ</Select.Option>
-                        <Select.Option value="Chuyển khoản">Chuyển khoản</Select.Option>
-                        <Select.Option value="Tiền mặt">Tiền mặt</Select.Option>
-                      </Select>
-                    </div>
-                    <div style={{ width: '45%' }}>
-                      <div>Số tiền thanh toán</div>
-                      <InputNumber
-                        defaultValue={orderCreate.moneyToBePaidByCustomer}
-                        style={{ width: '100%' }}
-                        min={0}
-                        max={orderCreate.moneyToBePaidByCustomer}
-                        placeholder="Nhập số tiền thanh toán"
-                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      />
-                    </div>
-                  </Row>
-                  <Row justify="space-between" wrap={false} style={{ marginTop: 15 }}>
-                    <div style={{ width: '45%' }}>
-                      <div>Ngày thanh toán</div>
-                      <DatePicker
-                        defaultValue={moment(new Date(), 'DD/MM/YYYY HH:mm:ss')}
-                        format="DD/MM/YYYY HH:mm:ss"
-                        showTime={{ defaultValue: moment(new Date(), 'HH:mm:ss') }}
-                        style={{ width: '100%' }}
-                        placeholder="Chọn ngày thanh toán"
-                      />
-                    </div>
-                    <div style={{ width: '45%' }}>
-                      <div>Tham chiếu</div>
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        max={orderCreate.moneyToBePaidByCustomer}
-                        placeholder="Nhập tham chiếu"
-                      />
-                    </div>
-                  </Row>
-                </div>
-              )}
-              {orderCreate.type_payment === 'Thanh toán sau' && (
-                <div>
-                  <Row justify="space-between" wrap={false}>
-                    <div style={{ width: '45%' }}>
-                      <div>Hình thức thanh toán dự kiến</div>
-                      <Select
-                        defaultValue="Tiền mặt"
-                        placeholder="Chọn hình thức thanh toán"
-                        style={{ width: '100%' }}
-                      >
-                        <Select.Option value="Quẹt thẻ">Quẹt thẻ</Select.Option>
-                        <Select.Option value="Thanh toán bằng điểm">
-                          Thanh toán bằng điểm
-                        </Select.Option>
-                        <Select.Option value="Chuyển khoản">Chuyển khoản</Select.Option>
-                        <Select.Option value="Tiền mặt">Tiền mặt</Select.Option>
-                      </Select>
-                    </div>
-                  </Row>
-                </div>
-              )}
-
-              {orderCreate.type_payment === 'Thu cod' && (
-                <div>
-                  <div>
-                    Số tiền cần người mua thanh toán bạn vui lòng nhập ở phần <b>"Tiền thu hộ"</b>{' '}
-                    trong thông tin giao hàng. Bạn có thể lựa chọn <b>"Đẩy đơn qua ĐTVC"</b> hoặc{' '}
-                    <b>"Tự gọi shipper"</b>
-                    để hoàn thành đơn. Trường hợp chọn <b>"Giao hàng sau"</b>, COD sẽ được ghi nhận
-                    thành hình thức thanh toán dự kiến.
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className={styles['block']} style={{ marginTop: 30 }}>
-              <Row wrap={false} align="middle" style={{ fontWeight: 600 }}>
-                <CarFilled style={{ fontSize: 17 }} />
-                <div style={{ margin: '0px 5px' }}>ĐÓNG GÓI VÀ GIAO HÀNG</div>
-                <Tooltip
-                  title={
-                    <div style={{ textAlign: 'center' }}>
-                      Xác nhận đơn hàng đã được đóng gói và chuyển sang đơn vị vận chuyển . Bạn có
-                      thể bỏ qua bước này nếu chưa sẵn sàng đóng gói và giao hàng
-                    </div>
-                  }
-                >
-                  <InfoCircleTwoTone style={{ fontSize: 12 }} />
-                </Tooltip>
-              </Row>
-              <div style={{ marginTop: 10 }}>
-                <Tabs type="card">
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <CarOutlined style={{ marginRight: 3 }} /> Đẩy qua hãng vận chuyển
-                      </span>
-                    }
-                    key="1"
-                  >
-                    Dịch vụ vận chuyển dành cho các đối tác vận chuyển.
-                  </Tabs.TabPane>
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <UserOutlined style={{ marginRight: 3 }} /> Tự gọi shipper
-                      </span>
-                    }
-                    key="2"
-                  >
-                    Dịch vụ vận chuyển dành cho các đối tác vận chuyển là nhân viên cửa hàng hoặc
-                    thuê ở bên ngoài.
-                  </Tabs.TabPane>
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <ShopOutlined style={{ marginRight: 3 }} /> Nhận tại cửa hàng
-                      </span>
-                    }
-                    key="3"
-                  >
-                    Chọn nhận tại cửa hàng khi khách hàng xác nhận sẽ qua tận nơi để lấy sản phẩm.
-                  </Tabs.TabPane>
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <ClockCircleOutlined style={{ marginRight: 3 }} /> Giao hàng sau
-                      </span>
-                    }
-                    key="4"
-                  >
-                    Bạn có thể xử lý giao hàng sau khi tạo và duyệt đơn hàng.
-                  </Tabs.TabPane>
-                </Tabs>
-              </div>
-            </div>
-          </Col>
-
-          <Col span={8}>
-            <div className={styles['block']} style={{ marginBottom: 30 }}>
-              <div className={styles['title']}>Cửa hàng</div>
-              <Select
-                showSearch
-                value={storeActive && storeActive.store_id}
-                notFoundContent={loadingStore ? <Spin /> : null}
-                style={{ width: '100%' }}
-              >
-                {stores.map((e, index) => (
-                  <Select.Option value={e.store_id} key={index}>
-                    {e.name}
+                    </Row>
                   </Select.Option>
                 ))}
               </Select>
             </div>
-            <Form layout="vertical" form={formInfoOrder}>
-              <div className={styles['block']} style={{ marginBottom: 30 }}>
-                <div className={styles['title']}>Thông tin đơn hàng</div>
 
-                <Form.Item label="Mã đơn hàng" name="order_id">
-                  <Input placeholder="Nhập mã đơn hàng" />
-                </Form.Item>
-              </div>
-
-              <div className={styles['block']} style={{ marginBottom: 30 }}>
-                <ModalPromotion order={orderCreate} editOrder={_editOrder} />
-              </div>
-
-              <div className={styles['block']}>
-                <div className={styles['title']}>
-                  Ghi chú{' '}
-                  <Tooltip
-                    title={
-                      <div style={{ textAlign: 'center' }}>
-                        Thêm thông tin ghi chú phục vụ cho việc xem thông tin và xử lý đơn hàng.
-                        (VD: đơn giao trong ngày, giao trong giờ hành chính...)
-                      </div>
-                    }
+            <Table
+              pagination={false}
+              columns={columns}
+              size="small"
+              dataSource={[...orderCreate.order_details]}
+              locale={{
+                emptyText: (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 200,
+                    }}
                   >
-                    <InfoCircleTwoTone style={{ fontSize: 12 }} />
-                  </Tooltip>
-                </div>
-                <Form.Item name="note">
-                  <Input.TextArea rows={2} placeholder="Nhập ghi chú" />
-                </Form.Item>
+                    <img src={noData} alt="" style={{ width: 90, height: 90 }} />
+                    <h4 style={{ fontSize: 15, color: '#555' }}>
+                      Đơn hàng của bạn chưa có sản phẩm
+                    </h4>
+                  </div>
+                ),
+              }}
+              summary={() => (
+                <Table.Summary.Row
+                  style={{ display: orderCreate.order_details.length === 0 && 'none' }}
+                >
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell colSpan={3}>
+                    <div style={{ fontSize: 14.4 }}>
+                      <Row wrap={false} justify="space-between">
+                        <div>Tổng tiền ({orderCreate.order_details.length} sản phẩm)</div>
+                        <div>
+                          {orderCreate.sumCostPaid ? formatCash(+orderCreate.sumCostPaid) : 0}
+                        </div>
+                      </Row>
+                      <Row wrap={false} justify="space-between">
+                        <div>VAT</div>
+                        <div>{formatCash(orderCreate.VAT || 0)}</div>
+                      </Row>
+                      <Row wrap={false} justify="space-between">
+                        <div>Chiết khấu</div>
+                        <div>
+                          {formatCash(orderCreate.discount ? orderCreate.discount.value : 0)}{' '}
+                          {orderCreate.discount
+                            ? orderCreate.discount.type === 'VALUE'
+                              ? ''
+                              : '%'
+                            : ''}
+                        </div>
+                      </Row>
+                      <Row wrap={false} justify="space-between" align="middle">
+                        <div>Phí giao hàng</div>
+                        <div>
+                          <InputNumber
+                            style={{ minWidth: 120 }}
+                            onBlur={(e) => {
+                              const value = e.target.value.replaceAll(',', '')
+                              _editOrder('deliveryCharges', +value)
+                            }}
+                            min={0}
+                            size="small"
+                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                            defaultValue={orderCreate.deliveryCharges}
+                          />
+                        </div>
+                      </Row>
+                      <Row wrap={false} justify="space-between" style={{ fontWeight: 600 }}>
+                        <div>Khách phải trả</div>
+                        <div>{formatCash(+orderCreate.moneyToBePaidByCustomer || 0)}</div>
+                      </Row>
+                    </div>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              )}
+            />
+          </div>
+          <div className={styles['block']} style={{ marginTop: 30 }}>
+            <Row wrap={false} align="middle" style={{ fontWeight: 600 }}>
+              <CreditCardFilled style={{ fontSize: 17 }} />
+              <div style={{ margin: '0px 5px' }}>XÁC NHẬN THANH TOÁN</div>
+              <Tooltip
+                title={
+                  <div style={{ textAlign: 'center' }}>
+                    Xác nhận đơn hàng đã được thanh toán thành công hoặc chọn thanh toán sau với
+                    hình thức thanh toán dự kiến. Bạn có thể bỏ qua bước này nếu khách hàng chưa sẵn
+                    sàng thanh toán
+                  </div>
+                }
+              >
+                <InfoCircleTwoTone style={{ fontSize: 12 }} />
+              </Tooltip>
+            </Row>
+            <div style={{ marginTop: 10 }}>
+              <Radio.Group
+                onChange={(e) => _editOrder('type_payment', e.target.value)}
+                defaultValue={orderCreate.type_payment}
+              >
+                <Space size="small" direction="vertical">
+                  <Radio value="Thanh toán trước">Khách hàng thanh toán trước</Radio>
+                  <Radio value="Thu cod">Thu COD sau khi giao hàng thành công</Radio>
+                  <Radio value="Thanh toán sau">Thanh toán sau</Radio>
+                </Space>
+              </Radio.Group>
+            </div>
+            <Divider />
 
-                <div className={styles['title']}>
-                  Tag{' '}
-                  <Tooltip
-                    title={
-                      <div style={{ textAlign: 'center' }}>
-                        Chọn hoặc thêm các thẻ cho đơn hàng, thẻ này phục vụ cho việc lọc các đơn
-                        (VD: Đơn giao gấp, đơn nội thành...)
-                      </div>
-                    }
-                  >
-                    <InfoCircleTwoTone style={{ fontSize: 12 }} />
-                  </Tooltip>
-                </div>
-                <Form.Item name="tags">
-                  <Select mode="tags" placeholder="Nhập tags"></Select>
-                </Form.Item>
+            {orderCreate.type_payment === 'Thanh toán trước' && (
+              <div>
+                <Row justify="space-between" wrap={false}>
+                  <div style={{ width: '45%' }}>
+                    <div>Hình thức thanh toán</div>
+                    <Select
+                      defaultValue="Quẹt thẻ"
+                      placeholder="Chọn hình thức thanh toán"
+                      style={{ width: '100%' }}
+                    >
+                      <Select.Option value="Quẹt thẻ">Quẹt thẻ</Select.Option>
+                      <Select.Option value="Chuyển khoản">Chuyển khoản</Select.Option>
+                      <Select.Option value="Tiền mặt">Tiền mặt</Select.Option>
+                    </Select>
+                  </div>
+                  <div style={{ width: '45%' }}>
+                    <div>Số tiền thanh toán</div>
+                    <InputNumber
+                      defaultValue={orderCreate.moneyToBePaidByCustomer}
+                      style={{ width: '100%' }}
+                      min={0}
+                      max={orderCreate.moneyToBePaidByCustomer}
+                      placeholder="Nhập số tiền thanh toán"
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    />
+                  </div>
+                </Row>
+                <Row justify="space-between" wrap={false} style={{ marginTop: 15 }}>
+                  <div style={{ width: '45%' }}>
+                    <div>Ngày thanh toán</div>
+                    <DatePicker
+                      defaultValue={moment(new Date(), 'DD/MM/YYYY HH:mm:ss')}
+                      format="DD/MM/YYYY HH:mm:ss"
+                      showTime={{ defaultValue: moment(new Date(), 'HH:mm:ss') }}
+                      style={{ width: '100%' }}
+                      placeholder="Chọn ngày thanh toán"
+                    />
+                  </div>
+                  <div style={{ width: '45%' }}>
+                    <div>Tham chiếu</div>
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      min={0}
+                      max={orderCreate.moneyToBePaidByCustomer}
+                      placeholder="Nhập tham chiếu"
+                    />
+                  </div>
+                </Row>
               </div>
-            </Form>
-          </Col>
-        </Row>
-      </div>
+            )}
+            {orderCreate.type_payment === 'Thanh toán sau' && (
+              <div>
+                <Row justify="space-between" wrap={false}>
+                  <div style={{ width: '45%' }}>
+                    <div>Hình thức thanh toán dự kiến</div>
+                    <Select
+                      defaultValue="Tiền mặt"
+                      placeholder="Chọn hình thức thanh toán"
+                      style={{ width: '100%' }}
+                    >
+                      <Select.Option value="Quẹt thẻ">Quẹt thẻ</Select.Option>
+                      <Select.Option value="Thanh toán bằng điểm">
+                        Thanh toán bằng điểm
+                      </Select.Option>
+                      <Select.Option value="Chuyển khoản">Chuyển khoản</Select.Option>
+                      <Select.Option value="Tiền mặt">Tiền mặt</Select.Option>
+                    </Select>
+                  </div>
+                </Row>
+              </div>
+            )}
+
+            {orderCreate.type_payment === 'Thu cod' && (
+              <div>
+                <div>
+                  Số tiền cần người mua thanh toán bạn vui lòng nhập ở phần <b>"Tiền thu hộ"</b>{' '}
+                  trong thông tin giao hàng. Bạn có thể lựa chọn <b>"Đẩy đơn qua ĐTVC"</b> hoặc{' '}
+                  <b>"Tự gọi shipper"</b>
+                  để hoàn thành đơn. Trường hợp chọn <b>"Giao hàng sau"</b>, COD sẽ được ghi nhận
+                  thành hình thức thanh toán dự kiến.
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={styles['block']} style={{ marginTop: 30 }}>
+            <Row wrap={false} align="middle" style={{ fontWeight: 600 }}>
+              <CarFilled style={{ fontSize: 17 }} />
+              <div style={{ margin: '0px 5px' }}>ĐÓNG GÓI VÀ GIAO HÀNG</div>
+              <Tooltip
+                title={
+                  <div style={{ textAlign: 'center' }}>
+                    Xác nhận đơn hàng đã được đóng gói và chuyển sang đơn vị vận chuyển . Bạn có thể
+                    bỏ qua bước này nếu chưa sẵn sàng đóng gói và giao hàng
+                  </div>
+                }
+              >
+                <InfoCircleTwoTone style={{ fontSize: 12 }} />
+              </Tooltip>
+            </Row>
+            <div style={{ marginTop: 10 }}>
+              <Tabs type="card">
+                <Tabs.TabPane
+                  tab={
+                    <span>
+                      <CarOutlined style={{ marginRight: 3 }} /> Đẩy qua hãng vận chuyển
+                    </span>
+                  }
+                  key="1"
+                >
+                  Dịch vụ vận chuyển dành cho các đối tác vận chuyển.
+                </Tabs.TabPane>
+                <Tabs.TabPane
+                  tab={
+                    <span>
+                      <UserOutlined style={{ marginRight: 3 }} /> Tự gọi shipper
+                    </span>
+                  }
+                  key="2"
+                >
+                  Dịch vụ vận chuyển dành cho các đối tác vận chuyển là nhân viên cửa hàng hoặc thuê
+                  ở bên ngoài.
+                </Tabs.TabPane>
+                <Tabs.TabPane
+                  tab={
+                    <span>
+                      <ShopOutlined style={{ marginRight: 3 }} /> Nhận tại cửa hàng
+                    </span>
+                  }
+                  key="3"
+                >
+                  Chọn nhận tại cửa hàng khi khách hàng xác nhận sẽ qua tận nơi để lấy sản phẩm.
+                </Tabs.TabPane>
+                <Tabs.TabPane
+                  tab={
+                    <span>
+                      <ClockCircleOutlined style={{ marginRight: 3 }} /> Giao hàng sau
+                    </span>
+                  }
+                  key="4"
+                >
+                  Bạn có thể xử lý giao hàng sau khi tạo và duyệt đơn hàng.
+                </Tabs.TabPane>
+              </Tabs>
+            </div>
+          </div>
+        </Col>
+
+        <Col span={8}>
+          <div className={styles['block']} style={{ marginBottom: 30 }}>
+            <div className={styles['title']}>Cửa hàng</div>
+            <Select
+              showSearch
+              value={storeActive && storeActive.store_id}
+              notFoundContent={loadingStore ? <Spin /> : null}
+              style={{ width: '100%' }}
+            >
+              {stores.map((e, index) => (
+                <Select.Option value={e.store_id} key={index}>
+                  {e.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+          <Form layout="vertical" form={formInfoOrder}>
+            <div className={styles['block']} style={{ marginBottom: 30 }}>
+              <div className={styles['title']}>Thông tin đơn hàng</div>
+
+              <Form.Item label="Mã đơn hàng" name="order_id">
+                <Input placeholder="Nhập mã đơn hàng" />
+              </Form.Item>
+            </div>
+
+            <div className={styles['block']} style={{ marginBottom: 30 }}>
+              <ModalPromotion order={orderCreate} editOrder={_editOrder} />
+            </div>
+
+            <div className={styles['block']}>
+              <div className={styles['title']}>
+                Ghi chú{' '}
+                <Tooltip
+                  title={
+                    <div style={{ textAlign: 'center' }}>
+                      Thêm thông tin ghi chú phục vụ cho việc xem thông tin và xử lý đơn hàng. (VD:
+                      đơn giao trong ngày, giao trong giờ hành chính...)
+                    </div>
+                  }
+                >
+                  <InfoCircleTwoTone style={{ fontSize: 12 }} />
+                </Tooltip>
+              </div>
+              <Form.Item name="note">
+                <Input.TextArea rows={2} placeholder="Nhập ghi chú" />
+              </Form.Item>
+
+              <div className={styles['title']}>
+                Tag{' '}
+                <Tooltip
+                  title={
+                    <div style={{ textAlign: 'center' }}>
+                      Chọn hoặc thêm các thẻ cho đơn hàng, thẻ này phục vụ cho việc lọc các đơn (VD:
+                      Đơn giao gấp, đơn nội thành...)
+                    </div>
+                  }
+                >
+                  <InfoCircleTwoTone style={{ fontSize: 12 }} />
+                </Tooltip>
+              </div>
+              <Form.Item name="tags">
+                <Select mode="tags" placeholder="Nhập tags"></Select>
+              </Form.Item>
+            </div>
+          </Form>
+        </Col>
+      </Row>
     </div>
   )
 }

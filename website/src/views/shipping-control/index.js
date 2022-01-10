@@ -85,7 +85,7 @@ export default function ShippingControl() {
   }, [filter])
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage
           title={
             <Row
@@ -94,15 +94,15 @@ export default function ShippingControl() {
               style={{ cursor: 'pointer' }}
               onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             >
-              <ArrowLeftOutlined style={{ marginRight: 10 }} />
-              Danh sách phiếu
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              Đối soát vận chuyển
             </Row>
           }
         >
           <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
             <Button
               size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              icon={<PlusCircleOutlined />}
               type="primary"
               onClick={() => setShowCreate(true)}
             >

@@ -14,29 +14,28 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 import location from 'assets/icons/location.png'
 
 //apis
-import { getAllStore } from 'apis/store'
+import { getAllBranch } from 'apis/branch'
 
-export default function ChangeStore() {
+export default function ChangeBranch() {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
 
-  const [stores, setStores] = useState([])
+  const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(false)
 
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const storeActive =
-    localStorage.getItem('storeSell') && JSON.parse(localStorage.getItem('storeSell'))
+  const branchActive =
+    localStorage.getItem('branchSell') && JSON.parse(localStorage.getItem('branchSell'))
 
-  const [storeId, setStoreId] = useState(storeActive && storeActive.store_id)
+  const [branchId, setBranchId] = useState(branchActive && branchActive.branch_id)
 
-  const _getStores = async () => {
+  const _getBranches = async () => {
     try {
       setLoading(true)
-      const res = await getAllStore()
-      if (res.status === 200) setStores(res.data.data)
-
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -44,9 +43,9 @@ export default function ChangeStore() {
     }
   }
 
-  const _changeStore = async () => {
-    const store = stores.find((s) => s.store_id === storeId)
-    localStorage.setItem('storeSell', JSON.stringify(store))
+  const _changeBranch = async () => {
+    const branch = branches.find((s) => s.branch_id === branchId)
+    localStorage.setItem('branchSell', JSON.stringify(branch))
     localStorage.setItem('invoice', JSON.stringify({ invoice: {} })) //reset đơn hàng local storage
     dispatch({ type: 'UPDATE_INVOICE', data: [] }) //reset đơn hàng trong reducer
     window.location.reload()
@@ -54,8 +53,8 @@ export default function ChangeStore() {
 
   function confirm() {
     Modal.confirm({
-      onOk: () => _changeStore(),
-      title: 'Bạn có muốn chuyển đổi cửa hàng này không ?',
+      onOk: () => _changeBranch(),
+      title: 'Bạn có muốn chuyển đổi chi nhánh này không ?',
       icon: <ExclamationCircleOutlined />,
       content: 'Hệ thống sẽ không lưu lại thông tin của các đơn hàng này',
       okText: 'Đồng ý',
@@ -64,19 +63,19 @@ export default function ChangeStore() {
   }
 
   useEffect(() => {
-    if (!visible) setStoreId(storeActive && storeActive.store_id)
+    if (!visible) setBranchId(branchActive && branchActive.branch_id)
   }, [visible])
 
   useEffect(() => {
-    _getStores()
+    _getBranches()
   }, [])
 
   return (
     <>
-      <Tooltip title={storeActive ? storeActive.name : ''}>
+      <Tooltip title={branchActive ? branchActive.name : ''}>
         <Row wrap={false} align="middle" style={{ cursor: 'pointer' }} onClick={toggle}>
           <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
-          <p className={styles['name-store']}>{storeActive && storeActive.name}</p>
+          <p className={styles['name-store']}>{branchActive && branchActive.name}</p>
         </Row>
       </Tooltip>
       <Modal
@@ -84,7 +83,7 @@ export default function ChangeStore() {
         onCancel={toggle}
         visible={visible}
         footer={null}
-        title="Chuyển đổi cửa hàng"
+        title="Chuyển đổi chi nhánh"
       >
         <div>
           <p style={{ marginBottom: 0 }}>Doanh nghiệp</p>
@@ -104,12 +103,12 @@ export default function ChangeStore() {
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
             style={{ width: '100%' }}
-            value={storeId}
-            onChange={(value) => setStoreId(value)}
+            value={branchId}
+            onChange={(value) => setBranchId(value)}
           >
-            {stores.map((store, index) => (
-              <Select.Option key={index} value={store.store_id}>
-                {store.name}
+            {branches.map((branch, index) => (
+              <Select.Option key={index} value={branch.branch_id}>
+                {branch.name}
               </Select.Option>
             ))}
           </Select>

@@ -164,7 +164,7 @@ export default function Branch() {
 
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Danh sách chi nhánh">
           <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
             <BranchForm reloadData={_getBranches}>

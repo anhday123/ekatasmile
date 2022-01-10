@@ -16,7 +16,7 @@ import {} from '@ant-design/icons'
 
 export default function Reports() {
   return (
-    <div className={`${styles['card']} ${styles['reports-container']}`}>
+    <div className="card">
       <TitlePage title="Báo cáo tổng hợp"></TitlePage>
 
       <div style={{ marginTop: 30 }}>

@@ -103,8 +103,6 @@ export const ROUTES = {
   PROMOTION_ADD: '/actions/promotion/add',
   ROLE_ADD: '/actions/role/add',
   GUARANTEE_ADD: '/actions/guarantee/add',
-  CUSTOMER_ORDER_LIST: '/customer/order-list',
-  CUSTOMER_ORDER_DETAIL: '/customer/order/detail',
   POINT: '/point',
   CATEGORY: '/category',
   CATEGORIES: '/categories',
@@ -195,7 +193,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.1.17'
+export const VERSION_APP = '1.1.18'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

@@ -159,15 +159,23 @@ export default function Shipping() {
 
   return (
     <>
-      <div className={`${styles['shipping_manager']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Đối tác vận chuyển">
-          <ShippingForm reloadData={_getShippings}>
-            <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
-              <Button icon={<PlusCircleOutlined />} type="primary" size="large">
-                Thêm đối tác
-              </Button>
-            </Permission>
-          </ShippingForm>
+          <Space>
+            <SettingColumns
+              nameColumn="columnsShipping"
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsShipping}
+            />
+            <ShippingForm reloadData={_getShippings}>
+              <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
+                <Button icon={<PlusCircleOutlined />} type="primary" size="large">
+                  Thêm đối tác
+                </Button>
+              </Permission>
+            </ShippingForm>
+          </Space>
         </TitlePage>
 
         <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19 }}>
@@ -357,22 +365,14 @@ export default function Shipping() {
             {/* </Permission> */}
           </Popconfirm>
 
-          <Space>
-            <Button
-              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-              onClick={_clearFilters}
-              type="primary"
-              size="large"
-            >
-              Xóa bộ lọc
-            </Button>
-            <SettingColumns
-              nameColumn="columnsShipping"
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsShipping}
-            />
-          </Space>
+          <Button
+            style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+            onClick={_clearFilters}
+            type="primary"
+            size="large"
+          >
+            Xóa bộ lọc
+          </Button>
         </Row>
 
         <Table
