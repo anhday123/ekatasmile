@@ -149,7 +149,7 @@ module.exports._get = async (req, res, next) => {
                                     { $eq: ['$type', 'BRANCH'] },
                                     ...(() => {
                                         if (req.query.branch_id) {
-                                            return [{ $eq: ['$inventory_id', Number(req.query.branch_id)] }];
+                                            return [{ $eq: ['$branch_id', Number(req.query.branch_id)] }];
                                         }
                                         return [];
                                     })(),
