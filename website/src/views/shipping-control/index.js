@@ -1,17 +1,19 @@
 import styles from './shipping-control.module.scss'
 import React, { useEffect, useState } from 'react'
-import { Button, Tabs } from 'antd'
-import { PlusCircleOutlined } from '@ant-design/icons'
+import { Button, Tabs, Row } from 'antd'
+import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import PenddingCompare from './components/penddingCompare'
 import Compared from './components/compared'
 import CompareHistory from './components/compareHistory'
 import CreateCompare from './components/createCompare'
 import Permission from 'components/permission'
-import { PERMISSIONS } from 'consts'
+import TitlePage from 'components/title-page'
+import { PERMISSIONS, ROUTES } from 'consts'
 
 //apis
 import { getAllBranch } from 'apis/branch'
 import { getCompare, getSession } from 'apis/compare'
+import { useHistory } from 'react-router-dom'
 
 const { TabPane } = Tabs
 function removeNull(a) {
@@ -20,6 +22,8 @@ function removeNull(a) {
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 export default function ShippingControl() {
+  const history = useHistory()
+
   const [compareList, setCompareList] = useState([])
   const [sessionList, setSessionList] = useState([])
   const [showCreate, setShowCreate] = useState(false)
@@ -82,30 +86,31 @@ export default function ShippingControl() {
   return (
     <>
       <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+        <TitlePage
+          title={
+            <Row
+              wrap={false}
+              align="middle"
+              style={{ cursor: 'pointer' }}
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 10 }} />
+              Danh sách phiếu
+            </Row>
+          }
         >
-          <div className={styles['promotion_manager_title']}>Đối soát vận chuyển</div>
-          <div className={styles['promotion_manager_button']}>
-            <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                onClick={() => setShowCreate(true)}
-              >
-                Thêm phếu đối soát riêng lẻ
-              </Button>
-            </Permission>
-          </div>
-        </div>
+          <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
+            <Button
+              size="large"
+              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+              type="primary"
+              onClick={() => setShowCreate(true)}
+            >
+              Thêm phiếu đối soát riêng lẻ
+            </Button>
+          </Permission>
+        </TitlePage>
+
         <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
           <TabPane
             tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn chờ đối soát</span>}

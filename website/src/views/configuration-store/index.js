@@ -8,6 +8,7 @@ import {
   DollarOutlined,
   TeamOutlined,
   CreditCardOutlined,
+  ClusterOutlined,
 } from '@ant-design/icons'
 import { ROUTES } from 'consts'
 
@@ -179,6 +180,35 @@ export default function ConfigurationStore() {
                 </Row>
               </Link>
             </Col>
+            <Col xs={24} sm={24} md={11} lg={8} xl={8}>
+              <Link to={ROUTES.SHIPPING_CONTROL}>
+                <Row wrap={false}>
+                  <div
+                    className={styles['wrap-icon']}
+                    style={{
+                      backgroundColor: '#F3FCE2',
+                      border: '1px solid #B6DE62',
+                      borderRadius: '0.25rem',
+                    }}
+                  >
+                    <ClusterOutlined style={{ color: '#B6DE62' }} />
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: '1rem',
+                        color: '#0015CD',
+                      }}
+                    >
+                      Quản lý đối soát vận chuyển
+                    </div>
+                    <div style={{ color: 'black', fontSize: '0.75rem' }}>
+                      Thiết lập và quản lý các phiếu đối soát
+                    </div>
+                  </div>
+                </Row>
+              </Link>
+            </Col>
           </Row>
         </div>
 
@@ -249,3 +279,10 @@ export default function ConfigurationStore() {
     </>
   )
 }
+// {
+//   icon: <ClusterOutlined />,
+//   pathsChild: [],
+//   path: ROUTES.SHIPPING_CONTROL,
+//   title: 'Đối soát',
+//   permissions: [PERMISSIONS.doi_soat_van_chuyen],
+// },
