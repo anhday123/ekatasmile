@@ -577,7 +577,7 @@ module.exports._getOrderReport = async (req, res, next) => {
         });
         for (let i in _products) {
             _products[i].product = { ..._products[i].product, ..._productInDBs[i] };
-            _products[i].profit_rate = Number((_products[i].total_revenue / _products[i].base_prices) * 100).toFixed(2);
+            _products[i].profit_rate = Number((_products[i].total_revenue / _products[i].base_price) * 100).toFixed(2);
         }
         _products = Object.values(_products);
         let counts = _products.length;
