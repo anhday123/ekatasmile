@@ -202,10 +202,10 @@ module.exports._get = async (req, res, next) => {
                                 ...storeQuery,
                                 {
                                     $group: {
-                                        _id: { type: '$type', inventory_id: '$inventory_id' },
+                                        _id: { type: '$type', branch_id: '$branch_id', store_id: '$store_id' },
                                         type: { $first: '$type' },
-                                        name: { $first: '$name' },
-                                        inventory_id: { $first: '$inventory_id' },
+                                        branch_id: { $first: '$branch_id' },
+                                        store_id: { $first: '$store_id' },
                                         quantity: { $sum: '$quantity' },
                                     },
                                 },

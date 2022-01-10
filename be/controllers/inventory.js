@@ -1665,6 +1665,8 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         let order = await client.db(req.user.database).collection('TransportOrders').findOne(req.params);
         delete req.body._id;
         delete req.body.order_id;
+        delete req.body.create_date;
+        delete req.body.creator_id;
         let _order = { ...order, ...req.body };
         let productIds = [];
         let variantIds = [];
