@@ -18,14 +18,14 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        // let hmac = req.body.order;
-        // try {
-        //     let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
-        //     let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-        //     req.body = JSON.parse(decryptedData);
-        // } catch (err) {
-        //     throw new Error('400: Đơn hàng không chính xác!');
-        // }
+        let hmac = req.body.order;
+        try {
+            let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
+            let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+            req.body = JSON.parse(decryptedData);
+        } catch (err) {
+            throw new Error('400: Đơn hàng không chính xác!');
+        }
         if (!req.body.order_details || req.body.order_details.length == 0) {
             throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!');
         }
