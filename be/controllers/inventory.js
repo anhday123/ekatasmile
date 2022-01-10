@@ -1665,9 +1665,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         let order = await client.db(req.user.database).collection('TransportOrders').findOne(req.params);
         delete req.body._id;
         delete req.body.order_id;
+        let _order = { ...order, ...req.body };
         let productIds = [];
         let variantIds = [];
-        req.body.products.map((product) => {
+        _order.products.map((product) => {
             productIds.push(product.product_id);
             variantIds.push(product.variant_id);
         });
@@ -1697,7 +1698,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         let total_discount = 0;
         let final_cost = 0;
         let total_quantity = 0;
-        req.body.products = req.body.products.map((product) => {
+        _order.products = _order.products.map((product) => {
             total_cost += product.quantity * product.import_price;
             total_discount += product.discount || 0;
             final_cost += product.quantity * product.import_price - product.discount || 0;
@@ -1708,7 +1709,6 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 variant_info: _variants[product.variant_id],
             };
         });
-        let _order = { ...order, ...req.body };
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,
@@ -1808,6 +1808,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                         detailQuantity -= location.quantity;
                         location.quantity = 0;
                     }
+                    if (!eProduct.base_prices) eProduct.base_prices = [];
                     eProduct.base_prices.push(_basePrice);
                     eProduct.total_base_price += location.quantity * _prices[location.price_id].import_price;
                     _updates.push(location);
