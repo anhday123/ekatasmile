@@ -191,7 +191,7 @@ export default function Login() {
                         htmlType="submit"
                         className={styles['btn-registration']}
                       >
-                        Đăng ký dùng thử
+                        Đăng ký
                       </Button>
                     </Form.Item>
                   </Row>
