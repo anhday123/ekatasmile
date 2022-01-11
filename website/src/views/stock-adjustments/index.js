@@ -17,12 +17,7 @@ import locale from 'antd/es/date-picker/locale/zh_CN'
 import { Row, Col, Input, Button, DatePicker, Space, Table, Modal } from 'antd'
 
 //icons
-import {
-  SearchOutlined,
-  SettingOutlined,
-  VerticalAlignTopOutlined
-}
-  from '@ant-design/icons'
+import { SearchOutlined, SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 export default function Reports() {
   const history = useHistory()
@@ -56,7 +51,7 @@ export default function Reports() {
       render: (text, record, index) => {
         console.log(text, record, index)
         return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
-      }
+      },
     },
     {
       title: 'Kho kiểm hàng',
@@ -85,7 +80,7 @@ export default function Reports() {
   ]
 
   const dataStockAdjustment = []
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 1; i++) {
     dataStockAdjustment.push({
       key: i,
       code: `JANUARY ${i}`,
@@ -99,27 +94,8 @@ export default function Reports() {
   }
 
   return (
-    <div className={`${styles['card']} ${styles['stock-adjustments']}`}>
+    <div className="card">
       <TitlePage title="Phiếu kiểm hàng">
-        <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>
-          <Button type="primary" size="large">
-            Tạo phiếu kiểm
-          </Button>
-        </Link>
-      </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginTop: 25 }}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-          <Input
-            size="large"
-            prefix={<SearchOutlined />}
-            placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
-          />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-          <DatePicker.RangePicker size="large" />
-        </Col>
-      </Row>
-      <Row justify="end" wrap={false}>
         <Space>
           <Button
             size="large"
@@ -168,18 +144,31 @@ export default function Reports() {
             fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
           />
           <SettingColumns
-            btn={
-              <Button size="large" icon={<SettingOutlined />} type="primary">
-                Điều chỉnh cột
-              </Button>
-            }
             columns={columns}
             setColumns={setColumns}
             columnsDefault={columnsStock}
             nameColumn="columnsStockAdjustments"
           />
+          <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>
+            <Button type="primary" size="large">
+              Tạo phiếu kiểm
+            </Button>
+          </Link>
         </Space>
+      </TitlePage>
+      <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <Input
+            size="large"
+            prefix={<SearchOutlined />}
+            placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
+          />
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <DatePicker.RangePicker size="large" />
+        </Col>
       </Row>
+
       <Table
         loading={loading}
         // rowKey="_id"
@@ -193,9 +182,7 @@ export default function Reports() {
           if (column.dataIndex === 'code')
             return {
               ...column,
-              render: (text, record) => (
-                <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
-              ),
+              render: (text, record) => <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>,
             }
           return column
         })}
