@@ -79,12 +79,12 @@ export default function Login() {
   const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
 
   return (
-    <Row className={styles['registration']} >
+    <Row className={styles['registration']}>
       <img
         src="https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg"
         alt="background"
       />
-      <div className={styles['registration-content']} >
+      <div className={styles['registration-content']}>
         <Tabs
           className="tabs-login"
           size="large"
@@ -98,12 +98,12 @@ export default function Login() {
           <Tabs.TabPane
             tab={
               <div className={styles['registration-content-container']}>
-                <div className={styles['registration-content--logo']} >
-                  <img src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png" alt="logo" />
-                </div>
-                <div className={styles['registration-content--title']}>
-                  <h2>Dùng thử Vdropship miễn phí 7 ngày</h2>
-                  <p>+150,000 doanh nghiệp &amp; chủ shop tin dùng</p>
+                <div className={styles['registration-content--logo']}>
+                  <img
+                    style={{ maxWidth: 120, maxHeight: 120 }}
+                    src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
+                    alt="logo"
+                  />
                 </div>
               </div>
             }
@@ -113,7 +113,7 @@ export default function Login() {
               <div className={styles['registration-content--form']}>
                 <Form layout="vertical" form={formRegister} onFinish={_register}>
                   <Row gutter={[20, 20]} style={{ padding: '0px 20px' }}>
-                    <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Số điện thoại đăng ký</div>}
                         name="username"
@@ -127,7 +127,7 @@ export default function Login() {
                         />
                       </Form.Item>
                     </Col>
-                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                   <Form.Item
                     label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
                     name="business_name"
@@ -136,7 +136,7 @@ export default function Login() {
                     <Input size="large" placeholder="Nhập tên doanh nghiệp" />
                   </Form.Item>
                 </Col> */}
-                    <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         rules={[{ required: true, message: 'Vui lòng nhập email' }]}
                         // label={<div style={{ color: 'white' }}>Email</div>}
@@ -145,7 +145,7 @@ export default function Login() {
                         <Input size="large" placeholder="Nhập email" className={styles['input']} />
                       </Form.Item>
                     </Col>
-                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                   <Form.Item
                     rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
                     label={<div style={{ color: 'white' }}>Tên</div>}
@@ -154,31 +154,42 @@ export default function Login() {
                     <Input size="large" placeholder="Tên" />
                   </Form.Item>
                 </Col> */}
-                    <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Mật khẩu</div>}
                         name="password"
                         rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
                       >
-                        <Input.Password size="large" type="password" placeholder="Mật khẩu" className={styles['input']} />
+                        <Input.Password
+                          size="large"
+                          type="password"
+                          placeholder="Mật khẩu"
+                          className={styles['input']}
+                        />
                       </Form.Item>
                     </Col>
-                    <Col xs={24} sm={24} md={24} lg={24} xl={12}>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Nhập lại mật khẩu</div>}
                         name="passwordAgain"
                         rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu' }]}
                       >
-                        <Input.Password size="large" type="password" placeholder="Nhập lại mật khẩu" className={styles['input']} />
+                        <Input.Password
+                          size="large"
+                          type="password"
+                          placeholder="Nhập lại mật khẩu"
+                          className={styles['input']}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
 
-                  <Row justify="center" className={styles['btn-registration']}>
+                  <Row justify="center">
                     <Form.Item>
                       <Button
-                        size="large"
+                        type="primary"
                         htmlType="submit"
+                        className={styles['btn-registration']}
                       >
                         Đăng ký dùng thử
                       </Button>

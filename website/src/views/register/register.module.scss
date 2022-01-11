@@ -29,7 +29,7 @@
       margin: 0 auto !important;
       text-align: center;
       width: 700px;
-      padding-top: 30px;
+      padding-top: 10px;
     }
     &--logo {
       img {
@@ -62,39 +62,13 @@
 }
 
 .btn-registration {
-  justify-content: center;
-  margin-bottom: 16px;
-  button {
-    color: #fff;
-    background: #2ad38b;
-    border-radius: 45px !important;
-    display: inline-block;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    font-size: 24px;
-    height: 64px;
-    line-height: 64px;
-    padding: 0 44px;
-    border: none;
-    cursor: pointer;
-    margin: 8px 0;
-    &:hover {
-      background-color: #0cceb0;
-      color: #fff;
-    }
-  }
-  &-sub-title {
-    font-size: 14px;
-    margin-bottom: 24px;
-    justify-content: center;
-  }
-  &-sub-img {
-    a {
-      img {
-        width: 100%;
-      }
-    }
-  }
+  margin-top: 30px;
+  background: #2ad38b !important;
+  border-color: #2ad38b !important;
+  border-radius: 45px !important;
+  font-size: 25px;
+  height: 60px;
+  width: 340px;
 }
 
 @media screen and (max-width: 768px) {
