@@ -27,6 +27,28 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
+let importProduct = async (user, products, productObjects, variantObjects, priceObjects) => {
+    try {
+        let locationMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Locations' });
+        let locationId = (() => {
+            if (locationMaxId && locationMaxId.value) {
+                return locationMaxId.value;
+            }
+            return 0;
+        })();
+        
+    } catch (err) {
+        throw new Error(err.message);
+    }
+};
+
+let exportProduct = () => {
+    try {
+    } catch (err) {
+        throw new Error(err.message);
+    }
+};
+
 module.exports._getImportOrder = async (req, res, next) => {
     try {
         let aggregateQuery = [];

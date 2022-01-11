@@ -76,6 +76,7 @@ module.exports._create = async (req, res, next) => {
             province: req.body.province || '',
             accumulate_point: req.body.accumulate_point || false,
             use_point: req.body.use_point || false,
+            //tichdiem
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
