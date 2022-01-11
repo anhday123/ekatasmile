@@ -27,6 +27,7 @@ export default function ImportInventories() {
   const history = useHistory()
 
   const [ordersInventory, setOrdersInventory] = useState([])
+  console.log(ordersInventory)
   const [countOrder, setCountOrder] = useState(0)
   const [selectRowsKey, setSelectRowKeys] = useState([])
   const [columns, setColumns] = useState([])

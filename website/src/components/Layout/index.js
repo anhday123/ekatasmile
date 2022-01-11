@@ -44,6 +44,7 @@ import {
   LineChartOutlined,
   CodeSandboxOutlined,
   CalendarOutlined,
+  FileSearchOutlined,
 } from '@ant-design/icons'
 
 //components
@@ -163,6 +164,13 @@ const BaseLayout = (props) => {
       title: 'Nhập hàng',
       permissions: [],
       pathsChild: [ROUTES.IMPORT_INVENTORY],
+    },
+    {
+      icon: <FileSearchOutlined />,
+      path: ROUTES.STOCK_ADJUSTMENTS,
+      title: 'Kiểm hàng',
+      permissions: [],
+      pathsChild: [ROUTES.STOCK_ADJUSTMENTS_CREATE],
     },
     {
       pathsChild: [],
