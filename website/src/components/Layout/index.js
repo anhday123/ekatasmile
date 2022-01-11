@@ -57,9 +57,9 @@ const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
-  const WIDTH_MENU_OPEN = 200
-  const WIDTH_MENU_CLOSE = 160
-  const HEIGHT_HEADER = 35
+  const WIDTH_MENU_OPEN = 195
+  const WIDTH_MENU_CLOSE = 60
+  const HEIGHT_HEADER = 56
 
   const [branches, setBranches] = useState([])
   const [user, setUser] = useState({})
@@ -69,7 +69,10 @@ const BaseLayout = (props) => {
     ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
 
-  const [collapsed, setCollapsed] = useState(false)
+  const isCollapsed = localStorage.getItem('collapsed')
+    ? JSON.parse(localStorage.getItem('collapsed'))
+    : false
+  const [collapsed, setCollapsed] = useState(isCollapsed)
   const [isMobile, setIsMobile] = useState(false)
 
   const [openKeys, setOpenKeys] = useState([])
@@ -105,11 +108,8 @@ const BaseLayout = (props) => {
   }
 
   var toggle = () => {
+    localStorage.setItem('collapsed', JSON.stringify(!collapsed))
     setCollapsed(!collapsed)
-  }
-
-  const onCollapse = (collapsed) => {
-    setCollapsed({ collapsed })
   }
 
   const MENUS = [
@@ -301,71 +301,20 @@ const BaseLayout = (props) => {
   const renderMenuItem = (_menu) => (
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
-        <Menu.SubMenu
-          key={_menu.path}
-          title={
-            <div
-              style={{
-                fontSize: '0.8rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: collapsed && 'center',
-                lineHeight: '25px',
-              }}
-            >
-              {collapsed && _menu.icon}
-              {_menu.title}
-            </div>
-          }
-          icon={!collapsed && _menu.icon}
-        >
+        <Menu.SubMenu key={_menu.path} title={_menu.title} icon={_menu.icon}>
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
-              {!collapsed ? (
-                <Menu.Item
-                  key={e.path}
-                  style={{
-                    fontSize: '0.8rem',
-                    backgroundColor:
-                      (location.pathname === e.path || e.pathsChild.includes(location.pathname)) &&
-                      '#e7e9fb',
-                  }}
-                  icon={!collapsed && e.icon}
-                >
-                  <Link
-                    to={e.path}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: collapsed && 'center',
-                      lineHeight: '25px',
-                    }}
-                  >
-                    {collapsed && e.icon}
-
-                    {e.title}
-                  </Link>
-                </Menu.Item>
-              ) : (
-                <Link to={e.path}>
-                  <Menu.Item
-                    key={e.path}
-                    style={{
-                      fontSize: '0.8rem',
-                      backgroundColor:
-                        (location.pathname === e.path ||
-                          e.pathsChild.includes(location.pathname)) &&
-                        '#e7e9fb',
-                      color: 'black',
-                    }}
-                    icon={collapsed && e.icon}
-                  >
-                    {e.title}
-                  </Menu.Item>
-                </Link>
-              )}
+              <Menu.Item
+                key={e.path}
+                style={{
+                  fontSize: '0.8rem',
+                  backgroundColor:
+                    (location.pathname === e.path || e.pathsChild.includes(location.pathname)) &&
+                    '#e7e9fb',
+                }}
+              >
+                <Link to={e.path}>{e.title}</Link>
+              </Menu.Item>
             </Permission>
           ))}
         </Menu.SubMenu>
@@ -377,23 +326,10 @@ const BaseLayout = (props) => {
             backgroundColor:
               (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
               '#e7e9fb',
-            color: collapsed && 'white',
           }}
-          icon={!collapsed && _menu.icon}
+          icon={_menu.icon}
         >
-          <Link
-            to={_menu.path}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: collapsed && 'center',
-              lineHeight: '25px',
-            }}
-          >
-            {collapsed && _menu.icon}
-            {_menu.title}
-          </Link>
+          <Link to={_menu.path}>{_menu.title}</Link>
         </Menu.Item>
       )}
     </Permission>
@@ -467,7 +403,6 @@ const BaseLayout = (props) => {
           position: 'fixed',
         }}
         collapsed={collapsed}
-        onCollapse={onCollapse}
       >
         <div
           style={{
@@ -512,21 +447,8 @@ const BaseLayout = (props) => {
           >
             <Link to={ROUTES.CLIENT_MANAGEMENT}>Quản lý client</Link>
           </Menu.Item> */}
-          <Menu.Item onClick={onSignOut} key="9" icon={!collapsed && <LogoutOutlined />}>
-            <Link
-              to={ROUTES.LOGIN}
-              style={{
-                fontSize: '0.8rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: collapsed && 'center',
-                justifyContent: 'center',
-                lineHeight: '25px',
-              }}
-            >
-              {collapsed && <LogoutOutlined />}
-              Đăng xuất
-            </Link>
+          <Menu.Item key={ROUTES.LOGIN} onClick={onSignOut} icon={<LogoutOutlined />}>
+            <Link to={ROUTES.LOGIN}>Đăng xuất</Link>
           </Menu.Item>
         </Menu>
       </Sider>
@@ -545,14 +467,14 @@ const BaseLayout = (props) => {
                 width: '100%',
                 paddingLeft: 5,
                 paddingRight: 5,
-                paddingTop: 5,
-                paddingBottom: 5,
+                paddingTop: 12,
+                paddingBottom: 12,
               }}
               justify={isMobile && 'space-between'}
             >
               <MenuOutlined
                 onClick={toggle}
-                style={{ fontSize: 18, marginRight: 18, color: 'white' }}
+                style={{ fontSize: 20, marginRight: 18, color: 'white' }}
               />
               <Permission permissions={[PERMISSIONS.them_cua_hang]}>
                 <Link
@@ -577,7 +499,6 @@ const BaseLayout = (props) => {
               <Row align="middle">
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
-                  size="small"
                   disabled={dataUser && dataUser.data.role_id === 1 ? false : true}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
@@ -597,14 +518,7 @@ const BaseLayout = (props) => {
               <div style={{ marginTop: 8, marginRight: 15 }}>
                 <Dropdown overlay={<NotifyContent />} placement="bottomCenter" trigger="click">
                   <Badge count={0} showZero size="small" offset={[-3, 3]}>
-                    <Bell
-                      style={{
-                        color: 'rgb(253, 170, 62)',
-                        cursor: 'pointer',
-                        width: 21,
-                        height: 21,
-                      }}
-                    />
+                    <Bell style={{ color: 'rgb(253, 170, 62)', cursor: 'pointer' }} />
                   </Badge>
                 </Dropdown>
               </div>
@@ -612,7 +526,7 @@ const BaseLayout = (props) => {
                 <Row align="middle" wrap={false} style={{ cursor: 'pointer' }}>
                   <Avatar
                     src={dataUser && (dataUser.data.avatar || '')}
-                    style={{ color: '#FFF', backgroundColor: '#FDAA3E', width: 27, height: 27 }}
+                    style={{ color: '#FFF', backgroundColor: '#FDAA3E', width: 35, height: 35 }}
                   />
                   <span
                     style={{

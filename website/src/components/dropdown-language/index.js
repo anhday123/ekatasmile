@@ -19,7 +19,7 @@ export default function DropdownLanguage() {
           <img
             alt=""
             src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
-            width="20"
+            width="28"
           />
         }
         onClick={() => {
@@ -34,7 +34,7 @@ export default function DropdownLanguage() {
           <img
             alt=""
             src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
-            width="20"
+            width="28"
           />
         }
         onClick={() => {
@@ -49,23 +49,23 @@ export default function DropdownLanguage() {
 
   return (
     <Dropdown overlay={<LanguageDropdown />} placement="bottomCenter" trigger="click">
-      <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+      <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginRight: 5 }}>
         <div>
           {appLanguage === 'vi' ? (
             <img
               alt=""
               src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/88294930-deff-4371-866d-ca2e882f24f8/1f1fb-1f1f3.png"
-              width="20"
+              width="28"
             />
           ) : (
             <img
               alt=""
               src="https://admin-order.s3.ap-northeast-1.wasabisys.com/2021/12/08/14065773-9bee-46ea-8ee5-26e87cdb01b8/1f1ec-1f1e7.png"
-              width="20"
+              width="28"
             />
           )}
         </div>
-        <div style={{ color: '#fff', minWidth: 90, marginLeft: 7, fontSize: 12.5 }}>
+        <div style={{ color: '#fff', minWidth: 90, marginLeft: 7, fontSize: 15 }}>
           {appLanguage === 'vi' ? t('login.vi') : t('login.en')} <CarretDown />
         </div>
       </div>
