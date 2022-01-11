@@ -5,7 +5,7 @@ import { ROUTES } from 'consts'
 import { Link, useHistory } from 'react-router-dom'
 
 //components
-import columnsStockAdjustments from './columns'
+// import columnsStockAdjustments from './columns'
 import SettingColumns from 'components/setting-columns'
 import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
@@ -14,14 +14,12 @@ import Permission from 'components/permission'
 import locale from 'antd/es/date-picker/locale/zh_CN'
 
 //antd
-import { Row, Col, Input, Button, DatePicker, Space, Select, Table, Modal, Spin } from 'antd'
+import { Row, Col, Input, Button, DatePicker, Space, Table, Modal } from 'antd'
 
 //icons
 import {
   SearchOutlined,
-  ArrowLeftOutlined,
   SettingOutlined,
-  VerticalAlignBottomOutlined,
   VerticalAlignTopOutlined
 }
   from '@ant-design/icons'
@@ -51,12 +49,63 @@ export default function Reports() {
     setSupplierId()
   }
 
+  const columnsStock = [
+    {
+      title: 'Mã phiếu',
+      dataIndex: 'code',
+      render: (text, record, index) => {
+        console.log(text, record, index)
+        return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
+      }
+    },
+    {
+      title: 'Kho kiểm hàng',
+      dataIndex: 'warehouse',
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'create_date',
+    },
+    {
+      title: 'Ngày kiểm',
+      dataIndex: 'check_date',
+    },
+    {
+      title: 'Nhân viên tạo',
+      dataIndex: 'creator',
+    },
+    {
+      title: 'Ghi chú',
+      dataIndex: 'note',
+    },
+  ]
+
+  const dataStockAdjustment = []
+  for (let i = 0; i < 46; i++) {
+    dataStockAdjustment.push({
+      key: i,
+      code: `JANUARY ${i}`,
+      warehouse: 'Chi nhanh mac dinh',
+      status: `London, Park Lane no. ${i}`,
+      create_date: `Da can bang`,
+      check_date: `11/01/2022`,
+      creator: `Duck`,
+      note: `Hang to`,
+    })
+  }
+
   return (
     <div className={`${styles['card']} ${styles['stock-adjustments']}`}>
       <TitlePage title="Phiếu kiểm hàng">
-        <Button type="primary" size="large">
-          Tạo phiếu kiểm
-        </Button>
+        <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>
+          <Button type="primary" size="large">
+            Tạo phiếu kiểm
+          </Button>
+        </Link>
       </TitlePage>
       <Row gutter={[16, 16]} style={{ marginTop: 25 }}>
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
@@ -111,15 +160,6 @@ export default function Reports() {
               </Button> */}
             </Row>
           </Modal>
-          {selectRowsKey.length !== 0 ? (
-            <Space>
-              <Button size="large" type="primary">
-                In hóa đơn
-              </Button>
-            </Space>
-          ) : (
-            ''
-          )}
           <ImportCSV
             size="large"
             // upload={uploadOrdersImportInventory}
@@ -135,74 +175,30 @@ export default function Reports() {
             }
             columns={columns}
             setColumns={setColumns}
-            columnsDefault={columnsStockAdjustments}
+            columnsDefault={columnsStock}
             nameColumn="columnsStockAdjustments"
           />
         </Space>
       </Row>
       <Table
         loading={loading}
-        rowKey="_id"
-        rowSelection={{
-          selectedRowKeys: selectRowsKey,
-          onChange: (keys) => setSelectRowKeys(keys),
-        }}
+        // rowKey="_id"
+        // rowSelection={{
+        //   selectedRowKeys: selectRowsKey,
+        //   onChange: (keys) => setSelectRowKeys(keys),
+        // }}
         size="small"
-        // dataSource={ordersInventory}
-        columns={columns}
-        // columns={columns.map((column) => {
-        //   if (column.key === 'code')
-        //     return {
-        //       ...column,
-        //       render: (text, record) => (
-        //         <a
-        //           onClick={() =>
-        //             history.push({ pathname: ROUTES.IMPORT_INVENTORY, state: record })
-        //           }
-        //         >
-        //           #{record.code}
-        //         </a>
-        //       ),
-        //     }
-        //   if (column.key === 'warehouse')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record.import_location_info && record.import_location_info.name,
-        //     }
-        //   if (column.key === 'status')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
-        //     }
-        //   if (column.key === 'create_date')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record.import_location_info && record.import_location_info.name,
-        //     }
-        //   if (column.key === 'check_date')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record._creator &&
-        //         `${record._creator.first_name || ''} ${record._creator.last_name || ''}`,
-        //     }
-        //   if (column.key === 'creator')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record._verifier &&
-        //         `${record._verifier.first_name || ''} ${record._verifier.last_name || ''}`,
-        //     }
-        //   if (column.key === 'note')
-        //     return {
-        //       ...column,
-        //       render: (text, record) =>
-        //         record.verify_date && moment(record.verify_date).format('DD-MM-YYYY HH:mm'),
-        //     }
-        // })}
+        dataSource={dataStockAdjustment}
+        columns={columns.map((column) => {
+          if (column.dataIndex === 'code')
+            return {
+              ...column,
+              render: (text, record) => (
+                <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
+              ),
+            }
+          return column
+        })}
         style={{ width: '100%', marginTop: 10 }}
         pagination={{
           position: ['bottomLeft'],

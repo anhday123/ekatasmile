@@ -51,6 +51,7 @@ export const ROUTES = {
   REPORTS: '/reports',
   SALES_REPORT: '/sales-report',
   STOCK_ADJUSTMENTS: '/stock-adjustments',
+  STOCK_ADJUSTMENTS_CREATE: '/stock-adjustments/create',
   REPORT_VARIANT: '/report-variant',
   REPORT_INVENTORY: '/report-inventory',
   REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT: '/report-import-export-inventory-product',
