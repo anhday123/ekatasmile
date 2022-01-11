@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import styles from './order-create-shipping.module.scss'
-
 import { useHistory } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
 import { formatCash } from 'utils'
 import moment from 'moment'
 import jwt_decode from 'jwt-decode'
+import { useSelector } from 'react-redux'
 
 //antd
 import {
@@ -52,7 +52,7 @@ import noData from 'assets/icons/no-data.png'
 import { getPromotions } from 'apis/promotion'
 import { getProducts } from 'apis/product'
 import { getCustomers } from 'apis/customer'
-import { getAllStore } from 'apis/store'
+import { getAllBranch } from 'apis/branch'
 import { getTaxs } from 'apis/tax'
 
 //components
@@ -65,13 +65,14 @@ import TitlePage from 'components/title-page'
 export default function OrderCreateShipping() {
   let history = useHistory()
   const [formInfoOrder] = Form.useForm()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [productsSearch, setProductsSearch] = useState([])
   const [productData, setProductData] = useState([])
   const [options, setOptions] = useState([])
-  const [infoStore, setInfoStore] = useState(
-    localStorage.getItem('storeSell') ? JSON.parse(localStorage.getItem('storeSell')) : null
+  const [infoBranch, setInfoBranch] = useState(
+    localStorage.getItem('branchSell') ? JSON.parse(localStorage.getItem('branchSell')) : null
   )
 
   //object order create
@@ -107,10 +108,10 @@ export default function OrderCreateShipping() {
   const [voucher, setvoucher] = useState('')
   const [discount, setDiscount] = useState('')
 
-  const [loadingStore, setLoadingStore] = useState(false)
-  const [stores, setStores] = useState([])
-  const storeActive =
-    localStorage.getItem('storeSell') && JSON.parse(localStorage.getItem('storeSell'))
+  const [loadingBranch, setLoadingBranch] = useState(false)
+  const [branches, setBranches] = useState([])
+  const branchActive =
+    localStorage.getItem('branchSell') && JSON.parse(localStorage.getItem('branchSell'))
 
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customerInfo, setCustomerInfo] = useState(null)
@@ -537,12 +538,12 @@ export default function OrderCreateShipping() {
   //     history.push('/order-list')
   //   }
   // }
+
   const getData = async (api, callback) => {
     try {
-      const res = await api()
-      if (res.data.success) {
-        callback(res.data.data)
-      }
+      const res = await api({ branch_id: branchIdApp })
+      console.log(res)
+      if (res.status === 200) callback(res.data.data)
     } catch (e) {
       console.log(e)
     }
@@ -561,22 +562,23 @@ export default function OrderCreateShipping() {
     }
   }
 
-  const _getStores = async () => {
+  const _getBranches = async () => {
     try {
-      setLoadingStore(true)
-      const res = await getAllStore()
-      if (res.status === 200) setStores(res.data.data)
-      setLoadingStore(false)
+      setLoadingBranch(true)
+      const res = await getAllBranch()
+      console.log(res)
+      if (res.status === 200) setBranches(res.data.data)
+      setLoadingBranch(false)
     } catch (error) {
-      setLoadingStore(false)
+      setLoadingBranch(false)
       console.log(error)
     }
   }
 
-  const _getProductsSearch = async (store_id = storeActive ? storeActive.store_id : '') => {
+  const _getProductsSearch = async (branch_id = branchActive ? branchActive.branch_id : '') => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ store_id, merge: true, detach: true })
+      const res = await getProducts({ branch_id, merge: true, detach: true })
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
     } catch (error) {
@@ -585,29 +587,31 @@ export default function OrderCreateShipping() {
     }
   }
 
-  const _getStoreEmployee = () => {
+  const _getBranchEmployee = () => {
     const accessToken = localStorage.getItem('accessToken')
     if (accessToken) {
       const data = jwt_decode(accessToken)
-      if (!infoStore) {
-        if (data.data._store) {
-          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
-          setInfoStore(data.data._store)
-          _getProductsSearch(data.data._store.store_id)
+      if (!infoBranch) {
+        if (data.data._branch) {
+          localStorage.setItem('branchSell', JSON.stringify(data.data._branch))
+          setInfoBranch(data.data._branch)
+          _getProductsSearch(data.data._branch.branch_id)
         }
-      } else _getProductsSearch(infoStore.store_id)
+      } else _getProductsSearch(infoBranch.branch_id)
     } else history.push(ROUTES.LOGIN)
   }
 
   useEffect(() => {
-    _getStoreEmployee()
+    _getBranchEmployee()
     _getCustomers()
-    _getStores()
+    _getBranches()
     _getProductsSearch()
+  }, [])
 
+  useEffect(() => {
     getData(getTaxs, setTaxList)
     getData(getPromotions, setPromotionList)
-  }, [])
+  }, [branchIdApp])
 
   return (
     <div className="card">
@@ -1081,18 +1085,18 @@ export default function OrderCreateShipping() {
                   }
                   key="2"
                 >
-                  Dịch vụ vận chuyển dành cho các đối tác vận chuyển là nhân viên cửa hàng hoặc thuê
-                  ở bên ngoài.
+                  Dịch vụ vận chuyển dành cho các đối tác vận chuyển là nhân viên chi nhánh hoặc
+                  thuê ở bên ngoài.
                 </Tabs.TabPane>
                 <Tabs.TabPane
                   tab={
                     <span>
-                      <ShopOutlined style={{ marginRight: 3 }} /> Nhận tại cửa hàng
+                      <ShopOutlined style={{ marginRight: 3 }} /> Nhận tại chi nhánh
                     </span>
                   }
                   key="3"
                 >
-                  Chọn nhận tại cửa hàng khi khách hàng xác nhận sẽ qua tận nơi để lấy sản phẩm.
+                  Chọn nhận tại chi nhánh khi khách hàng xác nhận sẽ qua tận nơi để lấy sản phẩm.
                 </Tabs.TabPane>
                 <Tabs.TabPane
                   tab={
@@ -1111,15 +1115,16 @@ export default function OrderCreateShipping() {
 
         <Col span={8}>
           <div className={styles['block']} style={{ marginBottom: 30 }}>
-            <div className={styles['title']}>Cửa hàng</div>
+            <div className={styles['title']}>Chi nhánh</div>
             <Select
+              placeholder="Chọn chi nhánh"
               showSearch
-              value={storeActive && storeActive.store_id}
-              notFoundContent={loadingStore ? <Spin /> : null}
+              defaultValue={branchActive && branchActive.branch_id}
+              notFoundContent={loadingBranch ? <Spin /> : null}
               style={{ width: '100%' }}
             >
-              {stores.map((e, index) => (
-                <Select.Option value={e.store_id} key={index}>
+              {branches.map((e, index) => (
+                <Select.Option value={e.branch_id} key={index}>
                   {e.name}
                 </Select.Option>
               ))}

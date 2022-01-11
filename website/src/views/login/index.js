@@ -69,14 +69,7 @@ export default function Login() {
 
   return (
     <Row className={styles['login-container']}>
-      <Col
-        xs={24}
-        sm={24}
-        md={14}
-        lg={14}
-        xl={10}
-        className={styles['login-content']}
-      >
+      <Col xs={24} sm={24} md={14} lg={14} xl={10} className={styles['login-content']}>
         <Tabs
           className="tabs-login"
           size="large"
@@ -106,7 +99,7 @@ export default function Login() {
                   name="password"
                   rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
                 >
-                  <Input.Password size="large" type="password" placeholder="*Mật khẩu" />
+                  <Input.Password size="large" type="password" placeholder="Mật khẩu" />
                 </Form.Item>
                 <Row justify="end">
                   <Link to={ROUTES.FORGET_PASSWORD} style={{ margin: '20px 0px', color: 'white' }}>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import styles from './import-inventory.module.scss'
 import moment from 'moment'
 import { formatCash } from 'utils'
 import { BILL_STATUS_ORDER, ROUTES } from 'consts'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 //components
 import columnsImportInventories from './columns'
@@ -27,7 +27,7 @@ import {
 } from 'antd'
 
 //icons
-import { DeleteOutlined, SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
+import { DeleteOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //apis
 import {
@@ -35,12 +35,12 @@ import {
   uploadOrdersImportInventory,
   deleteOrderImportInventory,
 } from 'apis/inventory'
-import { getAllBranch } from 'apis/branch'
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
 
 export default function ImportInventories() {
   const history = useHistory()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [ordersInventory, setOrdersInventory] = useState([])
   const [countOrder, setCountOrder] = useState(0)
@@ -48,8 +48,6 @@ export default function ImportInventories() {
   const [columns, setColumns] = useState([])
 
   const [loading, setLoading] = useState(false)
-  const [branches, setBranches] = useState([])
-  const [loadingBranches, setLoadingBranches] = useState([])
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
 
@@ -280,7 +278,7 @@ export default function ImportInventories() {
     try {
       setLoading(true)
       setSelectRowKeys([])
-      const res = await getOrdersImportInventory(paramsFilter)
+      const res = await getOrdersImportInventory({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setCountOrder(res.data.count)
@@ -289,18 +287,6 @@ export default function ImportInventories() {
       setLoading(false)
     } catch (error) {
       setLoading(false)
-      console.log(error)
-    }
-  }
-
-  const _getBranches = async () => {
-    try {
-      setLoadingBranches(true)
-      const res = await getAllBranch()
-      if (res.status === 200) setBranches(res.data.data)
-      setLoadingBranches(false)
-    } catch (error) {
-      setLoadingBranches(false)
       console.log(error)
     }
   }
@@ -315,43 +301,110 @@ export default function ImportInventories() {
   }
 
   useEffect(() => {
-    _getBranches()
     _getSuppliers()
   }, [])
 
   useEffect(() => {
     _getOrdersImportInventory()
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   return (
     <div className="card">
       <TitlePage title="Nhập hàng">
-        <Button size="large" type="primary" onClick={() => history.push(ROUTES.IMPORT_INVENTORY)}>
-          Tạo đơn nhập hàng
-        </Button>
-      </TitlePage>
-      <div style={{ marginTop: 20 }}>
         <Space>
-          <Select
+          <Button
             size="large"
-            value={paramsFilter.branch_id}
-            onChange={(value) => _onFilter('branch_id', value)}
-            notFoundContent={loadingBranches ? <Spin /> : null}
-            style={{ width: 260 }}
-            placeholder="Lọc theo địa điểm nhập hàng"
-            allowClear
-            showSearch
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
+            onClick={toggleProductsToSupplier}
+            icon={<VerticalAlignTopOutlined />}
+            style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
           >
-            {branches.map((branch, index) => (
-              <Select.Option value={branch.branch_id} key={index}>
-                {branch.name}
-              </Select.Option>
-            ))}
-          </Select>
-
+            Xuất excel
+          </Button>
+          <Modal
+            style={{ top: 20 }}
+            footer={null}
+            title="Xuất file excel sản phẩm từ nhà cung cấp"
+            width={920}
+            visible={visibleProductsToSupplier}
+            onCancel={toggleProductsToSupplier}
+          >
+            <Row justify="space-between" wrap={false} align="middle">
+              <Select
+                value={supplierId}
+                onChange={(value) => {
+                  setSupplierId(value)
+                  _getProductsToSupplier(value)
+                }}
+                showSearch
+                style={{ width: 250, marginBottom: 10 }}
+                placeholder="Chọn nhà cung cấp"
+              >
+                {suppliers.map((supplier, index) => (
+                  <Select.Option key={index} value={supplier.supplier_id}>
+                    {supplier.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button
+                onClick={() => {
+                  const dataExport = productsSupplier.map((record, index) => ({
+                    STT: index + 1,
+                    'Tên sản phẩm': record.product_name || '',
+                    'Mã sản phẩm': record.product_sku || '',
+                    'Loại sản phẩm': record.categories || '',
+                    'Mã phiên bản': record.sku || '',
+                    'Nhà cung cấp': record.supplier || '',
+                    'Đơn vị': record.unit || '',
+                    'Đơn giá nhập': record.import_price || '',
+                    'Số lượng nhập': record.quantity || '',
+                  }))
+                  exportToCSV(dataExport, 'Danh sách sản phẩm')
+                }}
+                type="primary"
+                style={{ display: !productsSupplier.length && 'none' }}
+              >
+                Tải xuống
+              </Button>
+            </Row>
+            <Table
+              size="small"
+              loading={loading}
+              dataSource={productsSupplier}
+              columns={columnsProductsToSupplier}
+              pagination={false}
+              style={{ width: '100%' }}
+              scroll={{ y: 450 }}
+            />
+          </Modal>
+          {selectRowsKey.length !== 0 ? (
+            <Space>
+              <Button size="large" type="primary">
+                In hóa đơn
+              </Button>
+            </Space>
+          ) : (
+            ''
+          )}
+          <ImportCSV
+            size="large"
+            upload={uploadOrdersImportInventory}
+            reload={_getOrdersImportInventory}
+            title="Nhập đơn hàng bằng file excel"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
+          />
+          <SettingColumns
+            columns={columns}
+            setColumns={setColumns}
+            columnsDefault={columnsImportInventories}
+            nameColumn="columnsImportInventories"
+          />
+          <Button size="large" type="primary" onClick={() => history.push(ROUTES.IMPORT_INVENTORY)}>
+            Tạo đơn nhập hàng
+          </Button>
+        </Space>
+      </TitlePage>
+      <div style={{ marginTop: 10 }}>
+        <Space>
           <Select
             size="large"
             open={isOpenSelect}
@@ -491,103 +544,7 @@ export default function ImportInventories() {
         </Space>
       </div>
 
-      <div style={{ marginTop: 30 }}>
-        <Row justify="end" wrap={false}>
-          <Space>
-            <Button
-              size="large"
-              onClick={toggleProductsToSupplier}
-              icon={<VerticalAlignTopOutlined />}
-              style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
-            >
-              Xuất excel
-            </Button>
-            <Modal
-              style={{ top: 20 }}
-              footer={null}
-              title="Xuất file excel sản phẩm từ nhà cung cấp"
-              width={920}
-              visible={visibleProductsToSupplier}
-              onCancel={toggleProductsToSupplier}
-            >
-              <Row justify="space-between" wrap={false} align="middle">
-                <Select
-                  value={supplierId}
-                  onChange={(value) => {
-                    setSupplierId(value)
-                    _getProductsToSupplier(value)
-                  }}
-                  showSearch
-                  style={{ width: 250, marginBottom: 10 }}
-                  placeholder="Chọn nhà cung cấp"
-                >
-                  {suppliers.map((supplier, index) => (
-                    <Select.Option key={index} value={supplier.supplier_id}>
-                      {supplier.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    const dataExport = productsSupplier.map((record, index) => ({
-                      STT: index + 1,
-                      'Tên sản phẩm': record.product_name || '',
-                      'Mã sản phẩm': record.product_sku || '',
-                      'Loại sản phẩm': record.categories || '',
-                      'Mã phiên bản': record.sku || '',
-                      'Nhà cung cấp': record.supplier || '',
-                      'Đơn vị': record.unit || '',
-                      'Đơn giá nhập': record.import_price || '',
-                      'Số lượng nhập': record.quantity || '',
-                    }))
-                    exportToCSV(dataExport, 'Danh sách sản phẩm')
-                  }}
-                  type="primary"
-                  style={{ display: !productsSupplier.length && 'none' }}
-                >
-                  Tải xuống
-                </Button>
-              </Row>
-              <Table
-                size="small"
-                loading={loading}
-                dataSource={productsSupplier}
-                columns={columnsProductsToSupplier}
-                pagination={false}
-                style={{ width: '100%' }}
-                scroll={{ y: 450 }}
-              />
-            </Modal>
-            {selectRowsKey.length !== 0 ? (
-              <Space>
-                <Button size="large" type="primary">
-                  In hóa đơn
-                </Button>
-              </Space>
-            ) : (
-              ''
-            )}
-            <ImportCSV
-              size="large"
-              upload={uploadOrdersImportInventory}
-              reload={_getOrdersImportInventory}
-              title="Nhập đơn hàng bằng file excel"
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
-            />
-            <SettingColumns
-              btn={
-                <Button size="large" icon={<SettingOutlined />} type="primary">
-                  Điều chỉnh cột
-                </Button>
-              }
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsImportInventories}
-              nameColumn="columnsImportInventories"
-            />
-          </Space>
-        </Row>
-
+      <div style={{ marginTop: 15 }}>
         <Table
           loading={loading}
           rowKey="_id"
@@ -679,7 +636,7 @@ export default function ImportInventories() {
                     onConfirm={() => _deleteOrderImportInventory(record.order_id)}
                     title="Bạn có muốn xóa đơn nhập hàng này không?"
                   >
-                    <DeleteOutlined style={{ color: 'red', fontSize: 17 }} />
+                    <Button icon={<DeleteOutlined />} danger type="primary" />
                   </Popconfirm>
                 ),
               }

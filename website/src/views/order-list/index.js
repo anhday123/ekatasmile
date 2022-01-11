@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import styles from './order-list.module.scss'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
+import { useSelector } from 'react-redux'
 
 //antd
 import {
@@ -32,15 +32,17 @@ import columnsOrder from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { apiAllOrder, deleteOrders } from 'apis/order'
+import { getOrders, deleteOrders } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 
 const { RangePicker } = DatePicker
 export default function OrderList() {
   let printOrderRef = useRef()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
   const history = useHistory()
   const typingTimeoutRef = useRef(null)
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
+
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
 
@@ -98,8 +100,6 @@ export default function OrderList() {
   }
 
   const _onChangeDate = (date, dateString) => {
-    paramsFilter.page = 1
-
     if (date) {
       paramsFilter.from_date = dateString[0]
       paramsFilter.to_date = dateString[1]
@@ -107,8 +107,7 @@ export default function OrderList() {
       delete paramsFilter.from_date
       delete paramsFilter.to_date
     }
-
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
   const _onChangeFilter = (attribute = '', value = '') => {
@@ -160,11 +159,11 @@ export default function OrderList() {
     },
   ]
 
-  const _getOrders = async (params) => {
+  const _getOrders = async () => {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await apiAllOrder(params)
+      const res = await getOrders({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setOrders(res.data.data)
@@ -192,8 +191,8 @@ export default function OrderList() {
   }, [])
 
   useEffect(() => {
-    _getOrders(paramsFilter)
-  }, [paramsFilter])
+    _getOrders()
+  }, [paramsFilter, branchIdApp])
 
   return (
     <div className="card">

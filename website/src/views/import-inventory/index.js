@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import styles from './import-inventory.module.scss'
-
-import { useHistory, Link, useLocation } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, IMAGE_DEFAULT, ACTION } from 'consts'
 import { formatCash } from 'utils'
 import moment from 'moment'
@@ -46,7 +45,6 @@ import {
 //apis
 import { getProducts } from 'apis/product'
 import { getAllBranch } from 'apis/branch'
-import { getAllStore } from 'apis/store'
 import { uploadFile } from 'apis/upload'
 import { getSuppliers } from 'apis/supplier'
 import { getEmployees } from 'apis/employee'
@@ -90,9 +88,7 @@ export default function ImportInventory() {
     moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả (Tổng tiền thanh toán)
   })
 
-  const [loadingLocation, setLoadingLocation] = useState(false)
   const [branches, setBranches] = useState([])
-  const [stores, setStores] = useState([])
 
   const _editOrder = (attribute, value) => {
     const orderCreateNew = { ...orderCreate }
@@ -298,25 +294,6 @@ export default function ImportInventory() {
     }
   }
 
-  const _getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200) {
-        // cho store id âm để phân biệt với branch
-        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const _loadLocations = async () => {
-    setLoadingLocation(true)
-    await _getBranches()
-    await _getStores()
-    setLoadingLocation(false)
-  }
-
   const _getUsers = async () => {
     try {
       const res = await getEmployees()
@@ -487,17 +464,15 @@ export default function ImportInventory() {
   }
 
   useEffect(() => {
-    _loadLocations()
+    _getBranches()
     _getSuppliers()
     _getProductsSearch()
     _getUsers()
+  }, [])
 
-    console.log(location.state)
+  useEffect(() => {
     if (!location.state)
-      form.setFieldsValue({
-        payment_status: 'PAID',
-        complete_date: moment(new Date()),
-      })
+      form.setFieldsValue({ payment_status: 'PAID', complete_date: moment(new Date()) })
     else {
       setOrderCreate({
         order_details: location.state.products.map((e) => ({
@@ -919,27 +894,21 @@ export default function ImportInventory() {
                 rules={[{ required: true, message: 'Vui lòng chọn địa điểm nhận hàng!' }]}
               >
                 <Select
-                  allowClear
                   placeholder="Chọn địa điểm nhận hàng"
-                  notFoundContent={loadingLocation ? <Spin /> : null}
                   style={{ width: '100%' }}
                   onChange={(value, option) => {
                     let p = {}
                     if (value) {
-                      if (+option.key < 0) {
-                        const storeFind = stores.find((e) => e.name === value)
-                        if (storeFind) p.store_id = +storeFind.store_id * -1
-                      } else {
-                        const branchFind = branches.find((e) => e.name === value)
-                        if (branchFind) p.branch_id = branchFind.branch_id
-                      }
+                      const branchFind = branches.find((e) => e.name === value)
+                      if (branchFind) p.branch_id = branchFind.branch_id
                     }
-
                     setImportLocation({ ...p })
                   }}
                 >
-                  {branches.map((e) => (
-                    <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                  {branches.map((e, index) => (
+                    <Select.Option value={e.branch_id} key={index}>
+                      {e.name}
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>

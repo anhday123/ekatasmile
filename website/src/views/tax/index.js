@@ -1,9 +1,8 @@
-import styles from './tax.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
 import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
-import { Link, useHistory } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { compare } from 'utils'
 
 //antd
@@ -24,7 +23,7 @@ import {
 } from 'antd'
 
 //icons
-import { PlusCircleOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 
 //apis
 import { addTax, getTaxs, updateTax } from 'apis/tax'
@@ -39,6 +38,7 @@ const { TextArea } = Input
 export default function Tax() {
   const history = useHistory()
   const dispatch = useDispatch()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [tax, setTax] = useState([])
   const [visible, setVisible] = useState(false)
@@ -136,7 +136,7 @@ export default function Tax() {
   const apiAllTaxData = async () => {
     try {
       setLoading(true)
-      const res = await getTaxs()
+      const res = await getTaxs({ branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setTax(res.data.data)
@@ -146,9 +146,7 @@ export default function Tax() {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    apiAllTaxData()
-  }, [])
+
   const apiAddTaxData = async (object) => {
     try {
       setLoading(true)
@@ -348,6 +346,11 @@ export default function Tax() {
         ),
     },
   ]
+
+  useEffect(() => {
+    apiAllTaxData()
+  }, [branchIdApp])
+
   return (
     <>
       <div className="card">
@@ -390,7 +393,6 @@ export default function Tax() {
                 value={valueSearch}
                 enterButton
                 onChange={onSearch}
-                className={styles['orders_manager_content_row_col_search']}
                 placeholder="Tìm kiếm theo tên"
                 allowClear
               />
@@ -483,12 +485,7 @@ export default function Tax() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <Form
-          className={styles['supplier_add_content']}
-          onFinish={onFinish}
-          layout="vertical"
-          form={form}
-        >
+        <Form onFinish={onFinish} layout="vertical" form={form}>
           <Row
             style={{
               display: 'flex',
@@ -571,7 +568,6 @@ export default function Tax() {
               alignItems: 'center',
               width: '100%',
             }}
-            className={styles['supplier_add_content_supplier_button']}
           >
             <Col
               style={{

@@ -10,6 +10,7 @@ import {
   CreditCardOutlined,
   ClusterOutlined,
   PartitionOutlined,
+  AlertOutlined,
 } from '@ant-design/icons'
 import { ROUTES } from 'consts'
 
@@ -148,12 +149,12 @@ export default function ConfigurationStore() {
                 <div
                   className={styles['wrap-icon']}
                   style={{
-                    backgroundColor: '#F3FCE2',
-                    border: '1px solid #B6DE62',
+                    backgroundColor: '#FCF7EB',
+                    border: '1px solid #EFC76E',
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <CreditCardOutlined style={{ color: '#B6DE62' }} />
+                  <CreditCardOutlined style={{ color: '#EFC76E' }} />
                 </div>
                 <div>
                   <div
@@ -182,12 +183,12 @@ export default function ConfigurationStore() {
                 <div
                   className={styles['wrap-icon']}
                   style={{
-                    backgroundColor: '#F3FCE2',
-                    border: '1px solid #B6DE62',
+                    backgroundColor: '#FCF7EB',
+                    border: '1px solid #EFC76E',
                     borderRadius: '0.25rem',
                   }}
                 >
-                  <ClusterOutlined style={{ color: '#B6DE62' }} />
+                  <ClusterOutlined style={{ color: '#EFC76E' }} />
                 </div>
                 <div>
                   <div
@@ -200,6 +201,35 @@ export default function ConfigurationStore() {
                   </div>
                   <div style={{ color: 'black', fontSize: '0.75rem' }}>
                     Thiết lập và quản lý các phiếu đối soát
+                  </div>
+                </div>
+              </Row>
+            </Link>
+          </Col>
+          <Col xs={24} sm={24} md={11} lg={8} xl={8}>
+            <Link to={ROUTES.POINT}>
+              <Row wrap={false}>
+                <div
+                  className={styles['wrap-icon']}
+                  style={{
+                    backgroundColor: '#FCF7EB',
+                    border: '1px solid #EFC76E',
+                    borderRadius: '0.25rem',
+                  }}
+                >
+                  <AlertOutlined style={{ color: '#EFC76E' }} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: '1rem',
+                      color: '#0015CD',
+                    }}
+                  >
+                    Tích điểm
+                  </div>
+                  <div style={{ color: 'black', fontSize: '0.75rem' }}>
+                    Thiết lập và cấu hình tích điểm
                   </div>
                 </div>
               </Row>

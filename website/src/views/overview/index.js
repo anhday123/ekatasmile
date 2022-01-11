@@ -2,21 +2,30 @@ import React, { useEffect, useState } from 'react'
 import styles from './overview.module.scss'
 import { LineChart } from 'react-chartkick'
 import { formatCash } from 'utils'
-
-import ModalIntro from 'components/introduction'
+import { useSelector } from 'react-redux'
 
 //antd
-import { Row, Col, Popover, Skeleton, Space } from 'antd'
+import { Row, Col, Skeleton } from 'antd'
 
 //icons antd
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
+
+//apis
 import { getStatistical } from 'apis/statis'
 
 const Overview = () => {
+  const branchIdApp = useSelector((state) => state.branch.branchId)
+
   const [statistical, setStatistical] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [sales, setSales] = useState([
+
+  const [orderQuantity, setOrderQuantity] = useState(0)
+  const [totalBasePrice, setTotalBasePrice] = useState(0)
+  const [totalProfit, setTotalProfit] = useState(0)
+  const [totalSales, settTotalSales] = useState(0)
+
+  const SALES = [
     {
       profitToday: '0 VND',
       name: 'Tổng đơn hàng',
@@ -33,18 +42,12 @@ const Overview = () => {
       profitToday: '0 VND',
       name: 'Tổng lợi nhuận',
     },
-  ])
-
-  const [orderQuantity, setOrderQuantity] = useState(0)
-  const [totalBasePrice, setTotalBasePrice] = useState(0)
-  const [totalProfit, setTotalProfit] = useState(0)
-  const [totalSales, settTotalSales] = useState(0)
+  ]
 
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
-      const res = await getStatistical()
-      console.log(res)
+      const res = await getStatistical({ branch_id: branchIdApp })
       if (res.status === 200) {
         setStatistical(res.data.data)
         setOrderQuantity(res.data.data.order_quantity)
@@ -59,9 +62,10 @@ const Overview = () => {
       console.log(e)
     }
   }
+
   useEffect(() => {
     _getStatistical()
-  }, [])
+  }, [branchIdApp])
 
   //get width device
   useEffect(() => {
@@ -72,7 +76,6 @@ const Overview = () => {
 
   return (
     <div className={styles['dashboard_manager']}>
-      <ModalIntro />
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (
@@ -81,7 +84,7 @@ const Overview = () => {
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
           <Row justify="space-between" style={{ width: '100%' }}>
-            {sales.map((e, index) => (
+            {SALES.map((e, index) => (
               <div
                 style={{
                   width: '50%',

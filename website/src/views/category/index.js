@@ -104,8 +104,8 @@ export default function Category() {
           {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
         </Button>
       </TitlePage>
-      <div>
-        <div style={{ width: '50%', margin: '25px 0px' }}>
+      <Row style={{ margin: '25px 0px' }}>
+        <div style={{ width: '50%' }}>
           Hình ảnh
           <Upload
             name="avatar"
@@ -129,29 +129,31 @@ export default function Category() {
             )}
           </Upload>
         </div>
-        <Form layout="vertical" form={form}>
-          <Form.Item
-            rules={[{ required: true, message: 'Vui lòng nhập tên nhóm sản phẩm' }]}
-            name="name"
-            label="Tên nhóm sản phẩm"
-          >
-            <Input placeholder="Nhập tên nhóm sản phẩm" style={{ width: '50%' }} />
-          </Form.Item>
-          <Form.Item
-            rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}
-            name="priority"
-            label="Độ ưu tiên"
-          >
-            <InputNumber placeholder="Nhập độ ưu tiên" style={{ width: '50%' }} />
-          </Form.Item>
-          <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={4} placeholder="Nhập mô tả" style={{ width: '50%' }} />
-          </Form.Item>
-          <Form.Item valuePropName="checked" name="default">
-            <Checkbox>Chọn làm mặc định</Checkbox>
-          </Form.Item>
-        </Form>
-      </div>
+        <div style={{ width: '50%' }}>
+          <Form layout="vertical" form={form}>
+            <Form.Item
+              rules={[{ required: true, message: 'Vui lòng nhập tên nhóm sản phẩm' }]}
+              name="name"
+              label="Tên nhóm sản phẩm"
+            >
+              <Input placeholder="Nhập tên nhóm sản phẩm" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
+              rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}
+              name="priority"
+              label="Độ ưu tiên"
+            >
+              <InputNumber placeholder="Nhập độ ưu tiên" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="description" label="Mô tả">
+              <Input.TextArea rows={4} placeholder="Nhập mô tả" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item valuePropName="checked" name="default">
+              <Checkbox>Chọn làm mặc định</Checkbox>
+            </Form.Item>
+          </Form>
+        </div>
+      </Row>
     </div>
   )
 }

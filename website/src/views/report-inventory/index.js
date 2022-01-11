@@ -5,6 +5,7 @@ import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 import delay from 'delay'
+import { useSelector } from 'react-redux'
 
 //components
 import TitlePage from 'components/title-page'
@@ -219,7 +220,7 @@ export default function ReportInventory() {
             style={{ cursor: 'pointer' }}
             onClick={() => history.push(ROUTES.REPORTS)}
           >
-            <ArrowLeftOutlined style={{ marginRight: 10 }} />
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
             Báo cáo tồn kho theo sản phẩm
           </Row>
         }

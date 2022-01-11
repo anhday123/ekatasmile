@@ -10,6 +10,7 @@ const columns = [
   { title: 'Ngày tạo', key: 'create_date' },
   { title: 'Ngày sinh', key: 'birthday' },
   { title: 'Địa chỉ', key: 'address' },
+  { title: 'Hành động', key: 'action' },
 ]
 
 export default columns

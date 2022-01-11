@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 
-import styles from './employee.module.scss'
 import moment from 'moment'
 import { compare } from 'utils'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 
@@ -24,6 +23,7 @@ export default function Employee() {
   const typingTimeoutRef = useRef(null)
   const history = useHistory()
   const dispatch = useDispatch()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [users, setUsers] = useState([])
   const [countUser, setCountUser] = useState([])
@@ -62,7 +62,7 @@ export default function Employee() {
     {
       title: 'Tên nhân viên',
       render: (text, record) => (
-        <EmployeeForm record={record} reloadData={_getUsers}>
+        <EmployeeForm record={record} reloadData={_getEmployees}>
           <a>{record.first_name + ' ' + record.last_name}</a>
         </EmployeeForm>
       ),
@@ -124,7 +124,7 @@ export default function Employee() {
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({ message: 'Xóa khách hàng thành công' })
-          _getUsers()
+          _getEmployees()
         } else
           notification.error({
             message: res.data.message || 'Xóa khách hàng không thất bại, vui lòng thử lại',
@@ -138,15 +138,16 @@ export default function Employee() {
       console.log(err)
     }
   }
-  const _getUsers = async () => {
+  const _getEmployees = async () => {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await getEmployees(paramsFilter)
+      const res = await getEmployees({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         //chỉ lấy danh sách role employee
-        setUsers(res.data.data.filter((e) => e.role_id === 5))
+        const employees = res.data.data.filter((employee) => employee.role_id !== -1)
+        setUsers(employees)
         setCountUser(res.data.count)
       }
       setLoading(false)
@@ -174,8 +175,8 @@ export default function Employee() {
   }, [])
 
   useEffect(() => {
-    _getUsers()
-  }, [paramsFilter])
+    _getEmployees()
+  }, [paramsFilter, branchIdApp])
 
   return (
     <div className="card">
@@ -191,7 +192,7 @@ export default function Employee() {
           </Row>
         }
       >
-        <EmployeeForm reloadData={_getUsers}>
+        <EmployeeForm reloadData={_getEmployees}>
           <Button type="primary" size="large">
             Tạo nhân viên
           </Button>

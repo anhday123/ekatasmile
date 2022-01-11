@@ -32,17 +32,13 @@ import {
   RotateLeftOutlined,
   SettingOutlined,
   ControlOutlined,
-  ClusterOutlined,
-  PartitionOutlined,
   UserOutlined,
   ExportOutlined,
   SlidersOutlined,
   ShoppingCartOutlined,
-  TransactionOutlined,
   ShoppingOutlined,
   ShopOutlined,
   LineChartOutlined,
-  CodeSandboxOutlined,
   CalendarOutlined,
 } from '@ant-design/icons'
 
@@ -67,7 +63,7 @@ const BaseLayout = (props) => {
   const [branches, setBranches] = useState([])
   const [user, setUser] = useState({})
   const login = useSelector((state) => state.login)
-  const branchId = useSelector((state) => state.branch.branchId)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
   const dataUser = localStorage.getItem('accessToken')
     ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
@@ -98,7 +94,7 @@ const BaseLayout = (props) => {
     }
   }
 
-  const _getAllBranch = async () => {
+  const _getBranches = async () => {
     try {
       const res = await getAllBranch()
       if (res.status === 200) setBranches(res.data.data)
@@ -191,25 +187,20 @@ const BaseLayout = (props) => {
     //   title: 'Quản lý ưu đãi',
     //   permissions: [],
     //   icon: <ControlOutlined />,
+    //   pathsChild: [],
     //   menuItems: [
-    //     {
-    //       icon: <AlertOutlined />,
-    //       path: ROUTES.POINT,
-    //       title: 'Tích điểm',
-    //       permissions: [PERMISSIONS.tich_diem],
-    //     },
-    //     {
-    //       icon: <TagsOutlined />,
-    //       path: ROUTES.PROMOTION,
-    //       title: 'Khuyến mãi',
-    //       permissions: [PERMISSIONS.khuyen_mai],
-    //     },
-    //     {
-    //       icon: <ControlOutlined />,
-    //       path: ROUTES.OFFER_LIST,
-    //       title: 'Quản lý ưu đãi',
-    //       permissions: [],
-    //     },
+    // {
+    //   icon: <TagsOutlined />,
+    //   path: ROUTES.PROMOTION,
+    //   title: 'Khuyến mãi',
+    //   permissions: [PERMISSIONS.khuyen_mai],
+    // },
+    // {
+    //   icon: <ControlOutlined />,
+    //   path: ROUTES.OFFER_LIST,
+    //   title: 'Quản lý ưu đãi',
+    //   permissions: [],
+    // },
     //   ],
     // },
     // {
@@ -283,6 +274,7 @@ const BaseLayout = (props) => {
         ROUTES.PAYMENT,
         ROUTES.ACTIVITY_DIARY,
         ROUTES.SHIPPING_CONTROL,
+        ROUTES.POINT,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
@@ -438,14 +430,9 @@ const BaseLayout = (props) => {
     </div>
   )
 
-  const changeBranch = async (value) => {
-    dispatch({ type: 'SET_BRANCH_ID', data: value })
-    updateEmployee({ branch_id: value }, user.user_id)
-  }
-
   useEffect(() => {
     getInfoUser()
-    _getAllBranch()
+    _getBranches()
   }, [])
 
   //get width device
@@ -583,14 +570,16 @@ const BaseLayout = (props) => {
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
                   size="small"
-                  disabled={login.role === 'EMPLOYEE' ? true : false}
+                  disabled={dataUser && dataUser.data.role_id === 1 ? false : true}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
-                  onChange={changeBranch}
-                  value={branchId || user.branch_id}
+                  onChange={(value) => dispatch({ type: 'SET_BRANCH_ID', data: value })}
+                  value={branchIdApp}
                 >
-                  {branches.map((e) => (
-                    <Select.Option value={e.branch_id}>{e.name}</Select.Option>
+                  {branches.map((e, index) => (
+                    <Select.Option value={e.branch_id} key={index}>
+                      {e.name}
+                    </Select.Option>
                   ))}
                 </Select>
               </Row>

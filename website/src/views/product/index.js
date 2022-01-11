@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
-
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
-import { compareCustom, formatCash, tableSum } from 'utils'
+import { compareCustom, formatCash } from 'utils'
 import moment from 'moment'
+import { compare } from 'utils'
+import { useSelector } from 'react-redux'
 
 import {
   Switch,
-  Slider,
   Upload,
   Select,
   notification,
@@ -19,7 +19,6 @@ import {
   Row,
   Col,
   DatePicker,
-  Popover,
   Space,
   Popconfirm,
   Tag,
@@ -38,41 +37,33 @@ import ImportCSV from 'components/ImportCSV'
 import { PlusCircleOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons'
 
 //apis
-import { getWarranties } from 'apis/warranty'
 import { getSuppliers } from 'apis/supplier'
-import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
 import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
-import { compare } from 'utils'
 import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
+  const typingTimeoutRef = useRef(null)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
+
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const [paramsFilter, setParamsFilter] = useState({
-    page: 1,
-    page_size: 20,
-  })
-
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
-  const [warranty, setWarranty] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
-  const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-  const [stores, setStores] = useState([]) //list store in filter
-  const [storeId, setStoreId] = useState() //filter product by store
   const [columns, setColumns] = useState([])
 
   const [countProduct, setCountProduct] = useState(0)
 
-  const apiAllCategoryData = async () => {
+  const _getCategories = async () => {
     try {
       const res = await getCategories()
       if (res.status === 200) setCategories(res.data.data.filter((e) => e.active))
@@ -188,15 +179,8 @@ export default function Product() {
 
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-
-    const productsUpdateShipping = products.filter((product) =>
-      selectedRowKeys.includes(product.product_id)
-    )
-
-    setArrayProductShipping([...productsUpdateShipping])
   }
 
-  const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -216,12 +200,15 @@ export default function Product() {
 
   const _getProductsToExport = async () => {
     try {
-      const res = await getProducts({ store: true })
+      setLoading(true)
+      const res = await getProducts({ branch: true, branch_id: branchIdApp })
       console.log(res)
+      setLoading(false)
       if (res.status === 200) return res.data.data
       return []
     } catch (error) {
       console.log(error)
+      setLoading(false)
       return []
     }
   }
@@ -232,14 +219,12 @@ export default function Product() {
     setProducts([])
 
     try {
-      const res = await getProducts({ ...paramsFilter, store: true })
-
+      const res = await getProducts({ ...paramsFilter, branch: true, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setProducts(res.data.data)
         setCountProduct(res.data.count)
       }
-
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -248,13 +233,11 @@ export default function Product() {
 
   useEffect(() => {
     _getProducts()
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   useEffect(() => {
     _getSuppliers()
-    apiAllCategoryData()
-    _getWarranties()
-    getStores()
+    _getCategories()
   }, [])
 
   const UpdateCategoryProducts = () => {
@@ -468,7 +451,6 @@ export default function Product() {
   const onClickClear = async () => {
     setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
-    setStoreId()
     setSelectedRowKeys([])
     setValueTime()
     setValueDateTimeSearch({})
@@ -496,29 +478,6 @@ export default function Product() {
     } catch (error) {
       console.log(error)
       setLoading(false)
-    }
-  }
-
-  const _getWarranties = async () => {
-    try {
-      setLoading(true)
-      const res = await getWarranties()
-      if (res.status === 200) {
-        setWarranty(res.data.data)
-      }
-
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
-  const getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200) setStores(res.data.data)
-    } catch (error) {
-      console.log(error)
     }
   }
 
@@ -897,7 +856,7 @@ export default function Product() {
           pagination={{
             position: ['bottomLeft'],
             current: paramsFilter.page,
-            defaultPageSize: 20,
+            pageSize: paramsFilter.page_size,
             pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
             showQuickJumper: true,
             onChange: (page, pageSize) =>
