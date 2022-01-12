@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import styles from './shipping.module.scss'
 import { ACTION, PERMISSIONS } from 'consts'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'

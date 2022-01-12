@@ -507,7 +507,7 @@ export default function Product() {
               txt="Import sản phẩm"
               upload={importProduct}
               title="Nhập sản phẩm bằng file excel"
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/31/bc03caef-25ad-4767-bad3-d9d41459b0ef/ImportProductAO.xlsx"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
               reload={_getProducts}
             />
             <ExportProduct

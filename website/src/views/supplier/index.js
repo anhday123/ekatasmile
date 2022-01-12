@@ -192,7 +192,7 @@ export default function Supplier() {
       </TitlePage>
 
       <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
-        <Col xs={24} sm={24} md={11} lg={11} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Input
             size="large"
             value={valueSearch}
@@ -203,7 +203,7 @@ export default function Supplier() {
           />
         </Col>
 
-        <Col xs={24} sm={24} md={11} lg={11} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Select
             allowClear
             style={{ width: '100%' }}
@@ -224,7 +224,7 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Select
             allowClear
             size="large"
@@ -245,7 +245,7 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <RangePicker
             size="large"
             className="br-15__date-picker"
@@ -254,7 +254,7 @@ export default function Supplier() {
             onChange={onChangeDate}
           />
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Select
             allowClear
             size="large"
