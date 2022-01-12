@@ -197,7 +197,6 @@ module.exports._getIOIReport = async (req, res, next) => {
             },
             { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
         );
-        aggregateQuery.push({ $addFields: { note: '' } });
         let countQuery = [...aggregateQuery];
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
@@ -589,6 +588,131 @@ module.exports._getOrderReport = async (req, res, next) => {
             _products = _products.slice((page - 1) * page_size, (page - 1) * page_size + page_size);
         }
         res.send({ success: true, count: counts, data: _products });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._getFinanceReport = async (req, res, next) => {
+    try {
+        let aggregateQuery = [];
+        if (req.query.receipt_id) {
+            aggregateQuery.push({ $match: { receipt_id: Number(req.query.receipt_id) } });
+        }
+        if (req.query.creator_id) {
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
+        }
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
+        if (req.query.from_date) {
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
+        }
+        if (req.query.to_date) {
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
+        }
+        aggregateQuery.push({ $sort: { create_date: 1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
+        // lấy data từ database
+        let [result, counts] = await Promise.all([
+            client.db(req.user.database).collection(`Finances`).aggregate(aggregateQuery).toArray(),
+            client
+                .db(req.user.database)
+                .collection(`Finances`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            count: counts[0] ? counts[0].counts : 0,
+            data: result,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._createFinanceReport = async (req, res, next) => {
+    try {
+        [].map((e) => {
+            if (req.body[e] == undefined) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        let receiptMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Finances' });
+        let receipt_id = (() => {
+            if (receiptMaxId && receiptMaxId.value) {
+                return receiptMaxId.value;
+            }
+            return 0;
+        })();
+        receipt_id++;
+        let _finance = {
+            receipt_id: receipt_id,
+            type: 'IMPORT',
+            payments: [],
+            status: '',
+            value: '',
+            payer: '',
+            receiver: '',
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            
+        };
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._updateFinanceReport = async (req, res, next) => {
+    try {
     } catch (err) {
         next(err);
     }
