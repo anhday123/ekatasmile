@@ -1,4 +1,3 @@
-import styles from './shipping-control.module.scss'
 import React, { useEffect, useState } from 'react'
 import { Button, Tabs, Row } from 'antd'
 import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
