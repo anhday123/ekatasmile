@@ -53,12 +53,16 @@ export default function CreateReport() {
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const productsSearch = [{
-    title: 'test',
-    name: 'test',
-    price: 20000,
-    image: ['https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png']
-  }]
+  const productsSearch = [
+    {
+      title: 'test',
+      name: 'test',
+      price: 20000,
+      image: [
+        'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png',
+      ],
+    },
+  ]
 
   const columns = [
     {
@@ -84,11 +88,12 @@ export default function CreateReport() {
   ]
 
   return (
-    <div className={`${styles['create-container']} ${styles['card']}`}>
+    <div className="card">
       <Form layout="vertical" form={form}>
         <div>
           <Affix offsetTop={65}>
-            <Row className={styles['space-row']}
+            <Row
+              className={styles['space-row']}
               wrap={false}
               justify="space-between"
               align="middle"
@@ -109,11 +114,7 @@ export default function CreateReport() {
               </Link>
 
               <Space>
-                <Button
-                  style={{ minWidth: 100 }}
-                  size="large"
-                  type="primary"
-                >
+                <Button style={{ minWidth: 100 }} size="large" type="primary">
                   {location.state ? 'Lưu' : 'Tạo phiếu kiểm hàng'}
                 </Button>
               </Space>
@@ -137,9 +138,7 @@ export default function CreateReport() {
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
               filterSort={(optionA, optionB) =>
-                optionA.children
-                  .toLowerCase()
-                  .localeCompare(optionB.children.toLowerCase())
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
             >
               <Option value="1">Not Identified</Option>
@@ -158,9 +157,7 @@ export default function CreateReport() {
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
               filterSort={(optionA, optionB) =>
-                optionA.children
-                  .toLowerCase()
-                  .localeCompare(optionB.children.toLowerCase())
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
             >
               <Option value="1">Nhân viên A</Option>
@@ -181,7 +178,9 @@ export default function CreateReport() {
           <h3>Danh sách sản phẩm</h3>
           <Row>
             <Col span={6}>
-              <Button style={{ width: '90%' }} type="primary">Thêm nhóm hàng</Button>
+              <Button style={{ width: '90%' }} type="primary">
+                Thêm nhóm hàng
+              </Button>
             </Col>
             <Col span={14}>
               <Select
@@ -193,11 +192,7 @@ export default function CreateReport() {
                 suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
                 style={{ width: '95%', marginBottom: 15 }}
                 placeholder="Thêm sản phẩm vào hoá đơn"
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                  </div>
-                )}
+                dropdownRender={(menu) => <div>{menu}</div>}
               >
                 {productsSearch.map((data, index) => (
                   <Select.Option value={data.title} key={data.title + index + ''}>
@@ -248,7 +243,13 @@ export default function CreateReport() {
               </Select>
             </Col>
             <Col span={4}>
-              <Button onClick={() => setIsModalVisible(true)} style={{ width: '100%' }} type="primary">Chọn nhiều</Button>
+              <Button
+                onClick={() => setIsModalVisible(true)}
+                style={{ width: '100%' }}
+                type="primary"
+              >
+                Chọn nhiều
+              </Button>
             </Col>
           </Row>
           <Table
@@ -270,9 +271,7 @@ export default function CreateReport() {
                   }}
                 >
                   <img src={noData} alt="" style={{ width: 90, height: 90 }} />
-                  <h4 style={{ fontSize: 15, color: '#555' }}>
-                    Trống
-                  </h4>
+                  <h4 style={{ fontSize: 15, color: '#555' }}>Trống</h4>
                 </div>
               ),
             }}
@@ -280,7 +279,7 @@ export default function CreateReport() {
         </div>
       </Form>
       <Modal
-        title='Chọn nhiều sản phẩm'
+        title="Chọn nhiều sản phẩm"
         visible={isModalVisible}
         onOk={() => setIsModalVisible(false)}
         okText="Thêm vào đơn"
