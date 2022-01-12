@@ -22,7 +22,7 @@ const columnsProduct = [
     key: 'create_date',
   },
   {
-    title: 'Mở bán',
+    title: 'Hành động',
     key: 'active',
   },
 ]

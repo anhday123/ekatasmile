@@ -95,7 +95,7 @@ export default function ConfigurationStore() {
                       color: '#0015CD',
                     }}
                   >
-                    Quản lí bảo hành
+                    Quản lý bảo hành
                   </div>
                   <div
                     style={{
@@ -103,7 +103,7 @@ export default function ConfigurationStore() {
                       fontSize: '0.75rem',
                     }}
                   >
-                    Thiết lập quản lí bảo hành
+                    Thiết lập quản lý bảo hành
                   </div>
                 </div>
               </Row>

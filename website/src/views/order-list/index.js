@@ -472,11 +472,10 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${
-                                      record.promotion.type && record.promotion.type !== 'VALUE'
-                                        ? '%'
-                                        : ''
-                                    }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
+                                    ? '%'
+                                    : ''
+                                  }`
                                   : 0}
                               </div>
                             </Row>
@@ -576,7 +575,11 @@ export default function OrderList() {
                   onConfirm={() => _deleteOrders(record.order_id)}
                   title="Bạn có muốn xóa đơn hàng này không?"
                 >
-                  <DeleteOutlined style={{ color: 'red', cursor: 'pointer', fontSize: 18 }} />
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<DeleteOutlined />}
+                  />
                 </Popconfirm>
               ),
             }
