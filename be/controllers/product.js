@@ -584,9 +584,26 @@ module.exports.importFileC = async (req, res, next) => {
         let originSlugs = [];
         rows = rows.map((eRow) => {
             let _row = {};
+            let count = 0;
+            let optionRequire = [
+                'masanpham(*)',
+                'tensanpham(*)',
+                'thuoctinh1(*)',
+                'giatri1(*)',
+                'maphienban(*)',
+                'tenphienban(*)',
+                'giaban(*)',
+            ];
             for (let i in eRow) {
-                _row[removeUnicode(String(i), true).toLowerCase()] = eRow[i];
+                if (optionRequire.includes(removeUnicode(String(i), true).toLowerCase())) {
+                    count++;
+                }
+                _row[removeUnicode(String(i), true).toLowerCase().replace(/\(*\)/gi, '')] = eRow[i];
             }
+            if (count < optionRequire.length) {
+                throw new Error(`400: Các thuộc tính có dấu (*) là thuộc tính bắt buộc!`);
+            }
+            count = 0;
             if (_row['tendanhmuc']) {
                 _row['_tendanhmuc'] = removeUnicode(String(_row['tendanhmuc']), true).toLowerCase();
                 categorySlugs.push(_row['_tendanhmuc']);
@@ -908,29 +925,29 @@ module.exports.importFileC = async (req, res, next) => {
                     })(),
                 };
             }
-            if (eRow['thuoctinh1(*)']) {
-                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]) {
+            if (eRow['thuoctinh1']) {
+                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`]) {
                     attribute_id++;
                     let _attribute = {
                         attribute_id: attribute_id,
                         product_id: _products[eRow['masanpham']].product_id,
-                        option: eRow['thuoctinh1(*)'].toUpperCase(),
+                        option: eRow['thuoctinh1'].toUpperCase(),
                         values: [],
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: req.user.user_id,
                         last_update: moment().tz(TIMEZONE).format(),
                         active: true,
-                        slug_option: removeUnicode(String(eRow['thuoctinh1(*)']), true).toLowerCase(),
+                        slug_option: removeUnicode(String(eRow['thuoctinh1']), true).toLowerCase(),
                         slug_values: [],
                     };
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`] = _attribute;
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`] = _attribute;
                 }
-                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`]) {
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`].values.push(
-                        eRow['giatri1(*)'].toUpperCase()
+                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`]) {
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`].values.push(
+                        eRow['giatri1'].toUpperCase()
                     );
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1(*)']}`].slug_values.push(
-                        removeUnicode(String(eRow['giatri1(*)']), true).toLowerCase()
+                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`].slug_values.push(
+                        removeUnicode(String(eRow['giatri1']), true).toLowerCase()
                     );
                 }
             }
