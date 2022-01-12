@@ -1,7 +1,7 @@
 const express = require(`express`);
 
 const router = express.Router();
-const shippingCompany = require(`../controllers/shipping-company`);
+const shippingCompany = require(`../controllers/shippingCompany`);
 const { auth } = require(`../middleware/jwt`);
 
 router.route(`/create`).post(auth, shippingCompany._create);

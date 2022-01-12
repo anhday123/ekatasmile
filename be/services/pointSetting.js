@@ -37,6 +37,56 @@ module.exports._get = async (req, res, next) => {
             });
             aggregateQuery.push({ $match: { branch_id: { $in: branchIds } } });
         }
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Branchs',
+                localField: 'branch_id',
+                foreignField: 'branch_id',
+                as: 'branch_info',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Types',
+                localField: 'customer_type_id',
+                foreignField: 'type_id',
+                as: 'customer_type_info',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Categories',
+                localField: 'category_id',
+                foreignField: 'category_id',
+                as: 'category_info',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Products',
+                let: { productIds: '$product_id' },
+                pipeline: [
+                    { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
+                    {
+                        $lookup: {
+                            from: 'Attributes',
+                            let: { productId: '$product_id' },
+                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                            as: 'attributes',
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: 'Variants',
+                            let: { productId: '$product_id' },
+                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                            as: 'variants',
+                        },
+                    },
+                ],
+                as: 'product_info',
+            },
+        });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {

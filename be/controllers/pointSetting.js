@@ -77,6 +77,11 @@ module.exports._create = async (req, res, next) => {
             customer_type_id: req.body.customer_type_id || [],
             category_id: req.body.category_id || [],
             product_id: req.body.product_id || [],
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
             slug_name: removeUnicode(String(req.body.name || ''), true).toLowerCase(),
         };
         await client
@@ -96,6 +101,39 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
+        req.params.point_setting_id = Number(req.params.point_setting_id);
+        let setting = await client.db(req.user.database).collection('PointSettings').findOne(req.params);
+        if (!setting) {
+            throw new Error(`500: Chương trình tích điểm không tồn tại!`);
+        }
+        delete req.body._id;
+        delete req.body.point_setting_id;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _setting = { ...setting, ...req.body };
+        _setting = {
+            point_setting_id: _setting.point_setting_id,
+            name: _setting.name,
+            accumulate_for_promotion_product: _setting.accumulate_for_promotion_product || false,
+            accumulate_for_refund_order: _setting.accumulate_for_refund_order || false,
+            accumulate_for_payment_point: _setting.accumulate_for_payment_point || false,
+            accumulate_for_fee_shipping: _setting.accumulate_for_fee_shipping || false,
+            stack_point: _setting.stack_point || false,
+            exchange_point_rate: _setting.exchange_point_rate || 0,
+            exchange_money_rate: _setting.exchange_money_rate || 0,
+            order_require: _setting.order_require || 0,
+            order_cost_require: _setting.order_cost_require || 0,
+            branch_id: _setting.branch_id || [],
+            customer_type_id: _setting.customer_type_id || [],
+            category_id: _setting.category_id || [],
+            product_id: _setting.product_id || [],
+            create_date: _setting.create_date,
+            creator_id: _setting.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _setting.active,
+            slug_name: removeUnicode(String(_setting.name || ''), true).toLowerCase(),
+        };
         await pointService._update(req, res, next);
     } catch (err) {
         next(err);
@@ -104,6 +142,14 @@ module.exports._update = async (req, res, next) => {
 
 module.exports._delete = async (req, res, next) => {
     try {
+        await client
+            .db(req.user.database)
+            .collection(`PointSettings`)
+            .deleteMany({ point_setting_id: { $in: req.body.point_setting_id } });
+        res.send({
+            success: true,
+            message: 'Xóa chương trình tích điểm thành công!',
+        });
     } catch (err) {
         next(err);
     }
