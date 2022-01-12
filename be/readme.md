@@ -37,10 +37,9 @@
 -   Đưa folder lên server qua git/ssh, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
 
 server {
-    if ($host = *.vdropship.vn) {
+if ($host = *.vdropship.vn) {
         return 301 https://$host$request_uri;
-    } # managed by Certbot
-
+} # managed by Certbot
 
         listen 80;
         listen [::]:80;
@@ -48,14 +47,12 @@ server {
         server_name *.vdropship.vn;
     return 404; # managed by Certbot
 
-
 }
 
 server {
-    if ($host = vdropship.vn) {
+if ($host = vdropship.vn) {
         return 301 https://$host$request_uri;
-    } # managed by Certbot
-
+} # managed by Certbot
 
         listen 80;
         listen [::]:80;
@@ -63,7 +60,11 @@ server {
         server_name vdropship.vn;
     return 404; # managed by Certbot
 
-
 }
 
 https://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@github.com/viesoftware/System_Admin_Order
+
+
+
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt sources.list.d/docker.list > /dev/null

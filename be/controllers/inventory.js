@@ -2026,3 +2026,10 @@ module.exports._deleteTransportOrder = async (req, res, next) => {
         next(err);
     }
 };
+
+module.exports._getBalanceInventory = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
