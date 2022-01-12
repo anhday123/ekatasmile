@@ -1,28 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react'
-import styles from './supplier.module.scss'
-import { ACTION, PERMISSIONS } from 'consts'
+import { PERMISSIONS } from 'consts'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
 import { compare } from 'utils'
 
 //antd
 import {
-  Switch,
   DatePicker,
-  Form,
-  Drawer,
   Select,
-  notification,
   Input,
   Button,
   Table,
   Row,
   Col,
-  Modal,
+  Space,
+  Popconfirm,
+  notification,
 } from 'antd'
 
 //icons
-import { PlusCircleOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //components
 import Permission from 'components/permission'
@@ -34,16 +30,14 @@ import SettingColumns from 'components/setting-columns'
 //apis
 import { getEmployees } from 'apis/employee'
 import { getProvinces, getDistricts } from 'apis/address'
-import { getSuppliers } from 'apis/supplier'
+import { getSuppliers, deleteSupplier } from 'apis/supplier'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Supplier() {
-  const dispatch = useDispatch()
   const typingTimeoutRef = useRef(null)
 
   const [columns, setColumns] = useState([])
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [loading, setLoading] = useState(false)
   const [valueSearch, setValueSearch] = useState('')
   const [valueDate, setValueDate] = useState(null)
@@ -67,8 +61,7 @@ export default function Supplier() {
       delete paramsFilter.to_date
     }
 
-    paramsFilter.page = 1
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
   const onSearch = (e) => {
     const value = e.target.value
@@ -80,38 +73,53 @@ export default function Supplier() {
     typingTimeoutRef.current = setTimeout(() => {
       if (value) paramsFilter.search = value
       else delete paramsFilter.search
-      paramsFilter.page = 1
-      setParamsFilter({ ...paramsFilter })
+
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 650)
+  }
+
+  const _deleteSupplier = async (id) => {
+    try {
+      setLoading(true)
+      const res = await deleteSupplier(id)
+      console.log(res)
+      setLoading(false)
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: 'Xóa nhà cung cấp thành công!' })
+          _getSuppliers()
+        } else
+          notification.error({
+            message: res.data.message || 'Xóa nhà cung cấp thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xóa nhà cung cấp thất bại, vui lòng thử lại!',
+        })
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
   }
 
   const _getSuppliers = async () => {
     try {
       setLoading(true)
-      setSelectedRowKeys([])
       const res = await getSuppliers({ ...paramsFilter, _creator: true })
       console.log(res)
       if (res.status === 200) {
         setSuppliers(res.data.data)
         setCountSupplier(res.data.count)
       }
-
       setLoading(false)
     } catch (error) {
       setLoading(false)
     }
   }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
-  }
-
   const onClickClear = () => {
     setValueSearch('')
     setValueDate(null)
-    setSelectedRowKeys([])
-
     setParamsFilter({ page: 1, page_size: 20 })
   }
 
@@ -131,7 +139,6 @@ export default function Supplier() {
       setLoading(true)
       const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
-
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -167,13 +174,21 @@ export default function Supplier() {
   return (
     <div className="card">
       <TitlePage title="Quản lý nhà cung cấp">
-        <SupplierForm reloadData={_getSuppliers}>
-          <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
-            <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-              Thêm nhà cung cấp
-            </Button>
-          </Permission>
-        </SupplierForm>
+        <Space>
+          <SettingColumns
+            nameColumn="columnsSupplier"
+            columns={columns}
+            setColumns={setColumns}
+            columnsDefault={columnsSupplier}
+          />
+          <SupplierForm reloadData={_getSuppliers}>
+            <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
+              <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
+                Thêm nhà cung cấp
+              </Button>
+            </Permission>
+          </SupplierForm>
+        </Space>
       </TitlePage>
 
       <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
@@ -236,10 +251,6 @@ export default function Supplier() {
             className="br-15__date-picker"
             style={{ width: '100%' }}
             value={valueDate}
-            ranges={{
-              Today: [moment(), moment()],
-              'This Month': [moment().startOf('month'), moment().endOf('month')],
-            }}
             onChange={onChangeDate}
           />
         </Col>
@@ -271,16 +282,8 @@ export default function Supplier() {
         </Col>
       </Row>
 
-      <Row justify="end" style={{ marginTop: 10 }}>
-        <SettingColumns
-          nameColumn="columnsSupplier"
-          columns={columns}
-          setColumns={setColumns}
-          columnsDefault={columnsSupplier}
-        />
-      </Row>
       <Table
-        style={{ marginTop: 5, width: '100%' }}
+        style={{ marginTop: 12, width: '100%' }}
         size="small"
         rowKey="_id"
         // rowSelection={rowSelection}
@@ -323,6 +326,20 @@ export default function Supplier() {
                 (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
             }
           if (column.key === 'debt') return { ...column, render: () => <a>Công nợ</a> }
+          if (column.key === 'action')
+            return {
+              ...column,
+              render: (text, record) => (
+                <Popconfirm
+                  onConfirm={() => _deleteSupplier(record.supplier_id)}
+                  title="Bạn có muốn xóa nhà cung cấp này không?"
+                  okText="Đồng ý"
+                  cancelText="Từ chối"
+                >
+                  <Button type="primary" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              ),
+            }
 
           return column
         })}

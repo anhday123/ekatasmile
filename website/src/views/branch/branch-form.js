@@ -3,19 +3,7 @@ import { ACTION, regexPhone } from 'consts/index'
 import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
-import {
-  Input,
-  Button,
-  Row,
-  Col,
-  notification,
-  Select,
-  Modal,
-  Form,
-  Spin,
-  Upload,
-  Drawer,
-} from 'antd'
+import { Input, Button, Row, Col, notification, Select, Form, Upload, Drawer } from 'antd'
 
 //icons
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons'

@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { formatCash } from 'utils'
 
+//antd
 import { Modal, Space, Input, Select, Table, Button, Radio } from 'antd'
+
+//icons
 import { SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllOrder } from 'apis/order'
+import { getOrders } from 'apis/order'
 
 export default function OrdersReturn() {
   const typingTimeoutRef = useRef(null)
@@ -42,7 +45,7 @@ export default function OrdersReturn() {
   const _getOrdersRefund = async (params) => {
     try {
       setLoading(true)
-      const res = await apiAllOrder({ ...params, bill_status: 'REFUND' })
+      const res = await getOrders({ ...params, bill_status: 'REFUND' })
       console.log('orders', res)
       if (res.status === 200) {
         setOrdersRefund(res.data.data)
@@ -96,8 +99,7 @@ export default function OrdersReturn() {
     },
     {
       title: 'Thu ngân',
-      render: (text, record) =>
-        (record.first_name || '') + ' ' + (record.last_name || ''),
+      render: (text, record) => (record.first_name || '') + ' ' + (record.last_name || ''),
     },
     {
       render: () => (

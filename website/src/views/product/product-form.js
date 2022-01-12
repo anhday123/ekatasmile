@@ -65,6 +65,7 @@ export default function ProductAdd() {
   const [form] = Form.useForm()
   const typingTimeoutRef = useRef(null)
   const dataUser = useSelector((state) => state.login.dataUser)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
@@ -811,7 +812,8 @@ export default function ProductAdd() {
   const _getWarranties = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await getWarranties()
+      const res = await getWarranties({ branch_id: branchIdApp })
+      console.log(res)
       if (res.status === 200) {
         setWarranties(res.data.data)
       }
@@ -876,8 +878,11 @@ export default function ProductAdd() {
   }
 
   useEffect(() => {
-    _getSuppliers()
     _getWarranties()
+  }, [branchIdApp])
+
+  useEffect(() => {
+    _getSuppliers()
     _getCategories()
   }, [])
 

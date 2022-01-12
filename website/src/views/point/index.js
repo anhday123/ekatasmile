@@ -1,25 +1,29 @@
-import styles from './point.module.scss'
-import {
-  Row,
-  Col,
-  Select,
-  Checkbox,
-  Radio,
-  InputNumber,
-  Button,
-  Space,
-  notification,
-} from 'antd'
-import { useEffect, useState } from 'react'
-import { getPointSetting, updatePointSetting } from 'apis/point'
-import { getAllBranch } from 'apis/branch'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { ROUTES } from 'consts'
+import { useHistory } from 'react-router-dom'
+
+//components
+import TitlePage from 'components/title-page'
+
+//antd
+import { Row, Col, Select, Checkbox, Radio, InputNumber, Button, Space, notification } from 'antd'
+
+//icons
+import { ArrowLeftOutlined } from '@ant-design/icons'
+
+//apis
+import { getPoint, updatePoint } from 'apis/point'
+import { getAllBranch } from 'apis/branch'
 
 export default function Point() {
-  const [pointSetting, setPoinSetting] = useState(false)
-  const [branchList, setBranchList] = useState([])
-  const [selectedBranch, setSelectedBranch] = useState(1)
   const dispatch = useDispatch()
+  const history = useHistory()
+
+  const [point, setPoint] = useState({})
+  const [branches, setBranches] = useState([])
+  const [selectedBranch, setSelectedBranch] = useState(1)
+
   const [config, setConfig] = useState({
     use: true,
     accumulate: true,
@@ -27,6 +31,7 @@ export default function Point() {
     use_price: 0,
     selected: [],
   })
+
   const PointTitle = ({ title }) => (
     <Row style={{ borderBottom: 'solid 1px #B4B4B4', paddingBottom: '10px' }}>
       <Col>
@@ -48,12 +53,15 @@ export default function Point() {
         use_point_branchs: config.selected,
         currency_rate: config.use_price,
       }
-      const res = await updatePointSetting(pointSetting.point_setting_id, data)
-      if (res.data.success) {
-        notification.success({ message: 'Cập nhật thành công' })
-      } else {
-        notification.error({ message: 'Cập nhật thất bại' })
+      const res = await updatePoint(data, point.point_setting_id)
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: 'Cập nhật thành công' })
+        } else {
+          notification.error({ message: 'Cập nhật thất bại' })
+        }
       }
+
       dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
@@ -62,64 +70,66 @@ export default function Point() {
     }
   }
 
-  const selectAllBranch = (val) => {
-    if (val)
-      setConfig({
-        ...config,
-        selected: branchList.map((e) => {
-          return e.branch_id
-        }),
-      })
-    else
-      setConfig({
-        ...config,
-        selected: [],
-      })
+  const selectAllBranch = (checked) => {
+    if (checked) setConfig({ ...config, selected: branches.map((e) => e.branch_id) })
+    else setConfig({ ...config, selected: [] })
   }
-  useEffect(() => {
-    const getPoint = async (params) => {
-      try {
-        const res = await getPointSetting(params)
-        if (res.data.success) {
-          setPoinSetting(res.data.data[0])
-        }
-      } catch (err) {
-        console.log(err)
-      }
+
+  const _getPoint = async (query) => {
+    try {
+      const res = await getPoint(query)
+      console.log(res)
+      // if (res.data.success) setPoint(res.data.data[0])
+    } catch (err) {
+      console.log(err)
     }
-    getPoint()
-  }, [])
-  useEffect(() => {
-    const getBranch = async (params) => {
-      try {
-        const res = await getAllBranch(params)
-        if (res.data.success) {
-          setBranchList(res.data.data)
-          setSelectedBranch(res.data.data[0].branch_id)
-        }
-      } catch (err) {
-        console.log(err)
+  }
+
+  const _getBranches = async (params) => {
+    try {
+      const res = await getAllBranch(params)
+      if (res.data.success) {
+        setBranches(res.data.data)
+        setSelectedBranch(res.data.data[0].branch_id)
       }
+    } catch (err) {
+      console.log(err)
     }
-    getBranch()
+  }
+
+  useEffect(() => {
+    _getPoint()
+    _getBranches()
   }, [])
+
   useEffect(() => {
     setConfig({
-      use: pointSetting.use_point,
-      accumulate: pointSetting.accumulate_point,
-      accumulate_price: pointSetting.point_rate || 0,
-      use_price: pointSetting.currency_rate || 0,
+      use: point.use_point,
+      accumulate: point.accumulate_point,
+      accumulate_price: point.point_rate || 0,
+      use_price: point.currency_rate || 0,
     })
-  }, [pointSetting])
+  }, [point])
+
   return (
-    <div className={styles['point']}>
-      <Row style={{ borderBottom: 'solid 1px #B4B4B4', paddingBottom: '10px' }}>
-        <Col>
-          <Row align="middle" style={{ fontSize: 20, fontWeight: 600 }}>
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
             Cấu hình tích điểm
           </Row>
-        </Col>
-      </Row>
+        }
+      >
+        <Button type="primary" size="large" style={{ width: 100 }} onClick={onSaveSetting}>
+          Lưu
+        </Button>
+      </TitlePage>
       <Row style={{ margin: '1em 0' }}>
         <Col xs={24} lg={8}>
           <Select
@@ -130,7 +140,7 @@ export default function Point() {
             onChange={(e) => setConfig({ ...config, selected: e })}
             style={{ width: '100%' }}
           >
-            {branchList.map((e) => (
+            {branches.map((e) => (
               <Select.Option value={e.branch_id}>{e.name}</Select.Option>
             ))}
           </Select>
@@ -143,7 +153,7 @@ export default function Point() {
       </Row>
       <Row gutter={30} style={{ margin: '1em 0' }}>
         <Col xs={24} lg={12}>
-          <div className={styles['setting-box']}>
+          <div>
             <Space direction="vertical" style={{ width: '100%' }}>
               <PointTitle title="Thiết lập tích điểm" />
               <Checkbox
@@ -155,16 +165,12 @@ export default function Point() {
                   })
                 }
               >
-                <span style={{ fontWeight: 500, color: 'blue' }}>
-                  Áp dụng tính năng tích điểm
-                </span>
+                <span style={{ fontWeight: 500, color: 'blue' }}>Áp dụng tính năng tích điểm</span>
               </Checkbox>
               <div>
                 <b>Cơ chế tích điểm</b>
               </div>
-              <Checkbox checked={config.accumulate}>
-                Tích điểm cho toàn bộ sản phẩm
-              </Checkbox>
+              <Checkbox checked={config.accumulate}>Tích điểm cho toàn bộ sản phẩm</Checkbox>
               <div>
                 <b>Hình thức tích điểm</b>
               </div>
@@ -177,12 +183,8 @@ export default function Point() {
               <div>
                 <InputNumber
                   value={config.accumulate_price}
-                  onChange={(e) =>
-                    setConfig({ ...config, accumulate_price: e })
-                  }
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
+                  onChange={(e) => setConfig({ ...config, accumulate_price: e })}
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />{' '}
                 = 1 điểm
@@ -191,7 +193,7 @@ export default function Point() {
           </div>
         </Col>
         <Col xs={24} lg={12}>
-          <div className={styles['setting-box']}>
+          <div>
             <Space direction="vertical" style={{ width: '100%' }}>
               <PointTitle title="Thiết lập đổi điểm" />
               <Checkbox
@@ -203,9 +205,7 @@ export default function Point() {
                   })
                 }
               >
-                <span style={{ fontWeight: 500, color: 'blue' }}>
-                  Áp dụng tính năng đổi điểm
-                </span>
+                <span style={{ fontWeight: 500, color: 'blue' }}>Áp dụng tính năng đổi điểm</span>
               </Checkbox>
               <div>
                 <b>Thanh toán</b>
@@ -216,25 +216,13 @@ export default function Point() {
                 <InputNumber
                   value={config.use_price}
                   onChange={(e) => setConfig({ ...config, use_price: e })}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </div>
             </Space>
           </div>
         </Col>
-      </Row>
-      <Row justify="end">
-        <Button
-          type="primary"
-          size="large"
-          style={{ width: 100 }}
-          onClick={onSaveSetting}
-        >
-          Lưu
-        </Button>
       </Row>
     </div>
   )

@@ -1,11 +1,10 @@
-import styles from './shipping-product.module.scss'
 import React, { useEffect, useState, useRef } from 'react'
-
 import { PERMISSIONS, ROUTES } from 'consts'
-import { Link, useHistory } from 'react-router-dom'
-import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
+import { useHistory } from 'react-router-dom'
+import { PlusCircleOutlined, FileExcelOutlined, DeleteOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { compare, compareCustom } from 'utils'
+import { useSelector } from 'react-redux'
 
 import {
   Input,
@@ -30,8 +29,7 @@ import columnsProduct from './columns'
 
 //apis
 import { getAllBranch } from 'apis/branch'
-import { getAllStore } from 'apis/store'
-import { getTransportOrders, deleteTransportOrders, updateTransportOrder } from 'apis/transport'
+import { getTransportOrders, deleteTransportOrder, updateTransportOrder } from 'apis/transport'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -45,11 +43,9 @@ export default function ShippingProduct() {
     COMPLETE: { name: 'Hoàn thành', color: 'green' },
     CANCEL: { name: 'Hủy', color: 'red' },
   }
-
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [branches, setBranches] = useState([])
-  const [stores, setStores] = useState([])
   const [columns, setColumns] = useState([])
 
   const [totalTransportOrder, setTotalTransportOrder] = useState(0)
@@ -67,8 +63,7 @@ export default function ShippingProduct() {
   const _getTransportOrders = async () => {
     try {
       setLoading(true)
-      setSelectedRowKeys([])
-      const res = await getTransportOrders(paramsFilter)
+      const res = await getTransportOrders({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setTransportOrders(res.data.data)
@@ -103,10 +98,10 @@ export default function ShippingProduct() {
     }
   }
 
-  const _deleteTransportOrders = async () => {
+  const _deleteTransportOrder = async (id) => {
     try {
       setLoading(true)
-      const res = await deleteTransportOrders(selectedRowKeys)
+      const res = await deleteTransportOrder(id)
       setLoading(false)
       console.log(res)
       if (res.status === 200) {
@@ -217,10 +212,6 @@ export default function ShippingProduct() {
     },
   ]
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
-  }
   const ExportExcel = () => {
     exportToCSV(
       transportOrders.map((e) => {
@@ -248,40 +239,55 @@ export default function ShippingProduct() {
     }
   }
 
-  const _getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200)
-        // cho store id âm để phân biệt với branch
-        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   useEffect(() => {
     _getBranches()
-    _getStores()
   }, [])
 
   useEffect(() => {
     _getTransportOrders()
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   return (
     <>
       <div className="card">
         <TitlePage title="Quản lý phiếu chuyển hàng">
-          <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+          <Space>
+            <Button
+              type="primary"
+              size="large"
+              icon={<FileExcelOutlined />}
+              // onClick={() => setExportVisible(true)}
+            >
+              Nhập excel
+            </Button>
             <Button
               size="large"
-              icon={<PlusCircleOutlined />}
-              type="primary"
-              onClick={() => history.push(ROUTES.SHIPPING_PRODUCT_ADD)}
+              icon={<FileExcelOutlined />}
+              style={{
+                backgroundColor: '#008816',
+                color: 'white',
+              }}
+              onClick={() => setExportVisible(true)}
             >
-              Tạo phiếu chuyển hàng
+              Xuất excel
             </Button>
-          </Permission>
+            <SettingColumns
+              columnsDefault={columnsProduct}
+              nameColumn="columnsShippingProduct"
+              columns={columns}
+              setColumns={setColumns}
+            />
+            <Permission permissions={[PERMISSIONS.tao_phieu_chuyen_hang]}>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined />}
+                type="primary"
+                onClick={() => history.push(ROUTES.SHIPPING_PRODUCT_ADD)}
+              >
+                Tạo phiếu chuyển hàng
+              </Button>
+            </Permission>
+          </Space>
         </TitlePage>
 
         <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
@@ -307,7 +313,7 @@ export default function ShippingProduct() {
               allowClear
               showSearch
               style={{ width: '100%' }}
-              placeholder="Lọc theo thời gian nhập kho"
+              placeholder="Lọc theo thời gian nhập chi nhánh"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -461,49 +467,9 @@ export default function ShippingProduct() {
             </Button>
           </Col>
         </Row>
-        <Row justify="space-between" style={{ marginTop: 10 }}>
-          <Row style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
-            <Popconfirm
-              onConfirm={_deleteTransportOrders}
-              title="Bạn có muốn xóa phiếu chuyển hàng này không?"
-            >
-              <Button danger style={{ width: 100 }} size="large" type="primary">
-                Xóa
-              </Button>
-            </Popconfirm>
-          </Row>
-          <Space>
-            <Button
-              type="primary"
-              size="large"
-              icon={<FileExcelOutlined />}
-              // onClick={() => setExportVisible(true)}
-            >
-              Nhập excel
-            </Button>
-            <Button
-              size="large"
-              icon={<FileExcelOutlined />}
-              style={{
-                backgroundColor: '#008816',
-                color: 'white',
-              }}
-              onClick={() => setExportVisible(true)}
-            >
-              Xuất excel
-            </Button>
-            <SettingColumns
-              columnsDefault={columnsProduct}
-              nameColumn="columnsShippingProduct"
-              columns={columns}
-              setColumns={setColumns}
-            />
-          </Space>
-        </Row>
 
         <Table
           size="small"
-          rowSelection={rowSelection}
           loading={loading}
           columns={columns.map((column) => {
             if (column.key === 'stt')
@@ -571,29 +537,39 @@ export default function ShippingProduct() {
             if (column.key === 'action')
               return {
                 ...column,
-                render: (text, record) =>
-                  (record.status === 'VERIFY' && (
+                render: (text, record) => (
+                  <Space>
+                    {(record.status === 'VERIFY' && (
+                      <Popconfirm
+                        onConfirm={() => _acceptTransportOrder('COMPLETE', record.order_id)}
+                        okText="Đồng ý"
+                        cancelText="Từ chối"
+                        title="Bạn có muốn hoàn thành phiếu chuyển hàng này không?"
+                      >
+                        <Button type="primary">Hoàn thành</Button>
+                      </Popconfirm>
+                    )) ||
+                      (record.status === 'DRAFT' && (
+                        <Popconfirm
+                          onConfirm={() => _acceptTransportOrder('VERIFY', record.order_id)}
+                          okText="Đồng ý"
+                          cancelText="Từ chối"
+                          title="Bạn có muốn xác nhận phiếu chuyển hàng này không?"
+                        >
+                          <Button type="primary">Xác nhận phiếu</Button>
+                        </Popconfirm>
+                      ))}
                     <Popconfirm
-                      onConfirm={() => _acceptTransportOrder('COMPLETE', record.order_id)}
                       okText="Đồng ý"
                       cancelText="Từ chối"
-                      title="Bạn có muốn hoàn thành phiếu chuyển hàng này không?"
+                      onConfirm={() => _deleteTransportOrder(record.order_id)}
+                      title="Bạn có muốn xóa phiếu chuyển hàng này không?"
                     >
-                      <Button type="primary">Hoàn thành</Button>
+                      <Button icon={<DeleteOutlined />} danger type="primary" />
                     </Popconfirm>
-                  )) ||
-                  (record.status === 'DRAFT' && (
-                    <Popconfirm
-                      onConfirm={() => _acceptTransportOrder('VERIFY', record.order_id)}
-                      okText="Đồng ý"
-                      cancelText="Từ chối"
-                      title="Bạn có muốn xác nhận phiếu chuyển hàng này không?"
-                    >
-                      <Button type="primary">Xác nhận phiếu</Button>
-                    </Popconfirm>
-                  )),
+                  </Space>
+                ),
               }
-
             return column
           })}
           rowKey="order_id"

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import styles from './customer.module.scss'
 import moment from 'moment'
 import { PERMISSIONS } from 'consts'
+import { useSelector } from 'react-redux'
 
 //antd
 import {
@@ -19,7 +19,7 @@ import {
 } from 'antd'
 
 //icons
-import { DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DownloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //components
 import CustomerForm from './customer-form'
@@ -29,17 +29,17 @@ import columnsCustomer from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getCustomers, deleteCustomers } from 'apis/customer'
+import { getCustomers, deleteCustomer } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Customer() {
   const typingTimeoutRef = useRef(null)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [columns, setColumns] = useState([])
   const [countCustomer, setCountCustomer] = useState(0)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
 
   const [visibleCustomer, setVisibleCustomer] = useState(false)
@@ -76,15 +76,6 @@ export default function Customer() {
     setParamsFilter({ page: 1, ...paramsFilter })
   }
 
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-
   const ModalCustomer = ({ children, record }) => {
     return (
       <>
@@ -111,8 +102,7 @@ export default function Customer() {
   const _getCustomers = async () => {
     try {
       setTableLoading(true)
-      setSelectedRowKeys([])
-      const res = await getCustomers(paramsFilter)
+      const res = await getCustomers({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setCustomers(res.data.data.filter((e) => e.active))
@@ -125,10 +115,10 @@ export default function Customer() {
     }
   }
 
-  const _deleteCustomers = async () => {
+  const _deleteCustomer = async (id) => {
     try {
       setTableLoading(true)
-      const res = await deleteCustomers(selectedRowKeys)
+      const res = await deleteCustomer(id)
       console.log(res)
       setTableLoading(false)
       if (res.status === 200) {
@@ -149,32 +139,40 @@ export default function Customer() {
     }
   }
 
-  const clearFilter = () => {
-    setValueSearch('')
-    setParamsFilter({ page: 1, page_size: 20 })
-    setValueDateTimeSearch({})
-    setValueTime()
-    setValueDateSearch(null)
-  }
-
   useEffect(() => {
     _getCustomers()
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   return (
     <div className="card">
       <TitlePage title="Quản lý khách hàng">
-        <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-          <ModalCustomer>
-            <Button
-              size="large"
-              icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-              type="primary"
-            >
-              Thêm khách hàng
-            </Button>
-          </ModalCustomer>
-        </Permission>
+        <Space>
+          <Button
+            icon={<DownloadOutlined />}
+            style={{ backgroundColor: 'green', borderColor: 'green' }}
+            type="primary"
+            size="large"
+          >
+            Xuất file excel
+          </Button>
+          <SettingColumns
+            columnsDefault={columnsCustomer}
+            setColumns={setColumns}
+            columns={columns}
+            nameColumn="columnsCustomer"
+          />
+          <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+            <ModalCustomer>
+              <Button
+                size="large"
+                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                type="primary"
+              >
+                Thêm khách hàng
+              </Button>
+            </ModalCustomer>
+          </Permission>
+        </Space>
       </TitlePage>
 
       <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
@@ -324,57 +322,9 @@ export default function Customer() {
           </Select>
         </Col>
       </Row>
-      <Row style={{ width: '100%', marginTop: 20, marginBottom: 5 }} justify="space-between">
-        <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-          <Popconfirm
-            title="Bạn có muốn xóa khách hàng này không?"
-            cancelText="Từ chối"
-            okText="Đồng ý"
-            onConfirm={_deleteCustomers}
-          >
-            <Button
-              danger
-              size="large"
-              type="primary"
-              style={{ width: 100, visibility: !selectedRowKeys.length && 'hidden' }}
-            >
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Permission>
-        <Space>
-          <Button
-            style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
-            onClick={clearFilter}
-            type="primary"
-            size="large"
-          >
-            Xóa bộ lọc
-          </Button>
-          <Button
-            icon={<DownloadOutlined />}
-            style={{
-              backgroundColor: 'green',
-              borderColor: 'green',
-              display: !selectedRowKeys.length && 'none',
-            }}
-            type="primary"
-            size="large"
-          >
-            Xuất file excel
-          </Button>
-          <SettingColumns
-            columnsDefault={columnsCustomer}
-            setColumns={setColumns}
-            columns={columns}
-            nameColumn="columnsCustomer"
-          />
-        </Space>
-      </Row>
 
       <Table
-        style={{ width: '100%', marginBottom: 5 }}
-        rowSelection={rowSelection}
+        style={{ width: '100%', marginTop: 10 }}
         rowKey="customer_id"
         loading={tableLoading}
         columns={columns.map((column) => {
@@ -414,6 +364,22 @@ export default function Customer() {
                 `${record.address && record.address + ', '}${
                   record.district && record.district + ', '
                 }${record.province && record.province}`,
+            }
+          if (column.key === 'action')
+            return {
+              ...column,
+              render: (text, record) => (
+                <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                  <Popconfirm
+                    title="Bạn có muốn xóa khách hàng này không?"
+                    cancelText="Từ chối"
+                    okText="Đồng ý"
+                    onConfirm={() => _deleteCustomer(record.customer_id)}
+                  >
+                    <Button danger type="primary" icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Permission>
+              ),
             }
 
           return column

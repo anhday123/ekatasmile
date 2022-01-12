@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import styles from './guarantee.module.scss'
 import moment from 'moment'
 import { ROUTES, PERMISSIONS } from 'consts'
 import { compare } from 'utils'
 import * as XLSX from 'xlsx'
+import { useSelector } from 'react-redux'
 
 //antd
 import {
@@ -17,6 +17,7 @@ import {
   Table,
   notification,
   Upload,
+  Space,
   Select,
 } from 'antd'
 
@@ -42,6 +43,7 @@ function removeFalse(a) {
 }
 export default function Guarantee() {
   const history = useHistory()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [users, setUsers] = useState([])
   const [warrantyList, setWarrantyList] = useState([])
@@ -205,7 +207,12 @@ export default function Guarantee() {
   const changePagi = (page, page_size) => setPagination({ page, page_size })
   const getWarranty = async (params) => {
     try {
-      const res = await getWarranties({ ...params, ...pagination, _creator: true })
+      const res = await getWarranties({
+        ...params,
+        ...pagination,
+        _creator: true,
+        branch_id: branchIdApp,
+      })
       console.log(res)
       if (res.status == 200) {
         setWarrantyList(res.data.data)
@@ -237,7 +244,7 @@ export default function Guarantee() {
 
   useEffect(() => {
     getWarranty({ ...removeFalse(filter) })
-  }, [filter])
+  }, [filter, branchIdApp])
 
   return (
     <>
@@ -255,17 +262,40 @@ export default function Guarantee() {
             </Row>
           }
         >
-          <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
-            <Link to={ROUTES.GUARANTEE_ADD}>
-              <Button
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                size="large"
-              >
-                Tạo phiếu bảo hành
-              </Button>
-            </Link>
-          </Permission>
+          <Space>
+            <Button
+              icon={<FileExcelOutlined />}
+              style={{ backgroundColor: '#004F88', color: 'white' }}
+              size="large"
+              onClick={() => setShowImport(true)}
+            >
+              Nhập excel
+            </Button>
+            <Button
+              icon={<FileExcelOutlined />}
+              style={{ backgroundColor: '#008816', color: 'white' }}
+              size="large"
+              onClick={() =>
+                exportToCSV(
+                  warrantyList.map((e) => convertFields(e, guarantee, true)),
+                  'bao_hanh'
+                )
+              }
+            >
+              Xuất excel
+            </Button>
+            <Permission permissions={[PERMISSIONS.them_phieu_bao_hanh]}>
+              <Link to={ROUTES.GUARANTEE_ADD}>
+                <Button
+                  icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                  type="primary"
+                  size="large"
+                >
+                  Tạo phiếu bảo hành
+                </Button>
+              </Link>
+            </Permission>
+          </Space>
         </TitlePage>
 
         <Row wrap={false} justify="space-between" style={{ marginTop: '1rem' }}>
@@ -332,85 +362,6 @@ export default function Guarantee() {
           >
             Xóa bộ lọc
           </Button>
-        </Row>
-
-        <Row
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
-            <Row
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              <Col
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={6}
-              >
-                <Button
-                  icon={<FileExcelOutlined />}
-                  style={{
-                    backgroundColor: '#004F88',
-                    color: 'white',
-                  }}
-                  size="large"
-                  onClick={() => setShowImport(true)}
-                >
-                  Nhập excel
-                </Button>
-              </Col>
-              <Col
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  marginLeft: '1rem',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={6}
-              >
-                <Button
-                  icon={<FileExcelOutlined />}
-                  style={{
-                    backgroundColor: '#008816',
-                    color: 'white',
-                  }}
-                  size="large"
-                  onClick={() =>
-                    exportToCSV(
-                      warrantyList.map((e) => convertFields(e, guarantee, true)),
-                      'bao_hanh'
-                    )
-                  }
-                >
-                  Xuất excel
-                </Button>
-              </Col>
-            </Row>
-          </Col>
         </Row>
 
         <div

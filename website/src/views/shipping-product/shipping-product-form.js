@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import styles from './shipping-product.module.scss'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 import { ACTION, IMAGE_DEFAULT, ROUTES } from 'consts'
 import { compare, formatCash } from 'utils'
@@ -32,7 +31,6 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { getProducts } from 'apis/product'
 import { addTransportOrder, updateTransportOrder } from 'apis/transport'
@@ -41,6 +39,7 @@ export default function ShippingProductAdd() {
   const dispatch = useDispatch()
   const [form] = Form.useForm()
   const history = useHistory()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [modalImportVisible, setModalImportVisible] = useState(false)
   const [exportLocation, setExportLocation] = useState({})
@@ -48,7 +47,6 @@ export default function ShippingProductAdd() {
   const [loading, setLoading] = useState(false)
   const [products, setProducts] = useState([])
   const [branches, setBranches] = useState([])
-  const [stores, setStores] = useState([])
   const [productsTransport, setProductsTransport] = useState([])
 
   const columns = [
@@ -189,21 +187,15 @@ export default function ShippingProductAdd() {
     }
   }
 
-  const _getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200)
-        // cho store id âm để phân biệt với branch
-        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getProducts = async () => {
     try {
       setLoading(true)
-      const res = await getProducts({ ...exportLocation, merge: true, detach: true })
+      const res = await getProducts({
+        ...exportLocation,
+        merge: true,
+        detach: true,
+        branch_id: branchIdApp,
+      })
       console.log(res)
       if (res.status === 200) setProducts(res.data.data.map((e) => e.variants))
       setLoading(false)
@@ -219,7 +211,6 @@ export default function ShippingProductAdd() {
 
   useEffect(() => {
     _getBranches()
-    _getStores()
   }, [])
 
   useEffect(() => {

@@ -62,6 +62,9 @@
 .show-handler-number .ant-input-number-handler-wrap {
   opacity: 1 !important;
 }
+.input .ant-input-affix-wrapper {
+  border-radius: 50px !important;
+}
 /* custom input */
 
 .ant-popover {
