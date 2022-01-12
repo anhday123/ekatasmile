@@ -93,28 +93,6 @@ module.exports._getIOIReport = async (req, res, next) => {
                 end_price: { $last: '$end_price' },
             },
         });
-        // aggregateQuery.push(
-        //     {
-        //         $lookup: {
-        //             from: 'Branchs',
-        //             let: { branchId: '$branch_id' },
-        //             pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
-        //             as: 'branch',
-        //         },
-        //     },
-        //     { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
-        // );
-        // aggregateQuery.push(
-        //     {
-        //         $lookup: {
-        //             from: 'Stores',
-        //             let: { storeId: '$store_id' },
-        //             pipeline: [{ $match: { $expr: { $eq: ['$store_id', '$$storeId'] } } }],
-        //             as: 'store',
-        //         },
-        //     },
-        //     { $unwind: { path: '$store', preserveNullAndEmptyArrays: true } }
-        // );
         if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
             aggregateQuery.push({
                 $group: {
@@ -654,6 +632,7 @@ module.exports._getFinanceReport = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: 1 } });
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
