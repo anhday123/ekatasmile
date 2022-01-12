@@ -190,6 +190,7 @@ export default function BranchAdd({ reloadData, children, record }) {
               <Form.Item
                 name="address"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
               >
                 <Input placeholder="Nhập địa chỉ" size="large" />
               </Form.Item>
@@ -198,18 +199,8 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                name="phone"
-                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
-              >
-                <Input placeholder="Nhập liên hệ" size="large" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
               >
                 <Select
                   size="large"
@@ -237,32 +228,10 @@ export default function BranchAdd({ reloadData, children, record }) {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row justify="space-between" align="middle">
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item
-                name="warehouse_type"
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn loại chi nhánh' }]}
-              >
-                <Select
-                  size="large"
-                  showSearch
-                  placeholder="Chọn loại chi nhánh"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  <Option value="sở hữu">Sở hữu</Option>
-                  <Option value="dịch vụ">Thuê dịch vụ</Option>
-                </Select>
-              </Form.Item>
-            </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
                 name="district"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn quận/huyện' }]}
               >
                 <Select
                   size="large"
@@ -281,6 +250,34 @@ export default function BranchAdd({ reloadData, children, record }) {
                     )
                   })}
                 </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row justify="space-between" align="middle">
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="warehouse_type"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  placeholder="Chọn loại chi nhánh"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  <Option value="sở hữu">Sở hữu</Option>
+                  <Option value="dịch vụ">Thuê dịch vụ</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                name="phone"
+              >
+                <Input placeholder="Nhập liên hệ" size="large" />
               </Form.Item>
             </Col>
           </Row>

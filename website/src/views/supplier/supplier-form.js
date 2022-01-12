@@ -125,6 +125,7 @@ export default function SupplierForm({ children, reloadData, record }) {
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
                 name="address"
               >
@@ -138,7 +139,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố!' }]}
               >
                 <Select
                   size="large"
@@ -164,7 +164,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 name="district"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn quận/huyện!' }]}
               >
                 <Select
                   allowClear
@@ -194,7 +193,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
                 name="phone"
-                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
               >
                 <Input placeholder="Nhập liên hệ" size="large" />
               </Form.Item>
@@ -204,7 +202,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Email</div>}
                 name="email"
-                rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
               >
                 <Input placeholder="Nhập email" size="large" />
               </Form.Item>

@@ -169,6 +169,7 @@ export default function ShippingForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
                 name="address"
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
               >
                 <Input placeholder="Nhập địa chỉ" size="large" />
               </Form.Item>
@@ -178,36 +179,17 @@ export default function ShippingForm({ children, reloadData, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                name="district"
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn quận/huyện!' }]}
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                name="phone"
+                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
               >
-                <Select
-                  allowClear
-                  size="large"
-                  showSearch
-                  style={{ width: '100%' }}
-                  placeholder="Chọn quận/huyện"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  {districts.map((district, index) => {
-                    return (
-                      <Option value={district.district_name} key={index}>
-                        {district.district_name}
-                      </Option>
-                    )
-                  })}
-                </Select>
+                <Input placeholder="Nhập liên hệ" size="large" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố!' }]}
               >
                 <Select
                   size="large"
@@ -233,11 +215,28 @@ export default function ShippingForm({ children, reloadData, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                name="phone"
-                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
+                name="district"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
               >
-                <Input placeholder="Nhập liên hệ" size="large" />
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {districts.map((district, index) => {
+                    return (
+                      <Option value={district.district_name} key={index}>
+                        {district.district_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
