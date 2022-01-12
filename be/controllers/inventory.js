@@ -36,7 +36,6 @@ let importProduct = async (user, products, productObjects, variantObjects, price
             }
             return 0;
         })();
-        
     } catch (err) {
         throw new Error(err.message);
     }
@@ -719,6 +718,36 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
+        let productIds = [];
+        let variantIds = [];
+        _order.products.map((eProduct) => {
+            productIds.push(eProduct.product_id);
+            variantIds.push(eProduct.variant_id);
+        });
+        let [products, variants] = await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('Products')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+            client
+                .db(req.user.database)
+                .collection('Variants')
+                .find({ variant_id: { $in: variantIds } })
+                .toArray(),
+        ]);
+        let _products = {};
+        products.map((eProduct) => {
+            _products[`${eProduct.product_id}`] = eProduct;
+        });
+        let _variants = {};
+        variants.map((eVariant) => {
+            _variants[`${eVariant.variant_id}`] = eVariant;
+        });
+        _order.products = _order.products.map((eProduct) => {
+            eProduct['product_info'] = _products[`${eProduct.product_id}`];
+            eProduct['variant_info'] = _variants[`${eProduct.variant_id}`];
+        });
         let payment_amount = (() => {
             let result = 0;
             if (_order.payment_info && Array.isArray(_order.payment_info) && _order.payment_info.length > 0) {
@@ -732,7 +761,6 @@ module.exports._updateImportOrder = async (req, res, next) => {
             }
             return result;
         })();
-
         _order = {
             business_id: Number(_order.business_id),
             order_id: _order.order_id,

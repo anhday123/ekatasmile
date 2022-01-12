@@ -696,16 +696,27 @@ module.exports._createFinanceReport = async (req, res, next) => {
         receipt_id++;
         let _finance = {
             receipt_id: receipt_id,
-            type: 'IMPORT',
-            payments: [],
-            status: '',
-            value: '',
-            payer: '',
-            receiver: '',
+            //REVENUE - EXPENDITURE
+            type: req.body.type || 'REVENUE',
+            payments: req.body.payments || [],
+            status: req.body.status || 'DRAFT',
+            value: req.body.value || 0,
+            payer: req.body.payer || req.user.user_id,
+            receiver: req.body.receiver || req.user.user_id,
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
-            
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
         };
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Finances' }, { $set: { name: 'Finances', value: receipt_id } }, { $upsert: true });
+        let insert = await client.db(req.user.database).collection('Finances').insertOne(_finance);
+        if (!insert.insertedId) {
+            throw new Error(`500: Tạo phiếu thu chi thất bại!`);
+        }
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
@@ -713,6 +724,30 @@ module.exports._createFinanceReport = async (req, res, next) => {
 
 module.exports._updateFinanceReport = async (req, res, next) => {
     try {
+        req.params.receipt_id = Number(req.params.receipt_id);
+        let finance = await client.db(req.user.database).collection('Finances').findOne(req.params);
+        if (!finance) {
+            throw new Error(`400: Phiếu thu/chi không tồn tại!`);
+        }
+        delete req.body._id;
+        delete req.body.receipt_id;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _finance = { ...finance, ...req.body };
+        _finance = {
+            receipt_id: _finance.receipt_id,
+            //REVENUE - EXPENDITURE
+            type: _finance.type || 'REVENUE',
+            payments: _finance.payments || [],
+            status: _finance.status || 'DRAFT',
+            value: _finance.value || 0,
+            payer: _finance.payer || req.user.user_id,
+            receiver: _finance.receiver || req.user.user_id,
+            create_date: _finance.create_date,
+            creator_id: _finance.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+        };
     } catch (err) {
         next(err);
     }
