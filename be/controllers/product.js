@@ -598,7 +598,11 @@ module.exports.importFileC = async (req, res, next) => {
                 if (optionRequire.includes(removeUnicode(String(i), true).toLowerCase())) {
                     count++;
                 }
-                _row[removeUnicode(String(i), true).toLowerCase().replace(/\(*\)/gi, '')] = eRow[i];
+                _row[
+                    removeUnicode(String(i), true)
+                        .toLowerCase()
+                        .replace(/\(\*\)/gi, '')
+                ] = eRow[i];
             }
             if (count < optionRequire.length) {
                 throw new Error(`400: Các thuộc tính có dấu (*) là thuộc tính bắt buộc!`);
@@ -636,6 +640,7 @@ module.exports.importFileC = async (req, res, next) => {
             }
             return _row;
         });
+        console.log(rows);
         categorySlugs = [...new Set(categorySlugs)];
         supplierSlugs = [...new Set(supplierSlugs)];
         taxSlugs = [...new Set(taxSlugs)];

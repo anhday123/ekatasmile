@@ -72,6 +72,7 @@ module.exports._create = async (req, res, next) => {
             exchange_point_rate: req.body.exchange_point_rate || 0,
             exchange_money_rate: req.body.exchange_money_rate || 0,
             order_require: req.body.order_require || 0,
+            order_cost_require: req.body.order_cost_require || 0,
             branch_id: req.body.branch_id || [],
             customer_type_id: req.body.customer_type_id || [],
             category_id: req.body.category_id || [],
