@@ -757,6 +757,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         _order.products = _order.products.map((eProduct) => {
             eProduct['product_info'] = _products[`${eProduct.product_id}`];
             eProduct['variant_info'] = _variants[`${eProduct.variant_id}`];
+            return eProduct;
         });
         let payment_amount = (() => {
             let result = 0;
