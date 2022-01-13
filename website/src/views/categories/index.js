@@ -333,6 +333,7 @@ export default function Category() {
       sorter: (a, b) => compare(a, b, 'priority'),
     },
     {
+      title: 'Hành động',
       width: 100,
       align: 'center',
       render: (text, record) => (
