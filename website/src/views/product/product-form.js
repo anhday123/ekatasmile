@@ -49,6 +49,7 @@ import {
   UploadOutlined,
   DeleteOutlined,
   PlusCircleOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -1206,9 +1207,10 @@ export default function ProductAdd() {
                   display: location.state && 'none',
                 }}
               >
-                <div style={{ marginBottom: 8 }}>
+                <Row wrap={false} align="middle" style={{ marginBottom: 8 }}>
+                  <div style={{ fontWeight: 600 }}>Thuộc tính</div>
+                  <InfoCircleOutlined style={{ marginLeft: 5, marginRight: 8, color: '' }} />
                   <Switch
-                    style={{ marginRight: 5 }}
                     checked={isProductHasVariants}
                     onChange={(checked) => {
                       setIsProductHasVariants(checked)
@@ -1216,8 +1218,7 @@ export default function ProductAdd() {
                       setAttributes([{ option: '', values: [] }])
                     }}
                   />
-                  Sản phẩm có {isProductHasVariants ? 'nhiều' : '1'} thuộc tính
-                </div>
+                </Row>
                 <div>
                   Thêm mới thuộc tính giúp sản phẩm có nhiều sự lựa chọn, như kích cỡ hay màu sắc
                 </div>

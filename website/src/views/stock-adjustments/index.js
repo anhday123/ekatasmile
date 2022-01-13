@@ -86,8 +86,8 @@ export default function Reports() {
       code: `JANUARY ${i}`,
       warehouse: 'Chi nhanh mac dinh',
       status: `London, Park Lane no. ${i}`,
-      create_date: `Da can bang`,
-      check_date: `11/01/2022`,
+      create_date: `11/01/2022`,
+      check_date: `12/01/2022`,
       creator: `Duck`,
       note: `Hang to`,
     })

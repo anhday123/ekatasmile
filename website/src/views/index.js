@@ -429,7 +429,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.IMPORT_INVENTORIES,
     Component: () => <ImportInventories />,
-    title: 'Nhập kho',
+    title: 'Nhập hàng',
     permissions: [],
     exact: true,
   },
