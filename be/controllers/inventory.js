@@ -815,8 +815,8 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
-            _ỏder['completer_id'] = Number(req.user.user_id);
-            _ỏder['complete_date'] = moment().tz(TIMEZONE).format();
+            _order['completer_id'] = Number(req.user.user_id);
+            _order['complete_date'] = moment().tz(TIMEZONE).format();
             let [prices, priceMaxId, locationMaxId, inventoryMaxId, inventories] = await Promise.all([
                 client
                     .db(req.user.database)
@@ -832,7 +832,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     .find({
                         product_id: { $in: productIds },
                         variant_id: { $in: variantIds },
-                        branch_id: _ỏder.import_location.branch_id,
+                        branch_id: _order.import_location.branch_id,
                         is_check: false,
                     })
                     .toArray(),
@@ -867,7 +867,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             let insertLocations = [];
             let insertInventories = [];
             let updateInventories = [];
-            _ỏder.products.map((eProduct) => {
+            _order.products.map((eProduct) => {
                 if (!_prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`]) {
                     price_id++;
                     let _price = {
@@ -890,23 +890,23 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     price_id:
                         _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id,
                     type: (() => {
-                        if (_ỏder.import_location && _ỏder.import_location.branch_id) {
+                        if (_order.import_location && _order.import_location.branch_id) {
                             return 'BRANCH';
                         }
-                        if (_ỏder.import_location && _ỏder.import_location.store_id) {
+                        if (_order.import_location && _order.import_location.store_id) {
                             return 'STORE';
                         }
                         return '';
                     })(),
                     branch_id: (() => {
-                        if (_ỏder.import_location && _ỏder.import_location.branch_id) {
-                            return _ỏder.import_location.branch_id;
+                        if (_order.import_location && _order.import_location.branch_id) {
+                            return _order.import_location.branch_id;
                         }
                         return '';
                     })(),
                     store_id: (() => {
-                        if (_ỏder.import_location && _ỏder.import_location.store_id) {
-                            return _ỏder.import_location.store_id;
+                        if (_order.import_location && _order.import_location.store_id) {
+                            return _order.import_location.store_id;
                         }
                         return '';
                     })(),
@@ -950,6 +950,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     }
                     _oldInventory.is_check = true;
                     updateInventories.push(_oldInventory);
+                    console.log(`asd`);
                     return {
                         inventory_id: inventory_id,
                         product_id: eProduct.product_id,
