@@ -282,7 +282,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(req.user.database).collection(`Customers`).updateOne(req.params, { $set: req._update });
+        await client.db(req.user.database).collection(`Customers`).updateOne(req.params, { $set: req.body });
         try {
             let _action = new Action();
             _action.create({
@@ -290,7 +290,7 @@ module.exports._update = async (req, res, next) => {
                 type: 'Update',
                 properties: 'Customer',
                 name: 'Cập nhật thông tin khách hàng',
-                data: req._update,
+                data: req.body,
                 performer_id: Number(req.user.user_id),
                 date: new Date(),
             });
@@ -298,7 +298,7 @@ module.exports._update = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._update });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
