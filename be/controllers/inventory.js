@@ -418,6 +418,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                 };
                 let _inventory = (() => {
                     inventory_id++;
+                    console.log(_oldInventory);
                     if (!_oldInventory) {
                         return {
                             inventory_id: inventory_id,
