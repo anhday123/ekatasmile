@@ -1,5 +1,11 @@
 const columns = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
     title: 'Mã chi nhánh',
     dataIndex: 'code',
     key: 'code',

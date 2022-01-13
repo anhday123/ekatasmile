@@ -15,7 +15,8 @@ export default function SupplierForm({ children, reloadData, record }) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const [districts, setDistricts] = useState([])
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const [districtsMain, setDistrictsMain] = useState([])
   const [provinces, setProvinces] = useState([])
 
   const _addOrEditSupplier = async () => {
@@ -61,7 +62,7 @@ export default function SupplierForm({ children, reloadData, record }) {
     try {
       const res = await getDistricts({ search: value })
       if (res.status === 200) {
-        setDistricts(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
     } catch (error) {
       console.log(error)
@@ -145,6 +146,12 @@ export default function SupplierForm({ children, reloadData, record }) {
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Chọn tỉnh/thành phố"
+                  onChange={(value) => {
+                    if (value) {
+                      const districtsNew = districtsDefault.filter((e) => e.province_name === value)
+                      setDistrictsMain([...districtsNew])
+                    } else setDistrictsMain([...districtsDefault])
+                  }}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -176,7 +183,7 @@ export default function SupplierForm({ children, reloadData, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {districts.map((district, index) => {
+                  {districtsMain.map((district, index) => {
                     return (
                       <Option value={district.district_name} key={index}>
                         {district.district_name}

@@ -788,6 +788,13 @@ export default function Product() {
             expandIconColumnIndex: -1,
           }}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+              }
             if (column.key === 'name-product')
               return {
                 ...column,

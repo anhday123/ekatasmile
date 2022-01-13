@@ -65,6 +65,8 @@ const BaseLayout = (props) => {
   const [user, setUser] = useState({})
   const login = useSelector((state) => state.login)
   const branchIdApp = useSelector((state) => state.branch.branchId)
+  const triggerReloadBranch = useSelector((state) => state.branch.trigger)
+
   const dataUser = localStorage.getItem('accessToken')
     ? jwt_decode(localStorage.getItem('accessToken'))
     : {}
@@ -375,8 +377,11 @@ const BaseLayout = (props) => {
   )
 
   useEffect(() => {
-    getInfoUser()
     _getBranches()
+  }, [triggerReloadBranch])
+
+  useEffect(() => {
+    getInfoUser()
   }, [])
 
   //get width device

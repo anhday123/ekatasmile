@@ -29,7 +29,6 @@ export default function Login() {
 
       //code xong chỉnh lại như cũ
       const res = await login({ ...body, username: `0967487179_${body.username}` })
-      // const res = await login({ ...body, username: `${subDomain[1]}_${body.username}` })
 
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)

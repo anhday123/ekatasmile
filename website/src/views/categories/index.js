@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { POSITION_TABLE, ROUTES, ACTION, PAGE_SIZE_OPTIONS } from 'consts'
+import { POSITION_TABLE, ROUTES, ACTION, PAGE_SIZE_OPTIONS, IMAGE_DEFAULT } from 'consts'
 import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
@@ -61,7 +61,6 @@ export default function Category() {
   const _getUserList = async () => {
     try {
       const res = await getEmployees({ page: 1, page_size: 1000 })
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           setUserList(res.data.data)
@@ -104,7 +103,6 @@ export default function Category() {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await deleteCategory(category_id)
       dispatch({ type: ACTION.LOADING, data: false })
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({ message: 'Xóa nhóm sản phẩm thành công!' })
@@ -127,7 +125,6 @@ export default function Category() {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await addCategory(body)
       dispatch({ type: ACTION.LOADING, data: false })
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({ message: 'Tạo nhóm sản phẩm thành công!' })
@@ -150,7 +147,6 @@ export default function Category() {
     const [visible, setVisible] = useState(false)
     const toggle = () => {
       setVisible(!visible)
-      // console.log(record)
     }
     const [imageView, setImageView] = useState('')
     const [fileUpload, setFileUpload] = useState(null)
@@ -198,8 +194,6 @@ export default function Category() {
                     default: dataForm.default || '',
                     description: dataForm.description || '',
                   }
-                  console.log(body)
-
                   reset()
                   _addCategory(body)
                 }}
@@ -227,7 +221,9 @@ export default function Category() {
               }}
             >
               {imageView ? (
-                <img src={imageView} alt="avatar" style={{ width: '100%' }} />
+                imageView !== '' ?
+                  <img src={imageView} alt="avatar" style={{ width: '100%' }} /> :
+                  <img src={IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />
               ) : (
                 <div>
                   <PlusOutlined />
@@ -273,12 +269,10 @@ export default function Category() {
     try {
       setLoading(true)
       const res = await getCategories({ ...paramsFilter, _creator: true })
-      // console.log(res)
       if (res.status === 200) {
         setCategories(res.data.data)
         setCountCategories(res.data.count)
       }
-      console.log(res)
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -288,10 +282,20 @@ export default function Category() {
 
   const columnsParent = [
     {
+      title: 'STT',
+      dataIndex: 'stt',
+      key: 'stt',
+      width: 50,
+      render: (text, record, index) =>
+        (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+    },
+    {
       title: 'Hình ảnh',
       align: 'center',
       render: (text, record) =>
-        record.image && <img src={record.image} alt="" style={{ width: 70, height: 70 }} />,
+        record.image ?
+          <img src={record.image} alt="" style={{ width: 70, height: 70 }} /> :
+          <img src={IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />,
     },
     {
       title: 'Tên nhóm sản phẩm',

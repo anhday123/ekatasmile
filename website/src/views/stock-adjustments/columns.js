@@ -3,6 +3,12 @@ import { ROUTES } from 'consts'
 
 const columns = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
     title: 'Mã phiếu',
     dataIndex: 'code',
     render: (text, record, index) => {

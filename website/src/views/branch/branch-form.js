@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ACTION, regexPhone } from 'consts/index'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
 import { Input, Button, Row, Col, notification, Select, Form, Upload, Drawer } from 'antd'
@@ -18,6 +18,7 @@ export default function BranchAdd({ reloadData, children, record }) {
   const dispatch = useDispatch()
   const location = useLocation()
   const [form] = Form.useForm()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -44,8 +45,8 @@ export default function BranchAdd({ reloadData, children, record }) {
 
       const dataForm = form.getFieldsValue()
 
-      if (!regexPhone.test(dataForm.phone)) {
-        notification.error({ message: 'Số điện thoại liên hệ không hợp lệ' })
+      if (dataForm.phone && !regexPhone.test(dataForm.phone)) {
+        notification.warning({ message: 'Số điện thoại liên hệ không hợp lệ' })
         return
       }
 
@@ -73,6 +74,7 @@ export default function BranchAdd({ reloadData, children, record }) {
           reloadData()
           notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thành công` })
           setVisible(false)
+          dispatch({ type: 'TRIGGER_RELOAD_BRANCH' })
         } else
           notification.error({
             message:

@@ -380,6 +380,13 @@ export default function Shipping() {
           loading={loading}
           rowSelection={rowSelection}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -399,8 +406,7 @@ export default function Shipping() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
 
