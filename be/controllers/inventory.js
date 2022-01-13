@@ -560,9 +560,15 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             for (let i in eRow) {
                 _row[String(removeUnicode(i, true)).toLowerCase()] = eRow[i];
             }
+            if (eRow['maphieunhap']) {
+            
+            }
             productSkus.push(eRow['masanpham']);
             variantSkus.push(eRow['maphienban']);
-            branchSlug.push(removeUnicode(String(eRow['maphieunhap']), true)).toLowerCase();
+            if (eRow['tennoinhap']) {
+                eRow['_tennoinhap'] = removeUnicode(eRow['tennoinhap']).toLowerCase();
+                branchSlug.push(eRow['_tennoinhap']);
+            }
             return _row;
         });
         productSkus = [...new Set(productSkus)];
@@ -605,13 +611,14 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             return 0;
         })();
         let _orders = {};
-        excelProducts = excelProducts.map((e) => {
-            if (!_orders[e['madonhang']]) {
+        rows.map((eRow) => {
+            if (!_orders[eRow['maphieunhap']]) {
                 order_id++;
-                _orders[e['madonhang']] = {
+                _orders[eRow['maphieunhap']] = {
                     order_id: order_id,
+                    code: String(order_id).padStart(6, '0'),
                     import_order_id: order_id,
-                    code: e['madonhang'],
+                    import_code: eRow['maphieunhap'],
                     import_location: (() => {
                         if (e['noinhaphang'] == 'BRANCH') {
                             return { branch_id: _branchs[e['tennoinhap']].branch_id };
@@ -646,8 +653,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     active: true,
                 };
             }
-            if (_orders[e['madonhang']]) {
-                _orders[e['madonhang']].products.push({
+            if (_orders[e['maphieunhap']]) {
+                _orders[e['maphieunhap']].products.push({
                     product_id: _products[e['masanpham']].product_id,
                     variant_id: _variants[e['maphienban']].variant_id,
                     import_price: e['gianhap'],
@@ -655,9 +662,9 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     product_info: _products[e['masanpham']],
                     variant_info: _variants[e['maphienban']],
                 });
-                _orders[e['madonhang']].total_cost += e['gianhap'] * e['soluongnhap'];
-                _orders[e['madonhang']].final_cost += e['gianhap'] * e['soluongnhap'];
-                _orders[e['madonhang']].total_quantity += e['soluongnhap'];
+                _orders[e['maphieunhap']].total_cost += e['gianhap'] * e['soluongnhap'];
+                _orders[e['maphieunhap']].final_cost += e['gianhap'] * e['soluongnhap'];
+                _orders[e['maphieunhap']].total_quantity += e['soluongnhap'];
             }
         });
         let orders = Object.values(_orders);
