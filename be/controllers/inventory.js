@@ -409,16 +409,15 @@ module.exports._createImportOrder = async (req, res, next) => {
                 };
                 insertLocations.push(_location);
                 inventory_id++;
-                let _oldInventory = {
-                    ..._inventories[
+                let _oldInventory =
+                    _inventories[
                         `${eProduct.product_id}-${eProduct.variant_id}-${
                             _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id
                         }`
-                    ],
-                };
+                    ];
+
                 let _inventory = (() => {
                     inventory_id++;
-                    // console.log(_oldInventory);
                     if (!_oldInventory) {
                         return {
                             inventory_id: inventory_id,
@@ -484,17 +483,27 @@ module.exports._createImportOrder = async (req, res, next) => {
                         { upsert: true }
                     ),
             ]);
+
+            if (Array.isArray(insertPrices) && insertPrices.length > 0) {
+                await client.db(req.user.database).collection('Prices').insertMany(insertPrices);
+            }
+            if (Array.isArray(insertLocations) && insertLocations.length > 0) {
+                await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
+            }
+            if (Array.isArray(insertInventories) && insertInventories.length > 0) {
+                await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
+            }
             await Promise.all([
-                client.db(req.user.database).collection('Prices').insertMany(insertPrices),
-                client.db(req.user.database).collection('Locations').insertMany(insertLocations),
-                client.db(req.user.database).collection('Inventories').insertMany(insertInventories),
                 ...(() => {
-                    return updateInventories.map((eUpdate) => {
-                        return client
-                            .db(req.user.database)
-                            .collection('Inventories')
-                            .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
-                    });
+                    if (Array.isArray(updateInventories) && updateInventories.length > 0) {
+                        return updateInventories.map((eUpdate) => {
+                            return client
+                                .db(req.user.database)
+                                .collection('Inventories')
+                                .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
+                        });
+                    }
+                    return [];
                 })(),
             ]);
         }
