@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './sell.module.scss'
 
-import { ACTION } from 'consts'
 import { useSelector, useDispatch } from 'react-redux'
 
 //antd
@@ -12,43 +11,27 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 //images
 import location from 'assets/icons/location.png'
+import delay from 'delay'
 
-//apis
-import { getAllBranch } from 'apis/branch'
-
-export default function ChangeBranch() {
+export default function ChangeBranch({
+  branches = [],
+  loading = false,
+  branch = {},
+  resetInvoice,
+}) {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
-
-  const [branches, setBranches] = useState([])
-  const [loading, setLoading] = useState(false)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const branchActive =
-    localStorage.getItem('branchSell') && JSON.parse(localStorage.getItem('branchSell'))
-
-  const [branchId, setBranchId] = useState(branchActive && branchActive.branch_id)
-
-  const _getBranches = async () => {
-    try {
-      setLoading(true)
-      const res = await getAllBranch()
-      if (res.status === 200) setBranches(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-      console.log(error)
-    }
-  }
+  const [branchId, setBranchId] = useState(branchIdApp)
 
   const _changeBranch = async () => {
-    const branch = branches.find((s) => s.branch_id === branchId)
-    localStorage.setItem('branchSell', JSON.stringify(branch))
-    localStorage.setItem('invoice', JSON.stringify({ invoice: {} })) //reset đơn hàng local storage
-    dispatch({ type: 'UPDATE_INVOICE', data: [] }) //reset đơn hàng trong reducer
-    window.location.reload()
+    dispatch({ type: 'SET_BRANCH_ID', data: branchId }) //save branch_id in reducer
+    resetInvoice()
+    toggle()
   }
 
   function confirm() {
@@ -63,19 +46,15 @@ export default function ChangeBranch() {
   }
 
   useEffect(() => {
-    if (!visible) setBranchId(branchActive && branchActive.branch_id)
+    if (visible) setBranchId(branchIdApp)
   }, [visible])
-
-  useEffect(() => {
-    _getBranches()
-  }, [])
 
   return (
     <>
-      <Tooltip title={branchActive ? branchActive.name : ''}>
+      <Tooltip title={branch.name || ''}>
         <Row wrap={false} align="middle" style={{ cursor: 'pointer' }} onClick={toggle}>
           <img src={location} alt="" style={{ marginRight: 10, width: 10 }} />
-          <p className={styles['name-store']}>{branchActive && branchActive.name}</p>
+          <p className={styles['name-branch']}>{branch.name || ''}</p>
         </Row>
       </Tooltip>
       <Modal
@@ -89,15 +68,20 @@ export default function ChangeBranch() {
           <p style={{ marginBottom: 0 }}>Doanh nghiệp</p>
           <Input
             style={{ color: 'black' }}
-            value={dataUser.data && dataUser.data._branch && dataUser.data._branch.name}
+            value={
+              dataUser &&
+              dataUser.data &&
+              dataUser.data._business &&
+              dataUser.data._business.business_name
+            }
             disabled
           />
         </div>
         <div style={{ marginBottom: 25, marginTop: 20 }}>
           <p style={{ marginBottom: 0 }}>Điểm bán</p>
           <Select
-            placeholder="Chọn điểm bán"
             loading={loading}
+            placeholder="Chọn điểm bán"
             showSearch
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

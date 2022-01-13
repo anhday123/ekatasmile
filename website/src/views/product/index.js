@@ -34,7 +34,12 @@ import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
 //icons
-import { PlusCircleOutlined, InboxOutlined, LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
+import {
+  PlusCircleOutlined,
+  InboxOutlined,
+  LoadingOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons'
 
 //apis
 import { getSuppliers } from 'apis/supplier'
@@ -379,10 +384,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-              const fileNames = image.split('/')
-              const fileName = fileNames[fileNames.length - 1]
-              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-            })
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
             : []
         )
       }
@@ -392,7 +397,11 @@ export default function Product() {
       <>
         <div onClick={toggle} className={styles['variant-image']}>
           {record.image && record.image.length ? (
-            <img src={record.image[0] || IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
+            <img
+              src={record.image[0] || IMAGE_DEFAULT}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           ) : (
             <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
           )}

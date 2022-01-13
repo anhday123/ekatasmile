@@ -42,8 +42,6 @@ export default function Customer() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [tableLoading, setTableLoading] = useState(false)
 
-  const [visibleCustomer, setVisibleCustomer] = useState(false)
-  const toggleCustomer = () => setVisibleCustomer(!visibleCustomer)
   const [customers, setCustomers] = useState([])
 
   const [valueSearch, setValueSearch] = useState('')
@@ -63,8 +61,8 @@ export default function Customer() {
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
 
-      if (value) paramsFilter.name = value
-      else delete paramsFilter.name
+      if (value) paramsFilter[optionSearch] = value
+      else delete paramsFilter[optionSearch]
 
       setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
@@ -77,20 +75,23 @@ export default function Customer() {
   }
 
   const ModalCustomer = ({ children, record }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
     return (
       <>
-        <div onClick={toggleCustomer}>{children}</div>
+        <div onClick={toggle}>{children}</div>
         <Modal
           style={{ top: 20 }}
-          onCancel={toggleCustomer}
+          onCancel={toggle}
           width={800}
           footer={null}
           title={`${record ? 'Cập nhật' : 'Tạo'} khách hàng`}
-          visible={visibleCustomer}
+          visible={visible}
         >
           <CustomerForm
             record={record}
-            close={toggleCustomer}
+            close={toggle}
             text={record ? 'Lưu' : 'Tạo'}
             reload={_getCustomers}
           />
@@ -148,6 +149,7 @@ export default function Customer() {
       <TitlePage title="Quản lý khách hàng">
         <Space>
           <Button
+            // exportCustomers
             icon={<DownloadOutlined />}
             style={{ backgroundColor: 'green', borderColor: 'green' }}
             type="primary"
@@ -176,21 +178,24 @@ export default function Customer() {
       </TitlePage>
 
       <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
-        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+        <Col xs={24} sm={24} md={24} lg={10} xl={10}>
           <Row wrap={false} style={{ width: '100%' }}>
             <Input
               size="large"
               style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo tên"
+              placeholder="Tìm kiếm theo..."
               value={valueSearch}
               onChange={(e) => onSearch(e)}
               allowClear
             />
             <Select
               size="large"
-              style={{ width: 160 }}
+              style={{ width: 180 }}
               value={optionSearch}
-              onChange={(value) => setOptionSearch(value)}
+              onChange={(value) => {
+                delete paramsFilter[optionSearch]
+                setOptionSearch(value)
+              }}
             >
               <Option value="name">Tên khách hàng</Option>
               <Option value="phone">SDT khách hàng</Option>
@@ -198,7 +203,7 @@ export default function Customer() {
             </Select>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <Select
             size="large"
             open={isOpenSelect}
@@ -308,7 +313,7 @@ export default function Customer() {
             <Option value="last_year">Năm trước</Option>
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <Select
             size="large"
             style={{ width: '100%' }}
@@ -328,6 +333,11 @@ export default function Customer() {
         rowKey="customer_id"
         loading={tableLoading}
         columns={columns.map((column) => {
+          if (column.key === 'stt')
+            return {
+              ...column,
+              render: (text, record, index) => index + 1,
+            }
           if (column.key === 'code')
             return {
               ...column,

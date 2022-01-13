@@ -45,7 +45,7 @@ export default function FilterProductsByCategory({ setParamsFilter, paramsFilter
       <Drawer
         width={450}
         visible={visible}
-        title="Lọc theo danh mục"
+        title="Lọc theo nhóm sản phẩm"
         onClose={toggle}
         placement="left"
         footer={
@@ -76,7 +76,7 @@ export default function FilterProductsByCategory({ setParamsFilter, paramsFilter
           allowClear
           value={valueSearch}
           prefix={<SearchOutlined />}
-          placeholder="Tìm kiếm danh mục"
+          placeholder="Tìm kiếm nhóm sản phẩm"
           onChange={(e) => setValueSearch(e.target.value)}
         />
 

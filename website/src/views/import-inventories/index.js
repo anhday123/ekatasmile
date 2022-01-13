@@ -647,13 +647,16 @@ export default function ImportInventories() {
                   <ModalDownloadProducts
                     products={
                       record.products
-                        ? record.products.map((e) => ({
-                            ...e.product_info,
-                            quantity: e.quantity,
-                            files: record.files,
-                            tags: record.tags,
-                            note: record.note,
-                          }))
+                        ? record.products.map(
+                            (e) =>
+                              e && {
+                                ...e.product_info,
+                                quantity: e.quantity,
+                                files: record.files,
+                                tags: record.tags,
+                                note: record.note,
+                              }
+                          )
                         : []
                     }
                   />
