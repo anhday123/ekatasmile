@@ -365,7 +365,7 @@ export default function Product() {
 
     const [loading, setLoading] = useState(false)
 
-    const _uploadFile = async (file) => {
+    const addFile = async (file) => {
       setLoading(true)
       const url = await uploadFile(file)
       setImages([...images, url])
@@ -376,6 +376,20 @@ export default function Product() {
         { uid: imagesView.length, name: fileName, status: 'done', url: url, thumbUrl: url },
       ])
       setLoading(false)
+    }
+
+    const removeFile = (file) => {
+      const imagesNew = [...images]
+      const imagesViewNew = [...imagesView]
+
+      const indexImage = images.findIndex((url) => url === file.url)
+      const indexImageView = imagesView.findIndex((f) => f.url === file.url)
+
+      if (indexImage !== -1) imagesNew.splice(indexImage, 1)
+      if (indexImageView !== -1) imagesViewNew.splice(indexImageView, 1)
+
+      setImages([...imagesNew])
+      setImagesView([...imagesViewNew])
     }
 
     useEffect(() => {
@@ -440,7 +454,8 @@ export default function Product() {
           <Upload.Dragger
             fileList={imagesView}
             listType="picture"
-            data={_uploadFile}
+            data={addFile}
+            onRemove={removeFile}
             name="file"
             multiple
             onChange={(info) => {
@@ -793,7 +808,7 @@ export default function Product() {
                 ...column,
                 width: 50,
                 render: (text, record, index) =>
-                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
               }
             if (column.key === 'name-product')
               return {

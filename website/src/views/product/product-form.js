@@ -122,8 +122,9 @@ export default function ProductAdd() {
         attributes[0].values.map((value) => {
           variantsNew.push({
             title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-            sku: `${valueGeneratedSku || ''
-              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+            sku: `${
+              valueGeneratedSku || ''
+            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
             options: [{ name: attributes[0].option, value: value }],
             ...initVariant,
           })
@@ -134,8 +135,9 @@ export default function ProductAdd() {
           attributes[1].values.map((value) => {
             variantsNew.push({
               title: `${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${valueGeneratedSku || ''
-                }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[1].option, value: value }],
               ...initVariant,
             })
@@ -145,8 +147,9 @@ export default function ProductAdd() {
           attributes[0].values.map((value) => {
             variantsNew.push({
               title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${valueGeneratedSku || ''
-                }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[0].option, value: value }],
             })
           })
@@ -156,8 +159,9 @@ export default function ProductAdd() {
             attributes[1].values.map((v1) => {
               variantsNew.push({
                 title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
-                sku: `${valueGeneratedSku || ''
-                  }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                sku: `${
+                  valueGeneratedSku || ''
+                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
                 options: [
                   { name: attributes[0].option, value: v0 },
                   { name: attributes[1].option, value: v1 },
@@ -262,21 +266,18 @@ export default function ProductAdd() {
     }
 
     if (!isValidated) return
-
-    if (isProductHasVariants && variants.length < 2) {
+    console.log(variants)
+    if (isProductHasVariants && variants.length === 0) {
       notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
       return
     }
 
     //validated, prices
-    for (let i = 0; i < variants.length; ++i) {
+    for (let i = 0; i < variants.length; ++i)
       if (!variants[i].price) {
-        notification.error({
-          message: 'Vui lòng nhập giá bán trong thuộc tính!',
-        })
+        notification.error({ message: 'Vui lòng nhập giá bán trong thuộc tính!' })
         return
       }
-    }
 
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -325,10 +326,10 @@ export default function ProductAdd() {
           sku: location.state
             ? skuProductWithEdit
             : !isGeneratedSku
+            ? formProduct.sku
               ? formProduct.sku
-                ? formProduct.sku
-                : valueDefaultSku
-              : valueGeneratedSku,
+              : valueDefaultSku
+            : valueGeneratedSku,
           options: [],
           image: images || [],
           supplier: supplier || '',
@@ -968,8 +969,19 @@ export default function ProductAdd() {
                   </Checkbox>
                 </div>
               </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <Form.Item label="Nhà cung cấp" name="supplier_id" style={{ marginRight: 10, width: '100%' }}>
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ display: 'flex', alignItems: 'flex-end' }}
+              >
+                <Form.Item
+                  label="Nhà cung cấp"
+                  name="supplier_id"
+                  style={{ marginRight: 10, width: '100%' }}
+                >
                   <Select
                     showSearch
                     filterOption={(input, option) =>
@@ -994,7 +1006,12 @@ export default function ProductAdd() {
                 </Form.Item>
                 <SupplierForm reloadData={_getSuppliers}>
                   <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
-                    <Button size="large" type="primary" icon={<PlusOutlined />} style={{ marginBottom: 24 }} />
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      style={{ marginBottom: 24 }}
+                    />
                   </Permission>
                 </SupplierForm>
               </Col>
