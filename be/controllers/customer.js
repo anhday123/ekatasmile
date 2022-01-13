@@ -118,7 +118,6 @@ module.exports._update = async (req, res, next) => {
         delete req.body._id;
         delete req.body.customer_id;
         delete req.body.code;
-        delete req.body.balance;
         delete req.body.create_date;
         delete req.body.creator_id;
         let _customer = { ...customer, ...req.body };
