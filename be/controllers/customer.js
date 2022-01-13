@@ -154,7 +154,7 @@ module.exports._update = async (req, res, next) => {
             slug_province: removeUnicode(_customer.province, true).toLowerCase(),
         };
         req['body'] = _customer;
-        await customerService.updateCustomerS(req, res, next);
+        await customerService._update(req, res, next);
     } catch (err) {
         next(err);
     }

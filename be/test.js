@@ -1,19 +1,6 @@
-let arr = [
-    [1, 2, 3],
-    [3, 4, 5],
-];
+const { removeUnicode } = require('./utils/string-handle');
 
-let obj = {
-    a: (() => {
-        let result = [];
-        for (let i in arr) {
-            result = result.concat(arr[i]);
-        }
-        result = [...new Set(result)];
+let text = 'Ph@n Đăng Lưu 0123 ';
 
-        return result;
-    })(),
-    b: 2,
-};
-
-console.log(obj);
+text = removeUnicode(text, { removeSpecialCharacter: true });
+console.log(text);

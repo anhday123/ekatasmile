@@ -1,4 +1,4 @@
-let removeUnicode = (text, removeSpace) => {
+let removeUnicode = (text, options) => {
     /*
         string là chuỗi cần remove unicode
         trả về chuỗi ko dấu tiếng việt ko khoảng trắng
@@ -6,17 +6,23 @@ let removeUnicode = (text, removeSpace) => {
     if (typeof text != 'string') {
         throw new Error('Type of text input must be string!');
     }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
     text = text
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
+    if (options) {
+        if (options.replaceSpaceWithHyphen) {
+            text = text.replace(/\s/g, '-');
+        }
+        if (options.removeSpace) {
+            text = text.replace(/\s/g, '');
+        }
+        if (options.removeSpecialCharacter) {
+            text = text.replace(/[^a-zA-Z0-9\s]/g, '');
+        }
     }
+
     return text;
 };
 

@@ -560,9 +560,9 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             for (let i in eRow) {
                 _row[String(removeUnicode(i, true)).toLowerCase()] = eRow[i];
             }
-            if (_row['']) productSkus.push(_product['masanpham']);
-            variantSkus.push(_product['maphienban']);
-            branchSlug.push();
+            productSkus.push(eRow['masanpham']);
+            variantSkus.push(eRow['maphienban']);
+            branchSlug.push(removeUnicode(String(eRow['maphieunhap']), true));
             return _row;
         });
         productSkus = [...new Set(productSkus)];
@@ -582,7 +582,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('Branchs')
-                .find({ name: { $in: branchNames } })
+                .find({ slug_name: { $in: branchSlug } })
                 .toArray(),
         ]);
         let _products = {};
@@ -593,30 +593,17 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         variants.map((eVariant) => {
             _variants[eVariant.sku] = eVariant;
         });
-        let _branchs = {};
-        branchs.map((eBranch) => {
-            _branchs[eBranch.name] = eBranch;
+        let _branches = {};
+        branches.map((eBranch) => {
+            _branches[eBranch.slug_name] = eBranch;
         });
-        let _stores = {};
-        stores.map((eStore) => {
-            _stores[eStore.name] = eStore;
-        });
-
-        let [order_id] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'ImportOrders' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-        ]);
+        let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
+        let order_id = (() => {
+            if (orderMaxId && orderMaxId.value) {
+                return orderMaxId.value;
+            }
+            return 0;
+        })();
         let _orders = {};
         excelProducts = excelProducts.map((e) => {
             if (!_orders[e['madonhang']]) {
