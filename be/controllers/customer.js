@@ -118,7 +118,6 @@ module.exports._update = async (req, res, next) => {
         delete req.body._id;
         delete req.body.customer_id;
         delete req.body.code;
-        delete req.body.phone;
         delete req.body.balance;
         delete req.body.create_date;
         delete req.body.creator_id;
@@ -126,7 +125,7 @@ module.exports._update = async (req, res, next) => {
         _customer = {
             customer_id: _customer.customer_id,
             code: _customer.code,
-            phone: _customer.phone,
+            phone: String(_customer.phone),
             type: _customer.type || 'Tiềm năng',
             first_name: (_customer.first_name || '').trim(),
             last_name: (_customer.last_name.trim() || '').trim(),

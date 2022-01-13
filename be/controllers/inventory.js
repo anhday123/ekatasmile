@@ -562,7 +562,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             }
             productSkus.push(eRow['masanpham']);
             variantSkus.push(eRow['maphienban']);
-            branchSlug.push(removeUnicode(String(eRow['maphieunhap']), true));
+            branchSlug.push(removeUnicode(String(eRow['maphieunhap']), true)).toLowerCase();
             return _row;
         });
         productSkus = [...new Set(productSkus)];
@@ -610,6 +610,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 order_id++;
                 _orders[e['madonhang']] = {
                     order_id: order_id,
+                    import_order_id: order_id,
                     code: e['madonhang'],
                     import_location: (() => {
                         if (e['noinhaphang'] == 'BRANCH') {
