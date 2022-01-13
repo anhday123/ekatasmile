@@ -555,6 +555,13 @@ export default function ImportInventories() {
           size="small"
           dataSource={ordersInventory}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -648,12 +655,12 @@ export default function ImportInventories() {
                     products={
                       record.products
                         ? record.products.map((e) => ({
-                            ...e.product_info,
-                            quantity: e.quantity,
-                            files: record.files,
-                            tags: record.tags,
-                            note: record.note,
-                          }))
+                          ...e.product_info,
+                          quantity: e.quantity,
+                          files: record.files,
+                          tags: record.tags,
+                          note: record.note,
+                        }))
                         : []
                     }
                   />

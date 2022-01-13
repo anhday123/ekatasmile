@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, PERMISSIONS } from 'consts/index'
+import { ACTION, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import { compare } from 'utils'
@@ -314,6 +314,13 @@ export default function Branch() {
           size="small"
           loading={loading}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -339,11 +346,11 @@ export default function Branch() {
                 render: (text, record) => (
                   <Popover
                     content={
-                      <img src={record.logo || ''} alt="" style={{ width: 380, height: 380 }} />
+                      <img src={record.logo || IMAGE_DEFAULT} alt="" style={{ width: 380, height: 380 }} />
                     }
                   >
                     <img
-                      src={record.logo || ''}
+                      src={record.logo || IMAGE_DEFAULT}
                       alt=""
                       style={{ width: 55, height: 55, objectFit: 'cover' }}
                     />
@@ -354,8 +361,7 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
             if (column.key === 'creator')

@@ -1,5 +1,11 @@
 const columnsProduct = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
     title: 'Tên sản phẩm',
     dataIndex: 'name',
     key: 'name-product',

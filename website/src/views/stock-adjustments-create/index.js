@@ -43,6 +43,9 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons'
 
+//apis
+import { getProducts } from 'apis/product'
+
 export default function CreateReport() {
   const history = useHistory()
   const [form] = Form.useForm()
@@ -52,6 +55,23 @@ export default function CreateReport() {
 
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [dataProducts, setDataProducts] = useState([])
+  const [listProduct, setListProduct] = useState([])
+
+  const _getProducts = async (params) => {
+    try {
+      setLoadingProduct(true)
+      const res = await getProducts(params)
+      console.log(res)
+      if (res.status === 200)
+        setDataProducts(res.data.data)
+      setLoadingProduct(false)
+    }
+    catch (err) {
+      console.log(err)
+      setLoadingProduct(false)
+    }
+  }
 
   const productsSearch = [
     {
@@ -86,6 +106,10 @@ export default function CreateReport() {
       dataIndex: 'existing_branch',
     },
   ]
+
+  useEffect(() => {
+    _getProducts()
+  }, [])
 
   return (
     <div className="card">
@@ -191,10 +215,11 @@ export default function CreateReport() {
                 clearIcon={<CloseOutlined style={{ color: 'black' }} />}
                 suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
                 style={{ width: '95%', marginBottom: 15 }}
+                // onChange={(value) => console.log(value)}
                 placeholder="Thêm sản phẩm vào hoá đơn"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
-                {productsSearch.map((data, index) => (
+                {dataProducts.map((data, index) => (
                   <Select.Option value={data.title} key={data.title + index + ''}>
                     <Row
                       align="middle"
@@ -204,17 +229,21 @@ export default function CreateReport() {
                         e.stopPropagation()
                       }}
                     >
-                      <img
-                        src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
-                        alt=""
-                        style={{
-                          minWidth: 40,
-                          minHeight: 40,
-                          maxWidth: 40,
-                          maxHeight: 40,
-                          objectFit: 'cover',
-                        }}
-                      />
+                      {
+                        data.variants && data.variants.map((img) =>
+                          <img
+                            src={img.image[0] ? img.image[0] : IMAGE_DEFAULT}
+                            alt={img.title}
+                            style={{
+                              minWidth: 40,
+                              minHeight: 40,
+                              maxWidth: 40,
+                              maxHeight: 40,
+                              objectFit: 'cover',
+                            }}
+                          />
+                        )
+                      }
 
                       <div style={{ width: '100%', marginLeft: 15 }}>
                         <Row wrap={false} justify="space-between">
@@ -230,10 +259,10 @@ export default function CreateReport() {
                               display: '-webkit-box',
                             }}
                           >
-                            {data.title}
+                            {data.name}
                           </span>
                           <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                            {formatCash(data.price)}
+                            {formatCash(data.variants[0].price)}
                           </p>
                         </Row>
                       </div>

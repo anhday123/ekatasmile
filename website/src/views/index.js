@@ -4,7 +4,7 @@ import { Switch, Route, Redirect, BrowserRouter } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //base layout
-import BaseLayout from 'components/layout'
+import BaseLayout from 'components/Layout'
 import Authentication from 'components/authentication'
 
 //views
@@ -429,7 +429,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.IMPORT_INVENTORIES,
     Component: () => <ImportInventories />,
-    title: 'Nhập hàng',
+    title: 'Nhập kho',
     permissions: [],
     exact: true,
   },

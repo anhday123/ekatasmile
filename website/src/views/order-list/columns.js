@@ -1,5 +1,11 @@
 const columnsOrder = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50
+  },
+  {
     title: 'Mã đơn hàng',
     dataIndex: 'code',
     key: 'code',
