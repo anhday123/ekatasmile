@@ -101,6 +101,13 @@ module.exports._get = async (req, res, next) => {
                 },
             });
         }
+        if (req.query.phone) {
+            aggregateQuery.push({
+                $match: {
+                    phone: new RegExp(`${removeUnicode(req.query.phone, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
+                },
+            });
+        }
         if (req.query.gender) {
             aggregateQuery.push({
                 $match: {

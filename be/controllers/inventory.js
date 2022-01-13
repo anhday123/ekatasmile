@@ -551,58 +551,38 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             type: 'buffer',
             cellDates: true,
         });
-        let excelProducts = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
+        let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         let productSkus = [];
         let variantSkus = [];
-        let branchNames = [];
-        let storeNames = [];
-        excelProducts = excelProducts.map((eProduct) => {
-            let _product = {};
-            for (let i in eProduct) {
-                _product[String(removeUnicode(i, true)).toLowerCase()] = eProduct[i];
+        let branchSlug = [];
+        rows = rows.map((eRow) => {
+            let _row = {};
+            for (let i in eRow) {
+                _row[String(removeUnicode(i, true)).toLowerCase()] = eRow[i];
             }
-            productSkus.push(_product['masanpham']);
+            if (_row['']) productSkus.push(_product['masanpham']);
             variantSkus.push(_product['maphienban']);
-            _product['noinhaphang'] = (() => {
-                if (removeUnicode(_product['noinhaphang'], true).toLowerCase() == 'chinhanh') {
-                    return 'BRANCH';
-                }
-                if (removeUnicode(_product['noinhaphang'], true).toLowerCase() == 'cuahang') {
-                    return 'STORE';
-                }
-            })();
-            if (_product['noinhaphang'] == 'BRANCH') {
-                branchNames.push(_product['tennoinhap'].trim().toUpperCase());
-            }
-            if (_product['noinhaphang'] == 'STORE') {
-                storeNames.push(_product['tennoinhap'].trim().toUpperCase());
-            }
-            return _product;
+            branchSlug.push();
+            return _row;
         });
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
-        branchNames = [...new Set(branchNames)];
-        storeNames = [...new Set(storeNames)];
-        let [products, variants, branchs, stores] = await Promise.all([
+        branchSlug = [...new Set(branchSlug)];
+        let [products, variants, branches] = await Promise.all([
             client
                 .db(req.user.database)
                 .collection('Products')
-                .find({ business_id: Number(req.user.business_id), sku: { $in: productSkus } })
+                .find({ sku: { $in: productSkus } })
                 .toArray(),
             client
                 .db(req.user.database)
                 .collection('Variants')
-                .find({ business_id: Number(req.user.business_id), sku: { $in: variantSkus } })
+                .find({ sku: { $in: variantSkus } })
                 .toArray(),
             client
                 .db(req.user.database)
                 .collection('Branchs')
-                .find({ business_id: Number(req.user.business_id), name: { $in: branchNames } })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Stores')
-                .find({ business_id: Number(req.user.business_id), name: { $in: storeNames } })
+                .find({ name: { $in: branchNames } })
                 .toArray(),
         ]);
         let _products = {};
@@ -642,7 +622,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             if (!_orders[e['madonhang']]) {
                 order_id++;
                 _orders[e['madonhang']] = {
-                    business_id: Number(req.user.business_id),
                     order_id: order_id,
                     code: e['madonhang'],
                     import_location: (() => {
