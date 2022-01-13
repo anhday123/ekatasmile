@@ -43,7 +43,6 @@ export default function ImportInventories() {
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [ordersInventory, setOrdersInventory] = useState([])
-  console.log(ordersInventory)
   const [countOrder, setCountOrder] = useState(0)
   const [selectRowsKey, setSelectRowKeys] = useState([])
   const [columns, setColumns] = useState([])

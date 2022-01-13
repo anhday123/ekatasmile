@@ -60,6 +60,7 @@ export default function ImportInventory() {
   const location = useLocation()
   const dataUser = useSelector((state) => state.login.dataUser)
   const [form] = Form.useForm()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [users, setUsers] = useState([])
 
@@ -360,7 +361,6 @@ export default function ImportInventory() {
         })),
         files: file ? [file] : [],
         complete_date: dataForm.complete_date ? new Date(dataForm.complete_date).toString() : null,
-
         total_cost: orderCreate.sumCostPaid || 0,
         total_tax: (10 / 100) * orderCreate.sumCostPaid,
         total_discount: 0,
@@ -379,20 +379,20 @@ export default function ImportInventory() {
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({
-            message: `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập kho thành công`,
+            message: `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập hàng thành công`,
           })
           history.push(ROUTES.IMPORT_INVENTORIES)
         } else
           notification.error({
             message:
               res.data.message ||
-              `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập kho thất bại, vui lòng thử lại`,
+              `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập hàng thất bại, vui lòng thử lại`,
           })
       } else
         notification.error({
           message:
             res.data.message ||
-            `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập kho thất bại, vui lòng thử lại`,
+            `${location.state ? 'Cập nhật' : 'Tạo'} đơn nhập hàng thất bại, vui lòng thử lại`,
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -436,7 +436,7 @@ export default function ImportInventory() {
   const _getProductsSearch = async () => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ merge: true, detach: true })
+      const res = await getProducts({ merge: true, detach: true, branch_id: branchIdApp })
       if (res.status === 200) {
         const productsSearchNew = res.data.data.map((e) => ({
           ...e.variants,
@@ -471,21 +471,22 @@ export default function ImportInventory() {
   }, [])
 
   useEffect(() => {
+    console.log(location.state)
     if (!location.state)
       form.setFieldsValue({ payment_status: 'PAID', complete_date: moment(new Date()) })
     else {
       setOrderCreate({
         order_details: location.state.products.map((e) => ({
           ...e.variant_info,
-          product_name: e.product_info.name,
-          quantity: e.quantity,
-          import_price: e.import_price,
+          product_name: e.product_info ? e.product_info.name : '',
+          quantity: e.quantity || 0,
+          import_price: e.import_price || 0,
           sumCost: +e.import_price * +e.quantity,
         })),
-        type_payment: location.state.payment_status,
-        sumCostPaid: location.state.total_cost,
-        deliveryCharges: location.state.fee_shipping,
-        moneyToBePaidByCustomer: location.state.final_cost,
+        type_payment: location.state.payment_status || '',
+        sumCostPaid: location.state.total_cost || 0,
+        deliveryCharges: location.state.fee_shipping || 0,
+        moneyToBePaidByCustomer: location.state.final_cost || 0,
       })
       setImportLocation(location.state.import_location ? { ...location.state.import_location } : {})
       form.setFieldsValue({
@@ -494,8 +495,8 @@ export default function ImportInventory() {
           ? location.state.import_location.branch_id
           : '',
         complete_date: location.state.complete_date ? moment(location.state.complete_date) : null,
-        moneyToBePaidByCustomer: location.state.final_cost,
-        paid: location.state.payment_amount,
+        moneyToBePaidByCustomer: location.state.final_cost || 0,
+        paid: location.state.payment_amount || 0,
       })
     }
   }, [])
@@ -530,7 +531,7 @@ export default function ImportInventory() {
               type="primary"
               onClick={() => _addOrEditImportInventoryOrder('COMPLETE')}
             >
-              {location.state ? 'Lưu' : 'Tạo đơn hàng'}
+              {location.state ? 'Lưu' : 'Tạo đơn hàng và hoàn tất'}
             </Button>
           </Space>
         </TitlePage>

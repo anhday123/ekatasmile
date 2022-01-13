@@ -34,7 +34,7 @@ import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
 //icons
-import { PlusCircleOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, InboxOutlined, LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 //apis
 import { getSuppliers } from 'apis/supplier'
@@ -325,10 +325,11 @@ export default function Product() {
     )
   }
 
-  const _deleteProducts = async () => {
+  const _deleteProduct = async (product_id) => {
+    console.log(product_id)
     try {
       setLoading(true)
-      const res = await deleteProducts({ product_id: selectedRowKeys })
+      const res = await deleteProducts({ product_id: [product_id] })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -378,10 +379,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-                const fileNames = image.split('/')
-                const fileName = fileNames[fileNames.length - 1]
-                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-              })
+              const fileNames = image.split('/')
+              const fileName = fileNames[fileNames.length - 1]
+              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+            })
             : []
         )
       }
@@ -709,7 +710,7 @@ export default function Product() {
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
           <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
-            <Permission permission={[PERMISSIONS.xoa_san_pham]}>
+            {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
               <Popconfirm
                 title="Bạn có muốn xoá các sản phẩm này?"
                 okText="Đồng ý"
@@ -720,7 +721,7 @@ export default function Product() {
                   Xoá
                 </Button>
               </Popconfirm>
-            </Permission>
+            </Permission> */}
             <Button
               style={{
                 display: Object.keys(paramsFilter).length <= 2 && 'none',
@@ -841,10 +842,26 @@ export default function Product() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <Switch
-                    defaultChecked={record.active}
-                    onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
-                  />
+                  <div>
+                    <Switch
+                      defaultChecked={record.active}
+                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
+                      style={{ marginRight: 15 }}
+                    />
+                    <Popconfirm
+                      onConfirm={() => _deleteProduct(record.product_id)}
+                      title="Bạn có muốn xóa sản phẩm này không?"
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                    >
+                      <Button
+                        style={{ marginTop: 17 }}
+                        type="primary"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  </div>
                 ),
               }
 
