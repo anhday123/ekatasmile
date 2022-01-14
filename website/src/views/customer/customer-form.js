@@ -76,7 +76,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const initForm = () => {
     form.setFieldsValue({
-      type: 'Vãng Lai',
+      // type: 'Vãng Lai',
       gender: 'male',
       birthday: moment(new Date('1991-01-01')),
       district: districts[0] && districts[0].district_name,
