@@ -66,21 +66,23 @@ module.exports._get = async (req, res, next) => {
                 from: 'Products',
                 let: { productIds: '$product_id' },
                 pipeline: [
-                    { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
+                    { $match: { $expr: { $in: ['$$productIds', '$product_id'] } } },
                     {
                         $lookup: {
                             from: 'Attributes',
                             let: { productId: '$product_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                            pipeline: [
+                                { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                                {
+                                    $lookup: {
+                                        from: 'Variants',
+                                        let: { productId: '$product_id' },
+                                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                                        as: 'variants',
+                                    },
+                                },
+                            ],
                             as: 'attributes',
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'Variants',
-                            let: { productId: '$product_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                            as: 'variants',
                         },
                     },
                 ],
