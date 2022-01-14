@@ -728,13 +728,9 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
-        const importAt = (() => {
-            if (_order.import_location && _order.import_location.branch_id) {
-                return 'Branchs';
-            }
-            return 'Stores';
-        })();
-        let importLocation = await client.db(req.user.database).collection(importAt).findOne(_order.import_location);
+        console.log(_order.import_location);
+        let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
+        console.log(importLocation);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
