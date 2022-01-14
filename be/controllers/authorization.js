@@ -131,6 +131,7 @@ module.exports._register = async (req, res, next) => {
             company_email: req.body.company_email || '',
             company_phone: req.body.company_phone || '',
             company_website: req.body.company_website || '',
+            company_logo: req.body.company_logo || '',
             company_address: req.body.company_address || '',
             company_district: req.body.company_district || '',
             company_province: req.body.company_province || '',

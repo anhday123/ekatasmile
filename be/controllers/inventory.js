@@ -728,9 +728,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
-        console.log(_order.import_location);
         let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
-        console.log(importLocation);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
@@ -779,9 +777,10 @@ module.exports._updateImportOrder = async (req, res, next) => {
             return result;
         })();
         _order = {
-            business_id: Number(_order.business_id),
             order_id: _order.order_id,
             code: _order.code,
+            import_order_id: _order.import_order_id,
+            import_code: _order.import_code,
             import_location: _order.import_location,
             import_location_info: importLocation,
             products: _order.products,
@@ -867,7 +866,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             });
             let _inventories = {};
             inventories.map((eInventory) => {
-                _inventories[`${eInventory.product_id}-${eInventory.variant_id}-${eInventory.price_id}`] = eInventory;
+                _inventories[`${eInventory.product_id}-${eInventory.variant_id}`] = eInventory;
             });
             let insertPrices = [];
             let insertLocations = [];
@@ -924,14 +923,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     active: true,
                 };
                 insertLocations.push(_location);
-                inventory_id++;
-                let _oldInventory = {
-                    ..._inventories[
-                        `${eProduct.product_id}-${eProduct.variant_id}-${
-                            _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id
-                        }`
-                    ],
-                };
+                let _oldInventory = _inventories[`${eProduct.product_id}-${eProduct.variant_id}`];
                 let _inventory = (() => {
                     inventory_id++;
                     if (!_oldInventory) {
@@ -939,16 +931,16 @@ module.exports._updateImportOrder = async (req, res, next) => {
                             inventory_id: inventory_id,
                             product_id: eProduct.product_id,
                             variant_id: eProduct.variant_id,
-                            branch_id: eProduct.branch_id,
+                            branch_id: _location.branch_id,
                             type: 'IMPORT',
                             begin_quantity: 0,
                             begin_price: 0,
                             import_quantity: eProduct.quantity,
-                            import_price: eProduct.quantity * eProduct.price,
+                            import_price: eProduct.quantity * eProduct.import_price,
                             export_quantity: 0,
                             export_price: 0,
                             end_quantity: eProduct.quantity,
-                            end_price: eProduct.quantity * eProduct.price,
+                            end_price: eProduct.quantity * eProduct.import_price,
                             create_date: moment().tz(TIMEZONE).format(),
                             creator_id: Number(req.user.user_id),
                             is_check: false,
@@ -956,21 +948,20 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     }
                     _oldInventory.is_check = true;
                     updateInventories.push(_oldInventory);
-                    console.log(`asd`);
                     return {
                         inventory_id: inventory_id,
                         product_id: eProduct.product_id,
                         variant_id: eProduct.variant_id,
-                        branch_id: eProduct.branch_id,
+                        branch_id: _location.branch_id,
                         type: 'IMPORT',
                         begin_quantity: _oldInventory.end_quantity,
                         begin_price: _oldInventory.end_price,
                         import_quantity: eProduct.quantity,
-                        import_price: eProduct.quantity * eProduct.price,
+                        import_price: eProduct.quantity * eProduct.import_price,
                         export_quantity: 0,
                         export_price: 0,
                         end_quantity: _oldInventory.end_quantity + eProduct.quantity,
-                        end_price: _oldInventory.end_price + eProduct.quantity * eProduct.price,
+                        end_price: _oldInventory.end_price + eProduct.quantity * eProduct.import_price,
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: Number(req.user.user_id),
                         is_check: false,

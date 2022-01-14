@@ -380,8 +380,8 @@ module.exports._update = async (req, res, next) => {
             company_email: _business.company_email,
             company_phone: _business.company_phone,
             company_fax: _business.company_fax,
-            
             company_website: '',
+            company_logo: '',
             company_address: '',
             company_district: '',
             company_province: '',
