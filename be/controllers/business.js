@@ -359,6 +359,7 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
+        req.params.business_id = Number(req.params.business_id);
         let business = await client.db(SDB).collection('Business').findOne(req.params);
         if (!business) {
             throw new Error(`400: Doanh nghiệp không tồn tại!`);
@@ -395,7 +396,7 @@ module.exports._update = async (req, res, next) => {
             updater_id: 1,
             active: true,
         };
-        req['body'] = _user;
+        req['body'] = _business;
         await businessService._update(req, res, next);
     } catch (err) {
         next(err);

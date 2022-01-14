@@ -175,101 +175,25 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
     try {
-        await client.db(req.user.database).collection(`Users`).updateOne(req.params, { $set: req.body });
-        delete req._update.password;
+        await client.db(SDB).collection(`Business`).updateOne(req.params, { $set: req.body });
         try {
             let _action = {
                 business_id: req.user.business_id,
                 type: 'Cập nhật',
-                properties: 'Tài khoản',
-                name: 'Cập nhật tài khoản',
+                properties: 'Doanh nghiệp',
+                name: 'Cập nhật doanh nghiệp',
                 data: req.body,
                 performer_id: req.user.user_id,
                 date: moment().tz(TIMEZONE).format(),
                 slug_type: 'capnhat',
-                slug_properties: 'taikhoan',
-                name: 'capnhattaikhoan',
+                slug_properties: 'doanhnghiep',
+                name: 'capnhatdoanhnghiep',
             };
             await client.db(req.user.database).collection(`Actions`).insertOne(_action);
         } catch (err) {
             console.log(err);
         }
-        if (req.body.user_id == req.body.business_id) {
-            await client
-                .db(req.user.database)
-                .collection('Users')
-                .updateMany(
-                    {
-                        business_id: Number(req.body.user_id),
-                    },
-                    {
-                        $set: {
-                            price_recipe: req.body.price_recipe,
-                            company_name: req.body.company_name,
-                            company_website: req.body.company_website,
-                        },
-                    }
-                );
-        }
-        let [user] = await client
-            .db(req.user.database)
-            .collection(`Users`)
-            .aggregate([
-                { $match: { user_id: Number(req.user.user_id) } },
-                {
-                    $lookup: {
-                        from: 'Roles',
-                        localField: 'role_id',
-                        foreignField: 'role_id',
-                        as: '_role',
-                    },
-                },
-                { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
-                        from: 'Branchs',
-                        localField: 'branch_id',
-                        foreignField: 'branch_id',
-                        as: '_branch',
-                    },
-                },
-                { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
-                {
-                    $lookup: {
-                        from: 'Stores',
-                        localField: 'store_id',
-                        foreignField: 'store_id',
-                        as: '_store',
-                    },
-                },
-                { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
-                {
-                    $project: {
-                        slug_name: 0,
-                        password: 0,
-                        slug_address: 0,
-                        slug_district: 0,
-                        slug_province: 0,
-                        '_role.slug_name': 0,
-                        '_branch.slug_name': 0,
-                        '_branch.slug_warehouse_type': 0,
-                        '_branch.slug_address': 0,
-                        '_branch.slug_district': 0,
-                        '_branch.slug_province': 0,
-                        '_store.slug_name': 0,
-                        '_store.slug_address': 0,
-                        '_store.slug_district': 0,
-                        '_store.slug_province': 0,
-                    },
-                },
-            ])
-            .toArray();
-        delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(user, 24 * 60 * 60),
-            jwt.createToken(user, 30 * 24 * 60 * 60),
-        ]);
-        res.send({ success: true, data: req.body, accessToken, refreshToken });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
