@@ -66,7 +66,7 @@ module.exports._get = async (req, res, next) => {
                 from: 'Products',
                 let: { productIds: '$product_id' },
                 pipeline: [
-                    { $match: { $expr: { $in: ['$$productIds', '$product_id'] } } },
+                    { $match: { $expr: { $in: ['$product_id', '$$productIds'] } } },
                     {
                         $lookup: {
                             from: 'Attributes',
