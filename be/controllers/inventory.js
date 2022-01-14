@@ -694,18 +694,16 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     });
                     _orders[eRow['maphieunhap']].total_quantity += eRow['soluongnhap'];
                     _orders[eRow['maphieunhap']].total_cost += eRow['gianhap'] * eRow['soluongnhap'];
-                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['thue(vnd)']];
-                    _orders[eRow['maphieunhap']].total_discount = eRow['chietkhau(vnd)'];
-                    _orders[eRow['maphieunhap']].service_fee = eRow['chiphidichvu'];
-                    _orders[eRow['maphieunhap']].fee_shipping = eRow['phivanchuyen'];
-                    _orders[eRow['maphieunhap']].final_cost += eRow['tongcong(vnd)'];
-                    _orders[eRow['maphieunhap']].note += eRow['ghichu'];
+                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['thue(vnd)']] || 0;
+                    _orders[eRow['maphieunhap']].total_discount = eRow['chietkhau(vnd)'] || 0;
+                    _orders[eRow['maphieunhap']].service_fee = eRow['chiphidichvu'] || 0;
+                    _orders[eRow['maphieunhap']].fee_shipping = eRow['phivanchuyen'] || 0;
+                    _orders[eRow['maphieunhap']].final_cost += eRow['tongcong(vnd)'] || 0;
+                    _orders[eRow['maphieunhap']].note += eRow['ghichu'] || '';
                 }
             }
         });
         let orders = Object.values(_orders);
-        console.log(orders);
-        return;
         let insert = await client.db(req.user.database).collection('ImportOrders').insertMany(orders);
         if (!insert.insertedIds) {
             throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
