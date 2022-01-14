@@ -555,22 +555,35 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         let productSkus = [];
         let variantSkus = [];
         let branchSlug = [];
+
         rows = rows.map((eRow) => {
             let _row = {};
+            let checkFee = false;
+            let checkDiscount = false;
             for (let i in eRow) {
-                _row[String(removeUnicode(i, true)).toLowerCase()] = eRow[i];
+                let field = String(removeUnicode(i, true))
+                    .replace(/\(\*\)/g, '')
+                    .toLowerCase();
+                if (field == 'ngaynhaphang') {
+                    checkFee = true;
+                }
+                if (field == 'thue(%)') {
+                    checkDiscount = true;
+                }
+                _row[field] = eRow[i];
             }
             if (eRow['maphieunhap']) {
-            
             }
+
             productSkus.push(eRow['masanpham']);
             variantSkus.push(eRow['maphienban']);
-            if (eRow['tennoinhap']) {
-                eRow['_tennoinhap'] = removeUnicode(eRow['tennoinhap']).toLowerCase();
-                branchSlug.push(eRow['_tennoinhap']);
+            if (_row['tennoinhap']) {
+                _row['_tennoinhap'] = removeUnicode(_row['tennoinhap'], true).toLowerCase();
+                branchSlug.push(_row['_tennoinhap']);
             }
             return _row;
         });
+
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
         branchSlug = [...new Set(branchSlug)];
@@ -620,27 +633,19 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     import_order_id: order_id,
                     import_code: eRow['maphieunhap'],
                     import_location: (() => {
-                        if (e['noinhaphang'] == 'BRANCH') {
-                            return { branch_id: _branchs[e['tennoinhap']].branch_id };
+                        if (eRow['_tennoinhap']) {
+                            if (_branches[eRow['_tenoinhap']]) {
+                                return { branch_id: branches[eRow['_tennoinhap']].branch_id };
+                            }
                         }
-                        if (e['noinhaphang'] == 'STORE') {
-                            return { store_id: _stores[e['tennoinhap']].store_id };
-                        }
-                        return '';
-                    })(),
-                    import_location_info: (() => {
-                        if (e['noinhaphang'] == 'BRANCH') {
-                            return _branchs[e['tennoinhap']];
-                        }
-                        if (e['noinhaphang'] == 'STORE') {
-                            return _stores[e['tennoinhap']];
-                        }
-                        return {};
+                        throw new Error('400: Nơi nhập hàng không tồn tại!');
                     })(),
                     products: req.body.products || [],
-                    total_cost: 0,
-                    final_cost: 0,
                     total_quantity: 0,
+                    total_cost: 0,
+                    total_tax: 0,
+                    total_discount: 0,
+                    final_cost: 0,
                     // DRAFT - VERIFY - COMPLETE - CANCEL
                     status: 'DRAFT',
                     verify_date: '',
@@ -653,18 +658,42 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     active: true,
                 };
             }
-            if (_orders[e['maphieunhap']]) {
-                _orders[e['maphieunhap']].products.push({
-                    product_id: _products[e['masanpham']].product_id,
-                    variant_id: _variants[e['maphienban']].variant_id,
-                    import_price: e['gianhap'],
-                    quantity: e['soluongnhap'],
-                    product_info: _products[e['masanpham']],
-                    variant_info: _variants[e['maphienban']],
-                });
-                _orders[e['maphieunhap']].total_cost += e['gianhap'] * e['soluongnhap'];
-                _orders[e['maphieunhap']].final_cost += e['gianhap'] * e['soluongnhap'];
-                _orders[e['maphieunhap']].total_quantity += e['soluongnhap'];
+            if (_orders[eRow['maphieunhap']]) {
+                if (eRow['masanpham'] && eRow['maphienban']) {
+                    _orders[eRow['maphieunhap']].products.push({
+                        product_id: (() => {
+                            if (_products[eRow['masanpham']]) {
+                                return _products[eRow['masanpham']].product_id;
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} không tồn tại!`);
+                        })(),
+                        variant_id: (() => {
+                            if (_variants[eRow['maphienban']]) {
+                                return _variants[eRow['maphienban']].variant_id;
+                            }
+                            throw new Error(`400: Phiên bản ${eRow['maphienban']} không tồn tại!`);
+                        })(),
+                        import_price: (() => {
+                            if (eRow['gianhap']) {
+                                return eRow['gianhap'];
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có giá nhập hàng!`);
+                        })(),
+                        quantity: (() => {
+                            if (eRow['soluongnhap']) {
+                                return eRow['soluongnhap'];
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có số lượng nhập!`);
+                        })(),
+                        product_info: _products[eRow['masanpham']],
+                        variant_info: _variants[eRow['maphienban']],
+                    });
+                    _orders[eRow['maphieunhap']].total_quantity += eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].total_cost += eRow['gianhap'] * eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['maphieunhap']].total_cost * eRow['thue(%)'];
+                    _orders[eRow['maphieunhap']].total_discount += eRow['gianhap'] * eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].final_cost += eRow['gianhap'] * eRow['soluongnhap'];
+                }
             }
         });
         let orders = Object.values(_orders);
