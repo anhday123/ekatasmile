@@ -64,7 +64,4 @@ if ($host = vdropship.vn) {
 
 https://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@github.com/viesoftware/System_Admin_Order
 
-
-
-
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt sources.list.d/docker.list > /dev/null
