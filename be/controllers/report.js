@@ -98,14 +98,14 @@ module.exports._getIOIReport = async (req, res, next) => {
                 $group: {
                     _id: { product_id: '$product_id' },
                     product_id: { $first: '$product_id' },
-                    begin_quantity: { $sum: '$begin_quantity' },
-                    begin_price: { $sum: '$begin_price' },
+                    begin_quantity: { $first: '$begin_quantity' },
+                    begin_price: { $first: '$begin_price' },
                     import_quantity: { $sum: '$import_quantity' },
                     import_price: { $sum: '$import_price' },
                     export_quantity: { $sum: '$export_quantity' },
                     export_price: { $sum: '$export_price' },
-                    end_quantity: { $sum: '$end_quantity' },
-                    end_price: { $sum: '$end_price' },
+                    end_quantity: { $last: '$end_quantity' },
+                    end_price: { $last: '$end_price' },
                 },
             });
         }
@@ -115,14 +115,14 @@ module.exports._getIOIReport = async (req, res, next) => {
                     _id: { variant_id: '$variant_id' },
                     product_id: { $first: '$product_id' },
                     variant_id: { $first: '$variant_id' },
-                    begin_quantity: { $sum: '$begin_quantity' },
-                    begin_price: { $sum: '$begin_price' },
+                    begin_quantity: { $first: '$begin_quantity' },
+                    begin_price: { $first: '$begin_price' },
                     import_quantity: { $sum: '$import_quantity' },
                     import_price: { $sum: '$import_price' },
                     export_quantity: { $sum: '$export_quantity' },
                     export_price: { $sum: '$export_price' },
-                    end_quantity: { $sum: '$end_quantity' },
-                    end_price: { $sum: '$end_price' },
+                    end_quantity: { $last: '$end_quantity' },
+                    end_price: { $last: '$end_price' },
                 },
             });
         }

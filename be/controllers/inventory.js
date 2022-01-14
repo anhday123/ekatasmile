@@ -258,7 +258,7 @@ module.exports._createImportOrder = async (req, res, next) => {
         });
         let payment_amount = (() => {
             let result = 0;
-            if (req.body.payment_info && Array.isArray(req.body.payment_info) && req.body.payment_info.length > 0) {
+            if (Array.isArray(req.body.payment_info) && req.body.payment_info.length > 0) {
                 req.body.payment_info = req.body.payment_info.map((payment) => {
                     result += payment.paid_amount || 0;
                     payment['payment_date'] = moment().tz(TIMEZONE).format();
@@ -277,7 +277,8 @@ module.exports._createImportOrder = async (req, res, next) => {
             total_cost: req.body.total_cost || total_cost,
             total_tax: req.body.total_tax || 0,
             total_discount: req.body.total_discount || total_discount,
-            fee_shipping: req.body.fee_shipping,
+            service_fee: req.body.service_fee || 0,
+            fee_shipping: req.body.fee_shipping || 0,
             final_cost: req.body.final_cost || final_cost,
             note: req.body.note || '',
             files: req.body.files,
@@ -555,35 +556,22 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         let productSkus = [];
         let variantSkus = [];
         let branchSlug = [];
-
         rows = rows.map((eRow) => {
             let _row = {};
-            let checkFee = false;
-            let checkDiscount = false;
             for (let i in eRow) {
                 let field = String(removeUnicode(i, true))
                     .replace(/\(\*\)/g, '')
                     .toLowerCase();
-                if (field == 'ngaynhaphang') {
-                    checkFee = true;
-                }
-                if (field == 'thue(%)') {
-                    checkDiscount = true;
-                }
                 _row[field] = eRow[i];
             }
-            if (eRow['maphieunhap']) {
-            }
-
-            productSkus.push(eRow['masanpham']);
-            variantSkus.push(eRow['maphienban']);
+            productSkus.push(_row['masanpham']);
+            variantSkus.push(_row['maphienban']);
             if (_row['tennoinhap']) {
                 _row['_tennoinhap'] = removeUnicode(_row['tennoinhap'], true).toLowerCase();
                 branchSlug.push(_row['_tennoinhap']);
             }
             return _row;
         });
-
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
         branchSlug = [...new Set(branchSlug)];
@@ -634,8 +622,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     import_code: eRow['maphieunhap'],
                     import_location: (() => {
                         if (eRow['_tennoinhap']) {
-                            if (_branches[eRow['_tenoinhap']]) {
-                                return { branch_id: branches[eRow['_tennoinhap']].branch_id };
+                            if (_branches[eRow['_tennoinhap']]) {
+                                return { branch_id: _branches[eRow['_tennoinhap']].branch_id };
                             }
                         }
                         throw new Error('400: Nơi nhập hàng không tồn tại!');
@@ -645,17 +633,33 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     total_cost: 0,
                     total_tax: 0,
                     total_discount: 0,
+                    service_fee: 0,
+                    fee_shipping: 0,
                     final_cost: 0,
-                    // DRAFT - VERIFY - COMPLETE - CANCEL
+                    note: '',
+                    files: [],
+                    tags: [],
+                    // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
                     status: 'DRAFT',
+                    payment_info: [],
+                    payment_amount: '',
+                    // UNPAID - PAYING - PAID - REFUND
+                    payment_status: 'UNPAID',
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
                     verify_date: '',
                     verifier_id: '',
+                    delivery_date: '',
+                    deliverer_id: '',
                     complete_date: '',
                     completer_id: '',
-                    create_date: moment().tz(TIMEZONE).format(),
+                    cancel_date: '',
+                    canceler_id: '',
+                    order_creator_id: req.user.user_id,
+                    receiver_id: '',
                     last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
                     active: true,
+                    slug_tags: [],
                 };
             }
             if (_orders[eRow['maphieunhap']]) {
@@ -690,13 +694,18 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     });
                     _orders[eRow['maphieunhap']].total_quantity += eRow['soluongnhap'];
                     _orders[eRow['maphieunhap']].total_cost += eRow['gianhap'] * eRow['soluongnhap'];
-                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['maphieunhap']].total_cost * eRow['thue(%)'];
-                    _orders[eRow['maphieunhap']].total_discount += eRow['gianhap'] * eRow['soluongnhap'];
-                    _orders[eRow['maphieunhap']].final_cost += eRow['gianhap'] * eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['thue(vnd)']];
+                    _orders[eRow['maphieunhap']].total_discount = eRow['chietkhau(vnd)'];
+                    _orders[eRow['maphieunhap']].service_fee = eRow['chiphidichvu'];
+                    _orders[eRow['maphieunhap']].fee_shipping = eRow['phivanchuyen'];
+                    _orders[eRow['maphieunhap']].final_cost += eRow['tongcong(vnd)'];
+                    _orders[eRow['maphieunhap']].note += eRow['ghichu'];
                 }
             }
         });
         let orders = Object.values(_orders);
+        console.log(orders);
+        return;
         let insert = await client.db(req.user.database).collection('ImportOrders').insertMany(orders);
         if (!insert.insertedIds) {
             throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
