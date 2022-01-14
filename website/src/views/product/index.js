@@ -618,117 +618,6 @@ export default function Product() {
               ))}
             </TreeSelect>
           </Col>
-
-          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
-            <Select
-              size="large"
-              open={isOpenSelect}
-              onBlur={() => {
-                if (isOpenSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!isOpenSelect) toggleOpenSelect()
-              }}
-              allowClear
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Lọc theo thời gian nhập kho"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={valueTime}
-              onChange={async (value) => {
-                setValueTime(value)
-
-                paramsFilter.page = 1
-
-                //xoa params search date hien tai
-                const p = Object.keys(valueDateTimeSearch)
-                if (p.length) delete paramsFilter[p[0]]
-
-                setValueDateSearch(null)
-                delete paramsFilter.from_date
-                delete paramsFilter.to_date
-
-                if (isOpenSelect) toggleOpenSelect()
-
-                if (value) {
-                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-
-                  setParamsFilter({ ...paramsFilter, ...searchDate })
-                  setValueDateTimeSearch({ ...searchDate })
-                } else {
-                  setParamsFilter({ ...paramsFilter })
-                  setValueDateTimeSearch({})
-                }
-              }}
-              dropdownRender={(menu) => (
-                <>
-                  <RangePicker
-                    onFocus={() => {
-                      if (!isOpenSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (isOpenSelect) toggleOpenSelect()
-                    }}
-                    value={valueDateSearch}
-                    onChange={(dates, dateStrings) => {
-                      //khi search hoac filter thi reset page ve 1
-                      paramsFilter.page = 1
-
-                      if (isOpenSelect) toggleOpenSelect()
-
-                      //nếu search date thì xoá các params date
-                      delete paramsFilter.to_day
-                      delete paramsFilter.yesterday
-                      delete paramsFilter.this_week
-                      delete paramsFilter.last_week
-                      delete paramsFilter.last_month
-                      delete paramsFilter.this_month
-                      delete paramsFilter.this_year
-                      delete paramsFilter.last_year
-
-                      //Kiểm tra xem date có được chọn ko
-                      //Nếu ko thì thoát khỏi hàm, tránh cash app
-                      //và get danh sách order
-                      if (!dateStrings[0] && !dateStrings[1]) {
-                        delete paramsFilter.from_date
-                        delete paramsFilter.to_date
-
-                        setValueDateSearch(null)
-                        setValueTime()
-                      } else {
-                        const dateFirst = dateStrings[0]
-                        const dateLast = dateStrings[1]
-                        setValueDateSearch(dates)
-                        setValueTime(`${dateFirst} -> ${dateLast}`)
-
-                        dateFirst.replace(/-/g, '/')
-                        dateLast.replace(/-/g, '/')
-
-                        paramsFilter.from_date = dateFirst
-                        paramsFilter.to_date = dateLast
-                      }
-
-                      setParamsFilter({ ...paramsFilter })
-                    }}
-                    style={{ width: '100%' }}
-                  />
-                  {menu}
-                </>
-              )}
-            >
-              <Option value="today">Hôm nay</Option>
-              <Option value="yesterday">Hôm qua</Option>
-              <Option value="this_week">Tuần này</Option>
-              <Option value="last_week">Tuần trước</Option>
-              <Option value="this_month">Tháng này</Option>
-              <Option value="last_month">Tháng trước</Option>
-              <Option value="this_year">Năm này</Option>
-              <Option value="last_year">Năm trước</Option>
-            </Select>
-          </Col>
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
@@ -873,12 +762,16 @@ export default function Product() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <div>
-                    <Switch
-                      defaultChecked={record.active}
-                      onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
-                      style={{ marginRight: 15 }}
-                    />
+                  <Space size="middle">
+                    <div>
+                      <div>Mở bán</div>
+                      <Switch
+                        defaultChecked={record.active}
+                        onClick={() =>
+                          _updateProduct({ active: !record.active }, record.product_id)
+                        }
+                      />
+                    </div>
                     <Popconfirm
                       onConfirm={() => _deleteProduct(record.product_id)}
                       title="Bạn có muốn xóa sản phẩm này không?"
@@ -892,7 +785,7 @@ export default function Product() {
                         icon={<DeleteOutlined />}
                       />
                     </Popconfirm>
-                  </div>
+                  </Space>
                 ),
               }
 

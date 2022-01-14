@@ -70,6 +70,7 @@ export default function ProductAdd() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [isRenderFirst, setIsRenderFirst] = useState(false)
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
   const [idsWarranty, setIdsWarranty] = useState([])
@@ -108,6 +109,7 @@ export default function ProductAdd() {
     let variantsNew = []
 
     const dataForm = form.getFieldsValue()
+    console.log(dataForm)
 
     const initVariant = {
       image: [],
@@ -121,7 +123,9 @@ export default function ProductAdd() {
       if (attributes.length === 1) {
         attributes[0].values.map((value) => {
           variantsNew.push({
-            title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
+            title: `${(
+              dataForm.name || ''
+            ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
             sku: `${
               valueGeneratedSku || ''
             }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
@@ -134,7 +138,9 @@ export default function ProductAdd() {
         if (!attributes[0].values.length)
           attributes[1].values.map((value) => {
             variantsNew.push({
-              title: `${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
+              title: `${(
+                dataForm.name || ''
+              ).toUpperCase()} ${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
               }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
@@ -146,7 +152,9 @@ export default function ProductAdd() {
         if (!attributes[1].values.length)
           attributes[0].values.map((value) => {
             variantsNew.push({
-              title: `${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
+              title: `${(
+                dataForm.name || ''
+              ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
               }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
@@ -158,7 +166,9 @@ export default function ProductAdd() {
           attributes[0].values.map((v0) => {
             attributes[1].values.map((v1) => {
               variantsNew.push({
-                title: `${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
+                title: `${(
+                  dataForm.name || ''
+                ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
                 sku: `${
                   valueGeneratedSku || ''
                 }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
@@ -875,6 +885,8 @@ export default function ProductAdd() {
         setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
       }
     }
+    await delay(100)
+    setIsRenderFirst(true)
   }
 
   useEffect(() => {
@@ -893,7 +905,7 @@ export default function ProductAdd() {
   }, [])
 
   useEffect(() => {
-    addValueVariant()
+    if (isRenderFirst) addValueVariant()
   }, [attributes])
 
   //update product

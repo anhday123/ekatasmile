@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import styles from './setting.module.scss'
 import { copyText } from 'utils'
-import { VERSION_APP } from 'consts'
+import { ACTION, VERSION_APP } from 'consts'
 import jwt_decode from 'jwt-decode'
+import { useDispatch, useSelector } from 'react-redux'
 
 //antd
-import { Upload, Tabs, Table, Button, Row, Popconfirm, Modal, Input } from 'antd'
+import { Upload, Tabs, Table, Button, Row, Popconfirm, Modal, Input, notification } from 'antd'
 
 //icons
 import { LoadingOutlined, PlusOutlined, CopyOutlined, PlusCircleOutlined } from '@ant-design/icons'
 
 //apis
 import { uploadFile } from 'apis/upload'
-import { getBusinesses } from 'apis/app'
+import { getBusinesses, updateBusinesses } from 'apis/app'
 
 export default function Setting() {
+  const dispatch = useDispatch()
+  const setting = useSelector((state) => state.setting)
+
   const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState('')
-
-  const [business, setBusiness] = useState(null)
 
   const columnsLanguage = [
     {
@@ -54,6 +55,17 @@ export default function Setting() {
       file: 'File' + 1,
     })
 
+  const _uploadLogo = async (file) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const company_logo = await uploadFile(file)
+      if (company_logo) _updateSettingApp({ company_logo })
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const ModalImportFile = () => {
     const [visible, setVisible] = useState(false)
 
@@ -78,19 +90,46 @@ export default function Setting() {
     )
   }
 
+  const _updateSettingApp = async (body) => {
+    try {
+      setLoading(true)
+      const res = await updateBusinesses(body, setting.system_user_id)
+      console.log(res)
+      if (res.status === 200) {
+        document.querySelector("link[rel*='icon']").href = body.company_logo || ''
+        _getBusiness()
+        notification.success({ message: 'Cập nhật thành công!' })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+        })
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
   const _getBusiness = async () => {
     try {
       setLoading(true)
       const res = await getBusinesses({ _business: true })
-      if (res.status === 200) {
-        const dataUser = jwt_decode(localStorage.getItem('accessToken'))
-        console.log(dataUser)
-      }
-      console.log(res)
+      if (res.status === 200)
+        if (res.data.data)
+          if (localStorage.getItem('accessToken')) {
+            const dataUser = jwt_decode(localStorage.getItem('accessToken'))
+            if (dataUser && dataUser.data) {
+              const business = res.data.data.find(
+                (e) =>
+                  e._business && e._business.business_name === dataUser.data._business.business_name
+              )
+              if (business) dispatch({ type: 'GET_SETTING_APP', data: business._business || {} })
+            }
+          }
       setLoading(false)
     } catch (error) {
-      console.log()
       setLoading(false)
+      console.log(error)
     }
   }
 
@@ -135,19 +174,17 @@ export default function Setting() {
             className="upload-category-image"
             showUploadList={false}
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            data={async (file) => {
-              setLoading(true)
-              const url = await uploadFile(file)
-              setImageUrl(url)
-              setLoading(false)
+            onChange={(info) => {
+              if (info.file.status === 'uploading') info.file.status = 'done'
             }}
+            data={_uploadLogo}
           >
-            {imageUrl ? (
-              <img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+            {setting && setting.company_logo ? (
+              <img src={setting.company_logo} alt="avatar" style={{ width: '100%' }} />
             ) : (
               <div>
                 {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                <div style={{ marginTop: 8 }}>Tải lên</div>
+                <div style={{ marginTop: 8 }}>Logo</div>
               </div>
             )}
           </Upload>

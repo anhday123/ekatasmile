@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import { ACTION, ROUTES, PERMISSIONS } from 'consts'
+import { ACTION, ROUTES, PERMISSIONS, LOGO_DEFAULT } from 'consts'
 import { Link, useLocation, useRouteMatch } from 'react-router-dom'
 import { Bell, Plus } from 'utils/icon'
 import jwt_decode from 'jwt-decode'
@@ -66,6 +66,7 @@ const BaseLayout = (props) => {
   const login = useSelector((state) => state.login)
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const triggerReloadBranch = useSelector((state) => state.branch.trigger)
+  const setting = useSelector((state) => state.setting)
 
   const dataUser = localStorage.getItem('accessToken')
     ? jwt_decode(localStorage.getItem('accessToken'))
@@ -421,7 +422,7 @@ const BaseLayout = (props) => {
           }}
         >
           <img
-            src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
+            src={setting && setting.company_logo ? setting.company_logo : LOGO_DEFAULT}
             style={{ width: '6rem', objectFit: 'contain' }}
             alt=""
           />

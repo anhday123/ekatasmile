@@ -3,5 +3,6 @@ import login from './login.js'
 import store from './store.js'
 import branch from './branch.js'
 import invoice from './invoice.js'
-const rootReducers = combineReducers({ login, store, branch, invoice })
+import setting from './setting.js'
+const rootReducers = combineReducers({ login, store, branch, invoice, setting })
 export default rootReducers

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { ACTION } from './consts'
 import { clearBrowserCache } from 'utils'
 import jwt_decode from 'jwt-decode'
@@ -11,10 +11,39 @@ import LoadingCheckDomain from 'views/loading'
 
 //apis
 import { checkDomain } from 'apis/app'
+import { getBusinesses } from 'apis/business'
 
 function App() {
   const dispatch = useDispatch()
+  const dataUser = useSelector((state) => state.login.dataUser)
+
   const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
+
+  const getBusiness = async () => {
+    try {
+      const res = await getBusinesses({ _business: true })
+      if (res.status === 200)
+        if (res.data.data)
+          if (localStorage.getItem('accessToken')) {
+            const dataUser = jwt_decode(localStorage.getItem('accessToken'))
+            if (dataUser && dataUser.data) {
+              const business = res.data.data.find(
+                (e) =>
+                  e._business && e._business.business_name === dataUser.data._business.business_name
+              )
+
+              if (business) {
+                document.querySelector("link[rel*='icon']").href = business._business
+                  ? business._business.company_logo
+                  : ''
+                dispatch({ type: 'GET_SETTING_APP', data: business._business || {} })
+              }
+            }
+          }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const checkSubdomain = async () => {
     const domain = window.location.href
@@ -44,19 +73,20 @@ function App() {
     setLoadingCheckDomain(false)
   }
 
-  useEffect(() => {
+  const checkLogin = () => {
     if (localStorage.getItem('accessToken')) {
-      dispatch({
-        type: ACTION.LOGIN,
-        data: { accessToken: localStorage.getItem('accessToken') },
-      })
-
+      dispatch({ type: ACTION.LOGIN, data: { accessToken: localStorage.getItem('accessToken') } })
       const dataUser = jwt_decode(localStorage.getItem('accessToken'))
       if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
     }
-  }, [])
+  }
 
   useEffect(() => {
+    getBusiness()
+  }, [dataUser])
+
+  useEffect(() => {
+    checkLogin()
     checkSubdomain()
     clearBrowserCache()
   }, [])
