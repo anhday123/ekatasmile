@@ -99,6 +99,13 @@ module.exports._create = async (req, res, next) => {
     }
 };
 
+module.exports._importFile = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports._update = async (req, res, next) => {
     try {
         req.params.customer_id = Number(req.params.customer_id);
@@ -217,7 +224,7 @@ module.exports._createType = async (req, res, next) => {
             .db(req.user.database)
             .collection('CustomerTypes')
             .findOne({ name: req.body.name });
-        if (!typeCustomer) {
+        if (typeCustomer) {
             throw new Error(`400: Nhóm khách hàng đã tồn tại!`);
         }
         let typeMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'CustomerTypes' });
