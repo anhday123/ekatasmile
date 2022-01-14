@@ -47,7 +47,7 @@ module.exports._get = async (req, res, next) => {
         });
         aggregateQuery.push({
             $lookup: {
-                from: 'Types',
+                from: 'CustomerTypes',
                 localField: 'customer_type_id',
                 foreignField: 'type_id',
                 as: 'customer_type_info',
