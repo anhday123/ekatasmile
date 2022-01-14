@@ -5,6 +5,8 @@ const DB = process.env.DATABASE;
 
 const customerService = require(`../services/customer`);
 
+const XLSX = require('xlsx');
+
 let removeUnicode = (text, removeSpace) => {
     /*
         string là chuỗi cần remove unicode
@@ -101,6 +103,139 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._importFile = async (req, res, next) => {
     try {
+        if (req.file == undefined) {
+            throw new Error('400: Vui lòng truyền file!');
+        }
+        let excelData = XLSX.read(req.file.buffer, {
+            type: 'buffer',
+            cellDates: true,
+        });
+        let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
+        let typeSlugs = [];
+        rows = rows.map((eRow) => {
+            let _row = {};
+            for (let i in eRow) {
+                let field = String(removeUnicode(i, true))
+                    .replace(/\(\*\)/g, '')
+                    .toLowerCase();
+                _row[field] = eRow[i];
+            }
+            if (_row['nhomkhachhang']) {
+                _row['_nhomkhachhang'] = removeUnicode(String(_row['nhomkhachhang']), true).toLowerCase();
+                typeSlugs.push(_row['_nhomkhachhang']);
+            }
+            return _row;
+        });
+        typeSlugs = [...new Set(typeSlugs)];
+        let [customerMaxId, typeMaxId] = await Promise.all([
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Customers' }),
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'CustomerTypes' }),
+        ]);
+        let customer_id = (() => {
+            if (customerMaxId && customerMaxId.value) {
+                return customerMaxId.value;
+            }
+            return 0;
+        })();
+        let type_id = (() => {
+            if (typeMaxId && typeMaxId.value) {
+                return typeMaxId.value;
+            }
+            return 0;
+        })();
+        let types = await client
+            .db(req.user.database)
+            .collection('CustomerTypes')
+            .find({ slug_name: { $in: typeSlugs } })
+            .toArray();
+        let _types = {};
+        types.map((eType) => {
+            _types[`${eType.slug_name}`] = eType;
+        });
+        insertCustomers = [];
+        insertTypes = [];
+        rows.map((eRow) => {
+            if (eRow['stt']) {
+                if (!_types[eRow['_nhomkhachhang']]) {
+                    type_id++;
+                    let _type = {
+                        type_id: type_id,
+                        code: String(type_id).padStart(6, '0'),
+                        name: eRow['nhomkhachhang'],
+                        priority: 100,
+                        description: '',
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_name: removeUnicode(String(eRow['nhomkhachhang']), true).toLowerCase(),
+                    };
+                    insertTypes.push(_type);
+                    _types[_type.slug_name] = _type;
+                }
+                customer_id++;
+                let _customer = {
+                    customer_id: customer_id,
+                    code: String(customer_id).padStart(6, '0'),
+                    phone: eRow['sodienthoai'],
+                    type_id: (() => {
+                        if (_types[eRow['_nhomkhachhang']]) {
+                            return _types[eRow['_nhomkhachhang']].type_id;
+                        }
+                        throw new Error(`400: Nhóm khách hàng ${eRow['nhomkhachhang']} không tồn tại!`);
+                    })(),
+                    first_name: eRow['hokhachhang'],
+                    last_name: eRow['tenkhachhang'],
+                    gender: eRow['gioitinh'],
+                    birthday: eRow['ngaysinh'],
+                    address: eRow['diachi'],
+                    district: eRow['quan/huyen'],
+                    province: eRow['tinh/thanhpho'],
+                    balance: {
+                        available: 0,
+                        debt: 0,
+                        freezing: 0,
+                    },
+                    point: eRow['diemtichluy'],
+                    used_point: eRow['diemdasudung'],
+                    order_quantity: eRow['donhangdamua'],
+                    order_total_cost: eRow['tongtieuphi'],
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
+                    active: true,
+                    slug_name: removeUnicode(
+                        String(eRow['hokhachhang'] || '' + eRow['tenkhachhang'] || ''),
+                        true
+                    ).toLowerCase(),
+                    slug_type: removeUnicode(String(eRow['_nhomkhachhang'] || ''), true).toLowerCase(),
+                    slug_gender: removeUnicode(String(eRow['gioitinh'] || ''), true).toLowerCase(),
+                    slug_address: removeUnicode(String(eRow['diachi'] || ''), true).toLowerCase(),
+                    slug_district: removeUnicode(String(eRow['quan/huyen'] || ''), true).toLowerCase(),
+                    slug_province: removeUnicode(String(eRow['tinh/thanhpho'] || ''), true).toLowerCase(),
+                };
+                insertCustomers.push(_customer);
+            }
+        });
+        await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'CustomerTypes' }, { $set: { name: 'CustomerTypes', value: type_id } }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: customer_id } }),
+        ]);
+        if (Array.isArray(insertTypes) && insertTypes.length > 0) {
+            await client.db(req.user.database).collection('CustomerTypes').insertMany(insertTypes);
+        }
+        if (Array.isArray(insertCustomers) && insertCustomers.length > 0) {
+            await client.db(req.user.database).collection('Customers').insertMany(insertCustomers);
+        }
+        res.send({ success: true, message: 'Thêm khách hàng thành công!' });
     } catch (err) {
         next(err);
     }
