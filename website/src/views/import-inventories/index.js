@@ -390,7 +390,7 @@ export default function ImportInventories() {
             upload={uploadOrdersImportInventory}
             reload={_getOrdersImportInventory}
             title="Nhập đơn hàng bằng file excel"
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/13/707a9b2d-ecf8-4ebf-b07f-271e188ce1b0/NhapKhoAO.xlsx"
           />
           <SettingColumns
             columns={columns}
@@ -555,6 +555,13 @@ export default function ImportInventories() {
           size="small"
           dataSource={ordersInventory}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -647,13 +654,16 @@ export default function ImportInventories() {
                   <ModalDownloadProducts
                     products={
                       record.products
-                        ? record.products.map((e) => ({
-                            ...e.product_info,
-                            quantity: e.quantity,
-                            files: record.files,
-                            tags: record.tags,
-                            note: record.note,
-                          }))
+                        ? record.products.map(
+                            (e) =>
+                              e && {
+                                ...e.product_info,
+                                quantity: e.quantity,
+                                files: record.files,
+                                tags: record.tags,
+                                note: record.note,
+                              }
+                          )
                         : []
                     }
                   />

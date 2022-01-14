@@ -34,7 +34,12 @@ import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
 //icons
-import { PlusCircleOutlined, InboxOutlined, LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
+import {
+  PlusCircleOutlined,
+  InboxOutlined,
+  LoadingOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons'
 
 //apis
 import { getSuppliers } from 'apis/supplier'
@@ -360,7 +365,7 @@ export default function Product() {
 
     const [loading, setLoading] = useState(false)
 
-    const _uploadFile = async (file) => {
+    const addFile = async (file) => {
       setLoading(true)
       const url = await uploadFile(file)
       setImages([...images, url])
@@ -373,16 +378,30 @@ export default function Product() {
       setLoading(false)
     }
 
+    const removeFile = (file) => {
+      const imagesNew = [...images]
+      const imagesViewNew = [...imagesView]
+
+      const indexImage = images.findIndex((url) => url === file.url)
+      const indexImageView = imagesView.findIndex((f) => f.url === file.url)
+
+      if (indexImage !== -1) imagesNew.splice(indexImage, 1)
+      if (indexImageView !== -1) imagesViewNew.splice(indexImageView, 1)
+
+      setImages([...imagesNew])
+      setImagesView([...imagesViewNew])
+    }
+
     useEffect(() => {
       if (visible) {
         setImages(record.image || [])
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-              const fileNames = image.split('/')
-              const fileName = fileNames[fileNames.length - 1]
-              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-            })
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
             : []
         )
       }
@@ -392,7 +411,11 @@ export default function Product() {
       <>
         <div onClick={toggle} className={styles['variant-image']}>
           {record.image && record.image.length ? (
-            <img src={record.image[0] || IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
+            <img
+              src={record.image[0] || IMAGE_DEFAULT}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           ) : (
             <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
           )}
@@ -431,7 +454,8 @@ export default function Product() {
           <Upload.Dragger
             fileList={imagesView}
             listType="picture"
-            data={_uploadFile}
+            data={addFile}
+            onRemove={removeFile}
             name="file"
             multiple
             onChange={(info) => {
@@ -779,6 +803,13 @@ export default function Product() {
             expandIconColumnIndex: -1,
           }}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+              }
             if (column.key === 'name-product')
               return {
                 ...column,

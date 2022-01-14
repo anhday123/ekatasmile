@@ -5,7 +5,7 @@ import { ROUTES } from 'consts'
 import { Link, useHistory } from 'react-router-dom'
 
 //components
-// import columnsStockAdjustments from './columns'
+import columnsStock from './columns'
 import SettingColumns from 'components/setting-columns'
 import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
@@ -44,40 +44,40 @@ export default function Reports() {
     setSupplierId()
   }
 
-  const columnsStock = [
-    {
-      title: 'Mã phiếu',
-      dataIndex: 'code',
-      render: (text, record, index) => {
-        console.log(text, record, index)
-        return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
-      },
-    },
-    {
-      title: 'Kho kiểm hàng',
-      dataIndex: 'warehouse',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'create_date',
-    },
-    {
-      title: 'Ngày kiểm',
-      dataIndex: 'check_date',
-    },
-    {
-      title: 'Nhân viên tạo',
-      dataIndex: 'creator',
-    },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-    },
-  ]
+  // const columnsStock = [
+  //   {
+  //     title: 'Mã phiếu',
+  //     dataIndex: 'code',
+  //     render: (text, record, index) => {
+  //       console.log(text, record, index)
+  //       return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
+  //     },
+  //   },
+  //   {
+  //     title: 'Kho kiểm hàng',
+  //     dataIndex: 'warehouse',
+  //   },
+  //   {
+  //     title: 'Trạng thái',
+  //     dataIndex: 'status',
+  //   },
+  //   {
+  //     title: 'Ngày tạo',
+  //     dataIndex: 'create_date',
+  //   },
+  //   {
+  //     title: 'Ngày kiểm',
+  //     dataIndex: 'check_date',
+  //   },
+  //   {
+  //     title: 'Nhân viên tạo',
+  //     dataIndex: 'creator',
+  //   },
+  //   {
+  //     title: 'Ghi chú',
+  //     dataIndex: 'note',
+  //   },
+  // ]
 
   const dataStockAdjustment = []
   for (let i = 0; i < 1; i++) {
@@ -179,6 +179,13 @@ export default function Reports() {
         size="small"
         dataSource={dataStockAdjustment}
         columns={columns.map((column) => {
+          if (column.key === 'stt')
+            return {
+              ...column,
+              width: 50,
+              render: (text, record, index) =>
+                (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+            }
           if (column.dataIndex === 'code')
             return {
               ...column,

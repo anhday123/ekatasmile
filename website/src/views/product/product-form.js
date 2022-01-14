@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 
-import { ACTION, ROUTES } from 'consts'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import { removeAccents } from 'utils'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,6 +12,8 @@ import delay from 'delay'
 //components
 import NotSupportMobile from 'components/not-support-mobile'
 import TitlePage from 'components/title-page'
+import SupplierForm from 'views/supplier/supplier-form'
+import Permission from 'components/permission'
 
 //antd
 import {
@@ -264,21 +266,18 @@ export default function ProductAdd() {
     }
 
     if (!isValidated) return
-
-    if (isProductHasVariants && variants.length < 2) {
+    console.log(variants)
+    if (isProductHasVariants && variants.length === 0) {
       notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
       return
     }
 
     //validated, prices
-    for (let i = 0; i < variants.length; ++i) {
+    for (let i = 0; i < variants.length; ++i)
       if (!variants[i].price) {
-        notification.error({
-          message: 'Vui lòng nhập giá bán trong thuộc tính!',
-        })
+        notification.error({ message: 'Vui lòng nhập giá bán trong thuộc tính!' })
         return
       }
-    }
 
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -970,8 +969,19 @@ export default function ProductAdd() {
                   </Checkbox>
                 </div>
               </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item label="Nhà cung cấp" name="supplier_id">
+              <Col
+                xs={24}
+                sm={24}
+                md={7}
+                lg={7}
+                xl={7}
+                style={{ display: 'flex', alignItems: 'flex-end' }}
+              >
+                <Form.Item
+                  label="Nhà cung cấp"
+                  name="supplier_id"
+                  style={{ marginRight: 10, width: '100%' }}
+                >
                   <Select
                     showSearch
                     filterOption={(input, option) =>
@@ -994,6 +1004,16 @@ export default function ProductAdd() {
                     })}
                   </Select>
                 </Form.Item>
+                <SupplierForm reloadData={_getSuppliers}>
+                  <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      style={{ marginBottom: 24 }}
+                    />
+                  </Permission>
+                </SupplierForm>
               </Col>
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
                 <Form.Item label="Nhóm sản phẩm" name="category_id">

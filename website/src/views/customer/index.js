@@ -27,6 +27,8 @@ import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
 import columnsCustomer from './columns'
 import TitlePage from 'components/title-page'
+import exportCustomers from 'components/ExportCSV/export'
+import { compare } from 'utils'
 
 //apis
 import { getCustomers, deleteCustomer } from 'apis/customer'
@@ -42,8 +44,6 @@ export default function Customer() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [tableLoading, setTableLoading] = useState(false)
 
-  const [visibleCustomer, setVisibleCustomer] = useState(false)
-  const toggleCustomer = () => setVisibleCustomer(!visibleCustomer)
   const [customers, setCustomers] = useState([])
 
   const [valueSearch, setValueSearch] = useState('')
@@ -63,8 +63,8 @@ export default function Customer() {
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
 
-      if (value) paramsFilter.name = value
-      else delete paramsFilter.name
+      if (value) paramsFilter[optionSearch] = value
+      else delete paramsFilter[optionSearch]
 
       setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
@@ -77,26 +77,57 @@ export default function Customer() {
   }
 
   const ModalCustomer = ({ children, record }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
     return (
       <>
-        <div onClick={toggleCustomer}>{children}</div>
+        <div onClick={toggle}>{children}</div>
         <Modal
           style={{ top: 20 }}
-          onCancel={toggleCustomer}
+          onCancel={toggle}
           width={800}
           footer={null}
           title={`${record ? 'Cập nhật' : 'Tạo'} khách hàng`}
-          visible={visibleCustomer}
+          visible={visible}
         >
           <CustomerForm
             record={record}
-            close={toggleCustomer}
+            close={toggle}
             text={record ? 'Lưu' : 'Tạo'}
             reload={_getCustomers}
           />
         </Modal>
       </>
     )
+  }
+
+  const _getCustomerToExport = async () => {
+    let dataExport = []
+    try {
+      setTableLoading(true)
+      const res = await getCustomers({ branch_id: branchIdApp })
+      console.log(res)
+      if (res.status === 200) {
+        dataExport = res.data.data.map((item, index) => ({
+          STT: index + 1,
+          'Mã khách hàng': item.code || '',
+          'Tên khách hàng': (item.first_name || '') + ' ' + (item.last_name || ''),
+          'Loại khách hàng': item.type || '',
+          'Liên hệ': item.phone || '',
+          'Tổng số đơn hàng': item.order_quantity || '',
+          'Điểm tích luỹ': item.point || '',
+          'Số điểm đã dùng': item.used_point || '',
+          'Tổng chi tiêu tại cửa hàng': item.order_total_cost || '',
+        }))
+      }
+      setTableLoading(false)
+      exportCustomers(dataExport, 'Danh sách khách hàng')
+    } catch (e) {
+      console.log(e)
+      setTableLoading(false)
+
+    }
   }
 
   const _getCustomers = async () => {
@@ -148,6 +179,7 @@ export default function Customer() {
       <TitlePage title="Quản lý khách hàng">
         <Space>
           <Button
+            onClick={_getCustomerToExport}
             icon={<DownloadOutlined />}
             style={{ backgroundColor: 'green', borderColor: 'green' }}
             type="primary"
@@ -176,21 +208,24 @@ export default function Customer() {
       </TitlePage>
 
       <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
-        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+        <Col xs={24} sm={24} md={24} lg={10} xl={10}>
           <Row wrap={false} style={{ width: '100%' }}>
             <Input
               size="large"
               style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo tên"
+              placeholder="Tìm kiếm theo..."
               value={valueSearch}
               onChange={(e) => onSearch(e)}
               allowClear
             />
             <Select
               size="large"
-              style={{ width: 160 }}
+              style={{ width: 180 }}
               value={optionSearch}
-              onChange={(value) => setOptionSearch(value)}
+              onChange={(value) => {
+                delete paramsFilter[optionSearch]
+                setOptionSearch(value)
+              }}
             >
               <Option value="name">Tên khách hàng</Option>
               <Option value="phone">SDT khách hàng</Option>
@@ -198,7 +233,7 @@ export default function Customer() {
             </Select>
           </Row>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <Select
             size="large"
             open={isOpenSelect}
@@ -308,7 +343,7 @@ export default function Customer() {
             <Option value="last_year">Năm trước</Option>
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={11} lg={11} xl={7}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <Select
             size="large"
             style={{ width: '100%' }}
@@ -328,6 +363,11 @@ export default function Customer() {
         rowKey="customer_id"
         loading={tableLoading}
         columns={columns.map((column) => {
+          if (column.key === 'stt')
+            return {
+              ...column,
+              render: (text, record, index) => index + 1,
+            }
           if (column.key === 'code')
             return {
               ...column,
@@ -336,18 +376,56 @@ export default function Customer() {
                   <a>{record.code}</a>
                 </ModalCustomer>
               ),
+              sorter: (a, b) => compare(a, b, 'code'),
             }
           if (column.key === 'name')
             return {
               ...column,
-              render: (text, record) => record.first_name + ' ' + record.last_name,
+              render: (text, record) => <p>{record.first_name + ' ' + record.last_name}</p>,
+              sorter: (a, b) => a.first_name.length - b.first_name.length
             }
-
+          if (column.key === 'type')
+            return {
+              ...column,
+              render: (text, record) => record.type,
+              sorter: (a, b) => compare(a, b, 'type')
+            }
+          if (column.key === 'phone')
+            return {
+              ...column,
+              render: (text, record) => record.phone,
+              sorter: (a, b) => compare(a, b, 'phone')
+            }
+          if (column.key === 'order_quantity')
+            return {
+              ...column,
+              render: (text, record) => record.order_quantity,
+              sorter: (a, b) => compare(a, b, 'order_quantity', 1)
+            }
+          if (column.key === 'point')
+            return {
+              ...column,
+              render: (text, record) => record.point,
+              sorter: (a, b) => compare(a, b, 'point', 1)
+            }
+          if (column.key === 'used_point')
+            return {
+              ...column,
+              render: (text, record) => record.used_point,
+              sorter: (a, b) => compare(a, b, 'used_point', 1)
+            }
+          if (column.key === 'order_total_cost')
+            return {
+              ...column,
+              render: (text, record) => record.order_total_cost,
+              sorter: (a, b) => compare(a, b, 'order_total_cost', 1)
+            }
           if (column.key === 'create_date')
             return {
               ...column,
               render: (text, record) =>
                 record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
+              sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
             }
 
           if (column.key === 'birthday')
@@ -355,15 +433,16 @@ export default function Customer() {
               ...column,
               render: (text, record) =>
                 record.birthday && moment(record.birthday).format('DD-MM-YYYY HH:mm'),
+              sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
             }
 
           if (column.key === 'address')
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${
-                  record.district && record.district + ', '
+                `${record.address && record.address + ', '}${record.district && record.district + ', '
                 }${record.province && record.province}`,
+              sorter: (a, b) => compare(a, b, 'address')
             }
           if (column.key === 'action')
             return {

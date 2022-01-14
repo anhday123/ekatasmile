@@ -1,4 +1,5 @@
 const columns = [
+  { title: 'STT', key: 'stt' },
   { title: 'Mã khách hàng', key: 'code' },
   { title: 'Tên khách hàng', key: 'name' },
   { title: 'Loại khách hàng', dataIndex: 'type' },

@@ -80,12 +80,14 @@ import { getCustomers } from 'apis/customer'
 import { getShippings } from 'apis/shipping'
 import { getProducts } from 'apis/product'
 import { addOrder } from 'apis/order'
+import { getAllBranch } from 'apis/branch'
 
 export default function Sell() {
   const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
   const invoicesSelector = useSelector((state) => state.invoice.invoices)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
   let printOrderRef = useRef()
 
   //list ref keyboard
@@ -93,6 +95,9 @@ export default function Sell() {
   const handlePrint = useReactToPrint({
     content: () => printOrderRef.current,
   })
+
+  const [loadingBranch, setLoadingBranch] = useState(false)
+  const [branches, setBranches] = useState([])
 
   const [chooseButtonPrice, setChooseButtonPrice] = useState('')
 
@@ -117,9 +122,7 @@ export default function Sell() {
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
-  const [infoBranch, setInfoBranch] = useState(
-    localStorage.getItem('branchSell') ? JSON.parse(localStorage.getItem('branchSell')) : null
-  )
+  const [infoBranch, setInfoBranch] = useState({})
 
   //object invoice
   const initInvoice = {
@@ -662,7 +665,7 @@ export default function Sell() {
     const _getVariantsByProductId = async () => {
       try {
         const res = await getProducts({
-          branch_id: infoBranch.branch_id,
+          branch_id: infoBranch.branch_id || '',
           merge: true,
           detach: true,
           product_id: product.product_id,
@@ -972,7 +975,7 @@ export default function Sell() {
         if (res.data.success) {
           _getProductsRelated()
           _getProductsSearch()
-          _getProductsAllBranch()
+          _getProducts()
           _editInvoice('code', res.data.data.code || '')
           handlePrint()
         } else
@@ -989,6 +992,18 @@ export default function Sell() {
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
+    }
+  }
+
+  const _getBranches = async () => {
+    try {
+      setLoadingBranch(true)
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+      setLoadingBranch(false)
+    } catch (error) {
+      setLoadingBranch(false)
       console.log(error)
     }
   }
@@ -1039,19 +1054,19 @@ export default function Sell() {
     }
   }
 
-  const _getProductsAllBranch = async () => {
+  const _getProducts = async () => {
     try {
-      const res = await getProducts({ merge: true })
+      const res = await getProducts({ merge: true, branch_id: branchIdApp || '' })
       if (res.status === 200) setProductsAllBranch(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
-  const _getProductsSearch = async (branch_id) => {
+  const _getProductsSearch = async () => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ branch_id, merge: true, detach: true })
+      const res = await getProducts({ branch_id: branchIdApp, merge: true, detach: true })
       console.log(res)
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
@@ -1066,7 +1081,7 @@ export default function Sell() {
       setLoadingProductRelated(true)
 
       const res = await getProducts({
-        branch_id: infoBranch ? infoBranch.branch_id : '',
+        branch_id: branchIdApp || '',
         merge: true,
         detach: true,
         ...params,
@@ -1100,24 +1115,23 @@ export default function Sell() {
   }, [invoices])
 
   useEffect(() => {
-    if (localStorage.getItem('accessToken')) {
-      const data = jwt_decode(localStorage.getItem('accessToken'))
-      console.log(data)
-      if (!infoBranch) {
-        if (data.data._branch) {
-          localStorage.setItem('branchSell', JSON.stringify(data.data._branch))
-          setInfoBranch(data.data._branch)
-          _getProductsSearch(data.data._branch.branch_id)
-        }
-      } else _getProductsSearch(infoBranch.branch_id)
-    } else history.push(ROUTES.LOGIN)
+    if (!localStorage.getItem('accessToken')) history.push(ROUTES.LOGIN)
   }, [])
+
+  useEffect(() => {
+    if (branches.length) {
+      const branch = branches.find((branch) => branch.branch_id === branchIdApp)
+      if (branch) setInfoBranch(branch)
+    }
+  }, [branchIdApp, branches])
 
   useEffect(() => {
     _getInvoicesToReducer()
     _getCustomers()
     _getShippingsMethod()
-    _getProductsAllBranch()
+    _getProducts()
+    _getBranches()
+    _getProductsSearch()
   }, [])
 
   useEffect(() => {
@@ -1317,7 +1331,12 @@ export default function Sell() {
           style={{ width: '100%', marginLeft: 15 }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <ModalChangeBranch />
+            <ModalChangeBranch
+              resetInvoice={() => setInvoices([initInvoice])}
+              branch={infoBranch}
+              loading={loadingBranch}
+              branches={branches}
+            />
             <ModalInfoSeller />
           </div>
           <ModalKeyboardShortCuts />
@@ -1504,7 +1523,7 @@ export default function Sell() {
                               setParamsFilter({ ...paramsFilter })
                             }}
                           >
-                            Đang lọc theo danh mục
+                            Đang lọc theo nhóm sản phẩm
                           </Tag>
                         )
 

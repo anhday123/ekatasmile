@@ -30,6 +30,10 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const onFinish = async (values) => {
     try {
+      if (!Number(values.phone)) {
+        notification.warning({ message: 'Vui lòng nhập số điện thoại đúng định dạng' })
+        return
+      }
       dispatch({ type: ACTION.LOADING, data: true })
       const body = {
         ...values,
@@ -137,7 +141,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
             name="phone"
             rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
           >
-            <InputNumber style={{ width: '100%' }} size="large" placeholder="Nhập số điện thoại" />
+            <Input style={{ width: '100%' }} size="large" placeholder="Nhập số điện thoại" />
           </Form.Item>
         </Col>
 
