@@ -99,24 +99,20 @@ module.exports._register = async (req, res, next) => {
             throw new Error('Kiểm tra thông tin doanh nghiệp không thành công!');
         });
         let otpCode = String(Math.random()).substr(2, 6);
-        if (req.body.username && req.body.email) {
-            let verifyId = crypto.randomBytes(10).toString(`hex`);
-            let verifyLink = `https://quantribanhang.viesoftware.vn/verify-account?uid=${verifyId}`;
-            let _verifyLink = {
-                username: req.body.username,
-                UID: String(verifyId),
-                verify_link: verifyLink,
-                verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
-            };
-            await Promise.all([
-                mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink)),
-                client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
-            ]);
-        }
-        if (req.body.username) {
-            let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
-            sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
-        }
+        let verifyId = crypto.randomBytes(10).toString(`hex`);
+        let verifyLink = `https://quantribanhang.viesoftware.vn/verify-account?uid=${verifyId}`;
+        let _verifyLink = {
+            username: req.body.username,
+            UID: String(verifyId),
+            verify_link: verifyLink,
+            verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
+        };
+        await Promise.all([
+            mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink)),
+            client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
+        ]);
+        let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
+        sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         business_id++;
         system_user_id++;
         let user_id = 1;
