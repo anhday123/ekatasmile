@@ -34,6 +34,7 @@ module.exports._get = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._create = async (req, res, next) => {
     try {
         let customer = await client.db(req.user.database).collection(`Customers`).findOne({
@@ -164,6 +165,7 @@ module.exports._update = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._delete = async (req, res, next) => {
     try {
         await client
@@ -174,6 +176,97 @@ module.exports._delete = async (req, res, next) => {
             success: true,
             message: 'Xóa khách hàng thành công!',
         });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._getType = async (req, res, next) => {
+    try {
+        let aggregateQuery = [];
+        if (req.query.category_id) {
+            aggregateQuery.push({ $match: { category_id: Number(req.query.category_id) } });
+        }
+        aggregateQuery.push({ $sort: { priority: 1 } });
+        let [types, counts] = await Promise.all([
+            client.db(req.user.database).collection('CustomerTypes').aggregate(aggregateQuery).toArray(),
+            client
+                .db(req.user.database)
+                .collection('CustomerTypes')
+                .aggregate([...aggregateQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            count: counts[0] ? counts[0].counts : 0,
+            data: types,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._createType = async (req, res, next) => {
+    try {
+        ['name'].map((e) => {
+            if (req.body[e] == undefined) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        let typeCustomer = await client
+            .db(req.user.database)
+            .collection('CustomerTypes')
+            .findOne({ name: req.body.name });
+        if (!typeCustomer) {
+            throw new Error(`400: Nhóm khách hàng đã tồn tại!`);
+        }
+        let typeMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'CustomerTypes' });
+        let type_id = (() => {
+            if (typeMaxId && typeMaxId.value) {
+                return typeMaxId.value;
+            }
+            return 0;
+        })();
+        req['body'] = {
+            type_id: type_id,
+            code: String(type_id).padStart(6, '0'),
+            name: req.body.name,
+            priority: req.body.priority || 100,
+            description: req.body.description || '',
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
+        };
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'CustomerTypes' },
+                { $set: { name: 'CustomerTypes', value: type_id } },
+                { upsert: true }
+            );
+        let insert = await client.db(req.user.database).collection('CustomerTypes').insertOne(req.body);
+        if (!insert.insertedId) {
+            throw new Error(`Thêm nhóm khách hàng thất bại!`);
+        }
+        res.send({ success: true, data: req.body });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._updateType = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports._deleteType = async (req, res, next) => {
+    try {
     } catch (err) {
         next(err);
     }
