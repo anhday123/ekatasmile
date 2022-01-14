@@ -13,7 +13,10 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
-  const toggle = () => setVisible(!visible)
+  const toggle = () => {
+    setVisible(!visible)
+    setDistrictsMain([])
+  }
 
   const [districtsDefault, setDistrictsDefault] = useState([])
   const [districtsMain, setDistrictsMain] = useState([])
@@ -150,7 +153,7 @@ export default function SupplierForm({ children, reloadData, record }) {
                     if (value) {
                       const districtsNew = districtsDefault.filter((e) => e.province_name === value)
                       setDistrictsMain([...districtsNew])
-                    } else setDistrictsMain([...districtsDefault])
+                    }
                   }}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -183,13 +186,24 @@ export default function SupplierForm({ children, reloadData, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {districtsMain.map((district, index) => {
-                    return (
-                      <Option value={district.district_name} key={index}>
-                        {district.district_name}
-                      </Option>
-                    )
-                  })}
+                  {
+                    districtsMain && districtsMain.length ?
+                      districtsMain.map((district, index) => {
+                        return (
+                          <Option value={district.district_name} key={index}>
+                            {district.district_name}
+                          </Option>
+                        )
+                      })
+                      :
+                      districtsDefault.map((district, index) => {
+                        return (
+                          <Option value={district.district_name} key={index}>
+                            {district.district_name}
+                          </Option>
+                        )
+                      })
+                  }
                 </Select>
               </Form.Item>
             </Col>

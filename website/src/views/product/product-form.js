@@ -823,7 +823,6 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getWarranties({ branch_id: branchIdApp })
-      console.log(res)
       if (res.status === 200) {
         setWarranties(res.data.data)
       }

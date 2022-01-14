@@ -34,9 +34,9 @@ export default function Login() {
       const body = {
         ...dataForm,
         avatar: '',
-        business_name: dataForm.username,
+        business_name: dataForm.business_name,
         first_name: '',
-        last_name: dataForm.username,
+        last_name: dataForm.business_name,
         birthday: '',
         address: '',
         ward: '',
@@ -115,6 +115,19 @@ export default function Login() {
                   <Row gutter={[20, 20]} style={{ padding: '0px 20px' }}>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
+                        // label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
+                        name="business_name"
+                        rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
+                      >
+                        <Input
+                          style={{ width: '100%' }}
+                          size="large"
+                          placeholder="Nhập tên doanh nghiệp"
+                          className={styles['input']} />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <Form.Item
                         // label={<div style={{ color: 'white' }}>Số điện thoại đăng ký</div>}
                         name="username"
                         rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
@@ -127,18 +140,17 @@ export default function Login() {
                         />
                       </Form.Item>
                     </Col>
-                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <Form.Item
-                    label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
-                    name="business_name"
-                    rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
-                  >
-                    <Input size="large" placeholder="Nhập tên doanh nghiệp" />
-                  </Form.Item>
-                </Col> */}
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
-                        rules={[{ required: true, message: 'Vui lòng nhập email' }]}
+                        rules={[
+                          {
+                            type: 'email',
+                            message: 'Vui lòng nhập Email đúng định dạng!',
+                          },
+                          {
+                            required: true, message: 'Vui lòng nhập email'
+                          }
+                        ]}
                         // label={<div style={{ color: 'white' }}>Email</div>}
                         name="email"
                       >

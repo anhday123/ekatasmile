@@ -361,7 +361,7 @@ export default function Category() {
       title: 'Hình ảnh',
       align: 'center',
       render: (text, record) =>
-        record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
+        <img src={record.image.length ? record.image[0] : IMAGE_DEFAULT} alt="" style={{ width: 45, height: 45 }} />
     },
     {
       title: 'Tên nhóm sản phẩm',
@@ -402,22 +402,10 @@ export default function Category() {
 
   const columnsChildrenSmall = [
     {
-      render: (text, record) => (
-        <Popconfirm
-          onConfirm={() => _deleteCategory(record.category_id)}
-          title="Bạn có muốn xóa nhóm sản phẩm con này?"
-          okText="Đồng ý"
-          cancelText="Từ chối"
-        >
-          <DeleteOutlined style={{ color: 'red', fontSize: 22, cursor: 'pointer' }} />
-        </Popconfirm>
-      ),
-    },
-    {
       title: 'Hình ảnh',
       align: 'center',
       render: (text, record) =>
-        record.image && <img src={record.image} alt="" style={{ width: 45, height: 45 }} />,
+        <img src={record.image.length ? record.image : IMAGE_DEFAULT} alt="" style={{ width: 45, height: 45 }} />
     },
     {
       title: 'Tên nhóm sản phẩm',
@@ -438,6 +426,18 @@ export default function Category() {
         record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
     },
     { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
+    {
+      render: (text, record) => (
+        <Popconfirm
+          onConfirm={() => _deleteCategory(record.category_id)}
+          title="Bạn có muốn xóa nhóm sản phẩm con này?"
+          okText="Đồng ý"
+          cancelText="Từ chối"
+        >
+          <Button type="primary" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      ),
+    },
   ]
 
   useEffect(() => {
