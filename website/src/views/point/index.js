@@ -30,7 +30,7 @@ import { getPoint, updatePoint } from 'apis/point'
 import { getAllBranch } from 'apis/branch'
 import { getProducts } from 'apis/product'
 import { getCategories } from 'apis/category'
-import { getCustomers } from 'apis/customer'
+import { getCustomerTypes } from 'apis/customer'
 
 export default function Point() {
   const dispatch = useDispatch()
@@ -39,11 +39,10 @@ export default function Point() {
   const [loading, setLoading] = useState(false)
   const [point, setPoint] = useState({})
   const [branches, setBranches] = useState([])
-  const [orderPoint, setOrderPoint] = useState()
   const [selectedBranch, setSelectedBranch] = useState(1)
   const [dataProduct, setDataProduct] = useState([])
   const [dataCategories, setDataCategories] = useState([])
-  const [dataCustomer, setDataCustomer] = useState([])
+  const [customerTypes, setCustomerTypes] = useState([])
 
   const [config, setConfig] = useState({
     active: true,
@@ -65,6 +64,12 @@ export default function Point() {
     all_product: false,
     product_id: [],
   })
+  const [orderPoint, setOrderPoint] = useState({
+    order_require: config.order_require === false ? 0 : config.order_require,
+    order_require_check: config.order_require === false ? false : config.order_require !== false && true
+  })
+  // console.log(orderPoint)
+
 
   const PointTitle = ({ title }) => (
     <Row style={{ borderBottom: 'solid 1px #B4B4B4', paddingBottom: '10px' }}>
@@ -88,31 +93,33 @@ export default function Point() {
         stack_point: config.stack_point,
         exchange_point_rate: config.exchange_point_rate,
         exchange_money_rate: config.exchange_money_rate,
-        order_require: config.order_require,
+        order_require: orderPoint.order_require_check === true ? orderPoint.order_require : false,
         order_cost_require: config.order_cost_require,
-        all_branch: false,
-        branch_id: config.branch_id,
-        all_customer_type: point.all_customer_type,
-        customer_type_id: config.customer_type_id,
+        all_branch: config.all_branch,
+        branch_id: config.all_branch === false ? config.branch_id : [],
+        all_customer_type: config.all_customer_type,
+        customer_type_id: config.all_customer_type === false ? config.customer_type_id : [],
         all_category: config.all_category,
-        category_id: config.category_id,
+        category_id: config.all_category === false ? config.category_id : [],
         all_product: config.all_product,
-        product_id: config.product_id,
+        product_id: config.all_product === false ? config.product_id : [],
       }
-      const res = await updatePoint(data, point.point_setting_id)
-      console.log(res)
-      if (res.status === 200) {
-        if (res.data.success) {
-          notification.success({ message: 'Cập nhật thành công' })
-        } else {
-          notification.error({ message: 'Cập nhật thất bại' })
-        }
-      }
+      console.log(data.all_customer_type, data.customer_type_id)
+      // const res = await updatePoint(data, point.point_setting_id)
+      // if (res.status === 200) {
+      //   if (res.data.success) {
+      //     notification.success({ message: 'Cấu hình tích điểm thành công' })
+      //   } else {
+      //     notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
+      //   }
+      // } else {
+      //   notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
+      // }
       dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
       dispatch({ type: 'LOADING', data: true })
-      notification.error({ message: 'Cập nhật thất bại' })
+      // notification.error({ message: 'Cập nhật thất bại' })
     }
   }
 
@@ -125,7 +132,6 @@ export default function Point() {
     try {
       setLoading(true)
       const res = await getPoint()
-      console.log(res)
       if (res.data.success) {
         if (res.data.data && res.data.data.length) setPoint(res.data.data[0])
       }
@@ -142,7 +148,9 @@ export default function Point() {
       const res = await getAllBranch(params)
       if (res.data.success) {
         setBranches(res.data.data)
-        setSelectedBranch(res.data.data[0].branch_id)
+        if (res.data.data && res.data.data.length) {
+          setSelectedBranch(res.data.data[0].branch_id)
+        }
       }
       setLoading(false)
     } catch (err) {
@@ -175,11 +183,11 @@ export default function Point() {
     }
   }
 
-  const _getCustomers = async (params) => {
+  const _getCustomerTypes = async (params) => {
     try {
       setLoading(true)
-      const res = await getCustomers(params)
-      if (res.status === 200) setDataCustomer(res.data.data)
+      const res = await getCustomerTypes(params)
+      if (res.status === 200) setCustomerTypes(res.data.data)
       setLoading(false)
     } catch (err) {
       console.log(err)
@@ -192,8 +200,15 @@ export default function Point() {
     _getBranches()
     _getProducts()
     _getCategories()
-    _getCustomers()
+    _getCustomerTypes()
   }, [])
+
+  useEffect(() => {
+    setOrderPoint({
+      order_require: config.order_require === false ? 0 : config.order_require,
+      order_require_check: config.order_require === false ? false : true
+    })
+  }, [config])
 
   useEffect(() => {
     setConfig({
@@ -246,13 +261,13 @@ export default function Point() {
         <Col md={16} lg={16} xl={16} className={styles['point-top-right']}>
           <Row className={styles['point-top-right-top']}>
             <Checkbox
-              value={config.active}
-              // onChange={(e) =>
-              //   setConfig({
-              //     ...config,
-              //     active: e.target.checked,
-              //   })
-              // }
+              checked={config.active}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  active: e.target.checked,
+                })
+              }
             >
               <span style={{ fontWeight: 500 }}>Áp dụng tính năng tích điểm</span>
             </Checkbox>
@@ -261,24 +276,24 @@ export default function Point() {
           <Row className={styles['point-top-right-middle-1']}>
             <h4>CƠ CHẾ TÍCH ĐIỂM</h4>
             <Checkbox
-              value={config.accumulate_for_promotion_product}
-              // onChange={(e) =>
-              //   setConfig({
-              //     ...config,
-              //     accumulate_for_promotion_product: e.target.checked,
-              //   })
-              // }
+              checked={config.accumulate_for_promotion_product}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  accumulate_for_promotion_product: e.target.checked,
+                })
+              }
             >
               Tích điểm cho các sản phẩm giảm giá
             </Checkbox>
             <Checkbox
-              value={config.accumulate_for_refund_order}
-              // onChange={(e) =>
-              //   setConfig({
-              //     ...config,
-              //     accumulate_for_refund_order: e.target.checked,
-              //   })
-              // }
+              checked={config.accumulate_for_refund_order}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  accumulate_for_refund_order: e.target.checked,
+                })
+              }
             >
               Tích điểm khi khách hàng trả hàng
             </Checkbox>
@@ -287,7 +302,7 @@ export default function Point() {
           <Row className={styles['point-top-right-middle-2']}>
             <h4>HÌNH THỨC TÍCH ĐIỂM</h4>
             <Radio.Group
-              // onChange={(e) => setConfig({ ...config, stack_point: e.target.value })}
+              onChange={(e) => setConfig({ ...config, stack_point: e.target.value })}
               value={config.stack_point}
             >
               <Radio value={false}>Tích điểm cố định</Radio>
@@ -301,7 +316,7 @@ export default function Point() {
               <Col span={10}>
                 <InputNumber
                   value={config.exchange_point_rate}
-                  // onChange={(e) => setConfig({ ...config, exchange_point_rate: e })}
+                  onChange={(e) => setConfig({ ...config, exchange_point_rate: e })}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />{' '}
@@ -328,55 +343,57 @@ export default function Point() {
               1 điểm ={' '}
               <InputNumber
                 value={config.exchange_money_rate}
-                // onChange={(e) => setConfig({ ...config, exchange_money_rate: e })}
+                onChange={(e) => setConfig({ ...config, exchange_money_rate: e })}
                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
               />
             </div>
-            <div>
+            <div className={styles['format-display']}>
               <div>
                 <Checkbox
-                  value={config.order_require}
-                  // onChange={(e) =>
-                  //   setOrderPoint({
-                  //     order_require: e.target.checked,
-                  //   })
-                  // }
+                  checked={orderPoint.order_require_check}
+                  onChange={(e) =>
+                    setOrderPoint({
+                      order_require_check: e.target.checked,
+                    })
+                  }
                 >
                   Cho phép thanh toán bằng điểm sau
                 </Checkbox>
                 <InputNumber
-                  // onChange={(e) =>
-                  //   setConfig({
-                  //     ...config,
-                  //     order_require: orderPoint.order_require === true ? e : -1,
-                  //   })
-                  // }
-                  defaultValue="0"
+                  disabled={!orderPoint.order_require_check}
+                  onChange={(e) =>
+                    setOrderPoint({
+                      // ...config,
+                      ...orderPoint,
+                      order_require: e,
+                    })
+                  }
+                  value={orderPoint.order_require || config.order_require}
                   min={1}
-                  style={{ width: '15%', zIndex: 10 }}
+                  style={{ width: '15%' }}
                 />{' '}
                 lần mua
               </div>
               <Checkbox
-                value={config.accumulate_for_payment_point}
-                // onChange={(e) =>
-                //   setConfig({
-                //     ...config,
-                //     accumulate_for_payment_point: e.target.checked,
-                //   })
-                // }
+                checked={config.accumulate_for_payment_point}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    accumulate_for_payment_point: e.target.checked,
+                  })
+                }
               >
                 Tích điểm khi khách hàng thanh toán hóa đơn bằng điểm
               </Checkbox>
               <Checkbox
-                value={config.accumulate_for_fee_shipping}
-                // onChange={(e) =>
-                //   setConfig({
-                //     ...config,
-                //     accumulate_for_fee_shipping: e.target.checked,
-                //   })
-                // }
+                checked={config.accumulate_for_fee_shipping}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    accumulate_for_fee_shipping: e.target.checked,
+                  })
+                }
               >
                 Tích điểm cho giá trị thanh toán bao gồm phí vận chuyển
               </Checkbox>
@@ -387,7 +404,7 @@ export default function Point() {
             <h4>KHÁCH HÀNG ÁP DỤNG TÍCH ĐIỂM</h4>
             <Radio.Group
               className={styles['point-bottom-right-radio']}
-              // onChange={(e) => setConfig({ ...config, all_customer_type: e.target.value })}
+              onChange={(e) => setConfig({ ...config, all_customer_type: e.target.value })}
               value={config.all_customer_type}
             >
               <Radio value={true}>Tất cả khách hàng</Radio>
@@ -396,26 +413,35 @@ export default function Point() {
             <Row>
               <Select
                 mode="multiple"
-                placeholder="Chọn sản phẩm"
+                placeholder="Chọn loại khách hàng"
                 size="small"
                 value={config.customer_type_id}
-                // onChange={(e) => setConfig({ ...config, customer_type_id: e })}
+                onChange={(e) => setConfig({ ...config, customer_type_id: e })}
                 style={{
                   display: `${config.all_customer_type === false ? 'block' : 'none'}`,
                   width: '50%',
                   marginTop: 10,
                 }}
                 optionFilterProp="children"
-                // filterOption={(input, option) =>
-                //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                // }
-                // filterSort={(optionA, optionB) =>
-                //   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                // }
+                filterOption={(input, option) =>
+                  // console.log(input, option)
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) => {
+                  if (optionA.children !== undefined && optionB.children !== undefined) {
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  } else {
+                    return ''
+                  }
+                }}
               >
-                {dataCustomer.map((e) => (
-                  <Select.Option value={e.customer_type_id}>{e.name}</Select.Option>
-                ))}
+                {
+                  customerTypes.length !== 0 ?
+                    customerTypes.map((type, index) => (
+                      <Select.Option value={type.type_id} key={index}>{type.name}</Select.Option>
+                    ))
+                    : ''
+                }
               </Select>
             </Row>
           </Row>
@@ -424,7 +450,7 @@ export default function Point() {
             <h4>DANH SÁCH SẢN PHẨM ÁP DỤNG TÍCH ĐIỂM</h4>
             <Radio.Group
               className={styles['point-bottom-right-radio']}
-              // onChange={(e) => setConfig({ ...config, all_category: e.target.value })}
+              onChange={(e) => setConfig({ ...config, all_category: e.target.value })}
               value={config.all_category}
             >
               <Radio value={true}>Tất cả sản phẩm</Radio>
@@ -433,26 +459,33 @@ export default function Point() {
             <Row>
               <Select
                 mode="multiple"
-                placeholder="Chọn sản phẩm"
+                placeholder="Chọn nhóm sản phẩm"
                 size="small"
                 value={config.category_id}
-                // onChange={(e) => setConfig({ ...config, category_id: e })}
+                onChange={(e) => setConfig({ ...config, category_id: e })}
                 style={{
                   display: `${config.all_category === false ? 'block' : 'none'}`,
                   width: '50%',
                   marginTop: 10,
                 }}
                 optionFilterProp="children"
-                // filterOption={(input, option) =>
-                //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                // }
-                // filterSort={(optionA, optionB) =>
-                //   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                // }
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) => {
+                  if (optionA.children !== undefined && optionB.children !== undefined) {
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  } else {
+                    return ''
+                  }
+                }}
               >
-                {dataCategories.map((e) => (
-                  <Select.Option value={e.category_id}>{e.name}</Select.Option>
-                ))}
+                {
+                  dataCategories.length !== 0 ?
+                    dataCategories.map((e) => (
+                      <Select.Option value={e.category_id}>{e.name}</Select.Option>
+                    ))
+                    : ''}
               </Select>
             </Row>
           </Row>
@@ -461,7 +494,7 @@ export default function Point() {
             <h4>SẢN PHẨM ÁP DỤNG TÍCH ĐIỂM</h4>
             <Radio.Group
               className={styles['point-bottom-right-radio']}
-              // onChange={(e) => setConfig({ ...config, all_product: e.target.value })}
+              onChange={(e) => setConfig({ ...config, all_product: e.target.value })}
               value={config.all_product}
             >
               <Radio value={true}>Tất cả sản phẩm</Radio>
@@ -473,23 +506,30 @@ export default function Point() {
                 placeholder="Chọn sản phẩm"
                 size="small"
                 value={config.product_id}
-                // onChange={(e) => setConfig({ ...config, product_id: e })}
+                onChange={(e) => setConfig({ ...config, product_id: e })}
                 style={{
                   display: `${config.all_product === false ? 'block' : 'none'}`,
                   width: '50%',
                   marginTop: 10,
                 }}
                 optionFilterProp="children"
-                // filterOption={(input, option) =>
-                //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                // }
-                // filterSort={(optionA, optionB) =>
-                //   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                // }
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) => {
+                  if (optionA.children !== undefined && optionB.children !== undefined) {
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  } else {
+                    return ''
+                  }
+                }}
               >
-                {dataProduct.map((e) => (
-                  <Select.Option value={e.product_id}>{e.name}</Select.Option>
-                ))}
+                {
+                  dataProduct.length !== 0 ?
+                    dataProduct.map((e) => (
+                      <Select.Option value={e.product_id}>{e.name}</Select.Option>
+                    ))
+                    : ''}
               </Select>
             </Row>
           </Row>
@@ -498,7 +538,7 @@ export default function Point() {
             <h4>CHI NHÁNH ÁP DỤNG TÍCH ĐIỂM</h4>
             <Radio.Group
               className={styles['point-bottom-right-radio']}
-              // onChange={(e) => setConfig({ ...config, all_branch: e.target.value })}
+              onChange={(e) => setConfig({ ...config, all_branch: e.target.value })}
               value={config.all_branch}
             >
               <Radio value={true}>Tất cả chi nhánh</Radio>
@@ -517,12 +557,16 @@ export default function Point() {
                   marginTop: 10,
                 }}
                 optionFilterProp="children"
-                // filterOption={(input, option) =>
-                //   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                // }
-                // filterSort={(optionA, optionB) =>
-                //   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                // }
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) => {
+                  if (optionA.children !== undefined && optionB.children !== undefined) {
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  } else {
+                    return ''
+                  }
+                }}
               >
                 {branches.map((e) => (
                   <Select.Option value={e.branch_id}>{e.name}</Select.Option>
@@ -549,7 +593,7 @@ export default function Point() {
         </Col>
       </Row>
 
-      <Row style={{ margin: '1em 0' }}>
+      {/* <Row style={{ margin: '1em 0' }}>
         <Col xs={24} lg={8}>
           <Select
             mode="multiple"
@@ -580,12 +624,12 @@ export default function Point() {
               <PointTitle title="Thiết lập tích điểm" />
               <Checkbox
                 checked={config.accumulate}
-                // onChange={(e) =>
-                //   setConfig({
-                //     ...config,
-                //     accumulate: e.target.checked,
-                //   })
-                // }
+              // onChange={(e) =>
+              //   setConfig({
+              //     ...config,
+              //     accumulate: e.target.checked,
+              //   })
+              // }
               >
                 <span style={{ fontWeight: 500, color: 'blue' }}>Áp dụng tính năng tích điểm</span>
               </Checkbox>
@@ -621,12 +665,12 @@ export default function Point() {
               <PointTitle title="Thiết lập đổi điểm" />
               <Checkbox
                 checked={config.use}
-                // onChange={(e) =>
-                //   setConfig({
-                //     ...config,
-                //     use: e.target.checked,
-                //   })
-                // }
+              // onChange={(e) =>
+              //   setConfig({
+              //     ...config,
+              //     use: e.target.checked,
+              //   })
+              // }
               >
                 <span style={{ fontWeight: 500, color: 'blue' }}>Áp dụng tính năng đổi điểm</span>
               </Checkbox>
@@ -646,7 +690,7 @@ export default function Point() {
             </Space>
           </div>
         </Col>
-      </Row>
+      </Row> */}
     </div>
   )
 }

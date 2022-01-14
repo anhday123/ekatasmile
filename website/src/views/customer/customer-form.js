@@ -18,7 +18,7 @@ import { ACTION } from 'consts'
 
 //apis
 import { getDistricts, getProvinces } from 'apis/address'
-import { addCustomer, updateCustomer } from 'apis/customer'
+import { addCustomer, updateCustomer, getCustomerTypes } from 'apis/customer'
 
 const { Option } = Select
 export default function CustomerForm({ record, close, reload, text = 'Thêm' }) {
@@ -27,6 +27,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
+  const [customerTypes, setCustomerTypes] = useState([])
 
   const onFinish = async (values) => {
     try {
@@ -75,7 +76,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const initForm = () => {
     form.setFieldsValue({
-      type: 'VÃNG LAI',
+      type: 'Vãng Lai',
       gender: 'male',
       birthday: moment(new Date('1991-01-01')),
       district: districts[0] && districts[0].district_name,
@@ -108,9 +109,21 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
     }
   }
 
+  const _getCustomerTypes = async () => {
+    try {
+      const res = await getCustomerTypes()
+      if (res.status === 200) {
+        setCustomerTypes(res.data.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getDistricts()
     _getProvinces()
+    _getCustomerTypes()
 
     if (!record) initForm()
     else form.setFieldsValue({ ...record, birthday: moment(new Date(record.birthday)) })
@@ -122,7 +135,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <div>
             <Form.Item label="Họ" name="first_name">
-              <Input size="large" placeholder="Nhập họ khách hàng" />
+              <Input allowClear size="large" placeholder="Nhập họ khách hàng" />
             </Form.Item>
           </div>
         </Col>
@@ -132,7 +145,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
             name="last_name"
             rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng' }]}
           >
-            <Input size="large" placeholder="Nhập tên khách hàng" />
+            <Input allowClear size="large" placeholder="Nhập tên khách hàng" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -141,15 +154,21 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
             name="phone"
             rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
           >
-            <Input style={{ width: '100%' }} size="large" placeholder="Nhập số điện thoại" />
+            <Input allowClear style={{ width: '100%' }} size="large" placeholder="Nhập số điện thoại" />
           </Form.Item>
         </Col>
 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item name="type" label="Loại khách hàng">
-            <Select defaultValue="VÃNG LAI" placeholder="Chọn loại khách hàng" size="large">
-              <Option value="TIỀM NĂNG">Tiềm năng</Option>
-              <Option value="VÃNG LAI">Vãng lai</Option>
+            <Select
+              allowClear
+              placeholder="Chọn loại khách hàng"
+              size="large">
+              {
+                customerTypes.map((type, index) =>
+                  <Option value={type.name} key={index}>{type.name}</Option>
+                )
+              }
             </Select>
           </Form.Item>
         </Col>
@@ -167,7 +186,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item label="Địa chỉ" name="address">
-            <Input placeholder="Nhập địa chỉ" size="large" />
+            <Input allowClear placeholder="Nhập địa chỉ" size="large" />
           </Form.Item>
         </Col>
 

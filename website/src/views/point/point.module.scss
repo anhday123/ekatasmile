@@ -53,7 +53,9 @@
         margin-top: 0px;
         flex-direction: column;
 
-        div {
+        .format-display {
+          display: flex;
+          flex-direction: column;
           label {
             margin-left: 0px;
           }

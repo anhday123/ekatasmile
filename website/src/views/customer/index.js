@@ -31,7 +31,7 @@ import exportCustomers from 'components/ExportCSV/export'
 import { compare } from 'utils'
 
 //apis
-import { getCustomers, deleteCustomer } from 'apis/customer'
+import { getCustomers, deleteCustomer, getCustomerTypes } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -45,6 +45,7 @@ export default function Customer() {
   const [tableLoading, setTableLoading] = useState(false)
 
   const [customers, setCustomers] = useState([])
+  const [customerTypes, setCustomerTypes] = useState([])
 
   const [valueSearch, setValueSearch] = useState('')
   const [optionSearch, setOptionSearch] = useState('name')
@@ -170,8 +171,20 @@ export default function Customer() {
     }
   }
 
+  const _getCustomerTypes = async () => {
+    try {
+      const res = await getCustomerTypes()
+      if (res.status === 200) {
+        setCustomerTypes(res.data.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getCustomers()
+    _getCustomerTypes()
   }, [paramsFilter, branchIdApp])
 
   return (
@@ -246,7 +259,7 @@ export default function Customer() {
             allowClear
             showSearch
             style={{ width: '100%' }}
-            placeholder="Lọc theo thời gian nhập kho"
+            placeholder="Lọc theo ngày tạo"
             optionFilterProp="children"
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -352,8 +365,11 @@ export default function Customer() {
             onChange={onChangeTypeCustomer}
             allowClear
           >
-            <Option value="TIỀM NĂNG">Khách hàng tiềm năng</Option>
-            <Option value="VÃNG LAI">Khách hàng vãng lai</Option>
+            {
+              customerTypes.map((type, index) =>
+                <Option value={type.name} key={index}>{type.name}</Option>
+              )
+            }
           </Select>
         </Col>
       </Row>
@@ -396,29 +412,29 @@ export default function Customer() {
               render: (text, record) => record.phone,
               sorter: (a, b) => compare(a, b, 'phone')
             }
-          if (column.key === 'order_quantity')
-            return {
-              ...column,
-              render: (text, record) => record.order_quantity,
-              sorter: (a, b) => compare(a, b, 'order_quantity', 1)
-            }
           if (column.key === 'point')
             return {
               ...column,
               render: (text, record) => record.point,
-              sorter: (a, b) => compare(a, b, 'point', 1)
+              sorter: (a, b) => compare(a, b, 'point')
             }
           if (column.key === 'used_point')
             return {
               ...column,
               render: (text, record) => record.used_point,
-              sorter: (a, b) => compare(a, b, 'used_point', 1)
+              sorter: (a, b) => compare(a, b, 'used_point')
+            }
+          if (column.key === 'order_quantity')
+            return {
+              ...column,
+              render: (text, record) => record.order_quantity,
+              sorter: (a, b) => compare(a, b, 'order_quantity')
             }
           if (column.key === 'order_total_cost')
             return {
               ...column,
               render: (text, record) => record.order_total_cost,
-              sorter: (a, b) => compare(a, b, 'order_total_cost', 1)
+              sorter: (a, b) => compare(a, b, 'order_total_cost')
             }
           if (column.key === 'create_date')
             return {
