@@ -234,6 +234,7 @@ module.exports._createType = async (req, res, next) => {
             }
             return 0;
         })();
+        type_id++;
         req['body'] = {
             type_id: type_id,
             code: String(type_id).padStart(6, '0'),
