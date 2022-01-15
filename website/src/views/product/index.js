@@ -57,6 +57,7 @@ export default function Product() {
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  console.log(paramsFilter)
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
@@ -176,7 +177,7 @@ export default function Product() {
         ),
     },
     {
-      title: 'Kích hoạt giá sỉ',
+      title: 'Giá sỉ',
       key: 'enable_bulk_price',
     },
   ]
@@ -270,11 +271,11 @@ export default function Product() {
       <>
         <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
           <Button size="large" onClick={toggle} type="primary">
-            Cập nhật nhóm sản phẩm
+            Phân loại danh mục
           </Button>
         </Permission>
         <Modal
-          title="Cập nhật nhóm sản phẩm"
+          title="Phân loại danh mục"
           centered
           width={500}
           footer={null}
@@ -408,10 +409,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-                const fileNames = image.split('/')
-                const fileName = fileNames[fileNames.length - 1]
-                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-              })
+              const fileNames = image.split('/')
+              const fileName = fileNames[fileNames.length - 1]
+              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+            })
             : []
         )
       }
@@ -560,8 +561,8 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: '1rem' }}>
-          <Col xs={24} sm={24} md={24} lg={11} xl={10}>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, }}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={16}>
@@ -573,16 +574,18 @@ export default function Product() {
                     onChange={onSearch}
                     placeholder="Tìm kiếm theo mã, theo tên"
                     allowClear
+                    bordered={false}
                   />
                 </Col>
                 <Col span={8}>
                   <Select
                     size="large"
                     showSearch
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
                     placeholder="Chọn theo"
                     optionFilterProp="children"
                     value={optionSearchName}
+                    bordered={false}
                     onChange={(value) => {
                       delete paramsFilter[optionSearchName]
                       setOptionSearchName(value)
@@ -598,7 +601,7 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <TreeSelect
               size="large"
               style={{ width: '100%' }}
@@ -607,6 +610,7 @@ export default function Product() {
               multiple
               showSearch={false}
               treeDefaultExpandAll
+              bordered={false}
               value={
                 paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
               }
@@ -630,6 +634,164 @@ export default function Product() {
           </Col>
         </Row>
 
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, }}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+            <Row style={{ width: '100%' }}>
+              <Col span={16}>
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Lọc theo nhà cung cấp"
+                  optionFilterProp="children"
+                  bordered={false}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, supplier_id: value })}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {
+                    suppliers.map((supplier, index) =>
+                      <Option value={supplier.supplier_id} key={index}>{supplier.name}</Option>
+                    )
+                  }
+                </Select>
+              </Col>
+              <Col span={8}>
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%', borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+                  placeholder="Lọc trạng thái"
+                  optionFilterProp="children"
+                  // value={optionSearchName}
+                  bordered={false}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value })}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  <Option value={true}>Mở bán</Option>
+                  <Option value={false}>Ngừng bán</Option>
+                </Select>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+            <Select
+              style={{ width: '100%' }}
+              size="large"
+              open={isOpenSelect}
+              onBlur={() => {
+                if (isOpenSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!isOpenSelect) toggleOpenSelect()
+              }}
+              allowClear
+              showSearch
+              placeholder="Lọc theo thời gian tạo"
+              optionFilterProp="children"
+              bordered={false}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={valueTime}
+              onChange={async (value) => {
+                setValueTime(value)
+
+                paramsFilter.page = 1
+
+                //xoa params search date hien tai
+                const p = Object.keys(valueDateTimeSearch)
+                if (p.length) delete paramsFilter[p[0]]
+
+                setValueDateSearch(null)
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
+
+                if (isOpenSelect) toggleOpenSelect()
+
+                if (value) {
+                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                  setParamsFilter({ ...paramsFilter, ...searchDate })
+                  setValueDateTimeSearch({ ...searchDate })
+                } else {
+                  setParamsFilter({ ...paramsFilter })
+                  setValueDateTimeSearch({})
+                }
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <RangePicker
+                    onFocus={() => {
+                      if (!isOpenSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (isOpenSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
+
+                      if (isOpenSelect) toggleOpenSelect()
+
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
+
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
+
+                        setValueDateSearch(null)
+                        setValueTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                    style={{ width: '100%' }}
+                  />
+                  {menu}
+                </>
+              )}
+            >
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
+            </Select>
+          </Col>
+        </Row>
+
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
           <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
@@ -645,6 +807,13 @@ export default function Product() {
                 </Button>
               </Popconfirm>
             </Permission> */}
+            <Button
+              size="large"
+              // onClick={onClickClear}
+              type="primary"
+            >
+              Nhập hàng
+            </Button>
             <Button
               style={{
                 display: Object.keys(paramsFilter).length <= 2 && 'none',

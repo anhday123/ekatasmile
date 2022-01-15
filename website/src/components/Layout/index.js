@@ -18,6 +18,7 @@ import {
   Badge,
   Empty,
   Row,
+  Tooltip,
   Col,
 } from 'antd'
 
@@ -138,11 +139,44 @@ const BaseLayout = (props) => {
       icon: <ShoppingOutlined />,
     },
     {
-      pathsChild: [ROUTES.PRODUCT_ADD, ROUTES.PRODUCT_UPDATE],
+      pathsChild: [
+        ROUTES.PRODUCT_ADD,
+        ROUTES.PRODUCT_UPDATE,
+        ROUTES.REPORT_INVENTORY,
+        ROUTES.REPORT_VARIANT,
+        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
+        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_VARIANT,
+      ],
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
       permissions: [],
+      menuItems: [
+        {
+          path: ROUTES.REPORT_INVENTORY,
+          title: 'Báo cáo tồn kho theo sản phẩm',
+          permissions: [],
+          pathsChild: [],
+        },
+        {
+          path: ROUTES.REPORT_VARIANT,
+          title: 'Báo cáo tồn kho theo thuộc tính',
+          permissions: [],
+          pathsChild: [],
+        },
+        {
+          path: ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
+          title: 'Báo cáo xuất nhập tồn theo sản phẩm',
+          permissions: [],
+          pathsChild: [],
+        },
+        {
+          path: ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_VARIANT,
+          title: 'Báo cáo xuất nhập tồn theo thuộc tính',
+          permissions: [],
+          pathsChild: [],
+        },
+      ],
     },
     {
       pathsChild: [ROUTES.CATEGORY],
@@ -302,9 +336,30 @@ const BaseLayout = (props) => {
   ]
 
   const renderMenuItem = (_menu) => (
+    // console.log(_menu)
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
-        <Menu.SubMenu key={_menu.path} title={_menu.title} icon={_menu.icon}>
+        <Menu.SubMenu
+          className='edit-submenu-arrow'
+          style={{
+            height: 40,
+            backgroundColor:
+              (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
+              '#e7e9fb',
+          }}
+          key={_menu.path}
+          title={
+            <Link
+              style={{
+                fontSize: '0.8rem',
+                color:
+                  (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) ?
+                    '#5F73E2' : 'rgba(0, 0, 0, 0.85)',
+              }}
+              to={_menu.path}>{_menu.title}
+            </Link>
+          }
+          icon={_menu.icon}>
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
               <Menu.Item
@@ -317,6 +372,8 @@ const BaseLayout = (props) => {
                 }}
               >
                 <Link to={e.path}>{e.title}</Link>
+                {/* <Tooltip placement="right" title={e.title}>
+                </Tooltip> */}
               </Menu.Item>
             </Permission>
           ))}
@@ -440,7 +497,7 @@ const BaseLayout = (props) => {
           onOpenChange={onOpenChange}
           openKeys={openKeys}
           selectedKeys={routeMatch.path}
-          mode="inline"
+          mode="vertical"
         >
           {MENUS.map(renderMenuItem)}
           {/* <Menu.Item

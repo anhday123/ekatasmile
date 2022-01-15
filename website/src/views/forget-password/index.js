@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './forget-password.module.scss'
 import { Link, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
@@ -48,8 +49,17 @@ export default function ForgetPassword() {
   }
 
   return (
-    <Row justify="center" align="middle" style={{ backgroundColor: '#5B6BE8', color: 'white' }}>
-      <Col xs={24} sm={24} md={24} lg={24} xl={10}>
+    <Row className={styles['forget-pw-container']} justify="center" align="middle" >
+      <img
+        src='https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg'
+        style={{
+          width: '100%',
+          height: '100vh',
+          display: 'block'
+        }}
+        alt=""
+      />
+      <Col className={styles['forget-pw-content']} xs={24} sm={24} md={24} lg={24} xl={24}>
         <div
           style={{
             display: 'flex',
@@ -71,6 +81,7 @@ export default function ForgetPassword() {
               size="large"
               prefix={<UserOutlined />}
               placeholder="Nhập tên tài khoản"
+              className={styles['input']}
             />
           </Form.Item>
 
@@ -80,30 +91,17 @@ export default function ForgetPassword() {
               size="large"
               type="primary"
               htmlType="submit"
-              style={{ backgroundColor: 'black', borderColor: 'black', width: '100%' }}
+              className={styles['forget-pw-button']}
             >
               Xác nhận
             </Button>
           </Form.Item>
           <Row justify="end">
-            <Link to={ROUTES.LOGIN} style={{ color: 'white' }}>
+            <Link to={ROUTES.LOGIN} style={{ color: '#000' }}>
               Quay về đăng nhập
             </Link>
           </Row>
         </Form>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={24} xl={14}>
-        <img
-          src={store}
-          style={{
-            backgroundColor: 'white',
-            width: '100%',
-            paddingBottom: '4rem',
-            height: '100vh',
-            objectFit: 'contain',
-          }}
-          alt=""
-        />
       </Col>
     </Row>
   )
