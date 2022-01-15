@@ -640,7 +640,6 @@ module.exports.importFileC = async (req, res, next) => {
             }
             return _row;
         });
-        console.log(rows);
         categorySlugs = [...new Set(categorySlugs)];
         supplierSlugs = [...new Set(supplierSlugs)];
         taxSlugs = [...new Set(taxSlugs)];
