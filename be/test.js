@@ -1,6 +1,6 @@
-const { removeUnicode } = require('./utils/string-handle');
+let a = (b = c = d = 1);
 
-let text = 'Ph@n Đăng Lưu 0123 ';
-
-text = removeUnicode(text, { removeSpecialCharacter: true });
-console.log(text);
+console.log(a);
+console.log(b);
+console.log(c);
+console.log(d);

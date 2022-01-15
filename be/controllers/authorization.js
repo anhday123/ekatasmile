@@ -70,34 +70,24 @@ module.exports._register = async (req, res, next) => {
             throw new Error(`400: Số điện thoại hoặc email đã được sử dụng!`);
         }
         const DB = `${req.body.prefix}DB`;
-        let [business_id, system_user_id] = await Promise.all([
-            client
-                .db(SDB)
-                .collection('AppSetting')
-                .findOne({ name: 'Business' })
-                .then((doc) => {
-                    if (doc) {
-                        if (doc.value) {
-                            return Number(doc.value);
-                        }
-                    }
-                    return 0;
-                }),
-            client
-                .db(SDB)
-                .collection('AppSetting')
-                .findOne({ name: 'Users' })
-                .then((doc) => {
-                    if (doc) {
-                        if (doc.value) {
-                            return Number(doc.value);
-                        }
-                    }
-                    return 0;
-                }),
+        let [businessMaxId, systemUserMaxId] = await Promise.all([
+            client.db(SDB).collection('AppSetting').findOne({ name: 'Business' }),
+            client.db(SDB).collection('AppSetting').findOne({ name: 'Users' }),
         ]).catch((err) => {
             throw new Error('Kiểm tra thông tin doanh nghiệp không thành công!');
         });
+        let business_id = (() => {
+            if (businessMaxId && businessMaxId.value) {
+                return businessMaxId.value;
+            }
+            return 0;
+        })();
+        let system_user_id = (() => {
+            if (systemUserMaxId && systemUserMaxId.value) {
+                return systemUserMaxId.value;
+            }
+            return 0;
+        })();
         let otpCode = String(Math.random()).substr(2, 6);
         let verifyId = crypto.randomBytes(10).toString(`hex`);
         let verifyLink = `https://quantribanhang.viesoftware.vn/verify-account?uid=${verifyId}`;
@@ -115,12 +105,7 @@ module.exports._register = async (req, res, next) => {
         sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         business_id++;
         system_user_id++;
-        let user_id = 1;
-        let role_id = 1;
-        let branch_id = 1;
-        let store_id = 1;
-        let payment_method_id = 1;
-        let warranty_id = 1;
+        let user_id = (role_id = branch_id = store_id = payment_method_id = warranty_id = customer_id = 1);
         let _business = {
             business_id: business_id,
             system_user_id: system_user_id,
@@ -287,6 +272,39 @@ module.exports._register = async (req, res, next) => {
             sub_name: removeUnicode('Bảo hành 12 tháng', true).toLowerCase(),
             sub_type: removeUnicode('Tháng', true).toLowerCase(),
         };
+        let _customer = {
+            customer_id: customer_id,
+            code: String(customer_id).padStart(6, '0'),
+            phone: '0000000000',
+            type_id: 1,
+            first_name: 'Khách',
+            last_name: 'Lẻ',
+            gender: 'Nam',
+            birthday: moment().tz(TIMEZONE).format(),
+            address: '',
+            district: '',
+            province: '',
+            balance: {
+                available: 0,
+                debt: 0,
+                freezing: 0,
+            },
+            point: 0,
+            used_point: 0,
+            order_quantity: 0,
+            order_total_cost: 0,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: user_id,
+            active: true,
+            slug_name: removeUnicode(String('Khách' + 'Lẻ'), true).toLowerCase(),
+            slug_type: removeUnicode(String(''), true).toLowerCase(),
+            slug_gender: removeUnicode(String('Nam'), true).toLowerCase(),
+            slug_address: removeUnicode(String(''), true).toLowerCase(),
+            slug_district: removeUnicode(String(''), true).toLowerCase(),
+            slug_province: removeUnicode(String(''), true).toLowerCase(),
+        };
         await Promise.all([
             client.db(SDB).collection('Business').insertOne(_business),
             client.db(SDB).collection('Users').insertOne(_user),
@@ -296,6 +314,7 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('Branchs').insertOne(_branch),
             client.db(DB).collection('Stores').insertOne(_store),
             client.db(DB).collection('Waranties').insertOne(_warranty),
+            client.db(DB).collection('Customers').insertOne(_customer),
         ]).catch((err) => {
             throw new Error('Tạo tài khoản không thành công!');
         });
@@ -335,7 +354,19 @@ module.exports._register = async (req, res, next) => {
             client
                 .db(DB)
                 .collection('AppSetting')
-                .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: store_id } }, { upsert: true }),
+                .updateOne(
+                    { name: 'Warranties' },
+                    { $set: { name: 'Warranties', value: warranty_id } },
+                    { upsert: true }
+                ),
+            client
+                .db(DB)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'Customers' },
+                    { $set: { name: 'Customers', value: customer_id } },
+                    { upsert: true }
+                ),
         ]);
         delete _user.password;
         res.send({ success: true, data: _user, verify_with: _business.verify_with });
