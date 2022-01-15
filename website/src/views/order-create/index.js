@@ -616,6 +616,7 @@ export default function OrderCreateShipping() {
   return (
     <div className="card">
       <TitlePage
+        isAffix
         title={
           <Row
             align="middle"

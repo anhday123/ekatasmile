@@ -1,4 +1,3 @@
-import styles from './role.module.scss'
 import React, { useState, useEffect } from 'react'
 import { ACTION, PERMISSIONS, ROLE_DEFAULT, ROUTES } from 'consts'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,7 +15,10 @@ import {
   Switch,
   Input,
   Tree,
+  Space,
 } from 'antd'
+
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
 //apis
 import { addRole, getRoles, updateRole } from 'apis/role'
@@ -25,7 +27,6 @@ import { addRole, getRoles, updateRole } from 'apis/role'
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
 import Permission from 'components/permission'
 import TitlePage from 'components/title-page'
-import { ArrowLeftOutlined } from '@ant-design/icons'
 
 const { Panel } = Collapse
 export default function Role() {
@@ -362,8 +363,8 @@ export default function Role() {
     return data
       .filter((e) =>
         [
-          ...JSON.parse(localStorage.menu_list),
-          ...JSON.parse(localStorage.permission_list),
+          dataUser && dataUser.data._role.menu_list,
+          dataUser && dataUser.data._role.permission_list,
         ].includes(e.pParent || e)
       )
       .map((p) => {
@@ -387,12 +388,13 @@ export default function Role() {
         }
       })
   }
-  const generateCreateTreeData = (data) => {
-    return data
+
+  const generateCreateTreeData = (data) =>
+    data
       .filter((e) =>
         [
-          dataUser && dataUser.data._role.menu_list,
-          dataUser && dataUser.data._role.permission_list,
+          dataUser && dataUser.data && dataUser.data._role.menu_list,
+          dataUser && dataUser.data && dataUser.data._role.permission_list,
         ].includes(e.pParent || e)
       )
       .map((p) => {
@@ -408,7 +410,6 @@ export default function Role() {
           children: p.pChildren && generateCreateTreeData(p.pChildren),
         }
       })
-  }
 
   useEffect(() => {
     _getRoles()
@@ -513,8 +514,8 @@ export default function Role() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
         footer={
-          <Row justify="end" style={{ width: '100%' }} onClick={onClickAddRole}>
-            <Button type="primary" size="large">
+          <Row justify="end">
+            <Button onClick={onClickAddRole} style={{ width: 100 }} type="primary" size="large">
               Lưu
             </Button>
           </Row>
@@ -542,41 +543,36 @@ export default function Role() {
               />
             </div>
           </div>
-          <Row gutter={10} justify="start" style={{ width: '100%' }}>
-            <Col>
-              <Row align="middle">
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: '#EC7100',
-                    marginRight: 7,
-                  }}
-                ></div>
-                Menu
-              </Row>
-            </Col>
-            <Col>
-              <Row align="middle">
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: '#1772FA',
-                    marginRight: 7,
-                  }}
-                ></div>{' '}
-                Quyền thao tác
-              </Row>
-            </Col>
-          </Row>
+          <Space>
+            <Row align="middle">
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: '#EC7100',
+                  marginRight: 7,
+                }}
+              ></div>
+              Menu
+            </Row>
+            <Row align="middle">
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: '#1772FA',
+                  marginRight: 7,
+                }}
+              ></div>{' '}
+              Quyền thao tác
+            </Row>
+          </Space>
           <div style={{ marginTop: '1rem' }}>
             <Tree
               checkable
               defaultExpandAll
-              // checkStrictly
               onCheck={onCheck}
               treeData={[...generateCreateTreeData(PERMISSIONS_APP)]}
             />

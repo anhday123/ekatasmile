@@ -89,6 +89,18 @@ export default function Product() {
       const body = { variants: variantsNew }
       const res = await updateProduct(body, product.product_id)
       console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getProducts()
+          notification.success({ message: 'Cập nhật thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+        })
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -309,9 +321,7 @@ export default function Product() {
                   setLoading(false)
                   toggle()
                   await _getProducts()
-                  notification.success({
-                    message: `Cập nhật thành công nhóm sản phẩm vào các sản phẩm thành công!`,
-                  })
+                  notification.success({ message: `Cập nhật sản phẩm thành công!` })
                 } catch (error) {
                   setLoading(false)
                   toggle()

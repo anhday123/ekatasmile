@@ -19,6 +19,7 @@ import {
   Popconfirm,
   notification,
   Col,
+  Affix,
 } from 'antd'
 
 //icons
@@ -47,7 +48,6 @@ export default function OrderList() {
   const [dataPrint, setDataPrint] = useState(null)
 
   const [loading, setLoading] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
   const [employees, setEmployees] = useState([])
@@ -162,7 +162,6 @@ export default function OrderList() {
   const _getOrders = async () => {
     try {
       setLoading(true)
-      setSelectedRowKeys([])
       const res = await getOrders({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
@@ -325,10 +324,6 @@ export default function OrderList() {
         size="small"
         rowKey="order_id"
         loading={loading}
-        rowSelection={{
-          selectedRowKeys,
-          onChange: (keys) => setSelectedRowKeys(keys),
-        }}
         expandable={{
           expandedRowRender: (record) => {
             return (
@@ -472,10 +467,11 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -502,8 +498,6 @@ export default function OrderList() {
               </div>
             )
           },
-          expandedRowKeys: selectedRowKeys,
-          expandIconColumnIndex: -1,
         }}
         columns={columns.map((column) => {
           if (column.key === 'stt')
@@ -511,7 +505,7 @@ export default function OrderList() {
               ...column,
               width: 50,
               render: (text, record, index) =>
-                (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+                (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
             }
           if (column.key === 'code')
             return {
@@ -582,11 +576,7 @@ export default function OrderList() {
                   onConfirm={() => _deleteOrders(record.order_id)}
                   title="Bạn có muốn xóa đơn hàng này không?"
                 >
-                  <Button
-                    type="primary"
-                    danger
-                    icon={<DeleteOutlined />}
-                  />
+                  <Button type="primary" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
               ),
             }

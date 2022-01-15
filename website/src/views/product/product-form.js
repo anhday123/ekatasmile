@@ -70,6 +70,7 @@ export default function ProductAdd() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [keyTab, setKeyTab] = useState('1')
   const [isRenderFirst, setIsRenderFirst] = useState(false)
   const [files, setFiles] = useState([])
   const [loadingFile, setLoadingFile] = useState(false)
@@ -834,6 +835,7 @@ export default function ProductAdd() {
   }
 
   const initProductWithEditProduct = async () => {
+    setKeyTab('2')
     if (location.state) {
       const product = location.state
       console.log(product)
@@ -886,6 +888,9 @@ export default function ProductAdd() {
     }
     await delay(100)
     setIsRenderFirst(true)
+    setKeyTab('3')
+    await delay(100)
+    setKeyTab('1')
   }
 
   useEffect(() => {
@@ -943,7 +948,7 @@ export default function ProductAdd() {
       </TitlePage>
 
       <Form form={form} layout="vertical" style={{ width: '100%', marginTop: 15 }}>
-        <Tabs defaultActiveKey="1" type="card">
+        <Tabs activeKey={keyTab} type="card" onChange={setKeyTab}>
           <Tabs.TabPane tab="Thông tin sản phẩm" key="1">
             <Row justify="space-between" align="middle">
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
@@ -1463,7 +1468,7 @@ export default function ProductAdd() {
               </Col>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Thông số sản phẩm" key="4">
+          <Tabs.TabPane tab="Thông số sản phẩm" key="3">
             <Row justify="space-between" align="middle">
               <Row align="middle" style={{ marginBottom: 5, marginTop: 10, width: '100%' }}>
                 <Switch
@@ -1560,7 +1565,7 @@ export default function ProductAdd() {
               </Row>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="File đính kèm" key="5">
+          <Tabs.TabPane tab="File đính kèm" key="4">
             <div style={{ minHeight: 250 }}>
               <Upload
                 fileList={files.map((file, index) => {

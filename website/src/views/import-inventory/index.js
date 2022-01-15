@@ -505,6 +505,7 @@ export default function ImportInventory() {
     <div className="card">
       <Form layout="vertical" form={form}>
         <TitlePage
+          isAffix={true}
           title={
             <Row
               onClick={() => history.push(ROUTES.IMPORT_INVENTORIES)}
