@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import styles from './password-new.module.scss'
 import { Link, useLocation, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
@@ -62,14 +63,20 @@ export default function PasswordNew() {
   }, [])
 
   return (
-    <Row justify="center" align="middle" style={{ backgroundColor: '#5B6BE8' }}>
-      <Col xs={24} sm={24} md={24} lg={24} xl={10}>
-        <div style={{ color: 'white' }}>
+    <Row justify="center" align="middle" className={styles['pw-new-container']}>
+      <img
+        src='https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg'
+        style={{
+          width: '100%',
+          height: '100vh',
+        }}
+        alt=""
+      />
+      <Col xs={24} sm={24} md={24} lg={24} xl={10} className={styles['pw-new-content']}>
+        <div>
           <h2
             style={{
-              color: 'white',
               textAlign: 'center',
-              marginBottom: 25,
               fontSize: '1.5rem',
               fontWeight: 700,
             }}
@@ -83,11 +90,12 @@ export default function PasswordNew() {
             onFinish={_changePassword}
           >
             <Form.Item
-              label={<div style={{ color: 'white' }}>Nhập mật khẩu mới</div>}
+              label={<div>Nhập mật khẩu mới</div>}
               name="password"
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới' }]}
             >
               <Input.Password
+                className={styles['input']}
                 size="large"
                 prefix={<LockOutlined />}
                 type="password"
@@ -95,11 +103,12 @@ export default function PasswordNew() {
               />
             </Form.Item>
             <Form.Item
-              label={<div style={{ color: 'white' }}>Nhập lại mật khẩu mới</div>}
+              label={<div>Nhập lại mật khẩu mới</div>}
               name="passwordAgain"
               rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu mới' }]}
             >
               <Input.Password
+                className={styles['input']}
                 size="large"
                 prefix={<LockOutlined />}
                 type="password"
@@ -111,12 +120,7 @@ export default function PasswordNew() {
                 size="large"
                 type="primary"
                 htmlType="submit"
-                style={{
-                  width: '100%',
-                  backgroundColor: 'black',
-                  borderColor: 'black',
-                  borderRadius: 40,
-                }}
+                className={styles['pw-new-button']}
               >
                 Thay đổi mật khẩu
               </Button>
@@ -128,19 +132,6 @@ export default function PasswordNew() {
             </Row> */}
           </Form>
         </div>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={24} xl={14}>
-        <img
-          src={store}
-          style={{
-            backgroundColor: 'white',
-            width: '100%',
-            paddingBottom: '4rem',
-            height: '100vh',
-            objectFit: 'contain',
-          }}
-          alt=""
-        />
       </Col>
     </Row>
   )
