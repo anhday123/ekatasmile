@@ -525,6 +525,14 @@ module.exports._register = async (req, res, next) => {
           { $set: { name: "Users", value: 3 } },
           { upsert: true }
         ),
+        client
+        .db(DB)
+        .collection("AppSetting")
+        .updateOne(
+          { name: "Suppliers" },
+          { $set: { name: "Suppliers", value: 1 } },
+          { upsert: true }
+        ),
       client
         .db(DB)
         .collection("AppSetting")
