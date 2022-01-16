@@ -64,7 +64,7 @@ module.exports._register = async (req, res, next) => {
       .trim()
       .toLowerCase();
     req.body.password = bcrypt.hash(req.body.password);
-    if (/^((viesoftware)|(admin)|(login))$/gi.test(req.body.prefix)) {
+    if (/^((viesoftware)|(admin)|(login)|(register)|(root))$/gi.test(req.body.prefix)) {
       throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp này!`);
     }
     let [business, user] = await Promise.all([
@@ -100,7 +100,7 @@ module.exports._register = async (req, res, next) => {
 
     let otpCode = String(Math.random()).substr(2, 6);
     let verifyId = crypto.randomBytes(10).toString(`hex`);
-    let verifyLink = `https://${process.env.DOMAIN}/verify-account?uid=${verifyId}`;
+    let verifyLink = `https://${req.body.prefix}.${process.env.DOMAIN}/verify-account?uid=${verifyId}`;
     let _verifyLink = {
       username: req.body.username,
       UID: String(verifyId),
