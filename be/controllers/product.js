@@ -83,8 +83,6 @@ module.exports._create = async (req, res, next) => {
         ]).catch((err) => {
             throw new Error(err.message);
         });
-      }
-    });
     req["_variants"] = [];
     req.body.variants.map((eVariant) => {
       if (eVariant) {
