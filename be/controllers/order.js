@@ -9,9 +9,8 @@ var CryptoJS = require('crypto-js');
 
 module.exports.enumStatusOrder = async (req, res, next) => {
     try {
-        var enums =  await client.db(DB).collection("EnumStatusOrder").find({}).toArray();
-        return res.send({success:true,data:enums})
-      
+        var enums = await client.db(DB).collection('EnumStatusOrder').find({}).toArray();
+        return res.send({ success: true, data: enums });
     } catch (err) {
         next(err);
     }
@@ -19,8 +18,8 @@ module.exports.enumStatusOrder = async (req, res, next) => {
 
 module.exports.enumStatusShipping = async (req, res, next) => {
     try {
-       var enums =  await client.db(DB).collection("EnumStatusShipping").find({}).toArray();
-       return res.send({success:true,data:enums})
+        var enums = await client.db(DB).collection('EnumStatusShipping').find({}).toArray();
+        return res.send({ success: true, data: enums });
     } catch (err) {
         next(err);
     }
@@ -296,6 +295,40 @@ module.exports._create = async (req, res, next) => {
                         .updateOne({ location_id: eUpdate.location_id }, { $set: eUpdate });
                 })
             );
+            let receiptMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Finances' });
+            let receipt_id = (() => {
+                if (receiptMaxId && receiptMaxId.value) {
+                    return receiptMaxId.value;
+                }
+                return 0;
+            })();
+            receipt_id++;
+            let _finance = {
+                receipt_id: receipt_id,
+                source: req.body.source || 'AUTO',
+                //REVENUE - EXPENDITURE
+                type: req.body.type || 'REVENUE',
+                payments: req.body.payments || [],
+                value: req.body.final_cost || 0,
+                payer: (() => {
+                    req.body
+                })(),
+                receiver: req.user.user_id,
+                status: 'COMPLETE',
+                note: req.body.note || '',
+                create_date: moment().tz(TIMEZONE).format(),
+                creator_id: req.user.user_id,
+                last_update: moment().tz(TIMEZONE).format(),
+                updater_id: req.user.user_id,
+            };
+            await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Finances' }, { $set: { name: 'Finances', value: receipt_id } }, { $upsert: true });
+            let insert = await client.db(req.user.database).collection('Finances').insertOne(_finance);
         }
         req['body'] = _order;
         await orderService._create(req, res, next);
@@ -303,6 +336,14 @@ module.exports._create = async (req, res, next) => {
         next(err);
     }
 };
+
+module.exports._importFile = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports._update = async (req, res, next) => {
     try {
         req.params.order_id = Number(req.params.order_id);

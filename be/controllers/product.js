@@ -39,7 +39,6 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
     try {
-        console.log(req.user.database);
         ['products'].map((e) => {
             if (!req.body[e]) {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);

@@ -852,7 +852,7 @@ module.exports._verifyOTP = async (req, res, next) => {
       //       { $set: business }
       //     );
       let accessToken = await jwt.createToken(
-        { ...business, database: DB, _business: business },
+        { ...business, database: DB, _business: business[0] },
         30 * 24 * 60 * 60
       );
 
