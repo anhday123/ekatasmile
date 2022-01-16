@@ -661,7 +661,7 @@ module.exports._getOTP = async (req, res, next) => {
             .db(DB)
             .collection(`Users`)
             .updateOne(
-                { system_user_id: Number(user.system_user_id) },
+                { system_user_id: Number(business.system_user_id) },
                 {
                     $set: {
                         otp_code: otpCode,
