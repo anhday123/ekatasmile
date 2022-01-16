@@ -306,6 +306,38 @@ module.exports._register = async (req, res, next) => {
       slug_province: removeUnicode("", true).toLowerCase(),
     };
 
+
+    let _employee = {
+      user_id: 5,
+      code: String(4).padStart(6, "0"),
+      business_id: business_id,
+      username: "nhanvienmacdinh",
+      password: "nhanvienmacdinh",
+      role_id: 4,
+      email: "",
+      avatar: "",
+      first_name: "Nhân viên",
+      last_name: "mặc định",
+      birth_day: moment().tz(TIMEZONE).format(),
+      address: "",
+      district: "",
+      province: "",
+      branch_id: branch_id,
+      store_id: store_id,
+      otp_code: otpCode,
+      otp_timelife: moment().tz(TIMEZONE).add(5, "minutes").format(),
+      last_login: moment().tz(TIMEZONE).format(),
+      create_date: moment().tz(TIMEZONE).format(),
+      creator_id: user_id,
+      last_update: moment().tz(TIMEZONE).format(),
+      updater_id: user_id,
+      active: true,
+      slug_name: removeUnicode("", true).toLowerCase(),
+      slug_address: removeUnicode("", true).toLowerCase(),
+      slug_district: removeUnicode("", true).toLowerCase(),
+      slug_province: removeUnicode("", true).toLowerCase(),
+    };
+
     let _role = [
       {
         role_id: 1,
@@ -488,6 +520,7 @@ module.exports._register = async (req, res, next) => {
       client.db(DB).collection("Users").insertOne(_admin),
       client.db(DB).collection("Suppliers").insertOne(_supplier),
       client.db(DB).collection("Customers").insertOne(_customer),
+      client.db(DB).collection("Users").insertOne(_employee),
       client.db(DB).collection("Roles").insertMany(_role),
       client.db(DB).collection("EnumStatusOrder").insertMany(enumStatusOrder),
       client
