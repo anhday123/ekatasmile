@@ -581,6 +581,7 @@ module.exports._login = async (req, res, next) => {
       }
     });
     let [prefix, username] = req.body.username.split("_");
+    console.log(req.url)
 
     let business = await client
       .db(SDB)
