@@ -582,21 +582,20 @@ module.exports._register = async (req, res, next) => {
 
 module.exports._login = async (req, res, next) => {
   try {
-    console.log(req.url);
-    console.log(req.host)
-    console.log(req.subdomains);
-
+    let shop = req.headers[`shop`];
     ["username", "password"].map((e) => {
       if (!req.body[e]) {
         throw new Error(`400: Thiếu thuộc tính ${e}!`);
       }
     });
-    let [prefix, username] = req.body.username.split("_");
+   // let [prefix, username] = req.body.username.split("_");
+   console.log(shop)
+   var username = req.body.username;
 
     let business = await client
       .db(SDB)
       .collection("Business")
-      .findOne({ prefix: prefix });
+      .findOne({ prefix: shop });
     if (!business) {
       throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
     }
@@ -643,18 +642,18 @@ module.exports._login = async (req, res, next) => {
     if (!user) {
       throw new Error(`400: Tài khoản không tồn tại!`);
     }
-    if (user.active == false) {
-      res.status(400).send({
-        success: false,
-        message: "Tài khoản chưa được kích hoạt!",
-        data: {
-          username: user.username,
-          email: user.email,
-          verify_with: business.verify_with,
-        },
-      });
-      return;
-    }
+    // if (user.active == false) {
+    //   res.status(400).send({
+    //     success: false,
+    //     message: "Tài khoản chưa được kích hoạt!",
+    //     data: {
+    //       username: user.username,
+    //       email: user.email,
+    //       verify_with: business.verify_with,
+    //     },
+    //   });
+    //   return;
+    // }
     if (user.active == `banned`) {
       throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`);
     }
@@ -790,9 +789,6 @@ module.exports._verifyOTP = async (req, res, next) => {
     console.log(business);
     if (business.length == 0)
       throw new Error(`404: Không tìm thấy doanh nghiệp này`);
-
-    console.log("ABC");
-
     const DB = business[0].database_name;
     console.log(DB);
     let user = await client
@@ -852,13 +848,6 @@ module.exports._verifyOTP = async (req, res, next) => {
           }
         );
 
-      //   await client
-      //     .db(DB)
-      //     .collection("Business")
-      //     .updateOne(
-      //       { system_user_id: business.system_user_id },
-      //       { $set: business }
-      //     );
       let accessToken = await jwt.createToken(
         { ...business, database: DB, _business: business[0] },
         30 * 24 * 60 * 60
