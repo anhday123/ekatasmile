@@ -583,6 +583,7 @@ module.exports._register = async (req, res, next) => {
 module.exports._login = async (req, res, next) => {
   try {
     console.log(req.url);
+    console.log(req.host)
 
     ["username", "password"].map((e) => {
       if (!req.body[e]) {
