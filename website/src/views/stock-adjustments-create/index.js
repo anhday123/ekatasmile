@@ -8,6 +8,9 @@ import moment from 'moment'
 import noData from 'assets/icons/no-data.png'
 import { useDispatch, useSelector } from 'react-redux'
 
+//components
+import TitlePage from 'components/title-page'
+
 //antd
 import {
   Row,
@@ -63,11 +66,9 @@ export default function CreateReport() {
       setLoadingProduct(true)
       const res = await getProducts(params)
       console.log(res)
-      if (res.status === 200)
-        setDataProducts(res.data.data)
+      if (res.status === 200) setDataProducts(res.data.data)
       setLoadingProduct(false)
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       setLoadingProduct(false)
     }
@@ -114,37 +115,29 @@ export default function CreateReport() {
   return (
     <div className="card">
       <Form layout="vertical" form={form}>
-        <div>
-          <Affix offsetTop={65}>
-            <Row
-              className={styles['space-row']}
-              wrap={false}
-              justify="space-between"
-              align="middle"
-            >
-              <Link to={ROUTES.STOCK_ADJUSTMENTS}>
-                <Row
-                  align="middle"
-                  style={{
-                    fontSize: 18,
-                    color: 'black',
-                    fontWeight: 600,
-                    width: 'max-content',
-                  }}
-                >
-                  <ArrowLeftOutlined style={{ marginRight: 5 }} />
-                  {location.state ? 'Cập nhật' : 'Tạo'} phiếu kiểm hàng
-                </Row>
-              </Link>
-
-              <Space>
-                <Button style={{ minWidth: 100 }} size="large" type="primary">
-                  {location.state ? 'Lưu' : 'Tạo phiếu kiểm hàng'}
-                </Button>
-              </Space>
-            </Row>
-          </Affix>
-        </div>
+        <TitlePage
+          isAffix={true}
+          title={
+            <Link to={ROUTES.STOCK_ADJUSTMENTS}>
+              <Row
+                align="middle"
+                style={{
+                  fontSize: 18,
+                  color: 'black',
+                  fontWeight: 600,
+                  width: 'max-content',
+                }}
+              >
+                <ArrowLeftOutlined style={{ marginRight: 5 }} />
+                {location.state ? 'Cập nhật' : 'Tạo'} phiếu kiểm hàng
+              </Row>
+            </Link>
+          }
+        >
+          <Button style={{ minWidth: 100 }} size="large" type="primary">
+            {location.state ? 'Lưu' : 'Tạo phiếu kiểm hàng'}
+          </Button>
+        </TitlePage>
 
         <Row>
           <h3>Thông tin phiếu kiểm hàng</h3>
@@ -229,8 +222,8 @@ export default function CreateReport() {
                         e.stopPropagation()
                       }}
                     >
-                      {
-                        data.variants && data.variants.map((img) =>
+                      {data.variants &&
+                        data.variants.map((img) => (
                           <img
                             src={img.image[0] ? img.image[0] : IMAGE_DEFAULT}
                             alt={img.title}
@@ -242,8 +235,7 @@ export default function CreateReport() {
                               objectFit: 'cover',
                             }}
                           />
-                        )
-                      }
+                        ))}
 
                       <div style={{ width: '100%', marginLeft: 15 }}>
                         <Row wrap={false} justify="space-between">

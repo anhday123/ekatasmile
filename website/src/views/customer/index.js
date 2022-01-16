@@ -127,7 +127,6 @@ export default function Customer() {
     } catch (e) {
       console.log(e)
       setTableLoading(false)
-
     }
   }
 
@@ -174,17 +173,18 @@ export default function Customer() {
   const _getCustomerTypes = async () => {
     try {
       const res = await getCustomerTypes()
-      if (res.status === 200) {
-        setCustomerTypes(res.data.data)
-      }
+      if (res.status === 200) setCustomerTypes(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
   useEffect(() => {
-    _getCustomers()
     _getCustomerTypes()
+  }, [])
+
+  useEffect(() => {
+    _getCustomers()
   }, [paramsFilter, branchIdApp])
 
   return (
@@ -365,11 +365,11 @@ export default function Customer() {
             onChange={onChangeTypeCustomer}
             allowClear
           >
-            {
-              customerTypes.map((type, index) =>
-                <Option value={type.name} key={index}>{type.name}</Option>
-              )
-            }
+            {customerTypes.map((type, index) => (
+              <Option value={type.name} key={index}>
+                {type.name}
+              </Option>
+            ))}
           </Select>
         </Col>
       </Row>
@@ -398,43 +398,43 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) => <p>{record.first_name + ' ' + record.last_name}</p>,
-              sorter: (a, b) => a.first_name.length - b.first_name.length
+              sorter: (a, b) => a.first_name.length - b.first_name.length,
             }
           if (column.key === 'type')
             return {
               ...column,
               render: (text, record) => record.type,
-              sorter: (a, b) => compare(a, b, 'type')
+              sorter: (a, b) => compare(a, b, 'type'),
             }
           if (column.key === 'phone')
             return {
               ...column,
               render: (text, record) => record.phone,
-              sorter: (a, b) => compare(a, b, 'phone')
+              sorter: (a, b) => compare(a, b, 'phone'),
             }
           if (column.key === 'point')
             return {
               ...column,
               render: (text, record) => record.point,
-              sorter: (a, b) => compare(a, b, 'point')
+              sorter: (a, b) => compare(a, b, 'point'),
             }
           if (column.key === 'used_point')
             return {
               ...column,
               render: (text, record) => record.used_point,
-              sorter: (a, b) => compare(a, b, 'used_point')
+              sorter: (a, b) => compare(a, b, 'used_point'),
             }
           if (column.key === 'order_quantity')
             return {
               ...column,
               render: (text, record) => record.order_quantity,
-              sorter: (a, b) => compare(a, b, 'order_quantity')
+              sorter: (a, b) => compare(a, b, 'order_quantity'),
             }
           if (column.key === 'order_total_cost')
             return {
               ...column,
               render: (text, record) => record.order_total_cost,
-              sorter: (a, b) => compare(a, b, 'order_total_cost')
+              sorter: (a, b) => compare(a, b, 'order_total_cost'),
             }
           if (column.key === 'create_date')
             return {
@@ -456,9 +456,10 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${record.district && record.district + ', '
+                `${record.address && record.address + ', '}${
+                  record.district && record.district + ', '
                 }${record.province && record.province}`,
-              sorter: (a, b) => compare(a, b, 'address')
+              sorter: (a, b) => compare(a, b, 'address'),
             }
           if (column.key === 'action')
             return {

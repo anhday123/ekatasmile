@@ -293,9 +293,7 @@ export default function Category() {
       title: 'Hình ảnh',
       align: 'center',
       render: (text, record) =>
-        record.image ?
-          <img src={record.image} alt="" style={{ width: 70, height: 70 }} /> :
-          <img src={IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />,
+        <img src={record.image.length ? record.image : IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />
     },
     {
       title: 'Tên nhóm sản phẩm',

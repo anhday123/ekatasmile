@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
+import styles from './otp.module.scss'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
-import store from 'assets/img/store.png'
 import { verify, getOtp } from 'apis/auth'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Form, Input, Button, notification, Row, Col } from 'antd'
@@ -77,15 +77,22 @@ export default function OTP() {
   }, [])
 
   return (
-    <Row align="middle" style={{ backgroundColor: '#5B6BE8' }}>
-      <Col xs={24} sm={24} md={24} lg={24} xl={10}>
+    <Row justify="center" align="middle" className={styles['otp-container']}>
+      <img
+        src="https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg"
+        style={{
+          width: '100%',
+          height: '100vh',
+        }}
+        alt=""
+      />
+      <Col xs={24} sm={24} md={24} lg={24} xl={24} className={styles['otp-content']}>
         <div
           style={{
             display: 'flex',
             justifyContent: 'center',
             flexDirection: 'column',
             alignItems: 'center',
-            color: 'white',
             paddingLeft: '10%',
             paddingRight: '10%',
           }}
@@ -105,7 +112,7 @@ export default function OTP() {
               <Input
                 size="large"
                 onPressEnter={_verifyAccount}
-                style={{ textAlign: 'center' }}
+                className={styles['input']}
                 maxLength="6"
                 placeholder="Nhập mã xác thực otp"
               />
@@ -128,30 +135,12 @@ export default function OTP() {
           <Button
             size="large"
             type="primary"
-            style={{
-              width: '100%',
-              borderColor: 'black',
-              backgroundColor: 'black',
-              borderRadius: 40,
-              marginTop: 5,
-            }}
+            className={styles['otp-button']}
             onClick={_verifyAccount}
           >
             Xác thực
           </Button>
         </div>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={24} xl={14}>
-        <img
-          src={store}
-          style={{
-            width: '100%',
-            height: '100vh',
-            objectFit: 'contain',
-            backgroundColor: 'white',
-          }}
-          alt=""
-        />
       </Col>
     </Row>
   )

@@ -28,7 +28,7 @@ export default function PaymentMethods({
   const [costPaid, setCostPaid] = useState(0)
   const [excessCash, setExcessCash] = useState(0)
 
-  const _inputValue = (value, index) => {
+  const inputValue = (value, index) => {
     let paymentsNew = [...payments]
     paymentsNew[index].value = value
 
@@ -187,7 +187,7 @@ export default function PaymentMethods({
                 <InputNumber
                   onBlur={(e) => {
                     const value = e.target.value.replaceAll(',', '')
-                    _inputValue(+value, index)
+                    inputValue(+value, index)
                   }}
                   defaultValue={payment.value}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -215,12 +215,7 @@ export default function PaymentMethods({
                       title="Bạn có muốn xoá phương thức thanh toán này ?"
                     >
                       <DeleteOutlined
-                        style={{
-                          fontSize: 15,
-                          color: 'red',
-                          cursor: 'pointer',
-                          marginLeft: 10,
-                        }}
+                        style={{ fontSize: 15, color: 'red', cursor: 'pointer', marginLeft: 10 }}
                       />
                     </Popconfirm>
                   </Row>

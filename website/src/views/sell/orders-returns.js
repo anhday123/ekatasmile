@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { formatCash } from 'utils'
 
 //antd
-import { Modal, Space, Input, Select, Table, Button, Radio } from 'antd'
+import { Modal, Space, Input, Select, Table, Button, Radio, DatePicker } from 'antd'
 
 //icons
 import { SearchOutlined } from '@ant-design/icons'
@@ -16,6 +16,12 @@ export default function OrdersReturn() {
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
+
+  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({ this_week: true })
+  const [isOpenSelect, setIsOpenSelect] = useState(false)
+  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
 
   const [ordersRefund, setOrdersRefund] = useState([])
   const [finalCost, setFinalCost] = useState(0)
@@ -102,6 +108,7 @@ export default function OrdersReturn() {
       render: (text, record) => (record.first_name || '') + ' ' + (record.last_name || ''),
     },
     {
+      title: 'Hành động',
       render: () => (
         <Button
           style={{
@@ -142,10 +149,112 @@ export default function OrdersReturn() {
               style={{ width: 350 }}
               placeholder="Tìm kiếm mã đơn hàng"
             />
-            <Select style={{ width: 300 }} placeholder="Lọc theo thời gian">
-              <Select.Option>Today</Select.Option>
-              <Select.Option>Yesterday</Select.Option>
-              <Select.Option>This month</Select.Option>
+            <Select
+              open={isOpenSelect}
+              onBlur={() => {
+                if (isOpenSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!isOpenSelect) toggleOpenSelect()
+              }}
+              allowClear
+              showSearch
+              style={{ width: 270 }}
+              placeholder="Lọc theo ngày tạo"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={valueTime}
+              onChange={async (value) => {
+                setValueTime(value)
+
+                paramsFilter.page = 1
+
+                //xoa params search date hien tai
+                const p = Object.keys(valueDateTimeSearch)
+                if (p.length) delete paramsFilter[p[0]]
+
+                setValueDateSearch(null)
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
+
+                if (isOpenSelect) toggleOpenSelect()
+
+                if (value) {
+                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                  setParamsFilter({ ...paramsFilter, ...searchDate })
+                  setValueDateTimeSearch({ ...searchDate })
+                } else {
+                  setParamsFilter({ ...paramsFilter })
+                  setValueDateTimeSearch({})
+                }
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <DatePicker.RangePicker
+                    onFocus={() => {
+                      if (!isOpenSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (isOpenSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
+
+                      if (isOpenSelect) toggleOpenSelect()
+
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
+
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
+
+                        setValueDateSearch(null)
+                        setValueTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                    style={{ width: '100%' }}
+                  />
+                  {menu}
+                </>
+              )}
+            >
+              <Select.Option value="today">Hôm nay</Select.Option>
+              <Select.Option value="yesterday">Hôm qua</Select.Option>
+              <Select.Option value="this_week">Tuần này</Select.Option>
+              <Select.Option value="last_week">Tuần trước</Select.Option>
+              <Select.Option value="this_month">Tháng này</Select.Option>
+              <Select.Option value="last_month">Tháng trước</Select.Option>
+              <Select.Option value="this_year">Năm này</Select.Option>
+              <Select.Option value="last_year">Năm trước</Select.Option>
             </Select>
           </Space>
           <Table

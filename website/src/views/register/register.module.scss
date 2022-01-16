@@ -29,7 +29,6 @@
       margin: 0 auto !important;
       text-align: center;
       width: 700px;
-      padding-top: 10px;
     }
     &--logo {
       img {
@@ -56,9 +55,10 @@
 }
 
 .input {
-  width: 100% !important;
+  width: 80% !important;
   padding: 12px 10px 12px 19px !important;
   border-radius: 50px !important;
+  height: 40px !important;
 }
 
 .btn-registration {

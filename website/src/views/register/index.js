@@ -112,7 +112,7 @@ export default function Login() {
             <div className={styles['registration-content-container']}>
               <div className={styles['registration-content--form']}>
                 <Form layout="vertical" form={formRegister} onFinish={_register}>
-                  <Row gutter={[20, 20]} style={{ padding: '0px 20px' }}>
+                  <Row className='edit-form-item-register' gutter={[20, 20]} style={{ padding: '0px 20px' }}>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
@@ -120,7 +120,7 @@ export default function Login() {
                         rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
                       >
                         <Input
-                          style={{ width: '100%' }}
+                          style={{ width: '100%', height: '40px !important' }}
                           size="large"
                           placeholder="Nhập tên doanh nghiệp"
                           className={styles['input']} />
@@ -158,14 +158,14 @@ export default function Login() {
                       </Form.Item>
                     </Col>
                     {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                  <Form.Item
+                    <Form.Item
                     rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
                     label={<div style={{ color: 'white' }}>Tên</div>}
                     name="last_name"
-                  >
+                    >
                     <Input size="large" placeholder="Tên" />
-                  </Form.Item>
-                </Col> */}
+                    </Form.Item>
+                    </Col> */}
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Mật khẩu</div>}

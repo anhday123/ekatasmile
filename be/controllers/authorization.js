@@ -456,6 +456,38 @@ module.exports._register = async (req, res, next) => {
       sub_type: removeUnicode("Tháng", true).toLowerCase(),
     };
 
+    // // DRAFT  - PROCESSING - COMPLETE - CANCEL // - REFUND
+    var enumStatusOrder = [
+      {
+        name: "DRAFT",
+        label: "Lưu Nháp",
+        default: true,
+      },
+      {
+        name: "PROCESSING",
+        label: "Đang Xử Lí",
+      },
+      { name: "COMPLETE", label: "Hoàn Thành" },
+      { name: "CANCEL", label: "Huỷ Bỏ" },
+      { name: "REFUND", label: "Hoàn Trả" },
+    ];
+
+    // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
+    var enumStatusShipping = [
+      {
+        name: "DRAFT",
+        label: "Đợi Đóng Gói",
+        default: true,
+      },
+      {
+        name: "PROCESSING",
+        label: "Đợi Vận Chuyển",
+      },
+      { name: "SHIPPING", label: "Đang Vận Chuyển" },
+      { name: "COMPLETE", label: "Hoàn Thành" },
+      { name: "CANCEL", label: "Huỷ Bỏ" },
+    ];
+
     // Những model mặc định
     await Promise.all([
       client.db(SDB).collection("Business").insertOne(_business),
@@ -463,6 +495,8 @@ module.exports._register = async (req, res, next) => {
       client.db(DB).collection("Suppliers").insertOne(_supplier),
       client.db(DB).collection("Customers").insertOne(_customer),
       client.db(DB).collection("Roles").insertMany(_role),
+      client.db(DB).collection("EnumStatusOrder").insertMany(enumStatusOrder),
+      client.db(DB).collection("EnumStatusShipping").insertMany(enumStatusShipping),
       client.db(DB).collection("PaymentMethods").insertOne(_paymentMethod),
       client.db(DB).collection("Branchs").insertOne(_branch),
       client.db(DB).collection("Waranties").insertOne(_warranty),
@@ -532,7 +566,7 @@ module.exports._register = async (req, res, next) => {
       success: true,
       data: _business,
       verify_with: _business.verify_with,
-      verify_link: verifyLink
+      verify_link: verifyLink,
     });
   } catch (err) {
     next(err);

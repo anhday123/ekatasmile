@@ -1,12 +1,30 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
-const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-
+const client = require(`../config/mongodb`);
 const orderService = require(`../services/order`);
 const { Order, OrderDetail } = require('../models/order');
 
 var CryptoJS = require('crypto-js');
+
+module.exports.enumStatusOrder = async (req, res, next) => {
+    try {
+        var enums =  await client.db(DB).collection("EnumStatusOrder").find({}).toArray();
+        return res.send({success:true,data:enums})
+      
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports.enumStatusShipping = async (req, res, next) => {
+    try {
+       var enums =  await client.db(DB).collection("EnumStatusShipping").find({}).toArray();
+       return res.send({success:true,data:enums})
+    } catch (err) {
+        next(err);
+    }
+};
 
 module.exports._get = async (req, res, next) => {
     try {
