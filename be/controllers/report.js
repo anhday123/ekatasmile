@@ -640,17 +640,25 @@ module.exports._getFinanceReport = async (req, res, next) => {
             aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         }
         // lấy data từ database
-        let [result, counts] = await Promise.all([
+        let [result, counts, total] = await Promise.all([
             client.db(req.user.database).collection(`Finances`).aggregate(aggregateQuery).toArray(),
             client
                 .db(req.user.database)
                 .collection(`Finances`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
+            client
+                .db(req.user.database)
+                .collection(`Finances`)
+                .aggregate([...countQuery, { $group: { _id: { type: '$type' }, total: { $sum: '$value' } } }])
+                .toArray(),
         ]);
+        let [totalRevenue, totalExpenditure] = total;
         res.send({
             success: true,
             count: counts[0] ? counts[0].counts : 0,
+            total_revenue: totalRevenue ? totalRevenue.total : 0,
+            total_expenditure: totalExpenditure ? totalExpenditure.total : 0,
             data: result,
         });
     } catch (err) {
@@ -675,6 +683,7 @@ module.exports._createFinanceReport = async (req, res, next) => {
         receipt_id++;
         let _finance = {
             receipt_id: receipt_id,
+            source: req.body.source || 'AUTO',
             //REVENUE - EXPENDITURE
             type: req.body.type || 'REVENUE',
             payments: req.body.payments || [],
