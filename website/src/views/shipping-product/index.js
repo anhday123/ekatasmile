@@ -29,7 +29,12 @@ import columnsProduct from './columns'
 
 //apis
 import { getAllBranch } from 'apis/branch'
-import { getTransportOrders, deleteTransportOrder, updateTransportOrder } from 'apis/transport'
+import {
+  getTransportOrders,
+  deleteTransportOrder,
+  updateTransportOrder,
+  getStatusTransportOrder,
+} from 'apis/transport'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -47,7 +52,7 @@ export default function ShippingProduct() {
 
   const [branches, setBranches] = useState([])
   const [columns, setColumns] = useState([])
-
+  const [statusTransportOrder, setStatusTransportOrder] = useState([])
   const [totalTransportOrder, setTotalTransportOrder] = useState(0)
   const [transportOrders, setTransportOrders] = useState([])
   const [loading, setLoading] = useState(false)
@@ -239,8 +244,18 @@ export default function ShippingProduct() {
     }
   }
 
+  const _getStatus = async () => {
+    try {
+      const res = await getStatusTransportOrder()
+      if (res.status === 200) setStatusTransportOrder(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getBranches()
+    _getStatus()
   }, [])
 
   useEffect(() => {
@@ -419,11 +434,11 @@ export default function ShippingProduct() {
               value={paramsFilter.status}
               onChange={(value) => _onFilters('status', value)}
             >
-              <Option value="DRAFT">Lưu nháp</Option>
-              <Option value="VERIFY">Xác nhận</Option>
-              <Option value="SHIPPING">Đang chuyển</Option>
-              <Option value="COMPLETE">Hoàn thành</Option>
-              <Option value="CANCEL">Hủy</Option>
+              {statusTransportOrder.map((status, index) => (
+                <Select.Option value={status.name} key={index}>
+                  {status.label}
+                </Select.Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={6}>

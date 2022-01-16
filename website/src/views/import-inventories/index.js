@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 import { formatCash } from 'utils'
-import { BILL_STATUS_ORDER, ROUTES } from 'consts'
+import { ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
@@ -387,10 +387,11 @@ export default function ImportInventories() {
           )}
           <ImportCSV
             size="large"
+            txt="Nhập hàng"
             upload={uploadOrdersImportInventory}
             reload={_getOrdersImportInventory}
-            title="Nhập đơn hàng bằng file excel"
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/13/707a9b2d-ecf8-4ebf-b07f-271e188ce1b0/NhapKhoAO.xlsx"
+            title="Nhập hàng bằng file excel"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/823f2fb4-c3da-4203-9269-6f264cf412a3/InventoryImport.xlsx"
           />
           <SettingColumns
             columns={columns}
@@ -633,7 +634,7 @@ export default function ImportInventories() {
             if (column.key === 'status')
               return {
                 ...column,
-                render: (text, record) => record.status && BILL_STATUS_ORDER[record.status],
+                render: (text, record) => record.status,
               }
             if (column.key === 'action')
               return {

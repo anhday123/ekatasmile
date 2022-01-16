@@ -38,118 +38,50 @@ module.exports._get = async (req, res, next) => {
 };
 
 module.exports._create = async (req, res, next) => {
-  try {
-    console.log(req.user.database);
-    ["products"].map((e) => {
-      if (!req.body[e]) {
-        throw new Error(`400: Thiếu thuộc tính ${e}!`);
-      }
-    });
-    [req.body] = req.body.products;
-    let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
-      client
-        .db(req.user.database)
-        .collection("AppSetting")
-        .findOne({ name: "Products" })
-        .then((doc) => {
-          if (doc && doc.value) {
-            return doc.value;
-          }
-          return 0;
-        }),
-      client
-        .db(req.user.database)
-        .collection("AppSetting")
-        .findOne({ name: "Attributes" })
-        .then((doc) => {
-          if (doc && doc.value) {
-            return doc.value;
-          }
-          return 0;
-        }),
-      client
-        .db(req.user.database)
-        .collection("AppSetting")
-        .findOne({ name: "Variants" })
-        .then((doc) => {
-          if (doc && doc.value) {
-            return doc.value;
-          }
-          return 0;
-        }),
-      client
-        .db(req.user.database)
-        .collection("Suppliers")
-        .findOne({ supplier_id: Number(req.body.supplier_id) }),
-    ]).catch((err) => {
-      throw new Error(err.message);
-    });
-    product_id++;
-    req["_product"] = {
-      product_id: Number(product_id),
-      code: String(product_id).padStart(6, "0"),
-      name: String(req.body.name).toUpperCase(),
-      sku: String(req.body.sku).toUpperCase(),
-      slug: removeUnicode(String(req.body.name || ""), false).replace(
-        /\s/g,
-        "-"
-      ),
-      supplier_id: req.body.supplier_id || 0,
-      category_id: req.body.category_id || [],
-      tax_id: req.body.tax_id || [],
-      warranties: req.body.warranties || [],
-      image: req.body.image || [],
-      length: req.body.length || 0,
-      width: req.body.width || 0,
-      height: req.body.height || 0,
-      weight: req.body.weight || 0,
-      unit: req.body.unit || "",
-      brand_id: req.body.brand_id || 0,
-      origin_code: req.body.origin_code || "",
-      status: req.body.status || "",
-      description: req.body.description || "",
-      tags: req.body.tags || [],
-      files: req.body.files || [],
-      sale_quantity: req.body.sale_quantity || 0,
-      create_date: moment().tz(TIMEZONE).format(),
-      last_update: moment().tz(TIMEZONE).format(),
-      creator_id: Number(req.user.user_id),
-      active: true,
-      slug_name: removeUnicode(String(req.body.name || ""), true).toLowerCase(),
-      slug_tags: (() => {
-        if (req.body.tags) {
-          return req.body.tags.map((tag) => {
-            return removeUnicode(String(tag), true).toLowerCase();
-          });
-        }
-      })(),
-    };
-    req["_attributes"] = [];
-    req.body.attributes.map((eAttribute) => {
-      if (eAttribute) {
-        attribute_id++;
-        req._attributes.push({
-          attribute_id: Number(attribute_id),
-          product_id: Number(product_id),
-          option: String(eAttribute.option).toUpperCase(),
-          values: (() => {
-            return eAttribute.values.map((eValue) => {
-              return String(eValue).toUpperCase();
-            });
-          })(),
-          create_date: moment().tz(TIMEZONE).format(),
-          last_update: moment().tz(TIMEZONE).format(),
-          creator_id: Number(req.user.user_id),
-          active: true,
-          slug_option: removeUnicode(
-            String(eAttribute.option),
-            true
-          ).toLowerCase(),
-          slug_values: (() => {
-            return eAttribute.values.map((eValue) => {
-              return removeUnicode(String(eValue), true).toLowerCase();
-            });
-          })(),
+    try {
+        ['products'].map((e) => {
+            if (!req.body[e]) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
+        });
+        [req.body] = req.body.products;
+        let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Products' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Attributes' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Variants' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+            client
+                .db(req.user.database)
+                .collection('Suppliers')
+                .findOne({ supplier_id: Number(req.body.supplier_id) }),
+        ]).catch((err) => {
+            throw new Error(err.message);
         });
       }
     });

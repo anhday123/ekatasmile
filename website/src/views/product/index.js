@@ -44,7 +44,7 @@ import {
 //apis
 import { getSuppliers } from 'apis/supplier'
 import { getCategories } from 'apis/category'
-import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
+import { getProducts, updateProduct, deleteProducts, importProducts } from 'apis/product'
 import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
@@ -409,10 +409,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-              const fileNames = image.split('/')
-              const fileName = fileNames[fileNames.length - 1]
-              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-            })
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
             : []
         )
       }
@@ -541,7 +541,7 @@ export default function Product() {
             <ImportCSV
               size="large"
               txt="Import sản phẩm"
-              upload={importProduct}
+              upload={importProducts}
               title="Nhập sản phẩm bằng file excel"
               fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
               reload={_getProducts}
@@ -561,7 +561,7 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, }}>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
@@ -581,7 +581,11 @@ export default function Product() {
                   <Select
                     size="large"
                     showSearch
-                    style={{ width: '100%', borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+                    style={{
+                      width: '100%',
+                      borderLeft: '1px solid #d9d9d9',
+                      borderRight: '1px solid #d9d9d9',
+                    }}
                     placeholder="Chọn theo"
                     optionFilterProp="children"
                     value={optionSearchName}
@@ -634,7 +638,7 @@ export default function Product() {
           </Col>
         </Row>
 
-        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, }}>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Row style={{ width: '100%' }}>
               <Col span={16}>
@@ -651,11 +655,11 @@ export default function Product() {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {
-                    suppliers.map((supplier, index) =>
-                      <Option value={supplier.supplier_id} key={index}>{supplier.name}</Option>
-                    )
-                  }
+                  {suppliers.map((supplier, index) => (
+                    <Option value={supplier.supplier_id} key={index}>
+                      {supplier.name}
+                    </Option>
+                  ))}
                 </Select>
               </Col>
               <Col span={8}>
@@ -663,7 +667,11 @@ export default function Product() {
                   allowClear
                   size="large"
                   showSearch
-                  style={{ width: '100%', borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+                  style={{
+                    width: '100%',
+                    borderLeft: '1px solid #d9d9d9',
+                    borderRight: '1px solid #d9d9d9',
+                  }}
                   placeholder="Lọc trạng thái"
                   optionFilterProp="children"
                   // value={optionSearchName}
