@@ -39,7 +39,7 @@ import { getWarranties } from 'apis/warranty'
 import { getSuppliers } from 'apis/supplier'
 import { getAllStore } from 'apis/store'
 import { getCategories } from 'apis/category'
-import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
+import { getProducts, updateProduct, deleteProducts, importProducts } from 'apis/product'
 import { compare } from 'utils'
 
 const { Option } = Select
@@ -486,7 +486,7 @@ export default function Product() {
                 <ImportCSV
                   size="large"
                   txt="Import sản phẩm"
-                  upload={importProduct}
+                  upload={importProducts}
                   title="Nhập sản phẩm bằng file excel"
                   fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/28/4f5990e3-7325-4188-b09b-758b55b6148e/templated products import 4.xlsx"
                   reload={_getProducts}

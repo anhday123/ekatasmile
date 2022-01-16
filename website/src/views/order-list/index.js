@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
-import { ROUTES, PERMISSIONS, BILL_STATUS_ORDER, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
+import { ROUTES, PERMISSIONS, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
@@ -33,7 +33,7 @@ import columnsOrder from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getOrders, deleteOrders } from 'apis/order'
+import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 
 const { RangePicker } = DatePicker
@@ -46,7 +46,7 @@ export default function OrderList() {
 
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
-
+  const [statusOrder, setStatusOrder] = useState([])
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
@@ -179,13 +179,22 @@ export default function OrderList() {
     try {
       const res = await getEmployees()
       if (res.status === 200) setEmployees(res.data.data)
-      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getStatus = async () => {
+    try {
+      const res = await getStatusOrder()
+      if (res.status === 200) setStatusOrder(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
   useEffect(() => {
+    _getStatus()
     _getEmployees()
   }, [])
 
@@ -276,9 +285,9 @@ export default function OrderList() {
             style={{ width: '100%' }}
           >
             <Select.Option value="">Tất cả</Select.Option>
-            {Object.keys(BILL_STATUS_ORDER).map((status, index) => (
-              <Select.Option value={status} key={index}>
-                {BILL_STATUS_ORDER[status]}
+            {statusOrder.map((status, index) => (
+              <Select.Option value={status.name} key={index}>
+                {status.label}
               </Select.Option>
             ))}
           </Select>
@@ -557,7 +566,7 @@ export default function OrderList() {
           if (column.key === 'bill_status')
             return {
               ...column,
-              render: (text) => BILL_STATUS_ORDER[text] || '',
+              render: (text) => text,
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
           if (column.key === 'payment_status')
