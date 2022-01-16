@@ -584,6 +584,7 @@ module.exports._login = async (req, res, next) => {
   try {
     console.log(req.url);
     console.log(req.host)
+    console.log(req.subdomains);
 
     ["username", "password"].map((e) => {
       if (!req.body[e]) {
