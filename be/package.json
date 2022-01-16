@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js",
+    "start": "pm2 start index.js",
     "restart": "pm2 restart index.js",
     "push": "rm -r node_modules && scp -r ../be root@103.81.87.65:/root/Admin_Order/be && exit"
   },
