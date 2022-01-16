@@ -532,6 +532,7 @@ module.exports._register = async (req, res, next) => {
       success: true,
       data: _business,
       verify_with: _business.verify_with,
+      verify_link: verifyLink
     });
   } catch (err) {
     next(err);
