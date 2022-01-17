@@ -50,28 +50,29 @@ export default function Category() {
   )
 
   const PRODUCT_TYPES = [
-    'slug_title',
-    'slug_description',
-    'slug_sku',
-    'slug_origin_price',
-    'slug_sale_price',
-    'slug_compare_at_price',
-    'slug_weight',
-    'slug_inventory_stock',
-    'slug_variant_description',
-    'slug_variant_sku',
-    'slug_variant_origin_price',
-    'slug_variant_sale_price',
-    'slug_variant_compare_at_price',
-    'slug_variant_inventory_stock',
-    'slug_variant_weight',
-    'date_created',
-    'variant_date_created',
+    { slug_title: 'Tiêu đề' },
+    { slug_description: 'Mô tả' },
+    { slug_sku: 'Sku' },
+    { slug_origin_price: 'Giá gốc' },
+    { slug_sale_price: 'Giá bán' },
+    { slug_compare_at_price: 'So sánh giá' },
+    { slug_weight: 'Trọng lượng' },
+    { slug_inventory_stock: 'Kho hàng tồn kho' },
+    { slug_variant_description: 'Mô tả thuộc tính' },
+    { slug_variant_sku: 'Sku thuộc tính' },
+    { slug_variant_origin_price: 'Giá gốc thuộc tính' },
+    { slug_variant_sale_price: 'Giá bán thuộc tính' },
+    { slug_variant_compare_at_price: 'Thuộc tính so sánh ở mức giá' },
+    { slug_variant_inventory_stock: 'Thuộc tính tồn kho' },
+    { slug_variant_weight: 'Thuộc tính tồn kho' },
+    { slug_variant_inventory_stock: 'Trọng lượng thuộc tính' },
+    { date_created: 'Ngày tạo' },
+    { variant_date_created: 'Ngày tạo thuộc tính' },
   ]
 
   const ARCHIVES = [
     {
-      name: 'is_equal_to',
+      name: { is_equal_to: 'bằng' },
       actives: [
         'slug_title',
         'slug_description',
@@ -81,7 +82,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'is_not_equal_to',
+      name: { is_not_equal_to: 'không bằng' },
       actives: [
         'slug_title',
         'slug_description',
@@ -91,7 +92,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'is_greater_than',
+      name: { is_greater_than: 'không bằng' },
       actives: [
         'slug_origin_price',
         'slug_sale_price',
@@ -108,7 +109,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'is_less_than',
+      name: { is_less_than: 'ít hơn' },
       actives: [
         'slug_origin_price',
         'slug_sale_price',
@@ -125,7 +126,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'contains',
+      name: { contains: 'chứa' },
       actives: [
         'slug_title',
         'slug_description',
@@ -135,7 +136,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'does_not_contains',
+      name: { does_not_contains: 'không chứa' },
       actives: [
         'slug_title',
         'slug_description',
@@ -145,7 +146,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'is_not_empty',
+      name: { is_not_empty: 'không trống rỗng' },
       actives: [
         'slug_title',
         'slug_description',
@@ -155,7 +156,7 @@ export default function Category() {
       ],
     },
     {
-      name: 'is_empty',
+      name: { is_empty: 'trống rỗng' },
       actives: [
         'slug_title',
         'slug_description',
@@ -251,7 +252,7 @@ export default function Category() {
       </TitlePage>
       <Form layout="vertical" form={form}>
         <Row style={{ margin: '25px 0px' }}>
-          <div style={{ width: '50%' }}>
+          <div style={{ width: '60%' }}>
             <Form.Item valuePropName="checked" name="default">
               <Checkbox>Chọn làm mặc định</Checkbox>
             </Form.Item>
@@ -305,19 +306,18 @@ export default function Category() {
                         onChange={(value) => {
                           const conditionsNew = [...conditions]
                           conditionsNew[index].name = value
-
                           const labelFind = ARCHIVES.find((e) => e.actives.includes(value))
-                          if (labelFind) conditionsNew[index].operator = labelFind.name
-
+                          if (labelFind)
+                            conditionsNew[index].operator = Object.keys(labelFind.name)[0]
                           setConditions([...conditionsNew])
                         }}
                       >
-                        {PRODUCT_TYPES.map((type, index) => {
-                          let typeNew = type.replace('slug_', '')
+                        {PRODUCT_TYPES.map((objectType, index) => {
+                          const type = Object.keys(objectType)
 
                           return (
-                            <Select.Option key={index} value={type}>
-                              {(typeNew[0].toUpperCase() + typeNew.slice(1)).replaceAll('_', ' ')}
+                            <Select.Option key={index} value={type[0]}>
+                              {objectType[type[0]]}
                             </Select.Option>
                           )
                         })}
@@ -334,10 +334,10 @@ export default function Category() {
                         {ARCHIVES.map((archive, index) => (
                           <Select.Option
                             key={index}
-                            value={archive.name}
+                            value={Object.keys(archive.name)[0]}
                             disabled={!archive.actives.includes(condition.name) && true}
                           >
-                            {archive.name.replaceAll('_', ' ')}
+                            {archive.name[Object.keys(archive.name)[0]]}
                           </Select.Option>
                         ))}
                       </Select>
@@ -394,7 +394,7 @@ export default function Category() {
               </div>
             </div>
           </div>
-          <div style={{ width: '50%' }}>
+          <div style={{ width: '40%' }}>
             <Form.Item
               rules={[{ required: true, message: 'Vui lòng nhập tên nhóm sản phẩm' }]}
               name="name"
