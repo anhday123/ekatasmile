@@ -191,7 +191,7 @@ export default function Shipping() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19 }}>
+        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19, border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
               prefix={<SearchOutlined />}
@@ -202,10 +202,10 @@ export default function Shipping() {
               onChange={onSearch}
               placeholder="Tìm kiếm theo tên vận chuyển"
               allowClear
+              bordered={false}
             />
           </Col>
-
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
             <Select
               allowClear
               size="large"
@@ -218,13 +218,14 @@ export default function Shipping() {
               }
               value={paramsFilter.province}
               onChange={(value) => _onFilter('province', value)}
+              bordered={false}
             >
               {provinces.map((values, index) => {
                 return <Option value={values.province_name}>{values.province_name}</Option>
               })}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Select
               allowClear
               size="large"
@@ -237,6 +238,7 @@ export default function Shipping() {
               }
               value={paramsFilter.district}
               onChange={(value) => _onFilter('district', value)}
+              bordered={false}
             >
               {districts.map((values, index) => {
                 return (
@@ -262,6 +264,7 @@ export default function Shipping() {
               style={{ width: '100%' }}
               placeholder="Lọc theo thời gian"
               optionFilterProp="children"
+              bordered={false}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }

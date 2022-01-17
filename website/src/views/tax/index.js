@@ -377,47 +377,41 @@ export default function Tax() {
 
         <Row
           style={{
-            display: 'flex',
             margin: '1rem 0',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            width: '100%',
           }}
         >
-          <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                style={{ width: '100%' }}
-                name="name"
-                value={valueSearch}
-                enterButton
-                onChange={onSearch}
-                placeholder="Tìm kiếm theo tên"
-                allowClear
-              />
-            </div>
+          <Col style={{ borderRight: 'none', border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+            <Input
+              size="large"
+              style={{ width: '100%' }}
+              name="name"
+              value={valueSearch}
+              enterButton
+              onChange={onSearch}
+              placeholder="Tìm kiếm theo tên"
+              allowClear
+              bordered={false}
+            />
           </Col>
-          <Col style={{ width: '100%', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                value={
-                  clear === 1
-                    ? []
-                    : start !== ''
+          <Col style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+            <RangePicker
+              size="large"
+              className="br-15__date-picker"
+              value={
+                clear === 1
+                  ? []
+                  : start !== ''
                     ? [moment(start, dateFormat), moment(end, dateFormat)]
                     : []
-                }
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                onChange={onChangeDate}
-              />
-            </div>
+              }
+              style={{ width: '100%' }}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              onChange={onChangeDate}
+              bordered={false}
+            />
           </Col>
         </Row>
 

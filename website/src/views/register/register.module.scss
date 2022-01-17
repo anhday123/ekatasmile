@@ -3,11 +3,13 @@
   width: 100%;
   overflow: hidden;
   position: relative;
+  font-family: Nunito;
   img {
     width: 100%;
     height: 100%;
   }
   &-content {
+    margin-top: 20px;
     position: absolute;
     top: 0;
     width: 100%;
@@ -29,11 +31,21 @@
       margin: 0 auto !important;
       text-align: center;
       width: 700px;
+
+      h2 {
+        margin: 0px;
+        font-weight: 800;
+        font-size: 20px;
+        line-height: 41px;
+        text-align: center;
+        color: #ffffff;
+      }
     }
     &--logo {
       img {
-        width: 25%;
-        height: 25%;
+        width: 10%;
+        height: 10%;
+        margin-bottom: 10px;
       }
     }
     &--title {
@@ -50,25 +62,28 @@
     }
     &--form {
       margin-top: 24px;
+      .input {
+        width: 60% !important;
+        padding: 12px 10px 12px 19px !important;
+        height: 40px !important;
+        background-color: #fff !important;
+      }
+      .btn-registration {
+        background: #fff !important;
+        font-size: 20px;
+        height: 100%;
+        width: 60%;
+        span {
+          color: #2148c1;
+        }
+      }
+      .btn-registration:hover {
+        span {
+          color: #2148c1;
+        }
+      }
     }
   }
-}
-
-.input {
-  width: 80% !important;
-  padding: 12px 10px 12px 19px !important;
-  border-radius: 50px !important;
-  height: 40px !important;
-}
-
-.btn-registration {
-  margin-top: 30px;
-  background: #2ad38b !important;
-  border-color: #2ad38b !important;
-  border-radius: 45px !important;
-  font-size: 25px;
-  height: 60px;
-  width: 340px;
 }
 
 @media screen and (max-width: 768px) {

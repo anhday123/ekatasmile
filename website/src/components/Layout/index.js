@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES, PERMISSIONS, LOGO_DEFAULT } from 'consts'
-import { Link, useLocation, useRouteMatch } from 'react-router-dom'
+import { Link, useLocation, useRouteMatch, useHistory } from 'react-router-dom'
 import { Bell, Plus } from 'utils/icon'
 import jwt_decode from 'jwt-decode'
 
@@ -55,6 +55,7 @@ import { getAllBranch } from 'apis/branch'
 
 const { Sider } = Layout
 const BaseLayout = (props) => {
+  const history = useHistory()
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
@@ -337,11 +338,10 @@ const BaseLayout = (props) => {
   ]
 
   const renderMenuItem = (_menu) => (
-    // console.log(_menu)
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
         <Menu.SubMenu
-          className="edit-submenu-arrow"
+          className={`${styles['edit-submenu-arrow']} edit-submenu-arrow`}
           style={{
             height: 40,
             backgroundColor:

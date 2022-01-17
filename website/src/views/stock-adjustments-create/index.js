@@ -96,7 +96,7 @@ export default function CreateReport() {
     },
     {
       title: 'Tên Sản phẩm',
-      dataIndex: 'product_name',
+      dataIndex: 'name',
     },
     {
       title: 'Đơn vị',
@@ -104,7 +104,11 @@ export default function CreateReport() {
     },
     {
       title: 'Tồn chi nhánh',
-      dataIndex: 'existing_branch',
+      dataIndex: 'quantity',
+    },
+    {
+      title: 'Số lượng thực tế',
+      dataIndex: 'real_quantity',
     },
   ]
 

@@ -205,98 +205,104 @@ export default function Branch() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-            <Input
-              size="large"
-              style={{ width: '100%' }}
-              name="name"
-              value={valueSearch}
-              enterButton
-              onChange={onSearch}
-              placeholder="Tìm kiếm theo mã, theo tên"
-              allowClear
-              prefix={<SearchOutlined />}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-            <RangePicker
-              size="large"
-              className="br-15__date-picker"
-              value={valueDate}
-              style={{ width: '100%' }}
-              ranges={{
-                Today: [moment(), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-              }}
-              onChange={onChangeDate}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-            <Select
-              allowClear
-              size="large"
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo tỉnh/thành phố"
-              optionFilterProp="children"
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.province}
-              onChange={(value) => {
-                if (value) {
-                  paramsFilter.province = value
-                  const districtsByProvince = districtsDefault.filter(
-                    (e) => e.province_name === value
-                  )
-                  setDistricts([...districtsByProvince])
-                } else {
-                  delete paramsFilter.province
-                  setDistricts([...districtsDefault])
+        <div style={{ marginTop: 15 }}>
+          <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginBottom: 10 }}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+              <Input
+                size="large"
+                style={{ width: '100%' }}
+                name="name"
+                value={valueSearch}
+                enterButton
+                onChange={onSearch}
+                placeholder="Tìm kiếm theo mã, theo tên"
+                allowClear
+                prefix={<SearchOutlined />}
+                bordered={false}
+              />
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+              <RangePicker
+                size="large"
+                className="br-15__date-picker"
+                value={valueDate}
+                style={{ width: '100%' }}
+                ranges={{
+                  Today: [moment(), moment()],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
+                }}
+                onChange={onChangeDate}
+                bordered={false}
+              />
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
+              <Select
+                allowClear
+                size="large"
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo tỉnh/thành phố"
+                optionFilterProp="children"
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
+                value={paramsFilter.province}
+                onChange={(value) => {
+                  if (value) {
+                    paramsFilter.province = value
+                    const districtsByProvince = districtsDefault.filter(
+                      (e) => e.province_name === value
+                    )
+                    setDistricts([...districtsByProvince])
+                  } else {
+                    delete paramsFilter.province
+                    setDistricts([...districtsDefault])
+                  }
 
-                setParamsFilter({ ...paramsFilter, page: 1 })
-              }}
-            >
-              {provinces.map((values, index) => {
-                return (
-                  <Option value={values.province_name} key={index}>
-                    {values.province_name}
-                  </Option>
-                )
-              })}
-            </Select>
-          </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-            <Select
-              allowClear
-              size="large"
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo quận/huyện"
-              optionFilterProp="children"
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.district}
-              onChange={(value) => {
-                if (value) paramsFilter.district = value
-                else delete paramsFilter.district
+                  setParamsFilter({ ...paramsFilter, page: 1 })
+                }}
+                bordered={false}
+              >
+                {provinces.map((values, index) => {
+                  return (
+                    <Option value={values.province_name} key={index}>
+                      {values.province_name}
+                    </Option>
+                  )
+                })}
+              </Select>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+              <Select
+                allowClear
+                size="large"
+                style={{ width: '100%' }}
+                placeholder="Tìm kiếm theo quận/huyện"
+                optionFilterProp="children"
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                value={paramsFilter.district}
+                onChange={(value) => {
+                  if (value) paramsFilter.district = value
+                  else delete paramsFilter.district
 
-                setParamsFilter({ ...paramsFilter, page: 1 })
-              }}
-            >
-              {districts.map((values, index) => {
-                return (
-                  <Option value={values.district_name} key={index}>
-                    {values.district_name}
-                  </Option>
-                )
-              })}
-            </Select>
-          </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+                  setParamsFilter({ ...paramsFilter, page: 1 })
+                }}
+                bordered={false}
+              >
+                {districts.map((values, index) => {
+                  return (
+                    <Option value={values.district_name} key={index}>
+                      {values.district_name}
+                    </Option>
+                  )
+                })}
+              </Select>
+            </Col>
+          </Row>
+          <Row>
             <Button
               style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
               onClick={onClickClear}
@@ -305,8 +311,8 @@ export default function Branch() {
             >
               Xóa tất cả lọc
             </Button>
-          </Col>
-        </Row>
+          </Row>
+        </div>
 
         <Table
           style={{ width: '100%', marginTop: 5 }}
@@ -365,8 +371,7 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
             if (column.key === 'creator')

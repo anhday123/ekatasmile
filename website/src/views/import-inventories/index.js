@@ -18,6 +18,7 @@ import PrintImportInventory from 'components/print/print-import-inventory'
 //antd
 import {
   Row,
+  Col,
   Space,
   Select,
   Table,
@@ -516,7 +517,7 @@ export default function ImportInventories() {
             }}
             allowClear
             showSearch
-            style={{ width: 280 }}
+            style={{ width: '100%' }}
             placeholder="Lọc theo ngày nhập hàng"
             optionFilterProp="children"
             filterOption={(input, option) =>
@@ -616,7 +617,7 @@ export default function ImportInventories() {
 
           <Select
             size="large"
-            style={{ width: 250 }}
+            style={{ width: '100%' }}
             placeholder="Lọc theo trạng thái"
             allowClear
             showSearch

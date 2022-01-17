@@ -160,8 +160,8 @@ export default function Compared(props) {
             data.toLowerCase() == 'processing'
               ? { color: 'orange' }
               : data.toLowerCase() == 'complete'
-              ? { color: 'green' }
-              : { color: 'red' }
+                ? { color: 'green' }
+                : { color: 'red' }
           }
         >
           {data}
@@ -275,8 +275,8 @@ export default function Compared(props) {
   return (
     <>
       <div>
-        <Row justify="space-between">
-          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <Input
               size="large"
               onChange={(e) =>
@@ -286,9 +286,10 @@ export default function Compared(props) {
                 })
               }
               placeholder="Tìm theo mã, theo tên"
+              bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
             <Select
               size="large"
               open={isOpenSelect}
@@ -299,8 +300,9 @@ export default function Compared(props) {
                 if (!isOpenSelect) toggleOpenSelect()
               }}
               style={{ width: '100%' }}
-              placeholder="Choose time"
+              placeholder="Chọn ngày"
               allowClear
+              bordered={false}
               onChange={async (value) => {
                 if (isOpenSelect) toggleOpenSelect()
 
@@ -332,7 +334,7 @@ export default function Compared(props) {
               <Option value="last_year">Last year</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <Select
               size="large"
               placeholder="Chọn chi nhánh"
@@ -343,6 +345,7 @@ export default function Compared(props) {
                   branch: e,
                 })
               }
+              bordered={false}
             >
               {props.branchList
                 .filter((e) => e.active)
@@ -352,6 +355,7 @@ export default function Compared(props) {
             </Select>
           </Col>
         </Row>
+
         <Row
           justify="end"
           style={{

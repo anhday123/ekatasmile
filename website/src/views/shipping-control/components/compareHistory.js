@@ -167,8 +167,8 @@ export default function CompareHistory(props) {
   }
   return (
     <div>
-      <Row justify="space-between">
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+      <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Input
             size="large"
             onChange={(e) =>
@@ -178,9 +178,10 @@ export default function CompareHistory(props) {
               })
             }
             placeholder="Tìm theo mã, theo tên"
+            bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
           <Select
             size="large"
             open={isOpenSelect}
@@ -193,6 +194,7 @@ export default function CompareHistory(props) {
             style={{ width: '100%' }}
             placeholder="Choose time"
             allowClear
+            bordered={false}
             onChange={async (value) => {
               if (isOpenSelect) toggleOpenSelect()
               changeTimeOption(value)
@@ -223,7 +225,7 @@ export default function CompareHistory(props) {
             <Option value="last_year">Last year</Option>
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Select
             size="large"
             placeholder="Chọn chi nhánh"
@@ -234,6 +236,7 @@ export default function CompareHistory(props) {
                 branch: e,
               })
             }
+            bordered={false}
           >
             {props.branchList
               .filter((e) => e.active)

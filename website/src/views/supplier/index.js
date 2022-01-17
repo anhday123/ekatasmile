@@ -191,7 +191,7 @@ export default function Supplier() {
         </Space>
       </TitlePage>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
+      <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
         <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Input
             size="large"
@@ -200,10 +200,10 @@ export default function Supplier() {
             onChange={onSearch}
             placeholder="Tìm kiếm theo mã, theo tên"
             allowClear
+            bordered={false}
           />
         </Col>
-
-        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
           <Select
             allowClear
             style={{ width: '100%' }}
@@ -216,6 +216,7 @@ export default function Supplier() {
             }
             value={paramsFilter.province}
             onChange={(value) => _onFilter('province', value)}
+            bordered={false}
           >
             {provinces.map((province, index) => (
               <Option value={province.province_name} key={index}>
@@ -237,6 +238,7 @@ export default function Supplier() {
             }
             value={paramsFilter.district}
             onChange={(value) => _onFilter('district', value)}
+            bordered={false}
           >
             {districts.map((district, index) => (
               <Option value={district.district_name} key={index}>
@@ -245,16 +247,20 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+      </Row>
+
+      <Row style={{ marginTop: '1rem' }}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px', borderRight: 'none' }}>
           <RangePicker
             size="large"
             className="br-15__date-picker"
             style={{ width: '100%' }}
             value={valueDate}
             onChange={onChangeDate}
+            bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px', marginRight: 10 }}>
           <Select
             allowClear
             size="large"
@@ -267,6 +273,7 @@ export default function Supplier() {
             }
             value={paramsFilter.creator_id}
             onChange={(value) => _onFilter('creator_id', value)}
+            bordered={false}
           >
             {users.map((user, index) => (
               <Option value={user.user_id} key={index}>
@@ -312,8 +319,7 @@ export default function Supplier() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${
-                  record.district && record.district + ', '
+                `${record.address && record.address + ', '}${record.district && record.district + ', '
                 }${record.province && record.province}`,
             }
           if (column.key === 'creator')

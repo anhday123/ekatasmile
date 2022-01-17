@@ -43,3 +43,13 @@
     padding-top: 5px;
   }
 }
+
+.edit-submenu-arrow {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.edit-submenu-arrow:hover {
+  a {
+    color: #5f73e2 !important;
+  }
+}
