@@ -15,7 +15,7 @@ router.route(`/import`).get(auth, inventory._getImportOrder);
 router.route(`/import/delete`).delete(auth, inventory._deleteImportOrder);
 
 router.route(`/transport/create`).post(auth, inventory._createTransportOrder);
-router.route(`/transport/file`).post(auth, upload.single('file'), inventory._createTransportOrderFile);
+router.route(`/transport/create/file`).post(auth, upload.single('file'), inventory._createTransportOrderFile);
 router.route(`/transport/update/:order_id`).patch(auth, inventory._updateTransportOrder);
 router.route(`/transport`).get(auth, inventory._getTransportOrder);
 router.route(`/transport/delete`).delete(auth, upload.single('file'), inventory._deleteTransportOrder);

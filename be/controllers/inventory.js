@@ -730,6 +730,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
+        console.log(_order.import_location);
         let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
@@ -790,7 +791,8 @@ module.exports._updateImportOrder = async (req, res, next) => {
             total_cost: _order.total_cost,
             total_tax: _order.total_tax,
             total_discount: _order.total_discount,
-            shipping_cost: _order.shipping_cost,
+            service_fee: _order.service_fee,
+            fee_shipping: _order.fee_shipping,
             final_cost: _order.final_cost,
             note: _order.note,
             files: _order.files,
@@ -993,19 +995,23 @@ module.exports._updateImportOrder = async (req, res, next) => {
                         { upsert: true }
                     ),
             ]);
-            await Promise.all([
-                client.db(req.user.database).collection('Prices').insertMany(insertPrices),
-                client.db(req.user.database).collection('Locations').insertMany(insertLocations),
-                client.db(req.user.database).collection('Inventories').insertMany(insertInventories),
-                ...(() => {
-                    return updateInventories.map((eUpdate) => {
-                        return client
-                            .db(req.user.database)
-                            .collection('Inventories')
-                            .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
-                    });
-                })(),
-            ]);
+            if (Array.isArray(insertPrices) && insertPrices.length > 0) {
+                await client.db(req.user.database).collection('Prices').insertMany(insertPrices);
+            }
+            if (Array.isArray(insertLocations) && insertLocations.length > 0) {
+                await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
+            }
+            if (Array.isArray(insertInventories) && insertInventories.length > 0) {
+                await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
+            }
+            await Promise.all(
+                updateInventories.map((eUpdate) => {
+                    return client
+                        .db(req.user.database)
+                        .collection('Inventories')
+                        .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
+                })
+            );
         }
         await client.db(req.user.database).collection('ImportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
@@ -1028,152 +1034,170 @@ module.exports._deleteImportOrder = async (req, res, next) => {
 
 module.exports._getTransportOrder = async (req, res, next) => {
     try {
-        try {
-            let aggregateQuery = [];
-            if (req.query.order_id) {
-                aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-            }
-            if (req.query.code) {
-                aggregateQuery.push({ $match: { code: String(req.query.code) } });
-            }
-            if (req.query.export_location_name) {
-                aggregateQuery.push({
-                    $match: {
-                        'export_location_info.slug_name': new RegExp(
-                            removeUnicode(req.query.export_location_name, true).toLowerCase()
-                        ),
-                    },
-                });
-            }
-            if (req.query.import_location_name) {
-                aggregateQuery.push({
-                    $match: {
-                        'import_location_info.slug_name': new RegExp(
-                            removeUnicode(req.query.import_location_name, true).toLowerCase()
-                        ),
-                    },
-                });
-            }
-            if (req.query.status) {
-                aggregateQuery.push({ $match: { status: String(req.query.status) } });
-            }
-            if (req.query['today'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
-                delete req.query.today;
-            }
-            if (req.query['yesterday'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
-                delete req.query.yesterday;
-            }
-            if (req.query['this_week'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
-                delete req.query.this_week;
-            }
-            if (req.query['last_week'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
-                delete req.query.last_week;
-            }
-            if (req.query['this_month'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
-                delete req.query.this_month;
-            }
-            if (req.query['last_month'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
-                delete req.query.last_month;
-            }
-            if (req.query['this_year'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
-                delete req.query.this_year;
-            }
-            if (req.query['last_year'] != undefined) {
-                req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
-                req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
-                delete req.query.last_year;
-            }
-            if (req.query['from_date'] != undefined) {
-                req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
-            }
-            if (req.query['to_date'] != undefined) {
-                req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
-            }
-            if (req.query.from_date) {
-                aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
-            }
-            if (req.query.to_date) {
-                aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
-            }
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'completer_id',
-                        foreignField: 'user_id',
-                        as: '_completer',
-                    },
-                },
-                { $unwind: { path: '$_completer', preserveNullAndEmptyArrays: true } }
-            );
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'verifier_id',
-                        foreignField: 'user_id',
-                        as: '_verifier',
-                    },
-                },
-                { $unwind: { path: '$_verifier', preserveNullAndEmptyArrays: true } }
-            );
-            aggregateQuery.push(
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'creator_id',
-                        foreignField: 'user_id',
-                        as: '_creator',
-                    },
-                },
-                { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
-            );
-            aggregateQuery.push({
-                $project: {
-                    sub_name: 0,
-                    '_verifier.password': 0,
-                    '_creator.password': 0,
-                },
-            });
-            let countQuery = [...aggregateQuery];
-            aggregateQuery.push({ $sort: { create_date: -1 } });
-            if (req.query.page && req.query.page_size) {
-                let page = Number(req.query.page) || 1;
-                let page_size = Number(req.query.page_size) || 50;
-                aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
-            }
-
-            // lấy data từ database
-            let [orders, counts] = await Promise.all([
-                client.db(req.user.database).collection(`TransportOrders`).aggregate(aggregateQuery).toArray(),
-                client
-                    .db(req.user.database)
-                    .collection(`TransportOrders`)
-                    .aggregate([...countQuery, { $count: 'counts' }])
-                    .toArray(),
-            ]);
-            res.send({
-                success: true,
-                count: counts[0] ? counts[0].counts : 0,
-                data: orders,
-            });
-        } catch (err) {
-            next(err);
+        let aggregateQuery = [];
+        if (req.query.order_id) {
+            aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
         }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
+        if (req.query.export_location_name) {
+            aggregateQuery.push({
+                $match: {
+                    'export_location_info.slug_name': new RegExp(
+                        removeUnicode(req.query.export_location_name, true).toLowerCase()
+                    ),
+                },
+            });
+        }
+        if (req.query.import_location_name) {
+            aggregateQuery.push({
+                $match: {
+                    'import_location_info.slug_name': new RegExp(
+                        removeUnicode(req.query.import_location_name, true).toLowerCase()
+                    ),
+                },
+            });
+        }
+        if (req.query.status) {
+            aggregateQuery.push({ $match: { status: String(req.query.status) } });
+        }
+        if (req.query['today'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date'] != undefined) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date'] != undefined) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
+        if (req.query.from_date) {
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
+        }
+        if (req.query.to_date) {
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
+        }
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Branchs',
+                    localField: 'export_location.branch_id',
+                    foreignField: 'branch_id',
+                    as: 'export_location_info',
+                },
+            },
+            { $unwind: { path: '$export_location_info', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Branchs',
+                    localField: 'import_location.branch_id',
+                    foreignField: 'branch_id',
+                    as: 'import_location_info',
+                },
+            },
+            { $unwind: { path: '$import_location_info', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'completer_id',
+                    foreignField: 'user_id',
+                    as: '_completer',
+                },
+            },
+            { $unwind: { path: '$_completer', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'verifier_id',
+                    foreignField: 'user_id',
+                    as: '_verifier',
+                },
+            },
+            { $unwind: { path: '$_verifier', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'creator_id',
+                    foreignField: 'user_id',
+                    as: '_creator',
+                },
+            },
+            { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push({
+            $project: {
+                sub_name: 0,
+                '_verifier.password': 0,
+                '_creator.password': 0,
+            },
+        });
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
+
+        // lấy data từ database
+        let [orders, counts] = await Promise.all([
+            client.db(req.user.database).collection(`TransportOrders`).aggregate(aggregateQuery).toArray(),
+            client
+                .db(req.user.database)
+                .collection(`TransportOrders`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            count: counts[0] ? counts[0].counts : 0,
+            data: orders,
+        });
     } catch (err) {
         next(err);
     }
@@ -1266,7 +1290,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
             total_quantity: req.body.total_quantity || total_quantity,
             total_cost: total_cost,
             total_discount: total_discount,
-            shipping_cost: req.body.shipping_cost,
+            service_fee: req.body.service_fee,
+            fee_shipping: req.body.fee_shipping,
             final_cost: req.body.final_cost || final_cost,
             note: req.body.note || '',
             files: req.body.files,
@@ -1480,7 +1505,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('Branchs')
-                .find({ name: { $in: branchNames } })
+                .find({ slug_name: { $in: branchSlugs } })
                 .toArray(),
         ]);
         let _products = {};
@@ -1498,11 +1523,115 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         let _branchs = {};
         let _branchIds = [];
         branchs.map((eBranch) => {
-            _branchs[eBranch.name] = eBranch;
+            _branchs[eBranch.slug_name] = eBranch;
             _branchIds.push(eBranch.branch_id);
         });
-        
-
+        let orderMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'TransportOrders' });
+        let orderId = (() => {
+            if (orderMaxId && orderMaxId.value) {
+                return orderMaxId.value;
+            }
+            return 0;
+        })();
+        let _orders = {};
+        rows.map((eRow) => {
+            if (!_orders[eRow['maphieuchuyen']]) {
+                orderId++;
+                _orders[eRow['maphieuchuyen']] = {
+                    order_id: orderId,
+                    code: String(orderId).padStart(6, '0'),
+                    export_location: (() => {
+                        if (_branchs[eRow['_tennoixuathang']]) {
+                            return { branch_id: _branchs[eRow['_tennoixuathang']].branch_id };
+                        }
+                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
+                    })(),
+                    import_location: (() => {
+                        if (_branchs[eRow['_tennoinhaphang']]) {
+                            return { branch_id: _branchs[eRow['_tennoinhaphang']].branch_id };
+                        }
+                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
+                    })(),
+                    products: [],
+                    total_quantity: 0,
+                    total_cost: 0,
+                    total_discount: 0,
+                    service_fee: 0,
+                    fee_shipping: 0,
+                    final_cost: 0,
+                    note: '',
+                    files: [],
+                    tags: [],
+                    slug_tags: [],
+                    // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+                    status: 'DRAFT',
+                    payment_info: [],
+                    // UNPAID - PAYING - PAID
+                    payment_status: 'PAID',
+                    delivery_time: moment(eRow['ngayxuathang']).tz(TIMEZONE).format(),
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    verify_date: '',
+                    verifier_id: '',
+                    delivery_date: '',
+                    deliverer_id: '',
+                    complete_date: '',
+                    completer_id: '',
+                    cancel_date: '',
+                    canceler_id: '',
+                    last_update: moment().tz(TIMEZONE).format(),
+                    active: true,
+                };
+            }
+            if (_orders[eRow['maphieuchuyen']]) {
+                if (eRow['masanpham'] && eRow['maphienban']) {
+                    _orders[eRow['maphieuchuyen']].products.push({
+                        product_id: (() => {
+                            if (_products[eRow['masanpham']]) {
+                                return _products[eRow['masanpham']].product_id;
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} không tồn tại!`);
+                        })(),
+                        variant_id: (() => {
+                            if (_variants[eRow['maphienban']]) {
+                                return _variants[eRow['maphienban']].variant_id;
+                            }
+                            throw new Error(`400: Phiên bản ${eRow['maphienban']} không tồn tại!`);
+                        })(),
+                        quantity: (() => {
+                            if (eRow['soluong']) {
+                                return eRow['soluong'];
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có số lượng nhập!`);
+                        })(),
+                        product_info: _products[eRow['masanpham']],
+                        variant_info: _variants[eRow['maphienban']],
+                    });
+                    _orders[eRow['maphieuchuyen']].total_quantity += eRow['soluong'];
+                    _orders[eRow['maphieuchuyen']].service_fee = eRow['chiphidichvu'] || 0;
+                    _orders[eRow['maphieuchuyen']].fee_shipping = eRow['phivanchuyen'] || 0;
+                    _orders[eRow['maphieuchuyen']].final_cost = eRow['tongcong(vnd)'] || 0;
+                    _orders[eRow['maphieuchuyen']].note = eRow['ghichu'] || '';
+                }
+            }
+        });
+        let orders = Object.values(_orders);
+        let insert = await client.db(req.user.database).collection('TransportOrders').insertMany(orders);
+        if (!insert.insertedIds) {
+            throw new Error(`500: Tạo phiếu chuyển thất bại!`);
+        }
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'TransportOrders' },
+                { $set: { name: 'TransportOrders', value: orderId } },
+                { upsert: true }
+            );
+        res.send({
+            success: true,
+            data: orders,
+        });
     } catch (err) {
         next(err);
     }
@@ -1829,7 +1958,149 @@ module.exports._deleteTransportOrder = async (req, res, next) => {
     }
 };
 
-module.exports._getBalanceInventory = async (req, res, next) => {
+module.exports._getInventoryNote = async (req, res, next) => {
+    try {
+        let aggregateQuery = [];
+        if (req.query.inventory_note_id) {
+            aggregateQuery.push({ $match: { inventory_note_id: Number(req.query.inventory_note_id) } });
+        }
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
+        if (req.query.status) {
+            aggregateQuery.push({ $match: { status: String(req.query.status) } });
+        }
+        if (req.query['today'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year'] != undefined) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date'] != undefined) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date'] != undefined) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
+        if (req.query.from_date) {
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
+        }
+        if (req.query.to_date) {
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
+        }
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
+
+        // lấy data từ database
+        let [orders, counts] = await Promise.all([
+            client.db(req.user.database).collection(`InventoryNotes`).aggregate(aggregateQuery).toArray(),
+            client
+                .db(req.user.database)
+                .collection(`InventoryNotes`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            count: counts[0] ? counts[0].counts : 0,
+            data: orders,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+module.exports._createInventoryNote = async (req, res, next) => {
+    try {
+        let inventoryNoteMaxId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'InventoryNotes' });
+        let inventoryNoteId = (() => {
+            if (inventoryNoteMaxId && inventoryNoteMaxId.value) {
+                return inventoryNoteMaxId.value;
+            }
+            return 0;
+        })();
+        inventoryNoteId++;
+        let _inventoryNote = {
+            inventory_note_id: inventoryNoteId,
+            branch_id: req.body.branch_id,
+            products: req.body.products,
+            status: req.body.status || 'DRAFT',
+            balance: false,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            balance_date: '',
+            balancer_id: '',
+        };
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'InventoryNotes' },
+                { $set: { name: 'InventoryNotes', value: inventoryNoteId } },
+                { upsert: true }
+            );
+        await client.db(req.user.database).collection('InventoryNotes').insertOne(_inventoryNote);
+        res.send({ success: true, data: _inventoryNote });
+    } catch (err) {
+        next(err);
+    }
+};
+module.exports._createInventoryNoteFile = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+module.exports._updateInventoryNote = async (req, res, next) => {
+    try {
+    } catch (err) {
+        next(err);
+    }
+};
+module.exports._deleteInventoryNote = async (req, res, next) => {
     try {
     } catch (err) {
         next(err);
