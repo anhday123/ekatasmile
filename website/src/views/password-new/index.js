@@ -10,7 +10,7 @@ import { Form, Input, Button, notification, Row, Col } from 'antd'
 
 //icons
 import { LockOutlined } from '@ant-design/icons'
-import store from 'assets/img/store.png'
+import background from 'assets/img/bg1.jpg'
 
 //apis
 import { resetPassword } from 'apis/auth'
@@ -63,9 +63,9 @@ export default function PasswordNew() {
   }, [])
 
   return (
-    <Row justify="center" align="middle" className={styles['pw-new-container']}>
+    <Row align="middle" className={styles['pw-new-container']}>
       <img
-        src='https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg'
+        src={background}
         style={{
           width: '100%',
           height: '100vh',
@@ -79,6 +79,7 @@ export default function PasswordNew() {
               textAlign: 'center',
               fontSize: '1.5rem',
               fontWeight: 700,
+              color: '#fff'
             }}
           >
             Tạo mật khẩu mới
@@ -90,7 +91,7 @@ export default function PasswordNew() {
             onFinish={_changePassword}
           >
             <Form.Item
-              label={<div>Nhập mật khẩu mới</div>}
+              label={<div style={{ color: 'white' }}>Nhập mật khẩu mới</div>}
               name="password"
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới' }]}
             >
@@ -103,7 +104,7 @@ export default function PasswordNew() {
               />
             </Form.Item>
             <Form.Item
-              label={<div>Nhập lại mật khẩu mới</div>}
+              label={<div style={{ color: 'white' }}>Nhập lại mật khẩu mới</div>}
               name="passwordAgain"
               rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu mới' }]}
             >
@@ -115,16 +116,18 @@ export default function PasswordNew() {
                 placeholder="Nhập lại mật khẩu mới"
               />
             </Form.Item>
-            <Form.Item>
-              <Button
-                size="large"
-                type="primary"
-                htmlType="submit"
-                className={styles['pw-new-button']}
-              >
-                Thay đổi mật khẩu
-              </Button>
-            </Form.Item>
+            <Row justify="center">
+              <Form.Item>
+                <Button
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  className={styles['pw-new-button']}
+                >
+                  Thay đổi mật khẩu
+                </Button>
+              </Form.Item>
+            </Row>
             {/* <Row justify="end">
               <Link to={ROUTES.LOGIN} style={{ color: 'white' }}>
                 Quay về đăng nhập

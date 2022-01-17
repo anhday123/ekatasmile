@@ -156,18 +156,21 @@ export default function Reports() {
           </Link>
         </Space>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-          <Input
-            size="large"
-            prefix={<SearchOutlined />}
-            placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
-          />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-          <DatePicker.RangePicker size="large" />
-        </Col>
-      </Row>
+      <Space>
+        <Row gutter={[16, 16]} style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5, width: 700 }}>
+          <Col xs={24} sm={24} md={24} lg={12} xl={12} style={{ borderRight: '1px solid #d9d9d9' }}>
+            <Input
+              size="large"
+              prefix={<SearchOutlined />}
+              placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
+              bordered={false}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={12} xl={12}>
+            <DatePicker.RangePicker size="large" bordered={false} />
+          </Col>
+        </Row>
+      </Space>
 
       <Table
         loading={loading}

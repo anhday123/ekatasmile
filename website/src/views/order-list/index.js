@@ -226,108 +226,135 @@ export default function OrderList() {
         </Space>
       </TitlePage>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
-        <Col xs={24} sm={24} md={24} lg={10} xl={10}>
-          <div>Tìm kiếm đơn hàng</div>
-          <Row wrap={false}>
-            <Input
+      <div style={{ marginTop: 15 }}>
+        <Row>
+          <Col xs={24} sm={24} md={24} lg={10} xl={10}>
+            <div>Tìm kiếm đơn hàng</div>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+            <div>Lọc theo thời gian</div>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+            <div>Lọc theo trạng thái</div>
+          </Col>
+        </Row>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col xs={24} sm={24} md={24} lg={10} xl={10}>
+            <Row wrap={false}>
+              <Input
+                size="large"
+                style={{ width: '100%' }}
+                prefix={<SearchOutlined />}
+                name="name"
+                value={valueSearch}
+                onChange={_onSearch}
+                placeholder="Tìm kiếm theo..."
+                bordered={false}
+                allowClear
+              />
+              <Select
+                size="large"
+                showSearch
+                style={{ width: 170, borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
+                placeholder="Chọn theo"
+                value={optionSearchName}
+                onChange={(value) => {
+                  delete paramsFilter[optionSearchName]
+                  setOptionSearchName(value)
+                }}
+                bordered={false}
+              >
+                <Select.Option value="code">Mã đơn hàng</Select.Option>
+                <Select.Option value="product_name">Tên sản phẩm</Select.Option>
+                <Select.Option value="product_sku">Mã sản phẩm</Select.Option>
+                <Select.Option value="customer_name">Tên khách hàng</Select.Option>
+                <Select.Option value="customer_code">Mã khách hàng</Select.Option>
+                <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
+                <Select.Option value="employee_name">Tên nhân viên</Select.Option>
+              </Select>
+            </Row>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+            <RangePicker
               size="large"
+              onChange={_onChangeDate}
               style={{ width: '100%' }}
-              prefix={<SearchOutlined />}
-              name="name"
-              value={valueSearch}
-              onChange={_onSearch}
-              placeholder="Tìm kiếm theo..."
-              allowClear
+              className="br-15__date-picker"
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              bordered={false}
             />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7}>
             <Select
               size="large"
+              value={paramsFilter.bill_status || ''}
+              onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
-              style={{ width: 170 }}
-              placeholder="Chọn theo"
-              value={optionSearchName}
-              onChange={(value) => {
-                delete paramsFilter[optionSearchName]
-                setOptionSearchName(value)
-              }}
+              placeholder="Chọn trạng thái"
+              style={{ width: '100%', borderLeft: '1px solid #d9d9d9' }}
+              bordered={false}
             >
-              <Select.Option value="code">Mã đơn hàng</Select.Option>
-              <Select.Option value="product_name">Tên sản phẩm</Select.Option>
-              <Select.Option value="product_sku">Mã sản phẩm</Select.Option>
-              <Select.Option value="customer_name">Tên khách hàng</Select.Option>
-              <Select.Option value="customer_code">Mã khách hàng</Select.Option>
-              <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
-              <Select.Option value="employee_name">Tên nhân viên</Select.Option>
+              <Select.Option value="">Tất cả</Select.Option>
+              {statusOrder.map((status, index) => (
+                <Select.Option value={status.name} key={index}>
+                  {status.label}
+                </Select.Option>
+              ))}
             </Select>
-          </Row>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
-          <div>Lọc theo thời gian</div>
-          <RangePicker
-            size="large"
-            onChange={_onChangeDate}
-            style={{ width: '100%' }}
-            className="br-15__date-picker"
-            ranges={{
-              Today: [moment(), moment()],
-              'This Month': [moment().startOf('month'), moment().endOf('month')],
-            }}
-          />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
-          <div>Lọc theo trạng thái</div>
-          <Select
-            size="large"
-            value={paramsFilter.bill_status || ''}
-            onChange={(value) => _onChangeFilter('bill_status', value)}
-            showSearch
-            placeholder="Chọn trạng thái"
-            style={{ width: '100%' }}
-          >
-            <Select.Option value="">Tất cả</Select.Option>
-            {statusOrder.map((status, index) => (
-              <Select.Option value={status.name} key={index}>
-                {status.label}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={10} xl={10}>
-          <div>Lọc theo kênh bán hàng</div>
-          <Select
-            size="large"
-            value={paramsFilter.chanel || ''}
-            onChange={(value) => _onChangeFilter('chanel', value)}
-            showSearch
-            placeholder="Chọn kênh bán hàng"
-            style={{ width: '100%' }}
-          >
-            <Select.Option value="">Tất cả</Select.Option>
-            <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
-            <Select.Option value="Chi nhánh">Chi nhánh</Select.Option>
-            <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
-            <Select.Option value="other">Khác</Select.Option>
-          </Select>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
-          <div>Lọc theo nhân viên</div>
-          <Select
-            size="large"
-            value={paramsFilter.employee_name || ''}
-            onChange={(value) => _onChangeFilter('employee_name', value)}
-            showSearch
-            placeholder="Chọn nhân viên"
-            style={{ width: '100%' }}
-          >
-            <Select.Option value="">Tất cả</Select.Option>
-            {employees.map((employee, index) => (
-              <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
-                {employee.first_name} {employee.last_name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </div>
+
+      <div>
+        <Row style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={24} lg={10} xl={10}>
+            <div>Lọc theo kênh bán hàng</div>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+            <div>Lọc theo nhân viên</div>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
+            <Select
+              size="large"
+              value={paramsFilter.chanel || ''}
+              onChange={(value) => _onChangeFilter('chanel', value)}
+              showSearch
+              placeholder="Chọn kênh bán hàng"
+              style={{ width: '100%' }}
+              bordered={false}
+            >
+              <Select.Option value="">Tất cả</Select.Option>
+              <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
+              <Select.Option value="Chi nhánh">Chi nhánh</Select.Option>
+              <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
+              <Select.Option value="other">Khác</Select.Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderLeft: 'none', borderRadius: '0px 5px 5px 0px' }}>
+            <Select
+              size="large"
+              value={paramsFilter.employee_name || ''}
+              onChange={(value) => _onChangeFilter('employee_name', value)}
+              showSearch
+              placeholder="Chọn nhân viên"
+              style={{ width: '100%' }}
+              bordered={false}
+            >
+              <Select.Option value="">Tất cả</Select.Option>
+              {employees.map((employee, index) => (
+                <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
+                  {employee.first_name} {employee.last_name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Col>
+        </Row>
+      </div>
 
       <Table
         size="small"
@@ -476,11 +503,10 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${
-                                      record.promotion.type && record.promotion.type !== 'VALUE'
-                                        ? '%'
-                                        : ''
-                                    }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
+                                    ? '%'
+                                    : ''
+                                  }`
                                   : 0}
                               </div>
                             </Row>

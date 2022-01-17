@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES, PERMISSIONS, LOGO_DEFAULT } from 'consts'
-import { Link, useLocation, useRouteMatch } from 'react-router-dom'
+import { Link, useLocation, useRouteMatch, useHistory } from 'react-router-dom'
 import { Bell, Plus } from 'utils/icon'
 import jwt_decode from 'jwt-decode'
 
@@ -55,6 +55,7 @@ import { getAllBranch } from 'apis/branch'
 
 const { Sider } = Layout
 const BaseLayout = (props) => {
+  const history = useHistory()
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
@@ -336,11 +337,10 @@ const BaseLayout = (props) => {
   ]
 
   const renderMenuItem = (_menu) => (
-    // console.log(_menu)
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
         <Menu.SubMenu
-          className='edit-submenu-arrow'
+          className={`${styles['edit-submenu-arrow']} edit-submenu-arrow`}
           style={{
             height: 40,
             backgroundColor:
@@ -356,10 +356,12 @@ const BaseLayout = (props) => {
                   (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) ?
                     '#5F73E2' : 'rgba(0, 0, 0, 0.85)',
               }}
-              to={_menu.path}>{_menu.title}
+              to={_menu.path}>
+              {_menu.title}
             </Link>
           }
-          icon={_menu.icon}>
+          icon={_menu.icon}
+        >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
               <Menu.Item
@@ -391,8 +393,9 @@ const BaseLayout = (props) => {
         >
           <Link to={_menu.path}>{_menu.title}</Link>
         </Menu.Item>
-      )}
-    </Permission>
+      )
+      }
+    </Permission >
   )
 
   const onSignOut = () => {
