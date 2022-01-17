@@ -38,6 +38,9 @@ module.exports._get = async (req, res, next) => {
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
+        if (req.query.type_id) {
+            aggregateQuery.push({ $match: { type_id: Number(req.query.type_id) } });
+        }
         if (req.query['today']) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
             req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
@@ -179,6 +182,17 @@ module.exports._get = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'CustomerTypes',
+                    localField: 'type_id',
+                    foreignField: 'type_id',
+                    as: '_type',
+                },
+            },
+            { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+        );
         if (req.query._business) {
             aggregateQuery.push(
                 {
