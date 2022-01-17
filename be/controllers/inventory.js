@@ -791,7 +791,8 @@ module.exports._updateImportOrder = async (req, res, next) => {
             total_cost: _order.total_cost,
             total_tax: _order.total_tax,
             total_discount: _order.total_discount,
-            shipping_cost: _order.shipping_cost,
+            service_fee: _order.service_fee,
+            fee_shipping: _order.fee_shipping,
             final_cost: _order.final_cost,
             note: _order.note,
             files: _order.files,
@@ -1117,6 +1118,28 @@ module.exports._getTransportOrder = async (req, res, next) => {
             aggregateQuery.push(
                 {
                     $lookup: {
+                        from: 'Branchs',
+                        localField: 'export_location.branch_id',
+                        foreignField: 'branch_id',
+                        as: 'export_location_info',
+                    },
+                },
+                { $unwind: { path: '$export_location_info', preserveNullAndEmptyArrays: true } }
+            );
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Branchs',
+                        localField: 'import_location.branch_id',
+                        foreignField: 'branch_id',
+                        as: 'import_location_info',
+                    },
+                },
+                { $unwind: { path: '$import_location_info', preserveNullAndEmptyArrays: true } }
+            );
+            aggregateQuery.push(
+                {
+                    $lookup: {
                         from: 'Users',
                         localField: 'completer_id',
                         foreignField: 'user_id',
@@ -1271,7 +1294,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
             total_quantity: req.body.total_quantity || total_quantity,
             total_cost: total_cost,
             total_discount: total_discount,
-            shipping_cost: req.body.shipping_cost,
+            service_fee: req.body.service_fee,
+            fee_shipping: req.body.fee_shipping,
             final_cost: req.body.final_cost || final_cost,
             note: req.body.note || '',
             files: req.body.files,
@@ -1485,7 +1509,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('Branchs')
-                .find({ name: { $in: branchNames } })
+                .find({ slug_name: { $in: branchSlugs } })
                 .toArray(),
         ]);
         let _products = {};
@@ -1522,13 +1546,13 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                     code: String(orderId).padStart(6, '0'),
                     export_location: (() => {
                         if (_branchs[eRow['_tennoixuathang']]) {
-                            return _branchs[eRow['_tennoixuathang']].branch_id;
+                            return { branch_id: _branchs[eRow['_tennoixuathang']].branch_id };
                         }
                         throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
                     })(),
                     import_location: (() => {
                         if (_branchs[eRow['_tennoinhaphang']]) {
-                            return _branchs[eRow['_tennoinhaphang']].branch_id;
+                            return { branch_id: _branchs[eRow['_tennoinhaphang']].branch_id };
                         }
                         throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
                     })(),
@@ -1536,7 +1560,8 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                     total_quantity: 0,
                     total_cost: 0,
                     total_discount: 0,
-                    shipping_cost: 0,
+                    service_fee: 0,
+                    fee_shipping: 0,
                     final_cost: 0,
                     note: '',
                     files: [],
@@ -1577,29 +1602,20 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                             }
                             throw new Error(`400: Phiên bản ${eRow['maphienban']} không tồn tại!`);
                         })(),
-                        import_price: (() => {
-                            if (eRow['gianhap']) {
-                                return eRow['gianhap'];
-                            }
-                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có giá nhập hàng!`);
-                        })(),
                         quantity: (() => {
-                            if (eRow['soluongnhap']) {
-                                return eRow['soluongnhap'];
+                            if (eRow['soluong']) {
+                                return eRow['soluong'];
                             }
                             throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có số lượng nhập!`);
                         })(),
                         product_info: _products[eRow['masanpham']],
                         variant_info: _variants[eRow['maphienban']],
                     });
-                    _orders[eRow['maphieunhap']].total_quantity += eRow['soluongnhap'];
-                    _orders[eRow['maphieunhap']].total_cost += eRow['gianhap'] * eRow['soluongnhap'];
-                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['thue(vnd)']] || 0;
-                    _orders[eRow['maphieunhap']].total_discount = eRow['chietkhau(vnd)'] || 0;
-                    _orders[eRow['maphieunhap']].service_fee = eRow['chiphidichvu'] || 0;
-                    _orders[eRow['maphieunhap']].fee_shipping = eRow['phivanchuyen'] || 0;
-                    _orders[eRow['maphieunhap']].final_cost = eRow['tongcong(vnd)'] || 0;
-                    _orders[eRow['maphieunhap']].note = eRow['ghichu'] || '';
+                    _orders[eRow['maphieuchuyen']].total_quantity += eRow['soluong'];
+                    _orders[eRow['maphieuchuyen']].service_fee = eRow['chiphidichvu'] || 0;
+                    _orders[eRow['maphieuchuyen']].fee_shipping = eRow['phivanchuyen'] || 0;
+                    _orders[eRow['maphieuchuyen']].final_cost = eRow['tongcong(vnd)'] || 0;
+                    _orders[eRow['maphieuchuyen']].note = eRow['ghichu'] || '';
                 }
             }
         });
