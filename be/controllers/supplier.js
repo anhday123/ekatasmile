@@ -133,7 +133,7 @@ module.exports._update = async (req, res, next) => {
             slug_province: removeUnicode(String(_supplier.province), true).toLowerCase(),
         };
         req['_update'] = _supplier;
-        await supplierService.updateSupplierS(req, res, next);
+        await supplierService._update(req, res, next);
     } catch (err) {
         next(err);
     }

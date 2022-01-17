@@ -29,7 +29,7 @@ let removeUnicode = (text, removeSpace) => {
 
 module.exports._get = async (req, res, next) => {
     try {
-        await blogService.getBlogS(req, res, next);
+        await blogService._get(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -91,7 +91,7 @@ module.exports._create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Blogs' }, { $set: { name: 'Blogs', value: blog_id } }, { upsert: true });
         req[`body`] = _blog;
-        await blogService.createBlogS(req, res, next);
+        await blogService._create(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -150,7 +150,7 @@ module.exports._update = async (req, res, next) => {
             })(),
         };
         req['body'] = _blog;
-        await blogService.updateBlogS(req, res, next);
+        await blogService._update(req, res, next);
     } catch (err) {
         next(err);
     }

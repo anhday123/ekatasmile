@@ -121,7 +121,7 @@ module.exports._update = async (req, res, next) => {
             slug_name: removeUnicode(_topping.name, true).toLowerCase(),
         };
         req['body'] = _topping;
-        await toppingService.updateToppingS(req, res, next);
+        await toppingService._update(req, res, next);
     } catch (err) {
         next(err);
     }

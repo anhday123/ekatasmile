@@ -74,9 +74,6 @@ module.exports._create = async (req, res, next) => {
             ward: req.body.ward || '',
             district: req.body.district || '',
             province: req.body.province || '',
-            accumulate_point: req.body.accumulate_point || false,
-            use_point: req.body.use_point || false,
-            //tichdiem
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
@@ -144,8 +141,6 @@ module.exports._update = async (req, res, next) => {
             ward: _branch.ward,
             district: _branch.district,
             province: _branch.province,
-            accumulate_point: _branch.accumulate_point,
-            use_point: _branch.use_point,
             create_date: _branch.create_date,
             creator_id: _branch.creator_id,
             last_update: moment().tz(TIMEZONE).format(),

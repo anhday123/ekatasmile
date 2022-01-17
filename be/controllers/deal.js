@@ -156,7 +156,7 @@ module.exports._update = async (req, res, next) => {
             slug_saleoff_type: removeUnicode(String(_deal.saleoff_type), true).toLowerCase(),
         };
         req['body'] = _deal;
-        await dealService.updateDealS(req, res, next);
+        await dealService._update(req, res, next);
     } catch (err) {
         next(err);
     }

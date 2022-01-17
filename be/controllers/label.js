@@ -73,7 +73,7 @@ module.exports._create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Labels' }, { $set: { name: 'Labels', value: label_id } }, { upsert: true });
         req[`body`] = _label;
-        await labelService.addLabelS(req, res, next);
+        await labelService._create(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -119,7 +119,7 @@ module.exports._update = async (req, res, next) => {
             slug_name: removeUnicode(_label.name, true).toLowerCase(),
         };
         req['body'] = _label;
-        await labelService.updateLabelS(req, res, next);
+        await labelService._update(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -133,7 +133,7 @@ module.exports._delete = async (req, res, next) => {
             .deleteMany({ label_id: { $in: req.body.label_id } });
         res.send({
             success: true,
-            message: 'Xóa bài viết thành công!',
+            message: 'Xóa nhóm cửa hàng thành công!',
         });
     } catch (err) {
         next(err);

@@ -82,7 +82,7 @@ module.exports._create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Taxes' }, { $set: { name: 'Taxes', value: tax_id } }, { upsert: true });
         req[`body`] = _tax;
-        await taxService.addTaxS(req, res, next);
+        await taxService._create(req, res, next);
     } catch (err) {
         next(err);
     }

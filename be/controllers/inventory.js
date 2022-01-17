@@ -1292,6 +1292,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
             active: true,
         };
         if (order.status != 'COMPLETE') {
+            order['verifier_id'] = Number(req.user.user_id);
+            order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
             let locationMaxId = await client
@@ -1439,7 +1441,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         let productSkus = [];
         let variantSkus = [];
         let branchSlugs = [];
-        rows = rows.map((eProduct) => {
+        rows = rows.map((eRow) => {
             let _row = {};
             for (let i in eRow) {
                 let field = String(removeUnicode(i, true))
@@ -1499,42 +1501,22 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             _branchs[eBranch.name] = eBranch;
             _branchIds.push(eBranch.branch_id);
         });
-        let _stores = {};
-        let _storeIds = [];
-        stores.map((eStore) => {
-            _stores[eStore.name] = eStore;
-            _storeIds.push(eStore.store_id);
-        });
         let sortQuery = (() => {
             if (req.user.price_recipe == 'FIFO') {
                 return { create_date: 1 };
             }
             return { create_date: -1 };
         })();
-        let [branchLocations, storeLocations] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Locations')
-                .find({
-                    type: 'BRANCH',
-                    inventory_id: { $in: _branchIds },
-                    product_id: { $in: _productIds },
-                    variant_id: { $in: _variantIds },
-                })
-                .sort(sortQuery)
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Locations')
-                .find({
-                    type: 'STORE',
-                    inventory_id: { $in: _storeIds },
-                    product_id: { $in: _productIds },
-                    variant_id: { $in: _variantIds },
-                })
-                .sort(sortQuery)
-                .toArray(),
-        ]);
+        let branchLocations = await client
+            .db(req.user.database)
+            .collection('Locations')
+            .find({
+                branch_id: { $in: _branchIds },
+                product_id: { $in: _productIds },
+                variant_id: { $in: _variantIds },
+            })
+            .sort(sortQuery)
+            .toArray();
         let _branchLocations = {};
         branchLocations.map((location) => {
             if (!_branchLocations[`${location.inventory_id}-${location.product_id}-${location.variant_id}`]) {
@@ -1546,32 +1528,17 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 );
             }
         });
-        let _storeLocations = {};
-        storeLocations.map((location) => {
-            if (!_storeLocations[`${location.inventory_id}-${location.product_id}-${location.variant_id}`]) {
-                _storeLocations[`${location.inventory_id}-${location.product_id}-${location.variant_id}`] = [];
-            }
-            if (_storeLocations[`${location.inventory_id}-${location.product_id}-${location.variant_id}`]) {
-                _storeLocations[`${location.inventory_id}-${location.product_id}-${location.variant_id}`].push(
-                    location
-                );
-            }
-        });
-        let [location_id] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                })
-                .catch((err) => {
-                    throw new Error(`500: ${err}`);
-                }),
-        ]);
+        let location_id = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Locations' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return doc.value;
+                }
+                return 0;
+            });
+
         let exportLocations = [];
         let importLocations = [];
         excelProducts = excelProducts.map((product) => {

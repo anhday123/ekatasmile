@@ -390,9 +390,9 @@ module.exports._update = async (req, res, next) => {
             career_id: _business.career_id,
             price_recipe: 'FIFO',
             verify_with: 'PHONE',
-            create_date: '2022-01-10T00:15:26+07:00',
+            create_date: _business.create_date,
             creator_id: 1,
-            last_update: '2022-01-10T00:15:26+07:00',
+            last_update: moment().tz(TIMEZONE).format(),
             updater_id: 1,
             active: true,
         };

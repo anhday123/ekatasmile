@@ -123,7 +123,7 @@ module.exports._update = async (req, res, next) => {
             sub_type: removeUnicode(_warranty.type, true).toLowerCase(),
         };
         req['body'] = _warranty;
-        await warrantyService.updateWarrantyS(req, res, next);
+        await warrantyService._update(req, res, next);
     } catch (err) {
         next(err);
     }

@@ -157,7 +157,7 @@ module.exports._update = async (req, res, next) => {
             slug_name: removeUnicode(_promotion.name, true).toLowerCase(),
         };
         req['_update'] = _promotion;
-        await promotionService.updatePromotionS(req, res, next);
+        await promotionService._update(req, res, next);
     } catch (err) {
         next(err);
     }

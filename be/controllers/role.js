@@ -74,7 +74,7 @@ module.exports._create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Roles' }, { $set: { name: 'Roles', value: role_id } }, { upsert: true });
         req[`body`] = _role;
-        await roleService.addRoleS(req, res, next);
+        await roleService._create(req, res, next);
     } catch (err) {
         next(err);
     }
@@ -120,7 +120,7 @@ module.exports._update = async (req, res, next) => {
             slug_name: removeUnicode(_role.name, true).toLowerCase(),
         };
         req['body'] = _role;
-        await roleService.updateRoleS(req, res, next);
+        await roleService._update(req, res, next);
     } catch (err) {
         next(err);
     }
