@@ -10,11 +10,11 @@ const columns = [
     key: 'code',
   },
   {
-    title: 'Địa điểm nhận hàng',
+    title: 'Địa điểm nhập hàng',
     key: 'location',
   },
   {
-    title: 'Ngày mua hàng',
+    title: 'Ngày nhập hàng',
     key: 'create_date',
   },
   {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, PERMISSIONS } from 'consts'
+import { ACTION, PERMISSIONS, ROUTES } from 'consts'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
 //antd
 import {
@@ -18,7 +19,7 @@ import {
 } from 'antd'
 
 // icons
-import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 //apis
 import { getShippings, deleteShippings } from 'apis/shipping'
@@ -34,6 +35,7 @@ import ShippingForm from './shipping-form'
 const { Option } = Select
 export default function Shipping() {
   const dispatch = useDispatch()
+  const history = useHistory()
   const typingTimeoutRef = useRef(null)
 
   const [loading, setLoading] = useState(false)
@@ -159,7 +161,19 @@ export default function Shipping() {
   return (
     <>
       <div className="card">
-        <TitlePage title="Đối tác vận chuyển">
+        <TitlePage
+          title={
+            <Row
+              wrap={false}
+              align="middle"
+              style={{ cursor: 'pointer' }}
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              Đối tác vận chuyển
+            </Row>
+          }
+        >
           <Space>
             <SettingColumns
               nameColumn="columnsShipping"
@@ -385,7 +399,7 @@ export default function Shipping() {
                 ...column,
                 width: 50,
                 render: (text, record, index) =>
-                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
               }
             if (column.key === 'code')
               return {
@@ -406,7 +420,8 @@ export default function Shipping() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${
+                    record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
 

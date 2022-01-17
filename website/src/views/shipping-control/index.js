@@ -85,19 +85,7 @@ export default function ShippingControl() {
   return (
     <>
       <div className="card">
-        <TitlePage
-          title={
-            <Row
-              wrap={false}
-              align="middle"
-              style={{ cursor: 'pointer' }}
-              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
-            >
-              <ArrowLeftOutlined style={{ marginRight: 8 }} />
-              Đối soát vận chuyển
-            </Row>
-          }
-        >
+        <TitlePage title="Đối soát vận chuyển">
           <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
             <Button
               size="large"

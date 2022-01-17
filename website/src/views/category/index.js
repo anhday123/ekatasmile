@@ -46,124 +46,53 @@ export default function Category() {
   const [conditions, setConditions] = useState(
     location.state
       ? location.state.condition.function
-      : [{ name: 'slug_title', operator: 'is_equal_to', value: '' }]
+      : [{ name: 'name', operator: 'is_equal_to', value: '' }]
   )
 
   const PRODUCT_TYPES = [
-    { slug_title: 'Tiêu đề' },
-    { slug_description: 'Mô tả' },
-    { slug_sku: 'Sku' },
-    { slug_origin_price: 'Giá gốc' },
-    { slug_sale_price: 'Giá bán' },
-    { slug_compare_at_price: 'So sánh giá' },
-    { slug_weight: 'Trọng lượng' },
-    { slug_inventory_stock: 'Kho hàng tồn kho' },
-    { slug_variant_description: 'Mô tả thuộc tính' },
-    { slug_variant_sku: 'Sku thuộc tính' },
-    { slug_variant_origin_price: 'Giá gốc thuộc tính' },
-    { slug_variant_sale_price: 'Giá bán thuộc tính' },
-    { slug_variant_compare_at_price: 'Thuộc tính so sánh ở mức giá' },
-    { slug_variant_inventory_stock: 'Thuộc tính tồn kho' },
-    { slug_variant_weight: 'Thuộc tính tồn kho' },
-    { slug_variant_inventory_stock: 'Trọng lượng thuộc tính' },
-    { date_created: 'Ngày tạo' },
-    { variant_date_created: 'Ngày tạo thuộc tính' },
+    { name: 'Tên sản phẩm' },
+    { description: 'Mô tả' },
+    { sku: 'SKU' },
+    { weight: 'Cân nặng' },
+    { height: 'Chiều cao' },
+    { width: 'Chiều rộng' },
+    { quantity: 'Số lượng' },
+    { price_import: 'Giá nhập' },
+    { price_sale: 'Giá bán' },
   ]
 
   const ARCHIVES = [
     {
-      name: { is_equal_to: 'bằng' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      name: { is_equal_to: 'giống' },
+      actives: [],
     },
     {
-      name: { is_not_equal_to: 'không bằng' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      name: { is_not_equal_to: 'không giống' },
+      actives: [],
     },
     {
-      name: { is_greater_than: 'không bằng' },
-      actives: [
-        'slug_origin_price',
-        'slug_sale_price',
-        'slug_compare_at_price',
-        'slug_weight',
-        'slug_inventory_stock',
-        'slug_variant_origin_price',
-        'slug_variant_sale_price',
-        'slug_variant_compare_at_price',
-        'slug_variant_inventory_stock',
-        'slug_variant_weight',
-        'date_created',
-        'variant_date_created',
-      ],
+      name: { is_greater_than: 'nhiều hơn' },
+      actives: [],
     },
     {
       name: { is_less_than: 'ít hơn' },
-      actives: [
-        'slug_origin_price',
-        'slug_sale_price',
-        'slug_compare_at_price',
-        'slug_weight',
-        'slug_inventory_stock',
-        'slug_variant_origin_price',
-        'slug_variant_sale_price',
-        'slug_variant_compare_at_price',
-        'slug_variant_inventory_stock',
-        'slug_variant_weight',
-        'date_created',
-        'variant_date_created',
-      ],
+      actives: [],
     },
     {
       name: { contains: 'chứa' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      actives: [],
     },
     {
       name: { does_not_contains: 'không chứa' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      actives: [],
     },
     {
-      name: { is_not_empty: 'không trống rỗng' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      name: { is_not_empty: 'trống' },
+      actives: [],
     },
     {
-      name: { is_empty: 'trống rỗng' },
-      actives: [
-        'slug_title',
-        'slug_description',
-        'slug_sku',
-        'slug_variant_description',
-        'slug_variant_sku',
-      ],
+      name: { is_empty: 'không trống' },
+      actives: [],
     },
   ]
 
@@ -190,7 +119,6 @@ export default function Category() {
           must_match: match,
           function: conditions,
         },
-        sites: ['all'],
       }
 
       let res
@@ -333,11 +261,7 @@ export default function Category() {
                         }}
                       >
                         {ARCHIVES.map((archive, index) => (
-                          <Select.Option
-                            key={index}
-                            value={Object.keys(archive.name)[0]}
-                            disabled={!archive.actives.includes(condition.name) && true}
-                          >
+                          <Select.Option key={index} value={Object.keys(archive.name)[0]}>
                             {archive.name[Object.keys(archive.name)[0]]}
                           </Select.Option>
                         ))}

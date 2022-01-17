@@ -178,7 +178,7 @@ export default function ConfigurationStore() {
             </Link>
           </Col>
           <Col xs={24} sm={24} md={11} lg={8} xl={8}>
-            <Link to={ROUTES.SHIPPING_CONTROL}>
+            <Link to={ROUTES.SHIPPING}>
               <Row wrap={false}>
                 <div
                   className={styles['wrap-icon']}
@@ -197,10 +197,10 @@ export default function ConfigurationStore() {
                       color: '#0015CD',
                     }}
                   >
-                    Quản lý đối soát vận chuyển
+                    Quản lý đối tác vận chuyển
                   </div>
                   <div style={{ color: 'black', fontSize: '0.75rem' }}>
-                    Thiết lập và quản lý các phiếu đối soát
+                    Thiết lập và quản lý các đối tác vận chuyển
                   </div>
                 </div>
               </Row>

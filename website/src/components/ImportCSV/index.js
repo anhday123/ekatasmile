@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { ExcelRenderer } from 'react-excel-renderer'
+import exportToCSV from 'components/ExportCSV/export'
 
 // antd
 import { Row, Button, Modal, Upload, message, notification, Table } from 'antd'
@@ -14,6 +15,8 @@ export default function ImportFile({
   txt = 'Nhập excel',
   reload,
   size = 'default',
+  customFileTemplated = false,
+  fileName = '',
 }) {
   const typingTimeoutRef = useRef()
 
@@ -66,9 +69,19 @@ export default function ImportFile({
         footer={null}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
-            Tải xuống file mẫu
-          </a>
+          {customFileTemplated ? (
+            <a
+              onClick={() => exportToCSV(fileTemplated, fileName)}
+              style={{ marginBottom: 15, color: 'blue' }}
+            >
+              Tải xuống file mẫu
+            </a>
+          ) : (
+            <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
+              Tải xuống file mẫu
+            </a>
+          )}
+
           <Upload
             fileList={fileUpload ? [fileUpload] : []}
             maxCount={1}

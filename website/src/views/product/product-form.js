@@ -277,7 +277,7 @@ export default function ProductAdd() {
     }
 
     if (!isValidated) return
-    console.log(variants)
+
     if (isProductHasVariants && variants.length === 0) {
       notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
       return
@@ -293,7 +293,7 @@ export default function ProductAdd() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const formProduct = form.getFieldsValue()
-      console.log(formProduct)
+
       //phát sinh sku nếu user ko điền sku
       let valueDefaultSku = ''
       if (!formProduct.sku) {

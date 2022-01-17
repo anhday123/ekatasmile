@@ -126,10 +126,22 @@ export default function ShippingProductAdd() {
   }
 
   const _addOrEditTransportOrder = async (status = 'DRAFT') => {
+    await form.validateFields()
+
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
-      await form.validateFields()
       const dataForm = form.getFieldsValue()
+
+      // if (productsTransport.length === 0) {
+      //   notification.warning({ message: 'Vui lòng chọn sản phẩm cần chuyển hàng!' })
+      //   return
+      // }
+
+      if (exportLocation.branch_id === importLocation.branch_id) {
+        notification.warning({
+          message: 'Chi nhánh chuyển và Chi nhánh nhận không thể trùng nhau!',
+        })
+        return
+      }
 
       const body = {
         note: dataForm.note || '',
@@ -144,33 +156,38 @@ export default function ShippingProductAdd() {
         })),
       }
 
-      let res
-      if (history.location.state)
-        res = await updateTransportOrder(body, history.location.state.order_id)
-      else res = await addTransportOrder({ ...body, status: status })
-      console.log(res)
-      if (res.status === 200) {
-        if (res.data.success) {
-          notification.success({
-            message: `${history.location.state ? 'Cập nhật' : 'Tạo'} phiếu chuyển hàng thành công`,
-          })
-          history.push(ROUTES.SHIPPING_PRODUCT)
-        } else
-          notification.error({
-            message:
-              res.data.message ||
-              `${
-                history.location.state ? 'Cập nhật' : 'Tạo'
-              } phiếu chuyển hàng thất bại, vui lòng thử lại`,
-          })
-      } else
-        notification.error({
-          message:
-            res.data.message ||
-            `${
-              history.location.state ? 'Cập nhật' : 'Tạo'
-            } phiếu chuyển hàng thất bại, vui lòng thử lại`,
-        })
+      console.log(exportLocation)
+      console.log(importLocation)
+
+      dispatch({ type: ACTION.LOADING, data: true })
+
+      // let res
+      // if (history.location.state)
+      //   res = await updateTransportOrder(body, history.location.state.order_id)
+      // else res = await addTransportOrder({ ...body, status: status })
+      // console.log(res)
+      // if (res.status === 200) {
+      //   if (res.data.success) {
+      //     notification.success({
+      //       message: `${history.location.state ? 'Cập nhật' : 'Tạo'} phiếu chuyển hàng thành công`,
+      //     })
+      //     history.push(ROUTES.SHIPPING_PRODUCT)
+      //   } else
+      //     notification.error({
+      //       message:
+      //         res.data.message ||
+      //         `${
+      //           history.location.state ? 'Cập nhật' : 'Tạo'
+      //         } phiếu chuyển hàng thất bại, vui lòng thử lại`,
+      //     })
+      // } else
+      //   notification.error({
+      //     message:
+      //       res.data.message ||
+      //       `${
+      //         history.location.state ? 'Cập nhật' : 'Tạo'
+      //       } phiếu chuyển hàng thất bại, vui lòng thử lại`,
+      //   })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -472,7 +489,7 @@ export default function ShippingProductAdd() {
 
         <Row>
           <div style={{ color: 'black', fontWeight: '600', fontSize: 16 }}>
-            Danh sách sản phẩm chuyển
+            Danh sách sản phẩm cần chuyển hàng
           </div>
         </Row>
         <Table

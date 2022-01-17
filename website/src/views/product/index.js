@@ -57,7 +57,7 @@ export default function Product() {
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  console.log(paramsFilter)
+
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id

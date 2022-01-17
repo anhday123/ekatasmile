@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import moment from 'moment'
 import { formatCash } from 'utils'
 import { ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useReactToPrint } from 'react-to-print'
+import delay from 'delay'
 
 //components
 import columnsImportInventories from './columns'
@@ -11,6 +13,7 @@ import SettingColumns from 'components/setting-columns'
 import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
 import TitlePage from 'components/title-page'
+import PrintImportInventory from 'components/print/print-import-inventory'
 
 //antd
 import {
@@ -24,39 +27,51 @@ import {
   DatePicker,
   Popconfirm,
   notification,
+  Input,
+  Tooltip,
 } from 'antd'
 
 //icons
-import { DeleteOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  PrinterOutlined,
+  SearchOutlined,
+  VerticalAlignTopOutlined,
+} from '@ant-design/icons'
 
 //apis
 import {
   getOrdersImportInventory,
   uploadOrdersImportInventory,
   deleteOrderImportInventory,
+  updateOrderImportInventory,
 } from 'apis/inventory'
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
 
 export default function ImportInventories() {
+  let printOrderRef = useRef()
+  const typingTimeoutRef = useRef(null)
   const history = useHistory()
   const branchIdApp = useSelector((state) => state.branch.branchId)
+  const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
 
+  const [dataPrint, setDataPrint] = useState(null)
   const [ordersInventory, setOrdersInventory] = useState([])
   const [countOrder, setCountOrder] = useState(0)
-  const [selectRowsKey, setSelectRowKeys] = useState([])
   const [columns, setColumns] = useState([])
 
   const [loading, setLoading] = useState(false)
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
 
+  const [fileTemplated, setFileTemplated] = useState([])
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-
+  const [valueSearch, setValueSearch] = useState('')
   const [supplierId, setSupplierId] = useState()
   const [productsSupplier, setProductsSupplier] = useState([])
   const [suppliers, setSuppliers] = useState([])
@@ -65,6 +80,25 @@ export default function ImportInventories() {
     setVisibleProductsToSupplier(!visibleProductsToSupplier)
     setProductsSupplier([])
     setSupplierId()
+  }
+
+  const Print = () => (
+    <div style={{ display: 'none' }}>
+      <PrintImportInventory ref={printOrderRef} data={dataPrint} />
+    </div>
+  )
+
+  const onSearch = (e) => {
+    setValueSearch(e.target.value)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value
+      if (value) paramsFilter.code = value
+      else delete paramsFilter.code
+      setParamsFilter({ ...paramsFilter, page: 1 })
+    }, 750)
   }
 
   const ModalDownloadProducts = ({ products }) => {
@@ -253,6 +287,28 @@ export default function ImportInventories() {
     }
   }
 
+  const _acceptOrderImportInventory = async (id) => {
+    try {
+      setLoading(true)
+      const res = await updateOrderImportInventory({ status: 'COMPLETE' }, id)
+      setLoading(false)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getOrdersImportInventory()
+          notification.success({ message: 'Nhập hàng thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Nhập hàng thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({ message: res.data.message || 'Nhập hàng thất bại, vui lòng thử lại!' })
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
   const _deleteOrderImportInventory = async (id) => {
     try {
       const res = await deleteOrderImportInventory(id)
@@ -277,7 +333,6 @@ export default function ImportInventories() {
   const _getOrdersImportInventory = async () => {
     try {
       setLoading(true)
-      setSelectRowKeys([])
       const res = await getOrdersImportInventory({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
@@ -300,8 +355,43 @@ export default function ImportInventories() {
     }
   }
 
+  const _getProducts = async () => {
+    try {
+      const res = await getProducts({
+        branch: true,
+        branch_id: branchIdApp,
+        merge: true,
+        detach: true,
+      })
+      if (res.status === 200) {
+        if (res.data.data && res.data.data.length) {
+          const data = res.data.data.filter((e, index) => index < 10)
+          let productsExport = data.map((e, index) => ({
+            STT: index + 1,
+            'Mã phiếu nhập': 'PN0001',
+            'Mã sản phẩm (*)': e.sku || '',
+            'Mã phiên bản (*)': e.variants && (e.variants.sku || ''),
+            'Giá nhập (*)': e.import_price_default || 0,
+            'Tên nơi nhập (*)': '',
+            'Số lượng nhập (*)': 0,
+            'Ngày nhập hàng': '',
+            'Chi phí dịch vụ': 0,
+            'Thuế (VND)': 0,
+            'Chiết khấu (VND)': 0,
+            'Tổng cộng (VND)': 0,
+            'Ghi chú': '',
+          }))
+          setFileTemplated(productsExport)
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getSuppliers()
+    _getProducts()
   }, [])
 
   useEffect(() => {
@@ -310,6 +400,7 @@ export default function ImportInventories() {
 
   return (
     <div className="card">
+      <Print />
       <TitlePage title="Nhập hàng">
         <Space>
           <Button
@@ -376,22 +467,20 @@ export default function ImportInventories() {
               scroll={{ y: 450 }}
             />
           </Modal>
-          {selectRowsKey.length !== 0 ? (
-            <Space>
-              <Button size="large" type="primary">
-                In hóa đơn
-              </Button>
-            </Space>
-          ) : (
-            ''
-          )}
+
           <ImportCSV
             size="large"
             txt="Nhập hàng"
             upload={uploadOrdersImportInventory}
             reload={_getOrdersImportInventory}
             title="Nhập hàng bằng file excel"
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/823f2fb4-c3da-4203-9269-6f264cf412a3/InventoryImport.xlsx"
+            fileName="InventoryImport"
+            fileTemplated={
+              fileTemplated.length
+                ? fileTemplated
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/823f2fb4-c3da-4203-9269-6f264cf412a3/InventoryImport.xlsx'
+            }
+            customFileTemplated={fileTemplated.length ? true : false}
           />
           <SettingColumns
             columns={columns}
@@ -404,8 +493,18 @@ export default function ImportInventories() {
           </Button>
         </Space>
       </TitlePage>
+
       <div style={{ marginTop: 10 }}>
-        <Space>
+        <Space wrap={true}>
+          <Input
+            allowClear
+            value={valueSearch}
+            onChange={onSearch}
+            style={{ width: 320 }}
+            prefix={<SearchOutlined />}
+            size="large"
+            placeholder="Tìm kiếm theo số hóa đơn"
+          />
           <Select
             size="large"
             open={isOpenSelect}
@@ -418,7 +517,7 @@ export default function ImportInventories() {
             allowClear
             showSearch
             style={{ width: 280 }}
-            placeholder="Lọc theo ngày mua hàng"
+            placeholder="Lọc theo ngày nhập hàng"
             optionFilterProp="children"
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -533,6 +632,28 @@ export default function ImportInventories() {
             <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
           </Select>
 
+          <Select
+            size="large"
+            style={{ width: 320 }}
+            placeholder="Lọc theo nhân viên tạo đơn"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          ></Select>
+
+          <Select
+            size="large"
+            style={{ width: 320 }}
+            placeholder="Lọc theo nhân viên xác nhận đơn"
+            allowClear
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          ></Select>
+
           <Button
             size="large"
             onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
@@ -548,11 +669,6 @@ export default function ImportInventories() {
       <div style={{ marginTop: 15 }}>
         <Table
           loading={loading}
-          rowKey="_id"
-          rowSelection={{
-            selectedRowKeys: selectRowsKey,
-            onChange: (keys) => setSelectRowKeys(keys),
-          }}
           size="small"
           dataSource={ordersInventory}
           columns={columns.map((column) => {
@@ -640,12 +756,39 @@ export default function ImportInventories() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <Popconfirm
-                    onConfirm={() => _deleteOrderImportInventory(record.order_id)}
-                    title="Bạn có muốn xóa đơn nhập hàng này không?"
-                  >
-                    <Button icon={<DeleteOutlined />} danger type="primary" />
-                  </Popconfirm>
+                  <Space direction="vertical">
+                    <Space>
+                      <Tooltip title="Xóa đơn hàng">
+                        <Popconfirm
+                          onConfirm={() => _deleteOrderImportInventory(record.order_id)}
+                          title="Bạn có muốn xóa đơn nhập hàng này không?"
+                        >
+                          <Button icon={<DeleteOutlined />} danger type="primary" />
+                        </Popconfirm>
+                      </Tooltip>
+                      <Tooltip title="In hóa đơn">
+                        <Button
+                          onClick={async () => {
+                            setDataPrint(record)
+                            await delay(100)
+                            handlePrint()
+                          }}
+                          icon={<PrinterOutlined />}
+                          type="primary"
+                        />
+                      </Tooltip>
+                    </Space>
+                    {record.status !== 'COMPLETE' && (
+                      <Popconfirm
+                        onConfirm={() => _acceptOrderImportInventory(record.order_id)}
+                        okText="Đồng ý"
+                        cancelText="Từ chối"
+                        title="Bạn có muốn nhập đơn hàng này không?"
+                      >
+                        <Button type="primary">Nhập hàng</Button>
+                      </Popconfirm>
+                    )}
+                  </Space>
                 ),
               }
             if (column.key === 'products')
