@@ -175,6 +175,12 @@ module.exports._getIOIReport = async (req, res, next) => {
             },
             { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
         );
+        if (req.query.category_id) {
+            let ids = req.query.category_id.map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ $match: { category_id: { $in: ids } } });
+        }
         let countQuery = [...aggregateQuery];
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;
@@ -435,6 +441,12 @@ module.exports._getInventoryReport = async (req, res, next) => {
             },
             { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
         );
+        if (req.query.category_id) {
+            let ids = req.query.category_id.map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ $match: { category_id: { $in: ids } } });
+        }
         let countQuery = [...aggregateQuery];
         if (req.query.page && req.query.page_size) {
             let page = Number(req.query.page) || 1;

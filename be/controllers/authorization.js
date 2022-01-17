@@ -659,7 +659,7 @@ module.exports._getOTP = async (req, res, next) => {
         // await Promise.all(mail.sendMail(user.email, 'Mã xác thực', otpMail(otpCode)));
         await client
             .db(DB)
-            .collection(`Users`)
+            .collection(`Business`)
             .updateOne(
                 { system_user_id: Number(business.system_user_id) },
                 {

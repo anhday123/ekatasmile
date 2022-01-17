@@ -306,6 +306,8 @@ module.exports._createImportOrder = async (req, res, next) => {
             active: true,
         };
         if (order.status == 'COMPLETE') {
+            order['verifier_id'] = Number(req.user.user_id);
+            order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
             let [prices, priceMaxId, locationMaxId, inventoryMaxId, inventories] = await Promise.all([
@@ -647,8 +649,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     payment_status: 'UNPAID',
                     create_date: moment().tz(TIMEZONE).format(),
                     creator_id: req.user.user_id,
-                    verify_date: '',
-                    verifier_id: '',
+                    verify_date: moment().tz(TIMEZONE).format(),
+                    verifier_id: req.user.user_id,
                     delivery_date: '',
                     deliverer_id: '',
                     complete_date: '',
@@ -711,11 +713,11 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: order_id } }, { upsert: true }),
-            res.send({
-                success: true,
-                data: orders,
-            });
+            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: order_id } }, { upsert: true });
+        res.send({
+            success: true,
+            data: orders,
+        });
     } catch (err) {
         next(err);
     }
@@ -1179,250 +1181,246 @@ module.exports._getTransportOrder = async (req, res, next) => {
 
 module.exports._createTransportOrder = async (req, res, next) => {
     try {
-        try {
-            let maxOrderId = await client
+        let maxOrderId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'TransportOrders' });
+        let order_id = (() => {
+            if (maxOrderId && maxOrderId.value) {
+                return maxOrderId.value;
+            }
+            return 0;
+        })();
+        order_id++;
+        const exportAt = (() => {
+            if (req.body.export_location && req.body.export_location.branch_id) {
+                return 'Branchs';
+            }
+            return 'Stores';
+        })();
+        const importAt = (() => {
+            if (req.body.import_location && req.body.import_location.branch_id) {
+                return 'Branchs';
+            }
+            return 'Stores';
+        })();
+        let [exportLocation, importLocation] = await Promise.all([
+            client.db(req.user.database).collection(exportAt).findOne(req.body.export_location),
+            client.db(req.user.database).collection(importAt).findOne(req.body.import_location),
+        ]);
+        if (!exportLocation) {
+            throw new Error('400: Địa điểm xuất hàng không chính xác!');
+        }
+        if (!importLocation) {
+            throw new Error('400: Địa điểm nhập hàng không chính xác!');
+        }
+        let productIds = [];
+        let variantIds = [];
+        req.body.products.map((product) => {
+            productIds.push(product.product_id);
+            variantIds.push(product.variant_id);
+        });
+        productIds = [...new Set(productIds)];
+        variantIds = [...new Set(variantIds)];
+        let [products, variants] = await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('Products')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+            client
+                .db(req.user.database)
+                .collection('Variants')
+                .find({ product_id: { $in: productIds } })
+                .toArray(),
+        ]);
+        let _products = {};
+        products.map((product) => {
+            _products[String(product.product_id)] = product;
+        });
+        let _variants = {};
+        variants.map((variant) => {
+            _variants[String(variant.variant_id)] = variant;
+        });
+        let total_cost = 0;
+        let total_discount = 0;
+        let final_cost = 0;
+        let total_quantity = 0;
+        req.body.products = req.body.products.map((product) => {
+            total_cost += product.quantity * product.import_price;
+            total_discount += product.discount || 0;
+            final_cost += product.quantity * product.import_price - product.discount || 0;
+            total_quantity += product.quantity;
+            return {
+                ...product,
+                product_info: _products[product.product_id],
+                variant_info: _variants[product.variant_id],
+            };
+        });
+        let order = {
+            order_id: order_id,
+            code: req.body.code || String(order_id).padStart(6, '0'),
+            export_location: req.body.export_location,
+            import_location: req.body.import_location,
+            products: req.body.products || [],
+            total_quantity: req.body.total_quantity || total_quantity,
+            total_cost: total_cost,
+            total_discount: total_discount,
+            shipping_cost: req.body.shipping_cost,
+            final_cost: req.body.final_cost || final_cost,
+            note: req.body.note || '',
+            files: req.body.files,
+            tags: req.body.tags || [],
+            slug_tags: [],
+            // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+            status: req.body.status || 'DRAFT',
+            payment_info: req.body.payment_info || [],
+            // UNPAID - PAYING - PAID
+            payment_status: req.body.payment_status || 'PAID',
+            delivery_time: req.body.delivery_time || '',
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            verify_date: '',
+            verifier_id: '',
+            delivery_date: '',
+            deliverer_id: '',
+            complete_date: '',
+            completer_id: '',
+            cancel_date: '',
+            canceler_id: '',
+            last_update: moment().tz(TIMEZONE).format(),
+            active: true,
+        };
+        if (order.status != 'COMPLETE') {
+            order['completer_id'] = Number(req.user.user_id);
+            order['complete_date'] = moment().tz(TIMEZONE).format();
+            let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .findOne({ name: 'TransportOrders' });
-            let order_id = (() => {
-                if (maxOrderId && maxOrderId.value) {
-                    return maxOrderId.value;
+                .findOne({ name: 'Locations' });
+            let location_id = (() => {
+                if (locationMaxId && locationMaxId.value) {
+                    return locationMaxId.value;
                 }
                 return 0;
             })();
-            order_id++;
-            const exportAt = (() => {
-                if (req.body.export_location && req.body.export_location.branch_id) {
-                    return 'Branchs';
+            let sortQuery = (() => {
+                if (req.user._business.price_recipe == 'LIFO') {
+                    return { create_date: -1 };
                 }
-                return 'Stores';
+                return { create_date: 1 };
             })();
-            const importAt = (() => {
-                if (req.body.import_location && req.body.import_location.branch_id) {
-                    return 'Branchs';
+            let oldLocations = await client
+                .db(req.user.database)
+                .collection('Locations')
+                .find({ variant_id: { $in: variantIds }, quantity: { $gt: 0 } })
+                .sort(sortQuery)
+                .toArray();
+            let _oldLocations = {};
+            oldLocations.map((eLocation) => {
+                if (!_oldLocations[eLocation.variant_id]) {
+                    _oldLocations[eLocation.variant_id] = [];
                 }
-                return 'Stores';
-            })();
-            let [exportLocation, importLocation] = await Promise.all([
-                client.db(req.user.database).collection(exportAt).findOne(req.body.export_location),
-                client.db(req.user.database).collection(importAt).findOne(req.body.import_location),
-            ]);
-            if (!exportLocation) {
-                throw new Error('400: Địa điểm xuất hàng không chính xác!');
-            }
-            if (!importLocation) {
-                throw new Error('400: Địa điểm nhập hàng không chính xác!');
-            }
-            let productIds = [];
-            let variantIds = [];
-            req.body.products.map((product) => {
-                productIds.push(product.product_id);
-                variantIds.push(product.variant_id);
+                if (_oldLocations[eLocation.variant_id]) {
+                    _oldLocations[eLocation.variant_id].push(eLocation);
+                }
             });
-            productIds = [...new Set(productIds)];
-            variantIds = [...new Set(variantIds)];
-            let [products, variants] = await Promise.all([
-                client
-                    .db(req.user.database)
-                    .collection('Products')
-                    .find({ product_id: { $in: productIds } })
-                    .toArray(),
-                client
-                    .db(req.user.database)
-                    .collection('Variants')
-                    .find({ product_id: { $in: productIds } })
-                    .toArray(),
-            ]);
-            let _products = {};
-            products.map((product) => {
-                _products[String(product.product_id)] = product;
-            });
-            let _variants = {};
-            variants.map((variant) => {
-                _variants[String(variant.variant_id)] = variant;
-            });
-            let total_cost = 0;
-            let total_discount = 0;
-            let final_cost = 0;
-            let total_quantity = 0;
-            req.body.products = req.body.products.map((product) => {
-                total_cost += product.quantity * product.import_price;
-                total_discount += product.discount || 0;
-                final_cost += product.quantity * product.import_price - product.discount || 0;
-                total_quantity += product.quantity;
-                return {
-                    ...product,
-                    product_info: _products[product.product_id],
-                    variant_info: _variants[product.variant_id],
+            let locations = [];
+            let updateLocations = [];
+            order.products.map((product) => {
+                location_id++;
+                let _location = {
+                    business_id: Number(order.business_id),
+                    location_id: Number(location_id),
+                    product_id: Number(product.product_id),
+                    variant_id: Number(product.variant_id),
+                    price_id: Number(price_id),
+                    type: (() => {
+                        if (order.import_location && order.import_location.branch_id) {
+                            return 'BRANCH';
+                        }
+                        if (order.import_location && order.import_location.store_id) {
+                            return 'STORE';
+                        }
+                        return '';
+                    })(),
+                    branch_id: (() => {
+                        if (order.import_location && order.import_location.branch_id) {
+                            return order.import_location.branch_id;
+                        }
+                        return '';
+                    })(),
+                    store_id: (() => {
+                        if (order.import_location && order.import_location.store_id) {
+                            return order.import_location.store_id;
+                        }
+                        return '';
+                    })(),
+                    quantity: product.quantity,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    active: true,
                 };
-            });
-            let order = {
-                order_id: order_id,
-                code: req.body.code || String(order_id).padStart(6, '0'),
-                export_location: req.body.export_location,
-                import_location: req.body.import_location,
-                products: req.body.products || [],
-                total_quantity: req.body.total_quantity || total_quantity,
-                total_cost: total_cost,
-                total_discount: total_discount,
-                shipping_cost: req.body.shipping_cost,
-                final_cost: req.body.final_cost || final_cost,
-                note: req.body.note || '',
-                files: req.body.files,
-                tags: req.body.tags || [],
-                slug_tags: [],
-                // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
-                status: req.body.status || 'DRAFT',
-                payment_info: req.body.payment_info || [],
-                // UNPAID - PAYING - PAID
-                payment_status: req.body.payment_status || 'PAID',
-                delivery_time: req.body.delivery_time || '',
-                create_date: moment().tz(TIMEZONE).format(),
-                creator_id: req.user.user_id,
-                verify_date: '',
-                verifier_id: '',
-                delivery_date: '',
-                deliverer_id: '',
-                complete_date: '',
-                completer_id: '',
-                cancel_date: '',
-                canceler_id: '',
-                last_update: moment().tz(TIMEZONE).format(),
-                active: true,
-            };
-            if (order.status != 'COMPLETE') {
-                order['completer_id'] = Number(req.user.user_id);
-                order['complete_date'] = moment().tz(TIMEZONE).format();
-                let locationMaxId = await client
-                    .db(req.user.database)
-                    .collection('AppSetting')
-                    .findOne({ name: 'Locations' });
-                let location_id = (() => {
-                    if (locationMaxId && locationMaxId.value) {
-                        return locationMaxId.value;
-                    }
-                    return 0;
-                })();
-                let sortQuery = (() => {
-                    if (req.user._business.price_recipe == 'LIFO') {
-                        return { create_date: -1 };
-                    }
-                    return { create_date: 1 };
-                })();
-                let oldLocations = await client
-                    .db(req.user.database)
-                    .collection('Locations')
-                    .find({ variant_id: { $in: variantIds }, quantity: { $gt: 0 } })
-                    .sort(sortQuery)
-                    .toArray();
-                let _oldLocations = {};
-                oldLocations.map((eLocation) => {
-                    if (!_oldLocations[eLocation.variant_id]) {
-                        _oldLocations[eLocation.variant_id] = [];
-                    }
-                    if (_oldLocations[eLocation.variant_id]) {
-                        _oldLocations[eLocation.variant_id].push(eLocation);
-                    }
-                });
-                let locations = [];
-                let updateLocations = [];
-                order.products.map((product) => {
-                    location_id++;
-                    let _location = {
-                        business_id: Number(order.business_id),
-                        location_id: Number(location_id),
-                        product_id: Number(product.product_id),
-                        variant_id: Number(product.variant_id),
-                        price_id: Number(price_id),
-                        type: (() => {
-                            if (order.import_location && order.import_location.branch_id) {
-                                return 'BRANCH';
-                            }
-                            if (order.import_location && order.import_location.store_id) {
-                                return 'STORE';
-                            }
-                            return '';
-                        })(),
-                        branch_id: (() => {
-                            if (order.import_location && order.import_location.branch_id) {
-                                return order.import_location.branch_id;
-                            }
-                            return '';
-                        })(),
-                        store_id: (() => {
-                            if (order.import_location && order.import_location.store_id) {
-                                return order.import_location.store_id;
-                            }
-                            return '';
-                        })(),
-                        quantity: product.quantity,
-                        create_date: moment().tz(TIMEZONE).format(),
-                        last_update: moment().tz(TIMEZONE).format(),
-                        creator_id: Number(req.user.user_id),
-                        active: true,
-                    };
-                    locations.push(_location);
-                    let quantity = product.quantity;
-                    if (Array.isArray(_oldLocations[product.variant_id])) {
-                        for (let i in _oldLocations[product.variant_id]) {
-                            let eLocation = _oldLocations[product.variant_id][i];
-                            if (quantity > eLocation.quantity) {
-                                quantity -= eLocation.quantity;
-                                eLocation.quantity = 0;
-                                updateLocations.push(eLocation);
-                            }
-                            if (quantity < eLocation.quantity) {
-                                eLocation.quantity -= quantity;
-                                quantity = 0;
-                                updateLocations.push(eLocation);
-                            }
-                            if (quantity == 0) {
-                                break;
-                            }
+                locations.push(_location);
+                let quantity = product.quantity;
+                if (Array.isArray(_oldLocations[product.variant_id])) {
+                    for (let i in _oldLocations[product.variant_id]) {
+                        let eLocation = _oldLocations[product.variant_id][i];
+                        if (quantity > eLocation.quantity) {
+                            quantity -= eLocation.quantity;
+                            eLocation.quantity = 0;
+                            updateLocations.push(eLocation);
+                        }
+                        if (quantity < eLocation.quantity) {
+                            eLocation.quantity -= quantity;
+                            quantity = 0;
+                            updateLocations.push(eLocation);
+                        }
+                        if (quantity == 0) {
+                            break;
                         }
                     }
-                    if (quantity > 0) {
-                        throw new Error(`400: Sản phẩm không đủ số lượng tồn kho!`);
-                    }
-                });
-                await Promise.all([
-                    client
-                        .db(req.user.database)
-                        .collection('AppSetting')
-                        .updateOne(
-                            { name: 'Locations' },
-                            { $set: { name: 'Locations', value: location_id } },
-                            { upsert: true }
-                        ),
-                    client.db(req.user.database).collection('Locations').insertMany(locations),
-                    ...(() => {
-                        return updateLocations.map((eUpdate) => {
-                            return client
-                                .db(req.user.database)
-                                .collection('Locations')
-                                .updateOne({ location_id: eUpdate.location_id }, { $set: eUpdate });
-                        });
-                    })(),
-                ]);
-            }
+                }
+                if (quantity > 0) {
+                    throw new Error(`400: Sản phẩm không đủ số lượng tồn kho!`);
+                }
+            });
             await Promise.all([
                 client
                     .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
-                        { name: 'TransportOrders' },
-                        { $set: { name: 'TransportOrders', value: order_id } },
+                        { name: 'Locations' },
+                        { $set: { name: 'Locations', value: location_id } },
                         { upsert: true }
                     ),
-                client.db(req.user.database).collection('TransportOrders').insertOne(order),
+                client.db(req.user.database).collection('Locations').insertMany(locations),
+                ...(() => {
+                    return updateLocations.map((eUpdate) => {
+                        return client
+                            .db(req.user.database)
+                            .collection('Locations')
+                            .updateOne({ location_id: eUpdate.location_id }, { $set: eUpdate });
+                    });
+                })(),
             ]);
-            res.send({
-                success: true,
-                data: order,
-            });
-        } catch (err) {
-            next(err);
         }
+        await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'TransportOrders' },
+                    { $set: { name: 'TransportOrders', value: order_id } },
+                    { upsert: true }
+                ),
+            client.db(req.user.database).collection('TransportOrders').insertOne(order),
+        ]);
+        res.send({
+            success: true,
+            data: order,
+        });
     } catch (err) {
         next(err);
     }
