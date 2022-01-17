@@ -190,6 +190,7 @@ export default function Category() {
           must_match: match,
           function: conditions,
         },
+        sites: ['all'],
       }
 
       let res
