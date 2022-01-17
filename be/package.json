@@ -8,7 +8,7 @@
         "start": "pm2 start index.js",
         "restart": "pm2 restart index.js",
         "push": "rm -r node_modules && scp -r ../be root@103.81.87.65:/root/Admin_Order/be && exit",
-        "chay": "nodemon index.js"
+        "app": "nodemon index.js"
     },
     "author": "",
     "license": "ISC",
