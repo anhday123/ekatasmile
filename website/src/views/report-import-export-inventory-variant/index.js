@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import styles from './report-import-export-inventory.module.scss'
 import { formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import delay from 'delay'

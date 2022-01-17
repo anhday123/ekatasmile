@@ -57,7 +57,7 @@ export default function Product() {
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  console.log(paramsFilter)
+
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
@@ -650,7 +650,7 @@ export default function Product() {
                   placeholder="Lọc theo nhà cung cấp"
                   optionFilterProp="children"
                   bordered={false}
-                  onChange={(value) => setParamsFilter({ ...paramsFilter, supplier_id: value })}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, supplier_id: value ? value : '' })}
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
@@ -676,7 +676,7 @@ export default function Product() {
                   optionFilterProp="children"
                   // value={optionSearchName}
                   bordered={false}
-                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value })}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value ? value : ''  })}
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }

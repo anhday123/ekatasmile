@@ -75,8 +75,7 @@ export default function Employee() {
     {
       title: 'Địa chỉ',
       render: (text, record) =>
-        `${record.address && record.address + ', '}${record.district && record.district + ', '}${
-          record.province && record.province
+        `${record.address && record.address + ', '}${record.district && record.district + ', '}${record.province && record.province
         }`,
     },
     {
@@ -198,7 +197,7 @@ export default function Employee() {
           </Button>
         </EmployeeForm>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
+      <Row gutter={[16, 16]} style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}>
         <Col xs={24} sm={24} md={12} lg={12} xl={6}>
           <Input
             allowClear
@@ -207,9 +206,10 @@ export default function Employee() {
             onChange={onSearch}
             value={valueSearch}
             size="large"
+            bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
           <Select
             allowClear
             size="large"
@@ -222,6 +222,7 @@ export default function Employee() {
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
+            bordered={false}
           >
             {Address.province.map((e, index) => (
               <Option value={e.province_name} key={index}>
@@ -230,7 +231,7 @@ export default function Employee() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
           <Select
             allowClear
             size="large"
@@ -243,6 +244,7 @@ export default function Employee() {
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
+            bordered={false}
           >
             {Address.district
               .filter((e) => !paramsFilter.province || e.province_name === paramsFilter.province)
@@ -268,6 +270,7 @@ export default function Employee() {
             style={{ width: '100%' }}
             placeholder="Lọc theo thời gian"
             optionFilterProp="children"
+            bordered={false}
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }

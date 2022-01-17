@@ -313,7 +313,7 @@ export default function ActivityDiary() {
           }
         ></TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 15 }}>
+        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
               size="large"
@@ -324,9 +324,10 @@ export default function ActivityDiary() {
               onChange={onSearch}
               placeholder="Tìm kiếm theo tên"
               allowClear
+              bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
             <RangePicker
               size="large"
               className="br-15__date-picker"
@@ -334,8 +335,8 @@ export default function ActivityDiary() {
                 clear === 1
                   ? []
                   : start !== ''
-                  ? [moment(start, dateFormat), moment(end, dateFormat)]
-                  : []
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
               }
               style={{ width: '100%' }}
               ranges={{
@@ -343,9 +344,10 @@ export default function ActivityDiary() {
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
               }}
               onChange={onChangeDate}
+              bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Select
               size="large"
               showSearch
@@ -359,6 +361,7 @@ export default function ActivityDiary() {
               onChange={(event) => {
                 handleChange(event)
               }}
+              bordered={false}
             >
               <Option value="default">Tất cả thao tác</Option>
               {unique &&
@@ -382,6 +385,7 @@ export default function ActivityDiary() {
               onChange={(event) => {
                 handleChangeProperties(event)
               }}
+              bordered={false}
             >
               <Option value="default">Tất cả giao diện</Option>
               {uniqueProperties &&
@@ -458,7 +462,7 @@ export default function ActivityDiary() {
               scroll={{ y: 500 }}
               rowSelection={rowSelection}
               columns={columns}
-              // dataSource={data}
+            // dataSource={data}
             />
           </div>
         </div>

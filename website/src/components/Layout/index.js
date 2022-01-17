@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styles from './layout.module.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES, PERMISSIONS, LOGO_DEFAULT } from 'consts'
-import { Link, useLocation, useRouteMatch } from 'react-router-dom'
+import { Link, useLocation, useRouteMatch, useHistory } from 'react-router-dom'
 import { Bell, Plus } from 'utils/icon'
 import jwt_decode from 'jwt-decode'
 
@@ -55,6 +55,7 @@ import { getAllBranch } from 'apis/branch'
 
 const { Sider } = Layout
 const BaseLayout = (props) => {
+  const history = useHistory()
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
@@ -305,9 +306,10 @@ const BaseLayout = (props) => {
       icon: <LineChartOutlined />,
     },
     {
-      path: ROUTES.SHIPPING,
-      title: 'Đối tác vận chuyển',
-      permissions: [PERMISSIONS.quan_li_doi_tac_van_chuyen],
+      path: ROUTES.SHIPPING_CONTROL,
+      title: 'Đối soát vận chuyển',
+      permissions: [],
+      // permissions: [PERMISSIONS.doi_soat_van_chuyen],
       icon: <CarOutlined />,
       pathsChild: [],
     },
@@ -318,7 +320,7 @@ const BaseLayout = (props) => {
         ROUTES.TAX,
         ROUTES.PAYMENT,
         ROUTES.ACTIVITY_DIARY,
-        ROUTES.SHIPPING_CONTROL,
+        ROUTES.SHIPPING,
         ROUTES.POINT,
       ],
       path: ROUTES.CONFIGURATION_STORE,
@@ -336,11 +338,10 @@ const BaseLayout = (props) => {
   ]
 
   const renderMenuItem = (_menu) => (
-    // console.log(_menu)
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
         <Menu.SubMenu
-          className='edit-submenu-arrow'
+          className={`${styles['edit-submenu-arrow']} edit-submenu-arrow`}
           style={{
             height: 40,
             backgroundColor:
@@ -353,13 +354,17 @@ const BaseLayout = (props) => {
               style={{
                 fontSize: '0.8rem',
                 color:
-                  (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) ?
-                    '#5F73E2' : 'rgba(0, 0, 0, 0.85)',
+                  location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)
+                    ? '#5F73E2'
+                    : 'rgba(0, 0, 0, 0.85)',
               }}
-              to={_menu.path}>{_menu.title}
+              to={_menu.path}
+            >
+              {_menu.title}
             </Link>
           }
-          icon={_menu.icon}>
+          icon={_menu.icon}
+        >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
               <Menu.Item

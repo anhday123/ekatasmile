@@ -2,11 +2,18 @@ import React, { useEffect } from 'react'
 import styles from './otp.module.scss'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts/index'
-import { verify, getOtp } from 'apis/auth'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Form, Input, Button, notification, Row, Col } from 'antd'
 import jwt_decode from 'jwt-decode'
 import delay from 'delay'
+
+//apis
+import { verify, getOtp } from 'apis/auth'
+
+//antd
+import { Form, Input, Button, notification, Row, Col } from 'antd'
+
+//background
+import background from 'assets/img/bg1.jpg'
 
 export default function OTP() {
   const dispatch = useDispatch()
@@ -77,9 +84,9 @@ export default function OTP() {
   }, [])
 
   return (
-    <Row justify="center" align="middle" className={styles['otp-container']}>
+    <Row align="middle" className={styles['otp-container']}>
       <img
-        src="https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg"
+        src={background}
         style={{
           width: '100%',
           height: '100vh',
@@ -117,7 +124,7 @@ export default function OTP() {
                 placeholder="Nhập mã xác thực otp"
               />
             </Form.Item>
-            <Row wrap={false} align="middle" style={{ color: 'white' }}>
+            <Row wrap={false} align="end" style={{ color: 'white' }}>
               <div>Bạn chưa nhận được mã? </div>
               <p
                 onClick={_resendOtp}

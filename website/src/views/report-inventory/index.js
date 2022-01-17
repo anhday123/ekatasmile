@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import styles from './report-inventory.module.scss'
 import moment from 'moment'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
@@ -12,17 +11,19 @@ import TitlePage from 'components/title-page'
 import exportTableToCSV from 'components/ExportCSV/export-table'
 
 //antd
-import { Input, Col, Row, DatePicker, Table, Tag, Button } from 'antd'
+import { Input, Col, Row, DatePicker, Table, Tag, Button, Select } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //apis
 import { getReportInventory } from 'apis/report'
+import { getAllBranch } from 'apis/branch'
 
 export default function ReportInventory() {
   const history = useHistory()
 
+  const [branches, setBranches] = useState([])
   const [reportInventory, setReportInventory] = useState([])
   const [reportInventoryToExport, setReportInventoryToExport] = useState([])
   const [loading, setLoading] = useState(false)
@@ -43,6 +44,10 @@ export default function ReportInventory() {
     }
 
     setParamsFilter({ ...paramsFilter, page: 1 })
+  }
+
+  const _clearFilters = () => {
+    setParamsFilter({ page: 1, page_size: 20 })
   }
 
   const columnsDefault = [
@@ -205,6 +210,19 @@ export default function ReportInventory() {
     }
   }
 
+  const _getBranches = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    _getBranches()
+  }, [])
+
   useEffect(() => {
     _reportInventory()
   }, [paramsFilter])
@@ -249,6 +267,40 @@ export default function ReportInventory() {
             format={dateFormat}
           />
         </Col>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Select
+            mode="multiple"
+            allowClear
+            value={paramsFilter.branch_id}
+            onChange={(value) => setParamsFilter({ ...paramsFilter, branch_id: value })}
+            size="large"
+            placeholder="Lọc theo chi nhánh"
+            style={{ width: '100%' }}
+          >
+            {branches.map((branch, index) => (
+              <Select.Option value={branch.branch_id} key={index}>
+                {branch.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+          <Select
+            allowClear
+            size="large"
+            placeholder="Lọc theo nhóm sản phẩm"
+            style={{ width: '100%' }}
+          ></Select>
+        </Col>
+        <Button
+          onClick={_clearFilters}
+          style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+          size="large"
+          danger
+          type="primary"
+        >
+          Xóa bộ lọc
+        </Button>
       </Row>
 
       <div className="report-inventory" style={{ display: 'none' }}>

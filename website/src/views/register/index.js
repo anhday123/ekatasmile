@@ -4,8 +4,9 @@ import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { ACTION, ROUTES } from 'consts'
 
-//icons
-import store from 'assets/img/store.png'
+//background
+import background from 'assets/img/bg1.jpg'
+import logoRegister from 'assets/img/logoRegister.svg'
 
 //antd
 import { Row, Col, Form, Input, Button, notification, Tabs } from 'antd'
@@ -81,7 +82,7 @@ export default function Login() {
   return (
     <Row className={styles['registration']}>
       <img
-        src="https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg"
+        src={background}
         alt="background"
       />
       <div className={styles['registration-content']}>
@@ -101,10 +102,12 @@ export default function Login() {
                 <div className={styles['registration-content--logo']}>
                   <img
                     style={{ maxWidth: 120, maxHeight: 120 }}
-                    src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png"
+                    src={logoRegister}
                     alt="logo"
                   />
                 </div>
+                <h2>Đăng ký tài khoản miễn phí</h2>
+                <h2>để bắt đầu bán hàng</h2>
               </div>
             }
             key="register"
@@ -194,18 +197,21 @@ export default function Login() {
                         />
                       </Form.Item>
                     </Col>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <Form.Item>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          className={styles['btn-registration']}
+                        >
+                          Đăng ký
+                        </Button>
+                      </Form.Item>
+                    </Col>
                   </Row>
 
                   <Row justify="center">
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        className={styles['btn-registration']}
-                      >
-                        Đăng ký
-                      </Button>
-                    </Form.Item>
+
                   </Row>
                 </Form>
               </div>

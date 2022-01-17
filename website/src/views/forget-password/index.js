@@ -3,7 +3,6 @@ import styles from './forget-password.module.scss'
 import { Link, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
-import store from 'assets/img/store.png'
 
 //antd
 import { Form, Input, Button, notification, Row, Col } from 'antd'
@@ -13,6 +12,9 @@ import { UserOutlined } from '@ant-design/icons'
 
 //apis
 import { getOtp } from 'apis/auth'
+
+//background
+import background from 'assets/img/bg1.jpg'
 
 export default function ForgetPassword() {
   const dispatch = useDispatch()
@@ -49,9 +51,9 @@ export default function ForgetPassword() {
   }
 
   return (
-    <Row className={styles['forget-pw-container']} justify="center" align="middle" >
+    <Row className={styles['forget-pw-container']} align="middle" >
       <img
-        src='https://www.sapo.vn/Themes/Portal/Default/StylesV2/images/bg-register.jpg'
+        src={background}
         style={{
           width: '100%',
           height: '100vh',
@@ -66,6 +68,7 @@ export default function ForgetPassword() {
             flexDirection: 'column',
             alignItems: 'center',
             marginBottom: 20,
+            color: '#fff'
           }}
         >
           <div style={{ fontSize: '1.5rem', marginBottom: 10, fontWeight: 700 }}>Quên mật khẩu</div>
@@ -81,23 +84,24 @@ export default function ForgetPassword() {
               size="large"
               prefix={<UserOutlined />}
               placeholder="Nhập tên tài khoản"
-              className={styles['input']}
             />
           </Form.Item>
 
-          <Form.Item>
-            <Button
-              onClick={sendOtp}
-              size="large"
-              type="primary"
-              htmlType="submit"
-              className={styles['forget-pw-button']}
-            >
-              Xác nhận
-            </Button>
-          </Form.Item>
+          <Row justify="center" >
+            <Form.Item>
+              <Button
+                onClick={sendOtp}
+                size="large"
+                type="primary"
+                htmlType="submit"
+                className={styles['forget-pw-button']}
+              >
+                Xác nhận
+              </Button>
+            </Form.Item>
+          </Row>
           <Row justify="end">
-            <Link to={ROUTES.LOGIN} style={{ color: '#000' }}>
+            <Link to={ROUTES.LOGIN} style={{ color: '#fff' }}>
               Quay về đăng nhập
             </Link>
           </Row>

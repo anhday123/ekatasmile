@@ -1,16 +1,6 @@
-import styles from './../report-import/report-import.module.scss'
+import styles from './report-import.module.scss'
 import React, { useState } from 'react'
-import {
-  Popconfirm,
-  Input,
-  Button,
-  Row,
-  Col,
-  DatePicker,
-  Popover,
-  Table,
-  Typography,
-} from 'antd'
+import { Popconfirm, Input, Button, Row, Col, DatePicker, Popover, Table, Typography } from 'antd'
 
 import { FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
@@ -75,8 +65,7 @@ export default function ReportImport() {
       title: 'Ngày nhập',
       dataIndex: 'importDate',
       width: 150,
-      sorter: (a, b) =>
-        moment(a.importDate).unix() - moment(b.importDate).unix(),
+      sorter: (a, b) => moment(a.importDate).unix() - moment(b.importDate).unix(),
     },
   ]
   const data = []
@@ -111,9 +100,7 @@ export default function ReportImport() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Báo cáo nhập hàng
-          </div>
+          <div className={styles['promotion_manager_title']}>Báo cáo nhập hàng</div>
         </div>
         <Row
           style={{
@@ -123,30 +110,12 @@ export default function ReportImport() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                placeholder="Tìm kiếm theo mã, theo tên"
-                enterButton
-              />
+              <Input size="large" placeholder="Tìm kiếm theo mã, theo tên" enterButton />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -154,28 +123,14 @@ export default function ReportImport() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <DatePicker
-                style={{ width: '100%' }}
-                size="large"
-                className="br-15__date-picker"
-              />
+              <DatePicker style={{ width: '100%' }} size="large" className="br-15__date-picker" />
             </div>
           </Col>
         </Row>
@@ -299,9 +254,7 @@ export default function ReportImport() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Danh sách đơn hàng nhập
-          </div>
+          <div className={styles['promotion_manager_title']}>Danh sách đơn hàng nhập</div>
         </div>
         <Row
           style={{
@@ -311,14 +264,7 @@ export default function ReportImport() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={12}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row
               style={{
                 display: 'flex',
@@ -443,11 +389,7 @@ export default function ReportImport() {
               width: '100%',
             }}
           >
-            <Popconfirm
-              title="Bạn chắc chắn muốn xóa?"
-              okText="Yes"
-              cancelText="No"
-            >
+            <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Yes" cancelText="No">
               <Button type="primary" danger size="large">
                 Xóa báo cáo
               </Button>

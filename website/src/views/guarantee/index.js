@@ -298,70 +298,79 @@ export default function Guarantee() {
           </Space>
         </TitlePage>
 
-        <Row wrap={false} justify="space-between" style={{ marginTop: '1rem' }}>
-          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
-            <Input
-              placeholder="Tìm kiếm theo mã, theo tên"
-              value={filter.search}
-              onChange={onSearch}
-              enterButton
-              size="large"
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
-            <RangePicker
-              size="large"
-              className="br-15__date-picker"
-              style={{ width: '100%' }}
-              ranges={{
-                Today: [moment(), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-              }}
-              value={filter.from_date ? [moment(filter.from_date), moment(filter.to_date)] : []}
-              onChange={onChange}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={11} lg={11} xl={7}>
-            <Select
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              allowClear
-              showSearch
-              size="large"
-              placeholder="Chọn người tạo"
-              style={{ width: '100%' }}
-              value={filter.creator_id}
-              onChange={(value) => {
-                if (value) filter.creator_id = value
-                else filter.creator_id = undefined
+        <Row wrap={false} style={{ marginTop: '1rem' }}>
+          <Col xs={24} sm={24} md={21} lg={21} xl={21}>
+            <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Input
+                  placeholder="Tìm kiếm theo mã, theo tên"
+                  value={filter.search}
+                  onChange={onSearch}
+                  enterButton
+                  size="large"
+                  allowClear
+                  bordered={false}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+                <RangePicker
+                  size="large"
+                  className="br-15__date-picker"
+                  style={{ width: '100%' }}
+                  ranges={{
+                    Today: [moment(), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                  }}
+                  value={filter.from_date ? [moment(filter.from_date), moment(filter.to_date)] : []}
+                  onChange={onChange}
+                  bordered={false}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Select
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  allowClear
+                  showSearch
+                  size="large"
+                  placeholder="Chọn người tạo"
+                  style={{ width: '100%' }}
+                  value={filter.creator_id}
+                  onChange={(value) => {
+                    if (value) filter.creator_id = value
+                    else filter.creator_id = undefined
 
-                filter.page = 1
-                setFilter({ ...filter })
+                    filter.page = 1
+                    setFilter({ ...filter })
+                  }}
+                  bordered={false}
+                >
+                  {users.map((user, index) => (
+                    <Select.Option key={index} value={user.user_id}>
+                      {user.first_name || ''} {user.last_name || ''}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={24} sm={24} md={2} lg={2} xl={2} style={{ marginLeft: 10 }}>
+            <Button
+              size="large"
+              type="primary"
+              onClick={() => {
+                setFilter({
+                  search: '',
+                  from_date: undefined,
+                  to_date: undefined,
+                  creator_id: undefined,
+                })
               }}
             >
-              {users.map((user, index) => (
-                <Select.Option key={index} value={user.user_id}>
-                  {user.first_name || ''} {user.last_name || ''}
-                </Select.Option>
-              ))}
-            </Select>
+              Xóa bộ lọc
+            </Button>
           </Col>
-          <Button
-            size="large"
-            type="primary"
-            onClick={() => {
-              setFilter({
-                search: '',
-                from_date: undefined,
-                to_date: undefined,
-                creator_id: undefined,
-              })
-            }}
-          >
-            Xóa bộ lọc
-          </Button>
         </Row>
 
         <div

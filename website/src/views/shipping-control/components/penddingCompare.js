@@ -80,8 +80,8 @@ export default function PenddingCompare(props) {
             data.toLowerCase() == 'processing'
               ? { color: 'orange' }
               : data.toLowerCase() == 'complete'
-              ? { color: 'green' }
-              : { color: 'red' }
+                ? { color: 'green' }
+                : { color: 'red' }
           }
         >
           {data}
@@ -177,22 +177,21 @@ export default function PenddingCompare(props) {
     <div>
       <Row
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           width: '100%',
+          marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5
         }}
       >
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Input
             style={{ width: '100%' }}
             size="large"
             placeholder="Tìm kiếm theo mã, theo tên"
             onChange={onSearch}
             enterButton
+            bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
           <Select
             size="large"
             open={isOpenSelect}
@@ -203,8 +202,9 @@ export default function PenddingCompare(props) {
               if (!isOpenSelect) toggleOpenSelect()
             }}
             style={{ width: '100%' }}
-            placeholder="Choose time"
+            placeholder="Chọn ngày"
             allowClear
+            bordered={false}
             onChange={async (value) => {
               if (isOpenSelect) toggleOpenSelect()
               changeTimeOption(value)
@@ -235,7 +235,7 @@ export default function PenddingCompare(props) {
             <Option value="last_year">Last year</Option>
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: 13 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Select
             size="large"
             placeholder="Chọn chi nhánh"
@@ -246,6 +246,7 @@ export default function PenddingCompare(props) {
                 branch: e,
               })
             }
+            bordered={false}
           >
             {props.branchList
               .filter((e) => e.active)

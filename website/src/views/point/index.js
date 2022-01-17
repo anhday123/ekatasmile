@@ -104,16 +104,25 @@ export default function Point() {
         all_product: config.all_product,
         product_id: config.all_product === false ? config.product_id : [],
       }
-      console.log(data.all_customer_type, data.customer_type_id)
-      const res = await updatePoint(data, point.point_setting_id)
-      if (res.status === 200) {
-        if (res.data.success) {
-          notification.success({ message: 'Cấu hình tích điểm thành công' })
+      console.log(data)
+      if (
+        (data.all_branch === false && data.branch_id.length === 0) ||
+        (data.all_customer_type === false && data.customer_type_id.length === 0) ||
+        (data.all_category === false && data.category_id.length === 0) ||
+        (data.all_product === false && data.product_id.length === 0)
+      ) {
+        notification.error({ message: 'Cấu hình tích điểm thất bại, vui lòng điền đầy đủ thông tin' })
+      } else {
+        const res = await updatePoint(data, point.point_setting_id)
+        if (res.status === 200) {
+          if (res.data.success) {
+            notification.success({ message: 'Cấu hình tích điểm thành công' })
+          } else {
+            notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
+          }
         } else {
           notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
         }
-      } else {
-        notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
       }
       dispatch({ type: 'LOADING', data: false })
     } catch (err) {

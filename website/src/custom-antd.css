@@ -138,6 +138,10 @@
 .tabs-login .ant-tabs-ink-bar {
   background-color: white !important;
 }
+.tabs-login .ant-tabs-ink-bar.ant-tabs-ink-bar-animated {
+  width: 0px !important;
+  transition: none;
+}
 .ant-tabs-nav-wrap {
   padding-top: 5px;
 }
@@ -206,6 +210,5 @@
 
 /* custom submenu arrow */
 .edit-submenu-arrow .ant-menu-submenu-arrow {
-  height: 40px;
-  transform: translateY(-25%) !important;
+  display: none;
 }
