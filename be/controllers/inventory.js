@@ -57,6 +57,12 @@ module.exports._getImportOrder = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
+        if (req.query.creator_id) {
+            aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
+        }
+        if (req.query.verifier_id) {
+            aggregateQuery.push({ $match: { verifier_id: Number(req.query.verifier_id) } });
+        }
         if (req.query.branch_id) {
             aggregateQuery.push({ $match: { 'import_location.branch_id': Number(req.query.branch_id) } });
         }
@@ -209,7 +215,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             }
             return 'Stores';
         })();
-        let importLocation = await client.db(req.user.database).collection(importAt).findOne(req.body.import_location);
+        let importLocation = await client.db(req.user.database).collection(importAt).findOne();
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
