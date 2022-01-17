@@ -730,6 +730,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
+        console.log(_order.import_location);
         let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
@@ -993,19 +994,23 @@ module.exports._updateImportOrder = async (req, res, next) => {
                         { upsert: true }
                     ),
             ]);
-            await Promise.all([
-                client.db(req.user.database).collection('Prices').insertMany(insertPrices),
-                client.db(req.user.database).collection('Locations').insertMany(insertLocations),
-                client.db(req.user.database).collection('Inventories').insertMany(insertInventories),
-                ...(() => {
-                    return updateInventories.map((eUpdate) => {
-                        return client
-                            .db(req.user.database)
-                            .collection('Inventories')
-                            .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
-                    });
-                })(),
-            ]);
+            if (Array.isArray(insertPrices) && insertPrices.length > 0) {
+                await client.db(req.user.database).collection('Prices').insertMany(insertPrices);
+            }
+            if (Array.isArray(insertLocations) && insertLocations.length > 0) {
+                await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
+            }
+            if (Array.isArray(insertInventories) && insertInventories.length > 0) {
+                await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
+            }
+            await Promise.all(
+                updateInventories.map((eUpdate) => {
+                    return client
+                        .db(req.user.database)
+                        .collection('Inventories')
+                        .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
+                })
+            );
         }
         await client.db(req.user.database).collection('ImportOrders').updateOne(req.params, { $set: _order });
         res.send({ success: true, data: _order });
