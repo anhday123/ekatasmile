@@ -5,12 +5,13 @@ import moment from 'moment'
 import { Form, Drawer, Row, Col, Button, Input, notification, DatePicker, Select } from 'antd'
 
 //apis
-import { updateUser, addUser } from 'apis/user'
-import { apiDistrict, apiProvince } from 'apis/information'
+import { updateEmployee, addEmployee } from 'apis/employee'
+import { getDistricts, getProvinces } from 'apis/address'
 
 export default function ClientForm({ children, reloadData, record }) {
   const [form] = Form.useForm()
 
+  const [province, setProvince] = useState('')
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
   const [loading, setLoading] = useState(false)
@@ -33,11 +34,12 @@ export default function ClientForm({ children, reloadData, record }) {
         address: dataForm.address || '',
         district: dataForm.district || '',
         province: dataForm.province || '',
+        role_id: 2,
       }
 
       let res
-      if (record) res = await updateUser(body, record.user_id)
-      else res = await addUser({ ...body, role_id: 2 })
+      if (record) res = await updateEmployee(body, record.user_id)
+      else res = await addEmployee({ ...body })
       console.log(res)
 
       if (res.status === 200) {
@@ -65,12 +67,11 @@ export default function ClientForm({ children, reloadData, record }) {
     }
   }
 
-  const _getDistricts = async (value) => {
+  const _getDistricts = async () => {
     try {
-      const res = await apiDistrict({ search: value })
-      if (res.status === 200) {
-        setDistricts(res.data.data)
-      }
+      const res = await getDistricts()
+      console.log(res)
+      if (res.status === 200) setDistricts(res.data.data)
     } catch (error) {
       console.log(error)
     }
@@ -78,7 +79,7 @@ export default function ClientForm({ children, reloadData, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)
@@ -94,8 +95,13 @@ export default function ClientForm({ children, reloadData, record }) {
     if (visible) {
       if (!record) {
         form.resetFields()
+        form.setFieldsValue({
+          province: provinces.length ? provinces[0].province_name : '',
+          district: districts.length ? districts[0].district_name : '',
+        })
+        setProvince(provinces.length ? provinces[0].province_name : '')
       } else {
-        console.log(record)
+        setProvince(record.province || '')
         form.setFieldsValue({
           ...record,
           birthday: record.birthday ? moment(record.birthday) : null,
@@ -184,32 +190,11 @@ export default function ClientForm({ children, reloadData, record }) {
                 <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
-
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item name="district" label="Quận/huyện">
-                <Select
-                  allowClear
-                  showSearch
-                  style={{ width: '100%' }}
-                  placeholder="Chọn quận/huyện"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  {districts.map((district, index) => {
-                    return (
-                      <Select.Option value={district.district_name} key={index}>
-                        {district.district_name}
-                      </Select.Option>
-                    )
-                  })}
-                </Select>
-              </Form.Item>
-            </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item name="province" label="Tỉnh/thành phố">
                 <Select
+                  value={province}
+                  onChange={setProvince}
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Chọn tỉnh/thành phố"
@@ -225,6 +210,30 @@ export default function ClientForm({ children, reloadData, record }) {
                       </Select.Option>
                     )
                   })}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item name="district" label="Quận/huyện">
+                <Select
+                  allowClear
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {districts
+                    .filter((e) => !province || e.province_name === province)
+                    .map((district, index) => {
+                      return (
+                        <Select.Option value={district.district_name} key={index}>
+                          {district.district_name}
+                        </Select.Option>
+                      )
+                    })}
                 </Select>
               </Form.Item>
             </Col>

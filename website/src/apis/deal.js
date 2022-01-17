@@ -1,7 +1,7 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const getDeal = (params) => get('/deal/getdeal',params)
-export const addDeal = (body) => post('/deal/adddeal',body)
-export const updateDeal = (body,id) => patch(`/deal/updatedeal/${id}`,body)
-export const updateDealsPrice = (body) => patch('/deal/updatesaleofvalue',body)
-export const deleteDeal=(id)=>destroy(`/deal/deletedeal?deal_id=${id}`)
+export const getDeals = (query) => get('/deal/get', query)
+export const addDeal = (body) => post('/deal/create', body)
+export const updateDeal = (body, id) => patch(`/deal/update/${id}`, body)
+export const updateDealsPrice = (body) => patch('/deal/updatesaleofvalue', body)
+export const deleteDeal = (id) => destroy(`/deal/delete?deal_id=${id}`)

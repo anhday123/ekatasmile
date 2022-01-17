@@ -46,14 +46,14 @@ module.exports._create = async (req, res, next) => {
             .trim()
             .toUpperCase();
         let payment = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('PaymentMethods')
             .findOne({ business_id: req.user.business_id, name: req.body.name });
         if (payment) {
             throw new Error(`400: Phương thức thanh toán đã tồn tại!`);
         }
         let payment_method_id = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .findOne({ name: 'PaymentMethods' })
             .then((doc) => {
@@ -72,18 +72,19 @@ module.exports._create = async (req, res, next) => {
             images: req.body.images || [],
             default: req.body.default || false,
             create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
-            creator_id: Number(req.user.user_id),
+            updater_id: req.user.user_id,
             active: true,
         };
         if (_paymentMethod.default == true) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('PaymentMethods')
                 .updateMany({ business_id: req.user.business_id }, { $set: { default: false } });
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne(
                 { name: 'PaymentMethods' },
@@ -99,7 +100,7 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.payment_method_id = Number(req.params.payment_method_id);
-        let paymentMethod = await client.db(DB).collection(`PaymentMethods`).findOne(req.params);
+        let paymentMethod = await client.db(req.user.database).collection(`PaymentMethods`).findOne(req.params);
         if (!paymentMethod) {
             throw new Error(`400: Phương thức thanh toán không tồn tại!`);
         }
@@ -118,12 +119,13 @@ module.exports._update = async (req, res, next) => {
             images: _paymentMethod.images,
             default: _paymentMethod.default,
             create_date: _paymentMethod.create_date,
-            last_update: moment().tz(TIMEZONE).format(),
             creator_id: Number(_paymentMethod.user_id),
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
             active: _paymentMethod.active,
         };
         let exists = await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`PaymentMethods`)
             .findOne({
                 business_id: req.user.business_id,
@@ -135,7 +137,7 @@ module.exports._update = async (req, res, next) => {
         }
         if (_paymentMethod.default == true) {
             await client
-                .db(DB)
+                .db(req.user.database)
                 .collection('PaymentMethods')
                 .updateMany({ business_id: req.user.business_id }, { $set: { default: false } });
         }
@@ -148,12 +150,16 @@ module.exports._update = async (req, res, next) => {
 
 module.exports._delete = async (req, res, next) => {
     try {
-        let counts = await client.db(DB).collection('PaymentMethods').find({ business_id: req.user.user_id }).count();
+        let counts = await client
+            .db(req.user.database)
+            .collection('PaymentMethods')
+            .find({ business_id: req.user.user_id })
+            .count();
         if (counts <= req.body.payment_method_id.length) {
             throw new Error('400: Không thể xóa hết phương thức thanh toán!');
         }
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('PaymentMethods')
             .deleteMany({ payment_method_id: { $in: req.body.payment_method_id } });
         res.send({ success: true, data: 'Xóa phương thức thanh toán thành công!' });

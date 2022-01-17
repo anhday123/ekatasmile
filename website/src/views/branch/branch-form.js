@@ -1,28 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { ACTION, regexPhone } from 'consts/index'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
-import {
-  Input,
-  Button,
-  Row,
-  Col,
-  notification,
-  Select,
-  Modal,
-  Form,
-  Spin,
-  Upload,
-  Drawer,
-} from 'antd'
+import { Input, Button, Row, Col, notification, Select, Form, Upload, Drawer } from 'antd'
 
 //icons
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons'
 
 //apis
-import { apiProvince, apiDistrict } from 'apis/information'
-import { addBranch, apiUpdateBranch } from 'apis/branch'
+import { getProvinces, getDistricts } from 'apis/address'
+import { addBranch, updateBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
@@ -30,6 +18,7 @@ export default function BranchAdd({ reloadData, children, record }) {
   const dispatch = useDispatch()
   const location = useLocation()
   const [form] = Form.useForm()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -56,8 +45,8 @@ export default function BranchAdd({ reloadData, children, record }) {
 
       const dataForm = form.getFieldsValue()
 
-      if (!regexPhone.test(dataForm.phone)) {
-        notification.error({ message: 'Số điện thoại liên hệ không hợp lệ' })
+      if (dataForm.phone && !regexPhone.test(dataForm.phone)) {
+        notification.warning({ message: 'Số điện thoại liên hệ không hợp lệ' })
         return
       }
 
@@ -77,27 +66,26 @@ export default function BranchAdd({ reloadData, children, record }) {
       }
 
       let res
-      if (record) res = await apiUpdateBranch(body, record.branch_id)
+      if (record) res = await updateBranch(body, record.branch_id)
       else res = await addBranch(body)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          dispatch({
-            type: ACTION.LOGIN,
-            data: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
-          })
           reloadData()
-          notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} kho thành công` })
+          notification.success({ message: `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thành công` })
           setVisible(false)
+          dispatch({ type: 'TRIGGER_RELOAD_BRANCH' })
         } else
           notification.error({
             message:
-              res.data.message || `${record ? 'Cập nhật' : 'Thêm'} kho thất bại, vui lòng thử lại!`,
+              res.data.message ||
+              `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thất bại, vui lòng thử lại!`,
           })
       } else
         notification.error({
           message:
-            res.data.message || `${record ? 'Cập nhật' : 'Thêm'} kho thất bại, vui lòng thử lại!`,
+            res.data.message ||
+            `${record ? 'Cập nhật' : 'Thêm'} chi nhánh thất bại, vui lòng thử lại!`,
         })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -108,11 +96,9 @@ export default function BranchAdd({ reloadData, children, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
+      if (res.status === 200) setProvinces(res.data.data)
 
-      if (res.status === 200) {
-        setProvinces(res.data.data)
-      }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -121,7 +107,7 @@ export default function BranchAdd({ reloadData, children, record }) {
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistrictMain(res.data.data)
         setDistrictsDefault(res.data.data)
@@ -167,7 +153,7 @@ export default function BranchAdd({ reloadData, children, record }) {
             </Button>
           </Row>
         }
-        title={record ? 'Cập nhật kho' : 'Thêm kho'}
+        title={record ? 'Cập nhật chi nhánh' : 'Thêm chi nhánh'}
         centered
         width="70%"
         visible={visible}
@@ -195,17 +181,18 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Tên kho</div>}
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Tên chi nhánh</div>}
                 name="name"
-                rules={[{ required: true, message: 'Vui lòng nhập tên kho' }]}
+                rules={[{ required: true, message: 'Vui lòng nhập tên chi nhánh' }]}
               >
-                <Input size="large" placeholder="Nhập tên kho" />
+                <Input size="large" placeholder="Nhập tên chi nhánh" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
                 name="address"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
               >
                 <Input placeholder="Nhập địa chỉ" size="large" />
               </Form.Item>
@@ -214,18 +201,8 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-                name="phone"
-                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
-              >
-                <Input placeholder="Nhập liên hệ" size="large" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
               >
                 <Select
                   size="large"
@@ -253,32 +230,10 @@ export default function BranchAdd({ reloadData, children, record }) {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row justify="space-between" align="middle">
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item
-                name="warehouse_type"
-                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại kho</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn loại kho' }]}
-              >
-                <Select
-                  size="large"
-                  showSearch
-                  placeholder="Chọn quận huyện"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  <Option value="sở hữu">Kho sở hữu</Option>
-                  <Option value="dịch vụ">Kho thuê dịch vụ</Option>
-                </Select>
-              </Form.Item>
-            </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
                 name="district"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn quận/huyện' }]}
               >
                 <Select
                   size="large"
@@ -297,6 +252,34 @@ export default function BranchAdd({ reloadData, children, record }) {
                     )
                   })}
                 </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row justify="space-between" align="middle">
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="warehouse_type"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  placeholder="Chọn loại chi nhánh"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  <Option value="sở hữu">Sở hữu</Option>
+                  <Option value="dịch vụ">Thuê dịch vụ</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                name="phone"
+              >
+                <Input placeholder="Nhập liên hệ" size="large" />
               </Form.Item>
             </Col>
           </Row>

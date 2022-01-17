@@ -5,7 +5,7 @@ import { Modal, Row, Col, Button, Checkbox, Space, Input, notification } from 'a
 import gift from 'assets/icons/gift.png'
 import { formatCash } from 'utils'
 //apis
-import { getPromoton, checkVoucher } from 'apis/promotion'
+import { getPromotions, checkVoucher } from 'apis/promotion'
 
 export default function PromotionAvailable({ order, editOrder }) {
   const [loading, setLoading] = useState(false)
@@ -56,7 +56,7 @@ export default function PromotionAvailable({ order, editOrder }) {
 
   const _getPromotions = async () => {
     try {
-      const res = await getPromoton()
+      const res = await getPromotions()
       console.log(res)
       if (res.status === 200) setPromotions(res.data.data.filter((e) => !e.has_voucher))
     } catch (error) {

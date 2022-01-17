@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
-
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
 import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
-import { compareCustom, formatCash, tableSum } from 'utils'
+import { compareCustom, formatCash } from 'utils'
 import moment from 'moment'
+import { compare } from 'utils'
+import { useSelector } from 'react-redux'
 
 import {
   Switch,
-  Slider,
   Upload,
   Select,
   notification,
@@ -19,7 +19,6 @@ import {
   Row,
   Col,
   DatePicker,
-  Popover,
   Space,
   Popconfirm,
   Tag,
@@ -35,43 +34,42 @@ import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
 //icons
-import { PlusCircleOutlined } from '@ant-design/icons'
+import {
+  PlusCircleOutlined,
+  InboxOutlined,
+  LoadingOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons'
 
 //apis
-import { apiAllWarranty } from 'apis/warranty'
-import { apiAllSupplier } from 'apis/supplier'
-import { getAllStore } from 'apis/store'
+import { getSuppliers } from 'apis/supplier'
 import { getCategories } from 'apis/category'
-import { getProducts, updateProduct, deleteProducts, importProduct } from 'apis/product'
-import { compare } from 'utils'
+import { getProducts, updateProduct, deleteProducts, importProducts } from 'apis/product'
+import { uploadFile } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
+  const typingTimeoutRef = useRef(null)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
+
   const [loading, setLoading] = useState(true)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const [paramsFilter, setParamsFilter] = useState({
-    page: 1,
-    page_size: 20,
-  })
-
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  console.log(paramsFilter)
   const [suppliers, setSuppliers] = useState([])
   const [products, setProducts] = useState([])
-  const [warranty, setWarranty] = useState([])
   const [selectedRowKeys, setSelectedRowKeys] = useState([]) //list checkbox row, key = _id
-  const [arrayProductShipping, setArrayProductShipping] = useState([])
   const [categories, setCategories] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-  const [stores, setStores] = useState([]) //list store in filter
-  const [storeId, setStoreId] = useState() //filter product by store
   const [columns, setColumns] = useState([])
 
   const [countProduct, setCountProduct] = useState(0)
 
-  const apiAllCategoryData = async () => {
+  const _getCategories = async () => {
     try {
       const res = await getCategories()
       if (res.status === 200) setCategories(res.data.data.filter((e) => e.active))
@@ -80,13 +78,85 @@ export default function Product() {
     }
   }
 
+  const enableBulkPrice = async (product, variant) => {
+    try {
+      setLoading(true)
+
+      const variantsNew = product.variants.map((e) => {
+        if (e.variant_id === variant.variant_id) return variant
+        else return e
+      })
+
+      const body = { variants: variantsNew }
+      const res = await updateProduct(body, product.product_id)
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getProducts()
+          notification.success({ message: 'Cập nhật thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+        })
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
+  const ModalViewBulkPrices = ({ bulkPrices }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const columns = [
+      {
+        title: 'Số lượng thấp nhất',
+        render: (text, record) => formatCash(record.min_quantity_apply || 0),
+      },
+      {
+        title: 'Số lượng cao nhất',
+        render: (text, record) => formatCash(record.max_quantity_apply || 0),
+      },
+      {
+        title: 'Giá áp dụng',
+        render: (text, record) => formatCash(record.price || 0),
+      },
+    ]
+
+    return (
+      <>
+        <a onClick={toggle}>Xem giá sỉ</a>
+        <Modal
+          width="50%"
+          title="Danh sách giá sỉ"
+          footer={null}
+          visible={visible}
+          onCancel={toggle}
+        >
+          <Table
+            scroll={{ y: '50vh' }}
+            size="small"
+            pagination={false}
+            columns={columns}
+            dataSource={bulkPrices}
+          />
+        </Modal>
+      </>
+    )
+  }
+
   const columnsVariant = [
     {
       title: 'Hình ảnh',
-      render: (text, record) => <ImageProductVariable record={record} />,
+      key: 'image',
     },
     {
-      title: 'Phiên bản',
+      title: 'Thuộc tính',
       dataIndex: 'title',
     },
     {
@@ -94,19 +164,30 @@ export default function Product() {
       dataIndex: 'sku',
     },
     {
-      title: 'Giá bán',
-      dataIndex: 'price',
-      render: (text) => text && formatCash(text),
+      title: 'Giá bán lẻ',
+      render: (text, record) => formatCash(record.price || 0),
+    },
+    {
+      title: 'Giá bán sỉ',
+      render: (text, record) =>
+        record.bulk_prices && record.bulk_prices.length ? (
+          <ModalViewBulkPrices bulkPrices={record.bulk_prices || []} />
+        ) : (
+          ''
+        ),
+    },
+    {
+      title: 'Giá sỉ',
+      key: 'enable_bulk_price',
     },
   ]
 
-  const apiAllSupplierData = async () => {
+  const _getSuppliers = async () => {
     try {
       setLoading(true)
-      const res = await apiAllSupplier()
-      if (res.status === 200) {
-        setSuppliers(res.data.data)
-      }
+      const res = await getSuppliers()
+      console.log(res)
+      if (res.status === 200) setSuppliers(res.data.data)
 
       setLoading(false)
     } catch (error) {
@@ -116,15 +197,8 @@ export default function Product() {
 
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
-
-    const productsUpdateShipping = products.filter((product) =>
-      selectedRowKeys.includes(product.product_id)
-    )
-
-    setArrayProductShipping([...productsUpdateShipping])
   }
 
-  const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -144,12 +218,15 @@ export default function Product() {
 
   const _getProductsToExport = async () => {
     try {
-      const res = await getProducts({ store: true })
+      setLoading(true)
+      const res = await getProducts({ branch: true, branch_id: branchIdApp })
       console.log(res)
+      setLoading(false)
       if (res.status === 200) return res.data.data
       return []
     } catch (error) {
       console.log(error)
+      setLoading(false)
       return []
     }
   }
@@ -160,14 +237,12 @@ export default function Product() {
     setProducts([])
 
     try {
-      const res = await getProducts({ ...paramsFilter, store: true })
-
+      const res = await getProducts({ ...paramsFilter, branch: true, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setProducts(res.data.data)
         setCountProduct(res.data.count)
       }
-
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -176,13 +251,11 @@ export default function Product() {
 
   useEffect(() => {
     _getProducts()
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   useEffect(() => {
-    apiAllSupplierData()
-    apiAllCategoryData()
-    apiAllWarrantyData()
-    getStores()
+    _getSuppliers()
+    _getCategories()
   }, [])
 
   const UpdateCategoryProducts = () => {
@@ -198,11 +271,11 @@ export default function Product() {
       <>
         <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
           <Button size="large" onClick={toggle} type="primary">
-            Cập nhật danh mục
+            Phân loại danh mục
           </Button>
         </Permission>
         <Modal
-          title="Cập nhật danh mục"
+          title="Phân loại danh mục"
           centered
           width={500}
           footer={null}
@@ -214,7 +287,7 @@ export default function Product() {
             treeDefaultExpandAll
             size="large"
             style={{ width: '100%', marginBottom: 30 }}
-            placeholder="Chọn danh mục"
+            placeholder="Chọn nhóm sản phẩm"
             showSearch={false}
             onChange={(value) => setCategoryIds(value)}
             value={categoryIds}
@@ -249,9 +322,7 @@ export default function Product() {
                   setLoading(false)
                   toggle()
                   await _getProducts()
-                  notification.success({
-                    message: `Cập nhật thành công danh mục vào các sản phẩm thành công!`,
-                  })
+                  notification.success({ message: `Cập nhật sản phẩm thành công!` })
                 } catch (error) {
                   setLoading(false)
                   toggle()
@@ -270,15 +341,25 @@ export default function Product() {
     )
   }
 
-  const _deleteProducts = async () => {
+  const _deleteProduct = async (product_id) => {
+    console.log(product_id)
     try {
       setLoading(true)
-      const res = await deleteProducts(selectedRowKeys.join('---'))
+      const res = await deleteProducts({ product_id: [product_id] })
       console.log(res)
-      if (res.status === 200) notification.success({ message: 'Xoá sản phẩm thành công!' })
-      else notification.error({ message: 'Xoá sản phẩm thất bại!' })
-      await _getProducts()
-      setSelectedRowKeys([])
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getProducts()
+          notification.success({ message: 'Xoá sản phẩm thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+        })
+
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -286,59 +367,126 @@ export default function Product() {
     }
   }
 
-  /*image product */
-  const ContentZoomImage = (data) => {
-    const [valueBox, setValueBox] = useState(300)
-    return (
-      <div onClick={(e) => e.stopPropagation()}>
-        <img
-          src={data}
-          style={{ width: valueBox, height: valueBox, objectFit: 'contain' }}
-          alt=""
-          onClick={(e) => e.stopPropagation()}
-        />
-        <Slider
-          defaultValue={300}
-          min={100}
-          max={1000}
-          onChange={(value) => setValueBox(value)}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-    )
-  }
+  const ImagesVariant = ({ record, product }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
 
-  const ImageProductVariable = ({ record }) => {
+    const [images, setImages] = useState(record.image || [])
+    const [imagesView, setImagesView] = useState(record.image || [])
+
+    const [loading, setLoading] = useState(false)
+
+    const addFile = async (file) => {
+      setLoading(true)
+      const url = await uploadFile(file)
+      setImages([...images, url])
+      const fileNames = url.split('/')
+      const fileName = fileNames[fileNames.length - 1]
+      setImagesView([
+        ...imagesView,
+        { uid: imagesView.length, name: fileName, status: 'done', url: url, thumbUrl: url },
+      ])
+      setLoading(false)
+    }
+
+    const removeFile = (file) => {
+      const imagesNew = [...images]
+      const imagesViewNew = [...imagesView]
+
+      const indexImage = images.findIndex((url) => url === file.url)
+      const indexImageView = imagesView.findIndex((f) => f.url === file.url)
+
+      if (indexImage !== -1) imagesNew.splice(indexImage, 1)
+      if (indexImageView !== -1) imagesViewNew.splice(indexImageView, 1)
+
+      setImages([...imagesNew])
+      setImagesView([...imagesViewNew])
+    }
+
+    useEffect(() => {
+      if (visible) {
+        setImages(record.image || [])
+        setImagesView(
+          record.image
+            ? record.image.map((image, index) => {
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
+            : []
+        )
+      }
+    }, [visible])
+
     return (
-      <Upload
-        name="avatar"
-        listType="picture-card"
-        className="avatar-uploader"
-        showUploadList={false}
-        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-        disabled
-      >
-        {record.image && record.image.length ? (
-          <Popover style={{ top: 300 }} placement="top" content={ContentZoomImage(record.image[0])}>
-            <img src={record.image[0]} alt="" style={{ width: '100%' }} />
-          </Popover>
-        ) : (
-          <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
-        )}
-      </Upload>
+      <>
+        <div onClick={toggle} className={styles['variant-image']}>
+          {record.image && record.image.length ? (
+            <img
+              src={record.image[0] || IMAGE_DEFAULT}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <img src={IMAGE_DEFAULT} alt="" style={{ width: '100%' }} />
+          )}
+        </div>
+        <Modal
+          footer={
+            <Row justify="end">
+              <Space>
+                <Button style={{ minWidth: 100 }} onClick={toggle}>
+                  Đóng
+                </Button>
+                <Button
+                  onClick={async () => {
+                    const body = {
+                      variants: product.variants.map((e) => {
+                        if (e.variant_id === record.variant_id) return { ...e, image: images }
+                        return e
+                      }),
+                    }
+                    await _updateProduct(body, product.product_id)
+                    toggle()
+                  }}
+                  style={{ minWidth: 100 }}
+                  type="primary"
+                >
+                  Lưu
+                </Button>
+              </Space>
+            </Row>
+          }
+          width={700}
+          onCancel={toggle}
+          title="Cập nhật hình ảnh"
+          visible={visible}
+        >
+          <Upload.Dragger
+            fileList={imagesView}
+            listType="picture"
+            data={addFile}
+            onRemove={removeFile}
+            name="file"
+            multiple
+            onChange={(info) => {
+              if (info.file.status !== 'done') info.file.status = 'done'
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              {loading ? <LoadingOutlined /> : <InboxOutlined />}
+            </p>
+            <p className="ant-upload-text">Nhấp hoặc hình ảnh vào khu vực này để tải lên</p>
+            <p className="ant-upload-hint">Hỗ trợ hình ảnh .PNG, .JPG,...</p>
+          </Upload.Dragger>
+        </Modal>
+      </>
     )
   }
-  /*image product */
 
   const onClickClear = async () => {
-    Object.keys(paramsFilter).map((key) => {
-      delete paramsFilter[key]
-    })
-    paramsFilter.page = 1
-    paramsFilter.page_size = 20
-    setParamsFilter({ ...paramsFilter })
+    setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
-    setStoreId()
     setSelectedRowKeys([])
     setValueTime()
     setValueDateTimeSearch({})
@@ -350,50 +498,26 @@ export default function Product() {
       setLoading(true)
       let res = await updateProduct(body, id)
       console.log(res)
-      if (res.status === 200) notification.success({ message: 'Cập nhật thành công!' })
-      else notification.error({ message: 'Cập nhật thất bại, vui lòng thử lại!' })
+      if (res.status === 200) {
+        if (res.data.success) notification.success({ message: 'Cập nhật thành công!' })
+        else
+          notification.error({
+            message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
+        })
 
       await _getProducts()
-
       setLoading(false)
     } catch (error) {
       console.log(error)
       setLoading(false)
-    }
-  }
-
-  const apiAllWarrantyData = async () => {
-    try {
-      setLoading(true)
-      const res = await apiAllWarranty()
-      if (res.status === 200) {
-        setWarranty(res.data.data)
-      }
-
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
-    }
-  }
-
-  const getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200) setStores(res.data.data)
-    } catch (error) {
-      console.log(error)
     }
   }
 
   const [optionSearchName, setOptionSearchName] = useState('name')
-
-  const onChangeStore = (storeId) => {
-    if (storeId) paramsFilter.store_id = storeId
-    else delete paramsFilter.store_id
-
-    paramsFilter.page = 1
-    setParamsFilter({ ...paramsFilter })
-  }
 
   const onChangeCategoryValue = (id) => {
     if (id) paramsFilter.category_id = id.join('---')
@@ -405,18 +529,23 @@ export default function Product() {
 
   return (
     <>
-      <div className={`${styles['view_product']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Danh sách sản phẩm">
           <Space>
+            <SettingColumns
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsProduct}
+              nameColumn="columnsProductStore"
+            />
             <ImportCSV
               size="large"
               txt="Import sản phẩm"
-              upload={importProduct}
+              upload={importProducts}
               title="Nhập sản phẩm bằng file excel"
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/28/4f5990e3-7325-4188-b09b-758b55b6148e/templated products import 4.xlsx"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
               reload={_getProducts}
             />
-
             <ExportProduct
               fileName="Products"
               name="Export Sản Phẩm"
@@ -432,8 +561,8 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: '1rem' }}>
-          <Col xs={24} sm={24} md={24} lg={11} xl={10}>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={16}>
@@ -445,16 +574,22 @@ export default function Product() {
                     onChange={onSearch}
                     placeholder="Tìm kiếm theo mã, theo tên"
                     allowClear
+                    bordered={false}
                   />
                 </Col>
                 <Col span={8}>
                   <Select
                     size="large"
                     showSearch
-                    style={{ width: '100%' }}
+                    style={{
+                      width: '100%',
+                      borderLeft: '1px solid #d9d9d9',
+                      borderRight: '1px solid #d9d9d9',
+                    }}
                     placeholder="Chọn theo"
                     optionFilterProp="children"
                     value={optionSearchName}
+                    bordered={false}
                     onChange={(value) => {
                       delete paramsFilter[optionSearchName]
                       setOptionSearchName(value)
@@ -470,15 +605,16 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <TreeSelect
               size="large"
               style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo danh mục"
+              placeholder="Tìm kiếm theo nhóm sản phẩm"
               allowClear
               multiple
               showSearch={false}
               treeDefaultExpandAll
+              bordered={false}
               value={
                 paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
               }
@@ -500,9 +636,60 @@ export default function Product() {
               ))}
             </TreeSelect>
           </Col>
+        </Row>
 
-          <Col xs={24} sm={24} md={24} lg={11} xl={7}>
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+            <Row style={{ width: '100%' }}>
+              <Col span={16}>
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Lọc theo nhà cung cấp"
+                  optionFilterProp="children"
+                  bordered={false}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, supplier_id: value })}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {suppliers.map((supplier, index) => (
+                    <Option value={supplier.supplier_id} key={index}>
+                      {supplier.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col span={8}>
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{
+                    width: '100%',
+                    borderLeft: '1px solid #d9d9d9',
+                    borderRight: '1px solid #d9d9d9',
+                  }}
+                  placeholder="Lọc trạng thái"
+                  optionFilterProp="children"
+                  // value={optionSearchName}
+                  bordered={false}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value })}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  <Option value={true}>Mở bán</Option>
+                  <Option value={false}>Ngừng bán</Option>
+                </Select>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <Select
+              style={{ width: '100%' }}
               size="large"
               open={isOpenSelect}
               onBlur={() => {
@@ -513,9 +700,9 @@ export default function Product() {
               }}
               allowClear
               showSearch
-              style={{ width: '100%' }}
-              placeholder="Lọc theo thời gian nhập kho"
+              placeholder="Lọc theo thời gian tạo"
               optionFilterProp="children"
+              bordered={false}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -614,23 +801,9 @@ export default function Product() {
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
-          <Space size="middle" style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
-            {/* <Permission permission={[PERMISSIONS.tao_phieu_chuyen_hang]}>
-                <Button
-                  size="large"
-                  onClick={() => {
-                    history.push({
-                      pathname: ROUTES.SHIPPING_PRODUCT_ADD,
-                      state: arrayProductShipping,
-                    })
-                  }}
-                  type="primary"
-                >
-                  Chuyển hàng
-                </Button>
-              </Permission> */}
+          <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
-            <Permission permission={[PERMISSIONS.xoa_san_pham]}>
+            {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
               <Popconfirm
                 title="Bạn có muốn xoá các sản phẩm này?"
                 okText="Đồng ý"
@@ -641,10 +814,14 @@ export default function Product() {
                   Xoá
                 </Button>
               </Popconfirm>
-            </Permission>
-          </Space>
-
-          <Space>
+            </Permission> */}
+            <Button
+              size="large"
+              // onClick={onClickClear}
+              type="primary"
+            >
+              Nhập hàng
+            </Button>
             <Button
               style={{
                 display: Object.keys(paramsFilter).length <= 2 && 'none',
@@ -655,12 +832,6 @@ export default function Product() {
             >
               Xóa tất cả lọc
             </Button>
-            <SettingColumns
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsProduct}
-              nameColumn="columnsProductStore"
-            />
           </Space>
         </Row>
 
@@ -675,7 +846,29 @@ export default function Product() {
                   <Table
                     style={{ width: '100%' }}
                     pagination={false}
-                    columns={columnsVariant}
+                    columns={columnsVariant.map((column) => {
+                      if (column.key === 'image')
+                        return {
+                          ...column,
+                          render: (text, variant) => (
+                            <ImagesVariant record={variant} product={record} />
+                          ),
+                        }
+                      if (column.key === 'enable_bulk_price')
+                        return {
+                          ...column,
+                          render: (text, variant) => (
+                            <Switch
+                              checked={variant.enable_bulk_price}
+                              onChange={(checked) =>
+                                enableBulkPrice(record, { ...variant, enable_bulk_price: checked })
+                              }
+                            />
+                          ),
+                        }
+
+                      return column
+                    })}
                     dataSource={record.variants}
                     size="small"
                   />
@@ -686,12 +879,19 @@ export default function Product() {
             expandIconColumnIndex: -1,
           }}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+              }
             if (column.key === 'name-product')
               return {
                 ...column,
                 render: (text, record) =>
                   record.active ? (
-                    <Link to={{ pathname: ROUTES.PRODUCT_ADD, state: record }}>{text}</Link>
+                    <Link to={{ pathname: ROUTES.PRODUCT_UPDATE, state: record }}>{text}</Link>
                   ) : (
                     text
                   ),
@@ -749,10 +949,30 @@ export default function Product() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <Switch
-                    defaultChecked={record.active}
-                    onClick={() => _updateProduct({ active: !record.active }, record.product_id)}
-                  />
+                  <Space size="middle">
+                    <div>
+                      <div>Mở bán</div>
+                      <Switch
+                        defaultChecked={record.active}
+                        onClick={() =>
+                          _updateProduct({ active: !record.active }, record.product_id)
+                        }
+                      />
+                    </div>
+                    <Popconfirm
+                      onConfirm={() => _deleteProduct(record.product_id)}
+                      title="Bạn có muốn xóa sản phẩm này không?"
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                    >
+                      <Button
+                        style={{ marginTop: 17 }}
+                        type="primary"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  </Space>
                 ),
               }
 
@@ -764,15 +984,11 @@ export default function Product() {
           pagination={{
             position: ['bottomLeft'],
             current: paramsFilter.page,
-            defaultPageSize: 20,
+            pageSize: paramsFilter.page_size,
             pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
             showQuickJumper: true,
-            onChange: (page, pageSize) => {
-              setSelectedRowKeys([])
-              paramsFilter.page = page
-              paramsFilter.page_size = pageSize
-              setParamsFilter({ ...paramsFilter })
-            },
+            onChange: (page, pageSize) =>
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
             total: countProduct,
           }}
         />

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import styles from './shipping.module.scss'
 import { ACTION, PERMISSIONS } from 'consts'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
@@ -22,8 +21,8 @@ import {
 import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { apiAllShipping, deleteShippings } from 'apis/shipping'
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getShippings, deleteShippings } from 'apis/shipping'
+import { getProvinces, getDistricts } from 'apis/address'
 
 //components
 import Permission from 'components/permission'
@@ -83,7 +82,7 @@ export default function Shipping() {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await apiAllShipping(paramsFilter)
+      const res = await getShippings(paramsFilter)
       console.log(res)
       if (res.status === 200) {
         setCountShipping(res.data.count)
@@ -131,7 +130,7 @@ export default function Shipping() {
 
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       console.log(res)
       if (res.status === 200) setDistricts(res.data.data)
     } catch (error) {
@@ -141,7 +140,7 @@ export default function Shipping() {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)
@@ -159,15 +158,23 @@ export default function Shipping() {
 
   return (
     <>
-      <div className={`${styles['shipping_manager']} ${styles['card']}`}>
+      <div className="card">
         <TitlePage title="Đối tác vận chuyển">
-          <ShippingForm reloadData={_getShippings}>
-            <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
-              <Button icon={<PlusCircleOutlined />} type="primary" size="large">
-                Thêm đối tác
-              </Button>
-            </Permission>
-          </ShippingForm>
+          <Space>
+            <SettingColumns
+              nameColumn="columnsShipping"
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsShipping}
+            />
+            <ShippingForm reloadData={_getShippings}>
+              <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
+                <Button icon={<PlusCircleOutlined />} type="primary" size="large">
+                  Thêm đối tác
+                </Button>
+              </Permission>
+            </ShippingForm>
+          </Space>
         </TitlePage>
 
         <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19 }}>
@@ -357,22 +364,14 @@ export default function Shipping() {
             {/* </Permission> */}
           </Popconfirm>
 
-          <Space>
-            <Button
-              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-              onClick={_clearFilters}
-              type="primary"
-              size="large"
-            >
-              Xóa bộ lọc
-            </Button>
-            <SettingColumns
-              nameColumn="columnsShipping"
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsShipping}
-            />
-          </Space>
+          <Button
+            style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+            onClick={_clearFilters}
+            type="primary"
+            size="large"
+          >
+            Xóa bộ lọc
+          </Button>
         </Row>
 
         <Table
@@ -381,6 +380,13 @@ export default function Shipping() {
           loading={loading}
           rowSelection={rowSelection}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -400,8 +406,7 @@ export default function Shipping() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
 

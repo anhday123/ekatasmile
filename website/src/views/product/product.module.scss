@@ -4,10 +4,23 @@
   margin: 1rem;
   padding: 1rem;
   background-color: white;
+  border-radius: 1.25rem;
 }
 .card {
   box-shadow: 0 12px 23px 0 #5c37990a;
   border-radius: 1.25rem;
   border: 0 solid transparent;
   overflow: hidden;
+}
+
+.variant-image {
+  width: 85px;
+  height: 85px;
+  cursor: pointer;
+  border: 1px dashed #bcc6ff;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: #5f73e2;
+  }
 }

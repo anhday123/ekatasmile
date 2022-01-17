@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 // style
-import styles from './../blog/blog.module.scss'
+import styles from './blog.module.scss'
 
 // moment
 import moment from 'moment'
@@ -19,8 +19,8 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteBlog, getBlog } from 'apis/blog'
-import { apiFilterRoleEmployee } from 'apis/employee'
+import { deleteBlog, getBlogs } from 'apis/blog'
+import { getEmployees } from 'apis/employee'
 
 // html react parser
 import parse from 'html-react-parser'
@@ -104,7 +104,7 @@ export default function Blog() {
   const _getBlog = async () => {
     try {
       setLoadingTable(true)
-      const res = await getBlog({ ...paramsFilter, _creator: true })
+      const res = await getBlogs({ ...paramsFilter, _creator: true })
       setBlogList(res.data.data)
       setCountPage(res.data.count)
       console.log(res)
@@ -156,7 +156,7 @@ export default function Blog() {
 
   const _getUserList = async () => {
     try {
-      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      const res = await getEmployees({ page: 1, page_size: 1000 })
       console.log(res)
       if (res.data.success) {
         setUserList(res.data.data)

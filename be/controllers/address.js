@@ -1,149 +1,143 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
-const DB = process.env.DATABASE;
-const { relative } = require('../utils/filter');
+const SDB = process.env.DATABASE;
 
-let getWardC = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._getWard = async (req, res, next) => {
     try {
-        let matchQuery = {};
         let aggregateQuery = [];
-        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.ward_code) {
-            matchQuery['ward_code'] = String(req.query.ward_code);
+            aggregateQuery.push({ $match: { ward_code: String(req.query.ward_code) } });
         }
         if (req.query.district_id) {
-            matchQuery['district_id'] = Number(req.query.district_id);
+            aggregateQuery.push({ $match: { district_id: Number(req.query.district_id) } });
         }
         if (req.query.province_id) {
-            matchQuery['province_id'] = Number(req.query.province_id);
+            aggregateQuery.push({ $match: { province_id: Number(req.query.province_id) } });
         }
-        aggregateQuery.push({ $match: matchQuery });
-        // lấy data từ database
-        let wards = await client.db(DB).collection(`Wards`).aggregate(aggregateQuery).toArray();
-        wards = relative(
-            {
-                ...(() => {
-                    let result = {};
-                    if (req.query.ward_name) {
-                        result = { ...result, ...{ ward_name: req.query.ward_name } };
-                    }
-                    if (req.query.district_name) {
-                        result = { ...result, ...{ district_name: req.query.district_name } };
-                    }
-                    if (req.query.province_name) {
-                        result = { ...result, ...{ province_name: req.query.province_name } };
-                    }
-                    console.log(result);
-                    return result;
-                })(),
+        if (req.query.ward_name) {
+            aggregateQuery.push({
+                $match: { slug_ward_name: new RegExp(removeUnicode(req.query.ward_name, true), 'gi') },
+            });
+        }
+        if (req.query.district_name) {
+            aggregateQuery.push({
+                $match: { slug_district_name: new RegExp(removeUnicode(req.query.district_name, true), 'gi') },
+            });
+        }
+        if (req.query.province_name) {
+            aggregateQuery.push({
+                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+            });
+        }
+        aggregateQuery.push({
+            $project: {
+                slug_ward_name: 0,
+                slug_district_name: 0,
+                slug_province_name: 0,
             },
-            wards
-        );
+        });
+        let wards = await client.db(SDB).collection(`Wards`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: wards });
     } catch (err) {
         next(err);
     }
 };
 
-let getDistrictC = async (req, res, next) => {
+module.exports._getDistrict = async (req, res, next) => {
     try {
-        let matchQuery = {};
         let aggregateQuery = [];
-        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.district_id) {
-            matchQuery['district_id'] = Number(req.query.district_id);
+            aggregateQuery.push({ $match: { district_id: Number(req.query.district_id) } });
         }
         if (req.query.province_id) {
-            matchQuery['province_id'] = Number(req.query.province_id);
+            aggregateQuery.push({ $match: { province_id: Number(req.query.province_id) } });
         }
-        aggregateQuery.push({ $match: matchQuery });
-        // lấy data từ database
-        let districts = await client.db(DB).collection(`Districts`).aggregate(aggregateQuery).toArray();
-        districts = relative(
-            {
-                ...(() => {
-                    let result = {};
-                    if (req.query.district_name) {
-                        result = { ...result, ...{ district_name: req.query.district_name } };
-                    }
-                    if (req.query.province_name) {
-                        result = { ...result, ...{ province_name: req.query.province_name } };
-                    }
-                    return result;
-                })(),
+        if (req.query.district_name) {
+            aggregateQuery.push({
+                $match: { slug_district_name: new RegExp(removeUnicode(req.query.district_name, true), 'gi') },
+            });
+        }
+        if (req.query.province_name) {
+            aggregateQuery.push({
+                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+            });
+        }
+        aggregateQuery.push({
+            $project: {
+                slug_district_name: 0,
+                slug_province_name: 0,
             },
-            districts
-        );
+        });
+        let districts = await client.db(SDB).collection(`Districts`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: districts });
     } catch (err) {
-        console.log(err);
         next(err);
     }
 };
 
-let getProvinceC = async (req, res, next) => {
+module.exports._getProvince = async (req, res, next) => {
     try {
-        let matchQuery = {};
         let aggregateQuery = [];
-        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.province_id) {
-            matchQuery['province_id'] = Number(req.query.province_id);
+            aggregateQuery.push({ $match: { province_id: Number(req.query.province_id) } });
         }
-        aggregateQuery.push({ $match: matchQuery });
-        // lấy data từ database
-        let provinces = await client.db(DB).collection(`Provinces`).aggregate(aggregateQuery).toArray();
-        provinces = relative(
-            {
-                ...(() => {
-                    let result = {};
-                    if (req.query.province_name) {
-                        result = { ...result, ...{ province_name: req.query.province_name } };
-                    }
-                    return result;
-                })(),
+        if (req.query.province_name) {
+            aggregateQuery.push({
+                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+            });
+        }
+        aggregateQuery.push({
+            $project: {
+                slug_province_name: 0,
             },
-            provinces
-        );
+        });
+        let provinces = await client.db(SDB).collection(`Provinces`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: provinces });
     } catch (err) {
         next(err);
     }
 };
 
-let getCountryC = async (req, res, next) => {
+module.exports._getCountry = async (req, res, next) => {
     try {
-        let matchQuery = {};
         let aggregateQuery = [];
-        // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.code) {
-            matchQuery['code'] = String(req.query.code).trim().toUpperCase();
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
-        aggregateQuery.push({ $match: matchQuery });
-        aggregateQuery.push({ $sort: { priority: -1 } })
-        // lấy data từ database
-        let countries = await client.db(DB).collection(`Countries`).aggregate(aggregateQuery).toArray();
-        countries = relative(
-            {
-                ...(() => {
-                    let result = {};
-                    if (req.query.name) {
-                        result = { ...result, ...{ name: req.query.name } };
-                    }
-                    return result;
-                })(),
+        if (req.query.name) {
+            aggregateQuery.push({ $match: { slug_name: new RegExp(removeUnicode(req.query.name, true), 'gi') } });
+        }
+        aggregateQuery.push({
+            $project: {
+                slug_name: 0,
             },
-            countries
-        );
+        });
+        let countries = await client.db(SDB).collection(`Countries`).aggregate(aggregateQuery).toArray();
         res.send({ success: true, data: countries });
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getWardC,
-    getDistrictC,
-    getProvinceC,
-    getCountryC,
 };

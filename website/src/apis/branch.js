@@ -1,9 +1,6 @@
-import { get, patch, post } from './httpClient'
+import { get, patch, post, destroy } from './httpClient'
 
-export const getAllBranch = (params) => get('/branch/getbranch', params)
-export const getAllBranchMain = () => get('/branch/getbranch')
-export const addBranch = (object) => post('/branch/addbranch', object)
-export const apiSearch = (object) => get('/branch/getbranch', object)
-export const apiSearchSelect = (object) => get(`/branch/getbranch/${object}`)
-export const apiFilterCity = (object) => get('/address/getdistrict', object)
-export const apiUpdateBranch = (body, id) => patch(`/branch/updatebranch/${id}`, body)
+export const getAllBranch = (query) => get('/branch', query)
+export const addBranch = (body) => post('/branch/create', body)
+export const updateBranch = (body, id) => patch(`/branch/update/${id}`, body)
+export const deleteBranch = (id) => destroy('/branch/delete', { branch_id: [id] })

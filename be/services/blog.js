@@ -1,23 +1,98 @@
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-const { createTimeline } = require('../utils/date-handle');
-const { removeUnicode } = require('../utils/string-handle');
 
-let getBlogS = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
         if (req.query.blog_id) {
             aggregateQuery.push({ $match: { blog_id: Number(req.query.blog_id) } });
         }
-        if (req.query.business_id) {
-            aggregateQuery.push({ $match: { business_id: Number(req.query.business_id) } });
+        if (req.query.code) {
+            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+        }
+        if (req.query.slug) {
+            aggregateQuery.push({ $match: { slug: String(req.query.slug) } });
+        }
+        if (req.query.category_id) {
+            let categoryIds = req.query.category_id.split('---').map((eId) => {
+                return Number(eId);
+            });
+            aggregateQuery.push({ $match: { $in: categoryIds } });
         }
         if (req.query.creator_id) {
             aggregateQuery.push({ $match: { creator_id: Number(req.query.creator_id) } });
         }
-        req.query = createTimeline(req.query);
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -42,7 +117,7 @@ let getBlogS = async (req, res, next) => {
                 },
             });
         }
-        if (req.query.tag) {
+        if (req.query.tags) {
             aggregateQuery.push({
                 $match: {
                     sub_tag: {
@@ -94,9 +169,9 @@ let getBlogS = async (req, res, next) => {
         }
         // lấy data từ database
         let [blogs, counts] = await Promise.all([
-            client.db(DB).collection(`Blogs`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Blogs`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Blogs`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -111,31 +186,57 @@ let getBlogS = async (req, res, next) => {
     }
 };
 
-let createBlogS = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let blog = await client.db(DB).collection(`Blogs`).insertOne(req._insert);
+        let blog = await client.db(req.user.database).collection(`Blogs`).insertOne(req.body);
         if (!blog.insertedId) {
             throw new Error('500: Lỗi hệ thống, thêm bài viết thất bại!');
         }
-        res.send({ success: true, data: req._insert });
+        try {
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Tạo',
+                properties: 'Bài viết',
+                name: 'Tạo bài viết',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'tao',
+                slug_properties: 'baiviet',
+                name: 'taobaiviet',
+            };
+            await Promise.all([client.db(req.user.database).collection(`Actions`).insertOne(_action)]);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
 };
 
-let updateBlogS = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
-        await client.db(DB).collection(`Blogs`).findOneAndUpdate(req.params, { $set: req._update });
-        res.send({ success: true, data: req._update });
+        await client.db(req.user.database).collection(`Blogs`).updateOne(req.params, { $set: req.body });
+        try {
+            let _action = {
+                business_id: req.user.business_id,
+                type: 'Cập nhật',
+                properties: 'Bài viết',
+                name: 'Cập nhật bài viết',
+                data: req.body,
+                performer_id: req.user.user_id,
+                date: moment().tz(TIMEZONE).format(),
+                slug_type: 'capnhat',
+                slug_properties: 'baiviet',
+                name: 'capnhatbaiviet',
+            };
+            await client.db(req.user.database).collection(`Actions`).insertOne(_action);
+        } catch (err) {
+            console.log(err);
+        }
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
-};
-
-
-
-module.exports = {
-    createBlogS,
-    getBlogS,
-    updateBlogS,
 };

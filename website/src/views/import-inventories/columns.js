@@ -1,10 +1,16 @@
 const columns = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
     title: 'Số hóa đơn',
     key: 'code',
   },
   {
-    title: 'Địa điểm nhập hàng',
+    title: 'Địa điểm nhận hàng',
     key: 'location',
   },
   {
@@ -42,6 +48,10 @@ const columns = [
   {
     title: 'Danh sách sản phẩm',
     key: 'products',
+  },
+  {
+    title: 'Hành động',
+    key: 'action',
   },
 ]
 

@@ -1,8 +1,9 @@
-import styles from './../role/role.module.scss'
 import React, { useState, useEffect } from 'react'
-import { ACTION, PERMISSIONS, ROLE_DEFAULT } from 'consts'
+import { ACTION, PERMISSIONS, ROLE_DEFAULT, ROUTES } from 'consts'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
+//antd
 import {
   Col,
   Row,
@@ -14,21 +15,23 @@ import {
   Switch,
   Input,
   Tree,
+  Space,
 } from 'antd'
 
-import {
-  apiAddRole,
-  apiAllRolePermission,
-  apiUpdateRole,
-  apiUpdateRolePermission,
-} from 'apis/role'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
+//apis
+import { addRole, getRoles, updateRole } from 'apis/role'
+
+//components
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
 import Permission from 'components/permission'
+import TitlePage from 'components/title-page'
 
 const { Panel } = Collapse
 export default function Role() {
   const dispatch = useDispatch()
+  const history = useHistory()
   const dataUser = useSelector((state) => state.login.dataUser)
 
   const [visible, setVisible] = useState(false)
@@ -74,10 +77,7 @@ export default function Role() {
     },
     {
       pParent: 'quan_li_chuyen_hang',
-      pChildren: [
-        'tao_phieu_chuyen_hang',
-        'cap_nhat_trang_thai_phieu_chuyen_hang',
-      ],
+      pChildren: ['tao_phieu_chuyen_hang', 'cap_nhat_trang_thai_phieu_chuyen_hang'],
     },
     {
       pParent: 'quan_li_nha_cung_cap',
@@ -178,14 +178,14 @@ export default function Role() {
       description: 'Cập nhật quyền thành công',
     })
   }
-  const apiUpdateRolePermissionData = async (body) => {
+  const _updatePermission = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       console.log(body)
-      const res = await apiUpdateRolePermission(body, key)
+      const res = await updateRole(body, key)
       console.log(res)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         openNotificationUpdateRole()
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -209,7 +209,7 @@ export default function Role() {
         body.menu_list = role.menu_list
       }
 
-      apiUpdateRolePermissionData(body)
+      _updatePermission(body)
     }
   }
   const onCheck = (checkedKeys, info) => {
@@ -221,9 +221,7 @@ export default function Role() {
     if (role) {
       let body = { active: true }
       if (typePermission === 'permission_list') {
-        const itemIndex = role.permission_list.findIndex(
-          (e) => e === permissionAdd
-        )
+        const itemIndex = role.permission_list.findIndex((e) => e === permissionAdd)
         if (itemIndex !== -1) role.permission_list.splice(itemIndex, 1)
 
         body.permission_list = role.permission_list
@@ -234,20 +232,20 @@ export default function Role() {
         body.menu_list = role.menu_list
       }
 
-      apiUpdateRolePermissionData(body)
+      _updatePermission(body)
     }
   }
 
   const [rolePermission, setRolePermission] = useState([])
-  const apiAllRolePermissionData = async () => {
+  const _getRoles = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAllRolePermission(
-        dataUser.data._role.name === 'ADMIN' && { default: true }
+      const res = await getRoles(
+        dataUser && dataUser.data._role.name === 'ADMIN' && { default: true }
       )
-      if (res.status === 200) {
-        setRolePermission([...res.data.data])
-      }
+      console.log(res)
+      if (res.status === 200) setRolePermission([...res.data.data])
+
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -269,18 +267,16 @@ export default function Role() {
   const openNotificationAddRoleDelete = (e) => {
     notification.success({
       message: 'Thành công',
-      description: e
-        ? `Kích hoạt vai trò thành công`
-        : 'Vô hiệu hóa vai trò thành công',
+      description: e ? `Kích hoạt vai trò thành công` : 'Vô hiệu hóa vai trò thành công',
     })
   }
   const [name, setName] = useState('')
-  const apiUpdateRoleData = async (object, id, e) => {
+  const _updateRole = async (object, id, e) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateRole(object, id)
+      const res = await updateRole(object, id)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         openNotificationAddRoleDelete(e)
       }
       dispatch({ type: ACTION.LOADING, data: false })
@@ -289,13 +285,13 @@ export default function Role() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  const apiAddRoleData = async (object) => {
+  const _addRole = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiAddRole(object)
+      const res = await addRole(object)
       console.log(res)
       if (res.status === 200) {
-        await apiAllRolePermissionData()
+        await _getRoles()
         onClose()
         openNotificationAddRole()
 
@@ -333,7 +329,7 @@ export default function Role() {
         permission_list: permissionAdd,
         menu_list: menuAdd,
       }
-      apiAddRoleData(object)
+      _addRole(object)
     } else {
       openNotificationAddRoleError()
     }
@@ -345,21 +341,13 @@ export default function Role() {
       permission_list: [...rolePermission[index].permission_list],
       menu_list: [...rolePermission[index].menu_list],
     }
-    apiUpdateRoleData(object, id, e)
+    _updateRole(object, id, e)
   }
   // initial data tree
-  const getTitle = (
-    permissionAdd,
-    typePermission,
-    values,
-    color = '#EC7100'
-  ) => {
+  const getTitle = (permissionAdd, typePermission, values, color = '#EC7100') => {
     return (
       <Checkbox
-        defaultChecked={[
-          ...values.permission_list,
-          ...values.menu_list,
-        ].includes(permissionAdd)}
+        defaultChecked={[...values.permission_list, ...values.menu_list].includes(permissionAdd)}
         onClick={(e) => {
           if (e.target.checked) addPermission(permissionAdd, typePermission)
           else removePermission(permissionAdd, typePermission)
@@ -375,8 +363,8 @@ export default function Role() {
     return data
       .filter((e) =>
         [
-          ...JSON.parse(localStorage.menu_list),
-          ...JSON.parse(localStorage.permission_list),
+          dataUser && dataUser.data._role.menu_list,
+          dataUser && dataUser.data._role.permission_list,
         ].includes(e.pParent || e)
       )
       .map((p) => {
@@ -392,133 +380,70 @@ export default function Role() {
           }
         }
         return {
-          title: getTitle(
-            p.pParent,
-            typePermission ? 'menu_list' : 'permission_list',
-            roleProps
-          ),
+          title: getTitle(p.pParent, typePermission ? 'menu_list' : 'permission_list', roleProps),
           key: p.pParent,
           children:
             p.pChildren &&
-            generateTreeData(
-              p.pChildren,
-              roleProps,
-              typeof p.pChildren[0] === 'string' ? 0 : 1
-            ),
+            generateTreeData(p.pChildren, roleProps, typeof p.pChildren[0] === 'string' ? 0 : 1),
         }
       })
   }
-  const generateCreateTreeData = (data) => {
-    return data
+
+  const generateCreateTreeData = (data) =>
+    data
       .filter((e) =>
         [
-          ...JSON.parse(localStorage.menu_list),
-          ...JSON.parse(localStorage.permission_list),
+          dataUser && dataUser.data && dataUser.data._role.menu_list,
+          dataUser && dataUser.data && dataUser.data._role.permission_list,
         ].includes(e.pParent || e)
       )
       .map((p) => {
         if (typeof p === 'string') {
           return {
-            title: (
-              <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>
-            ),
+            title: <span style={{ color: '#1772FA' }}>{rolesTranslate(p)}</span>,
             key: `permission.${p}`,
           }
         }
         return {
-          title: (
-            <span style={{ color: '#EC7100' }}>
-              {rolesTranslate(p.pParent)}
-            </span>
-          ),
+          title: <span style={{ color: '#EC7100' }}>{rolesTranslate(p.pParent)}</span>,
           key: `menu.${p.pParent}`,
           children: p.pChildren && generateCreateTreeData(p.pChildren),
         }
       })
-  }
 
   useEffect(() => {
-    apiAllRolePermissionData()
+    _getRoles()
   }, [])
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          padding: '1rem',
-          margin: '1rem',
-          backgroundColor: 'white',
-        }}
-        className={styles['card']}
-      >
-        <Row
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(230, 220, 220)',
-            paddingBottom: '1rem',
-            marginBottom: '1rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-          >
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                width: '100%',
-              }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              style={{ cursor: 'pointer' }}
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
               Quản lý phân quyền
-            </div>
-          </Col>
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={11}
-            md={11}
-            lg={11}
-            xl={11}
-          >
-            <Permission permissions={[PERMISSIONS.tao_quyen]}>
-              <div
-                onClick={showDrawer}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  width: '100%',
-                }}
-              >
-                <Button type="primary" size="large">
-                  Tạo quyền
-                </Button>
-              </div>
-            </Permission>
-          </Col>
-        </Row>
+            </Row>
+          }
+        >
+          <Permission permissions={[PERMISSIONS.tao_quyen]}>
+            <Button onClick={showDrawer} type="primary" size="large">
+              Tạo quyền
+            </Button>
+          </Permission>
+        </TitlePage>
+
         <div style={{ width: '100%' }}>
           <Collapse accordion onChange={callback} expandIconPosition="left">
             {rolePermission.map((values, index) => {
               if (
                 values.name === 'ADMIN' ||
-                (values.name === 'BUSINESS' &&
-                  dataUser.data._role.name !== 'ADMIN') ||
-                (values.name === 'EMPLOYEE' &&
-                  dataUser.data._role.name !== 'ADMIN')
+                (values.name === 'BUSINESS' && dataUser.data._role.name !== 'ADMIN') ||
+                (values.name === 'EMPLOYEE' && dataUser.data._role.name !== 'ADMIN')
               )
                 return ''
 
@@ -535,9 +460,7 @@ export default function Role() {
                     >
                       <Switch
                         defaultChecked={values.active}
-                        onChange={(e) =>
-                          onClickDeleteDisable(e, values.role_id, index)
-                        }
+                        onChange={(e) => onClickDeleteDisable(e, values.role_id, index)}
                       />
                     </div>
                   }
@@ -591,8 +514,8 @@ export default function Role() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
         footer={
-          <Row justify="end" style={{ width: '100%' }} onClick={onClickAddRole}>
-            <Button type="primary" size="large">
+          <Row justify="end">
+            <Button onClick={onClickAddRole} style={{ width: 100 }} type="primary" size="large">
               Lưu
             </Button>
           </Row>
@@ -620,41 +543,36 @@ export default function Role() {
               />
             </div>
           </div>
-          <Row gutter={10} justify="start" style={{ width: '100%' }}>
-            <Col>
-              <Row align="middle">
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: '#EC7100',
-                    marginRight: 7,
-                  }}
-                ></div>
-                Menu
-              </Row>
-            </Col>
-            <Col>
-              <Row align="middle">
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: '#1772FA',
-                    marginRight: 7,
-                  }}
-                ></div>{' '}
-                Quyền thao tác
-              </Row>
-            </Col>
-          </Row>
+          <Space>
+            <Row align="middle">
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: '#EC7100',
+                  marginRight: 7,
+                }}
+              ></div>
+              Menu
+            </Row>
+            <Row align="middle">
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: '#1772FA',
+                  marginRight: 7,
+                }}
+              ></div>{' '}
+              Quyền thao tác
+            </Row>
+          </Space>
           <div style={{ marginTop: '1rem' }}>
             <Tree
               checkable
               defaultExpandAll
-              // checkStrictly
               onCheck={onCheck}
               treeData={[...generateCreateTreeData(PERMISSIONS_APP)]}
             />

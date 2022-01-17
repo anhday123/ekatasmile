@@ -11,8 +11,8 @@ import { Popconfirm, Input, Row, Col, Select, Table, Button, notification, DateP
 import { SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { getUsers, deleteUsers } from 'apis/user'
-import { apiDistrict, apiProvince } from 'apis/information'
+import { getBusinesses, deleteBusinesses } from 'apis/business'
+import { getDistricts, getProvinces } from 'apis/address'
 
 //components
 import TitlePage from 'components/title-page'
@@ -115,7 +115,7 @@ export default function ClientManagement() {
   const _deleteUsers = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await deleteUsers(selectedRowKeys)
+      const res = await deleteBusinesses({ system_user_id: selectedRowKeys })
       dispatch({ type: ACTION.LOADING, data: false })
 
       console.log(res)
@@ -140,7 +140,7 @@ export default function ClientManagement() {
     try {
       setLoading(true)
       setSelectedRowKeys([])
-      const res = await getUsers(paramsFilter)
+      const res = await getBusinesses(paramsFilter)
       console.log(res)
       if (res.status === 200) {
         //chỉ lấy danh sách role business
@@ -167,8 +167,8 @@ export default function ClientManagement() {
   }
 
   useEffect(() => {
-    getAddress(apiProvince, setAddress, 'province')
-    getAddress(apiDistrict, setAddress, 'district')
+    getAddress(getProvinces, setAddress, 'province')
+    getAddress(getDistricts, setAddress, 'district')
   }, [])
 
   useEffect(() => {
@@ -230,11 +230,13 @@ export default function ClientManagement() {
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
-              {Address.district.map((e, index) => (
-                <Option value={e.district_name} key={index}>
-                  {e.district_name}
-                </Option>
-              ))}
+              {Address.district
+                .filter((e) => !paramsFilter.province || e.province_name === paramsFilter.province)
+                .map((e, index) => (
+                  <Option value={e.district_name} key={index}>
+                    {e.district_name}
+                  </Option>
+                ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={6}>
@@ -351,9 +353,9 @@ export default function ClientManagement() {
         <Row style={{ width: '100%', marginTop: 15 }} justify="space-between">
           <div style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
             <Popconfirm
-              title="Bạn có muốn xóa các client này ?"
-              okText="Yes"
-              cancelText="No"
+              title="Bạn có muốn xóa các client này?"
+              okText="Đồng ý"
+              cancelText="Từ chối"
               onConfirm={_deleteUsers}
             >
               <Button size="large" type="primary" danger>
@@ -383,11 +385,8 @@ export default function ClientManagement() {
             pageSize: paramsFilter.page_size,
             pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
             showQuickJumper: true,
-            onChange: (page, pageSize) => {
-              paramsFilter.page = page
-              paramsFilter.page_size = pageSize
-              setParamsFilter({ ...paramsFilter })
-            },
+            onChange: (page, pageSize) =>
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
             total: countUser,
           }}
           columns={columnsClient}

@@ -13,7 +13,7 @@ export default function HeaderGroupButton() {
   return (
     <Space size="middle" wrap={false}>
       <ScreenZoom />
-      <Tooltip title="Đi tới trang quản lí thu chi">
+      <Tooltip title="Đi tới trang quản lý thu chi">
         <Link to={ROUTES.RECEIPTS_PAYMENT} target="_blank">
           <img
             src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/6cb46f92-43da-4d2e-9ba1-16598b2c9590/notes 1.png"

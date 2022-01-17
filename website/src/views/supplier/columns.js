@@ -40,6 +40,10 @@ const columns = [
     title: 'Công nợ',
     key: 'debt',
   },
+  {
+    title: 'Hành động',
+    key: 'action',
+  },
 ]
 
 export default columns

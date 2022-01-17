@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import styles from './shipping-product.module.scss'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 import { ACTION, IMAGE_DEFAULT, ROUTES } from 'consts'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
+
+//components
+import TitlePage from 'components/title-page'
 
 import {
   Select,
@@ -29,7 +31,6 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { getProducts } from 'apis/product'
 import { addTransportOrder, updateTransportOrder } from 'apis/transport'
@@ -38,6 +39,7 @@ export default function ShippingProductAdd() {
   const dispatch = useDispatch()
   const [form] = Form.useForm()
   const history = useHistory()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [modalImportVisible, setModalImportVisible] = useState(false)
   const [exportLocation, setExportLocation] = useState({})
@@ -45,7 +47,6 @@ export default function ShippingProductAdd() {
   const [loading, setLoading] = useState(false)
   const [products, setProducts] = useState([])
   const [branches, setBranches] = useState([])
-  const [stores, setStores] = useState([])
   const [productsTransport, setProductsTransport] = useState([])
 
   const columns = [
@@ -78,7 +79,7 @@ export default function ShippingProductAdd() {
         const InputQuantity = () => (
           <InputNumber
             style={{ width: 200 }}
-            onBlur={(e) => {
+            onMouseOut={(e) => {
               let value = e.target.value.replaceAll(',', '')
               _editProductInTransport('quantity', +value, index)
             }}
@@ -142,7 +143,7 @@ export default function ShippingProductAdd() {
           quantity: +e.quantity,
         })),
       }
-      console.log(history.location.state ? 'Cập nhật' : 'Tạo')
+
       let res
       if (history.location.state)
         res = await updateTransportOrder(body, history.location.state.order_id)
@@ -186,21 +187,15 @@ export default function ShippingProductAdd() {
     }
   }
 
-  const _getStores = async () => {
-    try {
-      const res = await getAllStore()
-      if (res.status === 200)
-        // cho store id âm để phân biệt với branch
-        setStores(res.data.data.map((e) => ({ ...e, store_id: +e.store_id * -1 })))
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getProducts = async () => {
     try {
       setLoading(true)
-      const res = await getProducts({ ...exportLocation, merge: true, detach: true })
+      const res = await getProducts({
+        ...exportLocation,
+        merge: true,
+        detach: true,
+        branch_id: branchIdApp,
+      })
       console.log(res)
       if (res.status === 200) setProducts(res.data.data.map((e) => e.variants))
       setLoading(false)
@@ -216,7 +211,6 @@ export default function ShippingProductAdd() {
 
   useEffect(() => {
     _getBranches()
-    _getStores()
   }, [])
 
   useEffect(() => {
@@ -247,265 +241,249 @@ export default function ShippingProductAdd() {
   }, [])
 
   return (
-    <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            fontSize: 19,
-            fontWeight: 600,
-            borderBottom: '1px solid rgb(235, 223, 223)',
-            paddingBottom: '1rem',
-          }}
-        >
+    <div className="card">
+      <TitlePage
+        isAffix={true}
+        title={
           <Row
             style={{ cursor: 'pointer', width: 'max-content' }}
             wrap={false}
             align="middle"
             onClick={() => history.goBack()}
-            wrap={false}
           >
             <ArrowLeftOutlined style={{ marginRight: 7 }} />
             {history.location.state ? 'Cập nhật' : 'Thêm'} phiếu chuyển hàng
           </Row>
-        </div>
+        }
+      >
+        <Space>
+          <Button
+            style={{ display: history.location.state && 'none' }}
+            size="large"
+            type="primary"
+            onClick={() => _addOrEditTransportOrder()}
+          >
+            Lưu nháp
+          </Button>
+          <Button
+            style={{ display: history.location.state && 'none' }}
+            size="large"
+            type="primary"
+            onClick={() => _addOrEditTransportOrder('COMPLETE')}
+          >
+            Tạo phiếu chuyển hàng và hoàn tất
+          </Button>
+          <Button
+            style={{ display: !history.location.state && 'none' }}
+            size="large"
+            type="primary"
+            onClick={() => _addOrEditTransportOrder()}
+          >
+            Cập nhật
+          </Button>
+          <Button
+            style={{
+              display:
+                history.location.state && history.location.state.status !== 'COMPLETE'
+                  ? ''
+                  : 'none',
+            }}
+            size="large"
+            type="primary"
+            onClick={() => _addOrEditTransportOrder('COMPLETE')}
+          >
+            Hoàn thành phiếu chuyển
+          </Button>
+        </Space>
+      </TitlePage>
 
-        <Form form={form} layout="vertical">
-          <Row gutter={[20, 16]} style={{ marginTop: 15 }}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8}>
-              <Form.Item
-                rules={[{ required: true, message: 'Vui lòng chọn nơi chuyển' }]}
-                label="Nơi chuyển"
-                name="export_location"
-              >
-                <Select
-                  showSearch
-                  onChange={(value, option) => {
-                    let p = {}
-                    if (value) {
-                      if (+option.key < 0) {
-                        const storeFind = stores.find((e) => e.name === value)
-                        if (storeFind) p.store_id = +storeFind.store_id * -1
-                      } else {
-                        const branchFind = branches.find((e) => e.name === value)
-                        if (branchFind) p.branch_id = branchFind.branch_id
-                      }
-                    }
-
-                    setExportLocation({ ...p })
-                  }}
-                  allowClear
-                  size="large"
-                  placeholder="Chọn nơi chuyển"
-                >
-                  <Select.OptGroup label="Kho" key="branch">
-                    {branches.map((e) => (
-                      <Select.Option value={e.name} key={e.branch_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                  <Select.OptGroup label="Cửa hàng" key="store">
-                    {stores.map((e) => (
-                      <Select.Option value={e.name} key={e.store_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                </Select>
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={24} md={12} lg={12} xl={8}>
-              <Form.Item
-                rules={[{ required: true, message: 'Vui lòng chọn nơi nhận' }]}
-                label="Nơi nhận"
-                name="import_location"
-              >
-                <Select
-                  onChange={(value, option) => {
-                    let p = {}
-                    if (value) {
-                      if (+option.key < 0) {
-                        const storeFind = stores.find((e) => e.name === value)
-                        if (storeFind) p.store_id = +storeFind.store_id * -1
-                      } else {
-                        const branchFind = branches.find((e) => e.name === value)
-                        if (branchFind) p.branch_id = branchFind.branch_id
-                      }
-                    }
-
-                    setImportLocation({ ...p })
-                  }}
-                  showSearch
-                  allowClear
-                  size="large"
-                  placeholder="Chọn nơi nhận"
-                >
-                  <Select.OptGroup label="Kho" key="branch">
-                    {branches.map((e) => (
-                      <Select.Option value={e.name} key={e.branch_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                  <Select.OptGroup label="Cửa hàng" key="store">
-                    {stores.map((e) => (
-                      <Select.Option value={e.name} key={e.store_id}>
-                        {e.name}
-                      </Select.Option>
-                    ))}
-                  </Select.OptGroup>
-                </Select>
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={24} md={12} lg={12} xl={8}>
-              <Form.Item
-                rules={[{ required: true, message: 'Vui lòng chọn ngày giao' }]}
-                name="delivery_time"
-                label="Ngày giao"
-              >
-                <DatePicker
-                  placeholder="Chọn ngày giao"
-                  style={{ width: '100%' }}
-                  size="large"
-                  className="br-15__date-picker"
-                  showTime={{ format: 'HH:mm' }}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={24} md={12} lg={12} xl={8}>
-              <Form.Item label="Tags" name="tags">
-                <Select mode="tags" allowClear size="large" placeholder="Nhập tags"></Select>
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={24} md={12} lg={12} xl={8}>
-              <Form.Item label="Ghi chú" name="note">
-                <Input.TextArea size="large" rows={1} placeholder="Nhập ghi chú" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row wrap={false} style={{ marginBottom: 20, marginTop: 35 }}>
-            <Select
-              size="large"
-              notFoundContent={loading ? <Spin size="small" /> : null}
-              dropdownClassName="dropdown-select-search-product"
-              allowClear
-              showSearch
-              clearIcon={<CloseOutlined style={{ color: 'black' }} />}
-              suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
-              style={{ width: '100%', marginRight: 40 }}
-              placeholder="Thêm sản phẩm vào danh sách"
-              dropdownRender={(menu) => <div>{menu}</div>}
+      <Form form={form} layout="vertical">
+        <Row gutter={[20, 16]} style={{ marginTop: 15 }}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+            <Form.Item
+              rules={[{ required: true, message: 'Vui lòng chọn nơi chuyển' }]}
+              label="Nơi chuyển"
+              name="export_location"
             >
-              {products.map((data, index) => (
-                <Select.Option value={data.title} key={index}>
-                  <Row
-                    align="middle"
-                    wrap={false}
-                    style={{ padding: '7px 13px' }}
-                    onClick={(e) => {
-                      if (data.locations && data.locations.length) _addProductToTransport(data)
-                      e.stopPropagation()
+              <Select
+                showSearch
+                onChange={(value) => {
+                  let p = {}
+                  if (value) {
+                    const branchFind = branches.find((e) => e.name === value)
+                    if (branchFind) p.branch_id = branchFind.branch_id
+                  }
+                  setExportLocation({ ...p })
+                }}
+                allowClear
+                size="large"
+                placeholder="Chọn nơi chuyển"
+              >
+                {branches.map((e, index) => (
+                  <Select.Option value={e.name} key={index}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+            <Form.Item
+              rules={[{ required: true, message: 'Vui lòng chọn nơi nhận' }]}
+              label="Nơi nhận"
+              name="import_location"
+            >
+              <Select
+                onChange={(value) => {
+                  let p = {}
+                  if (value) {
+                    const branchFind = branches.find((e) => e.name === value)
+                    if (branchFind) p.branch_id = branchFind.branch_id
+                  }
+
+                  setImportLocation({ ...p })
+                }}
+                showSearch
+                allowClear
+                size="large"
+                placeholder="Chọn nơi nhận"
+              >
+                {branches.map((e, index) => (
+                  <Select.Option value={e.name} key={index}>
+                    {e.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+            <Form.Item
+              rules={[{ required: true, message: 'Vui lòng chọn ngày giao' }]}
+              name="delivery_time"
+              label="Ngày giao"
+            >
+              <DatePicker
+                placeholder="Chọn ngày giao"
+                style={{ width: '100%' }}
+                size="large"
+                className="br-15__date-picker"
+                showTime={{ format: 'HH:mm' }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+            <Form.Item label="Tags" name="tags">
+              <Select mode="tags" allowClear size="large" placeholder="Nhập tags"></Select>
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+            <Form.Item label="Ghi chú" name="note">
+              <Input.TextArea size="large" rows={1} placeholder="Nhập ghi chú" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row wrap={false} style={{ marginBottom: 20, marginTop: 35 }}>
+          <Select
+            size="large"
+            notFoundContent={loading ? <Spin size="small" /> : null}
+            dropdownClassName="dropdown-select-search-product"
+            allowClear
+            showSearch
+            clearIcon={<CloseOutlined style={{ color: 'black' }} />}
+            suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
+            style={{ width: '100%', marginRight: 40 }}
+            placeholder="Thêm sản phẩm vào danh sách"
+            dropdownRender={(menu) => <div>{menu}</div>}
+          >
+            {products.map((data, index) => (
+              <Select.Option value={data.title} key={index}>
+                <Row
+                  align="middle"
+                  wrap={false}
+                  style={{ padding: '7px 13px' }}
+                  onClick={(e) => {
+                    if (data.locations && data.locations.length) _addProductToTransport(data)
+                    e.stopPropagation()
+                  }}
+                >
+                  <img
+                    src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
+                    alt=""
+                    style={{
+                      minWidth: 40,
+                      minHeight: 40,
+                      maxWidth: 40,
+                      maxHeight: 40,
+                      objectFit: 'cover',
                     }}
-                  >
-                    <img
-                      src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
-                      alt=""
-                      style={{
-                        minWidth: 40,
-                        minHeight: 40,
-                        maxWidth: 40,
-                        maxHeight: 40,
-                        objectFit: 'cover',
-                      }}
-                    />
+                  />
 
-                    <div style={{ width: '100%', marginLeft: 15 }}>
-                      <Row wrap={false} justify="space-between">
-                        <span
-                          style={{
-                            maxWidth: 200,
-                            marginBottom: 0,
-                            fontWeight: 600,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: 'vertical',
-                            display: '-webkit-box',
-                          }}
-                        >
-                          {data.title}
-                        </span>
-                        <p style={{ marginBottom: 0, fontWeight: 500 }}>{formatCash(data.price)}</p>
-                      </Row>
-                      <Row wrap={false} justify="space-between">
-                        <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
-                        <p
-                          style={{
-                            marginBottom: 0,
-                            color: data.locations && data.locations.length ? 'gray' : 'red',
-                          }}
-                        >
-                          Số lượng hiện tại:{' '}
-                          {formatCash(
-                            data.locations && data.locations.length ? data.locations[0].quantity : 0
-                          )}
-                        </p>
-                      </Row>
-                    </div>
-                  </Row>
-                </Select.Option>
-              ))}
-            </Select>
-            <Button
-              size="large"
-              icon={<FileExcelOutlined />}
-              onClick={() => setModalImportVisible(true)}
-              style={{ backgroundColor: '#004F88', color: 'white' }}
-            >
-              Nhập excel
-            </Button>
-          </Row>
+                  <div style={{ width: '100%', marginLeft: 15 }}>
+                    <Row wrap={false} justify="space-between">
+                      <span
+                        style={{
+                          maxWidth: 200,
+                          marginBottom: 0,
+                          fontWeight: 600,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          display: '-webkit-box',
+                        }}
+                      >
+                        {data.title}
+                      </span>
+                      <p style={{ marginBottom: 0, fontWeight: 500 }}>{formatCash(data.price)}</p>
+                    </Row>
+                    <Row wrap={false} justify="space-between">
+                      <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
+                      <p
+                        style={{
+                          marginBottom: 0,
+                          color: data.locations && data.locations.length ? 'gray' : 'red',
+                        }}
+                      >
+                        Số lượng hiện tại:{' '}
+                        {formatCash(
+                          data.locations && data.locations.length ? data.locations[0].quantity : 0
+                        )}
+                      </p>
+                    </Row>
+                  </div>
+                </Row>
+              </Select.Option>
+            ))}
+          </Select>
+          <Button
+            size="large"
+            icon={<FileExcelOutlined />}
+            onClick={() => setModalImportVisible(true)}
+            style={{ backgroundColor: '#004F88', color: 'white' }}
+          >
+            Nhập excel
+          </Button>
+        </Row>
 
-          <Row>
-            <div style={{ color: 'black', fontWeight: '600', fontSize: 16 }}>
-              Danh sách sản phẩm chuyển
-            </div>
-          </Row>
-          <Table
-            style={{ width: '100%' }}
-            size="small"
-            pagination={false}
-            columns={columns}
-            dataSource={productsTransport}
-            scroll={{ y: 500 }}
-          />
-
-          <Row justify="end" style={{ marginTop: 45, width: '100%' }}>
-            <Space size="large">
-              <Button
-                style={{ display: history.location.state && 'none' }}
-                size="large"
-                type="primary"
-                onClick={() => _addOrEditTransportOrder()}
-              >
-                Lưu nháp
-              </Button>
-              <Button
-                size="large"
-                type="primary"
-                onClick={() => _addOrEditTransportOrder('COMPLETE')}
-              >
-                {history.location.state ? 'Cập nhật' : 'Tạo phiếu chuyển'}
-              </Button>
-            </Space>
-          </Row>
-        </Form>
-      </div>
-    </>
+        <Row>
+          <div style={{ color: 'black', fontWeight: '600', fontSize: 16 }}>
+            Danh sách sản phẩm chuyển
+          </div>
+        </Row>
+        <Table
+          style={{ width: '100%' }}
+          size="small"
+          pagination={false}
+          columns={columns}
+          dataSource={productsTransport}
+          scroll={{ y: 500 }}
+        />
+      </Form>
+    </div>
   )
 }

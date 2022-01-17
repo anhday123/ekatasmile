@@ -21,7 +21,7 @@ import KeyboardEventHandler from 'react-keyboard-event-handler'
 import ReactToPrint, { useReactToPrint } from 'react-to-print'
 
 //components
-import AddCustomer from 'views/actions/customer/add'
+import CustomerForm from 'views/customer/customer-form'
 import FilterProductsByCategory from './filter-by-category'
 import FilterProductsBySku from './filter-by-sku'
 import ModalKeyboardShortCuts from './keyboard-shortcuts'
@@ -29,10 +29,9 @@ import ModalPromotion from './promotion-available'
 import Permission from 'components/permission'
 import PaymentMethods from './payment-methods'
 import ModalOrdersReturn from './orders-returns'
-import ModalChangeStore from './change-store'
+import ModalChangeBranch from './change-branch'
 import ModalDeliveryAddress from './delivery-address'
 import ModalInfoSeller from './info-seller'
-import CustomerUpdate from 'views/actions/customer/update'
 import HeaderGroupButton from './header-group-button'
 import PrintOrder from 'components/print/print-order'
 
@@ -77,16 +76,19 @@ import {
 } from '@ant-design/icons'
 
 //apis
-import { getAllCustomer } from 'apis/customer'
-import { apiAllShipping } from 'apis/shipping'
-import { getProducts, pricesProduct } from 'apis/product'
+import { getCustomers } from 'apis/customer'
+import { getShippings } from 'apis/shipping'
+import { getProducts } from 'apis/product'
 import { addOrder } from 'apis/order'
+import { getAllBranch } from 'apis/branch'
+import { getPayments } from 'apis/payment'
 
 export default function Sell() {
   const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
   const invoicesSelector = useSelector((state) => state.invoice.invoices)
+  const branchIdApp = useSelector((state) => state.branch.branchId)
   let printOrderRef = useRef()
 
   //list ref keyboard
@@ -95,6 +97,9 @@ export default function Sell() {
     content: () => printOrderRef.current,
   })
 
+  const [loadingBranch, setLoadingBranch] = useState(false)
+  const [branches, setBranches] = useState([])
+
   const [chooseButtonPrice, setChooseButtonPrice] = useState('')
 
   const [visibleConfirmCreateOrder, setVisibleConfirmCreateOrder] = useState(false)
@@ -102,7 +107,7 @@ export default function Sell() {
   const [shippingsMethod, setShippingsMethod] = useState([])
   const [visibleCustomerUpdate, setVisibleCustomerUpdate] = useState(false)
 
-  const [productsAllStore, setProductsAllStore] = useState([])
+  const [productsAllBranch, setProductsAllBranch] = useState([])
   const [productsSearch, setProductsSearch] = useState([])
   const [productsRelated, setProductsRelated] = useState([])
   const [countProducts, setCountProducts] = useState(0)
@@ -110,15 +115,16 @@ export default function Sell() {
   const [loadingProductRelated, setLoadingProductRelated] = useState(false)
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 10 })
 
+  const [paymentMethodDefault, setPaymentMethodDefault] = useState({})
   const [visiblePayments, setVisiblePayments] = useState(false)
   const [visibleCreateCustomer, setVisibleCreateCustomer] = useState(false)
   const toggleCustomer = () => setVisibleCreateCustomer(!visibleCreateCustomer)
+  const [visibleUpdateCustomer, setVisibleUpdateCustomer] = useState(false)
+  const toggleUpdateCustomer = () => setVisibleUpdateCustomer(!visibleUpdateCustomer)
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const [customers, setCustomers] = useState([])
 
-  const [infoStore, setInfoStore] = useState(
-    localStorage.getItem('storeSell') ? JSON.parse(localStorage.getItem('storeSell')) : null
-  )
+  const [infoBranch, setInfoBranch] = useState({})
 
   //object invoice
   const initInvoice = {
@@ -127,7 +133,7 @@ export default function Sell() {
     type: 'default',
     customer: null,
     order_details: [], //danh sách sản phẩm trong hóa đơn
-    payments: [], //hình thức thanh toán
+    payments: [{ ...paymentMethodDefault }], //hình thức thanh toán
     sumCostPaid: 0, // tổng tiền của tất cả sản phẩm
     discount: null,
     VAT: 0,
@@ -139,7 +145,7 @@ export default function Sell() {
     shipping: null, //đơn vị vận chuyển
     billOfLadingCode: '',
     moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả
-    prepay: 0, //tiền khách thanh toán trước
+    prepay: 0, //tiền khách thanh toán một phần
     moneyGivenByCustomer: 0, //tiền khách hàng đưa
     excessCash: 0, //tiền thừa
     create_date: new Date(), //ngày tạo đơn hàng
@@ -291,6 +297,23 @@ export default function Sell() {
             ).toFixed(0)
         }
 
+        //mặc định cho số tiền cần thanh toán = số tiền phải trả
+        //khi có 1 phương thức thanh toán
+        if (invoicesNew[indexInvoice].payments.length === 1) {
+          if (invoicesNew[indexInvoice].isDelivery)
+            invoicesNew[indexInvoice].prepay = invoicesNew[indexInvoice].moneyToBePaidByCustomer
+          else
+            invoicesNew[indexInvoice].moneyGivenByCustomer =
+              invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+          invoicesNew[indexInvoice].payments = [
+            {
+              ...invoicesNew[indexInvoice].payments[0],
+              value: invoicesNew[indexInvoice].moneyToBePaidByCustomer,
+            },
+          ]
+        }
+
         //tiền thừa
         const excessCashNew =
           (invoicesNew[indexInvoice].isDelivery
@@ -343,6 +366,23 @@ export default function Sell() {
             (+invoicesNew[indexInvoice].discount.value / 100) *
             invoicesNew[indexInvoice].moneyToBePaidByCustomer
           ).toFixed(0)
+      }
+
+      //mặc định cho số tiền cần thanh toán = số tiền phải trả
+      //khi có 1 phương thức thanh toán
+      if (invoicesNew[indexInvoice].payments.length === 1) {
+        if (invoicesNew[indexInvoice].isDelivery)
+          invoicesNew[indexInvoice].prepay = invoicesNew[indexInvoice].moneyToBePaidByCustomer
+        else
+          invoicesNew[indexInvoice].moneyGivenByCustomer =
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+        invoicesNew[indexInvoice].payments = [
+          {
+            ...invoicesNew[indexInvoice].payments[0],
+            value: invoicesNew[indexInvoice].moneyToBePaidByCustomer,
+          },
+        ]
       }
 
       //tiền thừa
@@ -462,6 +502,23 @@ export default function Sell() {
           ).toFixed(0)
       }
 
+      //mặc định cho số tiền cần thanh toán = số tiền phải trả
+      //khi có 1 phương thức thanh toán
+      if (invoicesNew[indexInvoice].payments.length === 1) {
+        if (invoicesNew[indexInvoice].isDelivery)
+          invoicesNew[indexInvoice].prepay = invoicesNew[indexInvoice].moneyToBePaidByCustomer
+        else
+          invoicesNew[indexInvoice].moneyGivenByCustomer =
+            invoicesNew[indexInvoice].moneyToBePaidByCustomer
+
+        invoicesNew[indexInvoice].payments = [
+          {
+            ...invoicesNew[indexInvoice].payments[0],
+            value: invoicesNew[indexInvoice].moneyToBePaidByCustomer,
+          },
+        ]
+      }
+
       //tiền thừa
       const excessCashNew =
         (invoicesNew[indexInvoice].isDelivery
@@ -511,9 +568,9 @@ export default function Sell() {
     )
 
     useEffect(() => {
-      for (let i = 0; i < productsAllStore.length; i++) {
-        for (let j = 0; j < productsAllStore[i].variants.length; j++) {
-          const findVariant = productsAllStore[i].variants.find((e) => e._id === product._id)
+      for (let i = 0; i < productsAllBranch.length; i++) {
+        for (let j = 0; j < productsAllBranch[i].variants.length; j++) {
+          const findVariant = productsAllBranch[i].variants.find((e) => e._id === product._id)
           if (findVariant) {
             setLocations([...findVariant.locations])
             break
@@ -661,7 +718,7 @@ export default function Sell() {
     const _getVariantsByProductId = async () => {
       try {
         const res = await getProducts({
-          store_id: infoStore.store_id,
+          branch_id: infoBranch.branch_id || '',
           merge: true,
           detach: true,
           product_id: product.product_id,
@@ -761,13 +818,40 @@ export default function Sell() {
           />
         </Tooltip>
         <Modal
+          style={{ top: 20 }}
           onCancel={toggleCustomer}
-          width={700}
+          width={800}
           footer={null}
           title="Thêm khách hàng mới"
           visible={visibleCreateCustomer}
         >
-          <AddCustomer text="Thêm" reload={_getCustomers} />
+          <CustomerForm close={toggleCustomer} text="Thêm" reload={_getCustomers} />
+        </Modal>
+      </>
+    )
+  }
+
+  const ModalUpdateCustomer = ({ children, record }) => {
+    return (
+      <>
+        <div onClick={toggleUpdateCustomer}>{children}</div>
+        <Modal
+          style={{ top: 20 }}
+          onCancel={toggleUpdateCustomer}
+          width={800}
+          footer={null}
+          title="Cập nhật khách hàng"
+          visible={visibleUpdateCustomer}
+        >
+          <CustomerForm
+            record={record}
+            close={toggleUpdateCustomer}
+            text="Lưu"
+            reload={() => {
+              _getCustomerAfterEditCustomer()
+              _getCustomers()
+            }}
+          />
         </Modal>
       </>
     )
@@ -862,62 +946,69 @@ export default function Sell() {
 
   const _createOrder = async () => {
     try {
-      dispatch({ type: ACTION.LOADING, data: true })
       let shipping = {}
-      console.log(infoStore)
-      if (invoices[indexInvoice].isDelivery) {
-        shipping.shipping_company_id = invoices[indexInvoice].shipping.shipping_company_id || ''
-        shipping.shipping_info = {
-          ship_code: invoices[indexInvoice].shipping.code || '',
-          to_name: infoStore.name || '',
-          to_phone: infoStore.phone || '',
-          to_address: infoStore.address || '',
-          to_ward: '',
-          to_district: infoStore.district || '',
-          to_province: infoStore.province || '',
-          to_province_code: '',
-          to_postcode: 70000,
-          to_country_code: '',
-          return_name: `${invoices[indexInvoice].deliveryAddress.first_name || ''} ${
-            invoices[indexInvoice].deliveryAddress.last_name || ''
-          }`,
-          return_phone: invoices[indexInvoice].deliveryAddress.phone || '',
-          return_address: invoices[indexInvoice].deliveryAddress.address || '',
-          return_ward: '',
-          return_district: invoices[indexInvoice].deliveryAddress.district || '',
-          return_province: invoices[indexInvoice].deliveryAddress.province || '',
-          return_province_code: '',
-          return_postcode_code: 70000,
-          return_country_code: '',
-          cod: invoices[indexInvoice].deliveryCharges || 0,
-          delivery_time: '2021-09-30T00:00:00+07:00',
-          complete_time: '2021-10-30T00:00:00+07:00',
-        }
-      }
 
+      if (invoices[indexInvoice].isDelivery)
+        if (invoices[indexInvoice].shipping) {
+          shipping.shipping_company_id = invoices[indexInvoice].shipping.shipping_company_id || ''
+          shipping.shipping_info = {
+            ship_code: invoices[indexInvoice].shipping.code || '',
+            to_name: infoBranch.name || '',
+            to_phone: infoBranch.phone || '',
+            to_address: infoBranch.address || '',
+            to_ward: '',
+            to_district: infoBranch.district || '',
+            to_province: infoBranch.province || '',
+            to_province_code: '',
+            to_postcode: 70000,
+            to_country_code: '',
+            return_name: `${invoices[indexInvoice].deliveryAddress.first_name || ''} ${
+              invoices[indexInvoice].deliveryAddress.last_name || ''
+            }`,
+            return_phone: invoices[indexInvoice].deliveryAddress.phone || '',
+            return_address: invoices[indexInvoice].deliveryAddress.address || '',
+            return_ward: '',
+            return_district: invoices[indexInvoice].deliveryAddress.district || '',
+            return_province: invoices[indexInvoice].deliveryAddress.province || '',
+            return_province_code: '',
+            return_postcode_code: 70000,
+            return_country_code: '',
+            cod: invoices[indexInvoice].deliveryCharges || 0,
+            delivery_time: '2021-09-30T00:00:00+07:00',
+            complete_time: '2021-10-30T00:00:00+07:00',
+          }
+        } else {
+          notification.warning({ message: 'Bạn chưa chọn đơn vị vận chuyển!' })
+          return
+        }
+
+      dispatch({ type: ACTION.LOADING, data: true })
       const body = {
-        sale_location: { store_id: infoStore.store_id || '' },
+        ...shipping,
+        sale_location: { branch_id: infoBranch.branch_id || '' },
         customer_id: invoices[indexInvoice].customer
           ? invoices[indexInvoice].customer.customer_id
           : '',
         employee_id: dataUser ? dataUser.data.user_id || '' : '',
-        order_details: invoices[indexInvoice].order_details.map((item) => {
-          return {
-            product_id: item.product_id || '',
-            variant_id: item.variant_id || '',
-            quantity: item.quantity || '',
-            total_cost: item.sumCost || '',
-            discount: item.VAT_Product || '',
-            final_cost: 4440000 || '',
-          }
-        }),
+        order_details: invoices[indexInvoice].order_details.map((product) => ({
+          product_id: product.product_id || '',
+          variant_id: product.variant_id || '',
+          quantity: product.quantity || 0,
+          price: product.price || 0,
+          total_cost: product.sumCost || 0,
+          discount: product.VAT_Product || 0,
+          final_cost: product.sumCost || 0,
+        })),
         payments: invoices[indexInvoice].payments,
-        ...shipping,
         voucher: invoices[indexInvoice].discount ? invoices[indexInvoice].discount.name || '' : '',
         promotion_id: invoices[indexInvoice].discount
           ? invoices[indexInvoice].discount.promotion_id || ''
           : '',
-        total_cost: invoices[indexInvoice].sumCostPaid || 0,
+        // total_cost: invoices[indexInvoice].sumCostPaid || 0,
+        total_cost: invoices[indexInvoice].order_details.reduce(
+          (total, current) => total + current.sumCost,
+          0
+        ),
         total_tax: invoices[indexInvoice].VAT || 0,
         total_discount:
           invoices[indexInvoice].sumCostPaid - invoices[indexInvoice].moneyToBePaidByCustomer,
@@ -926,7 +1017,7 @@ export default function Sell() {
           ? invoices[indexInvoice].prepay || 0
           : invoices[indexInvoice].moneyGivenByCustomer || 0,
         customer_debt: 0,
-        bill_status: BILL_STATUS_ORDER.DRAFT,
+        bill_status: 'COMPLETE',
         ship_status: SHIP_STATUS_ORDER.DRAFT,
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
@@ -939,17 +1030,18 @@ export default function Sell() {
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
+          _getProductsRelated()
+          _getProductsSearch()
+          _getProducts()
           _editInvoice('code', res.data.data.code || '')
           handlePrint()
         } else
           notification.error({
-            message:
-              res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+            message: res.data.message || `Tạo đơn hàng thất bại, vui lòng thử lại`,
           })
       } else
         notification.error({
-          message:
-            res.data.mess || res.data.message || `${'Tạo đơn hàng'} thất bại, vui lòng thử lại`,
+          message: res.data.message || `Tạo đơn hàng thất bại, vui lòng thử lại`,
         })
 
       if (res.status === 200 && res.data.success) _deleteInvoiceAfterCreateOrder()
@@ -961,11 +1053,33 @@ export default function Sell() {
     }
   }
 
+  const _getBranches = async () => {
+    try {
+      setLoadingBranch(true)
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+      setLoadingBranch(false)
+    } catch (error) {
+      setLoadingBranch(false)
+      console.log(error)
+    }
+  }
+
   const _getCustomers = async () => {
     try {
       setLoadingCustomer(true)
-      const res = await getAllCustomer()
-      if (res.status === 200) setCustomers(res.data.data)
+      const res = await getCustomers()
+      if (res.status === 200) {
+        setCustomers(res.data.data)
+
+        //mặc định chọn khách lẻ
+        const customer = res.data.data.find((e) => e.user_id === 3)
+        if (customer) {
+          _editInvoice('deliveryAddress', customer)
+          _editInvoice('customer', customer)
+          _editInvoice('name', `${customer.first_name} ${customer.last_name} - ${customer.phone}`)
+        }
+      }
 
       setLoadingCustomer(false)
     } catch (error) {
@@ -978,7 +1092,7 @@ export default function Sell() {
     try {
       setLoadingCustomer(true)
 
-      const res = await getAllCustomer({
+      const res = await getCustomers({
         customer_id: invoices[indexInvoice].customer.customer_id,
       })
       if (res.status === 200)
@@ -1000,26 +1114,26 @@ export default function Sell() {
 
   const _getShippingsMethod = async () => {
     try {
-      const res = await apiAllShipping()
+      const res = await getShippings()
       if (res.status === 200) setShippingsMethod(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
-  const _getProductsAllStore = async () => {
+  const _getProducts = async () => {
     try {
-      const res = await getProducts({ merge: true })
-      if (res.status === 200) setProductsAllStore(res.data.data)
+      const res = await getProducts({ merge: true, branch_id: branchIdApp || '' })
+      if (res.status === 200) setProductsAllBranch(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
 
-  const _getProductsSearch = async (store_id) => {
+  const _getProductsSearch = async () => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts({ store_id, merge: true, detach: true })
+      const res = await getProducts({ branch_id: branchIdApp, merge: true, detach: true })
       console.log(res)
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
@@ -1029,12 +1143,31 @@ export default function Sell() {
     }
   }
 
+  const _getPayments = async () => {
+    try {
+      const res = await getPayments()
+      if (res.status === 200) {
+        let paymentMethodDefault = ''
+        res.data.data.map((e) => {
+          if (e.default && e.active) paymentMethodDefault = e.name
+        })
+        if (paymentMethodDefault) {
+          const pDefault = { method: paymentMethodDefault, value: 0 }
+          _editInvoice('payments', [pDefault])
+          setPaymentMethodDefault(pDefault)
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getProductsRelated = async (params) => {
     try {
       setLoadingProductRelated(true)
 
       const res = await getProducts({
-        store_id: infoStore ? infoStore.store_id : '',
+        branch_id: branchIdApp || '',
         merge: true,
         detach: true,
         ...params,
@@ -1062,39 +1195,30 @@ export default function Sell() {
     }
   }
 
-  const _getPricesProduct = async () => {
-    try {
-      const res = await pricesProduct()
-      console.log(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   //lưu invoice lên reducer mỗi khi có sự thay đổi
   useEffect(() => {
     if (invoices) dispatch({ type: 'UPDATE_INVOICE', data: invoices })
   }, [invoices])
 
   useEffect(() => {
-    if (localStorage.getItem('accessToken')) {
-      const data = jwt_decode(localStorage.getItem('accessToken'))
-      if (!infoStore) {
-        if (data.data._store) {
-          localStorage.setItem('storeSell', JSON.stringify(data.data._store))
-          setInfoStore(data.data._store)
-          _getProductsSearch(data.data._store.store_id)
-        }
-      } else _getProductsSearch(infoStore.store_id)
-    } else history.push(ROUTES.LOGIN)
+    if (!localStorage.getItem('accessToken')) history.push(ROUTES.LOGIN)
   }, [])
 
   useEffect(() => {
-    _getPricesProduct()
+    if (branches.length) {
+      const branch = branches.find((branch) => branch.branch_id === branchIdApp)
+      if (branch) setInfoBranch(branch)
+    }
+  }, [branchIdApp, branches])
+
+  useEffect(() => {
     _getInvoicesToReducer()
     _getCustomers()
+    _getPayments()
     _getShippingsMethod()
-    _getProductsAllStore()
+    _getProducts()
+    _getBranches()
+    _getProductsSearch()
   }, [])
 
   useEffect(() => {
@@ -1294,7 +1418,12 @@ export default function Sell() {
           style={{ width: '100%', marginLeft: 15 }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <ModalChangeStore />
+            <ModalChangeBranch
+              resetInvoice={() => setInvoices([initInvoice])}
+              branch={infoBranch}
+              loading={loadingBranch}
+              branches={branches}
+            />
             <ModalInfoSeller />
           </div>
           <ModalKeyboardShortCuts />
@@ -1367,7 +1496,6 @@ export default function Sell() {
                         if (value) {
                           if (product.units) {
                             const variantFind = product.units.find((e) => e.name == value)
-                            console.log(variantFind)
                             if (variantFind)
                               _editProductInInvoices('price', +variantFind.price, index)
                           }
@@ -1378,7 +1506,7 @@ export default function Sell() {
                       placeholder="Đơn vị"
                       bordered={false}
                     >
-                      {product.units && product.units.length ? (
+                      {product.units ? (
                         product.units.map((unit, index) => (
                           <Select.Option key={index} value={unit.name}>
                             {unit.name}
@@ -1481,7 +1609,7 @@ export default function Sell() {
                               setParamsFilter({ ...paramsFilter })
                             }}
                           >
-                            Đang lọc theo danh mục
+                            Đang lọc theo nhóm sản phẩm
                           </Tag>
                         )
 
@@ -1626,44 +1754,26 @@ export default function Sell() {
           <Row
             wrap={false}
             align="middle"
-            style={{
-              display: !invoices[indexInvoice].customer && 'none',
-              marginTop: 15,
-            }}
+            style={{ display: !invoices[indexInvoice].customer && 'none', marginTop: 15 }}
           >
             <UserOutlined style={{ fontSize: 28, marginRight: 15 }} />
             <div style={{ width: '100%' }}>
               <Row wrap={false} align="middle">
-                <p
-                  style={{
-                    fontWeight: 600,
-                    marginRight: 5,
-                    color: '#1890ff',
-                    marginBottom: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setVisibleCustomerUpdate(true)}
-                >
-                  {invoices[indexInvoice].customer &&
-                    invoices[indexInvoice].customer.first_name +
-                      ' ' +
-                      invoices[indexInvoice].customer.last_name}
-                </p>
-                <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
-                  {invoices[indexInvoice].customer ? (
-                    <CustomerUpdate
-                      customerData={[invoices[indexInvoice].customer]}
-                      visible={visibleCustomerUpdate}
-                      onClose={() => setVisibleCustomerUpdate(false)}
-                      reload={() => {
-                        _getCustomerAfterEditCustomer()
-                        _getCustomers()
-                      }}
-                    />
-                  ) : (
-                    <div></div>
-                  )}
-                </Permission>
+                {invoices[indexInvoice].customer ? (
+                  <Permission permissions={[PERMISSIONS.cap_nhat_khach_hang]}>
+                    <ModalUpdateCustomer record={invoices[indexInvoice].customer}>
+                      <a style={{ fontWeight: 600, marginRight: 5, color: '#1890ff' }}>
+                        {invoices[indexInvoice].customer &&
+                          invoices[indexInvoice].customer.first_name +
+                            ' ' +
+                            invoices[indexInvoice].customer.last_name}
+                      </a>
+                    </ModalUpdateCustomer>
+                  </Permission>
+                ) : (
+                  <div></div>
+                )}
+
                 <span style={{ fontWeight: 500 }}>
                   {' '}
                   - {invoices[indexInvoice].customer && invoices[indexInvoice].customer.phone}
@@ -1730,7 +1840,7 @@ export default function Sell() {
                   _editInvoice('billOfLadingCode', '')
                   _editInvoice('prepay', 0)
                   _editInvoice('moneyGivenByCustomer', 0)
-                  _editInvoice('payments', [])
+                  _editInvoice('payments', [paymentMethodDefault])
                   _editInvoice('excessCash', 0)
                 }}
               />
@@ -1747,8 +1857,7 @@ export default function Sell() {
                 onChange={(value) => _editInvoice('salesChannel', value)}
               >
                 <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
-                <Select.Option value="Cửa hàng">Cửa hàng</Select.Option>
-                <Select.Option value="Kho">Kho</Select.Option>
+                <Select.Option value="Chi nhánh">Chi nhánh</Select.Option>
                 <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
                 <Select.Option value="other">Khác</Select.Option>
               </Select>
@@ -1883,69 +1992,43 @@ export default function Sell() {
               <div>Khách phải trả</div>
               <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
             </Row>
-            {invoices[indexInvoice].isDelivery ? (
-              <Row justify="space-between" wrap={false} align="middle">
-                <p style={{ marginBottom: 0 }}>Tiền thanh toán một phần (F2)</p>
-                {invoices[indexInvoice].payments.length === 1 ? (
-                  <div
-                    style={{
-                      borderBottom: '0.75px solid #C9C8C8',
-                      width: '40%',
+
+            <Row justify="space-between" wrap={false} align="middle">
+              <p style={{ marginBottom: 0 }}>
+                {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
+                (F2)
+              </p>
+              {invoices[indexInvoice].payments.length === 1 ? (
+                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
+                  <InputNumber
+                    ref={inputRef}
+                    value={
+                      invoices[indexInvoice].isDelivery
+                        ? invoices[indexInvoice].prepay
+                        : invoices[indexInvoice].moneyGivenByCustomer
+                    }
+                    onChange={(value) => {
+                      if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', value)
+                      else _editInvoice('moneyGivenByCustomer', value)
+                      _editInvoice('payments', [
+                        { method: invoices[indexInvoice].payments[0].method, value: value },
+                      ])
                     }}
-                  >
-                    <InputNumber
-                      ref={inputRef}
-                      value={invoices[indexInvoice].prepay}
-                      onChange={(value) => {
-                        _editInvoice('prepay', value)
-                        _editInvoice('payments', [
-                          { method: invoices[indexInvoice].payments[0].method, value: value },
-                        ])
-                      }}
-                      placeholder="Nhập tiền thanh toán một phần"
-                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      min={0}
-                      bordered={false}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                ) : (
-                  formatCash(invoices[indexInvoice].prepay)
-                )}
-              </Row>
-            ) : (
-              <Row justify="space-between" wrap={false} align="middle">
-                <p style={{ marginBottom: 0 }}>Tiền khách đưa (F2)</p>
-                {invoices[indexInvoice].payments.length === 1 ? (
-                  <div
-                    style={{
-                      borderBottom: '0.75px solid #C9C8C8',
-                      width: '40%',
-                    }}
-                  >
-                    <InputNumber
-                      placeholder="Nhập tiền tiền khách đưa"
-                      ref={inputRef}
-                      value={invoices[indexInvoice].moneyGivenByCustomer}
-                      onChange={(value) => {
-                        _editInvoice('moneyGivenByCustomer', value)
-                        _editInvoice('payments', [
-                          { method: invoices[indexInvoice].payments[0].method, value: value },
-                        ])
-                      }}
-                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                      min={0}
-                      bordered={false}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                ) : (
-                  formatCash(invoices[indexInvoice].moneyGivenByCustomer)
-                )}
-              </Row>
-            )}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    min={0}
+                    bordered={false}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              ) : (
+                formatCash(
+                  invoices[indexInvoice].isDelivery
+                    ? invoices[indexInvoice].prepay
+                    : invoices[indexInvoice].moneyGivenByCustomer
+                )
+              )}
+            </Row>
 
             <Row>
               <PaymentMethods
@@ -2003,7 +2086,7 @@ export default function Sell() {
             </Row>
           )}
 
-          <div style={{ marginBottom: 15, marginTop: 10 }}>
+          <div style={{ marginBottom: 60, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />
           </div>

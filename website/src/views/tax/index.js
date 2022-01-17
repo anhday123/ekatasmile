@@ -1,9 +1,11 @@
-import styles from './../tax/tax.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, ROUTES, PERMISSIONS } from './../../consts/index'
+import { ACTION, ROUTES, PERMISSIONS } from 'consts'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import { compare } from 'utils'
+
+//antd
 import {
   DatePicker,
   Switch,
@@ -19,24 +21,25 @@ import {
   Drawer,
   Checkbox,
 } from 'antd'
-import {
-  PlusCircleOutlined,
-  EditOutlined,
-  ArrowLeftOutlined,
-} from '@ant-design/icons'
-import {
-  apiAddTax,
-  apiAllTax,
-  apiSearchTax,
-  apiUpdateTax,
-} from '../../apis/tax'
+
+//icons
+import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+
+//apis
+import { addTax, getTaxs, updateTax } from 'apis/tax'
+
+//components
 import Permission from 'components/permission'
-import { compare } from 'utils'
+import TitlePage from 'components/title-page'
+
 const { RangePicker } = DatePicker
 const { Text } = Typography
+const { TextArea } = Input
 export default function Tax() {
+  const history = useHistory()
   const dispatch = useDispatch()
-  const { TextArea } = Input
+  const branchIdApp = useSelector((state) => state.branch.branchId)
+
   const [tax, setTax] = useState([])
   const [visible, setVisible] = useState(false)
   const [visibleUpdate, setVisibleUpdate] = useState(false)
@@ -89,7 +92,7 @@ export default function Tax() {
     try {
       setLoading(true)
 
-      const res = await apiSearchTax({ name: value })
+      const res = await getTaxs({ name: value })
 
       if (res.status === 200) setTax(res.data.data)
       setLoading(false)
@@ -133,7 +136,7 @@ export default function Tax() {
   const apiAllTaxData = async () => {
     try {
       setLoading(true)
-      const res = await apiAllTax()
+      const res = await getTaxs({ branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
         setTax(res.data.data)
@@ -143,13 +146,11 @@ export default function Tax() {
       setLoading(false)
     }
   }
-  useEffect(() => {
-    apiAllTaxData()
-  }, [])
+
   const apiAddTaxData = async (object) => {
     try {
       setLoading(true)
-      const res = await apiAddTax(object)
+      const res = await addTax(object)
       if (res.status === 200) {
         await apiAllTaxData()
         setVisible(false)
@@ -196,17 +197,14 @@ export default function Tax() {
   const openNotificationDeleteSupplier = (data) => {
     notification.success({
       message: 'Thành công',
-      description:
-        data === 2
-          ? 'Vô hiệu hóa thuế thành công.'
-          : 'Kích hoạt thuế thành công',
+      description: data === 2 ? 'Vô hiệu hóa thuế thành công.' : 'Kích hoạt thuế thành công',
     })
   }
   const apiUpdateTaxDataStatus = async (object, id, data) => {
     try {
       setLoading(true)
 
-      const res = await apiUpdateTax(object, id)
+      const res = await updateTax(object, id)
       if (res.status === 200) {
         await apiAllTaxData()
         openNotificationDeleteSupplier(data)
@@ -228,7 +226,7 @@ export default function Tax() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
 
-      const res = await apiUpdateTax(object, id)
+      const res = await updateTax(object, id)
 
       if (res.status === 200) {
         await apiAllTaxData()
@@ -248,7 +246,7 @@ export default function Tax() {
     try {
       setLoading(true)
 
-      const res = await apiSearchTax({ from_date: start, to_date: end })
+      const res = await getTaxs({ from_date: start, to_date: end })
       if (res.status === 200) {
         setTax(res.data.data)
       }
@@ -296,8 +294,7 @@ export default function Tax() {
             const object = {
               name: values.name,
               value: values.value,
-              description:
-                values && values.description ? values.description : '',
+              description: values && values.description ? values.description : '',
             }
             apiUpdateTaxData(object, values.tax_id)
           }
@@ -313,9 +310,7 @@ export default function Tax() {
               name: values.name,
               value: arrayUpdate[0].value,
               description:
-                arrayUpdate[0] && arrayUpdate[0].description
-                  ? arrayUpdate[0].description
-                  : '',
+                arrayUpdate[0] && arrayUpdate[0].description ? arrayUpdate[0].description : '',
             }
             apiUpdateTaxData(object, values.tax_id)
           }
@@ -351,44 +346,26 @@ export default function Tax() {
         ),
     },
   ]
+
+  useEffect(() => {
+    apiAllTaxData()
+  }, [branchIdApp])
+
   return (
     <>
-      <div className={`${styles['supplier_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(241, 236, 236)',
-            paddingBottom: '1rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <Link
-            className={styles['supplier_add_back_parent']}
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-            to={ROUTES.CONFIGURATION_STORE}
-          >
-            <ArrowLeftOutlined
-              style={{ fontWeight: '600', fontSize: '1rem', color: 'black' }}
-            />
-            <div
-              style={{
-                color: 'black',
-                fontWeight: '600',
-                fontSize: '1rem',
-                marginLeft: '0.5rem',
-              }}
-              className={styles['supplier_add_back']}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              align="middle"
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              style={{ cursor: 'pointer' }}
             >
-              Quản lý thuế
-            </div>
-          </Link>
+              <ArrowLeftOutlined />
+              <div style={{ marginLeft: 8 }}>Quản lý thuế</div>
+            </Row>
+          }
+        >
           <Permission permissions={[PERMISSIONS.them_thue]}>
             <div onClick={showDrawer}>
               <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
@@ -396,7 +373,8 @@ export default function Tax() {
               </Button>
             </div>
           </Permission>
-        </div>
+        </TitlePage>
+
         <Row
           style={{
             display: 'flex',
@@ -415,20 +393,12 @@ export default function Tax() {
                 value={valueSearch}
                 enterButton
                 onChange={onSearch}
-                className={styles['orders_manager_content_row_col_search']}
                 placeholder="Tìm kiếm theo tên"
                 allowClear
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginLeft: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginLeft: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -443,10 +413,7 @@ export default function Tax() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
                 onChange={onChangeDate}
               />
@@ -490,16 +457,12 @@ export default function Tax() {
                   <Table.Summary.Row>
                     <Table.Summary.Cell>
                       <Text>
-                        <div style={{ color: 'black', fontWeight: '600' }}>
-                          Tổng cộng:
-                        </div>
+                        <div style={{ color: 'black', fontWeight: '600' }}>Tổng cộng:</div>
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>
-                        <div
-                          style={{ color: 'black', fontWeight: '600' }}
-                        >{`${totalTax}%`}</div>
+                        <div style={{ color: 'black', fontWeight: '600' }}>{`${totalTax}%`}</div>
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell>
@@ -522,12 +485,7 @@ export default function Tax() {
         visible={visible}
         bodyStyle={{ paddingBottom: 80 }}
       >
-        <Form
-          className={styles['supplier_add_content']}
-          onFinish={onFinish}
-          layout="vertical"
-          form={form}
-        >
+        <Form onFinish={onFinish} layout="vertical" form={form}>
           <Row
             style={{
               display: 'flex',
@@ -536,21 +494,10 @@ export default function Tax() {
               width: '100%',
             }}
           >
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Tên thuế
-                    </div>
-                  }
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Tên thuế</div>}
                   name="taxName"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -558,21 +505,10 @@ export default function Tax() {
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  label={
-                    <div style={{ color: 'black', fontWeight: '600' }}>
-                      Giá trị
-                    </div>
-                  }
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Giá trị</div>}
                   name="value"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -582,23 +518,14 @@ export default function Tax() {
                     style={{ width: '100%' }}
                     min={0}
                     max={100}
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                    }
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                     onChange={onChange}
                   />
                 </Form.Item>
               </div>
             </Col>
-            <Col
-              style={{ width: '100%' }}
-              xs={24}
-              sm={24}
-              md={11}
-              lg={11}
-              xl={11}
-            >
+            <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <div
                   style={{
@@ -617,9 +544,7 @@ export default function Tax() {
           </Row>
 
           <Row>
-            <Checkbox onChange={(e) => setDefaultActive(e.target.checked)}>
-              Kích hoạt
-            </Checkbox>
+            <Checkbox onChange={(e) => setDefaultActive(e.target.checked)}>Kích hoạt</Checkbox>
           </Row>
           <div
             style={{
@@ -632,8 +557,8 @@ export default function Tax() {
               width: '100%',
             }}
           >
-            <b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa
-            giá trị thuế khi đã sử dụng thuế đó trong một đơn hàng.
+            <b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa giá trị thuế khi đã
+            sử dụng thuế đó trong một đơn hàng.
           </div>
 
           <Row
@@ -643,7 +568,6 @@ export default function Tax() {
               alignItems: 'center',
               width: '100%',
             }}
-            className={styles['supplier_add_content_supplier_button']}
           >
             <Col
               style={{

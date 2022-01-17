@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //apis
-import { getAllCustomer } from 'apis/customer'
+import { getCustomers } from 'apis/customer'
 
 //antd
 import {
@@ -33,6 +33,7 @@ import {
 
 //components
 import SettingColumns from 'components/setting-columns'
+import TitlePage from 'components/title-page'
 
 export default function ReceiptsAndPayment() {
   const history = useHistory()
@@ -249,7 +250,7 @@ export default function ReceiptsAndPayment() {
 
   const _getCustomers = async () => {
     try {
-      const res = await getAllCustomer()
+      const res = await getCustomers()
       console.log(res)
       if (res.status === 200) setCustomers(res.data.data)
     } catch (error) {
@@ -262,20 +263,26 @@ export default function ReceiptsAndPayment() {
   }, [])
 
   return (
-    <div className={styles['card']}>
-      <Row
-        align="middle"
-        justify="space-between"
-        style={{ paddingBottom: 17, borderBottom: '1px solid #b4b4b4' }}
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.REPORTS)}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 10 }} />
+            Danh sách phiếu
+          </Row>
+        }
       >
-        <p style={{ marginBottom: 0, marginLeft: 8, fontWeight: 700, fontSize: 18 }}>
-          Danh sách phiếu
-        </p>
         <Space size="middle">
           <ModalCreatePaymentOrReceipts type="payment" />
           <ModalCreatePaymentOrReceipts type="receipts" />
         </Space>
-      </Row>
+      </TitlePage>
+
       <Row style={{ marginTop: 15, marginBottom: 15 }}>
         <Space size="middle">
           <Button

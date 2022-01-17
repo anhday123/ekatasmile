@@ -1,81 +1,123 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const dealService = require(`../services/deal`);
-const { Deal } = require('../models/deal');
 
-let getDealC = async (req, res, next) => {
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
+module.exports._get = async (req, res, next) => {
     try {
-        await dealService.getDealS(req, res, next);
+        await dealService._get(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let addDealC = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
-        let _deal = new Deal();
-        _deal.validateInput(req.body);
         req.body.name = String(req.body.name).trim().toUpperCase();
-        let deal = await client
-            .db(DB)
-            .collection(`Deals`)
-            .findOne({
-                business_id: Number(req.user.business_id),
-                name: req.body.name,
-            });
-        let dealMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Deals' });
+        let deal = await client.db(req.user.database).collection(`Deals`).findOne({
+            name: req.body.name,
+        });
         if (deal) {
             throw new Error(`400: Chương trình giảm giá đã tồn tại!`);
         }
-        let deal_id = (() => {
-            if (dealMaxId) {
-                if (dealMaxId.value) {
-                    return Number(dealMaxId.value);
+        let deal_id = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Deals' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return Number(doc.value);
                 }
-            }
-            return 0;
-        })();
+                return 0;
+            });
         deal_id++;
-        _deal.create({
-            ...req.body,
-            ...{
-                deal_id: Number(deal_id),
-                business_id: Number(req.user.user_id),
-                create_date: new Date(),
-                creator_id: Number(req.user.user_id),
-                active: true,
-            },
-        });
+        let _deal = {
+            deal_id: deal_id,
+            code: String(customer_id).padStart(6, '0'),
+            name: req.body.name,
+            type: String(req.body.type).trim().toUpperCase(),
+            saleoff_type: String(req.body.saleoff_type).trim().toUpperCase(),
+            saleoff_value: Number(req.body.saleoff_value || 0),
+            max_saleoff_value: Number(req.body.max_saleoff_value || 0),
+            image: req.body.image || [],
+            image_list: (() => {
+                if (slug_type == 'banner') {
+                    return req.body.image_list || [];
+                }
+                return [];
+            })(),
+            category_list: (() => {
+                if (slug_type == 'category') {
+                    return req.body.category_list || [];
+                }
+                return [];
+            })(),
+            product_list: (() => {
+                if (slug_type == 'product') {
+                    return req.body.product_list || [];
+                }
+                return [];
+            })(),
+            start_time: moment(req.body.start_time).tz(TIMEZONE).format(),
+            end_time: moment(req.body.end_time).tz(TIMEZONE).format(),
+            description: req.body.description || '',
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
+            slug_type: removeUnicode(String(req.body.type), true).toLowerCase(),
+            slug_saleoff_type: removeUnicode(String(req.body.saleoff_type), true).toLowerCase(),
+        };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Deals' }, { $set: { name: 'Deals', value: deal_id } }, { upsert: true });
-        req[`_insert`] = _deal;
-        await dealService.addDealS(req, res, next);
+        req[`body`] = _deal;
+        await dealService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let updateDealC = async (req, res, next) => {
+
+module.exports._update = async (req, res, next) => {
     try {
         req.params.deal_id = Number(req.params.deal_id);
-        let _deal = new Deal();
-        let deal = await client.db(DB).collection(`Deals`).findOne(req.params);
+        let deal = await client.db(req.user.database).collection(`Deals`).findOne(req.params);
         if (!deal) {
             throw new Error(`400: Chương trình giảm giá không tồn tại!`);
         }
-        req.body.name = String(req.body.name || deal.name)
-            .trim()
-            .toUpperCase();
         if (req.body.name) {
+            req.body.name = String(req.body.name).trim().toUpperCase();
             let check = await client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`Deals`)
                 .findOne({
-                    business_id: Number(req.user.business_id),
                     deal_id: { $ne: Number(deal.deal_id) },
                     name: req.body.name,
                 });
@@ -83,19 +125,47 @@ let updateDealC = async (req, res, next) => {
                 throw new Error(`400: Chương trình giảm giá đã tồn tại!`);
             }
         }
-        _deal.create(deal);
-        _deal.update(req.body);
-        req['_update'] = _deal;
-        await dealService.updateDealS(req, res, next);
+        delete req.body._id;
+        delete req.body.deal_id;
+        delete req.body.code;
+        delete req.body.create_date;
+        delete req.body.creator_id;
+        let _deal = { ...deal, ...req.body };
+        _deal = {
+            deal_id: _deal.deal_id,
+            code: _deal.code,
+            name: _deal.name,
+            type: String(_deal.type).trim().toUpperCase(),
+            saleoff_type: String(_deal.saleoff_type).trim().toUpperCase(),
+            saleoff_value: Number(_deal.saleoff_value || 0),
+            max_saleoff_value: Number(_deal.max_saleoff_value || 0),
+            image: _deal.image || [],
+            image_list: _deal.image_list,
+            category_list: _deal.category_list,
+            product_list: _deal.product_list,
+            start_time: moment(_deal.start_time).tz(TIMEZONE).format(),
+            end_time: moment(_deal.end_time).tz(TIMEZONE).format(),
+            description: _deal.description || '',
+            create_date: _deal.create_date,
+            creator_id: _deal.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _deal.active,
+            slug_name: removeUnicode(String(_deal.name), true).toLowerCase(),
+            slug_type: removeUnicode(String(_deal.type), true).toLowerCase(),
+            slug_saleoff_type: removeUnicode(String(_deal.saleoff_type), true).toLowerCase(),
+        };
+        req['body'] = _deal;
+        await dealService._update(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Deals`)
             .deleteMany({ deal_id: { $in: req.body.deal_id } });
         res.send({
@@ -107,10 +177,10 @@ let _delete = async (req, res, next) => {
     }
 };
 
-let updateSaleOff = async (req, res, next) => {
+module.exports._updateSaleOff = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Deals')
             .updateMany(
                 { deal_id: { $in: req.body.deal_id } },
@@ -120,12 +190,4 @@ let updateSaleOff = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
-
-module.exports = {
-    getDealC,
-    addDealC,
-    updateDealC,
-    updateSaleOff,
-    _delete,
 };

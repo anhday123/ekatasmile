@@ -2,12 +2,13 @@ const express = require('express');
 const cors = require(`cors`);
 const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
+const TIMEZONE = process.env.TIMEZONE;
 const app = express();
 const endPoint = process.env.END_POINT;
 
 const router = require(`./routers/index`);
 const client = require('./config/mongodb');
-const DB = process.env.DATABASE;
+const SDB = process.env.DATABASE;
 const swaggerUi = require('./docs/swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 
@@ -30,7 +31,7 @@ app.use(cors()).use((req, res, next) => {
 });
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
+app.use("/app", express.static(__dirname + "/assets"));
 app.use(`/` + endPoint, router)
     .use((req, res, next) => {
         next(new Error(`404: Endpoint is not exists!`));
@@ -44,21 +45,38 @@ app.use(`/` + endPoint, router)
 
 let clearAccount = async () => {
     try {
-        await Promise.all([
-            client
-                .db(DB)
-                .collection('Users')
-                .deleteMany({
-                    otp_timelife: { $lte: moment().utc().format() },
-                    active: false,
-                }),
-            client
-                .db(DB)
-                .collection('VertifyLinks')
-                .deleteMany({
-                    vertify_timelife: { $lte: moment().utc().format() },
-                }),
-        ]);
+        let users = await client
+            .db(SDB)
+            .collection('Users')
+            .aggregate([
+                { $match: { otp_timelife: { $lte: moment().tz(TIMEZONE).format() } } },
+                {
+                    $lookup: {
+                        from: 'Business',
+                        localField: 'system_user_id',
+                        foreignField: 'system_user_id',
+                        as: '_business',
+                    },
+                },
+            ])
+            .toArray();
+        await Promise.all(
+            users.map((user) => {
+                const DB = (() => {
+                    if (user._business && user._business.database) {
+                        return user._business.database;
+                    }
+                    return '';
+                })();
+                if (DB) {
+                    return Promise.all([
+                        client.db(SDB).collection('Users').deleteOne({ system_user_id: user.system_user_id }),
+                        client.db(SDB).collection('Business').deleteOne({ system_user_id: user.system_user_id }),
+                        client.db(DB).dropDatabase(),
+                    ]);
+                }
+            })
+        );
     } catch (err) {
         console.log(err);
     }
@@ -66,6 +84,6 @@ let clearAccount = async () => {
 
 setInterval(() => {
     clearAccount();
-}, process.env.OTP_TIMELIFE || 300000);
+}, process.env.OTP_TIMELIFE * 60 * 1000);
 
 module.exports = app;

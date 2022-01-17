@@ -7,14 +7,13 @@ import * as XLSX from 'xlsx'
 
 //apis
 import { getCategories } from 'apis/category'
-import { apiAllSupplier } from 'apis/supplier'
+import { getSuppliers } from 'apis/supplier'
 
 export default function ExportProduct({ fileName, name, getProductsExport }) {
   const [suppliers, setSuppliers] = useState([])
   const [categories, setCategories] = useState([])
 
-  const fileType =
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+  const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
   const fileExtension = '.xlsx'
 
   const exportToCSV = (csvData, fileName) => {
@@ -27,7 +26,7 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
 
   const _getSuppliers = async () => {
     try {
-      const res = await apiAllSupplier()
+      const res = await getSuppliers()
       if (res.status === 200) {
         setSuppliers(res.data.data)
       }
@@ -55,13 +54,9 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
         let dataExport = []
 
         data.map((e) => {
-          const findCategory = categories.find(
-            (c) => c.category_id === e.category_id
-          )
+          const findCategory = categories.find((c) => c.category_id === e.category_id)
 
-          const findSupplier = suppliers.find(
-            (s) => s.supplier_id === e.supplier_id
-          )
+          const findSupplier = suppliers.find((s) => s.supplier_id === e.supplier_id)
 
           let objProduct = {
             'Tên sản phẩm': e.name || '',
@@ -81,8 +76,7 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
             'Mô tả': e.description,
           }
           e.attributes.map(
-            (attribute, index) =>
-              (objProduct[`Thuộc tính ${index + 1}`] = attribute.option)
+            (attribute, index) => (objProduct[`Thuộc tính ${index + 1}`] = attribute.option)
           )
           if (e.active)
             e.variants.map((v) => {

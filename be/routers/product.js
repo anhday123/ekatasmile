@@ -8,15 +8,15 @@ const multer = require('multer');
 const _storage = multer.memoryStorage();
 const upload = multer({ storage: _storage });
 
-router.route(`/getproduct`).get(auth, product.getProductC);
-router.route(`/addproduct`).post(auth, product.addProductC);
-router.route(`/updateproduct/:product_id`).patch(auth, product.updateProductC);
-router.route(`/deleteproduct`).delete(auth, product.deleteProductC);
-router.route(`/getattribute`).get(auth, product.getAllAtttributeC);
+router.route(`/create`).post(auth, product._create);
+router.route(`/update/:product_id`).patch(auth, product._update);
+router.route(`/`).get(auth, product._get);
+router.route(`/delete`).delete(auth, product.deleteProductC);
+router.route(`/attribute`).get(auth, product.getAllAtttributeC);
 router.route(`/unit`).get(auth, product.getAllUnitProductC);
-router.route(`/unit/add`).post(auth, product.AddUnitProductC);
-router.route(`/addfeedback`).post(auth, product.addFeedbackC);
-router.route(`/deletefeedback`).delete(auth, product.deleteFeedbackC);
-router.route(`/importfile`).post(auth, upload.single('file'), product.importFileC);
+router.route(`/unit/create`).post(auth, product.AddUnitProductC);
+router.route(`/feedback/create`).post(auth, product.addFeedbackC);
+router.route(`/feedback/delete`).delete(auth, product.deleteFeedbackC);
+router.route(`/file/import`).post(auth, upload.single('file'), product.importFileC);
 
 module.exports = router;

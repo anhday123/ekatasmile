@@ -1,10 +1,31 @@
 const moment = require(`moment-timezone`);
-const crypto = require(`crypto`);
+const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const channelService = require(`../services/channel`);
-const { removeUnicode } = require('../utils/string-handle');
+
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
 
 let checkPlatform = async (name, url, clientId, secretKey) => {
     //kiểm tra kết nối với các nền tảng khác nhau dựa theo tên, id, key
@@ -20,7 +41,7 @@ let checkPlatform = async (name, url, clientId, secretKey) => {
     });
 };
 
-let _get = async (req, res, next) => {
+module.exports._get = async (req, res, next) => {
     try {
         await channelService._get(req, res, next);
     } catch (err) {
@@ -28,58 +49,61 @@ let _get = async (req, res, next) => {
     }
 };
 
-let _create = async (req, res, next) => {
+module.exports._create = async (req, res, next) => {
     try {
         ['name', 'url', 'platform_id', 'client_id', 'secret_key'].map((properties) => {
             if (req.body[properties] == undefined) {
                 throw new Error(`400: Thiếu thuộc tính ${properties}!`);
             }
         });
-        let channelMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'Channels' });
-        let channel_id = (() => {
-            if (channelMaxId) {
-                if (channelMaxId.value) {
-                    return Number(channelMaxId.value);
+        let channel_id = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Channels' })
+            .then((doc) => {
+                if (doc && doc.value) {
+                    return Number(doc.value);
                 }
-            }
-            return 0;
-        })();
+
+                return 0;
+            });
         channel_id++;
         let status = await checkPlatform(req.body.name, req.body.url, req.body.client_id, req.body.secret_key).catch(
             (err) => {
                 throw new Error(err);
             }
         );
-        let _site = {
+        let _channel = {
             channel_id: Number(channel_id),
-            business_id: Number(req.user.business_id),
             code: String(channel_id).padStart(6, '0'),
             name: req.body.name,
-            slug_name: removeUnicode(String(req.body.name), true),
+
             url: req.body.url,
             platform_id: req.body.platform_id,
             client_id: req.body.client_id,
             secret_key: req.body.secret_key,
             status: status,
-            create_date: new Date(),
-            last_update: new Date(),
-            creator_id: Number(req.user.user_id),
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
             active: true,
+            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'Channels' }, { $set: { name: 'Channels', value: channel_id } }, { upsert: true });
-        req[`_insert`] = _site;
+        req[`body`] = _channel;
         await channelService._create(req, res, next);
     } catch (err) {
         next(err);
     }
 };
-let _update = async (req, res, next) => {
+module.exports._update = async (req, res, next) => {
     try {
         req.params.channel_id = Number(req.params.channel_id);
-        let site = await client.db(DB).collection(`Channels`).findOne(req.params);
+        let site = await client.db(req.user.database).collection(`Channels`).findOne(req.params);
         if (!site) {
             throw new Error(`400: Kênh không tồn tại!`);
         }
@@ -89,35 +113,39 @@ let _update = async (req, res, next) => {
         delete req.body.status;
         delete req.body.create_date;
         delete req.body.creator_id;
-        let _site = { ...site, ...req.body };
-        let status = await checkPlatform(_site.name, _site.url, _site.client_id, _site.secret_key).catch((err) => {
-            throw err;
-        });
-        _site = {
-            channel_id: Number(_site.channel_id),
-            code: Number(_site.code),
-            name: _site.name,
+        let _channel = { ...site, ...req.body };
+        let status = await checkPlatform(_channel.name, _channel.url, _channel.client_id, _channel.secret_key).catch(
+            (err) => {
+                throw err;
+            }
+        );
+        _channel = {
+            channel_id: Nuber(_channel.channel_id),
+            code: _channel.code,
+            name: _channel.name,
             url: req.body.url,
-            platform: _site.platform,
-            client_id: _site.client_id,
-            secret_key: _site.secret_key,
+            platform: _channel.platform,
+            client_id: _channel.client_id,
+            secret_key: _channel.secret_key,
             status: status,
-            create_date: _site.create_date,
-            last_update: new Date(),
-            creator_id: Number(_site.user_id),
-            active: _site.active,
+            create_date: _channel.create_date,
+            creator_id: _channel.creator_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: _channel.active,
+            slug_name: removeUnicode(String(_channel.name), true).toLowerCase(),
         };
-        req['_update'] = _site;
+        req['_update'] = _channel;
         await channelService._update(req, res, next);
     } catch (err) {
         next(err);
     }
 };
 
-let _delete = async (req, res, next) => {
+module.exports._delete = async (req, res, next) => {
     try {
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('Channels')
             .deleteMany({ channel_id: { $in: req.body.channel_id } });
         res.send({ success: true, data: 'Xóa kênh thành công!' });
@@ -126,19 +154,11 @@ let _delete = async (req, res, next) => {
     }
 };
 
-let _getPlatform = async (req, res, next) => {
+module.exports._getPlatform = async (req, res, next) => {
     try {
         await channelService._getPlatform(req, res, next);
     } catch (err) {
         next(err);
         s;
     }
-};
-
-module.exports = {
-    _get,
-    _create,
-    _update,
-    _delete,
-    _getPlatform,
 };

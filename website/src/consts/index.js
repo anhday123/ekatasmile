@@ -24,16 +24,6 @@ export const STATUS_PRODUCT = {
   out_stock: 'out_stock',
 }
 
-//status order
-export const BILL_STATUS_ORDER = {
-  DRAFT: 'Lưu nháp',
-  PROCESSING: 'Đang Xử Lý',
-  COMPLETE: 'Hoàn Thành',
-  VERIFY: 'Xác nhận',
-  CANCEL: 'Huỷ Bỏ',
-  REFUND: 'Hoàn Tiền',
-}
-
 export const SHIP_STATUS_ORDER = {
   DRAFT: 'DRAFT',
   WATTING_FOR_SHIPPING: 'WATTING_FOR_SHIPPING',
@@ -44,19 +34,26 @@ export const SHIP_STATUS_ORDER = {
 
 export const ROUTES = {
   LOGIN: '/login',
+  REGISTER: '/register',
   IMPORT_REPORT_FILE: '/import-report-file',
   PRODUCT_CHECK: '/product-check',
   ORDER_LIST: '/order-list',
+  REPORTS: '/reports',
   SALES_REPORT: '/sales-report',
+  STOCK_ADJUSTMENTS: '/stock-adjustments',
+  STOCK_ADJUSTMENTS_CREATE: '/stock-adjustments/create',
+  REPORT_VARIANT: '/report-variant',
   REPORT_INVENTORY: '/report-inventory',
+  REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT: '/report-import-export-inventory-product',
+  REPORT_IMPORT_EXPORT_INVENTORY_VARIANT: '/report-import-export-inventory-variant',
   SHIPPING_CONTROL: '/shipping-control',
   GUARANTEE: '/guarantee',
   SHIPPING_PRODUCT: '/shipping-product',
   CLIENT_MANAGEMENT: '/client-management',
-  BRANCH_MANAGEMENT: '/branch-management',
+  BRANCH_MANAGEMENT: '/branch',
   CONFIGURATION_STORE: '/configuration-store',
-  VERTIFY_ACCOUNT: '/vertifyaccount',
   OTP: '/otp',
+  VERIFY_ACCOUNT: '/verify-account',
   PASSWORD_NEW: '/password-new',
   FORGET_PASSWORD: '/forget-password',
   OVERVIEW: '/overview',
@@ -82,10 +79,6 @@ export const ROUTES = {
   ROLE: '/role',
   SHIPPING_CONTROL_ADD: '/actions/shipping-control/add',
   SHIPPING_CONTROL_VIEW: '/actions/shipping-control/view',
-  PRODUCT_UPDATE: '/actions/product/update',
-  PRODUCT_VIEW: '/actions/product/view',
-  INVENTORY_VIEW: '/actions/inventory/view',
-  INVENTORY_UPDATE: '/actions/inventory/update',
   ACCUMULATE_POINT_SETTING_VIEW: '/actions/accumulate-point-setting/view',
   CARD_ACCUMULATE_POINT_ADD: '/actions/card-accumulate-point/add',
   ACCUMULATE_POINT_EDIT_ADDD: '/actions/accumulate-point-edit/add',
@@ -93,20 +86,14 @@ export const ROUTES = {
   PRODUCT_CHECK_ADD: '/actions/product-check/add',
   PRODUCT_CHECK_VIEW: '/actions/product-check/view',
   ORDER_CREATE_SHIPPING_ADD: '/actions/order-create-shipping/add',
-  STORE_ADD: '/actions/store/add',
-  EMPLOYEE_VIEW: '/actions/employee/view',
   REPORT_FINANCIAL_VIEW: '/actions/sale-detail/view',
   REPORT_REVENUE_VIEW: '/actions/revenue-cost/view',
   INVENTORY_ADD: '/actions/inventory/add',
-  PRODUCT_ADD: '/actions/product/add',
-  EMPLOYEE_ADD: '/actions/employee/add',
-  EMPLOYEE_EDIT: '/actions/employee/edit',
-  CUSTOMER_ADD: '/actions/customer/add',
+  PRODUCT_ADD: '/product/add',
+  PRODUCT_UPDATE: '/product/update',
   PROMOTION_ADD: '/actions/promotion/add',
   ROLE_ADD: '/actions/role/add',
   GUARANTEE_ADD: '/actions/guarantee/add',
-  CUSTOMER_ORDER_LIST: '/customer/order-list',
-  CUSTOMER_ORDER_DETAIL: '/customer/order/detail',
   POINT: '/point',
   CATEGORY: '/category',
   CATEGORIES: '/categories',
@@ -197,12 +184,14 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.1.8'
+export const VERSION_APP = '1.2.11'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
 export const IMAGE_DEFAULT =
   'https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/11/08/757a2f95-f144-4963-8e11-931bafdee356/image_default.jpg'
+export const LOGO_DEFAULT =
+  'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png'
 
 export const PAGE_SIZE = 20
 export const PAGE_SIZE_OPTIONS = [20, 40, 50, 60, 80, 100]

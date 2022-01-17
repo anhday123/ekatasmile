@@ -19,7 +19,7 @@ let auth = async (req, res, next) => {
             //     delete user.password;
             // }
             // req[`user`] = user;
-            next();
+            // next();
         }
     } catch (err) {
         next(err);

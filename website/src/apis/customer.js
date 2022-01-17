@@ -1,7 +1,8 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const getCustomer = (params) => get('/customer/getcustomer', params)
-export const getAllCustomer = (params) => get('/customer/getcustomer', params)
-export const addCustomer = (body) => post('/customer/addcustomer', body)
-export const deleteCustomers = (ids) => destroy('/customer/delete', { customer_id: ids })
-export const updateCustomer = (id, body) => patch('/customer/updatecustomer/' + id, body)
+export const getCustomerTypes = (query) => get('/customer/type', query)
+export const getCustomers = (query) => get('/customer', query)
+export const addCustomer = (body) => post('/customer/create', body)
+export const deleteCustomer = (id) => destroy('/customer/delete', { customer_id: [id] })
+export const updateCustomer = (id, body) => patch('/customer/update/' + id, body)
+export const importCustomers = (formData) => post('/customer/create/file', formData)

@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { Form, Drawer, Row, Col, Button, Input, Select, notification, Checkbox } from 'antd'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
-import { apiAddSupplier, apiUpdateSupplier } from 'apis/supplier'
+import { getDistricts, getProvinces } from 'apis/address'
+import { addSupplier, updateSupplier } from 'apis/supplier'
 
 const { Option } = Select
 export default function SupplierForm({ children, reloadData, record }) {
@@ -13,9 +13,13 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
-  const toggle = () => setVisible(!visible)
+  const toggle = () => {
+    setVisible(!visible)
+    setDistrictsMain([])
+  }
 
-  const [districts, setDistricts] = useState([])
+  const [districtsDefault, setDistrictsDefault] = useState([])
+  const [districtsMain, setDistrictsMain] = useState([])
   const [provinces, setProvinces] = useState([])
 
   const _addOrEditSupplier = async () => {
@@ -27,8 +31,8 @@ export default function SupplierForm({ children, reloadData, record }) {
       const body = { ...dataForm }
 
       let res
-      if (record) res = await apiUpdateSupplier(body, record.supplier_id)
-      else res = await apiAddSupplier(body)
+      if (record) res = await updateSupplier(body, record.supplier_id)
+      else res = await addSupplier(body)
       console.log(res)
 
       if (res.status === 200) {
@@ -59,9 +63,9 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const _getDistricts = async (value) => {
     try {
-      const res = await apiDistrict({ search: value })
+      const res = await getDistricts({ search: value })
       if (res.status === 200) {
-        setDistricts(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
     } catch (error) {
       console.log(error)
@@ -70,7 +74,7 @@ export default function SupplierForm({ children, reloadData, record }) {
 
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) setProvinces(res.data.data)
     } catch (error) {
       console.log(error)
@@ -125,6 +129,7 @@ export default function SupplierForm({ children, reloadData, record }) {
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
+                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
                 name="address"
               >
@@ -138,13 +143,18 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố!' }]}
               >
                 <Select
                   size="large"
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Chọn tỉnh/thành phố"
+                  onChange={(value) => {
+                    if (value) {
+                      const districtsNew = districtsDefault.filter((e) => e.province_name === value)
+                      setDistrictsMain([...districtsNew])
+                    }
+                  }}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -164,7 +174,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 name="district"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-                rules={[{ required: true, message: 'Vui lòng chọn quận/huyện!' }]}
               >
                 <Select
                   allowClear
@@ -177,13 +186,24 @@ export default function SupplierForm({ children, reloadData, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {districts.map((district, index) => {
-                    return (
-                      <Option value={district.district_name} key={index}>
-                        {district.district_name}
-                      </Option>
-                    )
-                  })}
+                  {
+                    districtsMain && districtsMain.length ?
+                      districtsMain.map((district, index) => {
+                        return (
+                          <Option value={district.district_name} key={index}>
+                            {district.district_name}
+                          </Option>
+                        )
+                      })
+                      :
+                      districtsDefault.map((district, index) => {
+                        return (
+                          <Option value={district.district_name} key={index}>
+                            {district.district_name}
+                          </Option>
+                        )
+                      })
+                  }
                 </Select>
               </Form.Item>
             </Col>
@@ -194,7 +214,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
                 name="phone"
-                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
               >
                 <Input placeholder="Nhập liên hệ" size="large" />
               </Form.Item>
@@ -204,7 +223,6 @@ export default function SupplierForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Email</div>}
                 name="email"
-                rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
               >
                 <Input placeholder="Nhập email" size="large" />
               </Form.Item>

@@ -1,23 +1,14 @@
-import {
-  Modal,
-  Row,
-  Col,
-  Select,
-  Upload,
-  Button,
-  Table,
-  notification,
-  Typography,
-} from 'antd'
+import { Modal, Row, Col, Select, Upload, Button, Table, notification, Typography } from 'antd'
 import { useEffect, useState } from 'react'
-import { apiAllShipping } from '../../../apis/shipping'
+import { getShippings } from 'apis/shipping'
 import XLSX from 'xlsx'
-import { uploadImg } from '../../../apis/upload'
-import { addCompare } from '../../../apis/compare'
+import { uploadFile } from 'apis/upload'
+import { addCompare } from 'apis/compare'
 import { compare, tableSum, formatCash } from 'utils'
 import moment from 'moment'
+
 const { Text } = Typography
-export default function ImportFile(props) {
+export default function ImportFile() {
   const [visible, setVisible] = useState(false)
   const [transport, setTransport] = useState([])
   const [importData, setImportData] = useState([])
@@ -46,7 +37,7 @@ export default function ImportFile(props) {
           try {
             const fd = new FormData()
             fd.append('file', info.file.originFileObj)
-            const res = await uploadImg(fd)
+            const res = await uploadFile(fd)
             if (res.data.success) {
               setFileLink(res.data.data)
               console.log(fileData)
@@ -93,8 +84,7 @@ export default function ImportFile(props) {
     {
       title: 'Ngày nhận đơn',
       dataIndex: 'revice_date',
-      sorter: (a, b) =>
-        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sorter: (a, b) => moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Tiền COD',
@@ -127,13 +117,12 @@ export default function ImportFile(props) {
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
-      sorter: (a, b) =>
-        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sorter: (a, b) => moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
   ]
   const getTransport = async () => {
     try {
-      const res = await apiAllShipping()
+      const res = await getShippings()
       if (res.data.success) {
         setTransport(res.data.data)
       }
@@ -240,27 +229,16 @@ export default function ImportFile(props) {
                     <Text>Tổng cộng:{`${pageData.length}`}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}
-                    </Text>
+                    <Text>Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí bảo hiểm{' '}
-                      {formatCash(tableSum(pageData, 'insurance_cost'))}
-                    </Text>
+                    <Text>Phí bảo hiểm {formatCash(tableSum(pageData, 'insurance_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí giao hàng:{' '}
-                      {formatCash(tableSum(pageData, 'shipping_cost'))}
-                    </Text>
+                    <Text>Phí giao hàng: {formatCash(tableSum(pageData, 'shipping_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí lưu kho:{' '}
-                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
-                    </Text>
+                    <Text>Phí lưu kho: {formatCash(tableSum(pageData, 'warehouse_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
                     <Text></Text>

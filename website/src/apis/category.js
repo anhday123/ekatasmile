@@ -1,9 +1,7 @@
 import { get, patch, post, destroy } from './httpClient'
 
-export const getCategories = (params) => get('/category/getcategory', params)
-export const getCategoriesWithCreator = (params) => get('/category/getcategory?_creator=true', params)
-export const apiAddCategory = (object) => post('/category/addcategory', object)
-export const apiUpdateCategory = (body, id) =>
-  patch(`/category/updatecategory/${id}`, body)
-export const deleteCategories = (category_id) =>
-  destroy('/category/deletecategory?category_id=' + category_id)
+export const getCategories = (query) => get('/category', query)
+export const getCategoriesWithCreator = (params) => get('/category?_creator=true', params)
+export const addCategory = (body) => post('/category/create', body)
+export const updateCategory = (body, id) => patch(`/category/update/${id}`, body)
+export const deleteCategory = (id) => destroy('/category/delete', { category_id: [id] })

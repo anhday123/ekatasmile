@@ -1,29 +1,8 @@
 .dashboard_manager {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 1rem;
-}
-.dashboard_manager_date {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  // margin-bottom: 1rem;
-}
-.dashboard_manager_date_row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_date_row_col {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-.dashboard_manager_date_row_col_select {
-  width: 100%;
+  margin: 12px;
+  max-height: 100%;
 }
 .dashboard_manager_balance {
   display: flex;
@@ -32,11 +11,11 @@
   width: 100%;
   flex-direction: column;
   background-color: white;
-  padding: 1rem;
+  padding: 12px;
 }
 .card {
   box-shadow: 0 12px 23px 0 #5c37990a;
-  border-radius: 1.25rem;
+  border-radius: 10px;
   border: 0 solid transparent;
   overflow: hidden;
 }
@@ -56,106 +35,7 @@
   font-weight: 600;
   color: black;
 }
-.dashboard_manager_balance_parent_row_col_top_value {
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_value > div {
-  color: #1890ff;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-.dashboard_manager_balance_parent_row_col_top_value_balance {
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_value_balance > div {
-  color: #ff9726;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-.dashboard_manager_balance_parent_row_col_top_value_profit {
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_value_profit > div {
-  color: #26cf51;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-.dashboard_manager_balance_parent_row_col_parent_bottom {
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_parent_bottom > div {
-  font-size: 1rem;
-}
-.dashboard_manager_balance_parent_row_col_parent_bottom_today {
-  color: #1890ff;
-  margin-left: 0.5rem;
-}
-.dashboard_manager_balance_parent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
 
-.dashboard_manager_balance_parent_row_col_top {
-  display: flex;
-  border-bottom: 1px solid rgb(206, 193, 193);
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_title {
-  display: flex;
-  margin-bottom: 1rem;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_title_left {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-.dashboard_manager_balance_parent_row_col_top_title_left > div {
-  color: black;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-right: 0.5rem;
-}
-.dashboard_manager_revenue {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: white;
-}
 .dashboard_manager_revenue_title {
   display: flex;
   justify-content: space-between;
@@ -169,144 +49,12 @@
   font-size: 1rem;
   font-weight: 600;
 }
-@media only screen and (min-width: 320px) {
-  .dashboard_manager_revenue_chart {
-    width: 15rem;
-    height: 15rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 350px;
-    height: 300px;
-  }
-}
-@media only screen and (min-width: 300px) {
-  .dashboard_manager_revenue_chart {
-    width: 15rem;
-    height: 15rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 350px;
-    height: 300px;
-  }
-}
-
-@media only screen and (min-width: 380px) {
-  .dashboard_manager_revenue_chart {
-    width: 20rem;
-    height: 20rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 350px;
-    height: 300px;
-  }
-}
-@media only screen and (min-width: 576px) {
-  .dashboard_manager_revenue_chart {
-    width: 25rem;
-    height: 25rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 500px;
-    height: 300px;
-  }
-}
-@media only screen and (min-width: 768px) {
-  .dashboard_manager_revenue_chart {
-    width: 40rem;
-    height: 30rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 500px;
-    height: 300px;
-  }
-}
-@media only screen and (min-width: 992px) {
-  .dashboard_manager_revenue_chart {
-    width: 45rem;
-    height: 30rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 500px;
-    height: 300px;
-  }
-}
-@media only screen and (min-width: 1200px) {
-  .dashboard_manager_revenue_chart {
-    width: 60;
-    height: 30rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 550px;
-    height: 350px;
-  }
-}
-@media only screen and (min-width: 1600px) {
-  .dashboard_manager_revenue_chart {
-    width: 60rem;
-    height: 30rem;
-  }
-  .dashboard_manager_bottom_row_col_parent_top_chart_right {
-    width: 550px;
-    height: 350px;
-  }
-}
 .dashboard_manager_bottom {
   margin-top: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-}
-
-.dashboard_manager_bottom_row_col_parent_chart_bottom {
-  display: flex;
-  justify-content: center;
-  max-width: 100%;
-  overflow: auto;
-  margin-top: 2rem;
-  align-items: center;
-  width: 100%;
-}
-
-.dashboard_manager_bottom_row_col_parent_bottom {
-  display: flex;
-  margin-top: 1rem;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  font-size: 1rem;
-  color: rgb(218, 203, 203);
-}
-.dashboard_manager_bottom_row_col_parent_bottom_right {
-  display: flex;
-  margin-top: 1rem;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  font-size: 1rem;
-  color: rgb(218, 203, 203);
-}
-.dashboard_manager_bottom_row_col_parent_bottom_col {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 1rem;
-}
-.dashboard_manager_bottom_row_col_parent_bottom_right {
-  display: flex;
-  margin-top: 1rem;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 1rem;
-}
-.dashboard_manager_bottom_row_col_parent {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  flex-direction: column;
 }
 .dashboard_manager_bottom_row_col_parent_top > div {
   font-size: 1rem;
@@ -320,59 +68,4 @@
   width: 100%;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgb(197, 184, 184);
-}
-.dashboard_manager_bottom_row_col_parent_bottom_col_bottom_right_parent {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.dashboard_manager_bottom_row_col_parent_bottom_col_bottom {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-.dashboard_manager_bottom_row_col_parent_bottom_col_bottom_right {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-  flex-direction: column;
-}
-.dashboard_manager_bottom_row_col_parent_bottom_col_bottom_right > div {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  color: black;
-  font-size: 1rem;
-  width: 100%;
-}
-.dashboard_manager_footer {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  font-size: 1rem;
-  color: black;
-}
-.dashboard_manager_bottom_row_col_parent_bottom_chartbar {
-  display: flex;
-  max-width: 100%;
-  overflow: auto;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-.orders_manager_header_bottom_col_parent_child_icon {
-  cursor: pointer;
-}
-.popover {
-  width: 15rem;
-  // height: 10rem;
-  font-size: 1rem;
-  line-height: 1.5rem;
-  color: black;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
 }

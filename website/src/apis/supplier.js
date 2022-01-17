@@ -1,5 +1,6 @@
 import { get, patch, post } from './httpClient'
 
-export const apiAddSupplier = (body) => post('/supplier/addsupplier', body)
-export const apiAllSupplier = (params) => get('/supplier/getsupplier', params)
-export const apiUpdateSupplier = (object, id) => patch(`/supplier/updatesupplier/${id}`, object)
+export const addSupplier = (body) => post('/supplier/create', body)
+export const getSuppliers = (query) => get('/supplier', query)
+export const updateSupplier = (body, id) => patch(`/supplier/update/${id}`, body)
+export const deleteSupplier = (id) => patch('/supplier/delete', { supplier_id: [id] })

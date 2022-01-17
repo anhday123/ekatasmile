@@ -1,5 +1,11 @@
 const columnsProduct = [
   {
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
     title: 'Tên sản phẩm',
     dataIndex: 'name',
     key: 'name-product',
@@ -10,7 +16,7 @@ const columnsProduct = [
     key: 'sku',
   },
   {
-    title: 'Danh mục',
+    title: 'Nhóm sản phẩm',
     key: 'category',
   },
   {
@@ -22,7 +28,7 @@ const columnsProduct = [
     key: 'create_date',
   },
   {
-    title: 'Mở bán',
+    title: 'Hành động',
     key: 'active',
   },
 ]

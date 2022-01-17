@@ -1,2 +1,2 @@
 import { get } from './httpClient'
-export const getStatistical = (params) => get('/statistic/overview', params)
+export const getStatistical = (query) => get('/statistic/overview', query)

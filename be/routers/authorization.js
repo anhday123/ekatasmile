@@ -1,13 +1,14 @@
 const express = require(`express`);
-
 const router = express.Router();
 
 const auth = require(`../controllers/authorization`);
 
-router.route(`/login`).post(auth.loginC);
-router.route(`/refreshtoken`).post(auth.refreshTokenC);
-router.route(`/checkvertifylink`).post(auth.checkLinkVertifyC);
-router.route(`/getotp`).post(auth.getOTPC);
-router.route(`/vertifyotp`).post(auth.vertifyOTPC);
+router.route(`/register`).post(auth._register);
+router.route(`/login`).post(auth._login);
+router.route(`/refreshtoken`).post(auth._refreshToken);
+router.route(`/checkverifylink`).post(auth._checkVerifyLink);
+router.route(`/getotp`).post(auth._getOTP);
+router.route(`/verifyotp`).post(auth._verifyOTP);
+router.route(`/recoverypassword`).post(auth._recoveryPassword);
 
 module.exports = router;

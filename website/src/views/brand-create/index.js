@@ -24,7 +24,7 @@ import parse from 'html-react-parser'
 import { createBrand, updateBrand } from 'apis/brand'
 import { uploadFile, uploadFiles } from 'apis/upload'
 import { IMAGE_DEFAULT } from 'consts'
-import { apiCountry } from 'apis/information'
+import { getCountries } from 'apis/address'
 
 // moment
 import moment from 'moment'
@@ -51,7 +51,7 @@ export default function BrandCreate() {
     const value = e.editor.getData()
     setContent(value)
   }
-  
+
   const handleChangeCountry = (code, name) => {
     // console.log(value)
     setCountry(code)
@@ -153,10 +153,10 @@ export default function BrandCreate() {
     }
   }
 
-  const _getCountry = async () => {
+  const _getCountries = async () => {
     try {
       setLoadingSelect(true)
-      const res = await apiCountry()
+      const res = await getCountries()
       // console.log(res)
       setCountryList(res.data.data)
     } catch (err) {
@@ -187,10 +187,10 @@ export default function BrandCreate() {
       setPriority(location.state.priority)
       setFoundedYear(location.state.founded_year)
       form.setFieldsValue({ name: location.state.name })
-      form.setFieldsValue({country:location.state._country[0]?.name})
+      form.setFieldsValue({ country: location.state._country[0]?.name })
       // console.log(location.state.founded_year)
     }
-    _getCountry()
+    _getCountries()
   }, [])
 
   return (
@@ -248,7 +248,7 @@ export default function BrandCreate() {
             </Dragger>
           )}
         </div>
-        <div style={{paddingTop:20}}>
+        <div style={{ paddingTop: 20 }}>
           <Form className={styles['body_brand_content_header']} form={form}>
             <div>
               <h3>Tên thương hiệu</h3>
@@ -268,20 +268,20 @@ export default function BrandCreate() {
             <div>
               <h3>Quốc gia</h3>
               <Form.Item name="country">
-              <Select
-                notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
-                showSearch
-                // onChange={handleChangeCountry}
-                style={{ width: '85%' }}
-                placeholder="Chọn quốc gia"
-                allowClear
-              >
-                {countryList?.map((data) => (
-                  <Select.Option value={data.name} key={data.code}>
-                    <p onClick={() => handleChangeCountry(data.code, data.name)}>{data.name}</p>
-                  </Select.Option>
-                ))}
-              </Select>
+                <Select
+                  notFoundContent={loadingSelect ? <Spin size="small" /> : ''}
+                  showSearch
+                  // onChange={handleChangeCountry}
+                  style={{ width: '85%' }}
+                  placeholder="Chọn quốc gia"
+                  allowClear
+                >
+                  {countryList?.map((data) => (
+                    <Select.Option value={data.name} key={data.code}>
+                      <p onClick={() => handleChangeCountry(data.code, data.name)}>{data.name}</p>
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </div>
             <div>

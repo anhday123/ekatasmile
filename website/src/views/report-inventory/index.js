@@ -1,48 +1,51 @@
-import styles from './../report-inventory/report-inventory.module.scss'
 import React, { useEffect, useState } from 'react'
-
-import TitlePage from 'components/title-page'
-import {
-  Popconfirm,
-  Input,
-  Button,
-  Row,
-  Col,
-  DatePicker,
-  Select,
-  Table,
-  Modal,
-  Typography,
-  Popover,
-  Space,
-} from 'antd'
-
-import { FileExcelOutlined } from '@ant-design/icons'
+import styles from './report-inventory.module.scss'
 import moment from 'moment'
 import { compare, formatCash } from 'utils'
-const { Text } = Typography
-const { Option } = Select
-const { RangePicker } = DatePicker
+import { useHistory } from 'react-router-dom'
+import { ROUTES } from 'consts'
+import delay from 'delay'
+import { useSelector } from 'react-redux'
+
+//components
+import TitlePage from 'components/title-page'
+import exportTableToCSV from 'components/ExportCSV/export-table'
+
+//antd
+import { Input, Col, Row, DatePicker, Table, Tag, Button } from 'antd'
+
+//icons
+import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
+
+//apis
+import { getReportInventory } from 'apis/report'
 
 export default function ReportInventory() {
-  const { Search } = Input
-  const [modal2Visible, setModal2Visible] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [data, setData] = useState([])
+  const history = useHistory()
 
-  const modal2VisibleModal = (modal2Visible) => {
-    setModal2Visible(modal2Visible)
-  }
-  const onSearchCustomerChoose = (value) => console.log(value)
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
+  const [reportInventory, setReportInventory] = useState([])
+  const [reportInventoryToExport, setReportInventoryToExport] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [countReport, setCountReport] = useState(0)
+  const [warehousesName, setWarehousesName] = useState([])
+  const [warehousesNameExport, setWarehousesNameExport] = useState([])
+  const [dateFilter, setDateFilter] = useState()
+
+  const onChangeDate = (date, dateString) => {
+    setDateFilter(date)
+    if (date) {
+      paramsFilter.from_date = dateString[0]
+      paramsFilter.to_date = dateString[1]
+    } else {
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
+    }
+
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-  const columns = [
+  const columnsDefault = [
     {
       title: 'STT',
       key: 'stt',
@@ -50,7 +53,7 @@ export default function ReportInventory() {
     },
     {
       title: 'Mã hàng',
-      dataIndex: 'code',
+      dataIndex: 'sku',
     },
     {
       title: 'Tên hàng',
@@ -62,96 +65,291 @@ export default function ReportInventory() {
     },
     {
       title: 'Nhóm',
-      dataIndex: 'group',
-    },
-    {
-      title: 'Kho 1',
-      key: 'warehouse',
-      children: [
-        {
-          title: 'Số lượng',
-          dataIndex: 'quantity',
-          key: 'quantity',
-        },
-        {
-          title: 'Thành tiền',
-          dataIndex: 'cost',
-          key: 'cost',
-        },
-      ],
-    },
-    {
-      title: 'Kho 2',
-      key: 'warehouse',
-      children: [
-        {
-          title: 'Số lượng',
-          dataIndex: 'quantity',
-          key: 'quantity',
-        },
-        {
-          title: 'Thành tiền',
-          dataIndex: 'cost',
-          key: 'cost',
-        },
-      ],
+      render: (text, record) =>
+        record.categories ? record.categories.map((category) => <Tag>{category.name}</Tag>) : '',
     },
   ]
-  useEffect(() => {
-    const data = []
-    for (let i = 0; i < 100; i++) {
-      data.push({
-        code: Math.floor(Math.random() * 10000),
-        name: 'Mặt Hàng A',
-        unit: 'C',
-        group: 'A',
-        quantity: Math.floor(Math.random() * 15),
-        cost: formatCash(Math.floor(Math.random() * 1000000)),
-      })
+
+  const [columns, setColumns] = useState(columnsDefault)
+  const [columnsExport, setColumnsExport] = useState(columnsDefault)
+
+  const _reportInventory = async () => {
+    try {
+      setLoading(true)
+      const res = await getReportInventory({ ...paramsFilter, type: 'product' })
+      console.log(res)
+      if (res.status === 200) {
+        setCountReport(res.data.count)
+        const columnsNew = [...columnsDefault]
+        let reportNew = []
+        let warehousesNameNew = []
+
+        res.data.data.map((e) => {
+          let report = {
+            sku: e.product ? e.product.sku : '',
+            name: e.product ? e.product.name : '',
+            unit: e.product ? e.product.unit : '',
+            categories: e.product._categories ? e.product._categories : [],
+          }
+
+          e.warehouse.map((w) => {
+            if (w.branch) report[w.branch.name] = { quantity: w.quantity || 0, price: w.price || 0 }
+          })
+
+          reportNew.push(report)
+        })
+
+        res.data.data.map((e) => {
+          e.warehouse.map((item) => {
+            if (item.branch) {
+              const findBranch = columnsNew.find((e) => e.title === item.branch.name)
+              if (!findBranch) {
+                const branchName = item.branch ? item.branch.name : ''
+                const column = {
+                  title: branchName,
+                  children: [
+                    {
+                      title: 'Số lượng',
+                      render: (text, record) =>
+                        record[branchName] ? formatCash(record[branchName].quantity || 0) : 0,
+                    },
+                    {
+                      title: 'Thành tiền',
+                      render: (text, record) =>
+                        record[branchName] ? formatCash(record[branchName].price || 0) : 0,
+                    },
+                  ],
+                }
+
+                warehousesNameNew.push(branchName)
+                columnsNew.push(column)
+              }
+            }
+          })
+        })
+
+        setWarehousesName([...warehousesNameNew])
+        setReportInventory([...reportNew])
+        setColumns([...columnsNew])
+      }
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
     }
-    setData([...data])
-  }, [])
-  const dateFormat = 'YYYY/MM/DD'
+  }
+
+  const _reportInventoryToExport = async () => {
+    try {
+      setLoading(true)
+      const res = await getReportInventory({ type: 'product' })
+      console.log(res)
+      if (res.status === 200) {
+        setCountReport(res.data.count)
+        const columnsNew = [...columnsDefault]
+        let reportNew = []
+        let warehousesNameNew = []
+
+        res.data.data.map((e) => {
+          let report = {
+            sku: e.product ? e.product.sku : '',
+            name: e.product ? e.product.name : '',
+            unit: e.product ? e.product.unit : '',
+            categories: e.product._categories ? e.product._categories : [],
+          }
+
+          e.warehouse.map((w) => {
+            if (w.branch) report[w.branch.name] = { quantity: w.quantity || 0, price: w.price || 0 }
+          })
+
+          reportNew.push(report)
+        })
+
+        res.data.data.map((e) => {
+          e.warehouse.map((item) => {
+            if (item.branch) {
+              const findBranch = columnsNew.find((e) => e.title === item.branch.name)
+              if (!findBranch) {
+                const branchName = item.branch ? item.branch.name : ''
+                const column = {
+                  title: branchName,
+                  children: [
+                    {
+                      title: 'Số lượng',
+                      render: (text, record) =>
+                        record[branchName] ? formatCash(record[branchName].quantity || 0) : 0,
+                    },
+                    {
+                      title: 'Thành tiền',
+                      render: (text, record) =>
+                        record[branchName] ? formatCash(record[branchName].price || 0) : 0,
+                    },
+                  ],
+                }
+
+                warehousesNameNew.push(branchName)
+                columnsNew.push(column)
+              }
+            }
+          })
+        })
+
+        setWarehousesNameExport([...warehousesNameNew])
+        setReportInventoryToExport([...reportNew])
+        setColumnsExport([...columnsNew])
+      }
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    _reportInventory()
+  }, [paramsFilter])
+
+  const dateFormat = 'YYYY-MM-DD'
   return (
-    <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <TitlePage title="Báo cáo tồn kho"></TitlePage>
-        <Row style={{ marginBottom: 10, marginTop: 20 }}>
+    <div className="card">
+      <TitlePage
+        title={
+          <Row
+            wrap={false}
+            align="middle"
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push(ROUTES.REPORTS)}
+          >
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
+            Báo cáo tồn kho theo sản phẩm
+          </Row>
+        }
+      >
+        <Button
+          icon={<VerticalAlignTopOutlined />}
+          onClick={async () => {
+            await _reportInventoryToExport()
+            await delay(300)
+            exportTableToCSV('report-inventory', 'Báo cáo tồn kho theo sản phẩm')
+          }}
+          style={{ backgroundColor: 'green', borderColor: 'green' }}
+          size="large"
+          type="primary"
+        >
+          Xuất excel
+        </Button>
+      </TitlePage>
+      <Row gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <DatePicker.RangePicker
-            placeholder="Lọc theo ngày"
-            style={{ width: 350 }}
+            value={dateFilter}
+            onChange={onChangeDate}
+            style={{ width: '100%' }}
             size="large"
-            defaultValue={[moment('2021/11/01', dateFormat), moment('2021/12/01', dateFormat)]}
             format={dateFormat}
           />
-        </Row>
+        </Col>
+      </Row>
 
+      <div className="report-inventory" style={{ display: 'none' }}>
         <Table
+          bordered
           size="small"
           style={{ width: '100%' }}
-          pagination={{
-            position: ['bottomLeft'],
-          }}
-          // rowSelection={rowSelection}
-          columns={columns}
-          dataSource={data}
+          columns={columnsExport}
+          dataSource={reportInventoryToExport}
+          pagination={false}
           summary={(pageData) => (
             <Table.Summary.Row>
               <Table.Summary.Cell>
-                <h4>Tổng</h4>
+                <div style={{ fontWeight: 700 }}>Tổng</div>
               </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>100</Table.Summary.Cell>
-              <Table.Summary.Cell>{formatCash(4500000)}</Table.Summary.Cell>
-              <Table.Summary.Cell>100</Table.Summary.Cell>
-              <Table.Summary.Cell>{formatCash(5500000)}</Table.Summary.Cell>
+              {warehousesNameExport.map((name) => (
+                <>
+                  <Table.Summary.Cell>
+                    <div style={{ fontWeight: 700 }}>
+                      {formatCash(
+                        pageData.reduce(
+                          (total, current) => total + (current[name] ? current[name].quantity : 0),
+                          0
+                        )
+                      )}
+                    </div>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <div style={{ fontWeight: 700 }}>
+                      {formatCash(
+                        pageData.reduce(
+                          (total, current) => total + (current[name] ? current[name].price : 0),
+                          0
+                        )
+                      )}
+                    </div>
+                  </Table.Summary.Cell>
+                </>
+              ))}
             </Table.Summary.Row>
           )}
         />
       </div>
-    </>
+
+      <Table
+        bordered
+        loading={loading}
+        size="small"
+        style={{ width: '100%' }}
+        columns={columns}
+        dataSource={reportInventory}
+        pagination={{
+          position: ['bottomLeft'],
+          current: paramsFilter.page,
+          defaultPageSize: 20,
+          pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+          showQuickJumper: true,
+          onChange: (page, pageSize) =>
+            setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+          total: countReport,
+        }}
+        summary={(pageData) => (
+          <Table.Summary.Row>
+            <Table.Summary.Cell>
+              <div style={{ fontWeight: 700 }}>Tổng</div>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            <Table.Summary.Cell></Table.Summary.Cell>
+            {warehousesName.map((name) => (
+              <>
+                <Table.Summary.Cell>
+                  <div style={{ fontWeight: 700 }}>
+                    {formatCash(
+                      pageData.reduce(
+                        (total, current) => total + (current[name] ? current[name].quantity : 0),
+                        0
+                      )
+                    )}
+                  </div>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <div style={{ fontWeight: 700 }}>
+                    {formatCash(
+                      pageData.reduce(
+                        (total, current) => total + (current[name] ? current[name].price : 0),
+                        0
+                      )
+                    )}
+                  </div>
+                </Table.Summary.Cell>
+              </>
+            ))}
+          </Table.Summary.Row>
+        )}
+      />
+    </div>
   )
 }

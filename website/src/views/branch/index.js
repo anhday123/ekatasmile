@@ -1,12 +1,11 @@
-import styles from './../customer/customer.module.scss'
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, PERMISSIONS } from 'consts/index'
+import { ACTION, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import { compare } from 'utils'
 
 //icons
-import { SearchOutlined, PlusCircleOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusCircleOutlined, DeleteOutlined } from '@ant-design/icons'
 
 //antd
 import {
@@ -21,6 +20,8 @@ import {
   Table,
   Button,
   Popover,
+  Space,
+  Popconfirm,
 } from 'antd'
 
 //components
@@ -31,20 +32,19 @@ import SettingColumns from 'components/setting-columns'
 import columnsBranch from './columns'
 
 //apis
-import { apiDistrict, apiProvince } from 'apis/information'
-import { getAllBranch, apiUpdateBranch } from 'apis/branch'
+import { getDistricts, getProvinces } from 'apis/address'
+import { getAllBranch, updateBranch, deleteBranch } from 'apis/branch'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Branch() {
   const typingTimeoutRef = useRef(null)
+  const dispatch = useDispatch()
 
   const [columns, setColumns] = useState([])
-  const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
   const [branches, setBranches] = useState([])
   const [countBranch, setCountBranch] = useState(0)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
@@ -83,7 +83,7 @@ export default function Branch() {
   const _editBranch = async (body, id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await apiUpdateBranch(body, id)
+      const res = await updateBranch(body, id)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
@@ -112,7 +112,6 @@ export default function Branch() {
   const _getBranches = async () => {
     try {
       setLoading(true)
-      setSelectedRowKeys([])
       const res = await getAllBranch({ ...paramsFilter, _creator: true })
       console.log(res)
       if (res.status === 200) {
@@ -131,9 +130,32 @@ export default function Branch() {
     setValueDate(null)
   }
 
+  const _deleteBranch = async (branch_id) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await deleteBranch(branch_id)
+      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: 'Xóa chi nhánh thành công!' })
+          _getBranches()
+        } else
+          notification.error({
+            message: res.data.message || 'Xóa chi nhánh thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xóa chi nhánh thất bại, vui lòng thử lại!',
+        })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
   const _getDistricts = async () => {
     try {
-      const res = await apiDistrict()
+      const res = await getDistricts()
       if (res.status === 200) {
         setDistricts(res.data.data)
         setDistrictsDefault(res.data.data)
@@ -144,7 +166,7 @@ export default function Branch() {
   }
   const _getProvinces = async () => {
     try {
-      const res = await apiProvince()
+      const res = await getProvinces()
       if (res.status === 200) {
         setProvinces(res.data.data)
       }
@@ -164,15 +186,23 @@ export default function Branch() {
 
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <TitlePage title="Danh sách kho">
-          <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
-            <BranchForm reloadData={_getBranches}>
-              <Button size="large" icon={<PlusCircleOutlined />} type="primary">
-                Thêm chi nhánh
-              </Button>
-            </BranchForm>
-          </Permission>
+      <div className="card">
+        <TitlePage title="Danh sách chi nhánh">
+          <Space>
+            <SettingColumns
+              columnsDefault={columnsBranch}
+              columns={columns}
+              setColumns={setColumns}
+              nameColumn="columnsBranch"
+            />
+            <Permission permissions={[PERMISSIONS.them_chi_nhanh]}>
+              <BranchForm reloadData={_getBranches}>
+                <Button size="large" icon={<PlusCircleOutlined />} type="primary">
+                  Thêm chi nhánh
+                </Button>
+              </BranchForm>
+            </Permission>
+          </Space>
         </TitlePage>
 
         <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
@@ -201,29 +231,6 @@ export default function Branch() {
               }}
               onChange={onChangeDate}
             />
-          </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-            <Select
-              allowClear
-              size="large"
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo kho"
-              optionFilterProp="children"
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={paramsFilter.warehouse_type}
-              onChange={(value) => {
-                if (value) paramsFilter.warehouse_type = value
-                else delete paramsFilter.warehouse_type
-
-                setParamsFilter({ ...paramsFilter, page: 1 })
-              }}
-            >
-              <Option value="so huu">Kho sở hữu</Option>
-              <Option value="dich vu">Kho thuê dịch vụ</Option>
-            </Select>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={6}>
             <Select
@@ -301,33 +308,19 @@ export default function Branch() {
           </Col>
         </Row>
 
-        <Row justify="space-between" style={{ marginTop: 15 }}>
-          <Button
-            type="primary"
-            size="large"
-            style={{ visibility: !selectedRowKeys.length && 'hidden', width: 100 }}
-            danger
-          >
-            Xóa
-          </Button>
-          <SettingColumns
-            columnsDefault={columnsBranch}
-            columns={columns}
-            setColumns={setColumns}
-            nameColumn="columnsBranch"
-          />
-        </Row>
-
         <Table
-          rowSelection={{
-            selectedRowKeys,
-            onChange: (keys) => setSelectedRowKeys(keys),
-          }}
           style={{ width: '100%', marginTop: 5 }}
           rowKey="branch_id"
           size="small"
           loading={loading}
           columns={columns.map((column) => {
+            if (column.key === 'stt')
+              return {
+                ...column,
+                width: 50,
+                render: (text, record, index) =>
+                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+              }
             if (column.key === 'code')
               return {
                 ...column,
@@ -353,13 +346,17 @@ export default function Branch() {
                 render: (text, record) => (
                   <Popover
                     content={
-                      <img src={record.logo || ''} alt="" style={{ width: 350, height: 350 }} />
+                      <img
+                        src={record.logo || IMAGE_DEFAULT}
+                        alt=""
+                        style={{ width: 380, height: 380 }}
+                      />
                     }
                   >
                     <img
-                      src={record.logo || ''}
+                      src={record.logo || IMAGE_DEFAULT}
                       alt=""
-                      style={{ width: 80, height: 80, objectFit: 'cover' }}
+                      style={{ width: 55, height: 55, objectFit: 'cover' }}
                     />
                   </Popover>
                 ),
@@ -385,10 +382,28 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) => (
-                  <Switch
-                    checked={record.active}
-                    onChange={(checked) => _editBranch({ active: checked }, record.branch_id)}
-                  />
+                  <Space size="middle">
+                    <div>
+                      <div>Mở bán</div>
+                      <Switch
+                        checked={record.active}
+                        onChange={(checked) => _editBranch({ active: checked }, record.branch_id)}
+                      />
+                    </div>
+                    <Popconfirm
+                      onConfirm={() => _deleteBranch(record.branch_id)}
+                      title="Bạn có muốn xóa chi nhánh này không?"
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                    >
+                      <Button
+                        style={{ marginTop: 17 }}
+                        type="primary"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  </Space>
                 ),
               }
 

@@ -59,21 +59,14 @@ export default function ImportFile({
       </Button>
       <Modal
         style={{ top: 20 }}
-        width={780}
+        width="87%"
         title={title}
         visible={visible}
         onCancel={toggle}
         footer={null}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <a
-            download
-            href={fileTemplated}
-            style={{
-              marginBottom: 15,
-              color: 'blue',
-            }}
-          >
+          <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
             Tải xuống file mẫu
           </a>
           <Upload
@@ -137,7 +130,7 @@ export default function ImportFile({
               style={{ width: '100%', display: !fileUpload && 'none', marginBottom: 20 }}
               dataSource={dataView}
               columns={columns.map((column) => {
-                return { ...column, width: column.title.length * 30 }
+                return { ...column, width: column.title.length * 20 }
               })}
               pagination={false}
             />

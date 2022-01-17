@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { compare, formatCash, tableSum } from 'utils'
 
 // style
-import styles from './../offer-list/offer.module.scss'
+import styles from './offer.module.scss'
 
 // moment
 import moment from 'moment'
@@ -33,11 +33,11 @@ import { IMAGE_DEFAULT, PERMISSIONS, POSITION_TABLE, ROUTES } from 'consts'
 import Permission from 'components/permission'
 
 // api
-import { deleteDeal, getDeal, updateDeal, updateDealsPrice } from '../../apis/deal'
+import { deleteDeal, getDeals, updateDeal, updateDealsPrice } from 'apis/deal'
 
 // html react parser
 import parse from 'html-react-parser'
-import { apiFilterRoleEmployee } from 'apis/employee'
+import { getEmployees } from 'apis/employee'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -390,7 +390,7 @@ export default function OfferList() {
   const _getDeal = async () => {
     try {
       setLoadingTable(true)
-      const res = await getDeal({ ...paramsFilter, _creator: true })
+      const res = await getDeals({ ...paramsFilter, _creator: true })
       setDealList(res.data.data)
       setCountPage(res.data.count)
       console.log(res)
@@ -402,7 +402,7 @@ export default function OfferList() {
 
   const _getUserList = async () => {
     try {
-      const res = await apiFilterRoleEmployee({ page: 1, page_size: 1000 })
+      const res = await getEmployees({ page: 1, page_size: 1000 })
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {

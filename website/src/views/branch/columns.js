@@ -1,11 +1,17 @@
 const columns = [
   {
-    title: 'Mã kho',
+    title: 'STT',
+    dataIndex: 'stt',
+    key: 'stt',
+    width: 50,
+  },
+  {
+    title: 'Mã chi nhánh',
     dataIndex: 'code',
     key: 'code',
   },
   {
-    title: 'Tên kho',
+    title: 'Tên chi nhánh',
     dataIndex: 'name',
     key: 'name',
   },
@@ -25,7 +31,7 @@ const columns = [
   },
   {
     title: 'Địa chỉ',
-    dataIndex: 'address',
+    key: 'address',
   },
   {
     title: 'Người tạo',

@@ -1,5 +1,3 @@
 import { get, patch } from './httpClient'
-export const getPointSetting = (params) =>
-  get('/point-setting/getpointsetting', params && params)
-export const updatePointSetting = (id, data) =>
-  patch('/point-setting/updatepointsetting/' + id, data)
+export const getPoint = (query) => get('/pointsetting', query)
+export const updatePoint = (body, id) => patch('/pointsetting/update/' + id, body)

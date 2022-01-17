@@ -1,15 +1,18 @@
-import styles from './../shipping-control/shipping-control.module.scss'
 import React, { useEffect, useState } from 'react'
-import { Button, Tabs } from 'antd'
-import { PlusCircleOutlined } from '@ant-design/icons'
-import { getCompare, getSession } from '../../apis/compare'
+import { Button, Tabs, Row } from 'antd'
+import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import PenddingCompare from './components/penddingCompare'
 import Compared from './components/compared'
 import CompareHistory from './components/compareHistory'
 import CreateCompare from './components/createCompare'
 import Permission from 'components/permission'
-import { getAllBranch } from '../../apis/branch'
-import { PERMISSIONS } from 'consts'
+import TitlePage from 'components/title-page'
+import { PERMISSIONS, ROUTES } from 'consts'
+
+//apis
+import { getAllBranch } from 'apis/branch'
+import { getCompare, getSession } from 'apis/compare'
+import { useHistory } from 'react-router-dom'
 
 const { TabPane } = Tabs
 function removeNull(a) {
@@ -18,6 +21,8 @@ function removeNull(a) {
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
 export default function ShippingControl() {
+  const history = useHistory()
+
   const [compareList, setCompareList] = useState([])
   const [sessionList, setSessionList] = useState([])
   const [showCreate, setShowCreate] = useState(false)
@@ -79,46 +84,35 @@ export default function ShippingControl() {
   }, [filter])
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div className={styles['promotion_manager_title']}>
-            Đối soát vận chuyển
-          </div>
-          <div className={styles['promotion_manager_button']}>
-            <Permission
-              permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              wrap={false}
+              align="middle"
+              style={{ cursor: 'pointer' }}
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             >
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-                onClick={() => setShowCreate(true)}
-              >
-                Thêm phếu đối soát riêng lẻ
-              </Button>
-            </Permission>
-          </div>
-        </div>
-        <Tabs
-          defaultActiveKey="1"
-          style={{ width: '100%' }}
-          onChange={changeTab}
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              Đối soát vận chuyển
+            </Row>
+          }
         >
+          <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
+            <Button
+              size="large"
+              icon={<PlusCircleOutlined />}
+              type="primary"
+              onClick={() => setShowCreate(true)}
+            >
+              Thêm phiếu đối soát riêng lẻ
+            </Button>
+          </Permission>
+        </TitlePage>
+
+        <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Đơn chờ đối soát
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn chờ đối soát</span>}
             key="1"
           >
             <PenddingCompare
@@ -128,25 +122,13 @@ export default function ShippingControl() {
             />
           </TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Đơn đã đối soát thành công
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn đã đối soát thành công</span>}
             key="2"
           >
-            <Compared
-              compareList={compareList}
-              branchList={branchList}
-              setFilter={setFilter}
-            />
+            <Compared compareList={compareList} branchList={branchList} setFilter={setFilter} />
           </TabPane>
           <TabPane
-            tab={
-              <span style={{ fontSize: 15, fontWeight: 500 }}>
-                Lịch sử đối soát
-              </span>
-            }
+            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Lịch sử đối soát</span>}
             key="3"
           >
             <CompareHistory

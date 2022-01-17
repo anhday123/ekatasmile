@@ -8,7 +8,6 @@ const initialState = {
   username: '',
   objectUsername: {},
   branchName: '',
-  role: '',
 }
 let login = (state = initialState, action) => {
   switch (action.type) {
@@ -17,19 +16,13 @@ let login = (state = initialState, action) => {
       console.log('data user', data)
       if (data) {
         localStorage.setItem('accessToken', action.data.accessToken)
-        localStorage.setItem('refreshToken', action.data.refreshToken)
         localStorage.setItem('username', data.data.username)
-        localStorage.setItem(
-          'permission_list',
-          JSON.stringify(data.data._role.permission_list || [])
-        )
-        localStorage.setItem('menu_list', JSON.stringify(data.data._role.menu_list || []))
+
         return {
           ...state,
           dataUser: data,
           username: data.data.username,
           objectUsername: data.data,
-          role: data.data._role.name,
         }
       }
 

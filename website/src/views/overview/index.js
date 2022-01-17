@@ -2,21 +2,31 @@ import React, { useEffect, useState } from 'react'
 import styles from './overview.module.scss'
 import { LineChart } from 'react-chartkick'
 import { formatCash } from 'utils'
-
-import ModalIntro from 'components/introduction'
+import { useSelector } from 'react-redux'
+import noData from 'assets/icons/no-data.png'
 
 //antd
-import { Row, Col, Popover, Skeleton, Space } from 'antd'
+import { Row, Col, Skeleton } from 'antd'
 
 //icons antd
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
+
+//apis
 import { getStatistical } from 'apis/statis'
 
 const Overview = () => {
+  const branchIdApp = useSelector((state) => state.branch.branchId)
+
   const [statistical, setStatistical] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [sales, setSales] = useState([
+
+  const [orderQuantity, setOrderQuantity] = useState(0)
+  const [totalBasePrice, setTotalBasePrice] = useState(0)
+  const [totalProfit, setTotalProfit] = useState(0)
+  const [totalSales, settTotalSales] = useState(0)
+
+  const SALES = [
     {
       profitToday: '0 VND',
       name: 'Tổng đơn hàng',
@@ -33,18 +43,12 @@ const Overview = () => {
       profitToday: '0 VND',
       name: 'Tổng lợi nhuận',
     },
-  ])
-
-  const [orderQuantity, setOrderQuantity] = useState(0)
-  const [totalBasePrice, setTotalBasePrice] = useState(0)
-  const [totalProfit, setTotalProfit] = useState(0)
-  const [totalSales, settTotalSales] = useState(0)
+  ]
 
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
-      const res = await getStatistical()
-      console.log(res)
+      const res = await getStatistical({ branch_id: branchIdApp })
       if (res.status === 200) {
         setStatistical(res.data.data)
         setOrderQuantity(res.data.data.order_quantity)
@@ -59,9 +63,10 @@ const Overview = () => {
       console.log(e)
     }
   }
+
   useEffect(() => {
     _getStatistical()
-  }, [])
+  }, [branchIdApp])
 
   //get width device
   useEffect(() => {
@@ -71,21 +76,20 @@ const Overview = () => {
   }, [])
 
   return (
-    <div className={styles['dashboard_manager']}>
-      <ModalIntro />
+    <div>
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (
-        <div className={`${styles['dashboard_manager_balance']} ${styles['card']}`}>
+        <div className="card">
           <div className={styles['dashboard_manager_balance_title']}>
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
           <Row justify="space-between" style={{ width: '100%' }}>
-            {sales.map((e, index) => (
+            {SALES.map((e, index) => (
               <div
                 style={{
                   width: '50%',
-                  padding: 15,
+                  padding: 10,
                   borderRight: (index === 0 || index === 2) && '1px solid gray',
                   borderBottom: (index === 0 || index === 1) && '1px solid gray',
                 }}
@@ -94,16 +98,7 @@ const Overview = () => {
                   <p style={{ marginBottom: 0, fontSize: 17, marginRight: 7 }}>Hôm nay:</p>
                   <p style={{ marginBottom: 0, fontSize: 17, color: '#5B6BE8' }}>{e.profitToday}</p>
                 </Row>
-                <Row
-                  justify="space-between"
-                  wrap={false}
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 18,
-                    marginBottom: 10,
-                    marginTop: 10,
-                  }}
-                >
+                <Row justify="space-between" wrap={false} style={{ fontWeight: 600, fontSize: 18 }}>
                   <div>
                     <ShoppingCartOutlined /> {e.name}
                   </div>
@@ -121,88 +116,71 @@ const Overview = () => {
         </div>
       )}
 
-      <div className={styles['dashboard_manager_bottom']}>
-        <Row style={{ width: '100%' }}>
-          {loadingSkeleton ? (
-            <Skeleton active paragraph={{ rows: 9 }} />
-          ) : (
-            <Col xs={24} sm={24} md={24} lg={14} xl={14}>
-              <div
-                style={{
-                  marginRight: !isMobile && 7,
-                  padding: '1rem',
-                  backgroundColor: 'white',
-                  height: '100%',
-                }}
-                className={styles['card']}
-              >
-                <div className={styles['dashboard_manager_revenue_title']}>
-                  <div>Doanh thu</div>
-                </div>
+      <Row>
+        {loadingSkeleton ? (
+          <Skeleton active paragraph={{ rows: 9 }} />
+        ) : (
+          <Col xs={24} sm={24} md={24} lg={14} xl={14}>
+            <div style={{ marginRight: !isMobile && 7, marginTop: 0, height: '95%', marginBottom: 15 }} className="card">
+              <div className={styles['dashboard_manager_revenue_title']}>
+                <div>Doanh thu</div>
+              </div>
+              <div>
                 <LineChart data={statistical.chart || []} />
               </div>
-            </Col>
-          )}
-          {loadingSkeleton ? (
-            <Skeleton active paragraph={{ rows: 9 }} style={{ marginBottom: 15 }} />
-          ) : (
-            <Col
-              xs={24}
-              sm={24}
-              md={24}
-              lg={10}
-              xl={10}
-              style={{
-                marginBottom: isMobile && 15,
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: 'white',
-                  height: '100%',
-                  marginLeft: !isMobile ? 7 : 0,
-                  marginTop: isMobile && 15,
-                  padding: '1rem',
-                }}
-                className={styles['card']}
-              >
-                <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
-                  <div>Sản phẩm bán chạy</div>
-                </div>
-                <div style={{ width: '100%' }}>
-                  {statistical &&
-                    statistical.product_rank &&
-                    statistical.product_rank.slice(0, 5).map((e, index) => {
-                      return (
-                        <Row
-                          align="middle"
-                          style={
-                            index % 2
-                              ? { marginBottom: 8, background: '#F7F8FA' }
-                              : { marginBottom: 8 }
-                          }
-                        >
-                          <Col span={5}>
-                            <img alt="" src={e[0].image && e[0].image[0]} width="50px" />
-                          </Col>
-                          <Col span={12}>
-                            <Row>{(e[0].name || e[0].title) && (e[0].name || e[0].title)}</Row>
-                            <Row style={{ fontWeight: 500 }}>Đã bán {e[1].quantity} sản phẩm</Row>
-                          </Col>
-                          <Col span={7} style={{ fontSize: 15 }}>
-                            <div style={{ width: 'max-content' }}>
-                              {formatCash(e[1].cost)} &#8363;
-                            </div>
-                          </Col>
-                        </Row>
-                      )
-                    })}
-                </div>
+            </div>
+          </Col>
+        )}
+
+        {loadingSkeleton ? (
+          <Skeleton active paragraph={{ rows: 9 }} style={{ marginBottom: 15 }} />
+        ) : (
+          <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginBottom: isMobile && 15 }}>
+            <div style={{ marginLeft: !isMobile ? 7 : 0, marginTop: 0, height: '95%', marginBottom: 15 }} className="card">
+              <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
+                <div>Sản phẩm bán chạy</div>
               </div>
-            </Col>
-          )}
-        </Row>
-      </div>
+              <div style={{ width: '100%', margin: 'auto' }}>
+                {statistical &&
+                  statistical.product_rank ?
+                  statistical.product_rank.slice(0, 5).map((e, index) => {
+                    return (
+                      <Row
+                        align="middle"
+                        style={
+                          index % 2
+                            ? { marginBottom: 8, background: '#F7F8FA' }
+                            : { marginBottom: 8 }
+                        }
+                      >
+                        <Col span={5}>
+                          <img alt="" src={e[0].image && e[0].image[0]} width="50px" />
+                        </Col>
+                        <Col span={12}>
+                          <Row>{(e[0].name || e[0].title) && (e[0].name || e[0].title)}</Row>
+                          <Row style={{ fontWeight: 500 }}>Đã bán {e[1].quantity} sản phẩm</Row>
+                        </Col>
+                        <Col span={7} style={{ fontSize: 15 }}>
+                          <div style={{ width: 'max-content' }}>
+                            {formatCash(e[1].cost)} &#8363;
+                          </div>
+                        </Col>
+                      </Row>
+                    )
+                  })
+                  :
+                  <div style={{ textAlign: 'center' }}>
+                    <img src={noData} alt="" style={{ width: 90, height: 90 }} />
+                    <h4 style={{ fontSize: 15, color: '#555' }}>
+                      Chưa có sản phẩm bán chạy
+                    </h4>
+                  </div>
+                }
+              </div>
+            </div>
+          </Col>
+        )}
+      </Row>
     </div>
   )
 }

@@ -51,7 +51,7 @@ let getOverviewC = async (req, res, next) => {
             moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 23:59:59`)
         );
 
-        let [orders] = await Promise.all([client.db(DB).collection('Orders').find(orderQuery).toArray()]);
+        let [orders] = await Promise.all([client.db(req.user.database).collection('Orders').find(orderQuery).toArray()]);
         let total_base_price = 0;
         let total_sales = 0;
         let total_profit = 0;
@@ -71,7 +71,7 @@ let getOverviewC = async (req, res, next) => {
         let todayOrders = await Promise.all(
             timelines.map((timeline) => {
                 return client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Orders')
                     .find({ ...todayQuery, create_time: timeline })
                     .count();
@@ -84,7 +84,7 @@ let getOverviewC = async (req, res, next) => {
         let yesterdayOrder = await Promise.all(
             timelines.map((timeline) => {
                 return client
-                    .db(DB)
+                    .db(req.user.database)
                     .collection('Orders')
                     .find({ ...yesterdayQuery, create_time: timeline })
                     .count();
@@ -125,9 +125,9 @@ let getInventoryC = async (req, res, next) => {
         }
         // lấy data từ database
         let [branchProducts, storeProducts, stores] = await Promise.all([
-            client.db(DB).collection('Products').find(mongoQuery).toArray(),
-            client.db(DB).collection('SaleProducts').find(mongoQuery).toArray(),
-            client.db(DB).collection('Stores').find(mongoQuery).toArray(),
+            client.db(req.user.database).collection('Products').find(mongoQuery).toArray(),
+            client.db(req.user.database).collection('SaleProducts').find(mongoQuery).toArray(),
+            client.db(req.user.database).collection('Stores').find(mongoQuery).toArray(),
         ]);
         let _stores = {};
         stores.map((store) => {
