@@ -119,16 +119,16 @@ module.exports._create = async (req, res, next) => {
                 req._attributes.push({
                     product_id: Number(productId),
                     attribute_id: Number(attributeId),
-                    option: req.body.option,
-                    values: req.body.values,
+                    option: eAttribute.option,
+                    values: eAttribute.values,
                     create_date: moment().tz(TIMEZONE).format(),
                     creator_id: req.user.user_id,
                     last_update: moment().tz(TIMEZONE).format(),
                     updater_id: req.user.user_id,
                     active: true,
-                    slug_option: removeUnicode(String(req.body.option), true).toLowerCase(),
+                    slug_option: removeUnicode(String(eAttribute.option), true).toLowerCase(),
                     slug_values: (() => {
-                        return req.body.values.map((eValue) => {
+                        return eAttribute.values.map((eValue) => {
                             return removeUnicode(String(eValue), true).toLowerCase();
                         });
                     })(),
