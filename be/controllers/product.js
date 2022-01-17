@@ -45,37 +45,10 @@ module.exports._create = async (req, res, next) => {
             }
         });
         [req.body] = req.body.products;
-        let [product_id, attribute_id, variant_id, supplier] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Products' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Attributes' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Variants' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+        let [productMaxId, attributeMaxId, variantMaxId, supplier] = await Promise.all([
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' }),
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Attributes' }),
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' }),
             client
                 .db(req.user.database)
                 .collection('Suppliers')
@@ -83,13 +56,92 @@ module.exports._create = async (req, res, next) => {
         ]).catch((err) => {
             throw new Error(err.message);
         });
+        let productId = (() => {
+            if (productMaxId && productMaxId.value) {
+                return productMaxId.value;
+            }
+            return 0;
+        })();
+        let attributeId = (() => {
+            if (attributeMaxId && attributeMaxId.value) {
+                return attributeMaxId.value;
+            }
+            return 0;
+        })();
+        let variantId = (() => {
+            if (variantMaxId && variantMaxId.value) {
+                return variantMaxId.value;
+            }
+            return 0;
+        })();
+        productId++;
+        req['_product'] = {
+            product_id: productId,
+            code: String(productId).padStart(6, '0'),
+            sku: req.body.sku,
+            name: String(req.body.name).toUpperCase(),
+            slug: removeUnicode(String(req.body.name), false).toLowerCase().replace(/\s/gi, '-'),
+            supplier_id: req.body.supplier_id || [],
+            category_id: req.body.category_id || [],
+            tax_id: req.body.tax_id || [],
+            warranties: req.body.warranties || [],
+            length: req.body.length || 0,
+            width: req.body.width || 0,
+            height: req.body.height || 0,
+            weight: req.body.weight || 0,
+            unit: req.body.unit || '',
+            brand_id: req.body.brand_id || '',
+            origin_code: req.body.origin_code || '',
+            status: req.body.status || '',
+            description: req.body.description || '',
+            tags: req.body.tags || [],
+            files: req.body.files || [],
+            sale_quantity: req.body.sale_quantity || 0,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
+            active: true,
+            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
+            slug_tags: (() => {
+                if (req.body.tags) {
+                    req.body.tags.map((tag) => {
+                        return removeUnicode(String(tag), true).toLowerCase();
+                    });
+                }
+                return [];
+            })(),
+        };
+        req['_attributes'] = [];
+        req.body.attributes.map((eAttribute) => {
+            if (eAttribute) {
+                attributeId++;
+                req._attributes.push({
+                    product_id: Number(productId),
+                    attribute_id: Number(attributeId),
+                    option: req.body.option,
+                    values: req.body.values,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
+                    active: true,
+                    slug_option: removeUnicode(String(option), true).toLowerCase(),
+                    slug_values: (() => {
+                        return req.body.values.map((eValue) => {
+                            return removeUnicode(String(eValue), true).toLowerCase(  );
+                        });
+                    })(),
+                });
+            }
+        });
         req['_variants'] = [];
         req.body.variants.map((eVariant) => {
             if (eVariant) {
-                variant_id++;
+                variantId++;
                 req._variants.push({
-                    variant_id: Number(variant_id),
-                    product_id: Number(product_id),
+                    variant_id: Number(variantId),
+                    product_id: Number(productId),
                     title: String(eVariant.title).toUpperCase(),
                     sku: String(eVariant.sku).toUpperCase(),
                     image: eVariant.image || [],
@@ -126,19 +178,19 @@ module.exports._create = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
+                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Attributes' },
-                    { $set: { name: 'Attributes', value: attribute_id } },
+                    { $set: { name: 'Attributes', value: attributeId } },
                     { upsert: true }
                 ),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
+                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
         ]);
         await productService._create(req, res, next);
     } catch (err) {

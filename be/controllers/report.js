@@ -262,6 +262,9 @@ module.exports._getInventoryReport = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        if (req.query.warehouse_id) {
+            aggregateQuery.push({ $match: { branch_id: Number(req.query.warehouse_id) } });
+        }
         aggregateQuery.push({ $sort: { create_date: 1 } });
         if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
             aggregateQuery.push({
