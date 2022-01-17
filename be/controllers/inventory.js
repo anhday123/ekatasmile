@@ -1498,11 +1498,123 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         let _branchs = {};
         let _branchIds = [];
         branchs.map((eBranch) => {
-            _branchs[eBranch.name] = eBranch;
+            _branchs[eBranch.slug_name] = eBranch;
             _branchIds.push(eBranch.branch_id);
         });
-        
-
+        let orderMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'TransportOrders' });
+        let orderId = (() => {
+            if (orderMaxId && orderMaxId.value) {
+                return orderMaxId.value;
+            }
+            return 0;
+        })();
+        let _orders = {};
+        rows.map((eRow) => {
+            if (!_orders[eRow['maphieuchuyen']]) {
+                orderId++;
+                _orders[eRow['maphieuchuyen']] = {
+                    order_id: orderId,
+                    code: String(orderId).padStart(6, '0'),
+                    export_location: (() => {
+                        if (_branchs[eRow['_tennoixuathang']]) {
+                            return _branchs[eRow['_tennoixuathang']].branch_id;
+                        }
+                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
+                    })(),
+                    import_location: (() => {
+                        if (_branchs[eRow['_tennoinhaphang']]) {
+                            return _branchs[eRow['_tennoinhaphang']].branch_id;
+                        }
+                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
+                    })(),
+                    products: [],
+                    total_quantity: 0,
+                    total_cost: 0,
+                    total_discount: 0,
+                    shipping_cost: 0,
+                    final_cost: 0,
+                    note: '',
+                    files: [],
+                    tags: [],
+                    slug_tags: [],
+                    // DRAFT - VERIFY - SHIPPING - COMPLETE - CANCEL
+                    status: 'DRAFT',
+                    payment_info: [],
+                    // UNPAID - PAYING - PAID
+                    payment_status: 'PAID',
+                    delivery_time: moment(eRow['ngayxuathang']).tz(TIMEZONE).format(),
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    verify_date: '',
+                    verifier_id: '',
+                    delivery_date: '',
+                    deliverer_id: '',
+                    complete_date: '',
+                    completer_id: '',
+                    cancel_date: '',
+                    canceler_id: '',
+                    last_update: moment().tz(TIMEZONE).format(),
+                    active: true,
+                };
+            }
+            if (_orders[eRow['maphieuchuyen']]) {
+                if (eRow['masanpham'] && eRow['maphienban']) {
+                    _orders[eRow['maphieuchuyen']].products.push({
+                        product_id: (() => {
+                            if (_products[eRow['masanpham']]) {
+                                return _products[eRow['masanpham']].product_id;
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} không tồn tại!`);
+                        })(),
+                        variant_id: (() => {
+                            if (_variants[eRow['maphienban']]) {
+                                return _variants[eRow['maphienban']].variant_id;
+                            }
+                            throw new Error(`400: Phiên bản ${eRow['maphienban']} không tồn tại!`);
+                        })(),
+                        import_price: (() => {
+                            if (eRow['gianhap']) {
+                                return eRow['gianhap'];
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có giá nhập hàng!`);
+                        })(),
+                        quantity: (() => {
+                            if (eRow['soluongnhap']) {
+                                return eRow['soluongnhap'];
+                            }
+                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có số lượng nhập!`);
+                        })(),
+                        product_info: _products[eRow['masanpham']],
+                        variant_info: _variants[eRow['maphienban']],
+                    });
+                    _orders[eRow['maphieunhap']].total_quantity += eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].total_cost += eRow['gianhap'] * eRow['soluongnhap'];
+                    _orders[eRow['maphieunhap']].total_tax = _orders[eRow['thue(vnd)']] || 0;
+                    _orders[eRow['maphieunhap']].total_discount = eRow['chietkhau(vnd)'] || 0;
+                    _orders[eRow['maphieunhap']].service_fee = eRow['chiphidichvu'] || 0;
+                    _orders[eRow['maphieunhap']].fee_shipping = eRow['phivanchuyen'] || 0;
+                    _orders[eRow['maphieunhap']].final_cost = eRow['tongcong(vnd)'] || 0;
+                    _orders[eRow['maphieunhap']].note = eRow['ghichu'] || '';
+                }
+            }
+        });
+        let orders = Object.values(_orders);
+        let insert = await client.db(req.user.database).collection('TransportOrders').insertMany(orders);
+        if (!insert.insertedIds) {
+            throw new Error(`500: Tạo phiếu chuyển thất bại!`);
+        }
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'TransportOrders' },
+                { $set: { name: 'TransportOrders', value: orderId } },
+                { upsert: true }
+            );
+        res.send({
+            success: true,
+            data: orders,
+        });
     } catch (err) {
         next(err);
     }
