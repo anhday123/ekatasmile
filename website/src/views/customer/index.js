@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import moment from 'moment'
 import { PERMISSIONS } from 'consts'
 import { useSelector } from 'react-redux'
+import { compare } from 'utils'
 
 //antd
 import {
@@ -28,10 +29,10 @@ import SettingColumns from 'components/setting-columns'
 import columnsCustomer from './columns'
 import TitlePage from 'components/title-page'
 import exportCustomers from 'components/ExportCSV/export'
-import { compare } from 'utils'
+import ImportCSV from 'components/ImportCSV'
 
 //apis
-import { getCustomers, deleteCustomer, getCustomerTypes } from 'apis/customer'
+import { getCustomers, deleteCustomer, getCustomerTypes, importCustomers } from 'apis/customer'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -136,7 +137,7 @@ export default function Customer() {
       const res = await getCustomers({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
-        setCustomers(res.data.data.filter((e) => e.active))
+        setCustomers(res.data.data)
         setCountCustomer(res.data.count)
       }
       setTableLoading(false)
@@ -200,6 +201,14 @@ export default function Customer() {
           >
             Xuất file excel
           </Button>
+          <ImportCSV
+            size="large"
+            txt="Nhập khách hàng"
+            upload={importCustomers}
+            title="Nhập khách hàng bằng file excel"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/d5f3fe01-765d-40d0-9d8b-62ffaf61e057/CustomerImport.xlsx"
+            reload={_getCustomers}
+          />
           <SettingColumns
             columnsDefault={columnsCustomer}
             setColumns={setColumns}

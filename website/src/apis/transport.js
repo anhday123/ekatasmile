@@ -5,3 +5,4 @@ export const addTransportOrder = (body) => post('/inventory/transport/create', b
 export const deleteTransportOrder = (id) =>
   destroy('/inventory/transport/delete', { order_id: [id] })
 export const updateTransportOrder = (body, id) => patch('/inventory/transport/update/' + id, body)
+export const getStatusTransportOrder = () => get('/order/status/shipping')

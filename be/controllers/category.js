@@ -71,6 +71,7 @@ module.exports._create = async (req, res, next) => {
             updater_id: req.user.user_id,
             active: true,
             slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
+            condition:req.body.condition || null,
         };
         if (req.body.products) {
             await client
@@ -83,6 +84,7 @@ module.exports._create = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: category_id } }, { upsert: true });
         req[`body`] = _category;
+
         await categoryService._create(req, res, next);
     } catch (err) {
         next(err);

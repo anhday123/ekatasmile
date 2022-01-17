@@ -24,16 +24,6 @@ export const STATUS_PRODUCT = {
   out_stock: 'out_stock',
 }
 
-//status order
-export const BILL_STATUS_ORDER = {
-  DRAFT: 'Lưu nháp',
-  PROCESSING: 'Đang Xử Lý',
-  COMPLETE: 'Hoàn Thành',
-  VERIFY: 'Xác nhận',
-  CANCEL: 'Huỷ Bỏ',
-  REFUND: 'Hoàn Tiền',
-}
-
 export const SHIP_STATUS_ORDER = {
   DRAFT: 'DRAFT',
   WATTING_FOR_SHIPPING: 'WATTING_FOR_SHIPPING',
@@ -194,7 +184,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.2.8'
+export const VERSION_APP = '1.2.11'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

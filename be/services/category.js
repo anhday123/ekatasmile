@@ -400,9 +400,11 @@ module.exports._create = async (req, res, next) => {
       throw new Error("500: Tạo nhóm sản phẩm thất bại!");
     }
     var body = req.body;
+    
 
     if(body.condition != undefined)
     {
+      var query = {};
         if (body.condition.must_match == "all") {
             var filter_th2 = false;
             // Filter Phase 1
