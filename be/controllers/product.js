@@ -126,10 +126,10 @@ module.exports._create = async (req, res, next) => {
                     last_update: moment().tz(TIMEZONE).format(),
                     updater_id: req.user.user_id,
                     active: true,
-                    slug_option: removeUnicode(String(option), true).toLowerCase(),
+                    slug_option: removeUnicode(String(req.body.option), true).toLowerCase(),
                     slug_values: (() => {
                         return req.body.values.map((eValue) => {
-                            return removeUnicode(String(eValue), true).toLowerCase(  );
+                            return removeUnicode(String(eValue), true).toLowerCase();
                         });
                     })(),
                 });
