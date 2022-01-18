@@ -669,6 +669,28 @@ module.exports._getFinanceReport = async (req, res, next) => {
             {
                 $lookup: {
                     from: 'Users',
+                    localField: 'payer',
+                    foreignField: 'user_id',
+                    as: '_payer',
+                },
+            },
+            { $unwind: { path: '$_payer', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'receiver',
+                    foreignField: 'user_id',
+                    as: '_receiver',
+                },
+            },
+            { $unwind: { path: '$_receiver', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
                     localField: 'creator_id',
                     foreignField: 'user_id',
                     as: '_creator',

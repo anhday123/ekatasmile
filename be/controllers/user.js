@@ -75,6 +75,7 @@ module.exports._create = async (req, res, next) => {
             avatar: req.body.avatar,
             first_name: req.body.first_name,
             last_name: req.body.last_name,
+            name: req.body.first_name || '' + req.body.last_name || '',
             birth_day: req.body.birth_day,
             address: req.body.address,
             district: req.body.district,
