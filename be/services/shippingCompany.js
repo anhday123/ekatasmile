@@ -535,6 +535,7 @@ module.exports._importCompareCard = async (req, res, next) => {
       problems: problems,
       create_date_stt: moment().tz(process.env.TIMEZONE).format("yyyy/MM/DD"),
       status: req.body.status,
+      employee_id:parseInt(req.user.user_id)
     };
 
     await client
@@ -575,16 +576,6 @@ module.exports._getCompareCard = async (req, res, next) => {
     if (req.query.employee_id) {
       aggregateQuery.push({
         $match: { employee_id: Number(req.query.employee_id) },
-      });
-    }
-    if (req.query.customer_id) {
-      aggregateQuery.push({
-        $match: { customer_id: Number(req.query.customer_id) },
-      });
-    }
-    if (req.query.customer_code) {
-      aggregateQuery.push({
-        $match: { "customer.code": Number(req.query.customer_code) },
       });
     }
     if (req.query.creator_id) {
