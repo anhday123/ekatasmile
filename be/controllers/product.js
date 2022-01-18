@@ -559,7 +559,6 @@ module.exports.importFileC = async (req, res, next) => {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
-
         let excelData = XLSX.read(req.file.buffer, {
             type: 'buffer',
             cellDates: true,
