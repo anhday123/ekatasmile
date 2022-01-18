@@ -2067,6 +2067,19 @@ module.exports._createInventoryNote = async (req, res, next) => {
             return 0;
         })();
         inventoryNoteId++;
+        let branch = await client
+            .db(req.user.database)
+            .collection('Branchs')
+            .findOne({ branch_id: req.body.branch_id });
+        let productIds = [];
+        let variantIds = [];
+        req.body.products.map((eProduct) => {
+            productIds.push(eProduct.product_id);
+            variantIds.push(eProduct.variant_id);
+        });
+        productIds = [...new Set(productIds)];
+        variantIds = [...new Set(variantIds)];
+        let [products, variants] = await Promise.all([]);
         let _inventoryNote = {
             inventory_note_id: inventoryNoteId,
             code: String(inventoryNoteId).padStart(6, '0'),
