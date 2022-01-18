@@ -548,7 +548,7 @@ module.exports._update = async (req, res, next) => {
         variants.map((eVariant) => {
             _variants[String(eVariant.variant_id)] = eVariant;
         });
-        if (/^(draft)$/gi.test(order.bill_status) && !/^((draft)|(cancel)|(refund))$/gi.test(req.body.bill_status)) {
+        if (/^(draft)$/gi.test(order.bill_status) && !/^((draft)|(cancel)|(refund))$/gi.test(_order.bill_status)) {
             let sortQuery = (() => {
                 if (req.user.price_recipe == 'FIFO') {
                     return { create_date: 1 };
@@ -638,8 +638,8 @@ module.exports._update = async (req, res, next) => {
         }
         if (
             !/^(draft)$/gi.test(order.bill_status) &&
-            !/^((cancel)|(refund))$/gi.test(req.body.bill_status) &&
-            order.bill_status != req.body.bill_status
+            !/^((cancel)|(refund))$/gi.test(order.bill_status) &&
+            /^((cancel)|(refund))$/gi.test(_order.bill_status)
         ) {
             let _updates = [];
             _order.order_details.map((eDetail) => {
