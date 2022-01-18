@@ -7,6 +7,28 @@ const orderService = require(`../services/order`);
 
 var CryptoJS = require('crypto-js');
 
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
 let changePoint = async (database, customer, pointChange, branch, order) => {
     try {
         if (typeof customer != 'object' || !customer.customer_id) {
@@ -263,7 +285,11 @@ module.exports._create = async (req, res, next) => {
         };
         await Promise.all(
             _order.payments.map((payment, index) => {
-                if (payment.name == 'POINT' && !is_used) {
+                if (
+                    payment.method &&
+                    removeUnicode(String(payment.method).toLowerCase(), true) == 'diemtichluy' &&
+                    !is_used
+                ) {
                     _order.payments[index].is_used = true;
                     return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
                 }
