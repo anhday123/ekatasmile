@@ -21,7 +21,6 @@ export default function FilterProductsByCategory({ setParamsFilter, paramsFilter
     try {
       setLoading(true)
       const res = await getCategories()
-      console.log(res)
       if (res.status === 200) setCategories(res.data.data)
       setLoading(false)
     } catch (error) {

@@ -28,7 +28,7 @@ export default function ChangeBranch({
 
   const [branchId, setBranchId] = useState(branchIdApp)
 
-  const _changeBranch = async () => {
+  const _changeBranch = () => {
     dispatch({ type: 'SET_BRANCH_ID', data: branchId }) //save branch_id in reducer
     resetInvoice()
     toggle()

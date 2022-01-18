@@ -22,7 +22,6 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
     try {
       setLoading(true)
       const res = await getAttributes(params)
-      console.log(res)
       if (res.status === 200) {
         setAttributes(res.data.data)
         setActiveKey(res.data.data.map((e, index) => index))
@@ -87,12 +86,7 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
               onClick={() => {
                 if (attributesActive.length)
                   paramsFilter.attribute = attributesActive
-                    .map(
-                      (e) =>
-                        `${Object.keys(e)[0]}:${e[Object.keys(e)[0]].join(
-                          '||'
-                        )}`
-                    )
+                    .map((e) => `${Object.keys(e)[0]}:${e[Object.keys(e)[0]].join('||')}`)
                     .join('---')
                 else delete paramsFilter.attribute
 
@@ -147,12 +141,8 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
                 header={
                   <span style={{ fontWeight: 700, marginBottom: 0 }}>
                     {valueSearch &&
-                    attribute.option
-                      .toLowerCase()
-                      .includes(valueSearch.toLowerCase()) ? (
-                      <mark style={{ backgroundColor: 'yellow' }}>
-                        {attribute.option}
-                      </mark>
+                    attribute.option.toLowerCase().includes(valueSearch.toLowerCase()) ? (
+                      <mark style={{ backgroundColor: 'yellow' }}>{attribute.option}</mark>
                     ) : (
                       attribute.option
                     )}
@@ -206,13 +196,8 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
                         setAttributesActive([...attributesActiveNew])
                       }}
                     >
-                      {valueSearch &&
-                      value
-                        .toLowerCase()
-                        .includes(valueSearch.toLowerCase()) ? (
-                        <mark style={{ backgroundColor: 'yellow' }}>
-                          {value}
-                        </mark>
+                      {valueSearch && value.toLowerCase().includes(valueSearch.toLowerCase()) ? (
+                        <mark style={{ backgroundColor: 'yellow' }}>{value}</mark>
                       ) : (
                         value
                       )}

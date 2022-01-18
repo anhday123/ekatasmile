@@ -622,8 +622,6 @@ module.exports._create = async (req, res, next) => {
           }
     }
 
-   
-
     res.send({ success: true, data: req.body });
   } catch (err) {
     next(err);

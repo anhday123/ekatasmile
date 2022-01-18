@@ -61,7 +61,6 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
   const _getPromotions = async () => {
     try {
       const res = await getPromotions()
-      console.log(res)
       if (res.status === 200) setPromotions(res.data.data.filter((e) => !e.has_voucher))
     } catch (error) {
       console.log(error)
