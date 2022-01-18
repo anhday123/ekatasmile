@@ -150,7 +150,9 @@ export default function Sell() {
     create_date: new Date(), //ngày tạo đơn hàng
     code: '', //mã đơn hàng khi in hóa đơn
   }
-  const [invoices, setInvoices] = useState([initInvoice])
+  const [invoices, setInvoices] = useState(
+    !invoicesSelector.length ? [initInvoice] : invoicesSelector
+  )
   const [indexInvoice, setIndexInvoice] = useState(0)
   const [activeKeyTab, setActiveKeyTab] = useState(initInvoice.id)
 
@@ -1150,7 +1152,6 @@ export default function Sell() {
     try {
       setLoadingProduct(true)
       const res = await getProducts({ branch_id: branchIdApp, merge: true, detach: true })
-      console.log(res)
       if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
       setLoadingProduct(false)
     } catch (error) {
@@ -1191,7 +1192,6 @@ export default function Sell() {
       setActiveKeyTab(initInvoice.id)
     }
   }
-
   //lưu invoice lên reducer mỗi khi có sự thay đổi
   useEffect(() => {
     if (invoices) dispatch({ type: 'UPDATE_INVOICE', data: invoices })

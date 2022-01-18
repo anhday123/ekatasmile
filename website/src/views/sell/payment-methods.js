@@ -77,7 +77,6 @@ export default function PaymentMethods({
   const _getPayments = async () => {
     try {
       const res = await getPayments()
-      console.log(res)
       if (res.status === 200) {
         let paymentMethodDefault = ''
 

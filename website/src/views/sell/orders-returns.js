@@ -48,7 +48,6 @@ export default function OrdersReturn() {
     try {
       setLoading(true)
       const res = await getOrders({ ...paramsFilter, bill_status: 'REFUND' })
-      console.log('orders', res)
       if (res.status === 200) {
         setOrdersRefund(res.data.data)
         setCountOrdersRefund(res.data.count)

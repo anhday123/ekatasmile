@@ -98,12 +98,7 @@ export default function DeliveryAddress({ editInvoice, address }) {
       >
         <Form form={form} layout="vertical">
           <Row justify="space-between" wrap={false}>
-            <Form.Item
-              style={{ width: 250 }}
-              name="first_name"
-              label="Họ khách hàng"
-              rules={[{ message: ' Vui lòng nhập họ khách hàng', required: true }]}
-            >
+            <Form.Item style={{ width: 250 }} name="first_name" label="Họ">
               <Input placeholder="Nhập họ khách hàng" />
             </Form.Item>
 
@@ -133,7 +128,7 @@ export default function DeliveryAddress({ editInvoice, address }) {
               label="Số điện thoại"
               rules={[{ message: ' Vui lòng nhập số điện thoại', required: true }]}
             >
-              <InputNumber style={{ width: '100%' }} placeholder="Nhập số điện thoại" />
+              <Input style={{ width: '100%' }} placeholder="Nhập số điện thoại" />
             </Form.Item>
           </Row>
 
