@@ -7,6 +7,27 @@ const customerService = require(`../services/customer`);
 
 const XLSX = require('xlsx');
 
+
+let convertToSlug = (text) => {
+    /*
+          string là chuỗi cần remove unicode
+          trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+      */
+    if (typeof text != "string") {
+      return "";
+    }
+  
+    text = text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+    text = text.replace(/\s/g, "_");
+  
+    text = new String(text).toLowerCase();
+    return text;
+  };
+
 let removeUnicode = (text, removeSpace) => {
     /*
         string là chuỗi cần remove unicode
@@ -358,10 +379,11 @@ module.exports._createType = async (req, res, next) => {
         let typeCustomer = await client
             .db(req.user.database)
             .collection('CustomerTypes')
-            .findOne({ name: req.body.name });
+            .findOne({ slug: convertToSlug(req.body.name)});
         if (typeCustomer) {
             throw new Error(`400: Nhóm khách hàng đã tồn tại!`);
         }
+        req.body.slug = convertToSlug(req.body.name);
         let typeMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'CustomerTypes' });
         let type_id = (() => {
             if (typeMaxId && typeMaxId.value) {
@@ -374,7 +396,6 @@ module.exports._createType = async (req, res, next) => {
             type_id: type_id,
             code: String(type_id).padStart(6, '0'),
             name: req.body.name,
-            priority: req.body.priority || 100,
             description: req.body.description || '',
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
@@ -383,6 +404,7 @@ module.exports._createType = async (req, res, next) => {
             active: true,
             slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
         };
+        
         await client
             .db(req.user.database)
             .collection('AppSetting')
