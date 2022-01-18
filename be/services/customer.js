@@ -191,7 +191,7 @@ module.exports._get = async (req, res, next) => {
                     as: '_type',
                 },
             },
-            { $unwind: { path: '$_business', preserveNullAndEmptyArrays: true } }
+            { $unwind: { path: '$_type', preserveNullAndEmptyArrays: true } }
         );
         if (req.query._business) {
             aggregateQuery.push(
