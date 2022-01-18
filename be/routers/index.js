@@ -6,6 +6,7 @@ router.use(`/authorization`, require(`./authorization`));
 router.use(`/appinfo`, require(`./appinfo`));
 router.use(`/business`, require(`./business`));
 router.use(`/address`, require(`./address`));
+router.use('/enum', require('./enum'));
 router.use(`/user`, require(`./user`));
 router.use(`/role`, require(`./role`));
 router.use(`/action`, require(`./action`));

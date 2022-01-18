@@ -164,6 +164,17 @@ module.exports._get = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'PointSettings',
+                    let: { branchId: '$branch_id' },
+                    pipeline: [{ $match: { $expr: { $in: ['$$branchId', '$branch_id'] } } }],
+                    as: 'point_setting',
+                },
+            },
+            { $unwind: { path: '$point_setting', preserveNullAndEmptyArrays: true } }
+        );
         if (req.query._business) {
             aggregateQuery.push(
                 {

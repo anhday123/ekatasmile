@@ -2,10 +2,67 @@ const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const DB = process.env.DATABASE;
 const client = require(`../config/mongodb`);
+
 const orderService = require(`../services/order`);
-const { Order, OrderDetail } = require('../models/order');
 
 var CryptoJS = require('crypto-js');
+
+let changePoint = async (database, customer, pointChange, branch, order) => {
+    try {
+        if (typeof customer != 'object' || !customer.customer_id) {
+            throw new Error('customer phải là object chứa customer_id!');
+        }
+        if (!customer.point || !customer.used_point) {
+            customer = await client.db(database).collection('Customers').findOne({ customer_id: customer.customer_id });
+            if (!customer.point || !customer.used_point) {
+                customer['point'] = 0;
+                customer['used_point'] = 0;
+            }
+        }
+        if (customer.point + pointChange < 0) {
+            throw new Error('Khách hàng không đủ điểm tích lũy!');
+        }
+        customer.point += pointChange;
+        if (pointChange < 0) {
+            customer.used_point -= pointChange;
+        }
+        let pointUseMaxId = await client.db(database).collection('AppSetting').findOne({ name: 'PointUseHistories' });
+        let pointUseId = (() => {
+            if (pointUseMaxId && pointUseMaxId.value) {
+                return pointUseMaxId.value;
+            }
+            return 0;
+        })();
+        return Promise.all([
+            client
+                .db(database)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'PointUseHistories' },
+                    { $set: { name: 'PointUseHistories', value: pointUseId + 1 } }
+                ),
+            client
+                .db(database)
+                .collection('Customers')
+                .updateOne({ customer_id: customer.customer_id }, { $set: customer }),
+            client
+                .db(database)
+                .collection('PointUseHistories')
+                .insertOne({
+                    point_use_id: pointUseId + 1,
+                    type: pointChange < 0 ? 'USE' : 'ACCUMULATE',
+                    customer_id: customer.customer_id,
+                    branch_id: branch.branch_id,
+                    order_id: order.order_id,
+                    point_used: pointChange < 0 ? pointChange : 0,
+                    point_accumulated: pointChange > 0 ? pointChange : 0,
+                    create_date: moment().tz(TIMEZONE).format(),
+                }),
+        ]);
+    } catch (err) {
+        throw new Error(err.message);
+    }
+};
 
 module.exports.enumStatusOrder = async (req, res, next) => {
     try {
@@ -128,6 +185,7 @@ module.exports._create = async (req, res, next) => {
         if (totalCost != req.body.total_cost) {
             throw new Error('400: Tổng giá trị đơn hàng không chính xác!');
         }
+
         order_id++;
         let _order = {
             order_id: order_id,
@@ -175,13 +233,13 @@ module.exports._create = async (req, res, next) => {
             total_discount: req.body.total_discount,
             final_cost: req.body.final_cost,
             // UNPAID - PAID - REFUND
-            payments: req.body.payments,
+            payments: req.body.payments || [],
+            payment_status: req.body.payment_status,
             customer_paid: req.body.customer_paid,
             customer_debt: req.body.customer_debt,
             // DRAFT  - PROCESSING - COMPLETE - CANCEL - REFUND
-            payment_status: req.body.payment_status,
-            // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
             bill_status: req.body.bill_status,
+            // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
             ship_status: req.body.ship_status,
             note: req.body.note,
             tags: req.body.tags,
@@ -189,6 +247,7 @@ module.exports._create = async (req, res, next) => {
             creator_id: req.user.user_id,
             verify_date: '',
             verifier_id: '',
+            is_delivery: req.body.is_delivery || false,
             delivery_date: '',
             deliverer_id: '',
             complete_date: '',
@@ -202,6 +261,14 @@ module.exports._create = async (req, res, next) => {
             updater_id: req.user.user_id,
             // hmac: hmac,
         };
+        await Promise.all(
+            _order.payments.map((payment, index) => {
+                if (payment.name == 'POINT' && !is_used) {
+                    _order.payments[index].is_used = true;
+                    return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
+                }
+            })
+        );
         await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -314,7 +381,7 @@ module.exports._create = async (req, res, next) => {
                 payments: req.body.payments || [],
                 value: req.body.final_cost || 0,
                 payer: (() => {
-                    req.body
+                    req.body;
                 })(),
                 receiver: req.user.user_id,
                 status: 'COMPLETE',
@@ -417,6 +484,7 @@ module.exports._update = async (req, res, next) => {
             creator_id: _order.creator_id,
             verify_date: _order.verify_date,
             verifier_id: _order.verifier_id,
+            is_delivery: _order.is_delivery,
             delivery_date: _order.delivery_date,
             deliverer_id: _order.deliverer_id,
             complete_date: _order.complete_date,
@@ -429,6 +497,14 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
         };
+        await Promise.all(
+            _order.payments.map((payment, index) => {
+                if (payment.name == 'POINT' && !is_used) {
+                    _order.payments[index].is_used = true;
+                    return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
+                }
+            })
+        );
         let totalCost = 0;
         let productIds = [];
         let variantIds = [];
