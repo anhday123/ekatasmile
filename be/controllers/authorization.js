@@ -254,7 +254,7 @@ module.exports._register = async (req, res, next) => {
             first_name: 'Khách lẻ',
             last_name: '',
             gender: '',
-            birthday: '',
+            birthday: moment().tz(TIMEZONE).format(),
             address: '',
             district: '',
             province: '',
@@ -366,6 +366,33 @@ module.exports._register = async (req, res, next) => {
             slug_ward: '',
             slug_district: '',
             slug_province: '',
+        };
+        let _setting = {
+            point_setting_id: 1,
+            name: 'Chương trình tích điểm mặc định',
+            accumulate_for_promotion_product: false,
+            accumulate_for_refund_order: false,
+            accumulate_for_payment_point: false,
+            accumulate_for_fee_shipping: false,
+            stack_point: false,
+            exchange_point_rate: 0,
+            exchange_money_rate: 0,
+            order_require: 0,
+            order_cost_require: 0,
+            all_branch: false,
+            branch_id: [],
+            all_customer_type: false,
+            customer_type_id: [],
+            all_category: false,
+            category_id: [],
+            all_product: false,
+            product_id: [],
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: 1,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: 1,
+            active: true,
+            slug_name: removeUnicode(String('Chương trình tích điểm mặc định'), true).toLowerCase(),
         };
         let _paymentMethods = [
             {
@@ -493,6 +520,10 @@ module.exports._register = async (req, res, next) => {
             client
                 .db(DB)
                 .collection('AppSetting')
+                .updateOne({ name: 'PointSettings' }, { $set: { name: 'PointSettings', value: 1 } }, { upsert: true }),
+            client
+                .db(DB)
+                .collection('AppSetting')
                 .updateOne(
                     { name: 'PaymentMethods' },
                     { $set: { name: 'PaymentMethods', value: 2 } },
@@ -519,6 +550,7 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('Customers').insertOne(_customer),
             client.db(DB).collection('Roles').insertMany(_roles),
             client.db(DB).collection('Branchs').insertOne(_branch),
+            client.db(DB).collection('PointSettings').insertOne(_setting),
             client.db(DB).collection('PaymentMethods').insertMany(_paymentMethods),
             client.db(DB).collection('Warranties').insertOne(_warranty),
             client.db(DB).collection('ShippingCompanies').insertOne(_shippingCompany),
