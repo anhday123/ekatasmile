@@ -18,7 +18,7 @@ import {
   Badge,
   Empty,
   Row,
-  Tooltip,
+  Popover,
   Col,
 } from 'antd'
 
@@ -42,6 +42,7 @@ import {
   LineChartOutlined,
   CalendarOutlined,
   FileSearchOutlined,
+  MedicineBoxOutlined,
 } from '@ant-design/icons'
 
 //components
@@ -140,14 +141,7 @@ const BaseLayout = (props) => {
       icon: <ShoppingOutlined />,
     },
     {
-      pathsChild: [
-        ROUTES.PRODUCT_ADD,
-        ROUTES.PRODUCT_UPDATE,
-        ROUTES.REPORT_INVENTORY,
-        ROUTES.REPORT_VARIANT,
-        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
-        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_VARIANT,
-      ],
+      pathsChild: [ROUTES.PRODUCT_ADD, ROUTES.PRODUCT_UPDATE],
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
@@ -194,7 +188,7 @@ const BaseLayout = (props) => {
       permissions: [],
     },
     {
-      icon: <GiftOutlined />,
+      icon: <MedicineBoxOutlined />,
       path: ROUTES.IMPORT_INVENTORIES,
       title: 'Nhập hàng',
       permissions: [],
@@ -311,7 +305,7 @@ const BaseLayout = (props) => {
       permissions: [],
       // permissions: [PERMISSIONS.doi_soat_van_chuyen],
       icon: <CarOutlined />,
-      pathsChild: [],
+      pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
     {
       pathsChild: [
@@ -347,6 +341,8 @@ const BaseLayout = (props) => {
             backgroundColor:
               (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
               '#e7e9fb',
+            width: '100%',
+            display: 'block'
           }}
           key={_menu.path}
           title={
@@ -363,7 +359,18 @@ const BaseLayout = (props) => {
               {_menu.title}
             </Link>
           }
-          icon={_menu.icon}
+          icon={<Link
+            style={{
+              fontSize: '0.8rem',
+              color:
+                location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)
+                  ? '#5F73E2'
+                  : 'rgba(0, 0, 0, 0.85)',
+            }}
+            to={_menu.path}
+          >
+            {_menu.icon}
+          </Link>}
         >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
@@ -377,8 +384,6 @@ const BaseLayout = (props) => {
                 }}
               >
                 <Link to={e.path}>{e.title}</Link>
-                {/* <Tooltip placement="right" title={e.title}>
-                </Tooltip> */}
               </Menu.Item>
             </Permission>
           ))}
@@ -396,8 +401,9 @@ const BaseLayout = (props) => {
         >
           <Link to={_menu.path}>{_menu.title}</Link>
         </Menu.Item>
-      )}
-    </Permission>
+      )
+      }
+    </Permission >
   )
 
   const onSignOut = () => {
@@ -613,15 +619,7 @@ const BaseLayout = (props) => {
             </Row>
           </Row>
         </Affix>
-        <div
-          style={{
-            backgroundColor: '#f0f2f5',
-            width: '100%',
-            minHeight: `calc(100vh - ${HEIGHT_HEADER}px)`,
-          }}
-        >
-          {props.children}
-        </div>
+        <div style={{ backgroundColor: '#f0f2f5', width: '100%' }}>{props.children}</div>
       </Layout>
     </Layout>
   )

@@ -199,7 +199,7 @@ export default function Customer() {
             type="primary"
             size="large"
           >
-            Xuất file excel
+            Xuất excel
           </Button>
           <ImportCSV
             size="large"
@@ -259,7 +259,14 @@ export default function Customer() {
         </Col>
         <Col xs={24} sm={24} md={24} lg={14} xl={14}>
           <Row style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>
-            <Col xs={24} sm={24} md={24} lg={12} xl={12} style={{ borderRight: '1px solid #d9d9d9' }}>
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={12}
+              xl={12}
+              style={{ borderRight: '1px solid #d9d9d9' }}
+            >
               <Select
                 size="large"
                 open={isOpenSelect}
@@ -473,7 +480,8 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${record.district && record.district + ', '
+                `${record.address && record.address + ', '}${
+                  record.district && record.district + ', '
                 }${record.province && record.province}`,
               sorter: (a, b) => compare(a, b, 'address'),
             }

@@ -69,3 +69,15 @@
   padding-bottom: 1rem;
   border-bottom: 1px solid rgb(197, 184, 184);
 }
+
+.card-overview {
+  box-shadow: 0 12px 23px 0 #5c37990a;
+  border-radius: 10px;
+  border: 0 solid transparent;
+  overflow: hidden;
+  background-color: white;
+  margin: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}

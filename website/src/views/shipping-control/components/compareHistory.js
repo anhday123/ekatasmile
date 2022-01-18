@@ -1,17 +1,7 @@
-import {
-  Col,
-  Row,
-  Input,
-  DatePicker,
-  Select,
-  Button,
-  Table,
-  Typography,
-} from 'antd'
+import { Col, Row, Input, DatePicker, Select, Button, Table, Typography } from 'antd'
 import { useState, useEffect } from 'react'
 import SessionHistory from './sessionHistory'
 import moment from 'moment'
-import ImportFile from './ImportFile'
 import { compare } from 'utils'
 const { Text } = Typography
 export default function CompareHistory(props) {
@@ -53,8 +43,7 @@ export default function CompareHistory(props) {
       render(data) {
         return moment(data).format('DD-MM-YYYY hh:mm')
       },
-      sorter: (a, b) =>
-        moment(a.create_date).unix() - moment(b.create_date).unix(),
+      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
     },
     {
       title: 'Hình thức đối soát',
@@ -106,14 +95,8 @@ export default function CompareHistory(props) {
       case 'last_week':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'weeks')
-            .startOf('week')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'weeks')
-            .endOf('week')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'this_month':
@@ -126,14 +109,8 @@ export default function CompareHistory(props) {
       case 'last_month':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'month')
-            .startOf('month')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'month')
-            .endOf('month')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
         })
         break
       case 'this_year':
@@ -146,14 +123,8 @@ export default function CompareHistory(props) {
       case 'last_year':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'year')
-            .startOf('year')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'year')
-            .endOf('year')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
         })
         break
       default:
@@ -181,7 +152,14 @@ export default function CompareHistory(props) {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          xl={8}
+          style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+        >
           <Select
             size="large"
             open={isOpenSelect}
@@ -246,15 +224,8 @@ export default function CompareHistory(props) {
           </Select>
         </Col>
       </Row>
-      <Row justify="end" style={{ marginTop: 15, marginBottom: 15 }}>
-        <ImportFile />
-      </Row>
-      <Table
-        size="small"
-        columns={columns}
-        rowKey="_id"
-        dataSource={compareList}
-      />
+
+      <Table size="small" columns={columns} rowKey="_id" dataSource={compareList} />
       <SessionHistory
         data={sessionDetail}
         visible={showDetail}

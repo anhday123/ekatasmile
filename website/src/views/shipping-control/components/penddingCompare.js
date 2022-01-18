@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Input, Row, Col, DatePicker, Select, Table, Typography } from 'antd'
 import moment from 'moment'
-import ImportFile from './ImportFile'
 import { compare, tableSum } from 'utils'
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -80,8 +79,8 @@ export default function PenddingCompare(props) {
             data.toLowerCase() == 'processing'
               ? { color: 'orange' }
               : data.toLowerCase() == 'complete'
-                ? { color: 'green' }
-                : { color: 'red' }
+              ? { color: 'green' }
+              : { color: 'red' }
           }
         >
           {data}
@@ -178,7 +177,9 @@ export default function PenddingCompare(props) {
       <Row
         style={{
           width: '100%',
-          marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5
+          marginTop: '1rem',
+          border: '1px solid #d9d9d9',
+          borderRadius: 5,
         }}
       >
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
@@ -191,7 +192,14 @@ export default function PenddingCompare(props) {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          xl={8}
+          style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+        >
           <Select
             size="large"
             open={isOpenSelect}
@@ -257,15 +265,6 @@ export default function PenddingCompare(props) {
         </Col>
       </Row>
 
-      <Row
-        justify="end"
-        style={{
-          marginTop: 15,
-          width: '100%',
-        }}
-      >
-        <ImportFile />
-      </Row>
       <div
         style={{
           width: '100%',

@@ -217,110 +217,28 @@ module.exports._delete = async (req, res, next) => {
   }
 };
 
-module.exports._compareCard = async (req, res, next) => {
+module.exports._createCompareCard = async (req, res, next) => {};
+
+module.exports._importCompareCard = async (req, res, next) => {
   try {
     if (req.file == undefined) {
       throw new Error("400: Vui lòng truyền file!");
     }
 
-    let excelData = XLSX.read(req.file.buffer, {
-      type: "buffer",
-      cellDates: true,
-    });
-    let rows = XLSX.utils.sheet_to_json(
-      excelData.Sheets[excelData.SheetNames[0]]
-    );
 
-    var fields_order = [
-      "ma_van_don",
-      "ngay_nhan_don",
-      "ngay_hoan_thanh",
-      "khoi_luong",
-      "tien_cod",
-      "phi_bao_hiem",
-      "phi_giao_hang",
-      "phi_luu_kho",
-    ];
+      await shippingCompanyService._importCompareCard(req,res,next);
 
-    var fields_shipper = [
-      "ma_don_vi_van_chuyen",
-      "phi_cod",
-      "phi_giao_hang",
-      "phi_luu_kho",
-    ];
-
-    if (req.body.type != "order" && req.body.type != "shipper")
-      throw new Error("400: Vui lòng truyền tên đơn vị vận chuyển");
-
-    var fields = [];
-    if (req.body.type == "order") {
-      fields = fields_order;
-    } else {
-      fields = fields_shipper;
-    }
-
-    // valid date
-    var data_import = [];
-    var date_min = moment().tz(TIMEZONE).unix();
-    var date_max = moment().subtract(10, "years").tz(TIMEZONE).unix();
-    rows.map((item) => {
-      Object.keys(item).map((i) => {
-        item[`${convertToSlug(i)}`] = item[`${i}`];
-        return item;
-      });
-      var valid = validate(item, fields);
-      if (!valid)
-        throw new Error("401: Tên cột không đúng quy định, vui lòng xem lại");
-
-      if (date_min > moment(item["ngay_nhan_don"]).tz(TIMEZONE).unix())
-        date_min = moment(item["ngay_nhan_don"]).tz(TIMEZONE).unix();
-    });
-
-    // Trừ ra thêm 1 ngày cho chắc
-
-    var query = [
-      {
-        $match: {
-          create_date: {
-            $gte: moment(date_min * 1000)
-              .subtract(1, "days")
-              .format(),
-          },
-        },
-      },
-      {
-        $match: {
-          ship_status: "COMPLETE",
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          code: 1,
-          final_cost: 1,
-          shipping_info: 1,
-        },
-      },
-    ];
-
-    // Tien hanh doi soat
-    var problems = [];
-
-    var orders = await client
-      .db(DB)
-      .collection("Orders")
-      .aggregate([])
-      .toArray();
-
-    // Tien hanh doi soat
-
-    var problems = [];
-    for (var i = 0; i < rows.length; i++) {
-      rows[i].status = "done";
-    }
-
-    return res.send({ success: true, result: orders, problems: problems });
   } catch (err) {
     next(err);
   }
 };
+
+module.exports._getCompareCard = async (req, res, next) => {
+  try {
+    await shippingCompanyService._getCompareCard(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports._updateCompareCard = async (req, res, next) => {};

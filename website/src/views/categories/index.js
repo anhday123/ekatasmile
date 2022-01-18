@@ -222,9 +222,11 @@ export default function Category() {
               }}
             >
               {imageView ? (
-                imageView !== '' ?
-                  <img src={imageView} alt="avatar" style={{ width: '100%' }} /> :
+                imageView !== '' ? (
+                  <img src={imageView} alt="avatar" style={{ width: '100%' }} />
+                ) : (
                   <img src={IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />
+                )
               ) : (
                 <div>
                   <PlusOutlined />
@@ -287,14 +289,18 @@ export default function Category() {
       dataIndex: 'stt',
       key: 'stt',
       width: 50,
-      render: (text, record, index) =>
-        (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+      render: (text, record, index) => (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
     },
     {
       title: 'Hình ảnh',
       align: 'center',
-      render: (text, record) =>
-        <img src={record.image.length ? record.image : IMAGE_DEFAULT} alt="" style={{ width: 70, height: 70 }} />
+      render: (text, record) => (
+        <img
+          src={record.image.length ? record.image : IMAGE_DEFAULT}
+          alt=""
+          style={{ width: 70, height: 70 }}
+        />
+      ),
     },
     {
       title: 'Tên nhóm sản phẩm',
@@ -359,8 +365,13 @@ export default function Category() {
     {
       title: 'Hình ảnh',
       align: 'center',
-      render: (text, record) =>
-        <img src={record.image.length ? record.image[0] : IMAGE_DEFAULT} alt="" style={{ width: 45, height: 45 }} />
+      render: (text, record) => (
+        <img
+          src={record.image.length ? record.image[0] : IMAGE_DEFAULT}
+          alt=""
+          style={{ width: 45, height: 45 }}
+        />
+      ),
     },
     {
       title: 'Tên nhóm sản phẩm',
@@ -403,8 +414,13 @@ export default function Category() {
     {
       title: 'Hình ảnh',
       align: 'center',
-      render: (text, record) =>
-        <img src={record.image.length ? record.image : IMAGE_DEFAULT} alt="" style={{ width: 45, height: 45 }} />
+      render: (text, record) => (
+        <img
+          src={record.image.length ? record.image : IMAGE_DEFAULT}
+          alt=""
+          style={{ width: 45, height: 45 }}
+        />
+      ),
     },
     {
       title: 'Tên nhóm sản phẩm',
@@ -454,7 +470,7 @@ export default function Category() {
           Tạo nhóm sản phẩm
         </Button>
       </TitlePage>
-      <div style={{ margin: '25px 0' }}>
+      <div style={{ marginBottom: 15 }}>
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={10} xl={10}>
             <Input
@@ -473,7 +489,11 @@ export default function Category() {
               size="large"
               onChange={onChangeUserFilter}
               value={valueUserFilter}
-              style={{ width: '100%', borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
+              style={{
+                width: '100%',
+                borderRight: '1px solid #d9d9d9',
+                borderLeft: '1px solid #d9d9d9',
+              }}
               placeholder="Tìm kiếm theo người tạo"
               allowClear
               showSearch
