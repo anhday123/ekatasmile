@@ -212,3 +212,11 @@
 .edit-submenu-arrow .ant-menu-submenu-arrow {
   display: none;
 }
+
+.edit-submenu-arrow.ant-tooltip-arrow {
+  display: none !important;
+}
+
+.edit-submenu-arrow .ant-menu-item-only-child {
+  height: 40px !important;
+}

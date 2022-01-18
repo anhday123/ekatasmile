@@ -18,7 +18,7 @@ import {
   Badge,
   Empty,
   Row,
-  Tooltip,
+  Popover,
   Col,
 } from 'antd'
 
@@ -347,6 +347,8 @@ const BaseLayout = (props) => {
             backgroundColor:
               (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
               '#e7e9fb',
+            width: '100%',
+            display: 'block'
           }}
           key={_menu.path}
           title={
@@ -363,7 +365,18 @@ const BaseLayout = (props) => {
               {_menu.title}
             </Link>
           }
-          icon={_menu.icon}
+          icon={<Link
+            style={{
+              fontSize: '0.8rem',
+              color:
+                location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)
+                  ? '#5F73E2'
+                  : 'rgba(0, 0, 0, 0.85)',
+            }}
+            to={_menu.path}
+          >
+            {_menu.icon}
+          </Link>}
         >
           {_menu.menuItems.map((e) => (
             <Permission permissions={e.permissions}>
@@ -377,8 +390,6 @@ const BaseLayout = (props) => {
                 }}
               >
                 <Link to={e.path}>{e.title}</Link>
-                {/* <Tooltip placement="right" title={e.title}>
-                </Tooltip> */}
               </Menu.Item>
             </Permission>
           ))}
@@ -396,8 +407,9 @@ const BaseLayout = (props) => {
         >
           <Link to={_menu.path}>{_menu.title}</Link>
         </Menu.Item>
-      )}
-    </Permission>
+      )
+      }
+    </Permission >
   )
 
   const onSignOut = () => {

@@ -212,12 +212,12 @@ export default function Point() {
     _getCustomerTypes()
   }, [])
 
-  useEffect(() => {
-    setOrderPoint({
-      order_require: config.order_require === false ? 0 : config.order_require,
-      order_require_check: config.order_require === false ? false : true
-    })
-  }, [config])
+  // useEffect(() => {
+  //   setOrderPoint({
+  //     order_require: config.order_require === false ? 0 : config.order_require,
+  //     order_require_check: config.order_require === false ? false : true
+  //   })
+  // }, [config])
 
   useEffect(() => {
     setConfig({
@@ -332,7 +332,7 @@ export default function Point() {
                 = 1 điểm
               </Col>
               <Col span={14}>
-                Đơn vị tích điểm <Input defaultValue="Điểm" style={{ width: '30%' }} />
+                Đơn vị tích điểm <Input defaultValue="Điểm" readOnly style={{ width: '15%' }} />
               </Col>
             </Row>
           </Row>
@@ -436,13 +436,13 @@ export default function Point() {
                   // console.log(input, option)
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
-                filterSort={(optionA, optionB) => {
-                  if (optionA.children !== undefined && optionB.children !== undefined) {
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  } else {
-                    return ''
-                  }
-                }}
+                // filterSort={(optionA, optionB) => {
+                //   if (optionA.children !== undefined && optionB.children !== undefined) {
+                //     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                //   } else {
+                //     return ''
+                //   }
+                // }}
               >
                 {
                   customerTypes.length !== 0 ?
@@ -481,13 +481,13 @@ export default function Point() {
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
-                filterSort={(optionA, optionB) => {
-                  if (optionA.children !== undefined && optionB.children !== undefined) {
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  } else {
-                    return ''
-                  }
-                }}
+                // filterSort={(optionA, optionB) => {
+                //   if (optionA.children !== undefined && optionB.children !== undefined) {
+                //     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                //   } else {
+                //     return ''
+                //   }
+                // }}
               >
                 {
                   dataCategories.length !== 0 ?
@@ -525,13 +525,13 @@ export default function Point() {
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
-                filterSort={(optionA, optionB) => {
-                  if (optionA.children !== undefined && optionB.children !== undefined) {
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  } else {
-                    return ''
-                  }
-                }}
+                // filterSort={(optionA, optionB) => {
+                //   if (optionA.children !== undefined && optionB.children !== undefined) {
+                //     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                //   } else {
+                //     return ''
+                //   }
+                // }}
               >
                 {
                   dataProduct.length !== 0 ?
@@ -569,13 +569,13 @@ export default function Point() {
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
-                filterSort={(optionA, optionB) => {
-                  if (optionA.children !== undefined && optionB.children !== undefined) {
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  } else {
-                    return ''
-                  }
-                }}
+                // filterSort={(optionA, optionB) => {
+                //   if (optionA.children !== undefined && optionB.children !== undefined) {
+                //     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                //   } else {
+                //     return ''
+                //   }
+                // }}
               >
                 {branches.map((e) => (
                   <Select.Option value={e.branch_id}>{e.name}</Select.Option>

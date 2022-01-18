@@ -263,16 +263,17 @@ export default function ReportInventory() {
         </Button>
       </TitlePage>
       <Row wrap={false} gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
           <DatePicker.RangePicker
             value={dateFilter}
             onChange={onChangeDate}
             style={{ width: '100%' }}
             size="large"
             format={dateFormat}
+            bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ borderTop: '1px solid #d9d9d9', borderBottom: '1px solid #d9d9d9' }}>
           <Select
             mode="multiple"
             allowClear
@@ -281,6 +282,7 @@ export default function ReportInventory() {
             size="large"
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
+            bordered={false}
           >
             {branches.map((branch, index) => (
               <Select.Option value={branch.branch_id} key={index}>
@@ -289,12 +291,13 @@ export default function ReportInventory() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}>
           <Select
             allowClear
             size="large"
             placeholder="Lọc theo nhóm sản phẩm"
             style={{ width: '100%' }}
+            bordered={false}
           ></Select>
         </Col>
         <Button

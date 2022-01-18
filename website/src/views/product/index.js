@@ -409,10 +409,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-                const fileNames = image.split('/')
-                const fileName = fileNames[fileNames.length - 1]
-                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-              })
+              const fileNames = image.split('/')
+              const fileName = fileNames[fileNames.length - 1]
+              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+            })
             : []
         )
       }
@@ -561,8 +561,8 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
-          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+        <Row>
+          <Col xs={24} sm={24} md={24} lg={15} xl={15} style={{ marginRight: 15, marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
                 <Col span={16}>
@@ -584,7 +584,6 @@ export default function Product() {
                     style={{
                       width: '100%',
                       borderLeft: '1px solid #d9d9d9',
-                      borderRight: '1px solid #d9d9d9',
                     }}
                     placeholder="Chọn theo"
                     optionFilterProp="children"
@@ -605,7 +604,7 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <TreeSelect
               size="large"
               style={{ width: '100%' }}
@@ -638,8 +637,8 @@ export default function Product() {
           </Col>
         </Row>
 
-        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
-          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+        <Row>
+          <Col xs={24} sm={24} md={24} lg={15} xl={15} style={{ marginRight: 15, marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <Row style={{ width: '100%' }}>
               <Col span={16}>
                 <Select
@@ -670,13 +669,12 @@ export default function Product() {
                   style={{
                     width: '100%',
                     borderLeft: '1px solid #d9d9d9',
-                    borderRight: '1px solid #d9d9d9',
                   }}
                   placeholder="Lọc trạng thái"
                   optionFilterProp="children"
                   // value={optionSearchName}
                   bordered={false}
-                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value ? value : ''  })}
+                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value ? value : '' })}
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
@@ -687,7 +685,7 @@ export default function Product() {
               </Col>
             </Row>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <Select
               style={{ width: '100%' }}
               size="large"
