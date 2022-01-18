@@ -207,7 +207,6 @@ module.exports._create = async (req, res, next) => {
         if (totalCost != req.body.total_cost) {
             throw new Error('400: Tổng giá trị đơn hàng không chính xác!');
         }
-
         order_id++;
         let _order = {
             order_id: order_id,

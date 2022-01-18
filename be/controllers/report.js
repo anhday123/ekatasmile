@@ -6,16 +6,19 @@ const DB = process.env.DATABASE;
 module.exports._getIOIReport = async (req, res, next) => {
     try {
         let aggregateQuery = [];
-        if (req.body.branch) {
+        if (req.query.branch) {
             aggregateQuery.push({ store_id: '' });
         }
-        if (req.body.store) {
+        if (req.query.store) {
             aggregateQuery.push({ branch_id: '' });
         }
-        if (req.body.branch_id) {
-            aggregateQuery.push({ branch_id: Number(req.query.branch_id) });
+        if (req.query.branch_id) {
+            let ids = req.query.branch_id.split('---').map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ branch_id: { $in: ids } });
         }
-        if (req.body.store_id) {
+        if (req.query.store_id) {
             aggregateQuery.push({ store_id: Number(req.query.store_id) });
         }
         if (req.query['today']) {
@@ -210,6 +213,21 @@ module.exports._getIOIReport = async (req, res, next) => {
 module.exports._getInventoryReport = async (req, res, next) => {
     try {
         let aggregateQuery = [];
+        if (req.query.branch) {
+            aggregateQuery.push({ store_id: '' });
+        }
+        if (req.query.store) {
+            aggregateQuery.push({ branch_id: '' });
+        }
+        if (req.query.branch_id) {
+            let ids = req.query.branch_id.split('---').map((id) => {
+                return Number(id);
+            });
+            aggregateQuery.push({ branch_id: { $in: ids } });
+        }
+        if (req.query.store_id) {
+            aggregateQuery.push({ store_id: Number(req.query.store_id) });
+        }
         if (req.query['today']) {
             req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
             req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
@@ -647,6 +665,17 @@ module.exports._getFinanceReport = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'creator_id',
+                    foreignField: 'user_id',
+                    as: '_creator',
+                },
+            },
+            { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
+        );
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: 1 } });
         if (req.query.page && req.query.page_size) {
@@ -698,6 +727,7 @@ module.exports._createFinanceReport = async (req, res, next) => {
         receipt_id++;
         let _finance = {
             receipt_id: receipt_id,
+            code: String(receipt_id).padStart(6, '0'),
             source: req.body.source || 'AUTO',
             //REVENUE - EXPENDITURE
             type: req.body.type || 'REVENUE',
