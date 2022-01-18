@@ -42,6 +42,7 @@ import {
   LineChartOutlined,
   CalendarOutlined,
   FileSearchOutlined,
+  MedicineBoxOutlined,
 } from '@ant-design/icons'
 
 //components
@@ -140,14 +141,7 @@ const BaseLayout = (props) => {
       icon: <ShoppingOutlined />,
     },
     {
-      pathsChild: [
-        ROUTES.PRODUCT_ADD,
-        ROUTES.PRODUCT_UPDATE,
-        ROUTES.REPORT_INVENTORY,
-        ROUTES.REPORT_VARIANT,
-        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_PRODUCT,
-        ROUTES.REPORT_IMPORT_EXPORT_INVENTORY_VARIANT,
-      ],
+      pathsChild: [ROUTES.PRODUCT_ADD, ROUTES.PRODUCT_UPDATE],
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
@@ -194,7 +188,7 @@ const BaseLayout = (props) => {
       permissions: [],
     },
     {
-      icon: <GiftOutlined />,
+      icon: <MedicineBoxOutlined />,
       path: ROUTES.IMPORT_INVENTORIES,
       title: 'Nhập hàng',
       permissions: [],
@@ -311,7 +305,7 @@ const BaseLayout = (props) => {
       permissions: [],
       // permissions: [PERMISSIONS.doi_soat_van_chuyen],
       icon: <CarOutlined />,
-      pathsChild: [],
+      pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
     {
       pathsChild: [
@@ -613,15 +607,7 @@ const BaseLayout = (props) => {
             </Row>
           </Row>
         </Affix>
-        <div
-          style={{
-            backgroundColor: '#f0f2f5',
-            width: '100%',
-            minHeight: `calc(100vh - ${HEIGHT_HEADER}px)`,
-          }}
-        >
-          {props.children}
-        </div>
+        <div style={{ backgroundColor: '#f0f2f5', width: '100%' }}>{props.children}</div>
       </Layout>
     </Layout>
   )

@@ -1,15 +1,4 @@
-import {
-  Col,
-  Row,
-  Input,
-  DatePicker,
-  Select,
-  Button,
-  Table,
-  Checkbox,
-  Typography,
-} from 'antd'
-import ImportFile from './ImportFile'
+import { Col, Row, Input, DatePicker, Select, Button, Table, Checkbox, Typography } from 'antd'
 import moment from 'moment'
 import { useState, useEffect } from 'react'
 import Modal from 'antd/lib/modal/Modal'
@@ -20,9 +9,7 @@ export default function Compared(props) {
   const { Option } = Select
   const { RangePicker } = DatePicker
   const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const [defaultColumns, setDefaultColumns] = useState([
-    0, 1, 2, 3, 4, 5, 6, 7, 8,
-  ])
+  const [defaultColumns, setDefaultColumns] = useState([0, 1, 2, 3, 4, 5, 6, 7, 8])
   const [showCustomColumns, setShowCustomColumns] = useState(false)
   const [displayColumns, setDisplayColumns] = useState([])
   const [filter, setFilter] = useState({
@@ -68,8 +55,7 @@ export default function Compared(props) {
       title: 'Ngày tạo đơn',
       dataIndex: 'revice_date',
       key: 5,
-      sorter: (a, b) =>
-        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sorter: (a, b) => moment(a.revice_date).unix() - moment(b.revice_date).unix(),
       sortDirections: ['descend', 'ascend'],
     },
     {
@@ -133,14 +119,12 @@ export default function Compared(props) {
       title: 'Ngày nhận',
       dataIndex: 'revice_date',
       key: 15,
-      sorter: (a, b) =>
-        moment(a.revice_date).unix() - moment(b.revice_date).unix(),
+      sorter: (a, b) => moment(a.revice_date).unix() - moment(b.revice_date).unix(),
     },
     {
       title: 'Ngày hoàn thành',
       dataIndex: 'complete_date',
-      sorter: (a, b) =>
-        moment(a.complete_date).unix() - moment(b.complete_date).unix(),
+      sorter: (a, b) => moment(a.complete_date).unix() - moment(b.complete_date).unix(),
       key: 16,
     },
     {
@@ -160,8 +144,8 @@ export default function Compared(props) {
             data.toLowerCase() == 'processing'
               ? { color: 'orange' }
               : data.toLowerCase() == 'complete'
-                ? { color: 'green' }
-                : { color: 'red' }
+              ? { color: 'green' }
+              : { color: 'red' }
           }
         >
           {data}
@@ -204,14 +188,8 @@ export default function Compared(props) {
       case 'last_week':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'weeks')
-            .startOf('week')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'weeks')
-            .endOf('week')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'),
         })
         break
       case 'this_month':
@@ -224,14 +202,8 @@ export default function Compared(props) {
       case 'last_month':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'month')
-            .startOf('month')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'month')
-            .endOf('month')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD'),
         })
         break
       case 'this_year':
@@ -244,14 +216,8 @@ export default function Compared(props) {
       case 'last_year':
         props.setFilter({
           ...filter,
-          from_date: moment()
-            .subtract(1, 'year')
-            .startOf('year')
-            .format('YYYY-MM-DD'),
-          to_date: moment()
-            .subtract(1, 'year')
-            .endOf('year')
-            .format('YYYY-MM-DD'),
+          from_date: moment().subtract(1, 'year').startOf('year').format('YYYY-MM-DD'),
+          to_date: moment().subtract(1, 'year').endOf('year').format('YYYY-MM-DD'),
         })
         break
       default:
@@ -289,7 +255,14 @@ export default function Compared(props) {
               bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={8}
+            xl={8}
+            style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+          >
             <Select
               size="large"
               open={isOpenSelect}
@@ -363,12 +336,7 @@ export default function Compared(props) {
             marginBottom: 20,
           }}
         >
-          <ImportFile />
-          <Button
-            size="large"
-            type="primary"
-            onClick={() => setShowCustomColumns(true)}
-          >
+          <Button size="large" type="primary" onClick={() => setShowCustomColumns(true)}>
             Setting Column
           </Button>
         </Row>
@@ -388,9 +356,7 @@ export default function Compared(props) {
                     <Text></Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}
-                    </Text>
+                    <Text>Tiền CoD: {formatCash(tableSum(pageData, 'cod_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
                     <Text>
@@ -405,34 +371,19 @@ export default function Compared(props) {
                     </Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí vận chuyển:{' '}
-                      {formatCash(tableSum(pageData, 'delivery_cost'))}
-                    </Text>
+                    <Text>Phí vận chuyển: {formatCash(tableSum(pageData, 'delivery_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí bảo hiểm:{' '}
-                      {formatCash(tableSum(pageData, 'insurance_cost'))}
-                    </Text>
+                    <Text>Phí bảo hiểm: {formatCash(tableSum(pageData, 'insurance_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí chuyển hoàn:{' '}
-                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
-                    </Text>
+                    <Text>Phí chuyển hoàn: {formatCash(tableSum(pageData, 'warehouse_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí giao hàng:{' '}
-                      {formatCash(tableSum(pageData, 'shipping_cost'))}
-                    </Text>
+                    <Text>Phí giao hàng: {formatCash(tableSum(pageData, 'shipping_cost'))}</Text>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text>
-                      Phí lưu kho:{' '}
-                      {formatCash(tableSum(pageData, 'warehouse_cost'))}
-                    </Text>
+                    <Text>Phí lưu kho: {formatCash(tableSum(pageData, 'warehouse_cost'))}</Text>
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
               </Table.Summary>
@@ -446,10 +397,7 @@ export default function Compared(props) {
         onCancel={() => setShowCustomColumns(false)}
         onOk={handleShowColumns}
       >
-        <Checkbox.Group
-          defaultValue={defaultColumns}
-          onChange={(e) => setDefaultColumns(e)}
-        >
+        <Checkbox.Group defaultValue={defaultColumns} onChange={(e) => setDefaultColumns(e)}>
           <Row justify="space-between" gutter={[20, 10]}>
             {columns.map((e) => (
               <Col span={11}>

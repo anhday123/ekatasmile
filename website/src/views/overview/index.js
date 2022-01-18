@@ -80,7 +80,7 @@ const Overview = () => {
       {loadingSkeleton ? (
         <Skeleton active paragraph={{ rows: 9 }} />
       ) : (
-        <div className="card">
+        <div className={styles['card-overview']}>
           <div className={styles['dashboard_manager_balance_title']}>
             <div>DOANH SỐ BÁN HÀNG</div>
           </div>
@@ -121,7 +121,10 @@ const Overview = () => {
           <Skeleton active paragraph={{ rows: 9 }} />
         ) : (
           <Col xs={24} sm={24} md={24} lg={14} xl={14}>
-            <div style={{ marginRight: !isMobile && 7, marginTop: 0, height: '95%', marginBottom: 15 }} className="card">
+            <div
+              style={{ marginRight: !isMobile && 7, marginTop: 0, height: '95%', marginBottom: 15 }}
+              className={styles['card-overview']}
+            >
               <div className={styles['dashboard_manager_revenue_title']}>
                 <div>Doanh thu</div>
               </div>
@@ -136,13 +139,20 @@ const Overview = () => {
           <Skeleton active paragraph={{ rows: 9 }} style={{ marginBottom: 15 }} />
         ) : (
           <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginBottom: isMobile && 15 }}>
-            <div style={{ marginLeft: !isMobile ? 7 : 0, marginTop: 0, height: '95%', marginBottom: 15 }} className="card">
+            <div
+              style={{
+                marginLeft: !isMobile ? 7 : 0,
+                marginTop: 0,
+                height: '95%',
+                marginBottom: 15,
+              }}
+              className={styles['card-overview']}
+            >
               <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
                 <div>Sản phẩm bán chạy</div>
               </div>
               <div style={{ width: '100%', margin: 'auto' }}>
-                {statistical &&
-                  statistical.product_rank ?
+                {statistical && statistical.product_rank ? (
                   statistical.product_rank.slice(0, 5).map((e, index) => {
                     return (
                       <Row
@@ -168,14 +178,12 @@ const Overview = () => {
                       </Row>
                     )
                   })
-                  :
+                ) : (
                   <div style={{ textAlign: 'center' }}>
                     <img src={noData} alt="" style={{ width: 90, height: 90 }} />
-                    <h4 style={{ fontSize: 15, color: '#555' }}>
-                      Chưa có sản phẩm bán chạy
-                    </h4>
+                    <h4 style={{ fontSize: 15, color: '#555' }}>Chưa có sản phẩm bán chạy</h4>
                   </div>
-                }
+                )}
               </div>
             </div>
           </Col>

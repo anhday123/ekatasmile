@@ -271,11 +271,11 @@ export default function Product() {
       <>
         <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
           <Button size="large" onClick={toggle} type="primary">
-            Phân loại danh mục
+            Phân loại nhóm sản phẩm
           </Button>
         </Permission>
         <Modal
-          title="Phân loại danh mục"
+          title="Phân loại nhóm sản phẩm"
           centered
           width={500}
           footer={null}
@@ -283,6 +283,8 @@ export default function Product() {
           onCancel={toggle}
         >
           <TreeSelect
+            showCheckedStrategy={TreeSelect.SHOW_ALL}
+            allowClear
             multiple
             treeDefaultExpandAll
             size="large"
@@ -650,7 +652,9 @@ export default function Product() {
                   placeholder="Lọc theo nhà cung cấp"
                   optionFilterProp="children"
                   bordered={false}
-                  onChange={(value) => setParamsFilter({ ...paramsFilter, supplier_id: value ? value : '' })}
+                  onChange={(value) =>
+                    setParamsFilter({ ...paramsFilter, supplier_id: value ? value : '' })
+                  }
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
@@ -676,7 +680,9 @@ export default function Product() {
                   optionFilterProp="children"
                   // value={optionSearchName}
                   bordered={false}
-                  onChange={(value) => setParamsFilter({ ...paramsFilter, active: value ? value : ''  })}
+                  onChange={(value) =>
+                    setParamsFilter({ ...paramsFilter, active: value ? value : '' })
+                  }
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }

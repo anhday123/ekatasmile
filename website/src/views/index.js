@@ -15,6 +15,7 @@ import OrderList from './order-list'
 import SalesReport from './sales-report'
 import ReportInventory from './report-inventory'
 import ShippingControl from './shipping-control'
+import ShippingControlForm from './shipping-control/shipping-control-form'
 import Guarantee from './guarantee'
 import ShippingProduct from './shipping-product'
 import ClientManagement from './client-management'
@@ -59,8 +60,6 @@ import Customer from './customer'
 import Supplier from './supplier'
 import Promotion from './promotion'
 import Role from './role'
-import ShippingControlAdd from './actions/shipping-control/add'
-import ShippingControlView from './actions/shipping-control/view'
 
 import ProductCheckAdd from './actions/product-check/add'
 import ProductCheckView from './actions/product-check/view'
@@ -192,6 +191,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.SHIPPING_CONTROL,
     Component: () => <ShippingControl />,
     title: 'Đối soát vận chuyển',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CONTROL_ADD,
+    Component: () => <ShippingControlForm />,
+    title: 'Tạo phiếu đối soát vận chuyển',
     permissions: [],
     exact: true,
   },
@@ -503,20 +509,6 @@ const AUTH_ROUTER = [
     path: ROUTES.TAX_UPDATE,
     Component: () => <TaxUpdate />,
     title: 'Cập nhật thông tin thuế',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SHIPPING_CONTROL_ADD,
-    Component: () => <ShippingControlAdd />,
-    title: 'Thêm đối soát vận chuyển',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.SHIPPING_CONTROL_VIEW,
-    Component: () => <ShippingControlView />,
-    title: 'Xem thông tin chi tiết đối soát vận chuyển',
     permissions: [],
     exact: true,
   },

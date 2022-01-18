@@ -249,13 +249,11 @@ export default function Sell() {
               ),
             })
         } else {
-          const price = product.units && product.units.length ? product.units[0].price : 20000
           invoicesNew[indexInvoice].order_details.push({
             ...product,
             unit: product.units && product.units.length ? product.units[0].name : 'Cái', //đơn vị
-            price: price, //giá sản phẩm
             quantity: 1, //số lượng sản phẩm
-            sumCost: price, // tổng giá tiền
+            sumCost: product.price, // tổng giá tiền
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
@@ -1112,6 +1110,25 @@ export default function Sell() {
     }
   }
 
+  const _getPayments = async () => {
+    try {
+      const res = await getPayments()
+      if (res.status === 200) {
+        let paymentMethodDefault = ''
+        res.data.data.map((e) => {
+          if (e.default && e.active) paymentMethodDefault = e.name
+        })
+        if (paymentMethodDefault) {
+          const pDefault = { method: paymentMethodDefault, value: 0 }
+          _editInvoice('payments', [pDefault])
+          setPaymentMethodDefault(pDefault)
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getShippingsMethod = async () => {
     try {
       const res = await getShippings()
@@ -1140,25 +1157,6 @@ export default function Sell() {
     } catch (error) {
       console.log(error)
       setLoadingProduct(false)
-    }
-  }
-
-  const _getPayments = async () => {
-    try {
-      const res = await getPayments()
-      if (res.status === 200) {
-        let paymentMethodDefault = ''
-        res.data.data.map((e) => {
-          if (e.default && e.active) paymentMethodDefault = e.name
-        })
-        if (paymentMethodDefault) {
-          const pDefault = { method: paymentMethodDefault, value: 0 }
-          _editInvoice('payments', [pDefault])
-          setPaymentMethodDefault(pDefault)
-        }
-      }
-    } catch (error) {
-      console.log(error)
     }
   }
 
@@ -1216,14 +1214,17 @@ export default function Sell() {
     _getCustomers()
     _getPayments()
     _getShippingsMethod()
-    _getProducts()
     _getBranches()
-    _getProductsSearch()
   }, [])
 
   useEffect(() => {
+    _getProducts()
+    _getProductsSearch()
+  }, [branchIdApp])
+
+  useEffect(() => {
     _getProductsRelated(paramsFilter)
-  }, [paramsFilter])
+  }, [paramsFilter, branchIdApp])
 
   const Print = () => (
     <div style={{ display: 'none' }}>

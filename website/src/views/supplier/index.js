@@ -203,7 +203,14 @@ export default function Supplier() {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={8}
+          style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+        >
           <Select
             allowClear
             style={{ width: '100%' }}
@@ -250,7 +257,18 @@ export default function Supplier() {
       </Row>
 
       <Row style={{ marginTop: '1rem' }}>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px', borderRight: 'none' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={8}
+          style={{
+            border: '1px solid #d9d9d9',
+            borderRadius: '5px 0px 0px 5px',
+            borderRight: 'none',
+          }}
+        >
           <RangePicker
             size="large"
             className="br-15__date-picker"
@@ -260,7 +278,14 @@ export default function Supplier() {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px', marginRight: 10 }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={8}
+          style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px', marginRight: 10 }}
+        >
           <Select
             allowClear
             size="large"
@@ -319,7 +344,8 @@ export default function Supplier() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${record.district && record.district + ', '
+                `${record.address && record.address + ', '}${
+                  record.district && record.district + ', '
                 }${record.province && record.province}`,
             }
           if (column.key === 'creator')
@@ -331,7 +357,6 @@ export default function Supplier() {
                 (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
                 (b._creator && b._creator.first_name + ' ' + b._creator.last_name).length,
             }
-          if (column.key === 'debt') return { ...column, render: () => <a>Công nợ</a> }
           if (column.key === 'action')
             return {
               ...column,

@@ -1,31 +1,37 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Tabs, Row } from 'antd'
-import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
-import PenddingCompare from './components/penddingCompare'
-import Compared from './components/compared'
-import CompareHistory from './components/compareHistory'
-import CreateCompare from './components/createCompare'
-import Permission from 'components/permission'
-import TitlePage from 'components/title-page'
+
 import { PERMISSIONS, ROUTES } from 'consts'
+
+//antd
+import { Button, Tabs, Space } from 'antd'
+import { PlusCircleOutlined } from '@ant-design/icons'
 
 //apis
 import { getAllBranch } from 'apis/branch'
 import { getCompare, getSession } from 'apis/compare'
+import { addShippingControlWithFile } from 'apis/shipping'
 import { useHistory } from 'react-router-dom'
 
-const { TabPane } = Tabs
+//components
+import PenddingCompare from './components/penddingCompare'
+import Compared from './components/compared'
+import CompareHistory from './components/compareHistory'
+import Permission from 'components/permission'
+import TitlePage from 'components/title-page'
+import ImportCsv from 'components/ImportCSV'
+
 function removeNull(a) {
   return Object.keys(a)
     .filter((key) => a[key] !== '' && a[key] !== undefined)
     .reduce((res, key) => ((res[key] = a[key]), res), {})
 }
+
+const { TabPane } = Tabs
 export default function ShippingControl() {
   const history = useHistory()
 
   const [compareList, setCompareList] = useState([])
   const [sessionList, setSessionList] = useState([])
-  const [showCreate, setShowCreate] = useState(false)
   const [branchList, setBranchList] = useState([])
   const [filter, setFilter] = useState({})
   const [currentTab, setCurrentTab] = useState(1)
@@ -75,6 +81,7 @@ export default function ShippingControl() {
   useEffect(() => {
     getBranch()
   }, [])
+
   useEffect(() => {
     if (currentTab == 3) {
       getAllSession({ ...removeNull(filter) })
@@ -82,62 +89,56 @@ export default function ShippingControl() {
       getAllCompare({ ...removeNull(filter) })
     }
   }, [filter])
+
   return (
-    <>
-      <div className="card">
-        <TitlePage title="Đối soát vận chuyển">
+    <div className="card">
+      <TitlePage title="Đối soát vận chuyển">
+        <Space>
+          <ImportCsv
+            size="large"
+            txt="Import phiếu đối soát"
+            upload={addShippingControlWithFile}
+            title="Nhập phiếu đối soát bằng file excel"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/18/35e278a0-a244-4c7e-9284-015fb9c00238/file_mau_doi_soat.xlsx"
+            reload={getAllCompare}
+          />
           <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
             <Button
               size="large"
               icon={<PlusCircleOutlined />}
               type="primary"
-              onClick={() => setShowCreate(true)}
+              onClick={() => history.push(ROUTES.SHIPPING_CONTROL_ADD)}
             >
               Thêm phiếu đối soát riêng lẻ
             </Button>
           </Permission>
-        </TitlePage>
+        </Space>
+      </TitlePage>
 
-        <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
-          <TabPane
-            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn chờ đối soát</span>}
-            key="1"
-          >
-            <PenddingCompare
-              compareList={compareList}
-              branchList={branchList}
-              setFilter={setFilter}
-            />
-          </TabPane>
-          <TabPane
-            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn đã đối soát thành công</span>}
-            key="2"
-          >
-            <Compared compareList={compareList} branchList={branchList} setFilter={setFilter} />
-          </TabPane>
-          <TabPane
-            tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Lịch sử đối soát</span>}
-            key="3"
-          >
-            <CompareHistory
-              compareList={sessionList}
-              branchList={branchList}
-              setFilter={setFilter}
-            />
-          </TabPane>
-        </Tabs>
-      </div>
-      <CreateCompare
-        visible={showCreate}
-        reload={() => {
-          if (currentTab == 3) {
-            getAllSession({ ...removeNull(filter) })
-          } else {
-            getAllCompare({ ...removeNull(filter) })
-          }
-        }}
-        onClose={() => setShowCreate(false)}
-      />
-    </>
+      <Tabs defaultActiveKey="1" style={{ width: '100%' }} onChange={changeTab}>
+        <TabPane
+          tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn chờ đối soát</span>}
+          key="1"
+        >
+          <PenddingCompare
+            compareList={compareList}
+            branchList={branchList}
+            setFilter={setFilter}
+          />
+        </TabPane>
+        <TabPane
+          tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Đơn đã đối soát thành công</span>}
+          key="2"
+        >
+          <Compared compareList={compareList} branchList={branchList} setFilter={setFilter} />
+        </TabPane>
+        <TabPane
+          tab={<span style={{ fontSize: 15, fontWeight: 500 }}>Lịch sử đối soát</span>}
+          key="3"
+        >
+          <CompareHistory compareList={sessionList} branchList={branchList} setFilter={setFilter} />
+        </TabPane>
+      </Tabs>
+    </div>
   )
 }
