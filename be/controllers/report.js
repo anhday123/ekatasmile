@@ -176,10 +176,10 @@ module.exports._getIOIReport = async (req, res, next) => {
             { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
         );
         if (req.query.category_id) {
-            let ids = req.query.category_id.map((id) => {
+            let ids = req.query.category_id.split('---').map((id) => {
                 return Number(id);
             });
-            aggregateQuery.push({ $match: { category_id: { $in: ids } } });
+            aggregateQuery.push({ $match: { 'product.category_id': { $in: ids } } });
         }
         let countQuery = [...aggregateQuery];
         if (req.query.page && req.query.page_size) {
