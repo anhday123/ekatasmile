@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './sell.module.scss'
-
 import { v4 as uuidv4 } from 'uuid'
 import { useHistory, Link, BrowserRouter } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -1071,11 +1070,11 @@ export default function Sell() {
         setCustomers(res.data.data)
 
         //mặc định chọn khách lẻ
-        const customer = res.data.data.find((e) => e.user_id === 3)
-        if (customer) {
+        const customer = res.data.data.find((e) => e.customer_id === 1)
+        if (customer && !invoices[indexInvoice].customer) {
           _editInvoice('deliveryAddress', customer)
           _editInvoice('customer', customer)
-          _editInvoice('name', `${customer.first_name} ${customer.last_name} - ${customer.phone}`)
+          _editInvoice('name', `${customer.first_name} ${customer.last_name}`)
         }
       }
 
@@ -1718,10 +1717,7 @@ export default function Sell() {
                     onClick={(e) => {
                       _editInvoice('deliveryAddress', customer)
                       _editInvoice('customer', customer)
-                      _editInvoice(
-                        'name',
-                        `${customer.first_name} ${customer.last_name} - ${customer.phone}`
-                      )
+                      _editInvoice('name', `${customer.first_name} ${customer.last_name}`)
                       e.stopPropagation()
                     }}
                   >

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import moment from 'moment'
 import { PERMISSIONS } from 'consts'
 import { useSelector } from 'react-redux'
-import { compare } from 'utils'
+import { compare, formatCash } from 'utils'
 
 //antd
 import {
@@ -427,37 +427,37 @@ export default function Customer() {
           if (column.key === 'type')
             return {
               ...column,
-              render: (text, record) => record.type,
-              sorter: (a, b) => compare(a, b, 'type'),
+              render: (text, record) => (record._type ? record._type.name : ''),
             }
           if (column.key === 'phone')
             return {
               ...column,
-              render: (text, record) => record.phone,
+              render: (text, record) => record.phone || '',
               sorter: (a, b) => compare(a, b, 'phone'),
             }
           if (column.key === 'point')
             return {
               ...column,
-              render: (text, record) => record.point,
+              render: (text, record) => record.point && formatCash(record.point),
               sorter: (a, b) => compare(a, b, 'point'),
             }
           if (column.key === 'used_point')
             return {
               ...column,
-              render: (text, record) => record.used_point,
+              render: (text, record) => record.used_point && formatCash(record.used_point),
               sorter: (a, b) => compare(a, b, 'used_point'),
             }
           if (column.key === 'order_quantity')
             return {
               ...column,
-              render: (text, record) => record.order_quantity,
+              render: (text, record) => record.order_quantity && formatCash(record.order_quantity),
               sorter: (a, b) => compare(a, b, 'order_quantity'),
             }
           if (column.key === 'order_total_cost')
             return {
               ...column,
-              render: (text, record) => record.order_total_cost,
+              render: (text, record) =>
+                record.order_total_cost && formatCash(record.order_total_cost),
               sorter: (a, b) => compare(a, b, 'order_total_cost'),
             }
           if (column.key === 'create_date')
@@ -467,15 +467,13 @@ export default function Customer() {
                 record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
               sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
             }
-
           if (column.key === 'birthday')
             return {
               ...column,
               render: (text, record) =>
                 record.birthday && moment(record.birthday).format('DD-MM-YYYY HH:mm'),
-              sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
+              sorter: (a, b) => moment(a.birthday || '').unix() - moment(b.birthday || '').unix(),
             }
-
           if (column.key === 'address')
             return {
               ...column,

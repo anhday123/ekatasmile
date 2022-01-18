@@ -18,8 +18,8 @@ export default function OrdersReturn() {
   const toggle = () => setVisible(!visible)
 
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState('this_week') //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({ this_week: true })
+  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
+  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
 
@@ -30,7 +30,7 @@ export default function OrdersReturn() {
   const [customerPaid, setCustomerPaid] = useState(0)
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 5 })
-  const [countOrdersRefund, setCountOrdersRefund] = useState([])
+  const [countOrdersRefund, setCountOrdersRefund] = useState(0)
 
   const onSearch = (e) => {
     if (typingTimeoutRef.current) {
@@ -38,20 +38,16 @@ export default function OrdersReturn() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-
       if (value) paramsFilter.keyword = value
       else delete paramsFilter.keyword
-
-      paramsFilter.page = 1
-      setParamsFilter(paramsFilter)
-      _getOrdersRefund(paramsFilter)
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
 
-  const _getOrdersRefund = async (params) => {
+  const _getOrdersRefund = async () => {
     try {
       setLoading(true)
-      const res = await getOrders({ ...params, bill_status: 'REFUND' })
+      const res = await getOrders({ ...paramsFilter, bill_status: 'REFUND' })
       console.log('orders', res)
       if (res.status === 200) {
         setOrdersRefund(res.data.data)
@@ -83,51 +79,50 @@ export default function OrdersReturn() {
   const columns = [
     {
       title: 'Mã đơn hàng',
+      dataIndex: 'code',
     },
     {
       title: 'Khách hàng',
+      render: (text, record) =>
+        record.customer && `${record.customer.first_name} ${record.customer.last_name}`,
     },
     {
       title: 'Tổng tiền',
-      render: (text, record) => formatCash(record.final_cost),
+      render: (text, record) => formatCash(record.total_cost || 0),
     },
     {
       title: 'Chiết khấu',
-      render: (text, record) => formatCash(record.total_discount),
+      render: (text, record) => formatCash(record.total_discount || 0),
     },
     {
       title: 'Thành tiền',
-      render: (text, record) => formatCash(record.total_cost),
+      render: (text, record) => formatCash(record.final_cost || 0),
     },
     {
       title: 'Khách đã trả',
-      render: (text, record) => formatCash(record.customer_paid),
+      render: (text, record) => formatCash(record.customer_paid || 0),
     },
-    {
-      title: 'Thu ngân',
-      render: (text, record) => (record.first_name || '') + ' ' + (record.last_name || ''),
-    },
-    {
-      title: 'Hành động',
-      render: () => (
-        <Button
-          style={{
-            backgroundColor: '#0877DE',
-            borderColor: '#0877DE',
-            borderRadius: '3px',
-            color: 'white',
-            width: 110,
-          }}
-        >
-          Chọn
-        </Button>
-      ),
-    },
+    // {
+    //   title: 'Hành động',
+    //   render: () => (
+    //     <Button
+    //       style={{
+    //         backgroundColor: '#0877DE',
+    //         borderColor: '#0877DE',
+    //         borderRadius: '3px',
+    //         color: 'white',
+    //         width: 110,
+    //       }}
+    //     >
+    //       Chọn
+    //     </Button>
+    //   ),
+    // },
   ]
 
   useEffect(() => {
-    _getOrdersRefund(paramsFilter)
-  }, [])
+    _getOrdersRefund()
+  }, [paramsFilter])
 
   return (
     <>
@@ -160,7 +155,7 @@ export default function OrdersReturn() {
               allowClear
               showSearch
               style={{ width: 270 }}
-              placeholder="Lọc theo ngày tạo"
+              placeholder="Lọc theo thời gian"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -258,6 +253,7 @@ export default function OrdersReturn() {
             </Select>
           </Space>
           <Table
+            size="small"
             loading={loading}
             scroll={{ y: 300 }}
             style={{ width: '100%' }}
@@ -265,15 +261,10 @@ export default function OrdersReturn() {
             columns={columns}
             pagination={{
               current: paramsFilter.page,
-              defaultPageSize: 20,
-              pageSizeOptions: [5],
+              pageSize: paramsFilter.page_size,
               showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                paramsFilter.page = page
-                paramsFilter.page_size = pageSize
-                setParamsFilter(paramsFilter)
-                _getOrdersRefund(paramsFilter)
-              },
+              onChange: (page, pageSize) =>
+                setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
               total: countOrdersRefund,
             }}
           />

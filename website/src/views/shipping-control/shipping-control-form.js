@@ -18,7 +18,6 @@ import {
 } from 'antd'
 
 //apis
-import { addCompare } from 'apis/compare'
 import { getShippings } from 'apis/shipping'
 
 //components
@@ -76,7 +75,7 @@ export default function ShippingControlForm() {
             Lưu nháp
           </Button>
           <Button size="large" type="primary">
-            Tạo phiếu
+            Đối soát file
           </Button>
         </Space>
       </TitlePage>

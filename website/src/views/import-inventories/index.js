@@ -46,6 +46,7 @@ import {
   uploadOrdersImportInventory,
   deleteOrderImportInventory,
   updateOrderImportInventory,
+  getStatusOrderImportInventory,
 } from 'apis/inventory'
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
@@ -59,6 +60,7 @@ export default function ImportInventories() {
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
 
   const [employees, setEmployees] = useState([])
+  const [statusList, setStatusList] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
   const [ordersInventory, setOrdersInventory] = useState([])
   const [countOrder, setCountOrder] = useState(0)
@@ -367,6 +369,16 @@ export default function ImportInventories() {
     }
   }
 
+  const _getStatusOrderImportInventory = async () => {
+    try {
+      const res = await getStatusOrderImportInventory()
+      console.log(res)
+      if (res.status === 200) setStatusList(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getProducts = async () => {
     try {
       const res = await getProducts({
@@ -405,6 +417,7 @@ export default function ImportInventories() {
     _getSuppliers()
     _getProducts()
     _getEmployees()
+    _getStatusOrderImportInventory()
   }, [])
 
   useEffect(() => {
@@ -530,7 +543,14 @@ export default function ImportInventories() {
               bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={6}
+            lg={6}
+            xl={6}
+            style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
+          >
             <Select
               size="large"
               open={isOpenSelect}
@@ -655,10 +675,11 @@ export default function ImportInventories() {
               onChange={(value) => _onFilter('status', value)}
               style={{ width: '100%' }}
             >
-              <Select.Option value="DRAFT">Lưu nháp</Select.Option>
-              <Select.Option value="VERIFY">Xác nhận đơn hàng</Select.Option>
-              <Select.Option value="COMPLETE">Hoàn thành</Select.Option>
-              <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
+              {statusList.map((status, index) => (
+                <Select.Option value={status.name} index={index}>
+                  {status.label}
+                </Select.Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6}>
@@ -672,9 +693,16 @@ export default function ImportInventories() {
               }
               bordered={false}
               style={{ borderLeft: '1px solid #d9d9d9', width: '100%' }}
-            />
+              value={paramsFilter.creator_id}
+              onChange={(value) => _onFilter('creator_id', value)}
+            >
+              {employees.map((employee, index) => (
+                <Select.Option key={index} value={employee.user_id}>
+                  {employee.first_name} {employee.last_name}
+                </Select.Option>
+              ))}
+            </Select>
           </Col>
-          {/* </Space> */}
         </Row>
         <Select
           size="large"
@@ -685,16 +713,16 @@ export default function ImportInventories() {
             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
           }
           style={{ marginTop: 10, marginRight: 5, width: '25%' }}
-          />
-        <Button
-          size="large"
-          onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
-          style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
-          danger
-          type="primary"
+          value={paramsFilter.verifier_id}
+          onChange={(value) => _onFilter('verifier_id', value)}
         >
-          Xóa bộ lọc
-        </Button>
+          {employees.map((employee, index) => (
+            <Select.Option
+              key={index}
+              value={employee.user_id}
+            >{`${employee.first_name} ${employee.last_name}`}</Select.Option>
+          ))}
+        </Select>
       </div>
 
       <div style={{ marginTop: 15 }}>
@@ -830,15 +858,15 @@ export default function ImportInventories() {
                     products={
                       record.products
                         ? record.products.map(
-                          (e) =>
-                            e && {
-                              ...e.product_info,
-                              quantity: e.quantity,
-                              files: record.files,
-                              tags: record.tags,
-                              note: record.note,
-                            }
-                        )
+                            (e) =>
+                              e && {
+                                ...e.product_info,
+                                quantity: e.quantity,
+                                files: record.files,
+                                tags: record.tags,
+                                note: record.note,
+                              }
+                          )
                         : []
                     }
                   />

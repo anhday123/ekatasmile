@@ -294,7 +294,7 @@ export default function ShippingProduct() {
               allowClear
               showSearch
               style={{ width: '100%' }}
-              placeholder="Lọc theo thời gian nhập chi nhánh"
+              placeholder="Lọc theo thời gian"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
