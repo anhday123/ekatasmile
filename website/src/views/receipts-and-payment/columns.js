@@ -1,43 +1,43 @@
 const columns = [
   {
     title: 'Mã phiếu',
-    render: () => 'RVF456667',
+    dataIndex: 'code',
+  },
+  {
+    title: 'Hình phiếu',
+    dataIndex: 'source',
   },
   {
     title: 'Loại hình phiếu',
-    render: () => 'Phiếu thu',
-  },
-  {
-    title: 'Loại phiếu',
-    render: () => 'Tự động',
+    dataIndex: 'type',
   },
   {
     title: 'Hình thức thanh toán',
-    render: () => 'Tiền mặt',
+    key: 'payment',
   },
   {
     title: 'Trạng thái',
-    render: () => 'Hoàn thành',
+    dataIndex: 'status',
   },
   {
     title: 'Số tiền',
-    render: () => '4000000',
+    key: 'money',
   },
   {
     title: 'Người nộp',
-    render: () => 'Nguyễn B',
+    key: 'payer',
   },
   {
     title: 'Người nhận',
-    render: () => 'Nguyễn C',
+    key: 'receiver',
   },
   {
     title: 'Người tạo phiếu',
-    render: () => 'Nguyễn A',
+    key: 'creator',
   },
   {
     title: 'Ngày ghi nhận',
-    render: () => '26/09/2021 17:57:09',
+    key: 'create_date',
   },
 ]
 
