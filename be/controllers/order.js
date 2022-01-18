@@ -497,14 +497,16 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
         };
-        await Promise.all(
-            _order.payments.map((payment, index) => {
-                if (payment.name == 'POINT' && !is_used) {
-                    _order.payments[index].is_used = true;
-                    return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
-                }
-            })
-        );
+        if (_order.payments) {
+            await Promise.all(
+                _order.payments.map((payment, index) => {
+                    if (payment.name == 'POINT' && !is_used) {
+                        _order.payments[index].is_used = true;
+                        return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
+                    }
+                })
+            );
+        }
         let totalCost = 0;
         let productIds = [];
         let variantIds = [];
