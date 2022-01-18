@@ -413,7 +413,7 @@ module.exports._register = async (req, res, next) => {
                 code: String(2).padStart(6, '0'),
                 name: 'Điểm tích lũy',
                 images: [],
-                default: true,
+                default: false,
                 create_date: moment().tz(TIMEZONE).format(),
                 creator_id: 1,
                 last_update: moment().tz(TIMEZONE).format(),
