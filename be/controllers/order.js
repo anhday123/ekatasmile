@@ -288,7 +288,7 @@ module.exports._create = async (req, res, next) => {
                 if (
                     payment.method &&
                     removeUnicode(String(payment.method).toLowerCase(), true) == 'diemtichluy' &&
-                    !is_used
+                    !payment.is_used
                 ) {
                     _order.payments[index].is_used = true;
                     return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
