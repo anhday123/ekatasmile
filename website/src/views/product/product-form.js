@@ -1034,6 +1034,7 @@ export default function ProductAdd() {
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
                 <Form.Item label="Nhóm sản phẩm" name="category_id">
                   <TreeSelect
+                    showCheckedStrategy={TreeSelect.SHOW_ALL}
                     size="large"
                     style={{ width: '100%' }}
                     showSearch={false}

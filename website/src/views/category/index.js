@@ -22,12 +22,7 @@ import {
 } from 'antd'
 
 //icons
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  ExclamationCircleFilled,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { uploadFile } from 'apis/upload'
@@ -42,9 +37,11 @@ export default function Category() {
   const [fileUpload, setFileUpload] = useState(null)
   const [imageView, setImageView] = useState('')
 
-  const [match, setMatch] = useState(location.state ? location.state.condition.must_match : 'all')
+  const [match, setMatch] = useState(
+    location.state && location.state.condition ? location.state.condition.must_match : 'all'
+  )
   const [conditions, setConditions] = useState(
-    location.state
+    location.state && location.state.condition
       ? location.state.condition.function
       : [{ name: 'name', operator: 'is_equal_to', value: '' }]
   )
@@ -310,7 +307,7 @@ export default function Category() {
                   type="primary"
                   onClick={() => {
                     const conditionsNew = [...conditions]
-                    conditionsNew.push({ name: 'slug_title', operator: 'is_equal_to', value: '' })
+                    conditionsNew.push({ name: 'name', operator: 'is_equal_to', value: '' })
                     setConditions([...conditionsNew])
                   }}
                 >

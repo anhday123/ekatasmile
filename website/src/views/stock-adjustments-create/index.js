@@ -48,6 +48,8 @@ import {
 
 //apis
 import { getProducts } from 'apis/product'
+import { getAllBranch } from 'apis/branch'
+import { getUsers } from 'apis/users'
 
 export default function CreateReport() {
   const history = useHistory()
@@ -56,21 +58,62 @@ export default function CreateReport() {
   const { Option } = Select
   const { TextArea, Search } = Input
 
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [countOrder, setCountOrder] = useState(0)
+
   const [loadingProduct, setLoadingProduct] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [dataProducts, setDataProducts] = useState([])
+  const [dataModal, setDataModal] = useState([])
+  console.log(dataModal)
+  const [allBranch, setAllBranch] = useState([])
+  const [users, setUsers] = useState([])
   const [listProduct, setListProduct] = useState([])
 
   const _getProducts = async (params) => {
     try {
       setLoadingProduct(true)
       const res = await getProducts(params)
-      console.log(res)
-      if (res.status === 200) setDataProducts(res.data.data)
+      console.log(res.data.data)
+      if (res.status === 200) {
+        setDataProducts(res.data.data)
+        setCountOrder(res.data.count)
+
+        let dataNew = []
+        res.data.data.map(item => item.variants.map(e => dataNew.push(e)))
+        setDataModal(dataNew)
+      }
       setLoadingProduct(false)
     } catch (err) {
       console.log(err)
       setLoadingProduct(false)
+    }
+  }
+
+  const _getAllBranch = async (query) => {
+    try {
+      setLoading(true)
+      const res = await getAllBranch(query)
+      if (res.status === 200) setAllBranch(res.data.data)
+      setLoading(false)
+    }
+    catch (err) {
+      console.log(err)
+      setLoading(false)
+    }
+  }
+
+  const _getUsers = async (query) => {
+    try {
+      setLoading(true)
+      const res = await getUsers(query)
+      if (res.status === 200) setUsers(res.data.data)
+      setLoading(false)
+    }
+    catch (err) {
+      console.log(err)
+      setLoading(false)
     }
   }
 
@@ -112,8 +155,27 @@ export default function CreateReport() {
     },
   ]
 
+  const columnsModal = [
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      width: 100,
+      render: (text, record) => <img style={{ width: '50%', display: 'block' }} src={text} alt='' />
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'title',
+    },
+    {
+      title: 'Giá',
+      dataIndex: 'price',
+    },
+  ]
+
   useEffect(() => {
     _getProducts()
+    _getAllBranch()
+    _getUsers()
   }, [])
 
   return (
@@ -162,8 +224,11 @@ export default function CreateReport() {
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
             >
-              <Option value="1">Not Identified</Option>
-              <Option value="2">Closed</Option>
+              {
+                allBranch.map((branch, index) =>
+                  <Option key={index} value={branch.branch_id}>{branch.name}</Option>
+                )
+              }
             </Select>
           </Col>
           <Col span={6}>
@@ -181,8 +246,11 @@ export default function CreateReport() {
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
             >
-              <Option value="1">Nhân viên A</Option>
-              <Option value="2">Nhân viên B</Option>
+              {
+                users.map((user, index) =>
+                  <Option key={index} value={user.user_id}>{user.username}</Option>
+                )
+              }
             </Select>
           </Col>
           <Col span={6}>
@@ -216,57 +284,58 @@ export default function CreateReport() {
                 placeholder="Thêm sản phẩm vào hoá đơn"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
-                {dataProducts.map((data, index) => (
-                  <Select.Option value={data.title} key={data.title + index + ''}>
-                    <Row
-                      align="middle"
-                      wrap={false}
-                      style={{ padding: '7px 13px' }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                      }}
-                    >
-                      {data.variants &&
-                        data.variants.map((img) => (
-                          <img
-                            src={img.image[0] ? img.image[0] : IMAGE_DEFAULT}
-                            alt={img.title}
-                            style={{
-                              minWidth: 40,
-                              minHeight: 40,
-                              maxWidth: 40,
-                              maxHeight: 40,
-                              objectFit: 'cover',
-                            }}
-                          />
-                        ))}
+                {dataProducts.map((data, index) =>
+                  data.variants &&
+                  data.variants.map((variant, index) =>
+                    <Select.Option value={variant.title} key={variant.title + index + ''} >
+                      <Row
+                        align="middle"
+                        wrap={false}
+                        style={{ padding: '7px 13px' }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                        }}
+                      >
+                        <img
+                          src={variant.image[0] ? variant.image[0] : IMAGE_DEFAULT}
+                          alt={variant.title}
+                          style={{
+                            minWidth: 40,
+                            minHeight: 40,
+                            maxWidth: 40,
+                            maxHeight: 40,
+                            objectFit: 'cover',
+                          }}
+                        />
 
-                      <div style={{ width: '100%', marginLeft: 15 }}>
-                        <Row wrap={false} justify="space-between">
-                          <span
-                            style={{
-                              maxWidth: 200,
-                              marginBottom: 0,
-                              fontWeight: 600,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              WebkitLineClamp: 1,
-                              WebkitBoxOrient: 'vertical',
-                              display: '-webkit-box',
-                            }}
-                          >
-                            {data.name}
-                          </span>
-                          <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                            {formatCash(data.variants[0].price)}
-                          </p>
-                        </Row>
-                      </div>
-                    </Row>
-                  </Select.Option>
-                ))}
+                        <div style={{ width: '100%', marginLeft: 15 }}>
+                          <Row wrap={false} justify="space-between">
+                            <span
+                              style={{
+                                maxWidth: 200,
+                                marginBottom: 0,
+                                fontWeight: 600,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                display: '-webkit-box',
+                              }}
+                            >
+                              {variant.title}
+                            </span>
+                            <p style={{ marginBottom: 0, fontWeight: 500 }}>
+                              {formatCash(variant.price)}
+                            </p>
+                          </Row>
+                        </div>
+                      </Row>
+                    </Select.Option>
+                  )
+                )}
               </Select>
             </Col>
+
             <Col span={4}>
               <Button
                 onClick={() => setIsModalVisible(true)}
@@ -302,7 +371,7 @@ export default function CreateReport() {
             }}
           />
         </div>
-      </Form>
+      </Form >
       <Modal
         title="Chọn nhiều sản phẩm"
         visible={isModalVisible}
@@ -317,7 +386,35 @@ export default function CreateReport() {
           // onSearch={onSearch}
           style={{ width: '100%' }}
         />
+        <Table
+          rowSelection={{
+            onChange: (selectedRowKeys, selectedRows) => {
+              console.log(selectedRowKeys, selectedRows)
+            },
+            getCheckboxProps: (record) => ({
+              title: record.title,
+            }),
+          }}
+          loading={loading}
+          size="small"
+          dataSource={dataModal}
+          columns={columnsModal}
+          style={{ width: '100%', marginTop: 10 }}
+          pagination={{
+            position: ['bottomLeft'],
+            current: paramsFilter.page,
+            pageSize: paramsFilter.page_size,
+            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              paramsFilter.page = page
+              paramsFilter.page_size = pageSize
+              setParamsFilter({ ...paramsFilter })
+            },
+            total: countOrder,
+          }}
+        />
       </Modal>
-    </div>
+    </div >
   )
 }

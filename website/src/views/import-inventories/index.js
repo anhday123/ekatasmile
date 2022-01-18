@@ -49,6 +49,7 @@ import {
 } from 'apis/inventory'
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
+import { getEmployees } from 'apis/employee'
 
 export default function ImportInventories() {
   let printOrderRef = useRef()
@@ -57,6 +58,7 @@ export default function ImportInventories() {
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
 
+  const [employees, setEmployees] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
   const [ordersInventory, setOrdersInventory] = useState([])
   const [countOrder, setCountOrder] = useState(0)
@@ -356,6 +358,15 @@ export default function ImportInventories() {
     }
   }
 
+  const _getEmployees = async () => {
+    try {
+      const res = await getEmployees()
+      if (res.status === 200) setEmployees(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getProducts = async () => {
     try {
       const res = await getProducts({
@@ -393,6 +404,7 @@ export default function ImportInventories() {
   useEffect(() => {
     _getSuppliers()
     _getProducts()
+    _getEmployees()
   }, [])
 
   useEffect(() => {
@@ -404,6 +416,15 @@ export default function ImportInventories() {
       <Print />
       <TitlePage title="Nhập hàng">
         <Space>
+          <Button
+            size="large"
+            onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
+            style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
+            danger
+            type="primary"
+          >
+            Xóa bộ lọc
+          </Button>
           <Button
             size="large"
             onClick={toggleProductsToSupplier}
@@ -496,175 +517,184 @@ export default function ImportInventories() {
       </TitlePage>
 
       <div style={{ marginTop: 10 }}>
-        <Space wrap={true}>
-          <Input
-            allowClear
-            value={valueSearch}
-            onChange={onSearch}
-            style={{ width: 320 }}
-            prefix={<SearchOutlined />}
-            size="large"
-            placeholder="Tìm kiếm theo số hóa đơn"
-          />
-          <Select
-            size="large"
-            open={isOpenSelect}
-            onBlur={() => {
-              if (isOpenSelect) toggleOpenSelect()
-            }}
-            onClick={() => {
-              if (!isOpenSelect) toggleOpenSelect()
-            }}
-            allowClear
-            showSearch
-            style={{ width: '100%' }}
-            placeholder="Lọc theo ngày nhập hàng"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            value={valueTime}
-            onChange={async (value) => {
-              setValueTime(value)
-
-              paramsFilter.page = 1
-
-              //xoa params search date hien tai
-              const p = Object.keys(valueDateTimeSearch)
-              if (p.length) delete paramsFilter[p[0]]
-
-              setValueDateSearch(null)
-              delete paramsFilter.from_date
-              delete paramsFilter.to_date
-
-              if (isOpenSelect) toggleOpenSelect()
-
-              if (value) {
-                const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-
-                setParamsFilter({ ...paramsFilter, ...searchDate })
-                setValueDateTimeSearch({ ...searchDate })
-              } else {
-                setParamsFilter({ ...paramsFilter })
-                setValueDateTimeSearch({})
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          {/* <Space wrap={true}> */}
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Input
+              allowClear
+              value={valueSearch}
+              onChange={onSearch}
+              prefix={<SearchOutlined />}
+              size="large"
+              placeholder="Tìm kiếm theo số hóa đơn"
+              bordered={false}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
+            <Select
+              size="large"
+              open={isOpenSelect}
+              onBlur={() => {
+                if (isOpenSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!isOpenSelect) toggleOpenSelect()
+              }}
+              allowClear
+              showSearch
+              bordered={false}
+              placeholder="Lọc theo ngày nhập hàng"
+              optionFilterProp="children"
+              style={{ width: '100%' }}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-            }}
-            dropdownRender={(menu) => (
-              <>
-                <DatePicker.RangePicker
-                  onFocus={() => {
-                    if (!isOpenSelect) toggleOpenSelect()
-                  }}
-                  onBlur={() => {
-                    if (isOpenSelect) toggleOpenSelect()
-                  }}
-                  value={valueDateSearch}
-                  onChange={(dates, dateStrings) => {
-                    //khi search hoac filter thi reset page ve 1
-                    paramsFilter.page = 1
+              value={valueTime}
+              onChange={async (value) => {
+                setValueTime(value)
 
-                    if (isOpenSelect) toggleOpenSelect()
+                paramsFilter.page = 1
 
-                    //nếu search date thì xoá các params date
-                    delete paramsFilter.to_day
-                    delete paramsFilter.yesterday
-                    delete paramsFilter.this_week
-                    delete paramsFilter.last_week
-                    delete paramsFilter.last_month
-                    delete paramsFilter.this_month
-                    delete paramsFilter.this_year
-                    delete paramsFilter.last_year
+                //xoa params search date hien tai
+                const p = Object.keys(valueDateTimeSearch)
+                if (p.length) delete paramsFilter[p[0]]
 
-                    //Kiểm tra xem date có được chọn ko
-                    //Nếu ko thì thoát khỏi hàm, tránh cash app
-                    //và get danh sách order
-                    if (!dateStrings[0] && !dateStrings[1]) {
-                      delete paramsFilter.from_date
-                      delete paramsFilter.to_date
+                setValueDateSearch(null)
+                delete paramsFilter.from_date
+                delete paramsFilter.to_date
 
-                      setValueDateSearch(null)
-                      setValueTime()
-                    } else {
-                      const dateFirst = dateStrings[0]
-                      const dateLast = dateStrings[1]
-                      setValueDateSearch(dates)
-                      setValueTime(`${dateFirst} -> ${dateLast}`)
+                if (isOpenSelect) toggleOpenSelect()
 
-                      dateFirst.replace(/-/g, '/')
-                      dateLast.replace(/-/g, '/')
+                if (value) {
+                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
 
-                      paramsFilter.from_date = dateFirst
-                      paramsFilter.to_date = dateLast
-                    }
+                  setParamsFilter({ ...paramsFilter, ...searchDate })
+                  setValueDateTimeSearch({ ...searchDate })
+                } else {
+                  setParamsFilter({ ...paramsFilter })
+                  setValueDateTimeSearch({})
+                }
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <DatePicker.RangePicker
+                    onFocus={() => {
+                      if (!isOpenSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (isOpenSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
 
-                    setParamsFilter({ ...paramsFilter })
-                  }}
-                  style={{ width: '100%' }}
-                />
-                {menu}
-              </>
-            )}
-          >
-            <Select.Option value="today">Hôm nay</Select.Option>
-            <Select.Option value="yesterday">Hôm qua</Select.Option>
-            <Select.Option value="this_week">Tuần này</Select.Option>
-            <Select.Option value="last_week">Tuần trước</Select.Option>
-            <Select.Option value="this_month">Tháng này</Select.Option>
-            <Select.Option value="last_month">Tháng trước</Select.Option>
-            <Select.Option value="this_year">Năm này</Select.Option>
-            <Select.Option value="last_year">Năm trước</Select.Option>
-          </Select>
+                      if (isOpenSelect) toggleOpenSelect()
 
-          <Select
-            size="large"
-            style={{ width: '100%' }}
-            placeholder="Lọc theo trạng thái"
-            allowClear
-            showSearch
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            value={paramsFilter.status}
-            onChange={(value) => _onFilter('status', value)}
-          >
-            <Select.Option value="DRAFT">Lưu nháp</Select.Option>
-            <Select.Option value="VERIFY">Xác nhận đơn hàng</Select.Option>
-            <Select.Option value="COMPLETE">Hoàn thành</Select.Option>
-            <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
-          </Select>
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
 
-          <Select
-            size="large"
-            style={{ width: 320 }}
-            placeholder="Lọc theo nhân viên tạo đơn"
-            allowClear
-            showSearch
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          ></Select>
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
 
-          <Select
-            size="large"
-            style={{ width: 320 }}
-            placeholder="Lọc theo nhân viên xác nhận đơn"
-            allowClear
-            showSearch
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          ></Select>
+                        setValueDateSearch(null)
+                        setValueTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueTime(`${dateFirst} -> ${dateLast}`)
 
-          <Button
-            size="large"
-            onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
-            style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
-            danger
-            type="primary"
-          >
-            Xóa bộ lọc
-          </Button>
-        </Space>
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                    style={{ width: '100%' }}
+                  />
+                  {menu}
+                </>
+              )}
+            >
+              <Select.Option value="today">Hôm nay</Select.Option>
+              <Select.Option value="yesterday">Hôm qua</Select.Option>
+              <Select.Option value="this_week">Tuần này</Select.Option>
+              <Select.Option value="last_week">Tuần trước</Select.Option>
+              <Select.Option value="this_month">Tháng này</Select.Option>
+              <Select.Option value="last_month">Tháng trước</Select.Option>
+              <Select.Option value="this_year">Năm này</Select.Option>
+              <Select.Option value="last_year">Năm trước</Select.Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Select
+              size="large"
+              placeholder="Lọc theo trạng thái"
+              allowClear
+              showSearch
+              bordered={false}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={paramsFilter.status}
+              onChange={(value) => _onFilter('status', value)}
+              style={{ width: '100%' }}
+            >
+              <Select.Option value="DRAFT">Lưu nháp</Select.Option>
+              <Select.Option value="VERIFY">Xác nhận đơn hàng</Select.Option>
+              <Select.Option value="COMPLETE">Hoàn thành</Select.Option>
+              <Select.Option value="CANCEL">Hủy đơn hàng</Select.Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Select
+              size="large"
+              placeholder="Lọc theo nhân viên tạo đơn"
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              bordered={false}
+              style={{ borderLeft: '1px solid #d9d9d9', width: '100%' }}
+            />
+          </Col>
+          {/* </Space> */}
+        </Row>
+        <Select
+          size="large"
+          placeholder="Lọc theo nhân viên xác nhận đơn"
+          allowClear
+          showSearch
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          style={{ marginTop: 10, marginRight: 5, width: '25%' }}
+          />
+        <Button
+          size="large"
+          onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
+          style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
+          danger
+          type="primary"
+        >
+          Xóa bộ lọc
+        </Button>
       </div>
 
       <div style={{ marginTop: 15 }}>
@@ -800,15 +830,15 @@ export default function ImportInventories() {
                     products={
                       record.products
                         ? record.products.map(
-                            (e) =>
-                              e && {
-                                ...e.product_info,
-                                quantity: e.quantity,
-                                files: record.files,
-                                tags: record.tags,
-                                note: record.note,
-                              }
-                          )
+                          (e) =>
+                            e && {
+                              ...e.product_info,
+                              quantity: e.quantity,
+                              files: record.files,
+                              tags: record.tags,
+                              note: record.note,
+                            }
+                        )
                         : []
                     }
                   />

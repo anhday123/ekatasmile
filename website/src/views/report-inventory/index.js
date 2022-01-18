@@ -11,7 +11,7 @@ import TitlePage from 'components/title-page'
 import exportTableToCSV from 'components/ExportCSV/export-table'
 
 //antd
-import { Input, Col, Row, DatePicker, Table, Tag, Button, Select } from 'antd'
+import { Input, Col, Row, DatePicker, Table, Tag, Button, Select, TreeSelect } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -19,11 +19,13 @@ import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 //apis
 import { getReportInventory } from 'apis/report'
 import { getAllBranch } from 'apis/branch'
+import { getCategories } from 'apis/category'
 
 export default function ReportInventory() {
   const history = useHistory()
 
   const [branches, setBranches] = useState([])
+  const [categories, setCategories] = useState([])
   const [reportInventory, setReportInventory] = useState([])
   const [reportInventoryToExport, setReportInventoryToExport] = useState([])
   const [loading, setLoading] = useState(false)
@@ -219,7 +221,17 @@ export default function ReportInventory() {
     }
   }
 
+  const _getCategories = async () => {
+    try {
+      const res = await getCategories()
+      if (res.status === 200) setCategories(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
+    _getCategories()
     _getBranches()
   }, [])
 
@@ -257,7 +269,7 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 10 }}>
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <DatePicker.RangePicker
             value={dateFilter}
@@ -271,8 +283,14 @@ export default function ReportInventory() {
           <Select
             mode="multiple"
             allowClear
-            value={paramsFilter.branch_id}
-            onChange={(value) => setParamsFilter({ ...paramsFilter, branch_id: value })}
+            value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
+            onChange={(value) => {
+              if (value.length) setParamsFilter({ ...paramsFilter, branch_id: value.join('---') })
+              else {
+                delete paramsFilter.branch_id
+                setParamsFilter({ ...paramsFilter })
+              }
+            }}
             size="large"
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
@@ -285,12 +303,40 @@ export default function ReportInventory() {
           </Select>
         </Col>
         <Col xs={24} sm={24} md={24} lg={7} xl={7}>
-          <Select
-            allowClear
+          <TreeSelect
+            showCheckedStrategy={TreeSelect.SHOW_ALL}
+            multiple
+            treeDefaultExpandAll
             size="large"
-            placeholder="Lọc theo nhóm sản phẩm"
             style={{ width: '100%' }}
-          ></Select>
+            placeholder="Lọc theo nhóm sản phẩm"
+            value={
+              paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
+            }
+            onChange={(value) => {
+              if (value.length) setParamsFilter({ ...paramsFilter, category_id: value.join('---') })
+              else {
+                delete paramsFilter.category_id
+                setParamsFilter({ ...paramsFilter })
+              }
+            }}
+            allowClear
+          >
+            {categories.map((category) => (
+              <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                {category.children_category.map((child) => (
+                  <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                    {child.children_category &&
+                      child.children_category.map((e) => (
+                        <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                          {e.name}
+                        </TreeSelect.TreeNode>
+                      ))}
+                  </TreeSelect.TreeNode>
+                ))}
+              </TreeSelect.TreeNode>
+            ))}
+          </TreeSelect>
         </Col>
         <Button
           onClick={_clearFilters}
