@@ -217,7 +217,9 @@ module.exports._delete = async (req, res, next) => {
   }
 };
 
-module.exports._compareCard = async (req, res, next) => {
+module.exports._createCompareCard = async (req, res, next) => {};
+
+module.exports._importCompareCard = async (req, res, next) => {
   try {
     if (req.file == undefined) {
       throw new Error("400: Vui lòng truyền file!");
@@ -290,7 +292,7 @@ module.exports._compareCard = async (req, res, next) => {
       },
       {
         $match: {
-          ship_status: "COMPLETE",
+          is_delivery: true,
         },
       },
       {
@@ -307,9 +309,9 @@ module.exports._compareCard = async (req, res, next) => {
     var problems = [];
 
     var orders = await client
-      .db(DB)
+      .db(req.user.database)
       .collection("Orders")
-      .aggregate([])
+      .aggregate(query)
       .toArray();
 
     // Tien hanh doi soat
@@ -319,8 +321,59 @@ module.exports._compareCard = async (req, res, next) => {
       rows[i].status = "done";
     }
 
+    console.log();
+    var result_stt = await client
+      .db(req.user.database)
+      .collection("CardCompare")
+      .aggregate([
+        {
+          $match: {
+            create_date_stt: moment()
+              .tz(process.env.TIMEZONE)
+              .format("yyyy/MM/dd"),
+          },
+        },
+        {
+          $count: "counts",
+        },
+      ])
+      .toArray();
+    var stt = result_stt.length > 1 ? result_stt[0].counts : 0;
+
+    var code =
+      new String(moment().tz(process.env.TIMEZONE).year()).padStart(2, 0) +
+      "-" +
+      new String(moment().tz(process.env.TIMEZONE).month()).padStart(2, 0) +
+      "-" +
+      new String(moment().tz(process.env.TIMEZONE).date()).padStart(2, 0) +
+      "-" +
+      (stt + 1);
+
+    var card = {
+      code: code,
+      create_date: moment().tz(process.env.TIMEZONE).format(),
+      data: rows,
+      create_date_stt: moment().tz(process.env.TIMEZONE).format("yyyy/MM/dd"),
+      status: "COMPLETE",
+    };
+
+    await client
+      .db(req.user.database)
+      .collection("CardCompare")
+      .insertOne(card);
+
     return res.send({ success: true, result: orders, problems: problems });
   } catch (err) {
     next(err);
   }
 };
+
+module.exports._getCompareCard = async (req, res, next) => {
+  try {
+    await shippingCompanyService._getCompareCard(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports._updateCompareCard = async (req, res, next) => {};
