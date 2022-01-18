@@ -247,6 +247,7 @@ module.exports._create = async (req, res, next) => {
             creator_id: req.user.user_id,
             verify_date: '',
             verifier_id: '',
+            is_delivery: req.body.is_delivery || false,
             delivery_date: '',
             deliverer_id: '',
             complete_date: '',
