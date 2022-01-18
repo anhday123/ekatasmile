@@ -2069,12 +2069,16 @@ module.exports._createInventoryNote = async (req, res, next) => {
         inventoryNoteId++;
         let _inventoryNote = {
             inventory_note_id: inventoryNoteId,
+            code: String(inventoryNoteId).padStart(6, '0'),
             branch_id: req.body.branch_id,
             products: req.body.products,
+            note: '',
             status: req.body.status || 'DRAFT',
             balance: false,
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
+            inventory_date: req.body.inventory_date || '',
+            inventorier_id: req.body.inventorier_id || '',
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             balance_date: '',

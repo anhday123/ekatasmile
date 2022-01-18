@@ -20,4 +20,10 @@ router.route(`/transport/update/:order_id`).patch(auth, inventory._updateTranspo
 router.route(`/transport`).get(auth, inventory._getTransportOrder);
 router.route(`/transport/delete`).delete(auth, upload.single('file'), inventory._deleteTransportOrder);
 
+router.route(`/inventorynote/create`).post(auth, inventory._createInventoryNote);
+router.route(`/inventorynote/create/file`).post(auth, upload.single('file'), inventory._createInventoryNoteFile);
+router.route(`/inventorynote/update/:order_id`).patch(auth, inventory._updateInventoryNote);
+router.route(`/inventorynote`).get(auth, inventory._getInventoryNote);
+router.route(`/inventorynote/delete`).delete(auth, inventory._deleteInventoryNote);
+
 module.exports = router;
