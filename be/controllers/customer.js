@@ -414,3 +414,92 @@ module.exports._deleteType = async (req, res, next) => {
         next(err);
     }
 };
+
+module.exports._getPointHistory = async (req, res, next) => {
+    try {
+        let aggregateQuery = [];
+        if (req.query.customer_id) {
+            aggregateQuery.push({ $match: { customer_id: Number(req.query.customer_id) } });
+        }
+        if (req.query.branch_id) {
+            aggregateQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
+        }
+        if (req.query.type) {
+            aggregateQuery.push({ $match: { type: String(req.query.type).toUpperCase() } });
+        }
+        if (req.query['today']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
+            delete req.query.today;
+        }
+        if (req.query['yesterday']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
+            delete req.query.yesterday;
+        }
+        if (req.query['this_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
+            delete req.query.this_week;
+        }
+        if (req.query['last_week']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
+            delete req.query.last_week;
+        }
+        if (req.query['this_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
+            delete req.query.this_month;
+        }
+        if (req.query['last_month']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
+            delete req.query.last_month;
+        }
+        if (req.query['this_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
+            delete req.query.this_year;
+        }
+        if (req.query['last_year']) {
+            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
+            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
+            delete req.query.last_year;
+        }
+        if (req.query['from_date']) {
+            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
+        }
+        if (req.query['to_date']) {
+            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
+        }
+        if (req.query.from_date) {
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
+        }
+        if (req.query.to_date) {
+            aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
+        }
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        if (req.query.page && req.query.page_size) {
+            let page = Number(req.query.page) || 1;
+            let page_size = Number(req.query.page_size) || 50;
+            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        }
+        let [histories, counts] = await Promise.all([
+            client.db(req.user.database).collection(`PointUseHistories`).aggregate(aggregateQuery).toArray(),
+            client
+                .db(req.user.database)
+                .collection(`PointUseHistories`)
+                .aggregate([...countQuery, { $count: 'counts' }])
+                .toArray(),
+        ]);
+        res.send({
+            success: true,
+            count: counts[0] ? counts[0].counts : 0,
+            data: histories,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
