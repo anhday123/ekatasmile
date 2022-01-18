@@ -484,6 +484,7 @@ module.exports._update = async (req, res, next) => {
             creator_id: _order.creator_id,
             verify_date: _order.verify_date,
             verifier_id: _order.verifier_id,
+            is_delivery: _order.is_delivery,
             delivery_date: _order.delivery_date,
             deliverer_id: _order.deliverer_id,
             complete_date: _order.complete_date,
