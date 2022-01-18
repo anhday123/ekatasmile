@@ -101,7 +101,7 @@ module.exports._create = async (req, res, next) => {
             creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
-            active: true,
+            active: false,
             slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
             slug_tags: (() => {
                 if (req.body.tags) {
@@ -559,7 +559,6 @@ module.exports.importFileC = async (req, res, next) => {
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
-
         let excelData = XLSX.read(req.file.buffer, {
             type: 'buffer',
             cellDates: true,

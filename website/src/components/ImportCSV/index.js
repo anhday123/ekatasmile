@@ -7,6 +7,7 @@ import { Row, Button, Modal, Upload, message, notification, Table } from 'antd'
 
 //icons
 import { DownloadOutlined } from '@ant-design/icons'
+import moment from 'moment'
 
 export default function ImportFile({
   title,
@@ -17,6 +18,7 @@ export default function ImportFile({
   size = 'default',
   customFileTemplated = false,
   fileName = '',
+  shippingId = '',
 }) {
   const typingTimeoutRef = useRef()
 
@@ -37,7 +39,15 @@ export default function ImportFile({
       let formData = new FormData()
       formData.append('file', fileUpload)
       try {
-        const res = await upload(formData)
+        let res
+
+        //Trường hợp upload file đối soát vận chuyển
+        if (shippingId !== '') {
+          formData.append('type', 'order')
+          formData.append('shipping_company_id', shippingId)
+          formData.append('status', 'DRAFT')
+          res = await upload(formData)
+        } else res = await upload(formData)
         console.log('res', res)
         if (res.status === 200) {
           if (res.data.success) {
@@ -69,18 +79,21 @@ export default function ImportFile({
         footer={null}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {customFileTemplated ? (
-            <a
-              onClick={() => exportToCSV(fileTemplated, fileName)}
-              style={{ marginBottom: 15, color: 'blue' }}
-            >
-              Tải xuống file mẫu
-            </a>
-          ) : (
-            <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
-              Tải xuống file mẫu
-            </a>
-          )}
+          <Row wrap={false} justify="space-between">
+            {customFileTemplated ? (
+              <a
+                onClick={() => exportToCSV(fileTemplated, fileName)}
+                style={{ marginBottom: 15, color: 'blue' }}
+              >
+                Tải xuống file mẫu
+              </a>
+            ) : (
+              <a download href={fileTemplated} style={{ marginBottom: 15, color: 'blue' }}>
+                Tải xuống file mẫu
+              </a>
+            )}
+            <div>Cập nhật file lần cuối: {moment(new Date()).format('DD/MM/YYYY HH:mm')}</div>
+          </Row>
 
           <Upload
             fileList={fileUpload ? [fileUpload] : []}

@@ -18,7 +18,7 @@ import { ACTION } from 'consts'
 
 //apis
 import { getDistricts, getProvinces } from 'apis/address'
-import { addCustomer, updateCustomer, getCustomerTypes } from 'apis/customer'
+import { addCustomer, updateCustomer, getCustomerTypes, addCustomerType } from 'apis/customer'
 
 const { Option } = Select
 export default function CustomerForm({ record, close, reload, text = 'Thêm' }) {
@@ -28,6 +28,36 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
   const [customerTypes, setCustomerTypes] = useState([])
+  const [type, setType] = useState('')
+  const [loadingBtn, setLoadingBtn] = useState(false)
+
+  const _createType = async () => {
+    try {
+      if (!type) {
+        notification.warning({ message: 'Vui lòng nhập loại khách hàng' })
+        return
+      }
+      setLoadingBtn(true)
+      const res = await addCustomerType({ name: type })
+      if (res.status === 200) {
+        if (res.data.success) {
+          await _getCustomerTypes()
+          notification.success({ message: 'Tạo loại khách hàng thành công' })
+          setType('')
+        } else
+          notification.error({
+            message: res.data.message || 'Tạo loại khách hàng thất bại, vui lòng thử lại',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Tạo loại khách hàng thất bại, vui lòng thử lại',
+        })
+      setLoadingBtn(false)
+    } catch (error) {
+      console.log(error)
+      setLoadingBtn(false)
+    }
+  }
 
   const onFinish = async (values) => {
     try {
@@ -112,9 +142,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
   const _getCustomerTypes = async () => {
     try {
       const res = await getCustomerTypes()
-      if (res.status === 200) {
-        setCustomerTypes(res.data.data)
-      }
+      if (res.status === 200) setCustomerTypes(res.data.data)
     } catch (error) {
       console.log(error)
     }
@@ -126,7 +154,12 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
     _getCustomerTypes()
 
     if (!record) initForm()
-    else form.setFieldsValue({ ...record, birthday: moment(new Date(record.birthday)) })
+    else
+      form.setFieldsValue({
+        ...record,
+        birthday: moment(new Date(record.birthday)),
+        type_id: record._type ? record._type.type_id : '',
+      })
   }, [])
 
   return (
@@ -154,21 +187,48 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
             name="phone"
             rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
           >
-            <Input allowClear style={{ width: '100%' }} size="large" placeholder="Nhập số điện thoại" />
+            <Input
+              allowClear
+              style={{ width: '100%' }}
+              size="large"
+              placeholder="Nhập số điện thoại"
+            />
           </Form.Item>
         </Col>
 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-          <Form.Item name="type" label="Loại khách hàng">
+          <Form.Item name="type_id" label="Loại khách hàng">
             <Select
               allowClear
               placeholder="Chọn loại khách hàng"
-              size="large">
-              {
-                customerTypes.map((type, index) =>
-                  <Option value={type.name} key={index}>{type.name}</Option>
-                )
-              }
+              size="large"
+              dropdownRender={(menu) => (
+                <div>
+                  {menu}
+                  <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                    <Input
+                      value={type}
+                      onPressEnter={_createType}
+                      placeholder="Nhập loại khách hàng mới"
+                      onChange={(e) => setType(e.target.value)}
+                    />
+                    <Button
+                      loading={loadingBtn}
+                      onClick={_createType}
+                      type="primary"
+                      style={{ marginLeft: 10 }}
+                    >
+                      Tạo mới
+                    </Button>
+                  </div>
+                </div>
+              )}
+            >
+              {customerTypes.map((type, index) => (
+                <Option value={type.type_id} key={index}>
+                  {type.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Col>

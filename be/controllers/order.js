@@ -7,6 +7,28 @@ const orderService = require(`../services/order`);
 
 var CryptoJS = require('crypto-js');
 
+let removeUnicode = (text, removeSpace) => {
+    /*
+        string là chuỗi cần remove unicode
+        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
+    */
+    if (typeof text != 'string') {
+        return '';
+    }
+    if (removeSpace && typeof removeSpace != 'boolean') {
+        throw new Error('Type of removeSpace input must be boolean!');
+    }
+    text = text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+    if (removeSpace) {
+        text = text.replace(/\s/g, '');
+    }
+    return text;
+};
+
 let changePoint = async (database, customer, pointChange, branch, order) => {
     try {
         if (typeof customer != 'object' || !customer.customer_id) {
@@ -263,7 +285,11 @@ module.exports._create = async (req, res, next) => {
         };
         await Promise.all(
             _order.payments.map((payment, index) => {
-                if (payment.name == 'POINT' && !is_used) {
+                if (
+                    payment.method &&
+                    removeUnicode(String(payment.method).toLowerCase(), true) == 'diemtichluy' &&
+                    !payment.is_used
+                ) {
                     _order.payments[index].is_used = true;
                     return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
                 }
@@ -497,14 +523,16 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
         };
-        await Promise.all(
-            _order.payments.map((payment, index) => {
-                if (payment.name == 'POINT' && !is_used) {
-                    _order.payments[index].is_used = true;
-                    return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
-                }
-            })
-        );
+        if (_order.payments) {
+            await Promise.all(
+                _order.payments.map((payment, index) => {
+                    if (payment.name == 'POINT' && !is_used) {
+                        _order.payments[index].is_used = true;
+                        return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
+                    }
+                })
+            );
+        }
         let totalCost = 0;
         let productIds = [];
         let variantIds = [];
@@ -546,7 +574,7 @@ module.exports._update = async (req, res, next) => {
         variants.map((eVariant) => {
             _variants[String(eVariant.variant_id)] = eVariant;
         });
-        if (/^(draft)$/gi.test(order.bill_status) && !/^((draft)|(cancel)|(refund))$/gi.test(req.body.bill_status)) {
+        if (/^(draft)$/gi.test(order.bill_status) && !/^((draft)|(cancel)|(refund))$/gi.test(_order.bill_status)) {
             let sortQuery = (() => {
                 if (req.user.price_recipe == 'FIFO') {
                     return { create_date: 1 };
@@ -636,8 +664,8 @@ module.exports._update = async (req, res, next) => {
         }
         if (
             !/^(draft)$/gi.test(order.bill_status) &&
-            !/^((cancel)|(refund))$/gi.test(req.body.bill_status) &&
-            order.bill_status != req.body.bill_status
+            !/^((cancel)|(refund))$/gi.test(order.bill_status) &&
+            /^((cancel)|(refund))$/gi.test(_order.bill_status)
         ) {
             let _updates = [];
             _order.order_details.map((eDetail) => {
