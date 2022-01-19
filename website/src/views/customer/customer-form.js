@@ -27,6 +27,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
+  const [provinceName, setProvinceName] = useState('')
   const [customerTypes, setCustomerTypes] = useState([])
   const [type, setType] = useState('')
   const [loadingBtn, setLoadingBtn] = useState(false)
@@ -131,8 +132,10 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
       const res = await getProvinces()
       if (res.status === 200) {
         setProvinces(res.data.data)
-        if (res.data.data && res.data.data.length && !record)
+        if (res.data.data && res.data.data.length && !record) {
+          setProvinceName(res.data.data[0].province_name)
           form.setFieldsValue({ province: res.data.data[0].province_name })
+        }
       }
     } catch (error) {
       console.log(error)
@@ -154,12 +157,14 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
     _getCustomerTypes()
 
     if (!record) initForm()
-    else
+    else {
+      setProvinceName(record.province || '')
       form.setFieldsValue({
         ...record,
         birthday: moment(new Date(record.birthday)),
         type_id: record._type ? record._type.type_id : '',
       })
+    }
   }, [])
 
   return (
@@ -261,6 +266,8 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
+              value={provinceName}
+              onChange={setProvinceName}
             >
               {provinces.map((e, index) => (
                 <Option value={e.province_name} key={index}>
@@ -283,11 +290,13 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
-              {districts.map((e, index) => (
-                <Option value={e.district_name} key={index}>
-                  {e.district_name}
-                </Option>
-              ))}
+              {districts
+                .filter((d) => !provinceName || d.province_name === provinceName)
+                .map((e, index) => (
+                  <Option value={e.district_name} key={index}>
+                    {e.district_name}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
         </Col>

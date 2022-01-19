@@ -372,7 +372,6 @@ export default function ImportInventories() {
   const _getStatusOrderImportInventory = async () => {
     try {
       const res = await getStatusOrderImportInventory()
-      console.log(res)
       if (res.status === 200) setStatusList(res.data.data)
     } catch (error) {
       console.log(error)
@@ -505,7 +504,7 @@ export default function ImportInventories() {
 
           <ImportCSV
             size="large"
-            txt="Nhập hàng"
+            txt="Nhập excel"
             upload={uploadOrdersImportInventory}
             reload={_getOrdersImportInventory}
             title="Nhập hàng bằng file excel"
@@ -809,7 +808,10 @@ export default function ImportInventories() {
             if (column.key === 'status')
               return {
                 ...column,
-                render: (text, record) => record.status,
+                render: (text, record) => {
+                  const status = statusList.find((s) => s.name === record.status)
+                  return status ? status.label : ''
+                },
               }
             if (column.key === 'action')
               return {

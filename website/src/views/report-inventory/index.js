@@ -29,11 +29,16 @@ export default function ReportInventory() {
   const [reportInventory, setReportInventory] = useState([])
   const [reportInventoryToExport, setReportInventoryToExport] = useState([])
   const [loading, setLoading] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+    from_date: moment(new Date()).format('YYYY-MM-DD'),
+    to_date: moment(new Date()).format('YYYY-MM-DD'),
+  })
   const [countReport, setCountReport] = useState(0)
   const [warehousesName, setWarehousesName] = useState([])
   const [warehousesNameExport, setWarehousesNameExport] = useState([])
-  const [dateFilter, setDateFilter] = useState()
+  const [dateFilter, setDateFilter] = useState([moment(new Date()), moment(new Date())])
 
   const onChangeDate = (date, dateString) => {
     setDateFilter(date)
@@ -60,7 +65,7 @@ export default function ReportInventory() {
     },
     {
       title: 'Mã hàng',
-      dataIndex: 'sku',
+      dataIndex: 'code',
     },
     {
       title: 'Tên hàng',
@@ -93,7 +98,7 @@ export default function ReportInventory() {
 
         res.data.data.map((e) => {
           let report = {
-            sku: e.product ? e.product.sku : '',
+            code: e.product ? e.product.code : '',
             name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
             categories: e.product._categories ? e.product._categories : [],
@@ -159,7 +164,7 @@ export default function ReportInventory() {
 
         res.data.data.map((e) => {
           let report = {
-            sku: e.product ? e.product.sku : '',
+            code: e.product ? e.product.code : '',
             name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
             categories: e.product._categories ? e.product._categories : [],

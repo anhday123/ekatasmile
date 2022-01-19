@@ -1,18 +1,36 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
+import { useSelector } from 'react-redux'
 
 //antd
-import { Form, Drawer, Row, Col, Button, Input, notification, DatePicker, Select } from 'antd'
+import {
+  Form,
+  Drawer,
+  Row,
+  Col,
+  Button,
+  Input,
+  notification,
+  DatePicker,
+  Select,
+  Radio,
+  Space,
+} from 'antd'
 
 //apis
 import { updateEmployee, addEmployee } from 'apis/employee'
 import { getDistricts, getProvinces } from 'apis/address'
+import { getAllBranch } from 'apis/branch'
+import { getRoles } from 'apis/role'
 
 export default function EmployeeForm({ children, reloadData, record }) {
   const [form] = Form.useForm()
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [roles, setRoles] = useState([])
   const [province, setProvince] = useState('')
   const [districts, setDistricts] = useState([])
+  const [branches, setBranches] = useState([])
   const [provinces, setProvinces] = useState([])
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -34,7 +52,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
         address: dataForm.address || '',
         district: dataForm.district || '',
         province: dataForm.province || '',
-        role_id: 5,
+        role_id: +dataForm.role_id,
       }
 
       let res
@@ -71,7 +89,6 @@ export default function EmployeeForm({ children, reloadData, record }) {
   const _getDistricts = async () => {
     try {
       const res = await getDistricts()
-      console.log(res)
       if (res.status === 200) setDistricts(res.data.data)
     } catch (error) {
       console.log(error)
@@ -87,7 +104,27 @@ export default function EmployeeForm({ children, reloadData, record }) {
     }
   }
 
+  const _getBranches = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getRoles = async () => {
+    try {
+      const res = await getRoles()
+      if (res.status === 200) setRoles(res.data.data.filter((e) => e.role_id !== 1))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
+    _getBranches()
+    _getRoles()
     _getProvinces()
     _getDistricts()
   }, [])
@@ -137,6 +174,24 @@ export default function EmployeeForm({ children, reloadData, record }) {
         <Form layout="vertical" form={form}>
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label="Tài khoản"
+                name="username"
+                rules={[{ required: record ? false : true, message: 'Vui lòng nhập tài khoản!' }]}
+              >
+                <Input disabled={record ? true : false} placeholder="Nhập tài khoản" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11} style={{ display: record && 'none' }}>
+              <Form.Item
+                label="Mật khẩu"
+                name="password"
+                rules={[{ required: record ? false : true, message: 'Vui lòng nhập mật khẩu!' }]}
+              >
+                <Input.Password placeholder="Nhập mật khẩu" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Họ" name="first_name">
                 <Input placeholder="Nhập họ" />
               </Form.Item>
@@ -150,26 +205,21 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 <Input placeholder="Nhập tên" />
               </Form.Item>
             </Col>
-
-            <Col xs={24} sm={24} md={11} lg={11} xl={11} style={{ display: record && 'none' }}>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label="Tài khoản"
-                name="username"
-                rules={[{ required: record ? false : true, message: 'Vui lòng nhập tài khoản!' }]}
+                name="branch_id"
+                label="Chi nhánh làm việc"
+                rules={[{ required: true, message: 'Vui lòng chọn chi nhánh làm việc' }]}
               >
-                <Input placeholder="Nhập tài khoản" />
+                <Select defaultValue={branchIdApp} placeholder="Chọn chi nhánh làm việc">
+                  {branches.map((branch, index) => (
+                    <Select.Option value={branch.branch_id} key={index}>
+                      {branch.name}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={11} lg={11} xl={11} style={{ display: record && 'none' }}>
-              <Form.Item
-                label="Mật khẩu"
-                name="password"
-                rules={[{ required: record ? false : true, message: 'Vui lòng nhập mật khẩu!' }]}
-              >
-                <Input.Password placeholder="Nhập mật khẩu" />
-              </Form.Item>
-            </Col>
-
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Email" name="email">
                 <Input placeholder="Nhập email" />
@@ -180,17 +230,12 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 <Input placeholder="Nhập liên hệ" />
               </Form.Item>
             </Col>
-
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Ngày sinh" name="birthday">
                 <DatePicker placeholder="Chọn ngày sinh" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item label="Địa chỉ" name="address">
-                <Input placeholder="Nhập địa chỉ" />
-              </Form.Item>
-            </Col>
+
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item name="province" label="Tỉnh/thành phố">
                 <Select
@@ -236,6 +281,28 @@ export default function EmployeeForm({ children, reloadData, record }) {
                       )
                     })}
                 </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item label="Địa chỉ" name="address">
+                <Input placeholder="Nhập địa chỉ" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="role_id"
+                label="Vai trò"
+                rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+              >
+                <Space wrap={true}>
+                  <Radio.Group>
+                    {roles.map((role, index) => (
+                      <Radio value={role.role_id} key={index}>
+                        {role.name}
+                      </Radio>
+                    ))}
+                  </Radio.Group>
+                </Space>
               </Form.Item>
             </Col>
           </Row>

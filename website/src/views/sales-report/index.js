@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import styles from './sales-report.module.scss'
 import moment from 'moment'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
 
 //antd
-import { Row, Col, Button, Select, Table, Modal, DatePicker } from 'antd'
+import { Row, Col, Button, Table, DatePicker } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //components
 import TitlePage from 'components/title-page'
-import SettingColumns from 'components/setting-columns'
 import columnsSalesReport from './columns'
 import exportToCSV from 'components/ExportCSV/export'
 
@@ -24,12 +22,16 @@ export default function ReportFinancial() {
   const history = useHistory()
   const dateFormat = 'YYYY-MM-DD'
 
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+    from_date: moment(new Date()).format('YYYY-MM-DD'),
+    to_date: moment(new Date()).format('YYYY-MM-DD'),
+  })
   const [loading, setLoading] = useState(false)
-  const [columns, setColumns] = useState([])
   const [countReport, setCountReport] = useState(0)
   const [salesReport, setSalesReport] = useState([])
-  const [dateFilter, setDateFilter] = useState()
+  const [dateFilter, setDateFilter] = useState([moment(new Date()), moment(new Date())])
 
   const onChangeDate = (date, dateString) => {
     setDateFilter(date)

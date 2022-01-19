@@ -92,7 +92,7 @@ export default function ImportFile({
                 Tải xuống file mẫu
               </a>
             )}
-            <div>Cập nhật file lần cuối: {moment(new Date()).format('DD/MM/YYYY HH:mm')}</div>
+            <div>Mẫu file cập nhật lần cuối: {moment(new Date()).format('DD/MM/YYYY HH:mm')}</div>
           </Row>
 
           <Upload

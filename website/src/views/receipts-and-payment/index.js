@@ -7,6 +7,7 @@ import { ROUTES } from 'consts'
 
 //apis
 import { getCustomers } from 'apis/customer'
+import { getFinances } from 'apis/report'
 
 //antd
 import {
@@ -34,6 +35,7 @@ import {
 //components
 import SettingColumns from 'components/setting-columns'
 import TitlePage from 'components/title-page'
+import moment from 'moment'
 
 export default function ReceiptsAndPayment() {
   const history = useHistory()
@@ -41,12 +43,8 @@ export default function ReceiptsAndPayment() {
   const [customers, setCustomers] = useState([])
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
-  const [columns, setColumns] = useState(
-    localStorage.getItem('columnsReceiptsPayment')
-      ? JSON.parse(localStorage.getItem('columnsReceiptsPayment'))
-      : [...columnsReceiptsPayment]
-  )
-
+  const [columns, setColumns] = useState([])
+  const [finances, setFinances] = useState([])
   const [isOpenSelect, setIsOpenSelect] = useState(false)
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
@@ -258,8 +256,19 @@ export default function ReceiptsAndPayment() {
     }
   }
 
+  const _getFinances = async () => {
+    try {
+      const res = await getFinances()
+      console.log(res)
+      if (res.status === 200) setFinances(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     _getCustomers()
+    _getFinances()
   }, [])
 
   return (
@@ -484,13 +493,50 @@ export default function ReceiptsAndPayment() {
         </Space>
       </Row>
       <Table
+        dataSource={finances}
         size="small"
-        rowSelection={{
-          selectedRowKeys,
-          onChange: (keys) => console.log(keys),
-        }}
+        rowSelection={{ selectedRowKeys, onChange: (keys) => console.log(keys) }}
         style={{ width: '100%' }}
-        columns={columns}
+        columns={columns.map((column) => {
+          if (column.key === 'payment')
+            return {
+              ...column,
+              render: (text, record) =>
+                record.payments && record.payments.map((e) => e.method).join(', '),
+            }
+          if (column.key === 'money')
+            return {
+              ...column,
+              render: (text, record) => record.money && formatCash(record.money || 0),
+            }
+          if (column.key === 'money')
+            return {
+              ...column,
+              render: (text, record) => record.money && formatCash(record.money || 0),
+            }
+          if (column.key === 'creator')
+            return {
+              ...column,
+              render: (text, record) => record._creator && record._creator.name,
+            }
+          if (column.key === 'receiver')
+            return {
+              ...column,
+              render: (text, record) => record._receiver && record._receiver.name,
+            }
+          if (column.key === '_payer')
+            return {
+              ...column,
+              render: (text, record) => record.__payer && record.__payer.name,
+            }
+          if (column.key === 'create_date')
+            return {
+              ...column,
+              render: (text, record) =>
+                record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm'),
+            }
+          return column
+        })}
       />
     </div>
   )

@@ -22,7 +22,6 @@ import {
   Spin,
   Tooltip,
   Space,
-  Affix,
   DatePicker,
   Upload,
   Modal,
@@ -217,48 +216,40 @@ export default function ImportInventory() {
     },
     {
       title: 'Số lượng nhập',
-      render: (data, record) => {
-        const InputQuantity = () => (
-          <InputNumber
-            style={{ width: 70 }}
-            onMouseOut={(event) => {
-              const value = event.target.value.replaceAll(',', '')
-              const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
-              _editProductInOrder('quantity', +value, indexProduct)
-            }}
-            defaultValue={record.quantity || 0}
-            min={1}
-            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-            placeholder="Nhập số lượng nhập"
-          />
-        )
-
-        return <InputQuantity />
-      },
+      render: (data, record) => (
+        <InputNumber
+          style={{ width: 70 }}
+          onBlur={(event) => {
+            const value = event.target.value.replaceAll(',', '')
+            const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
+            _editProductInOrder('quantity', +value, indexProduct)
+          }}
+          defaultValue={record.quantity || 0}
+          min={1}
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          placeholder="Nhập số lượng nhập"
+        />
+      ),
     },
     {
       width: 130,
       title: 'Đơn giá nhập',
-      render: (data, record) => {
-        const InputPrice = () => (
-          <InputNumber
-            style={{ width: '100%' }}
-            onMouseOut={(e) => {
-              const value = e.target.value.replaceAll(',', '')
-              const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
-              _editProductInOrder('import_price', +value, indexProduct)
-            }}
-            defaultValue={record.import_price || 0}
-            min={0}
-            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-            placeholder="Nhập đơn giá nhập"
-          />
-        )
-
-        return <InputPrice />
-      },
+      render: (data, record) => (
+        <InputNumber
+          style={{ width: '100%' }}
+          onBlur={(e) => {
+            const value = e.target.value.replaceAll(',', '')
+            const indexProduct = orderCreate.order_details.findIndex((e) => e._id === record._id)
+            _editProductInOrder('import_price', +value, indexProduct)
+          }}
+          defaultValue={record.import_price || 0}
+          min={0}
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+          placeholder="Nhập đơn giá nhập"
+        />
+      ),
     },
     {
       title: 'Tổng tiền',

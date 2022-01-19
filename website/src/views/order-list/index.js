@@ -228,7 +228,14 @@ export default function OrderList() {
 
       <div style={{ marginTop: 15 }}>
         <Row>
-          <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={10}
+            xl={10}
+            style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}
+          >
             <Row wrap={false}>
               <Input
                 size="large"
@@ -237,7 +244,7 @@ export default function OrderList() {
                 name="name"
                 value={valueSearch}
                 onChange={_onSearch}
-                placeholder="Tìm kiếm theo..."
+                placeholder="Tìm kiếm theo"
                 bordered={false}
                 allowClear
               />
@@ -245,7 +252,6 @@ export default function OrderList() {
                 size="large"
                 showSearch
                 style={{ width: 170 }}
-                placeholder="Chọn theo"
                 value={optionSearchName}
                 onChange={(value) => {
                   delete paramsFilter[optionSearchName]
@@ -263,7 +269,14 @@ export default function OrderList() {
               </Select>
             </Row>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={7}
+            xl={7}
+            style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}
+          >
             <RangePicker
               size="large"
               onChange={_onChangeDate}
@@ -276,17 +289,23 @@ export default function OrderList() {
               bordered={false}
             />
           </Col>
-          <Col xs={24} sm={24} md={24} lg={5} xl={5} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={5}
+            xl={5}
+            style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}
+          >
             <Select
               size="large"
-              value={paramsFilter.bill_status || ''}
+              value={paramsFilter.bill_status}
               onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
-              placeholder="Chọn trạng thái"
+              placeholder="Lọc trạng thái đơn hàng"
               style={{ width: '100%' }}
               bordered={false}
             >
-              <Select.Option value="">Tất cả</Select.Option>
               {statusOrder.map((status, index) => (
                 <Select.Option value={status.name} key={index}>
                   {status.label}
@@ -299,7 +318,19 @@ export default function OrderList() {
 
       <div>
         <Row>
-          <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={10}
+            xl={10}
+            style={{
+              marginTop: '1rem',
+              border: '1px solid #d9d9d9',
+              borderRadius: 5,
+              marginRight: 15,
+            }}
+          >
             <Select
               size="large"
               value={paramsFilter.chanel || ''}
@@ -316,7 +347,14 @@ export default function OrderList() {
               <Select.Option value="other">Khác</Select.Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={7}
+            xl={7}
+            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
+          >
             <Select
               size="large"
               value={paramsFilter.employee_name || ''}
@@ -484,10 +522,11 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -573,7 +612,10 @@ export default function OrderList() {
           if (column.key === 'bill_status')
             return {
               ...column,
-              render: (text) => text,
+              render: (text) => {
+                const status = statusOrder.find((s) => s.name === text)
+                return status ? status.label : ''
+              },
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
           if (column.key === 'payment_status')
