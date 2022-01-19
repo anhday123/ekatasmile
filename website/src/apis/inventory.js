@@ -10,3 +10,10 @@ export const deleteOrderImportInventory = (id) =>
 export const uploadOrdersImportInventory = (formData) =>
   post('/inventory/import/create/file', formData)
 export const getStatusOrderImportInventory = () => get('/enum/importorder')
+
+export const getCheckInventoryNote = (params) => get('/inventory/inventorynote', params)
+export const createCheckInventoryNote = (body) => post('/inventory/inventorynote/create', body)
+export const importCheckInventoryNote = (formData) =>
+  post('/inventory/inventorynote/create/file', formData)
+export const updateCheckInventoryNote = (body, id) =>
+  post('/inventory/inventorynote/update' + id, body)
