@@ -42,30 +42,25 @@ let changePoint = async (database, order) => {
         if (!pointSetting.customer_type_id.includes(customer.type_id) && !pointSetting.all_customer_type) {
             throw new Error(`400: Khách hàng thuộc nhóm không thể sử dụng tích điểm!`);
         }
-        let costs = [];
+        let increasePoint = 0;
+        let decreasePoint = 0;
         order.order_details.map((eDetail) => {
             let categoryIds = [...pointSetting.category_id, ...eDetail.category_id];
             if (pointSetting.all_category || [...new Set(categoryIds)].length != categoryIds.length) {
-                costs.push(eDetail);
+                increasePoint += (eDetail.price * eDetail.quantity) / pointSetting.exchange_point_rate;
             }
         });
-        if (typeof customer != 'object' || !customer.customer_id) {
-            throw new Error('customer phải là object chứa customer_id!');
-        }
-        if (!customer.point || !customer.used_point) {
-            customer = await client.db(database).collection('Customers').findOne({ customer_id: customer.customer_id });
-            if (!customer.point || !customer.used_point) {
-                customer['point'] = 0;
-                customer['used_point'] = 0;
+        order.payments.map((ePayment) => {
+            let _method = removeUnicode(ePayment.method, true).toLowerCase();
+            if (_method == 'diemtichluy' && ePayment.is_use) {
+                decreasePoint += ePayment.value / pointSetting.exchange_money_rate;
             }
-        }
-        if (customer.point + pointChange < 0) {
-            throw new Error('Khách hàng không đủ điểm tích lũy!');
-        }
-        customer.point += pointChange;
-        if (pointChange < 0) {
-            customer.used_point -= pointChange;
-        }
+        });
+        customer.point += increasePoint;
+        customer.point -= decreasePoint;
+        customer.used_point += decreasePoint;
+        customer.order_quantity += 1;
+        customer.order_total_cost += order.total_cost;
         let pointUseMaxId = await client.db(database).collection('AppSetting').findOne({ name: 'PointUseHistories' });
         let pointUseId = (() => {
             if (pointUseMaxId && pointUseMaxId.value) {
@@ -79,7 +74,7 @@ let changePoint = async (database, order) => {
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'PointUseHistories' },
-                    { $set: { name: 'PointUseHistories', value: pointUseId + 1 } }
+                    { $set: { name: 'PointUseHistories', value: pointUseId + 2 } }
                 ),
             client
                 .db(database)
@@ -90,12 +85,25 @@ let changePoint = async (database, order) => {
                 .collection('PointUseHistories')
                 .insertOne({
                     point_use_id: pointUseId + 1,
-                    type: pointChange < 0 ? 'USE' : 'ACCUMULATE',
+                    type: 'ACCUMULATE',
                     customer_id: customer.customer_id,
                     branch_id: branch.branch_id,
                     order_id: order.order_id,
-                    point_used: pointChange < 0 ? pointChange : 0,
-                    point_accumulated: pointChange > 0 ? pointChange : 0,
+                    point_used: 0,
+                    point_accumulated: increasePoint,
+                    create_date: moment().tz(TIMEZONE).format(),
+                }),
+            client
+                .db(database)
+                .collection('PointUseHistories')
+                .insertOne({
+                    point_use_id: pointUseId + 2,
+                    type: 'USE',
+                    customer_id: customer.customer_id,
+                    branch_id: branch.branch_id,
+                    order_id: order.order_id,
+                    point_used: decreasePoint,
+                    point_accumulated: 0,
                     create_date: moment().tz(TIMEZONE).format(),
                 }),
         ]);

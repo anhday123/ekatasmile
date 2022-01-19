@@ -2143,6 +2143,8 @@ module.exports._createInventoryNoteFile = async (req, res, next) => {
 };
 module.exports._updateInventoryNote = async (req, res, next) => {
     try {
+        req.params.inventory_note_id = Number(req.params.inventory_note_id);
+        let note = await client.db(DB).collection('InventoryNotes').findOne(req.params);
     } catch (err) {
         next(err);
     }
