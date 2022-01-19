@@ -82,7 +82,7 @@ export default function CreateReport() {
       title: variant.title,
       unit: data.unit,
       total_quantity: variant.total_quantity,
-      real_quantity: realQuantity
+      real_quantity: realQuantity,
     }
     setListProduct([...listProduct, body])
   }
@@ -98,7 +98,7 @@ export default function CreateReport() {
       const dataForm = form.getFieldsValue()
       const body = {
         ...dataForm,
-        products: listProduct
+        products: listProduct,
       }
       let res
       if (!location.state) res = await createCheckInventoryNote(body)
@@ -107,7 +107,10 @@ export default function CreateReport() {
 
       if (res.status === 200) {
         if (res.data.success) {
-          notification.success({ message: `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thành công` })
+          history.goBack()
+          notification.success({
+            message: `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thành công`,
+          })
         } else
           notification.error({
             message:
@@ -122,8 +125,7 @@ export default function CreateReport() {
         })
 
       dispatch({ type: 'LOADING', data: false })
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       dispatch({ type: 'LOADING', data: false })
     }
@@ -138,7 +140,7 @@ export default function CreateReport() {
         setDataProducts(res.data.data)
 
         let dataNew = []
-        res.data.data.map(item => item.variants.map(e => dataNew.push(e)))
+        res.data.data.map((item) => item.variants.map((e) => dataNew.push(e)))
         setDataModal(dataNew)
       }
       setLoadingProduct(false)
@@ -154,8 +156,7 @@ export default function CreateReport() {
       const res = await getAllBranch(query)
       if (res.status === 200) setAllBranch(res.data.data)
       setLoading(false)
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       setLoading(false)
     }
@@ -173,8 +174,7 @@ export default function CreateReport() {
         // }
       }
       setLoading(false)
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       setLoading(false)
     }
@@ -210,13 +210,15 @@ export default function CreateReport() {
   const columnsModal = [
     {
       dataIndex: 'variant_id',
-      width: 0
+      width: 0,
     },
     {
       title: 'Hình ảnh',
       dataIndex: 'image',
       width: 100,
-      render: (text, record) => <img style={{ width: '50%', display: 'block' }} src={text} alt='' />
+      render: (text, record) => (
+        <img style={{ width: '50%', display: 'block' }} src={text} alt="" />
+      ),
     },
     {
       title: 'Tên sản phẩm',
@@ -251,7 +253,6 @@ export default function CreateReport() {
       setListProduct([])
     }
   }, [form, location.state])
-
 
   return (
     <div className="card">
@@ -303,11 +304,11 @@ export default function CreateReport() {
                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                 }
               >
-                {
-                  allBranch.map((branch, index) =>
-                    <Option key={index} value={branch.branch_id}>{branch.name}</Option>
-                  )
-                }
+                {allBranch.map((branch, index) => (
+                  <Option key={index} value={branch.branch_id}>
+                    {branch.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -330,19 +331,16 @@ export default function CreateReport() {
                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                 }
               >
-                {
-                  users.map((user, index) =>
-                    <Option key={index} value={user.user_id}>{user.username}</Option>
-                  )
-                }
+                {users.map((user, index) => (
+                  <Option key={index} value={user.user_id}>
+                    {user.username}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item
-              label="Ghi chú"
-              name="note"
-            >
+            <Form.Item label="Ghi chú" name="note">
               <TextArea rows={1} style={{ maxWidth: '100%' }} />
             </Form.Item>
           </Col>
@@ -376,64 +374,68 @@ export default function CreateReport() {
                 placeholder="Thêm sản phẩm vào hoá đơn"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
-                {dataProducts.map((data) =>
-                  data.variants && data.variants.map((variant, index) =>
-                    <Select.Option value={variant.title} key={variant.variant_id} >
-                      <Row
-                        key={index}
-                        align="middle"
-                        wrap={false}
-                        style={{ padding: '7px 13px' }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const findProduct = listProduct.find(
-                            (item) => item.variant_id === variant.variant_id
-                          )
-                          if (findProduct) {
-                            notification.error({ message: 'Chỉ được chọn sản phẩm khác phân loại' })
-                            return
-                          }
-                          getDataToCreate(data, variant, index)
-                          // console.log([...body])
-                        }}
-                      >
-                        <img
-                          src={variant.image[0] ? variant.image[0] : IMAGE_DEFAULT}
-                          alt={variant.title}
-                          style={{
-                            minWidth: 40,
-                            minHeight: 40,
-                            maxWidth: 40,
-                            maxHeight: 40,
-                            objectFit: 'cover',
+                {dataProducts.map(
+                  (data) =>
+                    data.variants &&
+                    data.variants.map((variant, index) => (
+                      <Select.Option value={variant.title} key={variant.variant_id}>
+                        <Row
+                          key={index}
+                          align="middle"
+                          wrap={false}
+                          style={{ padding: '7px 13px' }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const findProduct = listProduct.find(
+                              (item) => item.variant_id === variant.variant_id
+                            )
+                            if (findProduct) {
+                              notification.error({
+                                message: 'Chỉ được chọn sản phẩm khác phân loại',
+                              })
+                              return
+                            }
+                            getDataToCreate(data, variant, index)
+                            // console.log([...body])
                           }}
-                        />
+                        >
+                          <img
+                            src={variant.image[0] ? variant.image[0] : IMAGE_DEFAULT}
+                            alt={variant.title}
+                            style={{
+                              minWidth: 40,
+                              minHeight: 40,
+                              maxWidth: 40,
+                              maxHeight: 40,
+                              objectFit: 'cover',
+                            }}
+                          />
 
-                        <div style={{ width: '100%', marginLeft: 15 }}>
-                          <Row wrap={false} justify="space-between">
-                            <span
-                              style={{
-                                maxWidth: 200,
-                                marginBottom: 0,
-                                fontWeight: 600,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                display: '-webkit-box',
-                              }}
-                            >
-                              {variant.title}
-                            </span>
-                            <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                              {formatCash(variant.price)}
-                            </p>
-                          </Row>
-                        </div>
-                      </Row>
-                    </Select.Option>
-                  ))
-                }
+                          <div style={{ width: '100%', marginLeft: 15 }}>
+                            <Row wrap={false} justify="space-between">
+                              <span
+                                style={{
+                                  maxWidth: 200,
+                                  marginBottom: 0,
+                                  fontWeight: 600,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  display: '-webkit-box',
+                                }}
+                              >
+                                {variant.title}
+                              </span>
+                              <p style={{ marginBottom: 0, fontWeight: 500 }}>
+                                {formatCash(variant.price)}
+                              </p>
+                            </Row>
+                          </div>
+                        </Row>
+                      </Select.Option>
+                    ))
+                )}
               </Select>
             </Col>
 
@@ -451,45 +453,49 @@ export default function CreateReport() {
             scroll={{ y: 400 }}
             // sticky
             pagination={false}
-            columns={
-              columns.map(column => {
-                if (column.dataIndex === 'stt')
-                  return {
-                    ...column,
-                    width: 50,
-                    render: (text, record, index) =>
-                      (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
-                  }
-                if (column.dataIndex === 'sku')
-                  return {
-                    ...column,
-                    render: (text, record) => record.sku
-                  }
-                if (column.dataIndex === 'title')
-                  return {
-                    ...column,
-                    render: (text, record) => record.title
-                  }
-                if (column.dataIndex === 'unit')
-                  return {
-                    ...column,
-                    render: (text, record) => {
-                      return record.unit
-                    }
-                  }
-                if (column.dataIndex === 'total_quantity')
-                  return {
-                    ...column,
-                    render: (text, record) => record.total_quantity
-                  }
-                if (column.dataIndex === 'real_quantity')
-                  return {
-                    ...column,
-                    render: (text, record, index) => <InputNumber min={0} defaultValue='0' onChange={e => _setRealQuantity(index, e)} />
-                  }
-                return column
-              })
-            }
+            columns={columns.map((column) => {
+              if (column.dataIndex === 'stt')
+                return {
+                  ...column,
+                  width: 50,
+                  render: (text, record, index) =>
+                    (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+                }
+              if (column.dataIndex === 'sku')
+                return {
+                  ...column,
+                  render: (text, record) => record.sku,
+                }
+              if (column.dataIndex === 'title')
+                return {
+                  ...column,
+                  render: (text, record) => record.title,
+                }
+              if (column.dataIndex === 'unit')
+                return {
+                  ...column,
+                  render: (text, record) => {
+                    return record.unit
+                  },
+                }
+              if (column.dataIndex === 'total_quantity')
+                return {
+                  ...column,
+                  render: (text, record) => record.total_quantity,
+                }
+              if (column.dataIndex === 'real_quantity')
+                return {
+                  ...column,
+                  render: (text, record, index) => (
+                    <InputNumber
+                      min={0}
+                      defaultValue="0"
+                      onChange={(e) => _setRealQuantity(index, e)}
+                    />
+                  ),
+                }
+              return column
+            })}
             size="small"
             dataSource={listProduct}
             locale={{
@@ -526,12 +532,11 @@ export default function CreateReport() {
           style={{ width: '100%' }}
         />
         <Table
-          rowKey='variant_id'
+          rowKey="variant_id"
           rowSelection={{
             onChange: (selectedRowKeys, selectedRows) => {
               console.log(selectedRowKeys, selectedRows)
               selectedRows.length !== 0 && setListProduct(selectedRows)
-
             },
             getCheckboxProps: (record) => ({
               title: record.title,
@@ -540,16 +545,16 @@ export default function CreateReport() {
           loading={loading}
           size="small"
           dataSource={dataModal}
-          columns={
-            columnsModal.map(column => {
-              if (column.dataIndex === 'variant_id')
-                return {
-                  ...column,
-                  render: (text, record) => <span style={{ display: 'none' }}>{record.variant_id}</span>,
-                }
-              return column
-            })
-          }
+          columns={columnsModal.map((column) => {
+            if (column.dataIndex === 'variant_id')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <span style={{ display: 'none' }}>{record.variant_id}</span>
+                ),
+              }
+            return column
+          })}
           style={{ width: '100%', marginTop: 10 }}
           pagination={{
             position: ['bottomLeft'],
@@ -566,6 +571,6 @@ export default function CreateReport() {
           }}
         />
       </Modal>
-    </div >
+    </div>
   )
 }
