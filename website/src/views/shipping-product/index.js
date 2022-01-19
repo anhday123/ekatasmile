@@ -43,13 +43,7 @@ const { RangePicker } = DatePicker
 export default function ShippingProduct() {
   const history = useHistory()
   const typingTimeoutRef = useRef(null)
-  const STATUS = {
-    DRAFT: { name: 'Lưu nháp', color: 'magenta' },
-    VERIFY: { name: 'Xác nhận', color: 'cyan' },
-    SHIPPING: { name: 'Đang chuyển', color: 'gold' },
-    COMPLETE: { name: 'Hoàn thành', color: 'green' },
-    CANCEL: { name: 'Hủy', color: 'red' },
-  }
+
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [branches, setBranches] = useState([])
@@ -200,6 +194,7 @@ export default function ShippingProduct() {
   const _getStatus = async () => {
     try {
       const res = await getStatusTransportOrder()
+      console.log(res)
       if (res.status === 200) setStatusTransportOrder(res.data.data)
     } catch (error) {
       console.log(error)
@@ -523,7 +518,10 @@ export default function ShippingProduct() {
           if (column.key === 'status')
             return {
               ...column,
-              render: (text) => <Tag color={STATUS[text].color}>{STATUS[text].name}</Tag>,
+              render: (text) => {
+                const status = statusTransportOrder.find((s) => s.name === text)
+                return status ? status.label : ''
+              },
               sorter: (a, b) => compare(a, b, 'status'),
             }
           if (column.key === 'action')

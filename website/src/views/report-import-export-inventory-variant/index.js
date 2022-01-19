@@ -24,8 +24,13 @@ export default function ReportImportExportInventoryProduct() {
   const [loading, setLoading] = useState(false)
   const [reports, setReports] = useState([])
   const [countReport, setCountReport] = useState(0)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [dateFilter, setDateFilter] = useState()
+  const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+    from_date: moment(new Date()).format('YYYY-MM-DD'),
+    to_date: moment(new Date()).format('YYYY-MM-DD'),
+  })
+  const [dateFilter, setDateFilter] = useState([moment(new Date()), moment(new Date())])
 
   const onChangeDate = (date, dateString) => {
     setDateFilter(date)
@@ -48,7 +53,7 @@ export default function ReportImportExportInventoryProduct() {
     },
     {
       title: 'Mã hàng',
-      dataIndex: 'sku',
+      dataIndex: 'code',
     },
     {
       title: 'Tên hàng',

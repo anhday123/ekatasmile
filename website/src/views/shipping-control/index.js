@@ -168,7 +168,7 @@ export default function ShippingControl() {
             columnsDefault={columnsShippingControl}
             nameColumn="columnsShippingControl"
           />
-          <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
+          {/* <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
             <Button
               size="large"
               icon={<PlusCircleOutlined />}
@@ -177,7 +177,7 @@ export default function ShippingControl() {
             >
               Thêm phiếu đối soát
             </Button>
-          </Permission>
+          </Permission> */}
         </Space>
       </TitlePage>
 

@@ -53,6 +53,7 @@ export default function Payment() {
     {
       title: 'STT',
       render: (text, record, index) => index + 1,
+      width: 70,
     },
     {
       title: 'Tên hình thức thanh toán',
@@ -89,9 +90,9 @@ export default function Payment() {
           />
           <Popconfirm
             onConfirm={() => _deletePayment(record.payment_method_id)}
-            title="Bạn có muốn xóa hình thức thanh toán này"
+            title="Bạn có muốn xóa hình thức thanh toán này không?"
           >
-            <DeleteOutlined style={{ color: 'red', fontSize: 18 }} />
+            <Button type="primary" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
       ),
@@ -237,7 +238,7 @@ export default function Payment() {
       </div>
 
       <Modal
-        title={isEditPayment ? 'Cập nhật hình thức thanh toán' : 'Thêm hình thức thanh toán'}
+        title={`${isEditPayment ? 'Cập nhật' : 'Thêm'} hình thức thanh toán`}
         visible={visible}
         onCancel={toggle}
         footer={

@@ -7,16 +7,29 @@ import { ACTION, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 
 //antd
-import { Popconfirm, Input, Row, Col, Select, Table, Button, notification, DatePicker } from 'antd'
-import { SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import {
+  Popconfirm,
+  Input,
+  Row,
+  Col,
+  Select,
+  Table,
+  Button,
+  Space,
+  notification,
+  DatePicker,
+} from 'antd'
+import { SearchOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons'
 
 //apis
-import { getEmployees, deleteEmployees } from 'apis/employee'
+import { getEmployees, deleteEmployee } from 'apis/employee'
 import { getDistricts, getProvinces } from 'apis/address'
 
 //components
 import TitlePage from 'components/title-page'
 import EmployeeForm from './employee-form'
+import SettingColumns from 'components/setting-columns'
+import columnsEmployee from './columns'
 
 const { Option } = Select
 export default function Employee() {
@@ -25,10 +38,10 @@ export default function Employee() {
   const dispatch = useDispatch()
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [columns, setColumns] = useState([])
   const [users, setUsers] = useState([])
   const [countUser, setCountUser] = useState([])
   const [loading, setLoading] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [Address, setAddress] = useState({ province: [], district: [] })
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [valueDateSearch, setValueDateSearch] = useState(null)
@@ -58,45 +71,6 @@ export default function Employee() {
     }, 650)
   }
 
-  const columnsEmployee = [
-    {
-      title: 'Tên nhân viên',
-      render: (text, record) => (
-        <EmployeeForm record={record} reloadData={_getEmployees}>
-          <a>{record.first_name + ' ' + record.last_name}</a>
-        </EmployeeForm>
-      ),
-    },
-    {
-      title: 'Số điện thoại',
-      dataIndex: 'phone',
-      sorter: (a, b) => compare(a, b, 'phone'),
-    },
-    {
-      title: 'Địa chỉ',
-      render: (text, record) =>
-        `${record.address && record.address + ', '}${record.district && record.district + ', '}${record.province && record.province
-        }`,
-    },
-    {
-      title: 'Ngày sinh',
-      dataIndex: 'birthday',
-      sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
-      render: (data) => data && moment(data).format('DD/MM/YYYY'),
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      sorter: (a, b) => compare(a, b, 'email'),
-    },
-    {
-      title: 'Thời gian đăng kí',
-      dataIndex: 'create_date',
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-      render: (data) => data && moment(data).format('DD/MM/YYYY HH:mm'),
-    },
-  ]
-
   const _clearFilters = () => {
     setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
@@ -105,32 +79,24 @@ export default function Employee() {
     setValueDateSearch(null)
   }
 
-  const onSelectChange = (selectedRowKeys) => {
-    setSelectedRowKeys(selectedRowKeys)
-  }
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-
-  const _deleteUsers = async () => {
+  const _deleteUser = async (id) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await deleteEmployees(selectedRowKeys)
+      const res = await deleteEmployee(id)
       dispatch({ type: ACTION.LOADING, data: false })
 
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
-          notification.success({ message: 'Xóa khách hàng thành công' })
+          notification.success({ message: 'Xóa nhân viên thành công' })
           _getEmployees()
         } else
           notification.error({
-            message: res.data.message || 'Xóa khách hàng không thất bại, vui lòng thử lại',
+            message: res.data.message || 'Xóa nhân viên không thất bại, vui lòng thử lại',
           })
       } else
         notification.error({
-          message: res.data.message || 'Xóa khách hàng không thất bại, vui lòng thử lại',
+          message: res.data.message || 'Xóa nhân viên không thất bại, vui lòng thử lại',
         })
     } catch (err) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -140,12 +106,10 @@ export default function Employee() {
   const _getEmployees = async () => {
     try {
       setLoading(true)
-      setSelectedRowKeys([])
       const res = await getEmployees({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
-        //chỉ lấy danh sách role employee
-        const employees = res.data.data.filter((employee) => employee.role_id !== -1)
+        const employees = res.data.data.filter((employee) => employee.role_id !== 1)
         setUsers(employees)
         setCountUser(res.data.count)
       }
@@ -191,13 +155,24 @@ export default function Employee() {
           </Row>
         }
       >
-        <EmployeeForm reloadData={_getEmployees}>
-          <Button type="primary" size="large">
-            Tạo nhân viên
-          </Button>
-        </EmployeeForm>
+        <Space>
+          <SettingColumns
+            columns={columns}
+            setColumns={setColumns}
+            columnsDefault={columnsEmployee}
+            nameColumn="columnsEmployee"
+          />
+          <EmployeeForm reloadData={_getEmployees}>
+            <Button type="primary" size="large">
+              Tạo nhân viên
+            </Button>
+          </EmployeeForm>
+        </Space>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}>
+      <Row
+        gutter={[16, 16]}
+        style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}
+      >
         <Col xs={24} sm={24} md={12} lg={12} xl={6}>
           <Input
             allowClear
@@ -209,7 +184,14 @@ export default function Employee() {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={6}
+          style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+        >
           <Select
             allowClear
             size="large"
@@ -368,19 +350,6 @@ export default function Employee() {
         </Col>
       </Row>
       <Row style={{ width: '100%', marginTop: 15 }} justify="space-between">
-        <div style={{ visibility: !selectedRowKeys.length && 'hidden' }}>
-          <Popconfirm
-            title="Bạn có muốn xóa các nhân viên này?"
-            okText="Đồng ý"
-            cancelText="Từ chối"
-            onConfirm={_deleteUsers}
-          >
-            <Button size="large" type="primary" danger>
-              Xóa nhân viên
-            </Button>
-          </Popconfirm>
-        </div>
-
         <Button
           style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
           size="large"
@@ -393,7 +362,6 @@ export default function Employee() {
 
       <Table
         loading={loading}
-        rowSelection={rowSelection}
         rowKey="user_id"
         size="small"
         pagination={{
@@ -406,7 +374,61 @@ export default function Employee() {
             setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
           total: countUser,
         }}
-        columns={columnsEmployee}
+        columns={columns.map((column) => {
+          if (column.key === 'stt') return { ...column, render: (text, record, index) => index + 1 }
+          if (column.key === 'name')
+            return {
+              ...column,
+              render: (text, record) => (
+                <EmployeeForm record={record} reloadData={_getEmployees}>
+                  <a>{record.first_name + ' ' + record.last_name}</a>
+                </EmployeeForm>
+              ),
+            }
+          if (column.key === 'phone') return { ...column, sorter: (a, b) => compare(a, b, 'phone') }
+          if (column.key === 'address')
+            return {
+              ...column,
+              render: (text, record) =>
+                `${record.address && record.address + ', '}${
+                  record.district && record.district + ', '
+                }${record.province && record.province}`,
+            }
+          if (column.key === 'birthday')
+            return {
+              ...column,
+              sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
+              render: (data) => data && moment(data).format('DD/MM/YYYY'),
+            }
+          if (column.key === 'email') return { ...column, sorter: (a, b) => compare(a, b, 'email') }
+          if (column.key === 'create_date')
+            return {
+              ...column,
+              sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+              render: (data) => data && moment(data).format('DD/MM/YYYY HH:mm'),
+            }
+          if (column.key === 'role')
+            return {
+              ...column,
+              render: (data, record) => record._role && record._role.name,
+            }
+          if (column.key === 'action')
+            return {
+              ...column,
+              render: (text, record) => (
+                <Popconfirm
+                  title="Bạn có muốn xóa nhân viên này không?"
+                  okText="Đồng ý"
+                  cancelText="Từ chối"
+                  onConfirm={() => _deleteUser(record.user_id)}
+                >
+                  <Button icon={<DeleteOutlined />} type="primary" danger />
+                </Popconfirm>
+              ),
+            }
+
+          return column
+        })}
         dataSource={users}
         style={{ width: '100%', marginTop: 10 }}
       />

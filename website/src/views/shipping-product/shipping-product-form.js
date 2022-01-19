@@ -75,25 +75,21 @@ export default function ShippingProductAdd() {
     // },
     {
       title: 'Số lượng',
-      render: (text, record, index) => {
-        const InputQuantity = () => (
-          <InputNumber
-            style={{ width: 200 }}
-            onMouseOut={(e) => {
-              let value = e.target.value.replaceAll(',', '')
-              _editProductInTransport('quantity', +value, index)
-            }}
-            defaultValue={record.quantity || 0}
-            min={0}
-            max={record.locations && record.locations.length ? record.locations[0].quantity : 10000}
-            placeholder="Nhập số lượng"
-            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-          />
-        )
-
-        return <InputQuantity />
-      },
+      render: (text, record, index) => (
+        <InputNumber
+          style={{ width: 200 }}
+          onBlur={(e) => {
+            let value = e.target.value.replaceAll(',', '')
+            _editProductInTransport('quantity', +value, index)
+          }}
+          defaultValue={record.quantity || 0}
+          min={0}
+          max={record.locations && record.locations.length ? record.locations[0].quantity : 10000}
+          placeholder="Nhập số lượng"
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+        />
+      ),
     },
     {
       width: 110,

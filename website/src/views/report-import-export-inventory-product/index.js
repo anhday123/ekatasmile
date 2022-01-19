@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
+import delay from 'delay'
+import moment from 'moment'
 
 //antd
 import { Table, Row, Input, DatePicker, Col, Button } from 'antd'
@@ -10,12 +12,11 @@ import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //components
 import TitlePage from 'components/title-page'
+import exportTableToCSV from 'components/ExportCSV/export-table'
 
 //apis
 import { getReportImportExportInventory } from 'apis/report'
 import { ROUTES } from 'consts'
-import exportTableToCSV from 'components/ExportCSV/export-table'
-import delay from 'delay'
 
 export default function ReportImportExportInventoryProduct() {
   const history = useHistory()
@@ -23,8 +24,13 @@ export default function ReportImportExportInventoryProduct() {
   const [loading, setLoading] = useState(false)
   const [reports, setReports] = useState([])
   const [countReport, setCountReport] = useState(0)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [dateFilter, setDateFilter] = useState()
+  const [paramsFilter, setParamsFilter] = useState({
+    page: 1,
+    page_size: 20,
+    from_date: moment(new Date()).format('YYYY-MM-DD'),
+    to_date: moment(new Date()).format('YYYY-MM-DD'),
+  })
+  const [dateFilter, setDateFilter] = useState([moment(new Date()), moment(new Date())])
 
   const onChangeDate = (date, dateString) => {
     setDateFilter(date)
@@ -47,7 +53,7 @@ export default function ReportImportExportInventoryProduct() {
     },
     {
       title: 'Mã hàng',
-      dataIndex: 'sku',
+      dataIndex: 'code',
     },
     {
       title: 'Tên hàng',
