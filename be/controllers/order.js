@@ -29,8 +29,26 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
-let changePoint = async (database, customer, pointChange, branch, order) => {
+let changePoint = async (database, order) => {
     try {
+        let pointSetting = await client
+            .db(database)
+            .collection('PointSettings')
+            .findOne({ $or: [{ all_branch: true }, { branch_id: order.sale_location.branch_id }] });
+        if (!pointSetting) {
+            throw new Error(`400: Địa điểm bán hàng không áp dụng chương trình tích điểm!`);
+        }
+        let customer = await client.db(database).collection('Customers').findOne({ customer_id: order.customer_id });
+        if (!pointSetting.customer_type_id.includes(customer.type_id) && !pointSetting.all_customer_type) {
+            throw new Error(`400: Khách hàng thuộc nhóm không thể sử dụng tích điểm!`);
+        }
+        let costs = [];
+        order.order_details.map((eDetail) => {
+            let categoryIds = [...pointSetting.category_id, ...eDetail.category_id];
+            if (pointSetting.all_category || [...new Set(categoryIds)].length != categoryIds.length) {
+                costs.push(eDetail);
+            }
+        });
         if (typeof customer != 'object' || !customer.customer_id) {
             throw new Error('customer phải là object chứa customer_id!');
         }
@@ -120,6 +138,7 @@ module.exports._create = async (req, res, next) => {
             let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
             req.body = JSON.parse(decryptedData);
         } catch (err) {
+            console.log(err);
             throw new Error('400: Đơn hàng không chính xác!');
         }
         if (!req.body.order_details || req.body.order_details.length == 0) {

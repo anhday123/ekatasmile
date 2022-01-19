@@ -2028,6 +2028,30 @@ module.exports._getInventoryNote = async (req, res, next) => {
         if (req.query.to_date) {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Users',
+                localField: 'inventorier_id',
+                foreignField: 'user_id',
+                as: 'inventorier_info',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Users',
+                localField: 'balancer_id',
+                foreignField: 'user_id',
+                as: 'balancer_info',
+            },
+        });
+        aggregateQuery.push({
+            $lookup: {
+                from: 'Users',
+                localField: 'creator_id',
+                foreignField: 'user_id',
+                as: 'creator_info',
+            },
+        });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
@@ -2088,14 +2112,14 @@ module.exports._createInventoryNote = async (req, res, next) => {
             note: '',
             status: req.body.status || 'DRAFT',
             balance: false,
-            create_date: moment().tz(TIMEZONE).format(),
-            creator_id: req.user.user_id,
             inventory_date: req.body.inventory_date || '',
             inventorier_id: req.body.inventorier_id || '',
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: req.user.user_id,
             balance_date: '',
             balancer_id: '',
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: req.user.user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: req.user.user_id,
         };
         await client
             .db(req.user.database)
