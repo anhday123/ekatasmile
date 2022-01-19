@@ -131,7 +131,7 @@ export default function CreateReport() {
 
   const _getProducts = async (params) => {
     try {
-      setLoadingProduct(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getProducts(params)
       if (res.status === 200) {
         setCountOrder(res.data.count)
@@ -141,29 +141,29 @@ export default function CreateReport() {
         res.data.data.map(item => item.variants.map(e => dataNew.push(e)))
         setDataModal(dataNew)
       }
-      setLoadingProduct(false)
+      dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
-      setLoadingProduct(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
   const _getAllBranch = async (query) => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getAllBranch(query)
       if (res.status === 200) setAllBranch(res.data.data)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
     catch (err) {
       console.log(err)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
   const _getUsers = async (query) => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getUsers(query)
       if (res.status === 200) {
         setUsers(res.data.data)
@@ -172,11 +172,11 @@ export default function CreateReport() {
         //   res.data.data.map(user => user.)
         // }
       }
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
     catch (err) {
       console.log(err)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 

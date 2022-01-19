@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import styles from './stock-adjustments.module.scss'
 import moment from 'moment'
 import { ROUTES } from 'consts'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 
 //components
@@ -25,6 +26,7 @@ import { getAllBranch } from 'apis/branch'
 
 export default function Reports() {
   const history = useHistory()
+  const dispatch = useDispatch()
   const typingTimeoutRef = useRef(null)
   const { RangePicker } = DatePicker
   const { Option } = Select
@@ -60,29 +62,31 @@ export default function Reports() {
 
   const _getCheckInventoryNote = async () => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getCheckInventoryNote({ ...paramsFilter })
       if (res.status === 200) {
         setInventoryNote(res.data.data)
       }
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
     catch (err) {
       console.log(err)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
   const _getAllBranch = async (query) => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getAllBranch(query)
       if (res.status === 200) {
         setValueBranch(res.data.data)
       }
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
     catch (err) {
       console.log(err)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
@@ -117,7 +121,7 @@ export default function Reports() {
   const _getStockAdjustmentToExport = async () => {
     let dataExport = []
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getCheckInventoryNote()
       console.log(res)
       if (res.status === 200) {
@@ -132,11 +136,11 @@ export default function Reports() {
           'Ghi chú': item.note || '',
         }))
       }
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
       exportToCSV(dataExport, 'Phiếu kiểm hàng')
     } catch (e) {
       console.log(e)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
