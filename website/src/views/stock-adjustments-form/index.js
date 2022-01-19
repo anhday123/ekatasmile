@@ -15,7 +15,7 @@ import TitlePage from 'components/title-page'
 import {
   Row,
   Col,
-  Divider,
+  message,
   Input,
   Button,
   Table,
@@ -50,9 +50,11 @@ import {
 import { getProducts } from 'apis/product'
 import { getAllBranch } from 'apis/branch'
 import { getUsers } from 'apis/users'
+import { createCheckInventoryNote, updateCheckInventoryNote } from 'apis/inventory'
 
 export default function CreateReport() {
   const history = useHistory()
+  const dispatch = useDispatch()
   const [form] = Form.useForm()
   const location = useLocation()
   const { Option } = Select
@@ -66,19 +68,74 @@ export default function CreateReport() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [dataProducts, setDataProducts] = useState([])
   const [dataModal, setDataModal] = useState([])
-  console.log(dataModal)
   const [allBranch, setAllBranch] = useState([])
   const [users, setUsers] = useState([])
   const [listProduct, setListProduct] = useState([])
+
+  const [realQuantity, setRealQuantity] = useState(0)
+  console.log(listProduct)
+
+  const getDataToCreate = (data, variant) => {
+    const body = {
+      variant_id: variant.variant_id,
+      sku: variant.sku,
+      title: variant.title,
+      unit: data.unit,
+      total_quantity: variant.total_quantity,
+      real_quantity: realQuantity
+    }
+    setListProduct([...listProduct, body])
+  }
+
+  const _setRealQuantity = (index, value) => {
+    listProduct[index].real_quantity = value
+  }
+
+  const _createCheckInventoryNote = async () => {
+    try {
+      dispatch({ type: 'LOADING', data: true })
+      await form.validateFields()
+      const dataForm = form.getFieldsValue()
+      const body = {
+        ...dataForm,
+        products: listProduct
+      }
+      let res
+      if (!location.state) res = await createCheckInventoryNote(body)
+      else res = await updateCheckInventoryNote(body, location.state.inventory_note_id)
+      console.log(res)
+
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({ message: `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thành công` })
+        } else
+          notification.error({
+            message:
+              res.data.message ||
+              `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thất bại, vui lòng thử lại!`,
+          })
+      } else
+        notification.error({
+          message:
+            res.data.message ||
+            `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thất bại, vui lòng thử lại!`,
+        })
+
+      dispatch({ type: 'LOADING', data: false })
+    }
+    catch (err) {
+      console.log(err)
+      dispatch({ type: 'LOADING', data: false })
+    }
+  }
 
   const _getProducts = async (params) => {
     try {
       setLoadingProduct(true)
       const res = await getProducts(params)
-      console.log(res.data.data)
       if (res.status === 200) {
-        setDataProducts(res.data.data)
         setCountOrder(res.data.count)
+        setDataProducts(res.data.data)
 
         let dataNew = []
         res.data.data.map(item => item.variants.map(e => dataNew.push(e)))
@@ -108,7 +165,13 @@ export default function CreateReport() {
     try {
       setLoading(true)
       const res = await getUsers(query)
-      if (res.status === 200) setUsers(res.data.data)
+      if (res.status === 200) {
+        setUsers(res.data.data)
+        // if (location.state) {
+        //   let cloneUser = []
+        //   res.data.data.map(user => user.)
+        // }
+      }
       setLoading(false)
     }
     catch (err) {
@@ -116,17 +179,6 @@ export default function CreateReport() {
       setLoading(false)
     }
   }
-
-  const productsSearch = [
-    {
-      title: 'test',
-      name: 'test',
-      price: 20000,
-      image: [
-        'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png',
-      ],
-    },
-  ]
 
   const columns = [
     {
@@ -139,7 +191,7 @@ export default function CreateReport() {
     },
     {
       title: 'Tên Sản phẩm',
-      dataIndex: 'name',
+      dataIndex: 'title',
     },
     {
       title: 'Đơn vị',
@@ -147,7 +199,7 @@ export default function CreateReport() {
     },
     {
       title: 'Tồn chi nhánh',
-      dataIndex: 'quantity',
+      dataIndex: 'total_quantity',
     },
     {
       title: 'Số lượng thực tế',
@@ -156,6 +208,10 @@ export default function CreateReport() {
   ]
 
   const columnsModal = [
+    {
+      dataIndex: 'variant_id',
+      width: 0
+    },
     {
       title: 'Hình ảnh',
       dataIndex: 'image',
@@ -172,15 +228,34 @@ export default function CreateReport() {
     },
   ]
 
+  const onOkayModal = () => {
+    setIsModalVisible(false)
+  }
+
   useEffect(() => {
     _getProducts()
     _getAllBranch()
     _getUsers()
-  }, [])
+  }, [listProduct, realQuantity])
+
+  useEffect(() => {
+    if (location.state) {
+      console.log(location.state)
+      form.setFieldsValue({
+        ...location.state,
+        note_creator_id: location.state.creator,
+      })
+      setListProduct(location.state.products)
+    } else {
+      form.resetFields()
+      setListProduct([])
+    }
+  }, [form, location.state])
+
 
   return (
     <div className="card">
-      <Form layout="vertical" form={form}>
+      <Form layout="vertical" form={form} onFinish={_createCheckInventoryNote}>
         <TitlePage
           isAffix={true}
           title={
@@ -200,7 +275,7 @@ export default function CreateReport() {
             </Link>
           }
         >
-          <Button style={{ minWidth: 100 }} size="large" type="primary">
+          <Button style={{ minWidth: 100 }} size="large" type="primary" htmlType="submit">
             {location.state ? 'Lưu' : 'Tạo phiếu kiểm hàng'}
           </Button>
         </TitlePage>
@@ -210,57 +285,75 @@ export default function CreateReport() {
         </Row>
         <Row gutter={16} className={styles['space-row']}>
           <Col span={6}>
-            <p>Chi nhánh phiếu kiểm</p>
-            <Select
-              allowClear
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Search to Select"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
+            <Form.Item
+              label="Chi nhánh phiếu kiểm"
+              name="branch_id"
+              rules={[{ required: true, message: 'Vui lòng chọn chi nhánh phiếu kiểm!' }]}
             >
-              {
-                allBranch.map((branch, index) =>
-                  <Option key={index} value={branch.branch_id}>{branch.name}</Option>
-                )
-              }
-            </Select>
+              <Select
+                allowClear
+                showSearch
+                style={{ width: '100%' }}
+                placeholder="Chọn chi nhánh"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+              >
+                {
+                  allBranch.map((branch, index) =>
+                    <Option key={index} value={branch.branch_id}>{branch.name}</Option>
+                  )
+                }
+              </Select>
+            </Form.Item>
           </Col>
           <Col span={6}>
-            <p>Nhân viên kiểm</p>
-            <Select
-              allowClear
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Search to Select"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
+            <Form.Item
+              label="Nhân viên kiểm"
+              name="inventorier_id"
+              rules={[{ required: true, message: 'Vui lòng chọn nhân viên kiểm!' }]}
             >
-              {
-                users.map((user, index) =>
-                  <Option key={index} value={user.user_id}>{user.username}</Option>
-                )
-              }
-            </Select>
+              <Select
+                allowClear
+                showSearch
+                style={{ width: '100%' }}
+                placeholder="Chọn nhân viên"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+              >
+                {
+                  users.map((user, index) =>
+                    <Option key={index} value={user.user_id}>{user.username}</Option>
+                  )
+                }
+              </Select>
+            </Form.Item>
           </Col>
           <Col span={6}>
-            <p>Ghi chú</p>
-            <TextArea rows={1} style={{ maxWidth: '100%' }} />
+            <Form.Item
+              label="Ghi chú"
+              name="note"
+            >
+              <TextArea rows={1} style={{ maxWidth: '100%' }} />
+            </Form.Item>
           </Col>
-          <Col span={6}>
-            <p>Tag</p>
-            <Input style={{ maxWidth: '100%' }} />
-          </Col>
+          {/* <Col span={6}>
+            <Form.Item
+              label="Tag"
+              name="tag"
+            >
+              <Input style={{ maxWidth: '100%' }} />
+            </Form.Item>
+          </Col> */}
         </Row>
 
         <div>
@@ -280,20 +373,28 @@ export default function CreateReport() {
                 clearIcon={<CloseOutlined style={{ color: 'black' }} />}
                 suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
                 style={{ width: '95%', marginBottom: 15 }}
-                // onChange={(value) => console.log(value)}
                 placeholder="Thêm sản phẩm vào hoá đơn"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
-                {dataProducts.map((data, index) =>
-                  data.variants &&
-                  data.variants.map((variant, index) =>
-                    <Select.Option value={variant.title} key={variant.title + index + ''} >
+                {dataProducts.map((data) =>
+                  data.variants && data.variants.map((variant, index) =>
+                    <Select.Option value={variant.title} key={variant.variant_id} >
                       <Row
+                        key={index}
                         align="middle"
                         wrap={false}
                         style={{ padding: '7px 13px' }}
                         onClick={(e) => {
                           e.stopPropagation()
+                          const findProduct = listProduct.find(
+                            (item) => item.variant_id === variant.variant_id
+                          )
+                          if (findProduct) {
+                            notification.error({ message: 'Chỉ được chọn sản phẩm khác phân loại' })
+                            return
+                          }
+                          getDataToCreate(data, variant, index)
+                          // console.log([...body])
                         }}
                       >
                         <img
@@ -331,8 +432,8 @@ export default function CreateReport() {
                         </div>
                       </Row>
                     </Select.Option>
-                  )
-                )}
+                  ))
+                }
               </Select>
             </Col>
 
@@ -348,11 +449,49 @@ export default function CreateReport() {
           </Row>
           <Table
             scroll={{ y: 400 }}
-            sticky
+            // sticky
             pagination={false}
-            columns={columns}
+            columns={
+              columns.map(column => {
+                if (column.dataIndex === 'stt')
+                  return {
+                    ...column,
+                    width: 50,
+                    render: (text, record, index) =>
+                      (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
+                  }
+                if (column.dataIndex === 'sku')
+                  return {
+                    ...column,
+                    render: (text, record) => record.sku
+                  }
+                if (column.dataIndex === 'title')
+                  return {
+                    ...column,
+                    render: (text, record) => record.title
+                  }
+                if (column.dataIndex === 'unit')
+                  return {
+                    ...column,
+                    render: (text, record) => {
+                      return record.unit
+                    }
+                  }
+                if (column.dataIndex === 'total_quantity')
+                  return {
+                    ...column,
+                    render: (text, record) => record.total_quantity
+                  }
+                if (column.dataIndex === 'real_quantity')
+                  return {
+                    ...column,
+                    render: (text, record, index) => <InputNumber min={0} defaultValue='0' onChange={e => _setRealQuantity(index, e)} />
+                  }
+                return column
+              })
+            }
             size="small"
-            // dataSource={[...orderCreate.order_details]}
+            dataSource={listProduct}
             locale={{
               emptyText: (
                 <div
@@ -371,11 +510,11 @@ export default function CreateReport() {
             }}
           />
         </div>
-      </Form >
+      </Form>
       <Modal
         title="Chọn nhiều sản phẩm"
         visible={isModalVisible}
-        onOk={() => setIsModalVisible(false)}
+        onOk={onOkayModal}
         okText="Thêm vào đơn"
         onCancel={() => setIsModalVisible(false)}
         width={'50%'}
@@ -387,9 +526,12 @@ export default function CreateReport() {
           style={{ width: '100%' }}
         />
         <Table
+          rowKey='variant_id'
           rowSelection={{
             onChange: (selectedRowKeys, selectedRows) => {
               console.log(selectedRowKeys, selectedRows)
+              selectedRows.length !== 0 && setListProduct(selectedRows)
+
             },
             getCheckboxProps: (record) => ({
               title: record.title,
@@ -398,7 +540,16 @@ export default function CreateReport() {
           loading={loading}
           size="small"
           dataSource={dataModal}
-          columns={columnsModal}
+          columns={
+            columnsModal.map(column => {
+              if (column.dataIndex === 'variant_id')
+                return {
+                  ...column,
+                  render: (text, record) => <span style={{ display: 'none' }}>{record.variant_id}</span>,
+                }
+              return column
+            })
+          }
           style={{ width: '100%', marginTop: 10 }}
           pagination={{
             position: ['bottomLeft'],

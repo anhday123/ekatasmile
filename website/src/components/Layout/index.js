@@ -205,7 +205,10 @@ const BaseLayout = (props) => {
       path: ROUTES.STOCK_ADJUSTMENTS,
       title: 'Kiểm hàng',
       permissions: [],
-      pathsChild: [ROUTES.STOCK_ADJUSTMENTS_CREATE],
+      pathsChild: [
+        ROUTES.STOCK_ADJUSTMENTS_CREATE,
+        ROUTES.STOCK_ADJUSTMENTS_UPDATE
+      ],
     },
     {
       pathsChild: [],

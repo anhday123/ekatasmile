@@ -24,7 +24,7 @@ import ReportVariant from './report-variant'
 import ReportImportExportInventoryProduct from './report-import-export-inventory-product'
 import ReportImportExportInventoryVariant from './report-import-export-inventory-variant'
 import StockAdjustments from './stock-adjustments'
-import StockAdjustmentsCreate from './stock-adjustments-create'
+import StockAdjustmentsForm from './stock-adjustments-form'
 import ConfigurationStore from './configuration-store'
 import OTP from './otp'
 import Setting from './setting'
@@ -169,8 +169,15 @@ const DEFINE_ROUTER = [
   },
   {
     path: ROUTES.STOCK_ADJUSTMENTS_CREATE,
-    Component: () => <StockAdjustmentsCreate />,
+    Component: () => <StockAdjustmentsForm />,
     title: 'Tạo phiếu kiểm hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.STOCK_ADJUSTMENTS_UPDATE,
+    Component: () => <StockAdjustmentsForm />,
+    title: 'Cập nhật phiếu kiểm hàng',
     permissions: [],
     exact: true,
   },
