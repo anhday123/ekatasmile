@@ -169,6 +169,7 @@ export default function Role() {
 
   const [key, setKey] = useState('')
   function callback(key) {
+    console.log('key', key)
     setKey(key)
   }
 
@@ -196,7 +197,7 @@ export default function Role() {
   }
 
   const addPermission = (permissionAdd, typePermission) => {
-    const role = rolePermission.find((e) => e.role_id === key)
+    const role = rolePermission.find((e) => e.role_id === +key)
     if (role) {
       let body = { active: true }
       if (typePermission === 'permission_list') {
@@ -217,7 +218,7 @@ export default function Role() {
   }
 
   const removePermission = (permissionAdd, typePermission) => {
-    const role = rolePermission.find((e) => e.role_id === key)
+    const role = rolePermission.find((e) => e.role_id === +key)
     if (role) {
       let body = { active: true }
       if (typePermission === 'permission_list') {
@@ -335,13 +336,13 @@ export default function Role() {
     }
   }
 
-  const onClickDeleteDisable = (e, id, index) => {
+  const onClickDeleteDisable = (e, roleId, index) => {
     const object = {
-      active: e ? e : false,
+      active: e,
       permission_list: [...rolePermission[index].permission_list],
       menu_list: [...rolePermission[index].menu_list],
     }
-    _updateRole(object, id, e)
+    _updateRole(object, roleId, e)
   }
   // initial data tree
   const getTitle = (permissionAdd, typePermission, values, color = '#EC7100') => {
@@ -363,8 +364,8 @@ export default function Role() {
     return data
       .filter((e) =>
         [
-          dataUser && dataUser.data._role.menu_list,
-          dataUser && dataUser.data._role.permission_list,
+          ...((dataUser && dataUser.data._role.menu_list) || []),
+          ...((dataUser && dataUser.data._role.permission_list) || []),
         ].includes(e.pParent || e)
       )
       .map((p) => {
@@ -393,8 +394,8 @@ export default function Role() {
     data
       .filter((e) =>
         [
-          dataUser && dataUser.data && dataUser.data._role.menu_list,
-          dataUser && dataUser.data && dataUser.data._role.permission_list,
+          ...((dataUser && dataUser.data && dataUser.data._role.menu_list) || []),
+          ...((dataUser && dataUser.data && dataUser.data._role.permission_list) || []),
         ].includes(e.pParent || e)
       )
       .map((p) => {
@@ -498,7 +499,7 @@ export default function Role() {
                   <Tree
                     showIcon={false}
                     defaultExpandAll={true}
-                    defaultExpandParent={true}
+                    // defaultExpandParent={true}
                     treeData={[...generateTreeData(PERMISSIONS_APP, values)]}
                   />
                 </Panel>
