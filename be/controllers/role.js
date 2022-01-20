@@ -116,7 +116,7 @@ module.exports._update = async (req, res, next) => {
             creator_id: _role.creator_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
-            active: true,
+            active: _role.active,
             slug_name: removeUnicode(_role.name, true).toLowerCase(),
         };
         req['body'] = _role;
