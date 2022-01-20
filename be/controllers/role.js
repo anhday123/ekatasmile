@@ -106,7 +106,7 @@ module.exports._update = async (req, res, next) => {
         delete req.body.creator_id;
         let _role = { ...role, ...req.body };
         _role = {
-            role_id: role_id,
+            role_id: _role.role_id,
             code: _role.code,
             name: _role.name,
             permission_list: _role.permission_list || [],
