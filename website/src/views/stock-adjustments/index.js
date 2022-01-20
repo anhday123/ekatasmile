@@ -191,6 +191,7 @@ export default function Reports() {
               prefix={<SearchOutlined />}
               placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
               bordered={false}
+              value={valueSearch}
             />
           </Col>
           <Col xs={24} sm={24} md={24} lg={12} xl={12}>
