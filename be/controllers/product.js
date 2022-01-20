@@ -564,8 +564,6 @@ module.exports.importFileC = async (req, res, next) => {
             cellDates: true,
         });
         let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
-        console.log(rows);
-        return;
         let categorySlugs = [];
         let supplierSlugs = [];
         let taxSlugs = [];
