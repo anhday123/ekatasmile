@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styles from './stock-adjustments.module.scss'
 import moment from 'moment'
 import { ROUTES } from 'consts'
@@ -14,13 +14,20 @@ import Permission from 'components/permission'
 import locale from 'antd/es/date-picker/locale/zh_CN'
 
 //antd
-import { Row, Col, Input, Button, DatePicker, Space, Table, Modal } from 'antd'
+import { Row, Col, Input, Button, DatePicker, Space, Table, Modal, Select } from 'antd'
 
 //icons
 import { SearchOutlined, SettingOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
+//apis
+import { getCheckInventoryNote, importCheckInventoryNote } from 'apis/inventory'
+import { getAllBranch } from 'apis/branch'
+
 export default function Reports() {
   const history = useHistory()
+  const typingTimeoutRef = useRef(null)
+  const { RangePicker } = DatePicker
+  const { Option } = Select
 
   const [selectRowsKey, setSelectRowKeys] = useState([])
   const [columns, setColumns] = useState([])
@@ -28,70 +35,115 @@ export default function Reports() {
   const [loading, setLoading] = useState(false)
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  console.log(paramsFilter)
 
-  const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
+  const [visibleProductsToSupplier, setVisibleProductsToSupplier] = useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-
+  const [valueFilterTime, setValueFilterTime] = useState()
+  const [valueSearch, setValueSearch] = useState('')
+  const [valueBranch, setValueBranch] = useState([])
+  console.log(valueBranch)
   const [supplierId, setSupplierId] = useState()
+  const [inventoryNote, setInventoryNote] = useState([])
   const [productsSupplier, setProductsSupplier] = useState([])
-  const [visibleProductsToSupplier, setVisibleProductsToSupplier] = useState(false)
+
   const toggleProductsToSupplier = () => {
     setVisibleProductsToSupplier(!visibleProductsToSupplier)
     setProductsSupplier([])
     setSupplierId()
   }
+  const toggleOpenSelect = () => setOpenSelect(!openSelect)
 
-  // const columnsStock = [
-  //   {
-  //     title: 'Mã phiếu',
-  //     dataIndex: 'code',
-  //     render: (text, record, index) => {
-  //       console.log(text, record, index)
-  //       return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
-  //     },
-  //   },
-  //   {
-  //     title: 'Kho kiểm hàng',
-  //     dataIndex: 'warehouse',
-  //   },
-  //   {
-  //     title: 'Trạng thái',
-  //     dataIndex: 'status',
-  //   },
-  //   {
-  //     title: 'Ngày tạo',
-  //     dataIndex: 'create_date',
-  //   },
-  //   {
-  //     title: 'Ngày kiểm',
-  //     dataIndex: 'check_date',
-  //   },
-  //   {
-  //     title: 'Nhân viên tạo',
-  //     dataIndex: 'creator',
-  //   },
-  //   {
-  //     title: 'Ghi chú',
-  //     dataIndex: 'note',
-  //   },
-  // ]
-
-  const dataStockAdjustment = []
-  for (let i = 0; i < 1; i++) {
-    dataStockAdjustment.push({
-      key: i,
-      code: `JANUARY ${i}`,
-      warehouse: 'Chi nhanh mac dinh',
-      status: `London, Park Lane no. ${i}`,
-      create_date: `11/01/2022`,
-      check_date: `12/01/2022`,
-      creator: `Duck`,
-      note: `Hang to`,
-    })
+  const _getCheckInventoryNote = async () => {
+    try {
+      setLoading(true)
+      const res = await getCheckInventoryNote({ ...paramsFilter })
+      if (res.status === 200) {
+        setInventoryNote(res.data.data)
+      }
+      setLoading(false)
+    }
+    catch (err) {
+      console.log(err)
+    }
   }
+
+  const _getAllBranch = async (query) => {
+    try {
+      setLoading(true)
+      const res = await getAllBranch(query)
+      if (res.status === 200) {
+        setValueBranch(res.data.data)
+      }
+      setLoading(false)
+    }
+    catch (err) {
+      console.log(err)
+    }
+  }
+
+  const _onSearch = (e) => {
+    setValueSearch(e.target.value)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const value = e.target.value
+
+      if (value) paramsFilter.code = value
+      else delete paramsFilter.code
+
+      paramsFilter.page = 1
+      setParamsFilter({ ...paramsFilter })
+    }, 750)
+  }
+
+  const _onClearFilters = () => {
+    Object.keys(paramsFilter).map((key) => delete paramsFilter[key])
+
+    setValueSearch('')
+    setValueFilterTime()
+    paramsFilter.page = 1
+    paramsFilter.page_size = 20
+
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const _getStockAdjustmentToExport = async () => {
+    let dataExport = []
+    try {
+      setLoading(true)
+      const res = await getCheckInventoryNote()
+      console.log(res)
+      if (res.status === 200) {
+        dataExport = res.data.data.map((item, index) => ({
+          STT: index + 1,
+          'Mã phiếu': item.code || '',
+          'Kho kiểm hàng ': item.branch || '',
+          'Trạng thái': item.status || '',
+          'Ngày tạo': item.create_date || '',
+          'Ngày kiểm': item.inventory_date || '',
+          'Nhân viên tạo': item.creator || '',
+          'Ghi chú': item.note || '',
+        }))
+      }
+      setLoading(false)
+      exportToCSV(dataExport, 'Phiếu kiểm hàng')
+    } catch (e) {
+      console.log(e)
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    _getCheckInventoryNote()
+    _getAllBranch()
+  }, [paramsFilter])
 
   return (
     <div className="card">
@@ -99,47 +151,16 @@ export default function Reports() {
         <Space>
           <Button
             size="large"
-            onClick={toggleProductsToSupplier}
+            onClick={_getStockAdjustmentToExport}
             icon={<VerticalAlignTopOutlined />}
             style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
           >
             Xuất excel
           </Button>
-          <Modal
-            style={{ top: 20 }}
-            footer={null}
-            title="Xuất file danh sách phiếu kiểm hàng"
-            width={920}
-            visible={visibleProductsToSupplier}
-            onCancel={toggleProductsToSupplier}
-          >
-            <Row justify="space-between" wrap={false} align="middle">
-              {/* <Button
-                onClick={() => {
-                  const dataExport = productsSupplier.map((record, index) => ({
-                    STT: index + 1,
-                    'Tên sản phẩm': record.product_name || '',
-                    'Mã sản phẩm': record.product_sku || '',
-                    'Loại sản phẩm': record.categories || '',
-                    'Mã phiên bản': record.sku || '',
-                    'Nhà cung cấp': record.supplier || '',
-                    'Đơn vị': record.unit || '',
-                    'Đơn giá nhập': record.import_price || '',
-                    'Số lượng nhập': record.quantity || '',
-                  }))
-                  exportToCSV(dataExport, 'Danh sách sản phẩm')
-                }}
-                type="primary"
-                style={{ display: !productsSupplier.length && 'none' }}
-              >
-                Tải xuống
-              </Button> */}
-            </Row>
-          </Modal>
           <ImportCSV
             size="large"
-            // upload={uploadOrdersImportInventory}
-            // reload={_getOrdersImportInventory}
+            upload={importCheckInventoryNote}
+            reload={_getCheckInventoryNote}
             title="Nhập phiếu kiểm hàng bằng file excel"
             fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
           />
@@ -160,16 +181,113 @@ export default function Reports() {
         <Row gutter={[16, 16]} style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5, width: 700 }}>
           <Col xs={24} sm={24} md={24} lg={12} xl={12} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Input
+              allowClear
               size="large"
+              onChange={_onSearch}
               prefix={<SearchOutlined />}
               placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
               bordered={false}
             />
           </Col>
           <Col xs={24} sm={24} md={24} lg={12} xl={12}>
-            <DatePicker.RangePicker size="large" bordered={false} />
+            <Select
+              size="large"
+              value={valueFilterTime}
+              allowClear
+              style={{ width: '100%' }}
+              placeholder="Lọc theo thời gian"
+              showSearch
+              open={openSelect}
+              onChange={(value) => {
+                setValueFilterTime(value)
+                delete paramsFilter[valueFilterTime]
+                if (value) paramsFilter[value] = true
+                else delete paramsFilter[value]
+                setParamsFilter({ ...paramsFilter })
+              }}
+              onBlur={() => {
+                if (openSelect) toggleOpenSelect()
+              }}
+              onClick={() => {
+                if (!openSelect) toggleOpenSelect()
+              }}
+              dropdownRender={(menu) => (
+                <>
+                  <RangePicker
+                    style={{ width: '100%' }}
+                    onFocus={() => {
+                      if (!openSelect) toggleOpenSelect()
+                    }}
+                    onBlur={() => {
+                      if (openSelect) toggleOpenSelect()
+                    }}
+                    value={valueDateSearch}
+                    onChange={(dates, dateStrings) => {
+                      //khi search hoac filter thi reset page ve 1
+                      paramsFilter.page = 1
+
+                      if (openSelect) toggleOpenSelect()
+
+                      //nếu search date thì xoá các params date
+                      delete paramsFilter.to_day
+                      delete paramsFilter.yesterday
+                      delete paramsFilter.this_week
+                      delete paramsFilter.last_week
+                      delete paramsFilter.last_month
+                      delete paramsFilter.this_month
+                      delete paramsFilter.this_year
+                      delete paramsFilter.last_year
+
+                      //Kiểm tra xem date có được chọn ko
+                      //Nếu ko thì thoát khỏi hàm, tránh cash app
+                      //và get danh sách order
+                      if (!dateStrings[0] && !dateStrings[1]) {
+                        delete paramsFilter.from_date
+                        delete paramsFilter.to_date
+
+                        setValueDateSearch(null)
+                        setValueFilterTime()
+                      } else {
+                        const dateFirst = dateStrings[0]
+                        const dateLast = dateStrings[1]
+                        setValueDateSearch(dates)
+                        setValueFilterTime(`${dateFirst} -> ${dateLast}`)
+
+                        dateFirst.replace(/-/g, '/')
+                        dateLast.replace(/-/g, '/')
+
+                        paramsFilter.from_date = dateFirst
+                        paramsFilter.to_date = dateLast
+                      }
+
+                      setParamsFilter({ ...paramsFilter })
+                    }}
+                  />
+                  {menu}
+                </>
+              )}
+              bordered={false}
+            >
+              <Option value="today">Hôm nay</Option>
+              <Option value="yesterday">Hôm qua</Option>
+              <Option value="this_week">Tuần này</Option>
+              <Option value="last_week">Tuần trước</Option>
+              <Option value="this_month">Tháng này</Option>
+              <Option value="last_month">Tháng trước</Option>
+              <Option value="this_year">Năm này</Option>
+              <Option value="last_year">Năm trước</Option>
+            </Select>
           </Col>
         </Row>
+        <Button
+          size="large"
+          onClick={_onClearFilters}
+          type="primary"
+          danger
+          style={{ marginTop: 15, marginLeft: 15, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+        >
+          Xóa bộ lọc
+        </Button>
       </Space>
 
       <Table
@@ -180,7 +298,7 @@ export default function Reports() {
         //   onChange: (keys) => setSelectRowKeys(keys),
         // }}
         size="small"
-        dataSource={dataStockAdjustment}
+        dataSource={inventoryNote}
         columns={columns.map((column) => {
           if (column.key === 'stt')
             return {
@@ -189,10 +307,20 @@ export default function Reports() {
               render: (text, record, index) =>
                 (paramsFilter.page - 1) * paramsFilter.page_size + index + 1
             }
-          if (column.dataIndex === 'code')
+          if (column.key === 'code')
             return {
               ...column,
-              render: (text, record) => <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>,
+              render: (text, record) => <Link to={{ pathname: ROUTES.STOCK_ADJUSTMENTS_UPDATE, state: record }}>{record.code}</Link>,
+            }
+          if (column.key === 'branch')
+            return {
+              ...column,
+              render: (text, record) => valueBranch.map(value => (value.branch_id === record.branch_id) && value.name)
+            }
+          if (column.key === 'create_date')
+            return {
+              ...column,
+              render: (text, record) => moment(record.create_date).format('DD/MM/YYYY, hh:mm:ss')
             }
           return column
         })}
@@ -211,6 +339,6 @@ export default function Reports() {
           // total: countOrder,
         }}
       />
-    </div>
+    </div >
   )
 }

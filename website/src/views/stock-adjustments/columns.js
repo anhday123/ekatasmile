@@ -10,15 +10,11 @@ const columns = [
   },
   {
     title: 'Mã phiếu',
-    dataIndex: 'code',
-    render: (text, record, index) => {
-      console.log(text, record, index)
-      return <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>{text}</Link>
-    }
+    key: 'code',
   },
   {
     title: 'Kho kiểm hàng',
-    dataIndex: 'warehouse',
+    key: 'branch',
   },
   {
     title: 'Trạng thái',
@@ -26,11 +22,11 @@ const columns = [
   },
   {
     title: 'Ngày tạo',
-    dataIndex: 'create_date',
+    key: 'create_date',
   },
   {
     title: 'Ngày kiểm',
-    dataIndex: 'check_date',
+    dataIndex: 'inventory_date',
   },
   {
     title: 'Nhân viên tạo',
