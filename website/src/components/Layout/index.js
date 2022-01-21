@@ -312,6 +312,7 @@ const BaseLayout = (props) => {
         ROUTES.SHIPPING,
         ROUTES.POINT,
         ROUTES.PROMOTION,
+        ROUTES.IMPORT_REPORT_FILE,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
