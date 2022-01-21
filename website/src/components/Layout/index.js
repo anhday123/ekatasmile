@@ -297,7 +297,6 @@ const BaseLayout = (props) => {
     {
       path: ROUTES.SHIPPING_CONTROL,
       title: 'Đối soát vận chuyển',
-      /*  permissions: [], */
       permissions: [],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
@@ -312,6 +311,7 @@ const BaseLayout = (props) => {
         ROUTES.SHIPPING,
         ROUTES.POINT,
         ROUTES.PROMOTION,
+        ROUTES.IMPORT_REPORT_FILE,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',

@@ -272,9 +272,7 @@ export default function ConfigurationStore() {
         <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Nhật ký</div>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={11} md={11} lg={8} xl={8}>
-            <Link
-            // to={ROUTES.IMPORT_REPORT_FILE}
-            >
+            <Link to={ROUTES.IMPORT_REPORT_FILE}>
               <Row wrap={false}>
                 <div
                   className={styles['wrap-icon']}
