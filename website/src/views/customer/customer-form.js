@@ -69,6 +69,10 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
       dispatch({ type: ACTION.LOADING, data: true })
       const body = {
         ...values,
+        point: 0,
+        used_point: 0,
+        order_quantity: 0,
+        order_total_cost: 0,
         first_name: values.first_name || '',
         birthday: values.birthday ? new Date(values.birthday).toString() : null,
         address: values.address || '',

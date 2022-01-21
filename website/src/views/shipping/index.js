@@ -195,7 +195,6 @@ export default function Shipping() {
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
               prefix={<SearchOutlined />}
-              size="large"
               style={{ width: '100%' }}
               value={valueSearch}
               enterButton
@@ -208,7 +207,6 @@ export default function Shipping() {
           <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
             <Select
               allowClear
-              size="large"
               showSearch
               style={{ width: '100%' }}
               placeholder="Lọc theo tỉnh/thành phố"
@@ -228,7 +226,6 @@ export default function Shipping() {
           <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Select
               allowClear
-              size="large"
               showSearch
               style={{ width: '100%' }}
               placeholder="Lọc theo quận/huyện"
@@ -251,7 +248,6 @@ export default function Shipping() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Select
-              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -385,7 +381,6 @@ export default function Shipping() {
             style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
             onClick={_clearFilters}
             type="primary"
-            size="large"
           >
             Xóa bộ lọc
           </Button>

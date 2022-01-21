@@ -180,7 +180,6 @@ export default function Employee() {
             placeholder="Tìm kiếm theo tên nhân viên"
             onChange={onSearch}
             value={valueSearch}
-            size="large"
             bordered={false}
           />
         </Col>
@@ -194,7 +193,6 @@ export default function Employee() {
         >
           <Select
             allowClear
-            size="large"
             style={{ width: '100%' }}
             placeholder="Chọn tỉnh/thành phố"
             showSearch
@@ -216,7 +214,6 @@ export default function Employee() {
         <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
           <Select
             allowClear
-            size="large"
             showSearch
             style={{ width: '100%' }}
             placeholder="Chọn quận/huyện"
@@ -239,7 +236,6 @@ export default function Employee() {
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={6}>
           <Select
-            size="large"
             open={isOpenSelect}
             onBlur={() => {
               if (isOpenSelect) toggleOpenSelect()
@@ -352,7 +348,6 @@ export default function Employee() {
       <Row style={{ width: '100%', marginTop: 15 }} justify="space-between">
         <Button
           style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}
-          size="large"
           onClick={_clearFilters}
           type="primary"
         >

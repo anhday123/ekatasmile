@@ -194,7 +194,6 @@ export default function Supplier() {
       <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
         <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Input
-            size="large"
             value={valueSearch}
             enterButton
             onChange={onSearch}
@@ -214,7 +213,6 @@ export default function Supplier() {
           <Select
             allowClear
             style={{ width: '100%' }}
-            size="large"
             showSearch
             placeholder="Lọc theo tỉnh/thành phố"
             optionFilterProp="children"
@@ -235,7 +233,6 @@ export default function Supplier() {
         <Col xs={24} sm={24} md={12} lg={12} xl={8}>
           <Select
             allowClear
-            size="large"
             showSearch
             style={{ width: '100%' }}
             placeholder="Lọc theo quận/huyện"
@@ -270,7 +267,6 @@ export default function Supplier() {
           }}
         >
           <RangePicker
-            size="large"
             className="br-15__date-picker"
             style={{ width: '100%' }}
             value={valueDate}
@@ -288,7 +284,6 @@ export default function Supplier() {
         >
           <Select
             allowClear
-            size="large"
             showSearch
             style={{ width: '100%' }}
             placeholder="Lọc theo người tạo"
@@ -308,7 +303,7 @@ export default function Supplier() {
           </Select>
         </Col>
         <Col style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}>
-          <Button onClick={onClickClear} type="primary" size="large">
+          <Button onClick={onClickClear} type="primary">
             Xóa tất cả lọc
           </Button>
         </Col>

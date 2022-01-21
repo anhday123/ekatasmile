@@ -307,14 +307,12 @@ export default function Guarantee() {
                   value={filter.search}
                   onChange={onSearch}
                   enterButton
-                  size="large"
                   allowClear
                   bordered={false}
                 />
               </Col>
               <Col xs={24} sm={24} md={8} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
                 <RangePicker
-                  size="large"
                   className="br-15__date-picker"
                   style={{ width: '100%' }}
                   ranges={{
@@ -333,7 +331,6 @@ export default function Guarantee() {
                   }
                   allowClear
                   showSearch
-                  size="large"
                   placeholder="Chọn người tạo"
                   style={{ width: '100%' }}
                   value={filter.creator_id}
@@ -357,7 +354,6 @@ export default function Guarantee() {
           </Col>
           <Col xs={24} sm={24} md={2} lg={2} xl={2} style={{ marginLeft: 10 }}>
             <Button
-              size="large"
               type="primary"
               onClick={() => {
                 setFilter({

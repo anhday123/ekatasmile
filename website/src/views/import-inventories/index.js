@@ -537,7 +537,6 @@ export default function ImportInventories() {
               value={valueSearch}
               onChange={onSearch}
               prefix={<SearchOutlined />}
-              size="large"
               placeholder="Tìm kiếm theo số hóa đơn"
               bordered={false}
             />
@@ -551,7 +550,6 @@ export default function ImportInventories() {
             style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
           >
             <Select
-              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -662,7 +660,6 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6}>
             <Select
-              size="large"
               placeholder="Lọc theo trạng thái"
               allowClear
               showSearch
@@ -683,7 +680,6 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6}>
             <Select
-              size="large"
               placeholder="Lọc theo nhân viên tạo đơn"
               allowClear
               showSearch
@@ -704,7 +700,6 @@ export default function ImportInventories() {
           </Col>
         </Row>
         <Select
-          size="large"
           placeholder="Lọc theo nhân viên xác nhận đơn"
           allowClear
           showSearch

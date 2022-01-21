@@ -580,7 +580,6 @@ export default function Product() {
               <Row style={{ width: '100%' }}>
                 <Col span={16}>
                   <Input
-                    size="large"
                     style={{ width: '100%' }}
                     name="name"
                     value={valueSearch}
@@ -592,7 +591,6 @@ export default function Product() {
                 </Col>
                 <Col span={8}>
                   <Select
-                    size="large"
                     showSearch
                     style={{
                       width: '100%',
@@ -626,7 +624,6 @@ export default function Product() {
             style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
           >
             <TreeSelect
-              size="large"
               style={{ width: '100%' }}
               placeholder="Tìm kiếm theo nhóm sản phẩm"
               allowClear
@@ -675,7 +672,6 @@ export default function Product() {
               <Col span={16}>
                 <Select
                   allowClear
-                  size="large"
                   showSearch
                   style={{ width: '100%' }}
                   placeholder="Lọc theo nhà cung cấp"
@@ -698,7 +694,6 @@ export default function Product() {
               <Col span={8}>
                 <Select
                   allowClear
-                  size="large"
                   showSearch
                   style={{
                     width: '100%',
@@ -731,7 +726,6 @@ export default function Product() {
           >
             <Select
               style={{ width: '100%' }}
-              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -867,7 +861,6 @@ export default function Product() {
               style={{
                 display: Object.keys(paramsFilter).length <= 2 && 'none',
               }}
-              size="large"
               onClick={onClickClear}
               type="primary"
             >

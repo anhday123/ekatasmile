@@ -182,11 +182,10 @@ export default function Reports() {
         </Space>
       </TitlePage>
       <Space>
-        <Row gutter={[16, 16]} style={{ marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5, width: 700 }}>
+        <Row gutter={[16, 16]} style={{ marginLeft: 0, marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5, width: 700 }}>
           <Col xs={24} sm={24} md={24} lg={12} xl={12} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Input
               allowClear
-              size="large"
               onChange={_onSearch}
               prefix={<SearchOutlined />}
               placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
@@ -196,7 +195,6 @@ export default function Reports() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={12} xl={12}>
             <Select
-              size="large"
               value={valueFilterTime}
               allowClear
               style={{ width: '100%' }}
@@ -285,7 +283,6 @@ export default function Reports() {
           </Col>
         </Row>
         <Button
-          size="large"
           onClick={_onClearFilters}
           type="primary"
           danger

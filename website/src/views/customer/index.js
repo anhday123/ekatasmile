@@ -233,7 +233,6 @@ export default function Customer() {
         <Col xs={24} sm={24} md={24} lg={10} xl={10}>
           <Row wrap={false} style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <Input
-              size="large"
               style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
               placeholder="Tìm kiếm theo..."
               value={valueSearch}
@@ -242,7 +241,6 @@ export default function Customer() {
               bordered={false}
             />
             <Select
-              size="large"
               style={{ width: 180 }}
               value={optionSearch}
               onChange={(value) => {
@@ -268,7 +266,6 @@ export default function Customer() {
               style={{ borderRight: '1px solid #d9d9d9' }}
             >
               <Select
-                size="large"
                 open={isOpenSelect}
                 onBlur={() => {
                   if (isOpenSelect) toggleOpenSelect()
@@ -379,7 +376,6 @@ export default function Customer() {
             </Col>
             <Col xs={24} sm={24} md={24} lg={12} xl={12}>
               <Select
-                size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc theo loại khách hàng"
                 value={paramsFilter.type}
@@ -427,7 +423,8 @@ export default function Customer() {
           if (column.key === 'type')
             return {
               ...column,
-              render: (text, record) => (record._type ? record._type.name : ''),
+              render: (text, record) => record._type.name,
+              sorter: (a, b) => compare(a, b, 'type'),
             }
           if (column.key === 'phone')
             return {
