@@ -123,7 +123,7 @@ const BaseLayout = (props) => {
       pathsChild: [],
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
-      permissions: [PERMISSIONS.tong_quan],
+      permissions: [],
       icon: <MenuFoldOutlined />,
     },
     {
@@ -137,7 +137,7 @@ const BaseLayout = (props) => {
       pathsChild: [ROUTES.ORDER_CREATE],
       path: ROUTES.ORDER_LIST,
       title: 'Đơn hàng',
-      permissions: [PERMISSIONS.danh_sach_don_hang],
+      permissions: [],
       icon: <ShoppingOutlined />,
     },
     {
@@ -145,7 +145,7 @@ const BaseLayout = (props) => {
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
-      permissions: [PERMISSIONS.san_pham],
+      permissions: [],
       menuItems: [
         {
           path: ROUTES.REPORT_INVENTORY,
@@ -177,7 +177,7 @@ const BaseLayout = (props) => {
       pathsChild: [ROUTES.CATEGORY],
       path: ROUTES.CATEGORIES,
       title: 'Nhóm sản phẩm',
-      permissions: [PERMISSIONS.nhom_san_pham],
+      permissions: [],
       icon: <SlidersOutlined />,
     },
     {
@@ -185,20 +185,20 @@ const BaseLayout = (props) => {
       icon: <ShopOutlined />,
       path: ROUTES.BRANCH_MANAGEMENT,
       title: 'Chi nhánh',
-      permissions: [PERMISSIONS.chi_nhanh],
+      permissions: [],
     },
     {
       icon: <MedicineBoxOutlined />,
       path: ROUTES.IMPORT_INVENTORIES,
       title: 'Nhập hàng',
-      permissions: [PERMISSIONS.nhap_hang],
+      permissions: [],
       pathsChild: [ROUTES.IMPORT_INVENTORY],
     },
     {
       icon: <FileSearchOutlined />,
       path: ROUTES.STOCK_ADJUSTMENTS,
       title: 'Kiểm hàng',
-      permissions: [PERMISSIONS.kiem_hang],
+      permissions: [],
       pathsChild: [ROUTES.STOCK_ADJUSTMENTS_CREATE, ROUTES.STOCK_ADJUSTMENTS_UPDATE],
     },
     {
@@ -206,7 +206,7 @@ const BaseLayout = (props) => {
       icon: <GoldOutlined />,
       path: ROUTES.SUPPLIER,
       title: 'Nhà cung cấp',
-      permissions: [PERMISSIONS.quan_li_nha_cung_cap],
+      permissions: [],
     },
     // {
     //   icon: <CodeSandboxOutlined />,
@@ -219,7 +219,7 @@ const BaseLayout = (props) => {
       icon: <RotateLeftOutlined />,
       path: ROUTES.SHIPPING_PRODUCT,
       title: 'Phiếu chuyển hàng',
-      permissions: [PERMISSIONS.phieu_chuyen_hang],
+      permissions: [],
       pathsChild: [ROUTES.SHIPPING_PRODUCT_ADD],
     },
     // {
@@ -229,12 +229,6 @@ const BaseLayout = (props) => {
     //   icon: <ControlOutlined />,
     //   pathsChild: [],
     //   menuItems: [
-    // {
-    //   icon: <TagsOutlined />,
-    //   path: ROUTES.PROMOTION,
-    //   title: 'Khuyến mãi',
-    //   permissions: [PERMISSIONS.khuyen_mai],
-    // },
     // {
     //   icon: <ControlOutlined />,
     //   path: ROUTES.OFFER_LIST,
@@ -281,7 +275,7 @@ const BaseLayout = (props) => {
       pathsChild: [],
       path: ROUTES.CUSTOMER,
       title: 'Khách hàng',
-      permissions: [PERMISSIONS.quan_li_khach_hang],
+      permissions: [],
       icon: <UserAddOutlined />,
     },
     {
@@ -297,14 +291,14 @@ const BaseLayout = (props) => {
       ],
       path: ROUTES.REPORTS,
       title: 'Tổng hợp báo cáo',
-      permissions: [PERMISSIONS.tong_hop_bao_cao],
+      permissions: [],
       icon: <LineChartOutlined />,
     },
     {
       path: ROUTES.SHIPPING_CONTROL,
       title: 'Đối soát vận chuyển',
       /*  permissions: [], */
-      permissions: [PERMISSIONS.doi_soat_van_chuyen],
+      permissions: [],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
@@ -317,10 +311,11 @@ const BaseLayout = (props) => {
         ROUTES.ACTIVITY_DIARY,
         ROUTES.SHIPPING,
         ROUTES.POINT,
+        ROUTES.PROMOTION,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
-      permissions: [PERMISSIONS.cau_hinh_thong_tin],
+      permissions: [],
       icon: <ControlOutlined />,
     },
     {
