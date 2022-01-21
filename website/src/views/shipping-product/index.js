@@ -310,7 +310,6 @@ export default function ShippingProduct() {
             <Col xs={24} sm={24} md={12} lg={12} xl={5}>
               <Input
                 value={valueSearch}
-                size="large"
                 placeholder="Tìm kiếm theo mã phiếu"
                 onChange={onSearch}
                 allowClear
@@ -319,7 +318,6 @@ export default function ShippingProduct() {
             </Col>
             <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
               <Select
-                size="large"
                 open={isOpenSelect}
                 onBlur={() => {
                   if (isOpenSelect) toggleOpenSelect()
@@ -431,7 +429,6 @@ export default function ShippingProduct() {
             <Col xs={24} sm={24} md={12} lg={12} xl={4}>
               <Select
                 allowClear
-                size="large"
                 style={{ width: '100%' }}
                 placeholder="Lọc theo trạng thái"
                 value={paramsFilter.status}
@@ -448,7 +445,6 @@ export default function ShippingProduct() {
             <Col xs={24} sm={24} md={12} lg={12} xl={5} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
               <Select
                 allowClear
-                size="large"
                 placeholder="Lọc theo nơi chuyển"
                 style={{ width: '100%' }}
                 onChange={(value) => _onFilters('export_location_name', value)}
@@ -464,7 +460,6 @@ export default function ShippingProduct() {
             <Col xs={24} sm={24} md={12} lg={12} xl={4}>
               <Select
                 allowClear
-                size="large"
                 placeholder="Lọc theo nơi nhận"
                 style={{ width: '100%' }}
                 onChange={(value) => _onFilters('import_location_name', value)}
@@ -480,7 +475,6 @@ export default function ShippingProduct() {
           </Row>
           <Row>
             <Button
-              size="large"
               onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
               style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
               type="primary"

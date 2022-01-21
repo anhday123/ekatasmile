@@ -458,7 +458,6 @@ export default function Category() {
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={10} xl={10}>
             <Input
-              size="large"
               allowClear
               value={valueSearch}
               onChange={_onSearch}
@@ -470,7 +469,6 @@ export default function Category() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={7} xl={7}>
             <Select
-              size="large"
               onChange={onChangeUserFilter}
               value={valueUserFilter}
               style={{ width: '100%', borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
@@ -490,7 +488,6 @@ export default function Category() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={7} xl={7}>
             <Select
-              size="large"
               value={valueFilterTime}
               allowClear
               style={{ width: '100%' }}
@@ -579,7 +576,6 @@ export default function Category() {
           </Col>
         </Row>
         <Button
-          size="large"
           onClick={_onClearFilters}
           type="primary"
           danger

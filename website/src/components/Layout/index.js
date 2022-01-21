@@ -92,9 +92,9 @@ const BaseLayout = (props) => {
     }
   }
 
-  const getInfoUser = async () => {
+  const getInfoUser = async (params) => {
     try {
-      const res = await getEmployees({ user_id: dataUser.data.user_id })
+      const res = await getEmployees(params)
       if (res.status === 200) {
         if (res.data.data.length) setUser({ ...res.data.data[0] })
       }
@@ -426,7 +426,7 @@ const BaseLayout = (props) => {
 
   const content = (
     <div className={styles['user_information']}>
-      <ModalUpdateUser user={dataUser && dataUser.data}>
+      <ModalUpdateUser user={user}>
         <div>
           <div style={{ color: '#565656', paddingLeft: 10 }}>
             <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
@@ -459,8 +459,8 @@ const BaseLayout = (props) => {
   }, [triggerReloadBranch])
 
   useEffect(() => {
-    getInfoUser()
-  }, [])
+    getInfoUser({ user_id: dataUser.data.user_id })
+  }, [dataUser.data.user_id])
 
   //get width device
   useEffect(() => {
@@ -582,7 +582,7 @@ const BaseLayout = (props) => {
               <Row align="middle">
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
-                  disabled={dataUser && dataUser.data.role_id === 1 ? false : true}
+                  disabled={user && user.role_id === 1 ? false : true}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   onChange={(value) => dispatch({ type: 'SET_BRANCH_ID', data: value })}
@@ -608,7 +608,7 @@ const BaseLayout = (props) => {
               <Dropdown overlay={content} trigger="click">
                 <Row align="middle" wrap={false} style={{ cursor: 'pointer' }}>
                   <Avatar
-                    src={dataUser && (dataUser.data.avatar || '')}
+                    src={user && (user.avatar || '')}
                     style={{ color: '#FFF', backgroundColor: '#FDAA3E', width: 35, height: 35 }}
                   />
                   <span
@@ -620,8 +620,8 @@ const BaseLayout = (props) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {dataUser &&
-                      (dataUser.data.first_name || '') + ' ' + (dataUser.data.last_name || '')}
+                    {user &&
+                      (user.first_name || '') + ' ' + (user.last_name || '')}
                   </span>
                 </Row>
               </Dropdown>

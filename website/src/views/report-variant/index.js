@@ -262,13 +262,12 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row wrap={false} gutter={[16]} style={{ marginBottom: 20, marginTop: 10 }}>
+      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 10 }}>
         <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
           <DatePicker.RangePicker
             value={dateFilter}
             onChange={onChangeDate}
             style={{ width: '100%' }}
-            size="large"
             format={dateFormat}
             bordered={false}
           />
@@ -279,7 +278,6 @@ export default function ReportInventory() {
             allowClear
             value={paramsFilter.branch_id}
             onChange={(value) => setParamsFilter({ ...paramsFilter, branch_id: value })}
-            size="large"
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
             bordered={false}
@@ -294,7 +292,6 @@ export default function ReportInventory() {
         <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}>
           <Select
             allowClear
-            size="large"
             placeholder="Lọc theo nhóm sản phẩm"
             style={{ width: '100%' }}
             bordered={false}
@@ -303,7 +300,6 @@ export default function ReportInventory() {
         <Button
           onClick={_clearFilters}
           style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-          size="large"
           danger
           type="primary"
         >

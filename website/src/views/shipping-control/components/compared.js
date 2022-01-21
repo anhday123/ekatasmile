@@ -278,7 +278,6 @@ export default function Compared(props) {
         <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <Input
-              size="large"
               onChange={(e) =>
                 props.setFilter({
                   ...filter,
@@ -291,7 +290,6 @@ export default function Compared(props) {
           </Col>
           <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
             <Select
-              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -336,7 +334,6 @@ export default function Compared(props) {
           </Col>
           <Col xs={24} sm={24} md={24} lg={8} xl={8}>
             <Select
-              size="large"
               placeholder="Chọn chi nhánh"
               style={{ width: '100%' }}
               onChange={(e) =>

@@ -184,7 +184,6 @@ export default function PenddingCompare(props) {
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Input
             style={{ width: '100%' }}
-            size="large"
             placeholder="Tìm kiếm theo mã, theo tên"
             onChange={onSearch}
             enterButton
@@ -193,7 +192,6 @@ export default function PenddingCompare(props) {
         </Col>
         <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
           <Select
-            size="large"
             open={isOpenSelect}
             onBlur={() => {
               if (isOpenSelect) toggleOpenSelect()
@@ -237,7 +235,6 @@ export default function PenddingCompare(props) {
         </Col>
         <Col xs={24} sm={24} md={24} lg={8} xl={8}>
           <Select
-            size="large"
             placeholder="Chọn chi nhánh"
             style={{ width: '100%' }}
             onChange={(e) =>

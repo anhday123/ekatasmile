@@ -504,14 +504,12 @@ export default function ImportInventories() {
               value={valueSearch}
               onChange={onSearch}
               prefix={<SearchOutlined />}
-              size="large"
               placeholder="Tìm kiếm theo số hóa đơn"
               bordered={false}
             />
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
             <Select
-              size="large"
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -622,7 +620,6 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6}>
             <Select
-              size="large"
               placeholder="Lọc theo trạng thái"
               allowClear
               showSearch
@@ -642,7 +639,6 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={24} md={6} lg={6} xl={6}>
             <Select
-              size="large"
               placeholder="Lọc theo nhân viên tạo đơn"
               allowClear
               showSearch
@@ -656,7 +652,6 @@ export default function ImportInventories() {
           {/* </Space> */}
         </Row>
         <Select
-          size="large"
           placeholder="Lọc theo nhân viên xác nhận đơn"
           allowClear
           showSearch
@@ -666,7 +661,6 @@ export default function ImportInventories() {
           style={{ marginTop: 10, marginRight: 5, width: '25%' }}
           />
         <Button
-          size="large"
           onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
           style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
           danger

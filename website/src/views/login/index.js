@@ -28,8 +28,8 @@ export default function Login() {
       subDomain = subDomain[0].split('//')
 
       //code xong chỉnh lại như cũ
-      // const res = await login({ ...body, username: body.username }, { shop: 'buidinhvietduc' })
-      const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
+      const res = await login({ ...body, username: body.username }, { shop: 'buidinhvietduc' })
+      // const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
 
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)

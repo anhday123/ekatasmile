@@ -382,7 +382,6 @@ export default function Tax() {
         >
           <Col style={{ borderRight: 'none', border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Input
-              size="large"
               style={{ width: '100%' }}
               name="name"
               value={valueSearch}
@@ -395,7 +394,6 @@ export default function Tax() {
           </Col>
           <Col style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <RangePicker
-              size="large"
               className="br-15__date-picker"
               value={
                 clear === 1
@@ -424,7 +422,7 @@ export default function Tax() {
             marginBottom: '1rem',
           }}
         >
-          <Button size="large" onClick={onClickClear} type="primary">
+          <Button onClick={onClickClear} type="primary">
             Xóa tất cả lọc
           </Button>
         </div>

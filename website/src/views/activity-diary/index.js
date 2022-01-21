@@ -316,7 +316,6 @@ export default function ActivityDiary() {
         <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
-              size="large"
               style={{ width: '100%' }}
               name="name"
               value={valueSearch}
@@ -329,7 +328,6 @@ export default function ActivityDiary() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
             <RangePicker
-              size="large"
               className="br-15__date-picker"
               value={
                 clear === 1
@@ -349,7 +347,6 @@ export default function ActivityDiary() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
             <Select
-              size="large"
               showSearch
               style={{ width: '100%' }}
               placeholder="Chọn thao tác"
@@ -373,7 +370,6 @@ export default function ActivityDiary() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Select
-              size="large"
               showSearch
               style={{ width: '100%' }}
               placeholder="Chọn thao tác"
@@ -397,7 +393,7 @@ export default function ActivityDiary() {
           </Col>
         </Row>
         <Row justify="end">
-          <Button onClick={onClickClear} type="primary" size="large">
+          <Button onClick={onClickClear} type="primary" >
             Xóa tất cả lọc
           </Button>
         </Row>

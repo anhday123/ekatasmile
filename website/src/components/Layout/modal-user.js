@@ -11,6 +11,7 @@ import { updateEmployee } from 'apis/employee'
 import { uploadFile } from 'apis/upload'
 
 export default function ModalUpdateUser({ user, children }) {
+  console.log(children)
   const [form] = Form.useForm()
 
   const [loading, setLoading] = useState(false)
@@ -33,6 +34,7 @@ export default function ModalUpdateUser({ user, children }) {
         if (res.data.success) {
           toggle()
           notification.success({ message: 'Cập nhật thông tin cá nhân thành công' })
+          window.location.reload()
         } else
           notification.error({
             message: res.data.message || 'Cập nhật thông tin cá nhân thành công',

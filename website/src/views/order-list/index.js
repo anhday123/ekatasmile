@@ -231,7 +231,6 @@ export default function OrderList() {
           <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}>
             <Row wrap={false}>
               <Input
-                size="large"
                 style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
                 prefix={<SearchOutlined />}
                 name="name"
@@ -242,7 +241,6 @@ export default function OrderList() {
                 allowClear
               />
               <Select
-                size="large"
                 showSearch
                 style={{ width: 170 }}
                 placeholder="Chọn theo"
@@ -265,7 +263,6 @@ export default function OrderList() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
             <RangePicker
-              size="large"
               onChange={_onChangeDate}
               style={{ width: '100%' }}
               className="br-15__date-picker"
@@ -278,7 +275,6 @@ export default function OrderList() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={5} xl={5} style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}>
             <Select
-              size="large"
               value={paramsFilter.bill_status || ''}
               onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
@@ -301,7 +297,6 @@ export default function OrderList() {
         <Row>
           <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}>
             <Select
-              size="large"
               value={paramsFilter.chanel || ''}
               onChange={(value) => _onChangeFilter('chanel', value)}
               showSearch
@@ -318,7 +313,6 @@ export default function OrderList() {
           </Col>
           <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
             <Select
-              size="large"
               value={paramsFilter.employee_name || ''}
               onChange={(value) => _onChangeFilter('employee_name', value)}
               showSearch

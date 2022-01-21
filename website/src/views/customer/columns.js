@@ -2,7 +2,7 @@ const columns = [
   { title: 'STT', key: 'stt' },
   { title: 'Mã khách hàng', key: 'code' },
   { title: 'Tên khách hàng', key: 'name' },
-  { title: 'Loại khách hàng', dataIndex: 'type' },
+  { title: 'Loại khách hàng', key: 'type' },
   { title: 'Liên hệ', dataIndex: 'phone' },
   { title: 'Điểm tích lũy	', key: 'point' },
   { title: 'Số điểm đã dùng	', key: 'used_point' },

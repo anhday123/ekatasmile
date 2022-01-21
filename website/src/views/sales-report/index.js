@@ -144,7 +144,6 @@ export default function ReportFinancial() {
             value={dateFilter}
             onChange={onChangeDate}
             style={{ width: '100%' }}
-            size="large"
             format={dateFormat}
           />
         </Col>
