@@ -145,7 +145,7 @@ const BaseLayout = (props) => {
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
       title: 'Sản phẩm',
-      permissions: [],
+      permissions: [PERMISSIONS.san_pham],
       menuItems: [
         {
           path: ROUTES.REPORT_INVENTORY,
@@ -177,7 +177,7 @@ const BaseLayout = (props) => {
       pathsChild: [ROUTES.CATEGORY],
       path: ROUTES.CATEGORIES,
       title: 'Nhóm sản phẩm',
-      permissions: [],
+      permissions: [PERMISSIONS.nhom_san_pham],
       icon: <SlidersOutlined />,
     },
     {
@@ -185,20 +185,20 @@ const BaseLayout = (props) => {
       icon: <ShopOutlined />,
       path: ROUTES.BRANCH_MANAGEMENT,
       title: 'Chi nhánh',
-      permissions: [],
+      permissions: [PERMISSIONS.chi_nhanh],
     },
     {
       icon: <MedicineBoxOutlined />,
       path: ROUTES.IMPORT_INVENTORIES,
       title: 'Nhập hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.nhap_hang],
       pathsChild: [ROUTES.IMPORT_INVENTORY],
     },
     {
       icon: <FileSearchOutlined />,
       path: ROUTES.STOCK_ADJUSTMENTS,
       title: 'Kiểm hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.kiem_hang],
       pathsChild: [ROUTES.STOCK_ADJUSTMENTS_CREATE, ROUTES.STOCK_ADJUSTMENTS_UPDATE],
     },
     {
@@ -219,7 +219,7 @@ const BaseLayout = (props) => {
       icon: <RotateLeftOutlined />,
       path: ROUTES.SHIPPING_PRODUCT,
       title: 'Phiếu chuyển hàng',
-      permissions: [],
+      permissions: [PERMISSIONS.phieu_chuyen_hang],
       pathsChild: [ROUTES.SHIPPING_PRODUCT_ADD],
     },
     // {
@@ -297,14 +297,14 @@ const BaseLayout = (props) => {
       ],
       path: ROUTES.REPORTS,
       title: 'Tổng hợp báo cáo',
-      permissions: [],
+      permissions: [PERMISSIONS.tong_hop_bao_cao],
       icon: <LineChartOutlined />,
     },
     {
       path: ROUTES.SHIPPING_CONTROL,
       title: 'Đối soát vận chuyển',
-      permissions: [],
-      // permissions: [PERMISSIONS.doi_soat_van_chuyen],
+      /*  permissions: [], */
+      permissions: [PERMISSIONS.doi_soat_van_chuyen],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
