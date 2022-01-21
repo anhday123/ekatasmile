@@ -457,8 +457,9 @@ module.exports._create = async (req, res, next) => {
               }
             }
       
-            query.auto_match_category = true;
+           // query.auto_match_category = true;
       
+           console.log(query)
             var data = await client
               .db(process.env.DB)
               .collection("Products")
@@ -595,11 +596,13 @@ module.exports._create = async (req, res, next) => {
                   break;
               }
             }
+
+            console.log(query_any)
       
             var result = await client
-              .db(process.env.DB)
+              .db(DB)
               .collection("Products")
-              .find(query_any)
+              .aggregate(query_any)
               .toArray();
       
             for (var _i = 0; _i < result.length; _i++) {
