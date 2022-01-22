@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useHistory } from 'react-router-dom'
 import moment from 'moment'
-import { ROUTES, PERMISSIONS, PAGE_SIZE, PAGE_SIZE_OPTIONS } from 'consts'
+import {
+  ROUTES,
+  PERMISSIONS,
+  PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  FILTER_SIZE,
+  FILTER_COL_HEIGHT,
+} from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
 import delay from 'delay'
@@ -227,57 +234,67 @@ export default function OrderList() {
       </TitlePage>
 
       <div style={{ marginTop: 15 }}>
-        <Row>
+        <Row justify="space-between">
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={10}
-            xl={10}
-            style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginRight: 15 }}
+            lg={8}
+            xl={8}
+            style={{
+              border: '1px solid #d9d9d9',
+              borderRadius: 5,
+              marginRight: 15,
+              height: FILTER_COL_HEIGHT,
+            }}
           >
-            <Row wrap={false}>
-              <Input
-                style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
-                prefix={<SearchOutlined />}
-                name="name"
-                value={valueSearch}
-                onChange={_onSearch}
-                placeholder="Tìm kiếm theo"
-                bordered={false}
-                allowClear
-              />
-              <Select
-                showSearch
-                style={{ width: 170 }}
-                value={optionSearchName}
-                onChange={(value) => {
-                  delete paramsFilter[optionSearchName]
-                  setOptionSearchName(value)
-                }}
-                bordered={false}
-              >
-                <Select.Option value="code">Mã đơn hàng</Select.Option>
-                <Select.Option value="product_name">Tên sản phẩm</Select.Option>
-                <Select.Option value="product_sku">Mã sản phẩm</Select.Option>
-                <Select.Option value="customer_name">Tên khách hàng</Select.Option>
-                <Select.Option value="customer_code">Mã khách hàng</Select.Option>
-                <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
-                <Select.Option value="employee_name">Tên nhân viên</Select.Option>
-              </Select>
-            </Row>
+            <Input
+              style={{ width: '70%' }}
+              prefix={<SearchOutlined />}
+              size={FILTER_SIZE}
+              name="name"
+              value={valueSearch}
+              onChange={_onSearch}
+              placeholder="Tìm kiếm theo"
+              bordered={false}
+              allowClear
+            />
+            <Select
+              showSearch
+              size={FILTER_SIZE}
+              style={{ width: '30%', borderLeft: '1px solid #d9d9d9' }}
+              value={optionSearchName}
+              onChange={(value) => {
+                delete paramsFilter[optionSearchName]
+                setOptionSearchName(value)
+              }}
+              bordered={false}
+            >
+              <Select.Option value="code">Mã đơn hàng</Select.Option>
+              <Select.Option value="product_name">Tên sản phẩm</Select.Option>
+              <Select.Option value="product_sku">Mã sản phẩm</Select.Option>
+              <Select.Option value="customer_name">Tên khách hàng</Select.Option>
+              <Select.Option value="customer_code">Mã khách hàng</Select.Option>
+              <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
+              <Select.Option value="employee_name">Tên nhân viên</Select.Option>
+            </Select>
           </Col>
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={7}
-            xl={7}
-            style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}
+            lg={8}
+            xl={8}
+            style={{
+              border: '1px solid #d9d9d9',
+              borderRadius: '5px 0px 0px 5px',
+              height: FILTER_COL_HEIGHT,
+            }}
           >
             <RangePicker
+              size={FILTER_SIZE}
               onChange={_onChangeDate}
-              style={{ width: '100%' }}
+              style={{ width: '50%' }}
               className="br-15__date-picker"
               ranges={{
                 Today: [moment(), moment()],
@@ -285,22 +302,13 @@ export default function OrderList() {
               }}
               bordered={false}
             />
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={5}
-            xl={5}
-            style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}
-          >
             <Select
-              size="large"
+              size={FILTER_SIZE}
               value={paramsFilter.bill_status}
               onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
               placeholder="Lọc trạng thái đơn hàng"
-              style={{ width: '100%' }}
+              style={{ width: '50%' }}
               bordered={false}
             >
               {statusOrder.map((status, index) => (
@@ -310,51 +318,23 @@ export default function OrderList() {
               ))}
             </Select>
           </Col>
-        </Row>
-      </div>
-
-      <div>
-        <Row>
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={10}
-            xl={10}
+            lg={6}
+            xl={6}
             style={{
-              marginTop: '1rem',
               border: '1px solid #d9d9d9',
               borderRadius: 5,
-              marginRight: 15,
+              height: FILTER_COL_HEIGHT,
             }}
-          >
-            <Select
-              value={paramsFilter.chanel || ''}
-              onChange={(value) => _onChangeFilter('chanel', value)}
-              showSearch
-              placeholder="Chọn kênh bán hàng"
-              style={{ width: '100%' }}
-              bordered={false}
-            >
-              <Select.Option value="">Tất cả</Select.Option>
-              <Select.Option value="Thương mại điện tử">Thương mại điện tử</Select.Option>
-              <Select.Option value="Chi nhánh">Chi nhánh</Select.Option>
-              <Select.Option value="Mạng Xã Hội">Mạng Xã Hội</Select.Option>
-              <Select.Option value="other">Khác</Select.Option>
-            </Select>
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={7}
-            xl={7}
-            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
           >
             <Select
               value={paramsFilter.employee_name || ''}
               onChange={(value) => _onChangeFilter('employee_name', value)}
               showSearch
+              size={FILTER_SIZE}
               placeholder="Chọn nhân viên"
               style={{ width: '100%' }}
               bordered={false}

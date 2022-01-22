@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Col, DatePicker, Input, Row, Select, Table } from 'antd'
 import TitlePage from 'components/title-page'
-import { ROUTES } from 'consts'
+import { FILTER_SIZE, ROUTES } from 'consts'
 import moment from 'moment'
 import React, { useEffect, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -178,28 +178,70 @@ export default function ImportReportFile() {
           </Row>
         }
       ></TitlePage>
-      <Row gutter={20} style={{ marginBottom: 25, marginTop: 20 }}>
-        <Col span={10}>
-          <Input.Group compact style={{ width: '100%' }}>
-            <Input
-              allowClear
-              enterButton
-              placeholder="Tìm kiếm theo"
-              style={{ width: '70%' }}
-              onChange={_search}
-            />
-            <Select
-              style={{ width: '30%' }}
-              value={searchKey}
-              onChange={(e) => setSearchKey(e)}
-              // suffixIcon={<SuffixIconCustom />}
-            >
-              <Select.Option value="file_name">Tên file</Select.Option>
-              <Select.Option value="action_name">Thao tác</Select.Option>
-            </Select>
+
+      <Row justify="space-between" style={{ margin: '20px 0' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={7}
+          xl={7}
+          style={{
+            marginTop: '1rem',
+            border: '1px solid #d9d9d9',
+            borderRadius: 5,
+            height: '24px',
+          }}
+        >
+          <Input.Group style={{ width: '100%' }}>
+            <Row style={{ width: '100%' }}>
+              <Col span={16}>
+                <Input
+                  size={FILTER_SIZE}
+                  allowClear
+                  enterButton
+                  placeholder="Tìm kiếm theo"
+                  onChange={_search}
+                  style={{ width: '100%' }}
+                  bordered={false}
+                />
+              </Col>
+              <Col span={8}>
+                <Select
+                  size={FILTER_SIZE}
+                  style={{
+                    width: '100%',
+                    borderLeft: '1px solid #d9d9d9',
+                  }}
+                  showSearch
+                  value={searchKey}
+                  onChange={(e) => setSearchKey(e)}
+                  bordered={false}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  // suffixIcon={<SuffixIconCustom />}
+                >
+                  <Select.Option value="file_name">Tên file</Select.Option>
+                  <Select.Option value="action_name">Thao tác</Select.Option>
+                </Select>
+              </Col>
+            </Row>
           </Input.Group>
         </Col>
-        <Col span={7}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={14}
+          xl={14}
+          style={{
+            marginTop: '1rem',
+            border: '1px solid #d9d9d9',
+            borderRadius: 5,
+            display: 'flex',
+          }}
+        >
           <Select
             dropdownClassName="dropdown-select-custom"
             //   suffixIcon={<SuffixIconCustom />}
@@ -210,9 +252,11 @@ export default function ImportReportFile() {
             onClick={() => {
               if (!isOpenSelect) toggleOpenSelect()
             }}
-            style={{ width: '100%' }}
+            style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
             placeholder="Lọc theo thời gian"
             allowClear
+            size={FILTER_SIZE}
+            bordered={false}
             value={valueTime}
             onChange={_onChangeTime}
             dropdownRender={(menu) => (
@@ -243,15 +287,15 @@ export default function ImportReportFile() {
             <Select.Option value="this_year">Năm này</Select.Option>
             <Select.Option value="last_year">Năm trước</Select.Option>
           </Select>
-        </Col>
-        <Col span={7}>
           <Select
             showSearch
+            size={FILTER_SIZE}
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
             style={{ width: '100%' }}
             allowClear
+            bordered={false}
             placeholder="Lọc theo thao tác"
             //   suffixIcon={<SuffixIconCustom />}
             onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
@@ -261,6 +305,7 @@ export default function ImportReportFile() {
           </Select>
         </Col>
       </Row>
+
       <Table
         size="small"
         scroll={{ y: '56vh' }}

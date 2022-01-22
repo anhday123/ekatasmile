@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { PERMISSIONS, ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, PERMISSIONS, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { PlusCircleOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons'
 import moment from 'moment'
@@ -259,12 +259,12 @@ export default function ShippingProduct() {
             marginBottom: 10,
           }}
         >
-          <Col xs={24} sm={24} md={12} lg={12} xl={5}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
             <Input
               value={valueSearch}
-              size="large"
               placeholder="Tìm kiếm theo mã phiếu"
               onChange={onSearch}
+              size={FILTER_SIZE}
               allowClear
               bordered={false}
             />
@@ -275,10 +275,14 @@ export default function ShippingProduct() {
             md={12}
             lg={12}
             xl={6}
-            style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+            style={{
+              borderLeft: '1px solid #d9d9d9',
+              borderRight: '1px solid #d9d9d9',
+              height: FILTER_COL_HEIGHT,
+            }}
           >
             <Select
-              size="large"
+              size={FILTER_SIZE}
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -387,10 +391,10 @@ export default function ShippingProduct() {
               <Option value="last_year">Năm trước</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={4}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               allowClear
-              size="large"
+              size={FILTER_SIZE}
               style={{ width: '100%' }}
               placeholder="Lọc theo trạng thái"
               value={paramsFilter.status}
@@ -410,11 +414,15 @@ export default function ShippingProduct() {
             md={12}
             lg={12}
             xl={5}
-            style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+            style={{
+              borderLeft: '1px solid #d9d9d9',
+              borderRight: '1px solid #d9d9d9',
+              height: FILTER_COL_HEIGHT,
+            }}
           >
             <Select
               allowClear
-              size="large"
+              size={FILTER_SIZE}
               placeholder="Lọc theo nơi chuyển"
               style={{ width: '100%' }}
               onChange={(value) => _onFilters('export_location_name', value)}
@@ -427,10 +435,10 @@ export default function ShippingProduct() {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={4}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               allowClear
-              size="large"
+              size={FILTER_SIZE}
               placeholder="Lọc theo nơi nhận"
               style={{ width: '100%' }}
               onChange={(value) => _onFilters('import_location_name', value)}
@@ -446,7 +454,6 @@ export default function ShippingProduct() {
         </Row>
         <Row>
           <Button
-            size="large"
             onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
             style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
             type="primary"

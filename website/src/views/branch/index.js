@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ACTION, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
+import { ACTION, PERMISSIONS, IMAGE_DEFAULT, FILTER_COL_HEIGHT, FILTER_SIZE } from 'consts'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import { compare } from 'utils'
@@ -207,10 +207,10 @@ export default function Branch() {
 
         <div style={{ marginTop: 15 }}>
           <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginBottom: 10 }}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
               <Input
-                size="large"
                 style={{ width: '100%' }}
+                size={FILTER_SIZE}
                 name="name"
                 value={valueSearch}
                 enterButton
@@ -221,9 +221,20 @@ export default function Branch() {
                 bordered={false}
               />
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+            <Col
+              xs={24}
+              sm={24}
+              md={12}
+              lg={12}
+              xl={6}
+              style={{
+                borderLeft: '1px solid #d9d9d9',
+                borderRight: '1px solid #d9d9d9',
+                height: FILTER_COL_HEIGHT,
+              }}
+            >
               <RangePicker
-                size="large"
+                size={FILTER_SIZE}
                 className="br-15__date-picker"
                 value={valueDate}
                 style={{ width: '100%' }}
@@ -235,10 +246,17 @@ export default function Branch() {
                 bordered={false}
               />
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
+            <Col
+              xs={24}
+              sm={24}
+              md={12}
+              lg={12}
+              xl={6}
+              style={{ borderRight: '1px solid #d9d9d9', height: FILTER_COL_HEIGHT }}
+            >
               <Select
                 allowClear
-                size="large"
+                size={FILTER_SIZE}
                 style={{ width: '100%' }}
                 placeholder="Tìm kiếm theo tỉnh/thành phố"
                 optionFilterProp="children"
@@ -272,10 +290,10 @@ export default function Branch() {
                 })}
               </Select>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
               <Select
                 allowClear
-                size="large"
+                size={FILTER_SIZE}
                 style={{ width: '100%' }}
                 placeholder="Tìm kiếm theo quận/huyện"
                 optionFilterProp="children"
@@ -371,7 +389,8 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${
+                    record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
             if (column.key === 'creator')

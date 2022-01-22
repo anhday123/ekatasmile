@@ -198,6 +198,8 @@ export const IMAGE_DEFAULT =
 export const LOGO_DEFAULT =
   'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png'
 
+export const FILTER_SIZE = 'small'
+export const FILTER_COL_HEIGHT = '24px'
 export const PAGE_SIZE = 20
 export const PAGE_SIZE_OPTIONS = [20, 40, 50, 60, 80, 100]
 export const POSITION_TABLE = ['bottomLeft']

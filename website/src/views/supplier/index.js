@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { PERMISSIONS } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, PERMISSIONS } from 'consts'
 import moment from 'moment'
 import { compare } from 'utils'
 
@@ -33,14 +33,12 @@ import { getProvinces, getDistricts } from 'apis/address'
 import { getSuppliers, deleteSupplier } from 'apis/supplier'
 
 const { Option } = Select
-const { RangePicker } = DatePicker
 export default function Supplier() {
   const typingTimeoutRef = useRef(null)
 
   const [columns, setColumns] = useState([])
   const [loading, setLoading] = useState(false)
   const [valueSearch, setValueSearch] = useState('')
-  const [valueDate, setValueDate] = useState(null)
 
   const [countSupplier, setCountSupplier] = useState(0)
   const [suppliers, setSuppliers] = useState([])
@@ -50,19 +48,6 @@ export default function Supplier() {
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
 
-  function onChangeDate(dates, dateStrings) {
-    setValueDate(dates)
-
-    if (dates) {
-      paramsFilter.from_date = dateStrings[0]
-      paramsFilter.to_date = dateStrings[1]
-    } else {
-      delete paramsFilter.from_date
-      delete paramsFilter.to_date
-    }
-
-    setParamsFilter({ ...paramsFilter, page: 1 })
-  }
   const onSearch = (e) => {
     const value = e.target.value
 
@@ -119,7 +104,6 @@ export default function Supplier() {
 
   const onClickClear = () => {
     setValueSearch('')
-    setValueDate(null)
     setParamsFilter({ page: 1, page_size: 20 })
   }
 
@@ -192,9 +176,10 @@ export default function Supplier() {
       </TitlePage>
 
       <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+        <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Input
             value={valueSearch}
+            size={FILTER_SIZE}
             enterButton
             onChange={onSearch}
             placeholder="Tìm kiếm theo mã, theo tên"
@@ -205,15 +190,20 @@ export default function Supplier() {
         <Col
           xs={24}
           sm={24}
-          md={12}
-          lg={12}
-          xl={8}
-          style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+          md={6}
+          lg={6}
+          xl={6}
+          style={{
+            borderLeft: '1px solid #d9d9d9',
+            borderRight: '1px solid #d9d9d9',
+            height: FILTER_COL_HEIGHT,
+          }}
         >
           <Select
             allowClear
             style={{ width: '100%' }}
             showSearch
+            size={FILTER_SIZE}
             placeholder="Lọc theo tỉnh/thành phố"
             optionFilterProp="children"
             filterOption={(input, option) =>
@@ -230,11 +220,12 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={8}>
+        <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Select
             allowClear
             showSearch
-            style={{ width: '100%' }}
+            size={FILTER_SIZE}
+            style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
             placeholder="Lọc theo quận/huyện"
             optionFilterProp="children"
             filterOption={(input, option) =>
@@ -251,40 +242,11 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
-      </Row>
-
-      <Row style={{ marginTop: '1rem' }}>
-        <Col
-          xs={24}
-          sm={24}
-          md={12}
-          lg={12}
-          xl={8}
-          style={{
-            border: '1px solid #d9d9d9',
-            borderRadius: '5px 0px 0px 5px',
-            borderRight: 'none',
-          }}
-        >
-          <RangePicker
-            className="br-15__date-picker"
-            style={{ width: '100%' }}
-            value={valueDate}
-            onChange={onChangeDate}
-            bordered={false}
-          />
-        </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={12}
-          lg={12}
-          xl={8}
-          style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px', marginRight: 10 }}
-        >
+        <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Select
             allowClear
             showSearch
+            size={FILTER_SIZE}
             style={{ width: '100%' }}
             placeholder="Lọc theo người tạo"
             optionFilterProp="children"
@@ -302,6 +264,9 @@ export default function Supplier() {
             ))}
           </Select>
         </Col>
+      </Row>
+
+      <Row style={{ marginTop: '1rem' }}>
         <Col style={{ display: Object.keys(paramsFilter).length < 3 && 'none' }}>
           <Button onClick={onClickClear} type="primary">
             Xóa tất cả lọc
