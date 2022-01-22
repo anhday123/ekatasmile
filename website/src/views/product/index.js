@@ -574,8 +574,8 @@ export default function Product() {
             xs={24}
             sm={24}
             md={24}
-            lg={6}
-            xl={6}
+            lg={7}
+            xl={7}
             style={{
               border: '1px solid #d9d9d9',
               borderRadius: 5,
@@ -584,7 +584,7 @@ export default function Product() {
           >
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
-                <Col span={16}>
+                <Col span={14}>
                   <Input
                     style={{ width: '100%' }}
                     name="name"
@@ -596,7 +596,7 @@ export default function Product() {
                     bordered={false}
                   />
                 </Col>
-                <Col span={8}>
+                <Col span={10}>
                   <Select
                     showSearch
                     size={FILTER_SIZE}
@@ -636,7 +636,7 @@ export default function Product() {
             }}
           >
             <Row style={{ width: '100%' }}>
-              <Col span={16}>
+              <Col span={14}>
                 <Select
                   size={FILTER_SIZE}
                   allowClear
@@ -659,7 +659,7 @@ export default function Product() {
                   ))}
                 </Select>
               </Col>
-              <Col span={8}>
+              <Col span={10}>
                 <Select
                   allowClear
                   showSearch
@@ -689,8 +689,8 @@ export default function Product() {
             xs={24}
             sm={24}
             md={24}
-            lg={10}
-            xl={10}
+            lg={9}
+            xl={9}
             style={{
               border: '1px solid #d9d9d9',
               borderRadius: 5,
@@ -836,17 +836,6 @@ export default function Product() {
               <Option value="last_year">Năm trước</Option>
             </Select>
           </Col>
-
-          {/*   <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={5}
-            xl={5}
-            style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}
-          >
-           
-          </Col> */}
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>

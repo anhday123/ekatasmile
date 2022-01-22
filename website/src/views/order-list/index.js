@@ -283,8 +283,8 @@ export default function OrderList() {
             xs={24}
             sm={24}
             md={24}
-            lg={8}
-            xl={8}
+            lg={10}
+            xl={10}
             style={{
               border: '1px solid #d9d9d9',
               borderRadius: '5px 0px 0px 5px',
@@ -308,7 +308,7 @@ export default function OrderList() {
               onChange={(value) => _onChangeFilter('bill_status', value)}
               showSearch
               placeholder="Lọc trạng thái đơn hàng"
-              style={{ width: '50%' }}
+              style={{ width: '50%', borderLeft: '1px solid #d9d9d9' }}
               bordered={false}
             >
               {statusOrder.map((status, index) => (
@@ -322,11 +322,12 @@ export default function OrderList() {
             xs={24}
             sm={24}
             md={24}
-            lg={6}
-            xl={6}
+            lg={4}
+            xl={4}
             style={{
               border: '1px solid #d9d9d9',
               borderRadius: 5,
+
               height: FILTER_COL_HEIGHT,
             }}
           >

@@ -274,7 +274,7 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 10 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 20 }}>
         <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
           <DatePicker.RangePicker
             size={FILTER_SIZE}

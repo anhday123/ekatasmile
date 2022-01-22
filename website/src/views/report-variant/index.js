@@ -278,7 +278,7 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 10 }}>
+      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 20 }}>
         <Col
           xs={24}
           sm={24}
