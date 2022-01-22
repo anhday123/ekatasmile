@@ -1,12 +1,6 @@
 const { MongoClient } = require('mongodb');
 
-let copyDatabase = (
-    sourceURI,
-    sourceDatabaseName,
-    destinationURI,
-    destinationDatabaseName,
-    copyCollections
-) => {
+let copyDatabase = (sourceURI, sourceDatabaseName, destinationURI, destinationDatabaseName, copyCollections) => {
     /*
         copy database qua 1 database mới
     */
@@ -82,5 +76,7 @@ let copyDatabase = (
         console.log(`Failed database connect: ${err.message}!`);
     });
 };
+
+copyDatabase('mongodb://viesoftware:viesoftware@api.wadyn.com.vn:27017/', 'Wadi','mongodb://viesoftware:viesoftware@103.173.155.48:27017/','hihihi');
 
 module.exports = { copyDatabase };

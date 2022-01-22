@@ -2095,6 +2095,9 @@ module.exports._createInventoryNote = async (req, res, next) => {
             .db(req.user.database)
             .collection('Branchs')
             .findOne({ branch_id: req.body.branch_id });
+        if (!branch) {
+            throw new Error('400: Chi nhánh không tồn tại!');
+        }
         let productIds = [];
         let variantIds = [];
         req.body.products.map((eProduct) => {
@@ -2103,13 +2106,17 @@ module.exports._createInventoryNote = async (req, res, next) => {
         });
         productIds = [...new Set(productIds)];
         variantIds = [...new Set(variantIds)];
-        let [products, variants] = await Promise.all([]);
+        let [products, variants] = await Promise.all([
+            client.db(req.user.database).find({ product_id: { $in: productIds } }),
+            client.db(req.user.database).find({ variant_id: { $in: variantIds } }),
+        ]);
+        
         let _inventoryNote = {
             inventory_note_id: inventoryNoteId,
             code: String(inventoryNoteId).padStart(6, '0'),
             branch_id: req.body.branch_id,
             products: req.body.products,
-            note: '',
+            note: req.body.note || '',
             status: req.body.status || 'DRAFT',
             balance: false,
             inventory_date: req.body.inventory_date || '',

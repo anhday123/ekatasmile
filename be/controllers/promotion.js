@@ -49,13 +49,11 @@ module.exports._get = async (req, res, next) => {
 };
 module.exports._create = async (req, res, next) => {
     try {
-        req.body.name = String(req.body.name).trim().toUpperCase();
-        let promotion = await client.db(req.user.database).collection(`Promotions`).findOne({
-            name: req.body.name,
+        ['name'].map((e) => {
+            if (req.body[e] == undefined) {
+                throw new Error(`400: Thiếu thuộc tính ${e}!`);
+            }
         });
-        if (promotion) {
-            throw new Error(`400: Chương trình khuyến mãi đã tồn tại!`);
-        }
         let promotion_id = await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -76,7 +74,7 @@ module.exports._create = async (req, res, next) => {
                 if (req.body.promotion_code && req.body.promotion_code != '') {
                     return req.body.promotion_code;
                 } else {
-                    return removeUnicode(`${getFirstLetter(req.body.name)}_${promotion_id}`, true);
+                    return removeUnicode(`${getFirstLetter(req.body.name)}`, true);
                 }
             })().toUpperCase(),
             type: String(req.body.type || 'percent').toUpperCase(),
@@ -87,15 +85,59 @@ module.exports._create = async (req, res, next) => {
             limit: req.body.limit || {
                 amount: 0,
                 branchs: [],
-                stores: [],
             },
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             active: true,
-            slug_name: removeUnicode(name, true).toLowerCase(),
+            slug_name: removeUnicode(req.body.name, true).toLowerCase(),
         };
+        let promotion = await client.db(req.user.database).collection(`Promotions`).findOne({
+            slug_name: _promotion.slug_name,
+        });
+        if (promotion) {
+            throw new Error(`400: Chương trình khuyến mãi đã tồn tại!`);
+        }
+        if (_promotion.has_voucher) {
+            let voucherQuantity = (() => {
+                if (_promotion.limit && _promotion.limit.amount) {
+                    return _promotion.limit.amount;
+                }
+                return 1;
+            })();
+            let voucherMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Vouchers' });
+            let voucher_id = (() => {
+                if (voucherMaxId && voucherMaxId.value) {
+                    return voucherMaxId.value;
+                }
+                return 0;
+            })();
+            let len = String(voucherQuantity).length;
+            let vouchers = [];
+            for (let i = 0; i < voucherQuantity; i++) {
+                let code = String(Math.random()).substr(2, len + 2);
+                voucher_id++;
+                vouchers.push({
+                    voucher_id: voucher_id,
+                    promotion_id: promotion_id,
+                    voucher: `${_promotion.promotion_code}_${code}`,
+                    order_id: '',
+                    customer_id: [],
+                    used: false,
+                    create_date: req.user.user_id,
+                    active: true,
+                });
+            }
+            await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Vouchers' }, { $set: { name: 'Vouchers', value: voucher_id } }, { upsert: true });
+            await client.db(req.user.database).collection('Vouchers').insertMany(vouchers);
+        }
         await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -146,7 +188,6 @@ module.exports._update = async (req, res, next) => {
             limit: _promotion.limit || {
                 amount: 0,
                 branchs: [],
-                stores: [],
             },
             description: String(_promotion.description) || '',
             create_date: _promotion.create_date,
@@ -168,28 +209,19 @@ module.exports._checkVoucher = async (req, res, next) => {
         if (!req.body.voucher) {
             throw new Error(`400: Voucher không được để trống!`);
         }
-        let promotion = await client
-            .db(req.user.database)
-            .collection(`Promotions`)
-            .findOne({
-                business_id: Number(req.user.business_id),
-                promotion_code: req.body.voucher.split(`_`)[0],
-                active: true,
-            });
-        if (!promotion) {
-            throw new Error(`400: Chương trình khuyến mãi không tồn tại hoặc đã hết hạn!`);
-        }
-        let check = false;
-        promotion.vouchers.map((voucher) => {
-            if (voucher && voucher.voucher == req.body.voucher) {
-                check = true;
-            }
+        let voucher = await client.db(req.user.database).collection(`Vouchers`).findOne({
+            voucher: req.body.voucher,
         });
-        if (check) {
-            res.send({ success: true, data: promotion });
-        } else {
+        if (!voucher) {
+            throw new Error(`400: Max khuyến mãi không tồn tại hoặc đã hết hạn!`);
+        }
+        let promotion = await client.db(req.user.database).collection('Promotions').findOne({
+            promotion_id: voucher.promotion_id,
+        });
+        if (!promotion) {
             throw new Error(`400: Voucher không tồn tại hoặc đã được sử dụngs!`);
         }
+        res.send({ success: true, data: promotion });
     } catch (err) {
         next(err);
     }
