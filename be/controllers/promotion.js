@@ -126,7 +126,7 @@ module.exports._create = async (req, res, next) => {
                     promotion_id: promotion_id,
                     voucher: `${_promotion.promotion_code}_${code}`,
                     order_id: '',
-                    customer_id: '',
+                    customer_id: [],
                     used: false,
                     create_date: req.user.user_id,
                     active: true,
@@ -188,7 +188,6 @@ module.exports._update = async (req, res, next) => {
             limit: _promotion.limit || {
                 amount: 0,
                 branchs: [],
-                stores: [],
             },
             description: String(_promotion.description) || '',
             create_date: _promotion.create_date,
