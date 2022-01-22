@@ -443,7 +443,7 @@ module.exports._create = async (req, res, next) => {
                   break;
                 case "does_not_contains":
                   query[`${body.condition.function[i].name}`] = {
-                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                    $ne: convertToSlug(body.condition.function[i].value),
                   };
                   break;
                 case "is_not_empty":
@@ -578,7 +578,7 @@ module.exports._create = async (req, res, next) => {
                 case "does_not_contains":
                   var query = {};
                   query[`${body.condition.function[i].name}`] = {
-                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                    $ne: convertToSlug(body.condition.function[i].value),
                   };
                   query_any.push(query);
                   break;
@@ -702,7 +702,7 @@ module.exports._update = async (req, res, next) => {
                   break;
                 case "does_not_contains":
                   query[`${body.condition.function[i].name}`] = {
-                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                    $ne: convertToSlug(body.condition.function[i].value),
                   };
                   break;
                 case "is_not_empty":
@@ -837,7 +837,7 @@ module.exports._update = async (req, res, next) => {
                 case "does_not_contains":
                   var query = {};
                   query[`${body.condition.function[i].name}`] = {
-                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                    $ne: convertToSlug(body.condition.function[i].value),
                   };
                   query_any.push(query);
                   break;
