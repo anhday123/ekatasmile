@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import moment from 'moment'
-import { ROUTES, PERMISSIONS } from 'consts'
+import { ROUTES, PERMISSIONS, FILTER_COL_HEIGHT, FILTER_SIZE } from 'consts'
 import { compare } from 'utils'
 import * as XLSX from 'xlsx'
 import { useSelector } from 'react-redux'
@@ -301,8 +301,9 @@ export default function Guarantee() {
         <Row wrap={false} style={{ marginTop: '1rem' }}>
           <Col xs={24} sm={24} md={21} lg={21} xl={21}>
             <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}>
-              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
                 <Input
+                  size={FILTER_SIZE}
                   placeholder="Tìm kiếm theo mã, theo tên"
                   value={filter.search}
                   onChange={onSearch}
@@ -311,8 +312,20 @@ export default function Guarantee() {
                   bordered={false}
                 />
               </Col>
-              <Col xs={24} sm={24} md={8} lg={8} xl={8} style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}>
+              <Col
+                xs={24}
+                sm={24}
+                md={8}
+                lg={8}
+                xl={8}
+                style={{
+                  borderLeft: '1px solid #d9d9d9',
+                  borderRight: '1px solid #d9d9d9',
+                  height: FILTER_COL_HEIGHT,
+                }}
+              >
                 <RangePicker
+                  size={FILTER_SIZE}
                   className="br-15__date-picker"
                   style={{ width: '100%' }}
                   ranges={{
@@ -324,8 +337,9 @@ export default function Guarantee() {
                   bordered={false}
                 />
               </Col>
-              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
                 <Select
+                  size={FILTER_SIZE}
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
@@ -355,6 +369,7 @@ export default function Guarantee() {
           <Col xs={24} sm={24} md={2} lg={2} xl={2} style={{ marginLeft: 10 }}>
             <Button
               type="primary"
+              danger
               onClick={() => {
                 setFilter({
                   search: '',

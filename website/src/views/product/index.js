@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
-import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
+import {
+  ROUTES,
+  PERMISSIONS,
+  STATUS_PRODUCT,
+  IMAGE_DEFAULT,
+  FILTER_SIZE,
+  FILTER_COL_HEIGHT,
+} from 'consts'
 import { compareCustom, formatCash } from 'utils'
 import moment from 'moment'
 import { compare } from 'utils'
@@ -562,26 +569,26 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row>
+        <Row justify="space-between" style={{ marginTop: '20px' }}>
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={15}
-            xl={15}
+            lg={7}
+            xl={7}
             style={{
-              marginRight: 15,
-              marginTop: '1rem',
               border: '1px solid #d9d9d9',
               borderRadius: 5,
+              height: FILTER_COL_HEIGHT,
             }}
           >
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
-                <Col span={16}>
+                <Col span={14}>
                   <Input
                     style={{ width: '100%' }}
                     name="name"
+                    size={FILTER_SIZE}
                     value={valueSearch}
                     onChange={onSearch}
                     placeholder="Tìm kiếm theo mã, theo tên"
@@ -589,9 +596,10 @@ export default function Product() {
                     bordered={false}
                   />
                 </Col>
-                <Col span={8}>
+                <Col span={10}>
                   <Select
                     showSearch
+                    size={FILTER_SIZE}
                     style={{
                       width: '100%',
                       borderLeft: '1px solid #d9d9d9',
@@ -619,58 +627,18 @@ export default function Product() {
             xs={24}
             sm={24}
             md={24}
-            lg={8}
-            xl={8}
-            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
-          >
-            <TreeSelect
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo nhóm sản phẩm"
-              allowClear
-              multiple
-              showSearch={false}
-              treeDefaultExpandAll
-              bordered={false}
-              value={
-                paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
-              }
-              onChange={onChangeCategoryValue}
-            >
-              {categories.map((category) => (
-                <TreeSelect.TreeNode value={category.category_id} title={category.name}>
-                  {category.children_category.map((child) => (
-                    <TreeSelect.TreeNode value={child.category_id} title={child.name}>
-                      {child.children_category &&
-                        child.children_category.map((e) => (
-                          <TreeSelect.TreeNode value={e.category_id} title={e.name}>
-                            {e.name}
-                          </TreeSelect.TreeNode>
-                        ))}
-                    </TreeSelect.TreeNode>
-                  ))}
-                </TreeSelect.TreeNode>
-              ))}
-            </TreeSelect>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={15}
-            xl={15}
+            lg={6}
+            xl={6}
             style={{
-              marginRight: 15,
-              marginTop: '1rem',
               border: '1px solid #d9d9d9',
               borderRadius: 5,
+              height: FILTER_COL_HEIGHT,
             }}
           >
             <Row style={{ width: '100%' }}>
-              <Col span={16}>
+              <Col span={14}>
                 <Select
+                  size={FILTER_SIZE}
                   allowClear
                   showSearch
                   style={{ width: '100%' }}
@@ -691,10 +659,11 @@ export default function Product() {
                   ))}
                 </Select>
               </Col>
-              <Col span={8}>
+              <Col span={10}>
                 <Select
                   allowClear
                   showSearch
+                  size={FILTER_SIZE}
                   style={{
                     width: '100%',
                     borderLeft: '1px solid #d9d9d9',
@@ -720,10 +689,43 @@ export default function Product() {
             xs={24}
             sm={24}
             md={24}
-            lg={8}
-            xl={8}
-            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
+            lg={9}
+            xl={9}
+            style={{
+              border: '1px solid #d9d9d9',
+              borderRadius: 5,
+              display: 'flex',
+            }}
           >
+            <TreeSelect
+              style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
+              placeholder="Tìm kiếm theo nhóm sản phẩm "
+              allowClear
+              multiple
+              size={FILTER_SIZE}
+              showSearch={false}
+              treeDefaultExpandAll
+              bordered={false}
+              value={
+                paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
+              }
+              onChange={onChangeCategoryValue}
+            >
+              {categories.map((category) => (
+                <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                  {category.children_category.map((child) => (
+                    <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                      {child.children_category &&
+                        child.children_category.map((e) => (
+                          <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                            {e.name}
+                          </TreeSelect.TreeNode>
+                        ))}
+                    </TreeSelect.TreeNode>
+                  ))}
+                </TreeSelect.TreeNode>
+              ))}
+            </TreeSelect>
             <Select
               style={{ width: '100%' }}
               open={isOpenSelect}
@@ -735,6 +737,7 @@ export default function Product() {
               }}
               allowClear
               showSearch
+              size={FILTER_SIZE}
               placeholder="Lọc theo thời gian tạo"
               optionFilterProp="children"
               bordered={false}

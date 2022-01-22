@@ -5,7 +5,7 @@ import delay from 'delay'
 import moment from 'moment'
 
 //antd
-import { Table, Row, Input, DatePicker, Col, Button } from 'antd'
+import { Table, Row, DatePicker, Col, Button } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -16,7 +16,7 @@ import exportTableToCSV from 'components/ExportCSV/export-table'
 
 //apis
 import { getReportImportExportInventory } from 'apis/report'
-import { ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, ROUTES } from 'consts'
 
 export default function ReportImportExportInventoryProduct() {
   const history = useHistory()

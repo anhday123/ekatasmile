@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import moment from 'moment'
 import { formatCash } from 'utils'
-import { ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useReactToPrint } from 'react-to-print'
@@ -24,7 +24,6 @@ import {
   Table,
   Button,
   Modal,
-  Spin,
   DatePicker,
   Popconfirm,
   notification,
@@ -529,11 +528,20 @@ export default function ImportInventories() {
       </TitlePage>
 
       <div style={{ marginTop: 10 }}>
-        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+        <Row
+          justify="space-between"
+          style={{
+            marginTop: '1rem',
+            border: '1px solid #d9d9d9',
+            borderRadius: 5,
+          }}
+        >
           {/* <Space wrap={true}> */}
-          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+          <Col xs={24} sm={5} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
             <Input
               allowClear
+              style={{ width: '100%' }}
+              size={FILTER_SIZE}
               value={valueSearch}
               onChange={onSearch}
               prefix={<SearchOutlined />}
@@ -543,11 +551,15 @@ export default function ImportInventories() {
           </Col>
           <Col
             xs={24}
-            sm={24}
-            md={6}
-            lg={6}
-            xl={6}
-            style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}
+            sm={4}
+            md={4}
+            lg={4}
+            xl={4}
+            style={{
+              borderLeft: '1px solid #d9d9d9',
+              borderRight: '1px solid #d9d9d9',
+              height: FILTER_COL_HEIGHT,
+            }}
           >
             <Select
               open={isOpenSelect}
@@ -558,6 +570,7 @@ export default function ImportInventories() {
                 if (!isOpenSelect) toggleOpenSelect()
               }}
               allowClear
+              size={FILTER_SIZE}
               showSearch
               bordered={false}
               placeholder="Lọc theo ngày nhập hàng"
@@ -658,18 +671,19 @@ export default function ImportInventories() {
               <Select.Option value="last_year">Năm trước</Select.Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+          <Col xs={24} sm={4} md={4} lg={4} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               placeholder="Lọc theo trạng thái"
               allowClear
               showSearch
+              size={FILTER_SIZE}
               bordered={false}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
               value={paramsFilter.status}
               onChange={(value) => _onFilter('status', value)}
-              style={{ width: '100%' }}
+              style={{ borderRight: '1px solid #d9d9d9', width: '100%' }}
             >
               {statusList.map((status, index) => (
                 <Select.Option value={status.name} index={index}>
@@ -678,16 +692,17 @@ export default function ImportInventories() {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+          <Col xs={24} sm={4} md={4} lg={4} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               placeholder="Lọc theo nhân viên tạo đơn"
               allowClear
               showSearch
+              size={FILTER_SIZE}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
               bordered={false}
-              style={{ borderLeft: '1px solid #d9d9d9', width: '100%' }}
+              style={{ borderRight: '1px solid #d9d9d9', width: '100%' }}
               value={paramsFilter.creator_id}
               onChange={(value) => _onFilter('creator_id', value)}
             >
@@ -698,25 +713,29 @@ export default function ImportInventories() {
               ))}
             </Select>
           </Col>
+          <Col xs={24} sm={5} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
+            <Select
+              placeholder="Lọc theo nhân viên xác nhận đơn"
+              allowClear
+              showSearch
+              size={FILTER_SIZE}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              bordered={false}
+              style={{ width: '100%' }}
+              value={paramsFilter.verifier_id}
+              onChange={(value) => _onFilter('verifier_id', value)}
+            >
+              {employees.map((employee, index) => (
+                <Select.Option
+                  key={index}
+                  value={employee.user_id}
+                >{`${employee.first_name} ${employee.last_name}`}</Select.Option>
+              ))}
+            </Select>
+          </Col>
         </Row>
-        <Select
-          placeholder="Lọc theo nhân viên xác nhận đơn"
-          allowClear
-          showSearch
-          filterOption={(input, option) =>
-            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
-          style={{ marginTop: 10, marginRight: 5, width: '25%' }}
-          value={paramsFilter.verifier_id}
-          onChange={(value) => _onFilter('verifier_id', value)}
-        >
-          {employees.map((employee, index) => (
-            <Select.Option
-              key={index}
-              value={employee.user_id}
-            >{`${employee.first_name} ${employee.last_name}`}</Select.Option>
-          ))}
-        </Select>
       </div>
 
       <div style={{ marginTop: 15 }}>

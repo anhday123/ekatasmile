@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
-import { ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, ROUTES } from 'consts'
 import delay from 'delay'
 import { useSelector } from 'react-redux'
 
@@ -274,18 +274,20 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 10 }}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 20 }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
           <DatePicker.RangePicker
+            size={FILTER_SIZE}
             value={dateFilter}
             onChange={onChangeDate}
             style={{ width: '100%' }}
             format={dateFormat}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Select
             mode="multiple"
+            size={FILTER_SIZE}
             allowClear
             value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
             onChange={(value) => {
@@ -295,7 +297,6 @@ export default function ReportInventory() {
                 setParamsFilter({ ...paramsFilter })
               }
             }}
-            size="large"
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
           >
@@ -306,12 +307,12 @@ export default function ReportInventory() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ height: FILTER_COL_HEIGHT }}>
           <TreeSelect
+            size={FILTER_SIZE}
             showCheckedStrategy={TreeSelect.SHOW_ALL}
             multiple
             treeDefaultExpandAll
-            size="large"
             style={{ width: '100%' }}
             placeholder="Lọc theo nhóm sản phẩm"
             value={

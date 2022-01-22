@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 import { compare, formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
-import { ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, ROUTES } from 'consts'
 import delay from 'delay'
 import { useSelector } from 'react-redux'
 
@@ -278,18 +278,31 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 10 }}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}>
+      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 20 }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          xl={8}
+          style={{
+            border: '1px solid #d9d9d9',
+            borderRadius: '5px',
+            height: FILTER_COL_HEIGHT,
+          }}
+        >
           <DatePicker.RangePicker
+            size={FILTER_SIZE}
             value={dateFilter}
             onChange={onChangeDate}
-            style={{ width: '100%' }}
+            style={{ width: '100%', border: 'none' }}
             format={dateFormat}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Select
             mode="multiple"
+            size={FILTER_SIZE}
             allowClear
             value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
             onChange={(value) => {
@@ -299,7 +312,6 @@ export default function ReportInventory() {
                 setParamsFilter({ ...paramsFilter })
               }
             }}
-            size="large"
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
           >
@@ -310,12 +322,12 @@ export default function ReportInventory() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <TreeSelect
             showCheckedStrategy={TreeSelect.SHOW_ALL}
             multiple
+            size={FILTER_SIZE}
             treeDefaultExpandAll
-            size="large"
             style={{ width: '100%' }}
             placeholder="Lọc theo nhóm sản phẩm"
             value={
