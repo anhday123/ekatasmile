@@ -10,7 +10,7 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 import { updateEmployee } from 'apis/employee'
 import { uploadFile } from 'apis/upload'
 
-export default function ModalUpdateUser({ user, children }) {
+export default function ModalUpdateUser({ user, children, reload }) {
   console.log(children)
   const [form] = Form.useForm()
 
@@ -34,7 +34,7 @@ export default function ModalUpdateUser({ user, children }) {
         if (res.data.success) {
           toggle()
           notification.success({ message: 'Cập nhật thông tin cá nhân thành công' })
-          window.location.reload()
+          reload()
         } else
           notification.error({
             message: res.data.message || 'Cập nhật thông tin cá nhân thành công',

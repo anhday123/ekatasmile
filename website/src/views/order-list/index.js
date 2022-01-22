@@ -251,7 +251,6 @@ export default function OrderList() {
             <Input
               style={{ width: '70%' }}
               prefix={<SearchOutlined />}
-              size={FILTER_SIZE}
               name="name"
               value={valueSearch}
               onChange={_onSearch}

@@ -88,11 +88,16 @@ export default function CreateReport() {
   }
 
   const deleteDataToCreate = (id) => {
-    setListProduct(listProduct.filter((item) => item.variant_id !== id))
+    const cloneData = [...listProduct]
+    const indexCloneData = cloneData.findIndex((item) => item.variant_id === id)
+    if (indexCloneData !== -1) cloneData.splice(indexCloneData, 1)
+    setListProduct(cloneData)
   }
 
-  const _setRealQuantity = (index, value) => {
-    listProduct[index].real_quantity = value
+  const _setRealQuantity = (index, e) => {
+    const cloneData = [...listProduct]
+    cloneData[index].real_quantity = e
+    setListProduct([...cloneData])
   }
 
   const _createOrUpdateCheckInventoryNote = async () => {
@@ -104,6 +109,7 @@ export default function CreateReport() {
         ...dataForm,
         products: listProduct,
       }
+      console.log(body)
       let res
       if (!location.state) res = await createCheckInventoryNote(body)
       else res = await updateCheckInventoryNote(body, location.state.inventory_note_id)
@@ -387,7 +393,7 @@ export default function CreateReport() {
           </Col>
           <Col span={6}>
             <Form.Item label="Ghi chú" name="note">
-              <TextArea rows={1} style={{ maxWidth: '100%' }} />
+              <TextArea placeholder="Nhập ghi chú" rows={1} style={{ maxWidth: '100%' }} />
             </Form.Item>
           </Col>
           {/* <Col span={6}>
@@ -403,7 +409,7 @@ export default function CreateReport() {
         <div>
           <h3>Danh sách sản phẩm</h3>
           <Row>
-            <Col span={6}>
+            <Col span={8}>
               <Button
                 onClick={() => setIsModalQuickAddProduct(true)}
                 style={{ width: '90%' }}
@@ -412,7 +418,7 @@ export default function CreateReport() {
                 Thêm nhóm hàng
               </Button>
             </Col>
-            <Col span={14}>
+            <Col span={16}>
               <Select
                 notFoundContent={loadingProduct ? <Spin size="small" /> : null}
                 dropdownClassName="dropdown-select-search-product"
@@ -420,7 +426,7 @@ export default function CreateReport() {
                 showSearch
                 clearIcon={<CloseOutlined style={{ color: 'black' }} />}
                 suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
-                style={{ width: '95%', marginBottom: 15 }}
+                style={{ width: '100%', marginBottom: 15 }}
                 placeholder="Thêm sản phẩm vào hoá đơn"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
@@ -489,7 +495,7 @@ export default function CreateReport() {
               </Select>
             </Col>
 
-            <Col span={4}>
+            {/* <Col span={4}>
               <Button
                 onClick={() => setIsModalVisible(true)}
                 style={{ width: '100%' }}
@@ -497,7 +503,7 @@ export default function CreateReport() {
               >
                 Chọn nhiều
               </Button>
-            </Col>
+            </Col> */}
           </Row>
           <Table
             scroll={{ y: 400 }}
