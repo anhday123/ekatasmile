@@ -231,7 +231,7 @@ module.exports._create = async (req, res, next) => {
         } catch (err) {
             console.log(err);
         }
-        res.send({ success: true, data: req._insert });
+        res.send({ success: true, data: req.body });
     } catch (err) {
         next(err);
     }
