@@ -278,7 +278,14 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row wrap={false} gutter={[16]} style={{ marginLeft: 0, marginBottom: 20, marginTop: 20 }}>
+      <Row wrap={false} gutter={[16, 16]} style={{
+        marginLeft: 0,
+        marginRight: 0,
+        marginBottom: 20,
+        marginTop: 20,
+        border: '1px solid #d9d9d9',
+        borderRadius: '5px',
+      }}>
         <Col
           xs={24}
           sm={24}
@@ -286,24 +293,27 @@ export default function ReportInventory() {
           lg={8}
           xl={8}
           style={{
-            border: '1px solid #d9d9d9',
-            borderRadius: '5px',
+
             height: FILTER_COL_HEIGHT,
           }}
         >
           <DatePicker.RangePicker
             size={FILTER_SIZE}
-            value={dateFilter}
+            bordered={false}
             onChange={onChangeDate}
-            style={{ width: '100%', border: 'none' }}
+            style={{ width: '100%' }}
             format={dateFormat}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{
+          borderLeft: '1px solid #d9d9d9',
+          borderRight: '1px solid #d9d9d9'
+        }}>
           <Select
             mode="multiple"
             size={FILTER_SIZE}
             allowClear
+            bordered={false}
             value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
             onChange={(value) => {
               if (value.length) setParamsFilter({ ...paramsFilter, branch_id: value.join('---') })
@@ -322,9 +332,10 @@ export default function ReportInventory() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
           <TreeSelect
             showCheckedStrategy={TreeSelect.SHOW_ALL}
+            bordered={false}
             multiple
             size={FILTER_SIZE}
             treeDefaultExpandAll
@@ -358,15 +369,15 @@ export default function ReportInventory() {
             ))}
           </TreeSelect>
         </Col>
-        <Button
-          onClick={_clearFilters}
-          style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-          danger
-          type="primary"
-        >
-          Xóa bộ lọc
-        </Button>
       </Row>
+      <Button
+        onClick={_clearFilters}
+        style={{ display: Object.keys(paramsFilter).length <= 4 && 'none', width: '10%', marginBottom: 10 }}
+        danger
+        type="primary"
+      >
+        Xóa bộ lọc
+      </Button>
 
       <div className="report-variant" style={{ display: 'none' }}>
         <Table

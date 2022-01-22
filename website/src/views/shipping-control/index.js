@@ -138,6 +138,7 @@ export default function ShippingControl() {
       <TitlePage title="Đối soát vận chuyển">
         <Space>
           <ImportCsv
+            size="large"
             shippingId={shippingId}
             txt="Import phiếu đối soát"
             upload={addShippingControlWithFile}

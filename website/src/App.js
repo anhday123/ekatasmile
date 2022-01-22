@@ -56,18 +56,18 @@ function App() {
       subDomain = subDomain[0].split('//')
 
       //Khi code comment lại, code xong để lại như cũ
-      // const res = await checkDomain(subDomain[1])
-      // console.log(res)
-      // if (res.status === 200) {
-      //   if (res.data.success) {
-      //   } else {
-      //     window.location.href = 'https://vdropship.vn/register'
-      //     return
-      //   }
-      // } else {
-      //   window.location.href = 'https://vdropship.vn/register'
-      //   return
-      // }
+      const res = await checkDomain(subDomain[1])
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+        } else {
+          window.location.href = 'https://vdropship.vn/register'
+          return
+        }
+      } else {
+        window.location.href = 'https://vdropship.vn/register'
+        return
+      }
     }
 
     setLoadingCheckDomain(false)
