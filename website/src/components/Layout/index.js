@@ -341,10 +341,12 @@ const BaseLayout = (props) => {
             display: 'block',
           }}
           key={_menu.path}
+          onTitleClick={() => history.push(_menu.path)}
           title={
             <Link
               style={{
                 fontSize: '0.8rem',
+
                 color:
                   location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)
                     ? '#5F73E2'
@@ -608,8 +610,7 @@ const BaseLayout = (props) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {user &&
-                      (user.first_name || '') + ' ' + (user.last_name || '')}
+                    {user && (user.first_name || '') + ' ' + (user.last_name || '')}
                   </span>
                 </Row>
               </Dropdown>

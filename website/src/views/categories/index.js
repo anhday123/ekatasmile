@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { POSITION_TABLE, ROUTES, ACTION, PAGE_SIZE_OPTIONS, IMAGE_DEFAULT } from 'consts'
+import {
+  POSITION_TABLE,
+  ROUTES,
+  ACTION,
+  PAGE_SIZE_OPTIONS,
+  IMAGE_DEFAULT,
+  CONDITION_OPERATOR,
+  CONDITION_NAME,
+} from 'consts'
 import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
@@ -318,22 +326,19 @@ export default function Category() {
       sorter: (a, b) => compare(a, b, 'code'),
     },
     {
-      title: 'Người tạo',
+      title: 'Bộ điều kiện',
       align: 'center',
-      sorter: (a, b) =>
-        compareCustom(
-          a._creator ? `${a._creator.first_name} ${a._creator.last_name}` : '',
-          b._creator ? `${b._creator.first_name} ${b._creator.last_name}` : ''
-        ),
-      render: (text, record) =>
-        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      align: 'center',
-      sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
-      render: (text, record) =>
-        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
+      render: (text, record) => {
+        return record.condition && record.condition.function.length
+          ? record.condition.function.map((item) => (
+              <div>
+                <span>
+                  {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
+                </span>
+              </div>
+            ))
+          : ''
+      },
     },
     {
       title: 'Độ ưu tiên',

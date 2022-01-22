@@ -203,3 +203,26 @@ export const FILTER_COL_HEIGHT = '24px'
 export const PAGE_SIZE = 20
 export const PAGE_SIZE_OPTIONS = [20, 40, 50, 60, 80, 100]
 export const POSITION_TABLE = ['bottomLeft']
+
+export const CONDITION_NAME = {
+  name: 'Tên sản phẩm',
+  description: 'Mô tả',
+  sku: 'SKU',
+  weight: 'Cân nặng',
+  height: 'Chiều cao',
+  width: 'Chiều rộng',
+  quantity: 'Số lượng',
+  price_import: 'Giá nhập',
+  price_sale: 'Giá bán',
+}
+
+export const CONDITION_OPERATOR = {
+  is_equal_to: 'giống',
+  is_not_equal_to: 'không giống',
+  is_greater_than: 'nhiều hơn',
+  is_less_than: 'ít hơn',
+  contains: 'chứa',
+  does_not_contains: 'không chứa',
+  is_not_empty: 'trống',
+  is_empty: 'không trống',
+}
