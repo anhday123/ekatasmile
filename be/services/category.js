@@ -657,6 +657,232 @@ module.exports._update = async (req, res, next) => {
     } catch (err) {
       console.log(err);
     }
+
+    var body = req.body;
+    
+
+    if(body.condition != undefined)
+    {
+      var query = {};
+        if (body.condition.must_match == "all") {
+            var filter_th2 = false;
+            // Filter Phase 1
+            for (var i = 0; i < body.condition.function.length; i++) {
+              switch (body.condition.function[i].operator) {
+                case "starts_with":
+                  filter_th2 = true;
+                  break;
+                case "ends_with":
+                  filter_th2 = true;
+                  break;
+                case "is_equal_to":
+                  query[`${body.condition.function[i].name}`] = convertToSlug(
+                    body.condition.function[i].value
+                  );
+                  break;
+                case "is_not_equal_to":
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: convertToSlug(body.condition.function[i].value),
+                  };
+                  break;
+                case "is_greater_than":
+                  query[`${body.condition.function[i].name}`] = {
+                    $gte: parseInt(body.condition.function[i].value),
+                  };
+                  break;
+                case "is_less_than":
+                  query[`${body.condition.function[i].name}`] = {
+                    $lt: parseInt(body.condition.function[i].value),
+                  };
+                  break;
+                case "contains":
+                  query[`${body.condition.function[i].name}`] = new RegExp(
+                    convertToSlug(body.condition.function[i].value)
+                  );
+                  break;
+                case "does_not_contains":
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                  };
+                  break;
+                case "is_not_empty":
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: "",
+                  };
+                  break;
+                case "is_empty":
+                  query[`${body.condition.function[i].name}`] = "";
+                  break;
+              }
+            }
+      
+           // query.auto_match_category = true;
+      
+           console.log(query)
+            var data = await client
+              .db(process.env.DB)
+              .collection("Products")
+              .find(query)
+              .toArray();
+      
+            // Filter Phase 2
+            var result = [];
+            if (filter_th2) {
+              for (var j = 0; j < data.length; j++) {
+                for (var i = 0; i < body.condition.function.length; i++) {
+                  switch (body.condition.function[i].operator) {
+                    case "starts_with":
+                      if (
+                        new String(
+                          data[j][`${body.condition.function[i].name}`]
+                        ).split("-")[0] == body.condition.function[i].value
+                      )
+                        result.push(data[j]);
+                      break;
+                    case "ends_with":
+                      var length = new String(
+                        data[j][`${body.condition.function[i].name}`]
+                      ).split("-").length;
+      
+                      if (
+                        new String(
+                          data[j][`${body.condition.function[i].name}`]
+                        ).split("-")[length - 1] == body.condition.function[i].value
+                      )
+                        result.push(data[j]);
+                      break;
+                  }
+                }
+              }
+            } else {
+              result = data;
+            }
+      
+            for (var _i = 0; _i < result.length; _i++) {
+              result[_i].categories.push(body.category_id);
+              await client
+                .db(DB)
+                .collection("Products")
+                .updateOne(
+                  {
+                    product_id: parseInt(result[_i].product_id),
+                  },
+                  {
+                    $set: {
+                      categories: result[_i].categories,
+                      last_update: moment().tz(TIMEZONE).format(),
+                    },
+                  }
+                );
+            }
+          } else {
+            var query_any = [];
+            for (var i = 0; i < body.condition.function.length; i++) {
+              switch (body.condition.function[i].operator) {
+                case "starts_with":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = new RegExp(
+                    `^(${convertToSlug(body.condition.function[i].value)})`,
+                    "i"
+                  );
+                  query_any.push(query);
+                  break;
+                case "ends_with":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = new RegExp(
+                    `(${convertToSlug(body.condition.function[i].value)})$`,
+                    "i"
+                  );
+      
+                  query_any.push(query);
+                  break;
+                case "is_equal_to":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = convertToSlug(
+                    body.condition.function[i].value
+                  );
+      
+                  query_any.push(query);
+                  break;
+                case "is_not_equal_to":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: convertToSlug(body.condition.function[i].value),
+                  };
+                  query_any.push(query);
+                  break;
+                case "is_greater_than":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = {
+                    $gte: parseInt(body.condition.function[i].value),
+                  };
+                  query_any.push(query);
+      
+                  break;
+                case "is_less_than":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = {
+                    $lt: parseInt(body.condition.function[i].value),
+                  };
+                  query_any.push(query);
+                  break;
+                case "contains":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = new RegExp(
+                    convertToSlug(body.condition.function[i].value)
+                  );
+                  query_any.push(query);
+      
+                  break;
+                case "does_not_contains":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: new RegExp(convertToSlug(body.condition.function[i].value)),
+                  };
+                  query_any.push(query);
+                  break;
+                case "is_not_empty":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = {
+                    $ne: "",
+                  };
+                  query_any.push(query);
+                  break;
+                case "is_empty":
+                  var query = {};
+                  query[`${body.condition.function[i].name}`] = "";
+                  query_any.push(query);
+                  break;
+              }
+            }
+
+            console.log(query_any)
+      
+            var result = await client
+              .db(DB)
+              .collection("Products")
+              .aggregate(query_any)
+              .toArray();
+      
+            for (var _i = 0; _i < result.length; _i++) {
+              result[_i].categories.push(body.category_id);
+              await client
+                .db(DB)
+                .collection("Products")
+                .updateOne(
+                  {
+                    product_id: parseInt(result[_i].product_id),
+                  },
+                  {
+                    $set: {
+                      categories: result[_i].categories,
+                      last_update: moment().tz(TIMEZONE).format(),
+                    },
+                  }
+                );
+            }
+          }
+    }
     res.send({ success: true, data: req.body });
   } catch (err) {
     next(err);

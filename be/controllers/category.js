@@ -133,6 +133,7 @@ module.exports._update = async (req, res, next) => {
             updater_id: req.user.user_id,
             active: _category.active,
             slug_name: removeUnicode(String(_category.name), true).toLowerCase(),
+            condition:req.body.condition || null,
         };
         req['body'] = _category;
         await categoryService._update(req, res, next);
