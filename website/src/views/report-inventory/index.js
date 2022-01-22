@@ -280,7 +280,6 @@ export default function ReportInventory() {
             value={dateFilter}
             onChange={onChangeDate}
             style={{ width: '100%' }}
-            size="large"
             format={dateFormat}
           />
         </Col>
@@ -345,8 +344,7 @@ export default function ReportInventory() {
         </Col>
         <Button
           onClick={_clearFilters}
-          style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-          size="large"
+          style={{ marginLeft: 10, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
           danger
           type="primary"
         >

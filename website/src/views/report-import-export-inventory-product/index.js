@@ -182,7 +182,6 @@ export default function ReportImportExportInventoryProduct() {
             <DatePicker.RangePicker
               value={dateFilter}
               onChange={onChangeDate}
-              size="large"
               style={{ width: '100%', marginTop: 15, marginBottom: 25 }}
             />
           </Col>

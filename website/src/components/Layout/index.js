@@ -93,9 +93,9 @@ const BaseLayout = (props) => {
     }
   }
 
-  const getInfoUser = async () => {
+  const getInfoUser = async (params) => {
     try {
-      const res = await getEmployees({ user_id: dataUser.data.user_id })
+      const res = await getEmployees(params)
       if (res.status === 200) {
         if (res.data.data.length) setUser({ ...res.data.data[0] })
       }
@@ -123,7 +123,7 @@ const BaseLayout = (props) => {
       pathsChild: [],
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
-      permissions: [PERMISSIONS.tong_quan],
+      permissions: [],
       icon: <MenuFoldOutlined />,
     },
     {
@@ -137,7 +137,7 @@ const BaseLayout = (props) => {
       pathsChild: [ROUTES.ORDER_CREATE],
       path: ROUTES.ORDER_LIST,
       title: 'Đơn hàng',
-      permissions: [PERMISSIONS.danh_sach_don_hang],
+      permissions: [],
       icon: <ShoppingOutlined />,
     },
     {
@@ -206,7 +206,7 @@ const BaseLayout = (props) => {
       icon: <GoldOutlined />,
       path: ROUTES.SUPPLIER,
       title: 'Nhà cung cấp',
-      permissions: [PERMISSIONS.quan_li_nha_cung_cap],
+      permissions: [],
     },
     // {
     //   icon: <CodeSandboxOutlined />,
@@ -229,12 +229,6 @@ const BaseLayout = (props) => {
     //   icon: <ControlOutlined />,
     //   pathsChild: [],
     //   menuItems: [
-    // {
-    //   icon: <TagsOutlined />,
-    //   path: ROUTES.PROMOTION,
-    //   title: 'Khuyến mãi',
-    //   permissions: [PERMISSIONS.khuyen_mai],
-    // },
     // {
     //   icon: <ControlOutlined />,
     //   path: ROUTES.OFFER_LIST,
@@ -281,7 +275,7 @@ const BaseLayout = (props) => {
       pathsChild: [],
       path: ROUTES.CUSTOMER,
       title: 'Khách hàng',
-      permissions: [PERMISSIONS.quan_li_khach_hang],
+      permissions: [],
       icon: <UserAddOutlined />,
     },
     {
@@ -304,7 +298,6 @@ const BaseLayout = (props) => {
       path: ROUTES.SHIPPING_CONTROL,
       title: 'Đối soát vận chuyển',
       permissions: [],
-      // permissions: [PERMISSIONS.doi_soat_van_chuyen],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
@@ -317,10 +310,12 @@ const BaseLayout = (props) => {
         ROUTES.ACTIVITY_DIARY,
         ROUTES.SHIPPING,
         ROUTES.POINT,
+        ROUTES.PROMOTION,
+        ROUTES.IMPORT_REPORT_FILE,
       ],
       path: ROUTES.CONFIGURATION_STORE,
       title: 'Cấu hình',
-      permissions: [PERMISSIONS.cau_hinh_thong_tin],
+      permissions: [],
       icon: <ControlOutlined />,
     },
     {
@@ -419,7 +414,7 @@ const BaseLayout = (props) => {
 
   const content = (
     <div className={styles['user_information']}>
-      <ModalUpdateUser user={dataUser && dataUser.data}>
+      <ModalUpdateUser user={user}>
         <div>
           <div style={{ color: '#565656', paddingLeft: 10 }}>
             <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
@@ -452,8 +447,8 @@ const BaseLayout = (props) => {
   }, [triggerReloadBranch])
 
   useEffect(() => {
-    getInfoUser()
-  }, [])
+    getInfoUser({ user_id: dataUser.data.user_id })
+  }, [dataUser.data.user_id])
 
   //get width device
   useEffect(() => {
@@ -575,7 +570,7 @@ const BaseLayout = (props) => {
               <Row align="middle">
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
-                  disabled={dataUser && dataUser.data.role_id === 1 ? false : true}
+                  disabled={user && user.role_id === 1 ? false : true}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   onChange={(value) => dispatch({ type: 'SET_BRANCH_ID', data: value })}
@@ -601,7 +596,7 @@ const BaseLayout = (props) => {
               <Dropdown overlay={content} trigger="click">
                 <Row align="middle" wrap={false} style={{ cursor: 'pointer' }}>
                   <Avatar
-                    src={dataUser && (dataUser.data.avatar || '')}
+                    src={user && (user.avatar || '')}
                     style={{ color: '#FFF', backgroundColor: '#FDAA3E', width: 35, height: 35 }}
                   />
                   <span
@@ -613,8 +608,8 @@ const BaseLayout = (props) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {dataUser &&
-                      (dataUser.data.first_name || '') + ' ' + (dataUser.data.last_name || '')}
+                    {user &&
+                      (user.first_name || '') + ' ' + (user.last_name || '')}
                   </span>
                 </Row>
               </Dropdown>

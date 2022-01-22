@@ -11,6 +11,7 @@ import {
   ClusterOutlined,
   PartitionOutlined,
   AlertOutlined,
+  FieldTimeOutlined,
 } from '@ant-design/icons'
 import { ROUTES } from 'consts'
 
@@ -235,6 +236,35 @@ export default function ConfigurationStore() {
               </Row>
             </Link>
           </Col>
+          <Col xs={24} sm={24} md={11} lg={8} xl={8}>
+            <Link to={ROUTES.PROMOTION}>
+              <Row wrap={false}>
+                <div
+                  className={styles['wrap-icon']}
+                  style={{
+                    backgroundColor: '#FCF7EB',
+                    border: '1px solid #EFC76E',
+                    borderRadius: '0.25rem',
+                  }}
+                >
+                  <FieldTimeOutlined style={{ color: '#EFC76E' }} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: '1rem',
+                      color: '#0015CD',
+                    }}
+                  >
+                    Khuyến mãi
+                  </div>
+                  <div style={{ color: 'black', fontSize: '0.75rem' }}>
+                    Thiết lập và cấu hình chương trình khuyến mãi
+                  </div>
+                </div>
+              </Row>
+            </Link>
+          </Col>
         </Row>
       </div>
 
@@ -242,9 +272,7 @@ export default function ConfigurationStore() {
         <div style={{ color: '#1A3873', fontSize: '1.25rem', fontWeight: '700' }}>Nhật ký</div>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={11} md={11} lg={8} xl={8}>
-            <Link
-            // to={ROUTES.IMPORT_REPORT_FILE}
-            >
+            <Link to={ROUTES.IMPORT_REPORT_FILE}>
               <Row wrap={false}>
                 <div
                   className={styles['wrap-icon']}

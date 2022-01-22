@@ -15,65 +15,65 @@ import TitlePage from 'components/title-page'
 import {
   Row,
   Col,
-  message,
+  Popconfirm,
   Input,
   Button,
   Table,
   InputNumber,
   Form,
   Select,
-  Radio,
   Spin,
-  Tooltip,
-  Space,
-  Affix,
-  DatePicker,
-  Upload,
   Modal,
   notification,
+  Checkbox,
+  Collapse,
 } from 'antd'
 
 //icons
-import {
-  ArrowLeftOutlined,
-  CloseOutlined,
-  InfoCircleTwoTone,
-  SearchOutlined,
-  PlusSquareOutlined,
-  CreditCardFilled,
-  LoadingOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-} from '@ant-design/icons'
+import { ArrowLeftOutlined, CloseOutlined, SearchOutlined, DeleteOutlined } from '@ant-design/icons'
 
 //apis
 import { getProducts } from 'apis/product'
 import { getAllBranch } from 'apis/branch'
 import { getUsers } from 'apis/users'
+import { getCategories } from 'apis/category'
 import { createCheckInventoryNote, updateCheckInventoryNote } from 'apis/inventory'
 
 export default function CreateReport() {
   const history = useHistory()
   const dispatch = useDispatch()
   const [form] = Form.useForm()
+  const formData = form.getFieldsValue()
   const location = useLocation()
   const { Option } = Select
   const { TextArea, Search } = Input
+  const { Panel } = Collapse
 
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [countOrder, setCountOrder] = useState(0)
 
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isModalQuickAddProduct, setIsModalQuickAddProduct] = useState(false)
+  const [countOrder, setCountOrder] = useState(0)
+
   const [dataProducts, setDataProducts] = useState([])
   const [dataModal, setDataModal] = useState([])
+  const [categories, setCategories] = useState([])
   const [allBranch, setAllBranch] = useState([])
+  const [branchId, setBranchId] = useState([])
   const [users, setUsers] = useState([])
   const [listProduct, setListProduct] = useState([])
+  const [cloneListProduct, setCloneListProduct] = useState([])
+  const [checkedKeys, setCheckedKeys] = useState([])
+  const [selectedKeys, setSelectedKeys] = useState([])
+  console.log(selectedKeys)
 
   const [realQuantity, setRealQuantity] = useState(0)
-  console.log(listProduct)
+
+  function getSelectedKeys(checkedValues) {
+    setSelectedKeys(checkedValues)
+  }
 
   const getDataToCreate = (data, variant) => {
     const body = {
@@ -87,11 +87,15 @@ export default function CreateReport() {
     setListProduct([...listProduct, body])
   }
 
+  const deleteDataToCreate = (id) => {
+    setListProduct(listProduct.filter((item) => item.variant_id !== id))
+  }
+
   const _setRealQuantity = (index, value) => {
     listProduct[index].real_quantity = value
   }
 
-  const _createCheckInventoryNote = async () => {
+  const _createOrUpdateCheckInventoryNote = async () => {
     try {
       dispatch({ type: 'LOADING', data: true })
       await form.validateFields()
@@ -107,10 +111,10 @@ export default function CreateReport() {
 
       if (res.status === 200) {
         if (res.data.success) {
-          history.goBack()
           notification.success({
             message: `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thành công`,
           })
+          history.push({ pathname: ROUTES.STOCK_ADJUSTMENTS })
         } else
           notification.error({
             message:
@@ -133,38 +137,67 @@ export default function CreateReport() {
 
   const _getProducts = async (params) => {
     try {
-      setLoadingProduct(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getProducts(params)
       if (res.status === 200) {
         setCountOrder(res.data.count)
         setDataProducts(res.data.data)
 
         let dataNew = []
-        res.data.data.map((item) => item.variants.map((e) => dataNew.push(e)))
+        res.data.data.forEach((item) => item.variants.forEach((e) => dataNew.push(e)))
         setDataModal(dataNew)
       }
-      setLoadingProduct(false)
+      dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
-      setLoadingProduct(false)
+      dispatch({ type: 'LOADING', data: false })
+    }
+  }
+
+  const _getProductsByCategory = async (params) => {
+    try {
+      dispatch({ type: 'LOADING', data: true })
+      const res = await getProducts(params)
+      console.log(res)
+      if (res.status === 200) {
+        let cloneData = []
+        res.data.data.map((item) => item.variants?.map((e) => cloneData.push(e)))
+        setListProduct(cloneData)
+      }
+      dispatch({ type: 'LOADING', data: false })
+    } catch (err) {
+      console.log(err)
+      dispatch({ type: 'LOADING', data: false })
+    }
+  }
+
+  const _getCategories = async (query) => {
+    try {
+      dispatch({ type: 'LOADING', data: true })
+      const res = await getCategories(query)
+      if (res.status === 200) setCategories(res.data.data)
+      dispatch({ type: 'LOADING', data: false })
+    } catch (err) {
+      console.log(err)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
   const _getAllBranch = async (query) => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getAllBranch(query)
       if (res.status === 200) setAllBranch(res.data.data)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
   const _getUsers = async (query) => {
     try {
-      setLoading(true)
+      dispatch({ type: 'LOADING', data: true })
       const res = await getUsers(query)
       if (res.status === 200) {
         setUsers(res.data.data)
@@ -173,10 +206,10 @@ export default function CreateReport() {
         //   res.data.data.map(user => user.)
         // }
       }
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
-      setLoading(false)
+      dispatch({ type: 'LOADING', data: false })
     }
   }
 
@@ -205,6 +238,9 @@ export default function CreateReport() {
       title: 'Số lượng thực tế',
       dataIndex: 'real_quantity',
     },
+    {
+      dataIndex: 'action',
+    },
   ]
 
   const columnsModal = [
@@ -216,9 +252,6 @@ export default function CreateReport() {
       title: 'Hình ảnh',
       dataIndex: 'image',
       width: 100,
-      render: (text, record) => (
-        <img style={{ width: '50%', display: 'block' }} src={text} alt="" />
-      ),
     },
     {
       title: 'Tên sản phẩm',
@@ -232,13 +265,20 @@ export default function CreateReport() {
 
   const onOkayModal = () => {
     setIsModalVisible(false)
+    setListProduct(cloneListProduct)
+  }
+
+  const addProductToTable = () => {
+    setIsModalQuickAddProduct(false)
+    _getProductsByCategory({ category_id: selectedKeys.join('---') })
   }
 
   useEffect(() => {
     _getProducts()
     _getAllBranch()
     _getUsers()
-  }, [listProduct, realQuantity])
+    _getCategories()
+  }, [realQuantity])
 
   useEffect(() => {
     if (location.state) {
@@ -256,7 +296,7 @@ export default function CreateReport() {
 
   return (
     <div className="card">
-      <Form layout="vertical" form={form} onFinish={_createCheckInventoryNote}>
+      <Form layout="vertical" form={form} onFinish={_createOrUpdateCheckInventoryNote}>
         <TitlePage
           isAffix={true}
           title={
@@ -305,7 +345,13 @@ export default function CreateReport() {
                 }
               >
                 {allBranch.map((branch, index) => (
-                  <Option key={index} value={branch.branch_id}>
+                  <Option
+                    onClick={() => {
+                      _getProducts({ branch_id: branch.branch_id })
+                    }}
+                    key={index}
+                    value={branch.branch_id}
+                  >
                     {branch.name}
                   </Option>
                 ))}
@@ -358,7 +404,11 @@ export default function CreateReport() {
           <h3>Danh sách sản phẩm</h3>
           <Row>
             <Col span={6}>
-              <Button style={{ width: '90%' }} type="primary">
+              <Button
+                onClick={() => setIsModalQuickAddProduct(true)}
+                style={{ width: '90%' }}
+                type="primary"
+              >
                 Thêm nhóm hàng
               </Button>
             </Col>
@@ -494,6 +544,20 @@ export default function CreateReport() {
                     />
                   ),
                 }
+              if (column.dataIndex === 'action')
+                return {
+                  ...column,
+                  render: (text, record) => (
+                    <Popconfirm
+                      onConfirm={() => deleteDataToCreate(record.variant_id)}
+                      title="Bạn có muốn xóa sản phẩm này không?"
+                      okText="Đồng ý"
+                      cancelText="Từ chối"
+                    >
+                      <Button type="primary" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                  ),
+                }
               return column
             })}
             size="small"
@@ -536,7 +600,9 @@ export default function CreateReport() {
           rowSelection={{
             onChange: (selectedRowKeys, selectedRows) => {
               console.log(selectedRowKeys, selectedRows)
-              selectedRows.length !== 0 && setListProduct(selectedRows)
+              selectedRows.length !== 0
+                ? setCloneListProduct(selectedRows)
+                : setCloneListProduct([])
             },
             getCheckboxProps: (record) => ({
               title: record.title,
@@ -551,6 +617,17 @@ export default function CreateReport() {
                 ...column,
                 render: (text, record) => (
                   <span style={{ display: 'none' }}>{record.variant_id}</span>
+                ),
+              }
+            if (column.dataIndex === 'image')
+              return {
+                ...column,
+                render: (text, record) => (
+                  <img
+                    style={{ width: '50%', display: 'block' }}
+                    src={record.image.length ? record.image : IMAGE_DEFAULT}
+                    alt=""
+                  />
                 ),
               }
             return column
@@ -570,6 +647,27 @@ export default function CreateReport() {
             total: countOrder,
           }}
         />
+      </Modal>
+      <Modal
+        title="Chọn nhiều sản phẩm"
+        visible={isModalQuickAddProduct}
+        onOk={addProductToTable}
+        okText="Thêm vào đơn"
+        onCancel={() => setIsModalQuickAddProduct(false)}
+        width={'50%'}
+      >
+        <Checkbox.Group onChange={getSelectedKeys}>
+          <Checkbox value={formData.branch_id}>Tất cả sản phẩm</Checkbox>
+        </Checkbox.Group>
+        <Collapse accordion bordered={false}>
+          <Panel className="edit-collapse-panel" header="Theo nhóm sản phẩm" key="1">
+            <Checkbox.Group onChange={getSelectedKeys}>
+              {categories.map((category, index) => (
+                <Checkbox value={category.category_id}>{category.name}</Checkbox>
+              ))}
+            </Checkbox.Group>
+          </Panel>
+        </Collapse>
       </Modal>
     </div>
   )

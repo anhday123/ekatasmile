@@ -238,7 +238,6 @@ export default function OrderList() {
           >
             <Row wrap={false}>
               <Input
-                size="large"
                 style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
                 prefix={<SearchOutlined />}
                 name="name"
@@ -249,7 +248,6 @@ export default function OrderList() {
                 allowClear
               />
               <Select
-                size="large"
                 showSearch
                 style={{ width: 170 }}
                 value={optionSearchName}
@@ -278,7 +276,6 @@ export default function OrderList() {
             style={{ border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }}
           >
             <RangePicker
-              size="large"
               onChange={_onChangeDate}
               style={{ width: '100%' }}
               className="br-15__date-picker"
@@ -332,7 +329,6 @@ export default function OrderList() {
             }}
           >
             <Select
-              size="large"
               value={paramsFilter.chanel || ''}
               onChange={(value) => _onChangeFilter('chanel', value)}
               showSearch
@@ -356,7 +352,6 @@ export default function OrderList() {
             style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
           >
             <Select
-              size="large"
               value={paramsFilter.employee_name || ''}
               onChange={(value) => _onChangeFilter('employee_name', value)}
               showSearch

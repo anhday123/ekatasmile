@@ -84,6 +84,7 @@ import Channel from './channel'
 import Contact from './contact'
 import ImportInventories from './import-inventories'
 import ImportInventory from './import-inventory'
+import ImportReportFile from './import-report-file'
 
 const DEFINE_ROUTER = [
   {
@@ -324,6 +325,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.EMPLOYEE,
     Component: () => <Employee />,
     title: 'Quản lý nhân viên',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.IMPORT_REPORT_FILE,
+    Component: () => <ImportReportFile />,
+    title: 'Nhập xuất File',
     permissions: [],
     exact: true,
   },
