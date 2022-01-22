@@ -25,7 +25,7 @@ import {
 import {
   MenuOutlined,
   GoldOutlined,
-  MenuFoldOutlined,
+  DashboardOutlined,
   LogoutOutlined,
   GiftOutlined,
   CarOutlined,
@@ -123,7 +123,7 @@ const BaseLayout = (props) => {
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
       permissions: [PERMISSIONS.tong_quan],
-      icon: <MenuFoldOutlined />,
+      icon: <DashboardOutlined />,
     },
     {
       pathsChild: [],
@@ -426,7 +426,7 @@ const BaseLayout = (props) => {
 
   const content = (
     <div className={styles['user_information']}>
-      <ModalUpdateUser user={user}>
+      <ModalUpdateUser user={user} reload={getInfoUser}>
         <div>
           <div style={{ color: '#565656', paddingLeft: 10 }}>
             <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
