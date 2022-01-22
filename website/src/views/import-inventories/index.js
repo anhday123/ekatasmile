@@ -338,7 +338,7 @@ export default function ImportInventories() {
   const _getOrdersImportInventory = async () => {
     try {
       setLoading(true)
-      const res = await getOrdersImportInventory({ ...paramsFilter, branch_id: branchIdApp })
+      const res = await getOrdersImportInventory({ ...paramsFilter })
       console.log(res)
       if (res.status === 200) {
         setCountOrder(res.data.count)

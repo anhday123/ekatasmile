@@ -62,7 +62,7 @@ export default function ImportInventory() {
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [users, setUsers] = useState([])
-
+  const [branches, setBranches] = useState([])
   const [loadingUpload, setLoadingUpload] = useState(false)
   const [file, setFile] = useState('')
   const [loadingProduct, setLoadingProduct] = useState(false)
@@ -88,18 +88,18 @@ export default function ImportInventory() {
     moneyToBePaidByCustomer: 0, // tổng tiền khách hàng phải trả (Tổng tiền thanh toán)
   })
 
-  const [branches, setBranches] = useState([])
-
   const _editOrder = (attribute, value) => {
     const orderCreateNew = { ...orderCreate }
     orderCreateNew[attribute] = value
 
-    //tổng tiền khách hàng phải trả
-    orderCreateNew.moneyToBePaidByCustomer =
-      orderCreateNew.sumCostPaid + orderCreateNew.deliveryCharges
+    //tổng tiền khách hàng phải trả (thành tiền)
+    //tổng tiền sp + phí ship + VAT (mặc định 10%)
+    orderCreateNew.moneyToBePaidByCustomer = +(
+      orderCreateNew.sumCostPaid +
+      orderCreateNew.deliveryCharges +
+      (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+    ).toFixed(0)
 
-    //Tính tổng tiền cần thanh toán (bao gồm VAT 10%)
-    orderCreateNew.moneyToBePaidByCustomer += (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
     form.setFieldsValue({ moneyToBePaidByCustomer: orderCreateNew.moneyToBePaidByCustomer })
     setOrderCreate({ ...orderCreateNew })
   }
@@ -118,17 +118,17 @@ export default function ImportInventory() {
           0
         )
 
-        //tổng tiền khách hàng phải trả
-        orderCreateNew.moneyToBePaidByCustomer =
-          orderCreateNew.sumCostPaid + orderCreateNew.deliveryCharges
-
-        //Tính tổng tiền cần thanh toán (bao gồm VAT 10%)
-        orderCreateNew.moneyToBePaidByCustomer +=
+        //tổng tiền khách hàng phải trả (thành tiền)
+        //tổng tiền sp + phí ship + VAT (mặc định 10%)
+        orderCreateNew.moneyToBePaidByCustomer = +(
+          orderCreateNew.sumCostPaid +
+          orderCreateNew.deliveryCharges +
           (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+        ).toFixed(0)
 
-        setOrderCreate({ ...orderCreateNew })
         form.setFieldsValue({ moneyToBePaidByCustomer: orderCreateNew.moneyToBePaidByCustomer })
-      } else notification.warning({ message: 'Bạn đã thêm sản phẩm này!' })
+        setOrderCreate({ ...orderCreateNew })
+      } else notification.warning({ message: 'Sản phẩm đã được thêm' })
     }
   }
 
@@ -148,12 +148,14 @@ export default function ImportInventory() {
         0
       )
 
-      //tổng tiền khách hàng phải trả
-      orderCreateNew.moneyToBePaidByCustomer =
-        orderCreateNew.sumCostPaid + orderCreateNew.deliveryCharges
+      //tổng tiền khách hàng phải trả (thành tiền)
+      //tổng tiền sp + phí ship + VAT (mặc định 10%)
+      orderCreateNew.moneyToBePaidByCustomer = +(
+        orderCreateNew.sumCostPaid +
+        orderCreateNew.deliveryCharges +
+        (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+      ).toFixed(0)
 
-      //Tính tổng tiền cần thanh toán (bao gồm VAT 10%)
-      orderCreateNew.moneyToBePaidByCustomer += (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
       form.setFieldsValue({ moneyToBePaidByCustomer: orderCreateNew.moneyToBePaidByCustomer })
       setOrderCreate({ ...orderCreateNew })
     }
@@ -170,12 +172,13 @@ export default function ImportInventory() {
         0
       )
 
-      //tổng tiền khách hàng phải trả
-      orderCreateNew.moneyToBePaidByCustomer =
-        orderCreateNew.sumCostPaid + orderCreateNew.deliveryCharges
-
-      //Tính tổng tiền cần thanh toán (bao gồm VAT 10%)
-      orderCreateNew.moneyToBePaidByCustomer += (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+      //tổng tiền khách hàng phải trả (thành tiền)
+      //tổng tiền sp + phí ship + VAT (mặc định 10%)
+      orderCreateNew.moneyToBePaidByCustomer = +(
+        orderCreateNew.sumCostPaid +
+        orderCreateNew.deliveryCharges +
+        (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+      ).toFixed(0)
 
       setOrderCreate({ ...orderCreateNew })
       form.setFieldsValue({ moneyToBePaidByCustomer: orderCreateNew.moneyToBePaidByCustomer })
@@ -486,7 +489,7 @@ export default function ImportInventory() {
           ? location.state.import_location.branch_id
           : '',
         complete_date: location.state.complete_date ? moment(location.state.complete_date) : null,
-        moneyToBePaidByCustomer: location.state.final_cost || 0,
+        moneyToBePaidByCustomer: location.state.payment_amount || 0,
         paid: location.state.payment_amount || 0,
       })
     }
@@ -563,12 +566,7 @@ export default function ImportInventory() {
                     </Select>
                     <Button
                       onClick={() => {
-                        // const orderCreateNew = { ...orderCreate }
-                        // orderCreateNew.order_details = productsSupplier
-                        // setOrderCreate({ ...orderCreateNew })
-
                         _editOrder('order_details', productsSupplier)
-
                         toggleProductsToSupplier()
                       }}
                       type="primary"
