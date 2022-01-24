@@ -549,7 +549,7 @@ export default function Sell() {
       <div>
         <Row justify="space-between">
           <span>Giá nhập</span>
-          <span>{formatCash(product ? product.import_price : 0)}</span>
+          <span>{formatCash(product ? product.import_price || product.import_price_default : 0)}</span>
         </Row>
         <Row justify="space-between">
           <span>Giá cơ bản</span>

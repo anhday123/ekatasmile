@@ -163,6 +163,17 @@ module.exports._get = async (req, res, next) => {
             });
         }
         // lấy các thuộc tính tùy chọn khác
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Roles',
+                    localField: 'role_id',
+                    foreignField: 'role_id',
+                    as: '_role',
+                },
+            },
+            { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } }
+        );
         if (req.query._business) {
             aggregateQuery.push(
                 {
