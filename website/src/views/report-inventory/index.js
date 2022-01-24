@@ -274,21 +274,33 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row gutter={[16, 16]} style={{ marginBottom: 20, marginTop: 20 }}>
+      <Row gutter={[16, 16]} style={{
+        marginBottom: 20,
+        marginTop: 20,
+        marginLeft: 0,
+        marginRight: 0,
+        border: '1px solid #d9d9d9',
+        borderRadius: '5px',
+      }}>
         <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
           <DatePicker.RangePicker
             size={FILTER_SIZE}
-            value={dateFilter}
+            // value={dateFilter}
             onChange={onChangeDate}
+            bordered={false}
             style={{ width: '100%' }}
             format={dateFormat}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{
+          borderLeft: '1px solid #d9d9d9',
+          borderRight: '1px solid #d9d9d9'
+        }}>
           <Select
             mode="multiple"
             size={FILTER_SIZE}
             allowClear
+            bordered={false}
             value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
             onChange={(value) => {
               if (value.length) setParamsFilter({ ...paramsFilter, branch_id: value.join('---') })
@@ -307,10 +319,11 @@ export default function ReportInventory() {
             ))}
           </Select>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={7} xl={7} style={{ height: FILTER_COL_HEIGHT }}>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ height: FILTER_COL_HEIGHT }}>
           <TreeSelect
             size={FILTER_SIZE}
             showCheckedStrategy={TreeSelect.SHOW_ALL}
+            bordered={false}
             multiple
             treeDefaultExpandAll
             style={{ width: '100%' }}
@@ -343,15 +356,15 @@ export default function ReportInventory() {
             ))}
           </TreeSelect>
         </Col>
-        <Button
-          onClick={_clearFilters}
-          style={{ marginLeft: 10, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-          danger
-          type="primary"
-        >
-          Xóa bộ lọc
-        </Button>
       </Row>
+      <Button
+        onClick={_clearFilters}
+        style={{ marginLeft: 10, display: Object.keys(paramsFilter).length <= 4 && 'none', width: '10%', marginBottom: 10 }}
+        danger
+        type="primary"
+      >
+        Xóa bộ lọc
+      </Button>
 
       <div className="report-inventory" style={{ display: 'none' }}>
         <Table
