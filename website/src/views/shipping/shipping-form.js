@@ -7,7 +7,7 @@ import { Form, Drawer, Row, Col, Button, Input, Select, Upload, notification, Ch
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
-import { getDistricts, getProvinces } from 'apis/address'
+import { getWards, getDistricts, getProvinces } from 'apis/address'
 import { uploadFile } from 'apis/upload'
 import { addShipping, updateShipping } from 'apis/shipping'
 
@@ -20,8 +20,11 @@ export default function ShippingForm({ children, reloadData, record }) {
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
 
-  const [districts, setDistricts] = useState([])
+  const [districtMain, setDistrictMain] = useState([])
+  const [districtsDefault, setDistrictsDefault] = useState([])
   const [provinces, setProvinces] = useState([])
+  const [wardMain, setWardMain] = useState([])
+  const [wardMainDefault, setWardMainDefault] = useState([])
 
   const _addOrEditShipping = async () => {
     try {
@@ -74,21 +77,34 @@ export default function ShippingForm({ children, reloadData, record }) {
     }
   }
 
+  const _getProvinces = async (params) => {
+    try {
+      const res = await getProvinces(params)
+      if (res.status === 200) setProvinces(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getDistricts = async (value) => {
     try {
       const res = await getDistricts({ search: value })
       if (res.status === 200) {
-        setDistricts(res.data.data)
+        setDistrictMain(res.data.data)
+        setDistrictsDefault(res.data.data)
       }
     } catch (error) {
       console.log(error)
     }
   }
 
-  const _getProvinces = async () => {
+  const _getWards = async (params) => {
     try {
-      const res = await getProvinces()
-      if (res.status === 200) setProvinces(res.data.data)
+      const res = await getWards(params)
+      if (res.status === 200) {
+        setWardMain(res.data.data)
+        setWardMainDefault(res.data.data)
+      }
     } catch (error) {
       console.log(error)
     }
@@ -97,6 +113,7 @@ export default function ShippingForm({ children, reloadData, record }) {
   useEffect(() => {
     _getProvinces()
     _getDistricts()
+    _getWards()
   }, [])
 
   useEffect(() => {
@@ -149,7 +166,7 @@ export default function ShippingForm({ children, reloadData, record }) {
               ) : (
                 <div>
                   {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                  <div style={{ marginTop: 8 }}>Upload</div>
+                  <div style={{ marginTop: 8 }}>Tải lên</div>
                 </div>
               )}
             </Upload>
@@ -169,7 +186,6 @@ export default function ShippingForm({ children, reloadData, record }) {
               <Form.Item
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
                 name="address"
-                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
               >
                 <Input placeholder="Nhập địa chỉ" size="large" />
               </Form.Item>
@@ -190,6 +206,7 @@ export default function ShippingForm({ children, reloadData, record }) {
               <Form.Item
                 name="province"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố!' }]}
               >
                 <Select
                   size="large"
@@ -200,6 +217,12 @@ export default function ShippingForm({ children, reloadData, record }) {
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
+                  onChange={(value) => {
+                    if (value) {
+                      const districtsNew = districtsDefault.filter((e) => e.province_name === value)
+                      setDistrictMain([...districtsNew])
+                    } else setDistrictMain([...districtsDefault])
+                  }}
                 >
                   {provinces.map((province, index) => {
                     return (
@@ -217,6 +240,40 @@ export default function ShippingForm({ children, reloadData, record }) {
               <Form.Item
                 name="district"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập quận/huyện!' }]}
+              >
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  onChange={(value) => {
+                    if (value) {
+                      const wardNew = wardMainDefault.filter((e) => e.district_name === value)
+                      setWardMain([...wardNew])
+                    } else setWardMain([...wardMainDefault])
+                  }}
+                >
+                  {districtMain.map((district, index) => {
+                    return (
+                      <Option value={district.district_name} key={index}>
+                        {district.district_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="ward"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Phường/xã</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập phường/xã!' }]}
               >
                 <Select
                   allowClear
@@ -229,16 +286,19 @@ export default function ShippingForm({ children, reloadData, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {districts.map((district, index) => {
+                  {wardMain.map((ward, index) => {
                     return (
-                      <Option value={district.district_name} key={index}>
-                        {district.district_name}
+                      <Option value={ward.ward_name} key={index}>
+                        {ward.ward_name}
                       </Option>
                     )
                   })}
                 </Select>
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item name="default" valuePropName="checked">
                 <Checkbox>Chọn làm mặc định</Checkbox>

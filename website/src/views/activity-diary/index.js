@@ -145,9 +145,9 @@ export default function ActivityDiary() {
 
       <Row
         gutter={[16, 16]}
-        style={{ marginTop: 15, marginBottom: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}
+        style={{ margin: '15px 0px', border: '1px solid #d9d9d9', borderRadius: 5 }}
       >
-        <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Input
             prefix={<SearchOutlined />}
             style={{ width: '100%' }}
@@ -164,8 +164,8 @@ export default function ActivityDiary() {
           xs={24}
           sm={24}
           md={12}
-          lg={6}
-          xl={6}
+          lg={8}
+          xl={8}
           style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
         >
           <RangePicker
@@ -179,23 +179,11 @@ export default function ActivityDiary() {
             bordered={false}
           />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
+        <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Select
             showSearch
             style={{ width: '100%' }}
-            placeholder="Chọn thao tác"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            bordered={false}
-          ></Select>
-        </Col>
-        <Col xs={24} sm={24} md={12} lg={6} xl={6}>
-          <Select
-            showSearch
-            style={{ width: '100%' }}
-            placeholder="Chọn thao tác"
+            placeholder="Lọc thao tác"
             optionFilterProp="children"
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

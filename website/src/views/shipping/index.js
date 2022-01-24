@@ -191,7 +191,7 @@ export default function Shipping() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 15, marginBottom: 19, border: '1px solid #d9d9d9', borderRadius: 5 }}>
+        <Row gutter={[16, 16]} style={{ margin: '15px 0px 19px 0px', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
               prefix={<SearchOutlined />}
@@ -418,9 +418,12 @@ export default function Shipping() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
-                  }${record.province && record.province}`,
+                  `
+                  ${record.address && record.address + ', '}
+                  ${record.district && record.district + ', '}
+                  ${record.province && record.province + ', '}
+                  ${record.ward && record.ward}
+                  `,
               }
 
             return column

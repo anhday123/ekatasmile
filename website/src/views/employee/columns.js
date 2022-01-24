@@ -19,8 +19,8 @@ const columns = [
   },
   {
     title: 'Ngày sinh',
-    key: 'birthday',
-    dataIndex: 'birthday',
+    key: 'birth_day',
+    dataIndex: 'birth_day',
   },
   {
     title: 'Email',

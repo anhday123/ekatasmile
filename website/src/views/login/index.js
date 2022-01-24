@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './login.module.scss'
 import { useDispatch } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
@@ -10,6 +10,7 @@ import { Row, Col, Form, Input, Button, notification, Select, Tabs } from 'antd'
 
 //apis
 import { register, login, getOtp } from 'apis/auth'
+import { checkDomain } from 'apis/app'
 
 export default function Login() {
   const dispatch = useDispatch()
@@ -18,6 +19,36 @@ export default function Login() {
   let history = useHistory()
 
   const [key, setKey] = useState('login')
+  const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
+
+  // const checkSubdomain = async () => {
+  //   const domain = window.location.href
+
+  //   // check domain login
+  //   if (!domain.includes('vdropship.vn/check-subdomain')) {
+  //     setLoadingCheckDomain(true)
+
+  //     let subDomain = domain.split('.vdropship.vn')
+  //     subDomain = subDomain[0].split('//')
+  //     console.log(subDomain)
+
+  //     //Khi code comment lại, code xong để lại như cũ
+  //     // const res = await checkDomain(subDomain[1])
+  //     // console.log(res)
+  //     // if (res.status === 200) {
+  //     //   if (res.data.success) {
+  //     //   } else {
+  //     //     window.location.href = 'https://vdropship.vn/check-subdomain'
+  //     //     return
+  //     //   }
+  //     // } else {
+  //     //   window.location.href = 'https://vdropship.vn/check-subdomain'
+  //     //   return
+  //     // }
+  //   }
+
+  //   setLoadingCheckDomain(false)
+  // }
 
   const _login = async (body) => {
     try {
@@ -26,8 +57,9 @@ export default function Login() {
       const domain = window.location.href
       let subDomain = domain.split('.vdropship.vn')
       subDomain = subDomain[0].split('//')
+      console.log(subDomain)
 
-      //code xong chỉnh lại như cũ
+      //Khi code comment lại, code xong để lại như cũ
       // const res = await login({ ...body, username: body.username }, { shop: 'buidinhvietduc' })
       const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
 
@@ -70,6 +102,10 @@ export default function Login() {
     }
   }
 
+  // useEffect(() => {
+  //   checkSubdomain()
+  // }, [])
+
   return (
     <Row className={styles['login-container']}>
       <Col xs={24} sm={24} md={14} lg={14} xl={10} className={styles['login-content']}>
@@ -91,11 +127,11 @@ export default function Login() {
             <Row justify="center" align="middle" style={{ padding: '0px 80px' }}>
               <Form form={formLogin} onFinish={_login} layout="vertical" style={{ width: '100%' }}>
                 <Form.Item
-                  label={<div style={{ color: 'white' }}>Tài khoản</div>}
+                  label={<div style={{ color: 'white' }}>SĐT đăng nhập</div>}
                   name="username"
-                  rules={[{ required: true, message: 'Vui lòng nhập tài khoản!' }]}
+                  rules={[{ required: true, message: 'Vui lòng nhập SĐT đăng nhập!' }]}
                 >
-                  <Input size="large" placeholder="Nhập tài khoản" />
+                  <Input size="large" placeholder="Nhập SĐT" />
                 </Form.Item>
                 <Form.Item
                   label={<div style={{ color: 'white' }}>Mật khẩu</div>}
@@ -110,10 +146,10 @@ export default function Login() {
                   </Link>
                 </Row>
                 <Row justify="center">
-                  <Form.Item>
+                  <Form.Item style={{ width: '100%' }}>
                     <Button
                       size="large"
-                      style={{ backgroundColor: 'black', borderColor: 'black', color: 'white' }}
+                      style={{ width: '100%', backgroundColor: 'black', borderColor: 'black', color: 'white' }}
                       htmlType="submit"
                     >
                       Đăng nhập

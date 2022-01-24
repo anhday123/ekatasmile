@@ -50,12 +50,12 @@ export default function OTP() {
           await delay(300)
           window.location.href = `https://${dataUser.data._business.business_name}.vdropship.vn${ROUTES.OVERVIEW}`
         } else
-          notification.error({
-            message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
+          notification.warning({
+            message: `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại` || res.data.message,
           })
       } else
-        notification.error({
-          message: res.data.message || 'Xác thực otp thất bại, vui lòng thử lại',
+        notification.warning({
+          message: `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại` || res.data.message,
         })
     } catch (error) {
       console.log(error)
@@ -106,7 +106,7 @@ export default function OTP() {
         >
           <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>Xác minh mã OTP</div>
           <div>
-            Mã otp đã được gửi vào{' '}
+            Mã OTP đã được gửi vào{' '}
             {
               <i>
                 <b>{username}</b>
@@ -114,26 +114,21 @@ export default function OTP() {
             }{' '}
             của bạn
           </div>
-          <Form form={form} style={{ marginTop: 15, width: '100%' }}>
-            <Form.Item name="otp" rules={[{ required: true, message: 'Bạn chưa nhập mã otp' }]}>
+          <Form form={form} style={{ marginTop: 15, width: '80%' }}>
+            <Form.Item name="otp" rules={[{ required: true, message: 'Bạn chưa nhập mã OTP' }]}>
               <Input
                 size="large"
                 onPressEnter={_verifyAccount}
                 className={styles['input']}
                 maxLength="6"
-                placeholder="Nhập mã xác thực otp"
+                placeholder="Nhập mã xác thực OTP"
               />
             </Form.Item>
             <Row wrap={false} align="end" style={{ color: 'white' }}>
-              <div>Bạn chưa nhận được mã? </div>
+              <div>Bạn chưa nhận được mã?</div>
               <p
                 onClick={_resendOtp}
-                style={{
-                  marginBottom: 0,
-                  cursor: 'pointer',
-                  marginLeft: '0.5rem',
-                  fontWeight: 700,
-                }}
+                className={styles['otp-content-resent']}
               >
                 Gửi lại OTP
               </p>

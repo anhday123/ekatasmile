@@ -446,8 +446,8 @@ export default function CreateReport() {
                               (item) => item.variant_id === variant.variant_id
                             )
                             if (findProduct) {
-                              notification.error({
-                                message: 'Chỉ được chọn sản phẩm khác phân loại',
+                              notification.warning({
+                                message: 'Bạn đã chọn sản phẩm này rồi!',
                               })
                               return
                             }

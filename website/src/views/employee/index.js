@@ -37,6 +37,7 @@ export default function Employee() {
   const history = useHistory()
   const dispatch = useDispatch()
   const branchIdApp = useSelector((state) => state.branch.branchId)
+  console.log(branchIdApp)
 
   const [columns, setColumns] = useState([])
   const [users, setUsers] = useState([])
@@ -385,14 +386,13 @@ export default function Employee() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${
-                  record.district && record.district + ', '
+                `${record.address && record.address + ', '}${record.district && record.district + ', '
                 }${record.province && record.province}`,
             }
-          if (column.key === 'birthday')
+          if (column.key === 'birth_day')
             return {
               ...column,
-              sorter: (a, b) => moment(a.birthday).unix() - moment(b.birthday).unix(),
+              sorter: (a, b) => moment(a.birth_day).unix() - moment(b.birth_day).unix(),
               render: (data) => data && moment(data).format('DD/MM/YYYY'),
             }
           if (column.key === 'email') return { ...column, sorter: (a, b) => compare(a, b, 'email') }

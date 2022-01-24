@@ -349,7 +349,7 @@ function ModalIntro() {
             ) : (
               <div>
                 <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+                <div style={{ marginTop: 8 }}>Tải lên</div>
               </div>
             )}
           </Upload>

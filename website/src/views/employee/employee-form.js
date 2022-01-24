@@ -48,7 +48,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
         first_name: dataForm.first_name || '',
         email: dataForm.email || '',
         phone: dataForm.phone || '',
-        birthday: dataForm.birthday || '',
+        birth_day: dataForm.birthday || '',
         address: dataForm.address || '',
         district: dataForm.district || '',
         province: dataForm.province || '',
@@ -142,7 +142,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
         setProvince(record.province || '')
         form.setFieldsValue({
           ...record,
-          birthday: record.birthday ? moment(record.birthday) : null,
+          birth_day: record.birth_day ? moment(record.birth_day) : null,
         })
       }
     }
@@ -211,7 +211,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 label="Chi nhánh làm việc"
                 rules={[{ required: true, message: 'Vui lòng chọn chi nhánh làm việc' }]}
               >
-                <Select defaultValue={branchIdApp} placeholder="Chọn chi nhánh làm việc">
+                <Select value={branchIdApp} placeholder="Chọn chi nhánh làm việc">
                   {branches.map((branch, index) => (
                     <Select.Option value={branch.branch_id} key={index}>
                       {branch.name}

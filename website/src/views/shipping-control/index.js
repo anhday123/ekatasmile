@@ -145,18 +145,21 @@ export default function ShippingControl() {
             title={
               <Row wrap={false} align="middle">
                 <div>Nhập phiếu đối soát bằng file excel</div>
-                <Select
-                  onChange={setShippingId}
-                  value={shippingId}
-                  placeholder="Chọn đơn vị vận chuyển"
-                  style={{ width: 250, marginLeft: 20 }}
-                >
-                  {shippings.map((shipping, index) => (
-                    <Select.Option value={shipping.shipping_company_id} key={index}>
-                      {shipping.name}
-                    </Select.Option>
-                  ))}
-                </Select>
+                <div style={{ marginLeft: 20 }}>
+                  <p style={{ margin: 0, fontSize: 12 }}>Chọn đơn vị vận chuyển</p>
+                  <Select
+                    onChange={setShippingId}
+                    value={shippingId}
+                    placeholder="Chọn đơn vị vận chuyển"
+                    style={{ width: 250 }}
+                  >
+                    {shippings.map((shipping, index) => (
+                      <Select.Option value={shipping.shipping_company_id} key={index}>
+                        {shipping.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
               </Row>
             }
             fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/18/35e278a0-a244-4c7e-9284-015fb9c00238/file_mau_doi_soat.xlsx"

@@ -153,6 +153,7 @@ export default function Category() {
   }
 
   const ModalCreateCategoryChild = ({ record }) => {
+    console.log(record)
     const [visible, setVisible] = useState(false)
     const toggle = () => {
       setVisible(!visible)
@@ -331,12 +332,12 @@ export default function Category() {
       render: (text, record) => {
         return record.condition && record.condition.function.length
           ? record.condition.function.map((item) => (
-              <div>
-                <span>
-                  {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
-                </span>
-              </div>
-            ))
+            <div>
+              <span>
+                {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
+              </span>
+            </div>
+          ))
           : ''
       },
     },
@@ -352,7 +353,6 @@ export default function Category() {
       align: 'center',
       render: (text, record) => (
         <Space>
-          <ModalCreateCategoryChild record={record} />
           <Popconfirm
             onConfirm={() => _deleteCategory(record.category_id)}
             title="Bạn có muốn xóa nhóm sản phẩm này không?"
@@ -384,18 +384,7 @@ export default function Category() {
       render: (text, record) => record.name || '',
     },
     { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
-    {
-      title: 'Người tạo',
-      align: 'center',
-      render: (text, record) =>
-        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      align: 'center',
-      render: (text, record) =>
-        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
-    },
+
     { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
     {
       align: 'center',
@@ -613,11 +602,13 @@ export default function Category() {
       <Table
         expandable={{
           expandedRowRender: (record) => {
+            console.log(record)
             return record.children_category && record.children_category.length ? (
-              <div style={{ margin: 25 }}>
+              <div style={{ margin: 0, marginLeft: 25 }}>
+                <ModalCreateCategoryChild record={record} />
                 <Table
                   rowKey="category_id"
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', marginTop: 10 }}
                   pagination={false}
                   columns={columnsChildren}
                   dataSource={record.children_category}
@@ -642,7 +633,9 @@ export default function Category() {
                 />
               </div>
             ) : (
-              ''
+              <div style={{ margin: 0, marginLeft: 25 }}>
+                <ModalCreateCategoryChild record={record} />
+              </div>
             )
           },
         }}

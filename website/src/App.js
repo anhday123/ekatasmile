@@ -49,7 +49,7 @@ function App() {
     const domain = window.location.href
 
     // check domain register
-    if (!domain.includes('vdropship.vn/register')) {
+    if (!domain.includes('vdropship.vn/check-subdomain')) {
       setLoadingCheckDomain(true)
 
       let subDomain = domain.split('.vdropship.vn')
@@ -57,15 +57,14 @@ function App() {
 
       //Khi code comment lại, code xong để lại như cũ
       const res = await checkDomain(subDomain[1])
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
         } else {
-          window.location.href = 'https://vdropship.vn/register'
+          window.location.href = 'https://vdropship.vn/check-subdomain'
           return
         }
       } else {
-        window.location.href = 'https://vdropship.vn/register'
+        window.location.href = 'https://vdropship.vn/check-subdomain'
         return
       }
     }
