@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { PERMISSIONS, ROUTES } from 'consts'
+import { FILTER_COL_HEIGHT, FILTER_SIZE, PERMISSIONS, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 import { compare, formatCash } from 'utils'
 
@@ -138,8 +138,8 @@ export default function ShippingControl() {
       <TitlePage title="Đối soát vận chuyển">
         <Space>
           <ImportCsv
-            shippingId={shippingId}
             size="large"
+            shippingId={shippingId}
             txt="Import phiếu đối soát"
             upload={addShippingControlWithFile}
             title={
@@ -182,24 +182,24 @@ export default function ShippingControl() {
       </TitlePage>
 
       <div style={{ marginTop: 10 }}>
-        <Row wrap={false} style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>
-          <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Row style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+          <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
             <Input
               allowClear
+              size={FILTER_SIZE}
               prefix={<SearchOutlined />}
               style={{ width: '100%' }}
-              size="large"
               placeholder="Tìm kiếm theo mã phiếu"
               enterButton
               bordered={false}
               onChange={onSearch}
             />
           </Col>
-          <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
+              size={FILTER_SIZE}
               allowClear
               bordered={false}
-              size="large"
               placeholder="Lọc theo đơn vị vận chuyển"
               style={{ width: '100%', borderLeft: '1px solid #d9d9d9' }}
               value={paramsFilter.shipping_company_id}
@@ -212,14 +212,14 @@ export default function ShippingControl() {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               style={{
                 width: '100%',
                 borderLeft: '1px solid #d9d9d9',
                 borderRight: '1px solid #d9d9d9',
               }}
-              size="large"
+              size={FILTER_SIZE}
               open={isOpenSelect}
               onBlur={() => {
                 if (isOpenSelect) toggleOpenSelect()
@@ -327,11 +327,11 @@ export default function ShippingControl() {
               <Select.Option value="last_year">Năm trước</Select.Option>
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               allowClear
+              size={FILTER_SIZE}
               bordered={false}
-              size="large"
               placeholder="Lọc theo người tạo phiếu"
               style={{ width: '100%' }}
               value={paramsFilter.employee_id}

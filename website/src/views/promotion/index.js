@@ -16,18 +16,21 @@ import {
   InputNumber,
   Switch,
   Typography,
+  Space,
 } from 'antd'
-import { PlusCircleOutlined, EditOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 import moment from 'moment'
 import { getPromotions, updatePromotion } from 'apis/promotion'
 import { getAllBranch } from 'apis/branch'
 import { getEmployees } from 'apis/employee'
 import { useDispatch } from 'react-redux'
-import { PERMISSIONS } from 'consts'
+import { PERMISSIONS, ROUTES } from 'consts'
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
 import { compare, tableSum, formatCash } from 'utils'
 import { getAllStore } from 'apis/store'
+import TitlePage from 'components/title-page'
+import { useHistory } from 'react-router-dom'
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -51,6 +54,7 @@ export default function Promotion() {
   const [userList, setUserList] = useState([])
   const [valueUserFilter, setValueUserFilter] = useState(null)
   const dispatch = useDispatch()
+  const history = useHistory()
 
   const onClose = () => {
     setVisible(false)
@@ -241,19 +245,21 @@ export default function Promotion() {
   }, [searchFilter, pagination])
   return (
     <>
-      <div className={`${styles['promotion_manager']} ${styles['card']}`}>
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid rgb(236, 226, 226)',
-            paddingBottom: '0.75rem',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
-          }}
+      <div className="card">
+        <TitlePage
+          title={
+            <Row
+              onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
+              wrap={false}
+              align="middle"
+              style={{ cursor: 'pointer' }}
+            >
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              <div>Khuyến mãi</div>
+            </Row>
+          }
         >
-          <div className={styles['promotion_manager_title']}>Khuyến mãi</div>
-          <div className={styles['promotion_manager_button']}>
+          <Space>
             <Permission permissions={[PERMISSIONS.them_khuyen_mai]}>
               <Button
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
@@ -264,98 +270,98 @@ export default function Promotion() {
                 Tạo khuyến mãi
               </Button>
             </Permission>
-          </div>
-        </div>
+          </Space>
+        </TitlePage>
         <Row
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            width: '100%',
+            border: '1px solid #d9d9d9',
+            borderRadius: 5,
+            marginBottom: 10,
+            marginTop: 20,
           }}
         >
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                placeholder="Tìm kiếm khuyến mãi"
-                onChange={(e) => {
-                  setSearchFilter({ ...searchFilter, search: e.target.value })
-                }}
-                allowClear
-                value={searchFilter.search}
-              />
-            </div>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Input
+              style={{ width: '100%' }}
+              placeholder="Tìm kiếm khuyến mãi"
+              bordered={false}
+              onChange={(e) => {
+                setSearchFilter({ ...searchFilter, search: e.target.value })
+              }}
+              allowClear
+              value={searchFilter.search}
+            />
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <RangePicker
-                size="large"
-                className="br-15__date-picker"
-                style={{ width: '100%' }}
-                ranges={{
-                  Today: [moment(), moment()],
-                  'This Month': [moment().startOf('month'), moment().endOf('month')],
-                }}
-                value={searchFilter.date}
-                onChange={(a, b) => {
-                  setSearchFilter({
-                    ...searchFilter,
-                    from_date: b[0],
-                    to_date: b[1],
-                    date: a,
-                  })
-                  onChange(a, b)
-                }}
-              />
-            </div>
+          <Col
+            xs={24}
+            sm={24}
+            md={6}
+            lg={6}
+            xl={6}
+            style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
+          >
+            <RangePicker
+              className="br-15__date-picker"
+              style={{ width: '100%' }}
+              bordered={false}
+              ranges={{
+                Today: [moment(), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+              }}
+              value={searchFilter.date}
+              onChange={(a, b) => {
+                setSearchFilter({
+                  ...searchFilter,
+                  from_date: b[0],
+                  to_date: b[1],
+                  date: a,
+                })
+                onChange(a, b)
+              }}
+            />
           </Col>
 
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                style={{ width: '100%' }}
-                allowClear
-                placeholder="Lọc theo hình thức khuyến mãi"
-                value={searchFilter.type}
-                onChange={(e) => {
-                  setSearchFilter({ ...searchFilter, type: e })
-                  handleChange(e)
-                }}
-              >
-                <Option value="percent">Phần trăm</Option>
-                <Option value="value">Giá trị</Option>
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Select
+              style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
+              allowClear
+              bordered={false}
+              placeholder="Lọc theo hình thức khuyến mãi"
+              value={searchFilter.type}
+              onChange={(e) => {
+                setSearchFilter({ ...searchFilter, type: e })
+                handleChange(e)
+              }}
+            >
+              <Option value="percent">Phần trăm</Option>
+              <Option value="value">Giá trị</Option>
+            </Select>
           </Col>
-          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
-            <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                style={{ width: '100%' }}
-                allowClear
-                placeholder="Tìm kiếm theo người tạo"
-                value={searchFilter.creator_id}
-                onChange={(e) => {
-                  setSearchFilter({ ...searchFilter, creator_id: e })
-                  handleChangeUserFilter(e)
-                }}
-                showSearch
-              >
-                {userList.map((item) => {
-                  return (
-                    <Option value={item.user_id}>
-                      {item.first_name} {item.last_name}
-                    </Option>
-                  )
-                })}
-              </Select>
-            </div>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6}>
+            <Select
+              style={{ width: '100%' }}
+              allowClear
+              placeholder="Tìm kiếm theo người tạo"
+              value={searchFilter.creator_id}
+              bordered={false}
+              onChange={(e) => {
+                setSearchFilter({ ...searchFilter, creator_id: e })
+                handleChangeUserFilter(e)
+              }}
+              showSearch
+            >
+              {userList.map((item) => {
+                return (
+                  <Option value={item.user_id}>
+                    {item.first_name} {item.last_name}
+                  </Option>
+                )
+              })}
+            </Select>
           </Col>
         </Row>
         <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button type="primary" onClick={resetFilter} size="large">
+          <Button type="primary" danger onClick={resetFilter} size="large">
             Xóa bộ lọc
           </Button>
         </Row>

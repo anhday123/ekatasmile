@@ -25,7 +25,7 @@ import {
 import {
   MenuOutlined,
   GoldOutlined,
-  MenuFoldOutlined,
+  DashboardOutlined,
   LogoutOutlined,
   GiftOutlined,
   CarOutlined,
@@ -124,7 +124,7 @@ const BaseLayout = (props) => {
       path: ROUTES.OVERVIEW,
       title: 'Tổng quan',
       permissions: [],
-      icon: <MenuFoldOutlined />,
+      icon: <DashboardOutlined />,
     },
     {
       pathsChild: [],
@@ -301,6 +301,13 @@ const BaseLayout = (props) => {
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
     },
+    // {
+    //   path: ROUTES.CLIENT_MANAGEMENT,
+    //   title: 'Quản lý client',
+    //   permissions: [],
+    //   icon: <CarOutlined />,
+    //   pathsChild: [],
+    // },
     {
       pathsChild: [
         ROUTES.EMPLOYEE,
@@ -341,10 +348,12 @@ const BaseLayout = (props) => {
             display: 'block',
           }}
           key={_menu.path}
+          onTitleClick={() => history.push(_menu.path)}
           title={
             <Link
               style={{
                 fontSize: '0.8rem',
+
                 color:
                   location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)
                     ? '#5F73E2'
@@ -414,7 +423,7 @@ const BaseLayout = (props) => {
 
   const content = (
     <div className={styles['user_information']}>
-      <ModalUpdateUser user={user}>
+      <ModalUpdateUser user={user} reload={getInfoUser}>
         <div>
           <div style={{ color: '#565656', paddingLeft: 10 }}>
             <UserOutlined style={{ fontSize: '1rem', marginRight: 10, color: ' #565656' }} />
@@ -508,16 +517,6 @@ const BaseLayout = (props) => {
           mode="vertical"
         >
           {MENUS.map(renderMenuItem)}
-          {/* <Menu.Item
-            style={{
-              display: dataUser && dataUser.data.role_id !== 1 && 'none',
-              fontSize: '0.8rem',
-            }}
-            key={ROUTES.CLIENT_MANAGEMENT}
-            icon={<ApartmentOutlined />}
-          >
-            <Link to={ROUTES.CLIENT_MANAGEMENT}>Quản lý client</Link>
-          </Menu.Item> */}
           <Menu.Item key={ROUTES.LOGIN} onClick={onSignOut} icon={<LogoutOutlined />}>
             <Link to={ROUTES.LOGIN}>Đăng xuất</Link>
           </Menu.Item>
@@ -608,8 +607,7 @@ const BaseLayout = (props) => {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {user &&
-                      (user.first_name || '') + ' ' + (user.last_name || '')}
+                    {user && (user.first_name || '') + ' ' + (user.last_name || '')}
                   </span>
                 </Row>
               </Dropdown>

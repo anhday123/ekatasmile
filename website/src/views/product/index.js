@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
-import { ROUTES, PERMISSIONS, STATUS_PRODUCT, IMAGE_DEFAULT } from 'consts'
+import {
+  ROUTES,
+  PERMISSIONS,
+  STATUS_PRODUCT,
+  IMAGE_DEFAULT,
+  FILTER_SIZE,
+  FILTER_COL_HEIGHT,
+} from 'consts'
 import { compareCustom, formatCash } from 'utils'
 import moment from 'moment'
 import { compare } from 'utils'
@@ -410,10 +417,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-                const fileNames = image.split('/')
-                const fileName = fileNames[fileNames.length - 1]
-                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-              })
+              const fileNames = image.split('/')
+              const fileName = fileNames[fileNames.length - 1]
+              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+            })
             : []
         )
       }
@@ -562,26 +569,25 @@ export default function Product() {
           </Space>
         </TitlePage>
 
-        <Row>
+        <Row gutter={[16, 16]} justify="space-between" style={{ marginLeft: 0, marginTop: 20 }}>
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={15}
-            xl={15}
+            lg={8}
+            xl={8}
             style={{
-              marginRight: 15,
-              marginTop: '1rem',
               border: '1px solid #d9d9d9',
               borderRadius: 5,
             }}
           >
             <Input.Group style={{ width: '100%' }}>
               <Row style={{ width: '100%' }}>
-                <Col span={16}>
+                <Col span={14}>
                   <Input
                     style={{ width: '100%' }}
                     name="name"
+                    size={FILTER_SIZE}
                     value={valueSearch}
                     onChange={onSearch}
                     placeholder="Tìm kiếm theo mã, theo tên"
@@ -589,9 +595,10 @@ export default function Product() {
                     bordered={false}
                   />
                 </Col>
-                <Col span={8}>
+                <Col span={10}>
                   <Select
                     showSearch
+                    size={FILTER_SIZE}
                     style={{
                       width: '100%',
                       borderLeft: '1px solid #d9d9d9',
@@ -615,62 +622,28 @@ export default function Product() {
               </Row>
             </Input.Group>
           </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={8}
-            xl={8}
-            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
-          >
-            <TreeSelect
-              style={{ width: '100%' }}
-              placeholder="Tìm kiếm theo nhóm sản phẩm"
-              allowClear
-              multiple
-              showSearch={false}
-              treeDefaultExpandAll
-              bordered={false}
-              value={
-                paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
-              }
-              onChange={onChangeCategoryValue}
-            >
-              {categories.map((category) => (
-                <TreeSelect.TreeNode value={category.category_id} title={category.name}>
-                  {category.children_category.map((child) => (
-                    <TreeSelect.TreeNode value={child.category_id} title={child.name}>
-                      {child.children_category &&
-                        child.children_category.map((e) => (
-                          <TreeSelect.TreeNode value={e.category_id} title={e.name}>
-                            {e.name}
-                          </TreeSelect.TreeNode>
-                        ))}
-                    </TreeSelect.TreeNode>
-                  ))}
-                </TreeSelect.TreeNode>
-              ))}
-            </TreeSelect>
-          </Col>
-        </Row>
 
-        <Row>
           <Col
             xs={24}
             sm={24}
             md={24}
-            lg={15}
-            xl={15}
-            style={{
-              marginRight: 15,
-              marginTop: '1rem',
-              border: '1px solid #d9d9d9',
-              borderRadius: 5,
-            }}
-          >
-            <Row style={{ width: '100%' }}>
-              <Col span={16}>
+            lg={16}
+            xl={16}>
+            <Row>
+              <Col
+                xs={24}
+                sm={24}
+                md={24}
+                lg={6}
+                xl={6}
+                style={{
+                  border: '1px solid #d9d9d9',
+                  borderRight: 'none',
+                  borderRadius: '5px 0px 0px 5px',
+                }}
+              >
                 <Select
+                  size={FILTER_SIZE}
                   allowClear
                   showSearch
                   style={{ width: '100%' }}
@@ -691,13 +664,20 @@ export default function Product() {
                   ))}
                 </Select>
               </Col>
-              <Col span={8}>
+              <Col xs={24}
+                sm={24}
+                md={24}
+                lg={6}
+                xl={6}
+                style={{
+                  border: '1px solid #d9d9d9',
+                }}>
                 <Select
                   allowClear
                   showSearch
+                  size={FILTER_SIZE}
                   style={{
                     width: '100%',
-                    borderLeft: '1px solid #d9d9d9',
                   }}
                   placeholder="Lọc trạng thái"
                   optionFilterProp="children"
@@ -714,128 +694,181 @@ export default function Product() {
                   <Option value={false}>Ngừng bán</Option>
                 </Select>
               </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={24}
+                lg={6}
+                xl={6}
+                style={{
+                  borderTop: '1px solid #d9d9d9',
+                  borderBottom: '1px solid #d9d9d9',
+                }}
+              >
+                <TreeSelect
+                  style={{ width: '100%' }}
+                  placeholder="Tìm kiếm theo nhóm sản phẩm "
+                  allowClear
+                  multiple
+                  size={FILTER_SIZE}
+                  showSearch={false}
+                  treeDefaultExpandAll
+                  bordered={false}
+                  value={
+                    paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
+                  }
+                  onChange={onChangeCategoryValue}
+                >
+                  {categories.map((category) => (
+                    <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                      {category.children_category.map((child) => (
+                        <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                          {child.children_category &&
+                            child.children_category.map((e) => (
+                              <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                                {e.name}
+                              </TreeSelect.TreeNode>
+                            ))}
+                        </TreeSelect.TreeNode>
+                      ))}
+                    </TreeSelect.TreeNode>
+                  ))}
+                </TreeSelect>
+              </Col>
+              <Col
+                xs={24}
+                sm={24}
+                md={24}
+                lg={6}
+                xl={6}
+                style={{
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '0px 5px 5px 0px',
+                }}>
+                <Select
+                  style={{ width: '100%' }}
+                  open={isOpenSelect}
+                  onBlur={() => {
+                    if (isOpenSelect) toggleOpenSelect()
+                  }}
+                  onClick={() => {
+                    if (!isOpenSelect) toggleOpenSelect()
+                  }}
+                  allowClear
+                  showSearch
+                  size={FILTER_SIZE}
+                  placeholder="Lọc theo thời gian tạo"
+                  optionFilterProp="children"
+                  bordered={false}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  value={valueTime}
+                  onChange={async (value) => {
+                    setValueTime(value)
+
+                    paramsFilter.page = 1
+
+                    //xoa params search date hien tai
+                    const p = Object.keys(valueDateTimeSearch)
+                    if (p.length) delete paramsFilter[p[0]]
+
+                    setValueDateSearch(null)
+                    delete paramsFilter.from_date
+                    delete paramsFilter.to_date
+
+                    if (isOpenSelect) toggleOpenSelect()
+
+                    if (value) {
+                      const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
+
+                      setParamsFilter({ ...paramsFilter, ...searchDate })
+                      setValueDateTimeSearch({ ...searchDate })
+                    } else {
+                      setParamsFilter({ ...paramsFilter })
+                      setValueDateTimeSearch({})
+                    }
+                  }}
+                  dropdownRender={(menu) => (
+                    <>
+                      <RangePicker
+                        onFocus={() => {
+                          if (!isOpenSelect) toggleOpenSelect()
+                        }}
+                        onBlur={() => {
+                          if (isOpenSelect) toggleOpenSelect()
+                        }}
+                        value={valueDateSearch}
+                        onChange={(dates, dateStrings) => {
+                          //khi search hoac filter thi reset page ve 1
+                          paramsFilter.page = 1
+
+                          if (isOpenSelect) toggleOpenSelect()
+
+                          //nếu search date thì xoá các params date
+                          delete paramsFilter.to_day
+                          delete paramsFilter.yesterday
+                          delete paramsFilter.this_week
+                          delete paramsFilter.last_week
+                          delete paramsFilter.last_month
+                          delete paramsFilter.this_month
+                          delete paramsFilter.this_year
+                          delete paramsFilter.last_year
+
+                          //Kiểm tra xem date có được chọn ko
+                          //Nếu ko thì thoát khỏi hàm, tránh cash app
+                          //và get danh sách order
+                          if (!dateStrings[0] && !dateStrings[1]) {
+                            delete paramsFilter.from_date
+                            delete paramsFilter.to_date
+
+                            setValueDateSearch(null)
+                            setValueTime()
+                          } else {
+                            const dateFirst = dateStrings[0]
+                            const dateLast = dateStrings[1]
+                            setValueDateSearch(dates)
+                            setValueTime(`${dateFirst} -> ${dateLast}`)
+
+                            dateFirst.replace(/-/g, '/')
+                            dateLast.replace(/-/g, '/')
+
+                            paramsFilter.from_date = dateFirst
+                            paramsFilter.to_date = dateLast
+                          }
+
+                          setParamsFilter({ ...paramsFilter })
+                        }}
+                        style={{ width: '100%' }}
+                      />
+                      {menu}
+                    </>
+                  )}
+                >
+                  <Option value="today">Hôm nay</Option>
+                  <Option value="yesterday">Hôm qua</Option>
+                  <Option value="this_week">Tuần này</Option>
+                  <Option value="last_week">Tuần trước</Option>
+                  <Option value="this_month">Tháng này</Option>
+                  <Option value="last_month">Tháng trước</Option>
+                  <Option value="this_year">Năm này</Option>
+                  <Option value="last_year">Năm trước</Option>
+                </Select>
+              </Col>
             </Row>
           </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={8}
-            xl={8}
-            style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}
+          <Button
+            style={{
+              display: Object.keys(paramsFilter).length <= 2 && 'none',
+            }}
+            onClick={onClickClear}
+            type="primary"
           >
-            <Select
-              style={{ width: '100%' }}
-              open={isOpenSelect}
-              onBlur={() => {
-                if (isOpenSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!isOpenSelect) toggleOpenSelect()
-              }}
-              allowClear
-              showSearch
-              placeholder="Lọc theo thời gian tạo"
-              optionFilterProp="children"
-              bordered={false}
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={valueTime}
-              onChange={async (value) => {
-                setValueTime(value)
-
-                paramsFilter.page = 1
-
-                //xoa params search date hien tai
-                const p = Object.keys(valueDateTimeSearch)
-                if (p.length) delete paramsFilter[p[0]]
-
-                setValueDateSearch(null)
-                delete paramsFilter.from_date
-                delete paramsFilter.to_date
-
-                if (isOpenSelect) toggleOpenSelect()
-
-                if (value) {
-                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-
-                  setParamsFilter({ ...paramsFilter, ...searchDate })
-                  setValueDateTimeSearch({ ...searchDate })
-                } else {
-                  setParamsFilter({ ...paramsFilter })
-                  setValueDateTimeSearch({})
-                }
-              }}
-              dropdownRender={(menu) => (
-                <>
-                  <RangePicker
-                    onFocus={() => {
-                      if (!isOpenSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (isOpenSelect) toggleOpenSelect()
-                    }}
-                    value={valueDateSearch}
-                    onChange={(dates, dateStrings) => {
-                      //khi search hoac filter thi reset page ve 1
-                      paramsFilter.page = 1
-
-                      if (isOpenSelect) toggleOpenSelect()
-
-                      //nếu search date thì xoá các params date
-                      delete paramsFilter.to_day
-                      delete paramsFilter.yesterday
-                      delete paramsFilter.this_week
-                      delete paramsFilter.last_week
-                      delete paramsFilter.last_month
-                      delete paramsFilter.this_month
-                      delete paramsFilter.this_year
-                      delete paramsFilter.last_year
-
-                      //Kiểm tra xem date có được chọn ko
-                      //Nếu ko thì thoát khỏi hàm, tránh cash app
-                      //và get danh sách order
-                      if (!dateStrings[0] && !dateStrings[1]) {
-                        delete paramsFilter.from_date
-                        delete paramsFilter.to_date
-
-                        setValueDateSearch(null)
-                        setValueTime()
-                      } else {
-                        const dateFirst = dateStrings[0]
-                        const dateLast = dateStrings[1]
-                        setValueDateSearch(dates)
-                        setValueTime(`${dateFirst} -> ${dateLast}`)
-
-                        dateFirst.replace(/-/g, '/')
-                        dateLast.replace(/-/g, '/')
-
-                        paramsFilter.from_date = dateFirst
-                        paramsFilter.to_date = dateLast
-                      }
-
-                      setParamsFilter({ ...paramsFilter })
-                    }}
-                    style={{ width: '100%' }}
-                  />
-                  {menu}
-                </>
-              )}
-            >
-              <Option value="today">Hôm nay</Option>
-              <Option value="yesterday">Hôm qua</Option>
-              <Option value="this_week">Tuần này</Option>
-              <Option value="last_week">Tuần trước</Option>
-              <Option value="this_month">Tháng này</Option>
-              <Option value="last_month">Tháng trước</Option>
-              <Option value="this_year">Năm này</Option>
-              <Option value="last_year">Năm trước</Option>
-            </Select>
-          </Col>
+            Xóa tất cả lọc
+          </Button>
         </Row>
 
-        <Row justify="space-between" style={{ width: '100%', marginTop: 20, marginBottom: 10 }}>
+        <Row justify="space-between" style={{ width: '100%', marginTop: 10, marginBottom: 10 }}>
           <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
             {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
@@ -856,15 +889,6 @@ export default function Product() {
               type="primary"
             >
               Nhập hàng
-            </Button>
-            <Button
-              style={{
-                display: Object.keys(paramsFilter).length <= 2 && 'none',
-              }}
-              onClick={onClickClear}
-              type="primary"
-            >
-              Xóa tất cả lọc
             </Button>
           </Space>
         </Row>

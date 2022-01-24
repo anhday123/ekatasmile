@@ -26,15 +26,15 @@ const columns = [
   },
   {
     title: 'Ngày kiểm',
-    dataIndex: 'inventory_date',
+    key: 'inventory_date',
   },
   {
     title: 'Nhân viên tạo',
-    dataIndex: 'creator',
+    key: 'creator_info',
   },
   {
     title: 'Ghi chú',
-    dataIndex: 'note',
+    key: 'note',
   },
 ]
 

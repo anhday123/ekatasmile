@@ -189,7 +189,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.3.0'
+export const VERSION_APP = '1.3.1'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
@@ -198,6 +198,31 @@ export const IMAGE_DEFAULT =
 export const LOGO_DEFAULT =
   'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png'
 
+export const FILTER_SIZE = ''
+export const FILTER_COL_HEIGHT = ''
 export const PAGE_SIZE = 20
 export const PAGE_SIZE_OPTIONS = [20, 40, 50, 60, 80, 100]
 export const POSITION_TABLE = ['bottomLeft']
+
+export const CONDITION_NAME = {
+  name: 'Tên sản phẩm',
+  description: 'Mô tả',
+  sku: 'SKU',
+  weight: 'Cân nặng',
+  height: 'Chiều cao',
+  width: 'Chiều rộng',
+  quantity: 'Số lượng',
+  price_import: 'Giá nhập',
+  price_sale: 'Giá bán',
+}
+
+export const CONDITION_OPERATOR = {
+  is_equal_to: 'giống',
+  is_not_equal_to: 'không giống',
+  is_greater_than: 'nhiều hơn',
+  is_less_than: 'ít hơn',
+  contains: 'chứa',
+  does_not_contains: 'không chứa',
+  is_not_empty: 'trống',
+  is_empty: 'không trống',
+}

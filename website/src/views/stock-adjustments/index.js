@@ -23,6 +23,7 @@ import { SearchOutlined, SettingOutlined, VerticalAlignTopOutlined } from '@ant-
 //apis
 import { getCheckInventoryNote, importCheckInventoryNote } from 'apis/inventory'
 import { getAllBranch } from 'apis/branch'
+import { getEmployees } from 'apis/employee'
 
 export default function Reports() {
   const history = useHistory()
@@ -48,10 +49,11 @@ export default function Reports() {
   const [valueFilterTime, setValueFilterTime] = useState()
   const [valueSearch, setValueSearch] = useState('')
   const [valueBranch, setValueBranch] = useState([])
-  console.log(valueBranch)
   const [supplierId, setSupplierId] = useState()
   const [inventoryNote, setInventoryNote] = useState([])
   const [productsSupplier, setProductsSupplier] = useState([])
+  const [valueUserFilter, setValueUserFilter] = useState(null)
+  const [userList, setUserList] = useState([])
 
   const toggleProductsToSupplier = () => {
     setVisibleProductsToSupplier(!visibleProductsToSupplier)
@@ -72,6 +74,19 @@ export default function Reports() {
     catch (err) {
       console.log(err)
       dispatch({ type: 'LOADING', data: false })
+    }
+  }
+
+  const _getUserList = async () => {
+    try {
+      const res = await getEmployees({ page: 1, page_size: 1000 })
+      if (res.status === 200) {
+        if (res.data.success) {
+          setUserList(res.data.data)
+        }
+      }
+    } catch (err) {
+      console.log(err)
     }
   }
 
@@ -112,10 +127,26 @@ export default function Reports() {
 
     setValueSearch('')
     setValueFilterTime()
+    setValueUserFilter()
+
     paramsFilter.page = 1
     paramsFilter.page_size = 20
 
     setParamsFilter({ ...paramsFilter })
+  }
+
+  const onChangeUserFilter = (value) => {
+    setValueUserFilter(value)
+    if (value) paramsFilter.creator_id = value
+    else delete paramsFilter.creator_id
+    setParamsFilter({ ...paramsFilter })
+  }
+
+  const _onFilter = (attribute = '', value = '') => {
+    const paramsFilterNew = { ...paramsFilter }
+    if (value) paramsFilterNew[attribute] = value
+    else delete paramsFilterNew[attribute]
+    setParamsFilter({ ...paramsFilterNew })
   }
 
   const _getStockAdjustmentToExport = async () => {
@@ -147,6 +178,7 @@ export default function Reports() {
   useEffect(() => {
     _getCheckInventoryNote()
     _getAllBranch()
+    _getUserList()
   }, [paramsFilter])
 
   return (
@@ -181,116 +213,153 @@ export default function Reports() {
           </Link>
         </Space>
       </TitlePage>
-      <Space>
-        <Row gutter={[16, 16]} style={{ marginLeft: 0, marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5, width: 700 }}>
-          <Col xs={24} sm={24} md={24} lg={12} xl={12} style={{ borderRight: '1px solid #d9d9d9' }}>
-            <Input
-              allowClear
-              onChange={_onSearch}
-              prefix={<SearchOutlined />}
-              placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
-              bordered={false}
-              value={valueSearch}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={12} xl={12}>
-            <Select
-              value={valueFilterTime}
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Lọc theo thời gian"
-              showSearch
-              open={openSelect}
-              onChange={(value) => {
-                setValueFilterTime(value)
-                delete paramsFilter[valueFilterTime]
-                if (value) paramsFilter[value] = true
-                else delete paramsFilter[value]
-                setParamsFilter({ ...paramsFilter })
-              }}
-              onBlur={() => {
-                if (openSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!openSelect) toggleOpenSelect()
-              }}
-              dropdownRender={(menu) => (
-                <>
-                  <RangePicker
-                    style={{ width: '100%' }}
-                    onFocus={() => {
-                      if (!openSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (openSelect) toggleOpenSelect()
-                    }}
-                    value={valueDateSearch}
-                    onChange={(dates, dateStrings) => {
-                      //khi search hoac filter thi reset page ve 1
-                      paramsFilter.page = 1
+      <Row gutter={[16, 16]} style={{ marginLeft: 0, marginRight: 0, marginTop: 15, border: '1px solid #d9d9d9', borderRadius: 5 }}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Input
+            allowClear
+            onChange={_onSearch}
+            prefix={<SearchOutlined />}
+            placeholder="Tìm kiếm theo mã phiếu kiểm hàng"
+            bordered={false}
+            value={valueSearch}
+          />
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9', borderLeft: '1px solid #d9d9d9' }}>
+          <Select
+            value={valueFilterTime}
+            allowClear
+            style={{ width: '100%' }}
+            placeholder="Lọc theo thời gian"
+            showSearch
+            open={openSelect}
+            onChange={(value) => {
+              setValueFilterTime(value)
+              delete paramsFilter[valueFilterTime]
+              if (value) paramsFilter[value] = true
+              else delete paramsFilter[value]
+              setParamsFilter({ ...paramsFilter })
+            }}
+            onBlur={() => {
+              if (openSelect) toggleOpenSelect()
+            }}
+            onClick={() => {
+              if (!openSelect) toggleOpenSelect()
+            }}
+            dropdownRender={(menu) => (
+              <>
+                <RangePicker
+                  style={{ width: '100%' }}
+                  onFocus={() => {
+                    if (!openSelect) toggleOpenSelect()
+                  }}
+                  onBlur={() => {
+                    if (openSelect) toggleOpenSelect()
+                  }}
+                  value={valueDateSearch}
+                  onChange={(dates, dateStrings) => {
+                    //khi search hoac filter thi reset page ve 1
+                    paramsFilter.page = 1
 
-                      if (openSelect) toggleOpenSelect()
+                    if (openSelect) toggleOpenSelect()
 
-                      //nếu search date thì xoá các params date
-                      delete paramsFilter.to_day
-                      delete paramsFilter.yesterday
-                      delete paramsFilter.this_week
-                      delete paramsFilter.last_week
-                      delete paramsFilter.last_month
-                      delete paramsFilter.this_month
-                      delete paramsFilter.this_year
-                      delete paramsFilter.last_year
+                    //nếu search date thì xoá các params date
+                    delete paramsFilter.to_day
+                    delete paramsFilter.yesterday
+                    delete paramsFilter.this_week
+                    delete paramsFilter.last_week
+                    delete paramsFilter.last_month
+                    delete paramsFilter.this_month
+                    delete paramsFilter.this_year
+                    delete paramsFilter.last_year
 
-                      //Kiểm tra xem date có được chọn ko
-                      //Nếu ko thì thoát khỏi hàm, tránh cash app
-                      //và get danh sách order
-                      if (!dateStrings[0] && !dateStrings[1]) {
-                        delete paramsFilter.from_date
-                        delete paramsFilter.to_date
+                    //Kiểm tra xem date có được chọn ko
+                    //Nếu ko thì thoát khỏi hàm, tránh cash app
+                    //và get danh sách order
+                    if (!dateStrings[0] && !dateStrings[1]) {
+                      delete paramsFilter.from_date
+                      delete paramsFilter.to_date
 
-                        setValueDateSearch(null)
-                        setValueFilterTime()
-                      } else {
-                        const dateFirst = dateStrings[0]
-                        const dateLast = dateStrings[1]
-                        setValueDateSearch(dates)
-                        setValueFilterTime(`${dateFirst} -> ${dateLast}`)
+                      setValueDateSearch(null)
+                      setValueFilterTime()
+                    } else {
+                      const dateFirst = dateStrings[0]
+                      const dateLast = dateStrings[1]
+                      setValueDateSearch(dates)
+                      setValueFilterTime(`${dateFirst} -> ${dateLast}`)
 
-                        dateFirst.replace(/-/g, '/')
-                        dateLast.replace(/-/g, '/')
+                      dateFirst.replace(/-/g, '/')
+                      dateLast.replace(/-/g, '/')
 
-                        paramsFilter.from_date = dateFirst
-                        paramsFilter.to_date = dateLast
-                      }
+                      paramsFilter.from_date = dateFirst
+                      paramsFilter.to_date = dateLast
+                    }
 
-                      setParamsFilter({ ...paramsFilter })
-                    }}
-                  />
-                  {menu}
-                </>
-              )}
-              bordered={false}
-            >
-              <Option value="today">Hôm nay</Option>
-              <Option value="yesterday">Hôm qua</Option>
-              <Option value="this_week">Tuần này</Option>
-              <Option value="last_week">Tuần trước</Option>
-              <Option value="this_month">Tháng này</Option>
-              <Option value="last_month">Tháng trước</Option>
-              <Option value="this_year">Năm này</Option>
-              <Option value="last_year">Năm trước</Option>
-            </Select>
-          </Col>
-        </Row>
-        <Button
-          onClick={_onClearFilters}
-          type="primary"
-          danger
-          style={{ marginTop: 15, marginLeft: 15, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-        >
-          Xóa bộ lọc
-        </Button>
-      </Space>
+                    setParamsFilter({ ...paramsFilter })
+                  }}
+                />
+                {menu}
+              </>
+            )}
+            bordered={false}
+          >
+            <Option value="today">Hôm nay</Option>
+            <Option value="yesterday">Hôm qua</Option>
+            <Option value="this_week">Tuần này</Option>
+            <Option value="last_week">Tuần trước</Option>
+            <Option value="this_month">Tháng này</Option>
+            <Option value="last_month">Tháng trước</Option>
+            <Option value="this_year">Năm này</Option>
+            <Option value="last_year">Năm trước</Option>
+          </Select>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ borderRight: '1px solid #d9d9d9' }}>
+          <Select
+            placeholder="Lọc theo trạng thái"
+            allowClear
+            showSearch
+            bordered={false}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            value={paramsFilter.status}
+            onChange={(value) => _onFilter('status', value)}
+            style={{ width: '100%' }}
+          >
+            <Select.Option value="DRAFT">Lưu nháp</Select.Option>
+            <Select.Option value="WATTING_FOR_CHECKING">Chờ kiểm</Select.Option>
+            <Select.Option value="CHECKING">Đang kiểm</Select.Option>
+            <Select.Option value="CHECKED">Đã kiểm</Select.Option>
+            <Select.Option value="BALANCED">Đã cân bằng</Select.Option>
+          </Select>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+          <Select
+            onChange={onChangeUserFilter}
+            value={valueUserFilter}
+            style={{ width: '100%' }}
+            placeholder="Lọc theo nhân viên tạo"
+            allowClear
+            showSearch
+            bordered={false}
+          >
+            {userList.map((item, index) => {
+              return (
+                <Option value={item.user_id}>
+                  {item.first_name} {item.last_name}
+                </Option>
+              )
+            })}
+          </Select>
+        </Col>
+      </Row>
+      <Button
+        onClick={_onClearFilters}
+        type="primary"
+        danger
+        style={{ marginTop: 15, marginLeft: 15, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+      >
+        Xóa bộ lọc
+      </Button>
 
       <Table
         loading={loading}
@@ -323,6 +392,23 @@ export default function Reports() {
             return {
               ...column,
               render: (text, record) => moment(record.create_date).format('DD/MM/YYYY, hh:mm:ss')
+            }
+          if (column.key === 'inventory_date')
+            return {
+              ...column,
+              render: (text, record) => record.inventory_date !== '' ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm:ss') : 'Chưa kiểm'
+            }
+          if (column.key === 'creator_info')
+            return {
+              ...column,
+              render: (text, record) => record.creator_info ? record.creator_info.first_name + ' ' + record.creator_info.last_name : ''
+
+            }
+          if (column.key === 'note')
+            return {
+              ...column,
+              render: (text, record) => record.note ? record.note : ''
+
             }
           return column
         })}
