@@ -8,34 +8,31 @@ import { Link, useHistory } from 'react-router-dom'
 import { Row, Col, Form, Input, Button, notification, Select, Tabs } from 'antd'
 
 //apis
-import { checkSubDomain } from 'apis/app'
+import { checkDomain } from 'apis/app'
 
 export default function CheckSubdomain() {
   const dispatch = useDispatch()
   const [formLogin] = Form.useForm()
-  const [formRegister] = Form.useForm()
   const history = useHistory()
 
   const [key, setKey] = useState('login')
 
-  const _login = async (body) => {
+  const _checkSubdomain = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await checkSubDomain({ prefix: body.business_name })
-      console.log(res)
+      const res = await checkDomain(body.business_name)
       if (res.status === 200) {
-        if (res.data.success) {
-          // history.push(`https://${body.business_name}.vdropship.vn`)
-          window.open(`https://${body.business_name}.vdropship.vn/login`)
-        } else {
-          notification.warning({ message: 'Tên doanh nghiệp chưa được đăng ký!' })
-        }
-      } else {
-        notification.warning({ message: 'Tên doanh nghiệp chưa được đăng ký!' })
-      }
+        if (res.data.success)
+          window.location.href = `https://${body.business_name}.vdropship.vn/login`
+        else
+          notification.warning({
+            message: res.data.message || 'Tên doanh nghiệp chưa được đăng ký!',
+          })
+      } else
+        notification.warning({ message: res.data.message || 'Tên doanh nghiệp chưa được đăng ký!' })
+
       dispatch({ type: ACTION.LOADING, data: false })
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
       dispatch({ type: ACTION.LOADING, data: false })
     }
@@ -60,7 +57,12 @@ export default function CheckSubdomain() {
               key="login"
             >
               <Row justify="center" align="middle" style={{ padding: '0px 80px' }}>
-                <Form form={formLogin} onFinish={_login} layout="vertical" style={{ width: '100%' }}>
+                <Form
+                  form={formLogin}
+                  onFinish={_checkSubdomain}
+                  layout="vertical"
+                  style={{ width: '100%' }}
+                >
                   <Form.Item
                     label={<div style={{ color: 'white' }}>Nhập tên doanh nghiệp của bạn</div>}
                     name="business_name"
@@ -72,7 +74,12 @@ export default function CheckSubdomain() {
                     <Form.Item style={{ width: '100%' }}>
                       <Button
                         size="large"
-                        style={{ width: "100%", backgroundColor: 'black', borderColor: 'black', color: 'white' }}
+                        style={{
+                          width: '100%',
+                          backgroundColor: 'black',
+                          borderColor: 'black',
+                          color: 'white',
+                        }}
                         htmlType="submit"
                       >
                         Tiếp
@@ -80,8 +87,14 @@ export default function CheckSubdomain() {
                     </Form.Item>
                   </Row>
                 </Form>
-                <Row justify="end">Tạo không gian quản lí doanh nghiệp của riêng bạn?
-                  <div onClick={() => history.push({ pathname: ROUTES.REGISTER })} className={styles['login-content-click']} >
+                <Row justify="end">
+                  <div style={{ color: 'white' }}>
+                    Tạo không gian quản lí doanh nghiệp của riêng bạn?
+                  </div>
+                  <div
+                    onClick={() => history.push({ pathname: ROUTES.REGISTER })}
+                    className={styles['login-content-click']}
+                  >
                     Đăng ký miễn phí!
                   </div>
                 </Row>

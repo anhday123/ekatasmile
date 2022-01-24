@@ -51,13 +51,13 @@ export default function ForgetPassword() {
   }
 
   return (
-    <Row className={styles['forget-pw-container']} align="middle" >
+    <Row className={styles['forget-pw-container']} align="middle">
       <img
         src={background}
         style={{
           width: '100%',
           height: '100vh',
-          display: 'block'
+          display: 'block',
         }}
         alt=""
       />
@@ -72,22 +72,24 @@ export default function ForgetPassword() {
               color: '#fff',
             }}
           >
-            <div style={{ fontSize: '1.5rem', marginBottom: 10, fontWeight: 700 }}>Quên mật khẩu</div>
+            <div style={{ fontSize: '1.5rem', marginBottom: 10, fontWeight: 700 }}>
+              Quên mật khẩu
+            </div>
             <div>Nhập tài khoản của bạn để đặt lại mật khẩu</div>
           </div>
           <Form.Item
             name="username"
-            rules={[{ required: true, message: 'Vui lòng nhập SĐT đăng ký' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại đăng ký' }]}
           >
             <Input
               onPressEnter={sendOtp}
               size="large"
               prefix={<UserOutlined />}
-              placeholder="Nhập SĐT đăng ký"
+              placeholder="Nhập số điện thoại đăng ký"
             />
           </Form.Item>
 
-          <Row justify="center" >
+          <Row justify="center">
             <Form.Item style={{ width: '100%' }}>
               <Button
                 onClick={sendOtp}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { ACTION } from './consts'
+import { ACTION, ROUTES } from './consts'
 import { clearBrowserCache } from 'utils'
 import jwt_decode from 'jwt-decode'
 
@@ -16,6 +16,8 @@ import { getBusinesses } from 'apis/business'
 function App() {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
+  const domain = window.location.href
+  let subDomain = domain.split('.vdropship.vn')
 
   const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
 
@@ -45,29 +47,52 @@ function App() {
     }
   }
 
-  const checkSubdomain = async () => {
-    const domain = window.location.href
+  if (
+    (domain === 'https://vdropship.vn/' ||
+      domain === 'https://vdropship.vn' ||
+      domain === 'vdropship.vn/' ||
+      domain === 'vdropship.vn/') &&
+    subDomain &&
+    subDomain.length === 1
+  )
+    window.location.href = 'https://vdropship.vn/register'
 
-    // check domain register
-    if (!domain.includes('vdropship.vn/check-subdomain')) {
+  const checkSubdomain = async () => {
+    let router = ''
+
+    if (domain.includes('vdropship.vn/check-subdomain')) router = '/check-subdomain'
+    if (domain.includes('vdropship.vn/register')) router = '/register'
+    if (domain.includes('vdropship.vn/login')) router = '/login'
+
+    if (router === '/login') {
       setLoadingCheckDomain(true)
 
-      let subDomain = domain.split('.vdropship.vn')
-      subDomain = subDomain[0].split('//')
+      if (subDomain && subDomain.length === 2) {
+        subDomain = subDomain[0].split('//')
 
-      //Khi code comment lại, code xong để lại như cũ
-      const res = await checkDomain(subDomain[1])
-      if (res.status === 200) {
-        if (res.data.success) {
+        const res = await checkDomain(subDomain[1])
+        if (res.status === 200) {
+          if (!res.data.success) {
+            window.location.href = 'https://vdropship.vn/register'
+            return
+          }
         } else {
-          window.location.href = 'https://vdropship.vn/check-subdomain'
+          window.location.href = 'https://vdropship.vn/register'
           return
         }
       } else {
-        window.location.href = 'https://vdropship.vn/check-subdomain'
+        window.location.href = 'https://vdropship.vn/register'
         return
       }
     }
+
+    if (router === '/register')
+      if (subDomain && subDomain.length === 2)
+        window.location.href = 'https://vdropship.vn/register'
+
+    if (router === '/check-subdomain')
+      if (subDomain && subDomain.length === 2)
+        window.location.href = 'https://vdropship.vn/check-subdomain'
 
     setLoadingCheckDomain(false)
   }
