@@ -33,7 +33,7 @@ export default function ModalUpdateUser({ user, children, reload }) {
         if (res.data.success) {
           toggle()
           notification.success({ message: 'Cập nhật thông tin cá nhân thành công' })
-          reload()
+          reload({ user_id: res.data.data.user_id })
         } else
           notification.error({
             message: res.data.message || 'Cập nhật thông tin cá nhân thành công',

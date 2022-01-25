@@ -36,6 +36,8 @@ export default function ReportInventory() {
     from_date: moment(new Date()).format('YYYY-MM-DD'),
     to_date: moment(new Date()).format('YYYY-MM-DD'),
   })
+  const [nameBranch, setNameBranch] = useState('')
+  console.log(nameBranch)
   const [countReport, setCountReport] = useState(0)
   const [warehousesNameExport, setWarehousesNameExport] = useState([])
   const [warehousesName, setWarehousesName] = useState([])
@@ -321,6 +323,7 @@ export default function ReportInventory() {
                 delete paramsFilter.branch_id
                 setParamsFilter({ ...paramsFilter })
               }
+              setNameBranch(value)
             }}
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}

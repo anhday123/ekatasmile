@@ -179,22 +179,23 @@ export default function ImportReportFile() {
         }
       ></TitlePage>
 
-      <Row justify="space-between" style={{ margin: '20px 0' }}>
+      <Row justify="space-between" gutter={[16, 16]} style={{ margin: '20px 0px' }}>
         <Col
           xs={24}
           sm={24}
-          md={24}
-          lg={7}
-          xl={7}
+          md={10}
+          lg={10}
+          xl={10}
           style={{
             marginTop: '1rem',
-            border: '1px solid #d9d9d9',
-            borderRadius: 5,
-            height: '24px',
           }}
         >
           <Input.Group style={{ width: '100%' }}>
-            <Row style={{ width: '100%' }}>
+            <Row style={{
+              width: '100%',
+              border: '1px solid #d9d9d9',
+              borderRadius: 5,
+            }}>
               <Col span={16}>
                 <Input
                   size={FILTER_SIZE}
@@ -220,7 +221,7 @@ export default function ImportReportFile() {
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
-                  // suffixIcon={<SuffixIconCustom />}
+                // suffixIcon={<SuffixIconCustom />}
                 >
                   <Select.Option value="file_name">Tên file</Select.Option>
                   <Select.Option value="action_name">Thao tác</Select.Option>
@@ -232,84 +233,90 @@ export default function ImportReportFile() {
         <Col
           xs={24}
           sm={24}
-          md={24}
+          md={14}
           lg={14}
           xl={14}
           style={{
             marginTop: '1rem',
-            border: '1px solid #d9d9d9',
-            borderRadius: 5,
-            display: 'flex',
           }}
         >
-          <Select
-            dropdownClassName="dropdown-select-custom"
-            //   suffixIcon={<SuffixIconCustom />}
-            open={isOpenSelect}
-            onBlur={() => {
-              if (isOpenSelect) toggleOpenSelect()
-            }}
-            onClick={() => {
-              if (!isOpenSelect) toggleOpenSelect()
-            }}
-            style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
-            placeholder="Lọc theo thời gian"
-            allowClear
-            size={FILTER_SIZE}
-            bordered={false}
-            value={valueTime}
-            onChange={_onChangeTime}
-            dropdownRender={(menu) => (
-              <div>
-                <DatePicker.RangePicker
-                  dropdownClassName="dropdown-datepicker-custom"
-                  className="datepicker-custom"
-                  onFocus={() => {
-                    if (!isOpenSelect) toggleOpenSelect()
-                  }}
-                  onBlur={() => {
-                    if (isOpenSelect) toggleOpenSelect()
-                  }}
-                  value={valueDateSearch}
-                  onChange={_onChangeDate}
-                  style={{ width: '100%' }}
-                />
-                {menu}
-              </div>
-            )}
-          >
-            <Select.Option value="today">Hôm nay</Select.Option>
-            <Select.Option value="yesterday">Hôm qua</Select.Option>
-            <Select.Option value="this_week">Tuần này</Select.Option>
-            <Select.Option value="last_week">Tuần trước</Select.Option>
-            <Select.Option value="this_month">Tháng này</Select.Option>
-            <Select.Option value="last_month">Tháng trước</Select.Option>
-            <Select.Option value="this_year">Năm này</Select.Option>
-            <Select.Option value="last_year">Năm trước</Select.Option>
-          </Select>
-          <Select
-            showSearch
-            size={FILTER_SIZE}
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            style={{ width: '100%' }}
-            allowClear
-            bordered={false}
-            placeholder="Lọc theo thao tác"
-            //   suffixIcon={<SuffixIconCustom />}
-            onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
-          >
-            <Select.Option value="Import File">Nhập file</Select.Option>
-            <Select.Option value="Export File">Xuất file</Select.Option>
-          </Select>
+          <Row style={{
+            border: '1px solid #d9d9d9',
+            borderRadius: 5,
+          }}>
+            <Col span={12}>
+              <Select
+                dropdownClassName="dropdown-select-custom"
+                //   suffixIcon={<SuffixIconCustom />}
+                open={isOpenSelect}
+                onBlur={() => {
+                  if (isOpenSelect) toggleOpenSelect()
+                }}
+                onClick={() => {
+                  if (!isOpenSelect) toggleOpenSelect()
+                }}
+                style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
+                placeholder="Lọc theo thời gian"
+                allowClear
+                size={FILTER_SIZE}
+                bordered={false}
+                value={valueTime}
+                onChange={_onChangeTime}
+                dropdownRender={(menu) => (
+                  <div>
+                    <DatePicker.RangePicker
+                      dropdownClassName="dropdown-datepicker-custom"
+                      className="datepicker-custom"
+                      onFocus={() => {
+                        if (!isOpenSelect) toggleOpenSelect()
+                      }}
+                      onBlur={() => {
+                        if (isOpenSelect) toggleOpenSelect()
+                      }}
+                      value={valueDateSearch}
+                      onChange={_onChangeDate}
+                      style={{ width: '100%' }}
+                    />
+                    {menu}
+                  </div>
+                )}
+              >
+                <Select.Option value="today">Hôm nay</Select.Option>
+                <Select.Option value="yesterday">Hôm qua</Select.Option>
+                <Select.Option value="this_week">Tuần này</Select.Option>
+                <Select.Option value="last_week">Tuần trước</Select.Option>
+                <Select.Option value="this_month">Tháng này</Select.Option>
+                <Select.Option value="last_month">Tháng trước</Select.Option>
+                <Select.Option value="this_year">Năm này</Select.Option>
+                <Select.Option value="last_year">Năm trước</Select.Option>
+              </Select>
+            </Col>
+            <Col span={12}>
+              <Select
+                showSearch
+                size={FILTER_SIZE}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                style={{ width: '100%' }}
+                allowClear
+                bordered={false}
+                placeholder="Lọc theo thao tác"
+                //   suffixIcon={<SuffixIconCustom />}
+                onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
+              >
+                <Select.Option value="Import File">Nhập file</Select.Option>
+                <Select.Option value="Export File">Xuất file</Select.Option>
+              </Select>
+            </Col>
+          </Row>
         </Col>
       </Row>
 
       <Table
         size="small"
         scroll={{ y: '56vh' }}
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginTop: '1rem' }}
         columns={columns}
         dataSource={fileActionList}
         loading={tableLoading}

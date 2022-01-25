@@ -433,7 +433,7 @@ export default function Role() {
         >
           <Permission permissions={[PERMISSIONS.tao_quyen]}>
             <Button onClick={showDrawer} type="primary" size="large">
-              Tạo quyền
+              Thêm vai trò
             </Button>
           </Permission>
         </TitlePage>
@@ -465,7 +465,7 @@ export default function Role() {
                       />
                     </div>
                   }
-                  header={`Permission ${values.name}`}
+                  header={`${values.name}`}
                   key={values.role_id}
                 >
                   <Row gutter={10}>

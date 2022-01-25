@@ -123,7 +123,7 @@ export default function ActivityDiary() {
     <div className="card">
       <TitlePage
         title={
-          <Row
+          < Row
             align="middle"
             onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             style={{ cursor: 'pointer' }}
@@ -141,11 +141,11 @@ export default function ActivityDiary() {
         >
           Xóa tất cả lọc
         </Button>
-      </TitlePage>
+      </TitlePage >
 
       <Row
         gutter={[16, 16]}
-        style={{ margin: '15px 0px', border: '1px solid #d9d9d9', borderRadius: 5 }}
+        style={{ marginTop: '1rem', marginBottom: '1rem', marginLeft: '0px', marginRight: '0px', border: '1px solid #d9d9d9', borderRadius: 5 }}
       >
         <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Input
@@ -210,6 +210,6 @@ export default function ActivityDiary() {
           total: countAction,
         }}
       />
-    </div>
+    </div >
   )
 }

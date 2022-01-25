@@ -554,14 +554,7 @@ export default function CreateReport() {
                 return {
                   ...column,
                   render: (text, record) => (
-                    <Popconfirm
-                      onConfirm={() => deleteDataToCreate(record.variant_id)}
-                      title="Bạn có muốn xóa sản phẩm này không?"
-                      okText="Đồng ý"
-                      cancelText="Từ chối"
-                    >
-                      <Button type="primary" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    <Button onClick={() => deleteDataToCreate(record.variant_id)} type="primary" danger icon={<DeleteOutlined />} />
                   ),
                 }
               return column

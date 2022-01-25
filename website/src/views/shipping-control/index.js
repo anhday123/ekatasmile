@@ -29,6 +29,7 @@ export default function ShippingControl() {
   const [shippingControlList, setShippingControlList] = useState([])
   const [shippingId, setShippingId] = useState('') //shipping id import
   const [shippings, setShippings] = useState([])
+  console.log(shippings)
   const [employees, setEmployees] = useState([])
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
   const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
@@ -149,7 +150,10 @@ export default function ShippingControl() {
                   <p style={{ margin: 0, fontSize: 12 }}>Chọn đơn vị vận chuyển</p>
                   <Select
                     onChange={setShippingId}
-                    value={shippingId}
+                    value={
+                      shippingId
+                    }
+                    defaultValue={shippings.length !== 0 && shippings[0].name}
                     placeholder="Chọn đơn vị vận chuyển"
                     style={{ width: 250 }}
                   >

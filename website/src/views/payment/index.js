@@ -133,7 +133,7 @@ export default function Payment() {
         if (res.data.success) {
           notification.success({ message: 'Cập nhật hình thức thanh toán thành công!' })
           _getPayments()
-          toggle()
+          // toggle()
         } else
           notification.error({
             message:

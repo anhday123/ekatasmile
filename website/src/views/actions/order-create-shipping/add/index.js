@@ -195,7 +195,7 @@ export default function OrderCreateShippingAdd() {
           padding: '0.5rem 1rem',
         }}
       >
-        Nhận tại cửa hàng
+        Nhận tại chi nhánh
       </div>
     </div>
   )
@@ -1019,7 +1019,7 @@ export default function OrderCreateShippingAdd() {
                     <div style={{ color: '#757575', fontSize: '1rem' }}>
                       Phương thức
                     </div>
-                    <div>Nhận tại cửa hàng</div>
+                    <div>Nhận tại chi nhánh</div>
                   </Col>
                   <Col
                     style={{ width: '100%', marginTop: '1rem' }}

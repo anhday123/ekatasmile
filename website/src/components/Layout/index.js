@@ -66,6 +66,7 @@ const BaseLayout = (props) => {
 
   const [branches, setBranches] = useState([])
   const [user, setUser] = useState({})
+  console.log(user)
   const login = useSelector((state) => state.login)
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const triggerReloadBranch = useSelector((state) => state.branch.trigger)

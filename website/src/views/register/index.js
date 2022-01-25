@@ -199,7 +199,7 @@ export default function Login() {
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Row justify="end">
                         <div
-                          style={{ color: 'white', cursor: 'pointer', marginTop: 12 }}
+                          style={{ color: 'white', cursor: 'pointer', marginTop: 10, marginRight: '20%' }}
                           onClick={() => history.push(ROUTES.CHECK_SUBDOMAIN)}
                         >
                           Đi đến trang đăng nhập
