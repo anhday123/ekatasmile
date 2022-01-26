@@ -122,6 +122,10 @@ export default function Product() {
 
     const columns = [
       {
+        title: 'STT',
+        render: (text, record, index) => index + 1,
+      },
+      {
         title: 'Số lượng thấp nhất',
         render: (text, record) => formatCash(record.min_quantity_apply || 0),
       },
