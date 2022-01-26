@@ -480,7 +480,6 @@ export default function Product() {
             data={addFile}
             onRemove={_removeFile}
             name="file"
-            multiple
             onChange={(info) => {
               if (info.file.status !== 'done') info.file.status = 'done'
             }}
@@ -488,7 +487,7 @@ export default function Product() {
             <p className="ant-upload-drag-icon">
               {loading ? <LoadingOutlined /> : <InboxOutlined />}
             </p>
-            <p className="ant-upload-text">Nhấp hoặc hình ảnh vào khu vực này để tải lên</p>
+            <p className="ant-upload-text">Nhấp hoặc kéo thả vào khu vực này để tải lên</p>
             <p className="ant-upload-hint">Hỗ trợ hình ảnh .PNG, .JPG,...</p>
           </Upload.Dragger>
         </Modal>
