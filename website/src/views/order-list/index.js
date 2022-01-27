@@ -658,7 +658,6 @@ export default function OrderList() {
             setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
           total: countOrder,
         }}
-        scroll={{ x: 'max-content' }}
         dataSource={orders}
         summary={(pageData) => (
           <Table.Summary.Row>

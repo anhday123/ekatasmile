@@ -422,7 +422,6 @@ export default function Promotion() {
             pagination={{ onChange: changePagi }}
             columns={columnsPromotion}
             dataSource={listPromotion}
-            scroll={{ y: 500 }}
             summary={(pageData) => {
               return (
                 <Table.Summary fixed>

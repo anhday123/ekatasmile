@@ -25,8 +25,8 @@ export default function Login() {
       subDomain = subDomain[0].split('//')
 
       //Khi code comment lại, code xong để lại như cũ
-      // const res = await login({ ...body, username: body.username }, { shop: 'buidinhvietduc' })
-      const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
+      const res = await login({ ...body, username: body.username }, { shop: 'buidinhvietduc' })
+      // const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
 
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
@@ -78,11 +78,11 @@ export default function Login() {
             <Row justify="center" align="middle" style={{ padding: '0px 80px' }}>
               <Form form={formLogin} onFinish={_login} layout="vertical" style={{ width: '100%' }}>
                 <Form.Item
-                  label={<div style={{ color: 'white' }}>SĐT đăng nhập</div>}
+                  label={<div style={{ color: 'white' }}>Số điện thoại</div>}
                   name="username"
-                  rules={[{ required: true, message: 'Vui lòng nhập SĐT đăng nhập!' }]}
+                  rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
                 >
-                  <Input size="large" placeholder="Nhập SĐT" />
+                  <Input size="large" placeholder="Nhập số điện thoại" />
                 </Form.Item>
                 <Form.Item
                   label={<div style={{ color: 'white' }}>Mật khẩu</div>}

@@ -191,7 +191,14 @@ export default function Shipping() {
           </Space>
         </TitlePage>
 
-        <Row gutter={[16, 16]} style={{ margin: '15px 0px 19px 0px', border: '1px solid #d9d9d9', borderRadius: 5 }}>
+        <Row gutter={[16, 16]} style={{
+          marginTop: 10,
+          marginRight: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          border: '1px solid #d9d9d9',
+          borderRadius: 5
+        }}>
           <Col xs={24} sm={24} md={12} lg={6} xl={6}>
             <Input
               prefix={<SearchOutlined />}
@@ -358,7 +365,7 @@ export default function Shipping() {
           </Col>
         </Row>
 
-        <Row justify="space-between" wrap={false} style={{ marginBottom: 8 }}>
+        <Row justify="space-between" wrap={false} style={{ marginBottom: 8, marginTop: 10 }}>
           <Popconfirm
             okText="Đồng ý"
             cancelText="Từ chối"

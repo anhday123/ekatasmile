@@ -133,7 +133,6 @@ export default function Category() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await addCategory(body)
-      dispatch({ type: ACTION.LOADING, data: false })
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({ message: 'Tạo nhóm sản phẩm thành công!' })
@@ -146,6 +145,7 @@ export default function Category() {
         notification.error({
           message: res.data.mess || res.data.message || 'Tạo nhóm sản phẩm thất bại!',
         })
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
@@ -161,6 +161,7 @@ export default function Category() {
     const [imageView, setImageView] = useState('')
     const [fileUpload, setFileUpload] = useState(null)
     const [loading, setLoading] = useState(false)
+    console.log(loading)
 
     const reset = () => {
       formCategoryChild.resetFields()
@@ -191,7 +192,6 @@ export default function Category() {
                 loading={loading}
                 type="primary"
                 onClick={async () => {
-                  setLoading(true)
                   await formCategoryChild.validateFields()
                   const dataForm = formCategoryChild.getFieldsValue()
                   const image = await uploadFile(fileUpload)
@@ -460,9 +460,20 @@ export default function Category() {
   return (
     <div className="card">
       <TitlePage title="Nhóm sản phẩm">
-        <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
-          Tạo nhóm sản phẩm
-        </Button>
+        <div>
+          <Button
+            onClick={_onClearFilters}
+            type="primary"
+            size="large"
+            danger
+            style={{ display: Object.keys(paramsFilter).length <= 2 && 'none', marginRight: 10 }}
+          >
+            Xóa bộ lọc
+          </Button>
+          <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
+            Tạo nhóm sản phẩm
+          </Button>
+        </div>
       </TitlePage>
       <div style={{ marginBottom: 15 }}>
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
@@ -589,14 +600,6 @@ export default function Category() {
             </Select>
           </Col>
         </Row>
-        <Button
-          onClick={_onClearFilters}
-          type="primary"
-          danger
-          style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-        >
-          Xóa bộ lọc
-        </Button>
       </div>
 
       <Table
