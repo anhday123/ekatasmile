@@ -133,7 +133,6 @@ export default function Category() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await addCategory(body)
-      dispatch({ type: ACTION.LOADING, data: false })
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({ message: 'Tạo nhóm sản phẩm thành công!' })
@@ -146,6 +145,7 @@ export default function Category() {
         notification.error({
           message: res.data.mess || res.data.message || 'Tạo nhóm sản phẩm thất bại!',
         })
+      dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       console.log(error)
       dispatch({ type: ACTION.LOADING, data: false })
@@ -153,6 +153,7 @@ export default function Category() {
   }
 
   const ModalCreateCategoryChild = ({ record }) => {
+    console.log(record)
     const [visible, setVisible] = useState(false)
     const toggle = () => {
       setVisible(!visible)
@@ -160,6 +161,7 @@ export default function Category() {
     const [imageView, setImageView] = useState('')
     const [fileUpload, setFileUpload] = useState(null)
     const [loading, setLoading] = useState(false)
+    console.log(loading)
 
     const reset = () => {
       formCategoryChild.resetFields()
@@ -190,7 +192,6 @@ export default function Category() {
                 loading={loading}
                 type="primary"
                 onClick={async () => {
-                  setLoading(true)
                   await formCategoryChild.validateFields()
                   const dataForm = formCategoryChild.getFieldsValue()
                   const image = await uploadFile(fileUpload)
@@ -331,12 +332,12 @@ export default function Category() {
       render: (text, record) => {
         return record.condition && record.condition.function.length
           ? record.condition.function.map((item) => (
-              <div>
-                <span>
-                  {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
-                </span>
-              </div>
-            ))
+            <div>
+              <span>
+                {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
+              </span>
+            </div>
+          ))
           : ''
       },
     },
@@ -352,7 +353,6 @@ export default function Category() {
       align: 'center',
       render: (text, record) => (
         <Space>
-          <ModalCreateCategoryChild record={record} />
           <Popconfirm
             onConfirm={() => _deleteCategory(record.category_id)}
             title="Bạn có muốn xóa nhóm sản phẩm này không?"
@@ -384,18 +384,7 @@ export default function Category() {
       render: (text, record) => record.name || '',
     },
     { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
-    {
-      title: 'Người tạo',
-      align: 'center',
-      render: (text, record) =>
-        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      align: 'center',
-      render: (text, record) =>
-        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
-    },
+
     { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
     {
       align: 'center',
@@ -471,9 +460,20 @@ export default function Category() {
   return (
     <div className="card">
       <TitlePage title="Nhóm sản phẩm">
-        <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
-          Tạo nhóm sản phẩm
-        </Button>
+        <div>
+          <Button
+            onClick={_onClearFilters}
+            type="primary"
+            size="large"
+            danger
+            style={{ display: Object.keys(paramsFilter).length <= 2 && 'none', marginRight: 10 }}
+          >
+            Xóa bộ lọc
+          </Button>
+          <Button size="large" type="primary" onClick={() => history.push(ROUTES.CATEGORY)}>
+            Tạo nhóm sản phẩm
+          </Button>
+        </div>
       </TitlePage>
       <div style={{ marginBottom: 15 }}>
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
@@ -600,24 +600,18 @@ export default function Category() {
             </Select>
           </Col>
         </Row>
-        <Button
-          onClick={_onClearFilters}
-          type="primary"
-          danger
-          style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-        >
-          Xóa bộ lọc
-        </Button>
       </div>
 
       <Table
         expandable={{
           expandedRowRender: (record) => {
+            console.log(record)
             return record.children_category && record.children_category.length ? (
-              <div style={{ margin: 25 }}>
+              <div style={{ margin: 0, marginLeft: 25 }}>
+                <ModalCreateCategoryChild record={record} />
                 <Table
                   rowKey="category_id"
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', marginTop: 10 }}
                   pagination={false}
                   columns={columnsChildren}
                   dataSource={record.children_category}
@@ -642,7 +636,9 @@ export default function Category() {
                 />
               </div>
             ) : (
-              ''
+              <div style={{ margin: 0, marginLeft: 25 }}>
+                <ModalCreateCategoryChild record={record} />
+              </div>
             )
           },
         }}

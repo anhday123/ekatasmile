@@ -11,7 +11,6 @@ import { updateEmployee } from 'apis/employee'
 import { uploadFile } from 'apis/upload'
 
 export default function ModalUpdateUser({ user, children, reload }) {
-  console.log(children)
   const [form] = Form.useForm()
 
   const [loading, setLoading] = useState(false)
@@ -34,7 +33,7 @@ export default function ModalUpdateUser({ user, children, reload }) {
         if (res.data.success) {
           toggle()
           notification.success({ message: 'Cập nhật thông tin cá nhân thành công' })
-          reload()
+          reload({ user_id: res.data.data.user_id })
         } else
           notification.error({
             message: res.data.message || 'Cập nhật thông tin cá nhân thành công',
@@ -47,10 +46,23 @@ export default function ModalUpdateUser({ user, children, reload }) {
     }
   }
 
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      notification.warning({ message: 'Bạn chỉ có thể tải lên tệp JPG / PNG / JPEG!' });
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      notification.warning({ message: 'Hình ảnh phải có kích thước nhỏ hơn 2MB!' });
+    }
+    return isJpgOrPng && isLt2M;
+  }
+
   const _upload = async (file) => {
     try {
       setLoading(true)
       const url = await uploadFile(file)
+      console.log(url)
       setAvatar(url || '')
       setLoading(false)
     } catch (error) {
@@ -90,13 +102,14 @@ export default function ModalUpdateUser({ user, children, reload }) {
                 className="avatar-uploader"
                 showUploadList={false}
                 data={_upload}
+                beforeUpload={beforeUpload}
               >
                 {avatar ? (
                   <img src={avatar} alt="avatar" style={{ width: '100%' }} />
                 ) : (
                   <div>
                     {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                    <div style={{ marginTop: 8 }}>Upload</div>
+                    <div style={{ marginTop: 8 }}>Tải lên</div>
                   </div>
                 )}
               </Upload>

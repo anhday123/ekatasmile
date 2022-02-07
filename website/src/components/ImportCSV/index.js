@@ -46,8 +46,9 @@ export default function ImportFile({
           formData.append('type', 'order')
           formData.append('shipping_company_id', shippingId)
           formData.append('status', 'DRAFT')
-          res = await upload(formData)
-        } else res = await upload(formData)
+        }
+
+        res = await upload(formData)
         console.log('res', res)
         if (res.status === 200) {
           if (res.data.success) {

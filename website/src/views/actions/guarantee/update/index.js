@@ -1,4 +1,5 @@
 import styles from './../add/add.module.scss'
+import moment from 'moment'
 import {
   Popconfirm,
   message,
@@ -34,8 +35,8 @@ const columns = [
       return a.productCode > b.productCode
         ? 1
         : a.productCode === b.productCode
-        ? 0
-        : -1
+          ? 0
+          : -1
     },
   },
   {
@@ -46,8 +47,8 @@ const columns = [
       return a.productName > b.productName
         ? 1
         : a.productName === b.productName
-        ? 0
-        : -1
+          ? 0
+          : -1
     },
   },
   {
@@ -58,8 +59,8 @@ const columns = [
       return a.guaranteeCode > b.guaranteeCode
         ? 1
         : a.guaranteeCode === b.guaranteeCode
-        ? 0
-        : -1
+          ? 0
+          : -1
     },
   },
   {

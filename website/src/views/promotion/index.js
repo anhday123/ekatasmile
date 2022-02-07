@@ -1,5 +1,11 @@
 import styles from './../promotion/promotion.module.scss'
 import React, { useEffect, useState } from 'react'
+import moment from 'moment'
+import { PERMISSIONS, ROUTES } from 'consts'
+import { useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+
+//antd
 import {
   Popconfirm,
   Input,
@@ -18,19 +24,22 @@ import {
   Typography,
   Space,
 } from 'antd'
-import { PlusCircleOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
-import moment from 'moment'
-import { getPromotions, updatePromotion } from 'apis/promotion'
-import { getAllBranch } from 'apis/branch'
-import { getEmployees } from 'apis/employee'
-import { useDispatch } from 'react-redux'
-import { PERMISSIONS, ROUTES } from 'consts'
+
+//icon antd
+import { PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+
+//components
 import PromotionAdd from 'views/actions/promotion/add'
 import Permission from 'components/permission'
 import { compare, tableSum, formatCash } from 'utils'
-import { getAllStore } from 'apis/store'
 import TitlePage from 'components/title-page'
-import { useHistory } from 'react-router-dom'
+
+//api
+import { getPromotions, updatePromotion, deletePromotion } from 'apis/promotion'
+import { getAllBranch } from 'apis/branch'
+import { getEmployees } from 'apis/employee'
+import { getAllStore } from 'apis/store'
+
 const { Text } = Typography
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -45,29 +54,26 @@ export default function Promotion() {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const [searchFilter, setSearchFilter] = useState({
-    search: '',
-    date: [],
-    type: undefined,
-    creator_id: null,
-  })
+  const [searchFilter, setSearchFilter] = useState({})
   const [userList, setUserList] = useState([])
   const [valueUserFilter, setValueUserFilter] = useState(null)
+  const [dataUpdate, setDataUpdate] = useState([])
   const dispatch = useDispatch()
   const history = useHistory()
+
 
   const onClose = () => {
     setVisible(false)
   }
   function onChange(dates, dateStrings) {
-    getPromotions({ from_date: dateStrings[0], to_date: dateStrings[1] })
+    _getPromotions({ from_date: dateStrings[0], to_date: dateStrings[1] })
   }
 
   function handleChange(value) {
-    getPromotions({ type: value })
+    _getPromotions({ type: value })
   }
   function handleChangeUserFilter(value) {
-    getPromotions({ creator_id: value })
+    _getPromotions({ creator_id: value })
   }
   const columnsPromotion = [
     {
@@ -76,7 +82,10 @@ export default function Promotion() {
       sorter: (a, b) => compare(a, b, 'name'),
       render: (data) => (
         <>
-          <div>{data.name}</div>
+          <a href onClick={() => {
+            setShowCreate(true)
+            setDataUpdate(data)
+          }}>{data.name}</a>
           {data.description && <div>Mô tả:{data.description}</div>}
         </>
       ),
@@ -86,7 +95,7 @@ export default function Promotion() {
       dataIndex: 'type',
       width: 150,
       render(data) {
-        return data == 'percent' ? 'Phần trăm' : 'Gía trị'
+        return data == 'percent' ? 'Phần trăm' : 'Giá trị'
       },
       sorter: (a, b) => compare(a, b, 'type'),
     },
@@ -119,15 +128,15 @@ export default function Promotion() {
       sorter: (a, b) => compare(a, b, 'limit'),
     },
     {
-      title: 'Cửa hàng áp dụng',
+      title: 'Chi nhánh áp dụng',
       dataIndex: 'limit',
       width: 150,
       sorter: (a, b) => compare(a, b, 'description'),
       render: (data) => {
         return data.stores
           .map((e) => {
-            return listStore.find((s) => s.store_id === e)
-              ? listStore.find((s) => s.store_id === e)['name']
+            return listBranch.find((s) => s.branch_id === e)
+              ? listBranch.find((s) => s.branch_id === e)['name']
               : undefined
           })
           .join(', ')
@@ -139,7 +148,21 @@ export default function Promotion() {
       width: 100,
       render(data, record) {
         return (
-          <Switch checked={data} onChange={(e) => onFinish(record.promotion_id, { active: e })} />
+          <Space size='middle'>
+            <Switch checked={data} onChange={(e) => onFinish(record.promotion_id, { active: e })} />
+            <Popconfirm
+              onConfirm={() => _deletePromotion(record.promotion_id)}
+              title="Bạn có muốn xóa sản phẩm này không?"
+              okText="Đồng ý"
+              cancelText="Từ chối"
+            >
+              <Button
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </Space>
         )
       },
     },
@@ -163,7 +186,7 @@ export default function Promotion() {
         openNotification(values.active)
         onClose()
         form.resetFields()
-        getPromotions()
+        _getPromotions()
       } else throw res
       dispatch({ type: 'LOADING', data: false })
     } catch (e) {
@@ -173,6 +196,27 @@ export default function Promotion() {
         description: 'Cập nhật khuyến mãi thất bại',
       })
       dispatch({ type: 'LOADING', data: false })
+    }
+  }
+
+  const _deletePromotion = async (value) => {
+    try {
+      const res = await deletePromotion({ promotion_id: value })
+      if (res.status === 200) {
+        if (res.data.success) {
+          _getPromotions()
+          notification.success({ message: 'Xoá sản phẩm thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
+        })
+    }
+    catch (err) {
+      console.log(err)
     }
   }
 
@@ -190,7 +234,6 @@ export default function Promotion() {
   const _getUserList = async () => {
     try {
       const res = await getEmployees({ page: 1, page_size: 1000 })
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           setUserList(res.data.data)
@@ -202,11 +245,10 @@ export default function Promotion() {
   }
 
   const changePagi = (page, page_size) => setPagination({ page, page_size })
-  const getPromotions = async (params) => {
+  const _getPromotions = async (params) => {
     try {
       setLoading(true)
       const res = await getPromotions({ ...params, ...pagination, _creator: true })
-      console.log(res)
       if (res.status === 200) {
         setListPromotion(res.data.data)
       } else {
@@ -231,17 +273,18 @@ export default function Promotion() {
     }
   }
   const resetFilter = () => {
-    setSearchFilter({ search: '', date: [], type: undefined })
+    setSearchFilter({})
   }
   useEffect(() => {
     getBranch()
     getStore()
     _getUserList()
   }, [])
+
   useEffect(() => {
     let tmp = { ...searchFilter }
     delete tmp['date']
-    getPromotions(tmp)
+    _getPromotions(tmp)
   }, [searchFilter, pagination])
   return (
     <>
@@ -260,6 +303,10 @@ export default function Promotion() {
           }
         >
           <Space>
+            <Button type="primary" danger onClick={resetFilter} size="large"
+              style={{ display: Object.keys(searchFilter).length == 0 && 'none' }}>
+              Xóa bộ lọc
+            </Button>
             <Permission permissions={[PERMISSIONS.them_khuyen_mai]}>
               <Button
                 icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
@@ -360,11 +407,7 @@ export default function Promotion() {
             </Select>
           </Col>
         </Row>
-        <Row style={{ width: '100%', marginTop: 20 }} justify="end">
-          <Button type="primary" danger onClick={resetFilter} size="large">
-            Xóa bộ lọc
-          </Button>
-        </Row>
+
         <div
           style={{
             width: '100%',
@@ -379,7 +422,6 @@ export default function Promotion() {
             pagination={{ onChange: changePagi }}
             columns={columnsPromotion}
             dataSource={listPromotion}
-            scroll={{ y: 500 }}
             summary={(pageData) => {
               return (
                 <Table.Summary fixed>
@@ -441,34 +483,10 @@ export default function Promotion() {
             }}
           />
         </div>
-        {selectedRowKeys && selectedRowKeys.length > 0 ? (
-          <div
-            style={{
-              marginTop: '1rem',
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <Popconfirm title="Bạn chắc chắn muốn xóa?" okText="Yes" cancelText="No">
-              <Button
-                type="primary"
-                danger
-                style={{
-                  width: '7.5rem',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Xóa khuyến mãi
-              </Button>
-            </Popconfirm>
-          </div>
-        ) : (
+        {/* {selectedRowKeys && selectedRowKeys.length > 0 ? ( */}
+        {/* ) : (
           ''
-        )}
+        )} */}
       </div>
 
       <Drawer
@@ -706,11 +724,16 @@ export default function Promotion() {
       </Drawer>
       <Drawer
         visible={showCreate}
-        onClose={() => setShowCreate(false)}
-        title="Thêm khuyến mãi"
+        onClose={() => {
+          setShowCreate(false)
+          setDataUpdate([])
+        }}
+        title={dataUpdate.length === 0 ? "Thêm khuyến mãi" : "Chỉnh sửa khuyến mãi"}
         width="75%"
       >
-        <PromotionAdd close={() => setShowCreate(false)} reload={getPromotions} />
+        <PromotionAdd state={dataUpdate} close={() => {
+          setShowCreate(false)
+        }} reload={_getPromotions} show={showCreate} />
       </Drawer>
     </>
   )

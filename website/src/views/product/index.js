@@ -122,6 +122,10 @@ export default function Product() {
 
     const columns = [
       {
+        title: 'STT',
+        render: (text, record, index) => index + 1,
+      },
+      {
         title: 'Số lượng thấp nhất',
         render: (text, record) => formatCash(record.min_quantity_apply || 0),
       },
@@ -379,8 +383,8 @@ export default function Product() {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
 
-    const [images, setImages] = useState(record.image || [])
-    const [imagesView, setImagesView] = useState(record.image || [])
+    const [images, setImages] = useState([])
+    const [imagesView, setImagesView] = useState([])
 
     const [loading, setLoading] = useState(false)
 
@@ -397,7 +401,7 @@ export default function Product() {
       setLoading(false)
     }
 
-    const removeFile = (file) => {
+    const _removeFile = (file) => {
       const imagesNew = [...images]
       const imagesViewNew = [...imagesView]
 
@@ -417,10 +421,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-              const fileNames = image.split('/')
-              const fileName = fileNames[fileNames.length - 1]
-              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-            })
+                const fileNames = image.split('/')
+                const fileName = fileNames[fileNames.length - 1]
+                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+              })
             : []
         )
       }
@@ -474,9 +478,8 @@ export default function Product() {
             fileList={imagesView}
             listType="picture"
             data={addFile}
-            onRemove={removeFile}
+            onRemove={_removeFile}
             name="file"
-            multiple
             onChange={(info) => {
               if (info.file.status !== 'done') info.file.status = 'done'
             }}
@@ -484,7 +487,7 @@ export default function Product() {
             <p className="ant-upload-drag-icon">
               {loading ? <LoadingOutlined /> : <InboxOutlined />}
             </p>
-            <p className="ant-upload-text">Nhấp hoặc hình ảnh vào khu vực này để tải lên</p>
+            <p className="ant-upload-text">Nhấp hoặc kéo thả vào khu vực này để tải lên</p>
             <p className="ant-upload-hint">Hỗ trợ hình ảnh .PNG, .JPG,...</p>
           </Upload.Dragger>
         </Modal>
@@ -623,12 +626,7 @@ export default function Product() {
             </Input.Group>
           </Col>
 
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={16}
-            xl={16}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Row>
               <Col
                 xs={24}
@@ -664,14 +662,16 @@ export default function Product() {
                   ))}
                 </Select>
               </Col>
-              <Col xs={24}
+              <Col
+                xs={24}
                 sm={24}
                 md={24}
                 lg={6}
                 xl={6}
                 style={{
                   border: '1px solid #d9d9d9',
-                }}>
+                }}
+              >
                 <Select
                   allowClear
                   showSearch
@@ -715,7 +715,9 @@ export default function Product() {
                   treeDefaultExpandAll
                   bordered={false}
                   value={
-                    paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
+                    paramsFilter.category_id
+                      ? paramsFilter.category_id.split('---').map((e) => +e)
+                      : []
                   }
                   onChange={onChangeCategoryValue}
                 >
@@ -744,7 +746,8 @@ export default function Product() {
                 style={{
                   border: '1px solid #d9d9d9',
                   borderRadius: '0px 5px 5px 0px',
-                }}>
+                }}
+              >
                 <Select
                   style={{ width: '100%' }}
                   open={isOpenSelect}

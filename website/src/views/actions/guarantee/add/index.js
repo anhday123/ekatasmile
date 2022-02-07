@@ -100,9 +100,9 @@ export default function GuaranteeAdd() {
             <Form.Item
               label="Tên bảo hành"
               name="name"
-              rules={[{ required: true, message: 'Tên bảo hành không được để trống' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên bảo hành' }]}
             >
-              <Input size="large" />
+              <Input size="large" placeholder='Nhập tên bảo hành' />
             </Form.Item>
           </Col>
           <Col span={11}>
@@ -112,11 +112,11 @@ export default function GuaranteeAdd() {
               rules={[
                 {
                   required: true,
-                  message: 'Thời hạn bảo hành không được để trống',
+                  message: 'Vui lòng nhập thời hạn bảo hành',
                 },
               ]}
             >
-              <InputNumber style={{ width: '100%' }} size="large" className="br-15__input" />
+              <InputNumber placeholder='Nhập thời hạn bảo hành' style={{ width: '100%' }} size="large" className="br-15__input" />
             </Form.Item>
           </Col>
           <Col span={11}>
@@ -126,16 +126,16 @@ export default function GuaranteeAdd() {
               rules={[
                 {
                   required: true,
-                  message: 'Loại bảo hành không được để trống',
+                  message: 'Vui lòng nhập loại bảo hành',
                 },
               ]}
             >
-              <Input size="large" />
+              <Input size="large" placeholder='Nhập tên bảo hành' />
             </Form.Item>
           </Col>
           <Col span={11}>
             <Form.Item label="Mô tả" name="description">
-              <Input.TextArea rows={5} />
+              <Input.TextArea rows={5} placeholder='Nhập mô tả' />
             </Form.Item>
           </Col>
         </Row>

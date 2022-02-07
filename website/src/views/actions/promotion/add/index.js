@@ -13,12 +13,14 @@ import {
 } from 'antd'
 import React, { useEffect, useState } from 'react'
 import styles from './add.module.scss'
-import { addPromotion } from 'apis/promotion'
+import { addPromotion, updatePromotion } from 'apis/promotion'
 import { getAllStore } from 'apis/store'
+import { getAllBranch } from 'apis/branch'
 import { removeAccents } from 'utils'
 const { Option } = Select
 
 export default function PromotionAdd(props) {
+  console.log(props.state)
   const [storeList, setStoreList] = useState([])
   const [showVoucher, setShowVoucher] = useState('show')
   const [isChooseAllStore, setIsChooseAllStore] = useState(false)
@@ -26,8 +28,7 @@ export default function PromotionAdd(props) {
   const [form] = Form.useForm()
   const openNotification = () => {
     notification.success({
-      message: 'Thành công',
-      description: 'Thêm khuyến mãi thành công.',
+      message: 'Thêm khuyến mãi thành công',
     })
   }
   const onFinish = async (values) => {
@@ -44,9 +45,13 @@ export default function PromotionAdd(props) {
         },
         discount_condition: values.discount_condition || '',
         max_discount: values.max_discount || '',
-        description: values.description || ' ',
+        description: values.description || '',
       }
-      const res = await addPromotion(obj)
+
+      let res
+      if (props.state.length === 0) res = await addPromotion(obj)
+      else res = await updatePromotion(props.state.promotion_id, obj)
+
       if (res.status === 200) {
         openNotification()
         props.reload()
@@ -54,11 +59,12 @@ export default function PromotionAdd(props) {
         form.resetFields()
         setIsChooseAllStore(false)
       } else throw res
+
+
     } catch (e) {
       console.log(e)
-      notification.error({
-        message: 'Thất bại!',
-        description: e.data && e.data.message,
+      notification.warning({
+        message: 'Thêm khuyến mãi không thành công! Vui lòng thử lại',
       })
     }
   }
@@ -74,19 +80,19 @@ export default function PromotionAdd(props) {
     setIsChooseAllStore(value)
     value
       ? form.setFieldsValue({
-          store: storeList.map((e) => {
-            return e.store_id
-          }),
-        })
+        store: storeList.map((e) => {
+          return e.branch_id
+        }),
+      })
       : form.setFieldsValue({ store: [] })
   }
 
   useEffect(() => {
     const getBranch = async (params) => {
       try {
-        const res = await getAllStore(params)
+        const res = await getAllBranch(params)
         if (res.status === 200) {
-          setStoreList(res.data.data.filter((e) => e.active))
+          setStoreList(res.data.data)
         } else {
           throw res
         }
@@ -96,6 +102,17 @@ export default function PromotionAdd(props) {
     }
     getBranch()
   }, [])
+
+  useEffect(() => {
+    if (props.state) { form.setFieldsValue({ ...props.state }) }
+    else {
+      form.resetFields()
+    }
+    if (!props.show) {
+      form.resetFields()
+    }
+  }, [form, props.show, props.state])
+
   return (
     <>
       <Form onFinish={onFinish} form={form} layout="vertical">
@@ -153,17 +170,17 @@ export default function PromotionAdd(props) {
               )}
 
               <div style={{ marginBottom: '10px' }}>
-                Cửa hàng <span style={{ color: 'red' }}>*</span>
+                Chi nhánh <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="store">
                 <Select
-                  placeholder="Chọn cửa hàng"
+                  placeholder="Chọn chi nhánh"
                   mode="multiple"
                   size="large"
                   style={{ width: '100%' }}
                 >
                   {storeList.map((e) => (
-                    <Option value={e.store_id}>{e.name}</Option>
+                    <Option value={e.branch_id}>{e.name}</Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -171,7 +188,7 @@ export default function PromotionAdd(props) {
                 checked={isChooseAllStore}
                 onChange={(e) => selectAllStore(e.target.checked)}
               >
-                Chọn tất cả cửa hàng
+                Chọn tất cả chi nhánh
               </Checkbox>
             </div>
           </Col>
@@ -233,7 +250,7 @@ export default function PromotionAdd(props) {
         <div className={styles['promotion_add_button']}>
           <Form.Item>
             <Button size="large" type="primary" htmlType="submit" style={{ width: 120 }}>
-              Tạo
+              {props.state.length === 0 ? 'Tạo' : 'Lưu'}
             </Button>
           </Form.Item>
         </div>

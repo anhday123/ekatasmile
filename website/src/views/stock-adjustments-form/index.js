@@ -446,8 +446,8 @@ export default function CreateReport() {
                               (item) => item.variant_id === variant.variant_id
                             )
                             if (findProduct) {
-                              notification.error({
-                                message: 'Chỉ được chọn sản phẩm khác phân loại',
+                              notification.warning({
+                                message: 'Bạn đã chọn sản phẩm này rồi!',
                               })
                               return
                             }
@@ -554,14 +554,7 @@ export default function CreateReport() {
                 return {
                   ...column,
                   render: (text, record) => (
-                    <Popconfirm
-                      onConfirm={() => deleteDataToCreate(record.variant_id)}
-                      title="Bạn có muốn xóa sản phẩm này không?"
-                      okText="Đồng ý"
-                      cancelText="Từ chối"
-                    >
-                      <Button type="primary" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    <Button onClick={() => deleteDataToCreate(record.variant_id)} type="primary" danger icon={<DeleteOutlined />} />
                   ),
                 }
               return column

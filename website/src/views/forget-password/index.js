@@ -36,11 +36,11 @@ export default function ForgetPassword() {
           })
         else
           notification.error({
-            message: res.data.message || 'Xác nhận tên tài khoản thất bại, vui lòng thử lại',
+            message: 'Không tìm thấy doanh nghiệp này' || res.data.message,
           })
       } else
         notification.error({
-          message: res.data.message || 'Xác nhận tên tài khoản thất bại, vui lòng thử lại',
+          message: 'Không tìm thấy doanh nghiệp này' || res.data.message,
         })
 
       dispatch({ type: ACTION.LOADING, data: false })
@@ -51,44 +51,46 @@ export default function ForgetPassword() {
   }
 
   return (
-    <Row className={styles['forget-pw-container']} align="middle" >
+    <Row className={styles['forget-pw-container']} align="middle">
       <img
         src={background}
         style={{
           width: '100%',
           height: '100vh',
-          display: 'block'
+          display: 'block',
         }}
         alt=""
       />
       <Col className={styles['forget-pw-content']} xs={24} sm={24} md={24} lg={24} xl={24}>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            marginBottom: 20,
-            color: '#fff'
-          }}
-        >
-          <div style={{ fontSize: '1.5rem', marginBottom: 10, fontWeight: 700 }}>Quên mật khẩu</div>
-          <div>Nhập tài khoản của bạn để đặt lại mật khẩu</div>
-        </div>
-        <Form form={form} style={{ paddingLeft: '10%', paddingRight: '10%' }}>
+        <Form form={form} style={{ paddingLeft: '15%', paddingRight: '10%', width: '90%' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: 20,
+              color: '#fff',
+            }}
+          >
+            <div style={{ fontSize: '1.5rem', marginBottom: 10, fontWeight: 700 }}>
+              Quên mật khẩu
+            </div>
+            <div>Nhập tài khoản của bạn để đặt lại mật khẩu</div>
+          </div>
           <Form.Item
             name="username"
-            rules={[{ required: true, message: 'Vui lòng nhập tên tài khoản' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại đăng ký' }]}
           >
             <Input
               onPressEnter={sendOtp}
               size="large"
               prefix={<UserOutlined />}
-              placeholder="Nhập tên tài khoản"
+              placeholder="Nhập số điện thoại đăng ký"
             />
           </Form.Item>
 
-          <Row justify="center" >
-            <Form.Item>
+          <Row justify="center">
+            <Form.Item style={{ width: '100%' }}>
               <Button
                 onClick={sendOtp}
                 size="large"

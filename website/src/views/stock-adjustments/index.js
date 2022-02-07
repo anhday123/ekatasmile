@@ -356,7 +356,7 @@ export default function Reports() {
         onClick={_onClearFilters}
         type="primary"
         danger
-        style={{ marginTop: 15, marginLeft: 15, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+        style={{ width: '10%', marginTop: 15, marginLeft: 0, display: Object.keys(paramsFilter).length <= 2 && 'none' }}
       >
         Xóa bộ lọc
       </Button>
