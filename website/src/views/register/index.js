@@ -16,9 +16,8 @@ import { register } from 'apis/auth'
 
 export default function Login() {
   const dispatch = useDispatch()
-  const [formLogin] = Form.useForm()
-  const [formRegister] = Form.useForm()
   let history = useHistory()
+  const [formRegister] = Form.useForm()
 
   const _register = async (dataForm) => {
     try {
@@ -83,16 +82,7 @@ export default function Login() {
     <Row className={styles['registration']}>
       <img src={background} alt="background" />
       <div className={styles['registration-content']}>
-        <Tabs
-          className="tabs-login"
-          size="large"
-          activeKey="register"
-          centered
-          onChange={(key) => {
-            formLogin.resetFields()
-            formRegister.resetFields()
-          }}
-        >
+        <Tabs className="tabs-login" size="large" activeKey="register" centered>
           <Tabs.TabPane
             tab={
               <div className={styles['registration-content-container']}>
@@ -108,11 +98,7 @@ export default function Login() {
             <div className={styles['registration-content-container']}>
               <div className={styles['registration-content--form']}>
                 <Form layout="vertical" form={formRegister} onFinish={_register}>
-                  <Row
-                    className="edit-form-item-register"
-                    gutter={[20, 20]}
-                    style={{ padding: '0px 20px' }}
-                  >
+                  <Row className="edit-form-item-register" gutter={[20, 20]}>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         // label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
@@ -120,10 +106,10 @@ export default function Login() {
                         rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
                       >
                         <Input
-                          style={{ width: '100%', height: '40px !important' }}
+                          allowClear
+                          style={{ width: '60%' }}
                           size="large"
                           placeholder="Nhập tên doanh nghiệp"
-                          className={styles['input']}
                         />
                       </Form.Item>
                     </Col>
@@ -134,10 +120,10 @@ export default function Login() {
                         rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
                       >
                         <Input
-                          style={{ width: '100%' }}
+                          allowClear
+                          style={{ width: '60%' }}
                           size="large"
                           placeholder="Nhập số điện thoại"
-                          className={styles['input']}
                         />
                       </Form.Item>
                     </Col>
@@ -156,7 +142,12 @@ export default function Login() {
                         // label={<div style={{ color: 'white' }}>Email</div>}
                         name="email"
                       >
-                        <Input size="large" placeholder="Nhập email" className={styles['input']} />
+                        <Input
+                          allowClear
+                          size="large"
+                          placeholder="Nhập email"
+                          style={{ width: '60%' }}
+                        />
                       </Form.Item>
                     </Col>
                     {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -170,15 +161,15 @@ export default function Login() {
                     </Col> */}
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
-                        // label={<div style={{ color: 'white' }}>Mật khẩu</div>}
                         name="password"
                         rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
                       >
                         <Input.Password
+                          allowClear
+                          style={{ width: '60%' }}
                           size="large"
                           type="password"
                           placeholder="Mật khẩu"
-                          className={styles['input']}
                         />
                       </Form.Item>
                     </Col>
@@ -189,17 +180,23 @@ export default function Login() {
                         rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu' }]}
                       >
                         <Input.Password
+                          allowClear
+                          style={{ width: '60%' }}
                           size="large"
                           type="password"
                           placeholder="Nhập lại mật khẩu"
-                          className={styles['input']}
                         />
                       </Form.Item>
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Row justify="end">
                         <div
-                          style={{ color: 'white', cursor: 'pointer', marginTop: 10, marginRight: '20%' }}
+                          style={{
+                            color: 'white',
+                            cursor: 'pointer',
+                            marginTop: 10,
+                            marginRight: '20%',
+                          }}
                           onClick={() => history.push(ROUTES.CHECK_SUBDOMAIN)}
                         >
                           Đi đến trang đăng nhập
@@ -218,8 +215,6 @@ export default function Login() {
                       </Form.Item>
                     </Col>
                   </Row>
-
-                  <Row justify="center"></Row>
                 </Form>
               </div>
             </div>
