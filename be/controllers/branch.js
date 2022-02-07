@@ -145,7 +145,7 @@ module.exports._update = async (req, res, next) => {
             creator_id: _branch.creator_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
-            active: true,
+            active: _branch.active,
             slug_name: removeUnicode(String(_branch.name), true).toLowerCase(),
             slug_warehouse_type: removeUnicode(String(_branch.warehouse_type), true).toLowerCase(),
             slug_address: removeUnicode(String(_branch.address), true).toLowerCase(),

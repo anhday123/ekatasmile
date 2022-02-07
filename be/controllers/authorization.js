@@ -780,16 +780,21 @@ module.exports._verifyOTP = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
+        let prefix = await (async () => {
+            if (req.headers && req.headers.shop) {
+                return client.db(SDB).collection('Business').findOne({ prefix: req.headers.shop });
+            }
+            return false;
+        })();
 
         let business = await client
             .db(SDB)
             .collection('Business')
-            .aggregate([{ $match: { username: req.body.username } }, { $match: { otp_code: req.body.otp_code } }])
-            .toArray();
-        console.log(business);
-        if (business.length == 0) throw new Error(`404: Không tìm thấy doanh nghiệp này`);
-        const DB = business[0].database_name;
-        console.log(DB);
+            .findOne({ username: req.body.username, otp_code: req.body.otp_code });
+        if (business) {
+            throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
+        }
+        const DB = business.database_name;
         let user = await client
             .db(DB)
             .collection('Users')
@@ -825,12 +830,8 @@ module.exports._verifyOTP = async (req, res, next) => {
             ])
             .toArray();
 
-        if (business.length == 0) {
-            throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
-        }
-
-        if (business[0].active == false) {
-            delete business[0].password;
+        if (user.active == false) {
+            delete user.password;
             await client
                 .db(SDB)
                 .collection('Business')

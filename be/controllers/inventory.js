@@ -2072,14 +2072,17 @@ module.exports._getInventoryNote = async (req, res, next) => {
                 as: 'balancer_info',
             },
         });
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Users',
-                localField: 'creator_id',
-                foreignField: 'user_id',
-                as: 'creator_info',
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'creator_id',
+                    foreignField: 'user_id',
+                    as: 'creator_info',
+                },
             },
-        });
+            { $unwind: { path: '$creator_info', preserveNullAndEmptyArrays: true } }
+        );
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
         if (req.query.page && req.query.page_size) {
