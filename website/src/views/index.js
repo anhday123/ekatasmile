@@ -86,6 +86,7 @@ import Contact from './contact'
 import ImportInventories from './import-inventories'
 import ImportInventory from './import-inventory'
 import ImportReportFile from './import-report-file'
+import DeliveryControl from './delivery-control'
 
 const DEFINE_ROUTER = [
   {
@@ -199,6 +200,13 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.SHIPPING_CONTROL,
     Component: () => <ShippingControl />,
+    title: 'Đối soát vận chuyển',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.DELIVERY_CONTROL,
+    Component: () => <DeliveryControl />,
     title: 'Đối soát vận chuyển',
     permissions: [],
     exact: true,

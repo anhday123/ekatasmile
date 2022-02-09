@@ -43,6 +43,7 @@ import {
   CalendarOutlined,
   FileSearchOutlined,
   MedicineBoxOutlined,
+  NodeExpandOutlined,
 } from '@ant-design/icons'
 
 //components
@@ -301,6 +302,13 @@ const BaseLayout = (props) => {
       permissions: [],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
+    },
+    {
+      path: ROUTES.DELIVERY_CONTROL,
+      title: 'Quản lý giao hàng',
+      permissions: [],
+      icon: <NodeExpandOutlined />,
+      pathsChild: [],
     },
     // {
     //   path: ROUTES.CLIENT_MANAGEMENT,

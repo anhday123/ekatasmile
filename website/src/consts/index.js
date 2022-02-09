@@ -51,6 +51,7 @@ export const ROUTES = {
   REPORT_IMPORT_EXPORT_INVENTORY_VARIANT: '/report-import-export-inventory-variant',
   SHIPPING_CONTROL: '/shipping-control',
   SHIPPING_CONTROL_ADD: '/shipping-control/add',
+  DELIVERY_CONTROL: '/delivery-control',
   GUARANTEE: '/guarantee',
   SHIPPING_PRODUCT: '/shipping-product',
   CLIENT_MANAGEMENT: '/client-management',
@@ -227,4 +228,13 @@ export const CONDITION_OPERATOR = {
   does_not_contains: 'không chứa',
   is_not_empty: 'trống',
   is_empty: 'không trống',
+}
+export const BILL_STATUS_ORDER = {
+  DRAFT: 'Lưu nháp',
+  PROGRESSING: 'Đang xử lý',
+  COMPLETE: 'Hoàn thành',
+  CANCEL: 'Huỷ bỏ',
+  SHIPPING: 'Đang vận chuyển',
+  IN_PRODUCTION: 'Đang bàn giao vận chuyển',
+  REFUND: 'Hoàn Tiền',
 }
