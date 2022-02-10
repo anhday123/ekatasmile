@@ -52,7 +52,6 @@ export default function Login() {
 
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await register(body)
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           if (res.data.verify_with === 'EMAIL') {

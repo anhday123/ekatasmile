@@ -389,8 +389,7 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${
-                    record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
             if (column.key === 'creator')

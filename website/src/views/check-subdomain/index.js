@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import styles from './check-subdomain.module.scss'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 //antd
-import { Row, Col, Form, Input, Button, notification, Select, Tabs } from 'antd'
+import { Row, Col, Form, Input, Button, notification, Tabs } from 'antd'
 
 //apis
 import { checkDomain } from 'apis/app'
