@@ -87,16 +87,16 @@ export default function CheckSubdomain() {
                     </Form.Item>
                   </Row>
                 </Form>
-                <Row justify="end">
-                  <div style={{ color: 'white' }}>
+                <Row >
+                  <Col span={24} style={{ color: 'white', textAlign: 'right' }}>
                     Tạo không gian quản lí doanh nghiệp của riêng bạn?
-                  </div>
-                  <div
+                  </Col>
+                  <Col span={24}
                     onClick={() => history.push({ pathname: ROUTES.REGISTER })}
                     className={styles['login-content-click']}
                   >
                     Đăng ký miễn phí!
-                  </div>
+                  </Col>
                 </Row>
               </Row>
             </Tabs.TabPane>
