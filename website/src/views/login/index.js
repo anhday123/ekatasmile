@@ -91,10 +91,18 @@ export default function Login() {
                 >
                   <Input.Password size="large" type="password" placeholder="Mật khẩu" />
                 </Form.Item>
-                <Row justify="end">
+                <Row justify="space-between">
                   <Link to={ROUTES.FORGET_PASSWORD} style={{ margin: '20px 0px', color: 'white' }}>
                     Quên mật khẩu?
                   </Link>
+                  <a
+                    onClick={() =>
+                      (window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`)
+                    }
+                    style={{ margin: '20px 0px', color: 'white' }}
+                  >
+                    Đăng ký tài khoản bán hàng
+                  </a>
                 </Row>
                 <Row justify="center">
                   <Form.Item style={{ width: '100%' }}>
