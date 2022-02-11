@@ -17,7 +17,7 @@ function App() {
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
   const domain = window.location.href
-  let subDomain = domain.split('.vdropship.vn')
+  let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
 
   const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
 
@@ -48,21 +48,22 @@ function App() {
   }
 
   if (
-    (domain === 'https://vdropship.vn/' ||
-      domain === 'https://vdropship.vn' ||
-      domain === 'vdropship.vn/' ||
-      domain === 'vdropship.vn/') &&
+    (domain === `https://${process.env.REACT_APP_HOST}/` ||
+      domain === `https://${process.env.REACT_APP_HOST}` ||
+      domain === `${process.env.REACT_APP_HOST}/` ||
+      domain === `${process.env.REACT_APP_HOST}`) &&
     subDomain &&
     subDomain.length === 1
   )
-    window.location.href = 'https://vdropship.vn/register'
+    window.location.href = `https://${process.env.REACT_APP_HOST}/register`
 
   const checkSubdomain = async () => {
     let router = ''
 
-    if (domain.includes('vdropship.vn/check-subdomain')) router = '/check-subdomain'
-    if (domain.includes('vdropship.vn/register')) router = '/register'
-    if (domain.includes('vdropship.vn/login')) router = '/login'
+    if (domain.includes(`${process.env.REACT_APP_HOST}/check-subdomain`))
+      router = '/check-subdomain'
+    if (domain.includes(`${process.env.REACT_APP_HOST}/register`)) router = '/register'
+    if (domain.includes(`${process.env.REACT_APP_HOST}/login`)) router = '/login'
 
     if (router === '/login') {
       setLoadingCheckDomain(true)
@@ -73,26 +74,26 @@ function App() {
         const res = await checkDomain(subDomain[1])
         if (res.status === 200) {
           if (!res.data.success) {
-            window.location.href = 'https://vdropship.vn/register'
+            window.location.href = `https://${process.env.REACT_APP_HOST}/register`
             return
           }
         } else {
-          window.location.href = 'https://vdropship.vn/register'
+          window.location.href = `https://${process.env.REACT_APP_HOST}/register`
           return
         }
       } else {
-        window.location.href = 'https://vdropship.vn/register'
+        window.location.href = `https://${process.env.REACT_APP_HOST}/register`
         return
       }
     }
 
     if (router === '/register')
       if (subDomain && subDomain.length === 2)
-        window.location.href = 'https://vdropship.vn/register'
+        window.location.href = `https://${process.env.REACT_APP_HOST}/register`
 
     if (router === '/check-subdomain')
       if (subDomain && subDomain.length === 2)
-        window.location.href = 'https://vdropship.vn/check-subdomain'
+        window.location.href = `https://${process.env.REACT_APP_HOST}/check-subdomain`
 
     setLoadingCheckDomain(false)
   }
