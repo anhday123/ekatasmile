@@ -786,16 +786,15 @@ module.exports._verifyOTP = async (req, res, next) => {
             }
             return false;
         })();
-
         let business = await client
             .db(SDB)
             .collection('Business')
             .findOne({ username: req.body.username, otp_code: req.body.otp_code });
-        if (business) {
+        if (!business) {
             throw new Error(`400: Tài khoản không tồn tại, mã OTP không chính xác hoặc đã hết hạn sử dụng!`);
         }
-        const DB = business.database_name;
-        let user = await client
+        const DB = (prefix && prefix.database) || business.database_name;
+        let [user] = await client
             .db(DB)
             .collection('Users')
             .aggregate([
@@ -829,14 +828,13 @@ module.exports._verifyOTP = async (req, res, next) => {
                 { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
             ])
             .toArray();
-
         if (user.active == false) {
             delete user.password;
             await client
                 .db(SDB)
                 .collection('Business')
                 .updateOne(
-                    { system_user_id: business[0].system_user_id },
+                    { system_user_id: business.system_user_id },
                     {
                         $set: {
                             otp_code: false,
@@ -847,7 +845,7 @@ module.exports._verifyOTP = async (req, res, next) => {
                 );
 
             let accessToken = await jwt.createToken(
-                { ...business, database: DB, _business: business[0] },
+                { ...business, database: DB, _business: business },
                 30 * 24 * 60 * 60
             );
 
@@ -857,26 +855,7 @@ module.exports._verifyOTP = async (req, res, next) => {
                 data: { accessToken: accessToken },
             });
         } else {
-            await client
-                .db(SDB)
-                .collection('Business')
-                .updateOne(
-                    { system_user_id: business[0].system_user_id },
-                    {
-                        $set: {
-                            otp_code: true,
-                            otp_timelife: true,
-                        },
-                    }
-                );
-            //   await client
-            //     .db(DB)
-            //     .collection("Business")
-            //     .updateOne(
-            //       { system_user_id: business.system_user_id },
-            //       { $set: business }
-            //     );
-
+            await client.db(DB).collection('Business').updateOne({ user_id: business.user_id }, { $set: business });
             res.send({
                 success: true,
                 message: `Mã OTP chính xác, xác thực thành công!`,
