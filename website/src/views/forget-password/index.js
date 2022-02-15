@@ -34,14 +34,8 @@ export default function ForgetPassword() {
             pathname: ROUTES.OTP,
             state: { username: dataForm.username, action: 'FORGOT_PASSWORD' },
           })
-        else
-          notification.error({
-            message: 'Không tìm thấy doanh nghiệp này' || res.data.message,
-          })
-      } else
-        notification.error({
-          message: 'Không tìm thấy doanh nghiệp này' || res.data.message,
-        })
+        else notification.error({ message: res.data.message || 'Không tìm thấy doanh nghiệp này' })
+      } else notification.error({ message: res.data.message || 'Không tìm thấy doanh nghiệp này' })
 
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
