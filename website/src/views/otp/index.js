@@ -48,14 +48,17 @@ export default function OTP() {
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
           await delay(300)
-          window.location.href = `https://${dataUser.data._business.business_name}.vdropship.vn${ROUTES.OVERVIEW}`
+          window.location.href = `https://${dataUser.data._business.business_name}.${process.env.REACT_APP_HOST}${ROUTES.OVERVIEW}`
         } else
           notification.warning({
-            message: `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại` || res.data.message,
+            message:
+              res.data.message ||
+              `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại`,
           })
       } else
         notification.warning({
-          message: `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại` || res.data.message,
+          message:
+            res.data.message || `Xác thực OTP thất bại, vui lòng bấm vào 'Gửi lại OTP' để thử lại`,
         })
     } catch (error) {
       console.log(error)
@@ -126,10 +129,7 @@ export default function OTP() {
             </Form.Item>
             <Row wrap={false} align="end" style={{ color: 'white' }}>
               <div>Bạn chưa nhận được mã?</div>
-              <p
-                onClick={_resendOtp}
-                className={styles['otp-content-resent']}
-              >
+              <p onClick={_resendOtp} className={styles['otp-content-resent']}>
                 Gửi lại OTP
               </p>
             </Row>
