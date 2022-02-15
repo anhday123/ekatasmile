@@ -743,18 +743,32 @@ module.exports._getOTP = async (req, res, next) => {
         sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         // let otpCode = String(Math.random()).substr(2, 6);
         // await Promise.all(mail.sendMail(user.email, 'Mã xác thực', otpMail(otpCode)));
-        await client
-            .db(DB)
-            .collection(`Users`)
-            .updateOne(
-                { system_user_id: Number(business.system_user_id) },
-                {
-                    $set: {
-                        otp_code: otpCode,
-                        otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
-                    },
-                }
-            );
+        await Promise.all([
+            client
+                .db(SDB)
+                .collection(`Business`)
+                .updateOne(
+                    { system_user_id: Number(business.system_user_id) },
+                    {
+                        $set: {
+                            otp_code: otpCode,
+                            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
+                        },
+                    }
+                ),
+            client
+                .db(DB)
+                .collection(`Users`)
+                .updateOne(
+                    { system_user_id: Number(business.system_user_id) },
+                    {
+                        $set: {
+                            otp_code: otpCode,
+                            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
+                        },
+                    }
+                ),
+        ]);
         // await client
         //     .db(SDB)
         //     .collection(`Users`)
