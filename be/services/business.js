@@ -125,18 +125,18 @@ module.exports._get = async (req, res, next) => {
             aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         }
         // lấy data từ database
-        let [users, counts] = await Promise.all([
-            client.db(SDB).collection(`Users`).aggregate(aggregateQuery).toArray(),
+        let [business, counts] = await Promise.all([
+            client.db(SDB).collection(`Business`).aggregate(aggregateQuery).toArray(),
             client
                 .db(SDB)
-                .collection(`Users`)
+                .collection(`Business`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
         ]);
         res.send({
             success: true,
             count: counts[0] ? counts[0].counts : 0,
-            data: users,
+            data: business,
         });
     } catch (err) {
         next(err);
