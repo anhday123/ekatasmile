@@ -21,7 +21,7 @@ export default function Login() {
       dispatch({ type: ACTION.LOADING, data: true })
 
       const domain = window.location.href
-      let subDomain = domain.split('.vdropship.vn')
+      let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
       subDomain = subDomain[0].split('//')
 
       //Khi code comment lại, code xong để lại như cũ
