@@ -391,10 +391,10 @@ module.exports._createImportOrder = async (req, res, next) => {
             });
             let insertPrices = [];
             let insertLocations = [];
-            let insertProductInventories = [];
-            let updateProductInventories = [];
-            let insertVariantInventories = [];
-            let updateVariantInventories = [];
+            let _insertProductInventories = {};
+            let updateProductInventories = {};
+            let _insertVariantInventories = {};
+            let updateVariantInventories = {};
             order.products.map((eProduct) => {
                 if (!_prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`]) {
                     priceId++;
@@ -431,92 +431,123 @@ module.exports._createImportOrder = async (req, res, next) => {
                     active: true,
                 };
                 insertLocations.push(_location);
-                if (_productInventories[eProduct.product_id]) {
-                    _productInventories[eProduct.product_id].is_check = true;
-                    updateInventories.push({ ..._productInventories[eProduct.product_id] });
+                if (_insertProductInventories[eProduct.product_id]) {
+                    _productInventories[eProduct.product_id].import_quantity += eProduct.quantity;
+                    _productInventories[eProduct.product_id].import_price += eProduct.quantity * eProduct.import_price;
+                    _productInventories[eProduct.product_id].end_quantity += eProduct.quantity;
+                    _productInventories[eProduct.product_id].import_quantity +=
+                        eProduct.quantity * eProduct.import_price;
+                }
+                if (!_insertProductInventories[eProduct.product_id]) {
+                    if (_productInventories[eProduct.product_id]) {
+                        _productInventories[eProduct.product_id].is_check = true;
+                        updateProductInventories.push({ ..._productInventories[eProduct.product_id] });
+                    }
                     productInventoryId++;
-                    _productInventories[eProduct.product_id] = {
+                    _insertProductInventories[eProduct.product_id] = {
                         inventory_id: productInventoryId,
                         product_id: eProduct.product_id,
                         branch_id: _location.branch_id,
                         type: 'IMPORT',
-                        begin_quantity: 0,
-                        begin_price: 0,
+                        begin_quantity:
+                            (_productInventories[eProduct.product_id] &&
+                                _productInventories[eProduct.product_id].end_quantity) ||
+                            0,
+                        begin_price:
+                            (_productInventories[eProduct.product_id] &&
+                                _productInventories[eProduct.product_id].end_price) ||
+                            0,
                         import_quantity: eProduct.quantity,
                         import_price: eProduct.quantity * eProduct.import_price,
                         export_quantity: 0,
                         export_price: 0,
-                        end_quantity: eProduct.quantity,
-                        end_price: eProduct.quantity * eProduct.import_price,
+                        end_quantity:
+                            ((_productInventories[eProduct.product_id] &&
+                                _productInventories[eProduct.product_id].end_quantity) ||
+                                0) + eProduct.quantity,
+                        end_price:
+                            ((_productInventories[eProduct.product_id] &&
+                                _productInventories[eProduct.product_id].end_price) ||
+                                0) +
+                            eProduct.quantity * eProduct.import_price,
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: Number(req.user.user_id),
                         is_check: false,
                     };
                 }
-                let _productInventory = (() => {
-                    productInventoryId++;
-                    if (!_oldProductInventory) {
-                        if (_productInventories)
-                            return {
-                                inventory_id: inventory_id,
-                                product_id: eProduct.product_id,
-                                branch_id: _location.branch_id,
-                                type: 'IMPORT',
-                                begin_quantity: 0,
-                                begin_price: 0,
-                                import_quantity: eProduct.quantity,
-                                import_price: eProduct.quantity * eProduct.import_price,
-                                export_quantity: 0,
-                                export_price: 0,
-                                end_quantity: eProduct.quantity,
-                                end_price: eProduct.quantity * eProduct.import_price,
-                                create_date: moment().tz(TIMEZONE).format(),
-                                creator_id: Number(req.user.user_id),
-                                is_check: false,
-                            };
+
+                if (_insertVariantInventories[eProduct.variant_id]) {
+                    _productInventories[eProduct.variant_id].import_quantity += eProduct.quantity;
+                    _productInventories[eProduct.variant_id].import_price += eProduct.quantity * eProduct.import_price;
+                    _productInventories[eProduct.variant_id].end_quantity += eProduct.quantity;
+                    _productInventories[eProduct.variant_id].import_quantity +=
+                        eProduct.quantity * eProduct.import_price;
+                }
+                if (!_insertVariantInventories[eProduct.variant_id]) {
+                    if (_productInventories[eProduct.variant_id]) {
+                        _productInventories[eProduct.variant_id].is_check = true;
+                        updateVariantInventories.push({ ..._variantInventories[eProduct.variant_id] });
                     }
-                    _oldProductInventory.is_check = true;
-                    updateInventories.push(_oldProductInventory);
-                    return {
-                        inventory_id: inventory_id,
-                        product_id: eProduct.product_id,
+                    variantInventoryId++;
+                    _insertVariantInventories[eProduct.variant_id] = {
+                        inventory_id: variantInventoryId,
                         variant_id: eProduct.variant_id,
                         branch_id: _location.branch_id,
                         type: 'IMPORT',
-                        begin_quantity: _oldProductInventory.end_quantity,
-                        begin_price: _oldProductInventory.end_price,
+                        begin_quantity:
+                            (_productInventories[eProduct.variant_id] &&
+                                _productInventories[eProduct.variant_id].end_quantity) ||
+                            0,
+                        begin_price:
+                            (_productInventories[eProduct.variant_id] &&
+                                _productInventories[eProduct.variant_id].end_price) ||
+                            0,
                         import_quantity: eProduct.quantity,
                         import_price: eProduct.quantity * eProduct.import_price,
                         export_quantity: 0,
                         export_price: 0,
-                        end_quantity: _oldProductInventory.end_quantity + eProduct.quantity,
-                        end_price: _oldProductInventory.end_price + eProduct.quantity * eProduct.import_price,
+                        end_quantity:
+                            ((_productInventories[eProduct.variant_id] &&
+                                _productInventories[eProduct.variant_id].end_quantity) ||
+                                0) + eProduct.quantity,
+                        end_price:
+                            ((_productInventories[eProduct.variant_id] &&
+                                _productInventories[eProduct.variant_id].end_price) ||
+                                0) +
+                            eProduct.quantity * eProduct.import_price,
                         create_date: moment().tz(TIMEZONE).format(),
                         creator_id: Number(req.user.user_id),
                         is_check: false,
                     };
-                })();
-                insertInventories.push(_inventory);
+                }
             });
             await Promise.all([
                 client
                     .db(req.user.database)
                     .collection('AppSetting')
-                    .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: price_id } }, { upsert: true }),
+                    .updateOne({ name: 'Prices' }, { $set: { name: 'Prices', value: priceId } }, { upsert: true }),
                 client
                     .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
                         { name: 'Locations' },
-                        { $set: { name: 'Locations', value: location_id } },
+                        { $set: { name: 'Locations', value: locationId } },
                         { upsert: true }
                     ),
                 client
                     .db(req.user.database)
                     .collection('AppSetting')
                     .updateOne(
-                        { name: 'Inventories' },
-                        { $set: { name: 'Inventories', value: inventory_id } },
+                        { name: 'ProductInventories' },
+                        { $set: { name: 'ProductInventories', value: productInventoryId } },
+                        { upsert: true }
+                    ),
+                client
+                    .db(req.user.database)
+                    .collection('AppSetting')
+                    .updateOne(
+                        { name: 'VariantInventories' },
+                        { $set: { name: 'VariantInventories', value: variantInventoryId } },
                         { upsert: true }
                     ),
             ]);
@@ -527,22 +558,40 @@ module.exports._createImportOrder = async (req, res, next) => {
             if (Array.isArray(insertLocations) && insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             }
-            if (Array.isArray(insertInventories) && insertInventories.length > 0) {
-                await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
+            let insertProductInventories = Object.values(_insertProductInventories);
+            if (Array.isArray(insertProductInventories) && insertProductInventories.length > 0) {
+                await client
+                    .db(req.user.database)
+                    .collection('ProductInventories')
+                    .insertMany(insertProductInventories);
             }
-            await Promise.all([
-                ...(() => {
-                    if (Array.isArray(updateInventories) && updateInventories.length > 0) {
-                        return updateInventories.map((eUpdate) => {
-                            return client
-                                .db(req.user.database)
-                                .collection('Inventories')
-                                .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
-                        });
-                    }
-                    return [];
-                })(),
-            ]);
+            let insertVariantInventories = Object.values(_insertVariantInventories);
+            if (Array.isArray(insertVariantInventories) && insertVariantInventories.length > 0) {
+                await client
+                    .db(req.user.database)
+                    .collection('VariantInventories')
+                    .insertMany(insertVariantInventories);
+            }
+            if (Array.isArray(updateProductInventories) && updateProductInventories.length > 0) {
+                await Promise.all(
+                    updateProductInventories.map((eUpdate) => {
+                        return client
+                            .db(req.user.database)
+                            .collection('ProductInventories')
+                            .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
+                    })
+                );
+            }
+            if (Array.isArray(updateVariantInventories) && updateVariantInventories.length > 0) {
+                await Promise.all(
+                    updateVariantInventories.map((eUpdate) => {
+                        return client
+                            .db(req.user.database)
+                            .collection('VariantInventories')
+                            .updateOne({ inventory_id: eUpdate.inventory_id }, { $set: eUpdate });
+                    })
+                );
+            }
         }
         let variantUpdates = [];
         order.products.map((eProduct) => {
