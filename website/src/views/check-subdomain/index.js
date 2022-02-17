@@ -23,7 +23,7 @@ export default function CheckSubdomain() {
       const res = await checkDomain(body.business_name)
       if (res.status === 200) {
         if (res.data.success)
-          window.location.href = `https://${body.business_name}.vdropship.vn/login`
+          window.location.href = `https://${body.business_name}.${process.env.REACT_APP_HOST}/login`
         else
           notification.warning({
             message: res.data.message || 'Tên doanh nghiệp chưa được đăng ký!',
@@ -87,11 +87,12 @@ export default function CheckSubdomain() {
                     </Form.Item>
                   </Row>
                 </Form>
-                <Row >
+                <Row>
                   <Col span={24} style={{ color: 'white', textAlign: 'right' }}>
                     Tạo không gian quản lí doanh nghiệp của riêng bạn?
                   </Col>
-                  <Col span={24}
+                  <Col
+                    span={24}
                     onClick={() => history.push({ pathname: ROUTES.REGISTER })}
                     className={styles['login-content-click']}
                   >
