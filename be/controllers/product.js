@@ -119,6 +119,7 @@ module.exports._create = async (req, res, next) => {
                 req._attributes.push({
                     product_id: Number(productId),
                     attribute_id: Number(attributeId),
+                    code: String(attributeId).padStart(6, '0'),
                     option: eAttribute.option,
                     values: eAttribute.values,
                     create_date: moment().tz(TIMEZONE).format(),
@@ -141,6 +142,7 @@ module.exports._create = async (req, res, next) => {
                 variantId++;
                 req._variants.push({
                     variant_id: Number(variantId),
+                    code: String(attributeId).padStart(6, '0'),
                     product_id: Number(productId),
                     title: String(eVariant.title).toUpperCase(),
                     sku: String(eVariant.sku).toUpperCase(),
