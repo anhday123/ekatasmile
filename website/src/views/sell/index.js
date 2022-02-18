@@ -33,6 +33,7 @@ import ModalDeliveryAddress from './delivery-address'
 import ModalInfoSeller from './info-seller'
 import HeaderGroupButton from './header-group-button'
 import PrintOrder from 'components/print/print-order'
+import ScanProduct from './scan-product'
 
 //antd
 import {
@@ -55,6 +56,7 @@ import {
   Spin,
   Tag,
   notification,
+  message,
 } from 'antd'
 
 //icons antd
@@ -88,7 +90,7 @@ export default function Sell() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const invoicesSelector = useSelector((state) => state.invoice.invoices)
   const branchIdApp = useSelector((state) => state.branch.branchId)
-  let printOrderRef = useRef()
+  const printOrderRef = useRef()
 
   //list ref keyboard
   const inputRef = useRef(null)
@@ -251,9 +253,9 @@ export default function Sell() {
             })
         } else {
           invoicesNew[indexInvoice].order_details.push({
+            quantity: 1, //số lượng sản phẩm
             ...product,
             unit: product.units && product.units.length ? product.units[0].name : 'Cái', //đơn vị
-            quantity: 1, //số lượng sản phẩm
             sumCost: product.price, // tổng giá tiền
             VAT_Product:
               product._taxes && product._taxes.length
@@ -549,7 +551,9 @@ export default function Sell() {
       <div>
         <Row justify="space-between">
           <span>Giá nhập</span>
-          <span>{formatCash(product ? product.import_price || product.import_price_default : 0)}</span>
+          <span>
+            {formatCash(product ? product.import_price || product.import_price_default : 0)}
+          </span>
         </Row>
         <Row justify="space-between">
           <span>Giá cơ bản</span>
@@ -579,7 +583,7 @@ export default function Sell() {
     }, [])
 
     return (
-      <>
+      <div onClick={(e) => e.stopPropagation()}>
         <Popover
           content={content}
           placement="bottom"
@@ -603,23 +607,12 @@ export default function Sell() {
               >
                 Thông tin sản phẩm: {product && product.title}
               </p>
-              <SearchOutlined
-                onClick={(e) => {
-                  toggle()
-                  e.stopPropagation()
-                }}
-                style={{ cursor: 'pointer', marginLeft: 30 }}
-              />
+              <SearchOutlined onClick={toggle} style={{ cursor: 'pointer', marginLeft: 30 }} />
             </Row>
           }
         >
           <ExclamationCircleOutlined
-            style={{
-              color: '#1991FF',
-              fontSize: 12,
-              cursor: 'pointer',
-              marginLeft: 6,
-            }}
+            style={{ color: '#1991FF', fontSize: 12, cursor: 'pointer', marginLeft: 6 }}
           />
         </Popover>
         <Modal
@@ -641,7 +634,7 @@ export default function Sell() {
             dataSource={locations}
           />
         </Modal>
-      </>
+      </div>
     )
   }
 
@@ -1342,16 +1335,7 @@ export default function Sell() {
               ))}
             </Select>
           </div>
-          <img
-            src="https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/10/16/b2c0b183-9330-4582-8ff0-9050b411532c/barcode 3.png"
-            alt=""
-            style={{
-              width: 30,
-              height: 30,
-              marginLeft: 17,
-              cursor: 'pointer',
-            }}
-          />
+          <ScanProduct addProductToCartInvoice={_addProductToCartInvoice} />
         </Row>
         <Row align="middle" style={{ marginLeft: 30 }}>
           <Tabs

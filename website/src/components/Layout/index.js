@@ -493,23 +493,20 @@ const BaseLayout = (props) => {
         }}
         collapsed={collapsed}
       >
-        <div
+        <Row
+          justify="center"
           style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            width: '100%',
             display: collapsed ? 'none' : 'flex',
-            paddingTop: 20,
+            paddingTop: 10,
             paddingBottom: 20,
           }}
         >
           <img
             src={setting && setting.company_logo ? setting.company_logo : LOGO_DEFAULT}
-            style={{ width: '6rem', objectFit: 'contain' }}
+            style={{ objectFit: 'contain', maxHeight: 70, width: '100%' }}
             alt=""
           />
-        </div>
+        </Row>
         <Menu
           style={{
             height: `calc(100vh - ${collapsed ? 4 : 96}px)`,
