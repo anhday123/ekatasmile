@@ -1,1 +1,10 @@
-console.log('11' * 1);
+/** @constructor */
+function Page(title) {
+    /**
+     * @default "Untitled"
+     */
+    this.title = title || 'Untitled';
+}
+
+
+Page

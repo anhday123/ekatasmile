@@ -640,7 +640,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         let productSkus = [];
         let variantSkus = [];
-        let branchSlug = [];
         rows = rows.map((eRow) => {
             let _row = {};
             for (let i in eRow) {
@@ -651,16 +650,11 @@ module.exports._createImportOrderFile = async (req, res, next) => {
             }
             productSkus.push(_row['masanpham']);
             variantSkus.push(_row['maphienban']);
-            if (_row['tennoinhap']) {
-                _row['_tennoinhap'] = removeUnicode(_row['tennoinhap'], true).toLowerCase();
-                branchSlug.push(_row['_tennoinhap']);
-            }
             return _row;
         });
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
-        branchSlug = [...new Set(branchSlug)];
-        let [products, variants, branches] = await Promise.all([
+        let [products, variants, branch] = await Promise.all([
             client
                 .db(req.user.database)
                 .collection('Products')
@@ -671,11 +665,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 .collection('Variants')
                 .find({ sku: { $in: variantSkus } })
                 .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Branchs')
-                .find({ slug_name: { $in: branchSlug } })
-                .toArray(),
+            client.db(req.user.database).collection('Branchs').findOne({ branch_id: req.body.branch_id }),
         ]);
         let _products = {};
         products.map((eProduct) => {
@@ -685,34 +675,18 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         variants.map((eVariant) => {
             _variants[eVariant.sku] = eVariant;
         });
-        let _branches = {};
-        branches.map((eBranch) => {
-            _branches[eBranch.slug_name] = eBranch;
-        });
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
-        let order_id = (() => {
-            if (orderMaxId && orderMaxId.value) {
-                return orderMaxId.value;
-            }
-            return 0;
-        })();
+        let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
         rows.map((eRow) => {
             if (!_orders[eRow['maphieunhap']]) {
-                order_id++;
+                orderId++;
                 _orders[eRow['maphieunhap']] = {
-                    order_id: order_id,
-                    code: String(order_id).padStart(6, '0'),
-                    import_order_id: order_id,
+                    order_id: orderId,
+                    code: String(orderId).padStart(6, '0'),
+                    import_order_id: orderId,
                     import_code: eRow['maphieunhap'],
-                    import_location: (() => {
-                        if (eRow['_tennoinhap']) {
-                            if (_branches[eRow['_tennoinhap']]) {
-                                return { branch_id: _branches[eRow['_tennoinhap']].branch_id };
-                            }
-                        }
-                        throw new Error('400: Nơi nhập hàng không tồn tại!');
-                    })(),
+                    import_location: { branch_id: branch.branch_id },
                     products: req.body.products || [],
                     total_quantity: 0,
                     total_cost: 0,
@@ -788,15 +762,19 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 }
             }
         });
-        let orders = Object.values(_orders);
-        let insert = await client.db(req.user.database).collection('ImportOrders').insertMany(orders);
-        if (!insert.insertedIds) {
-            throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
-        }
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: order_id } }, { upsert: true });
+            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: orderId } }, { upsert: true });
+        let orders = Object.values(_orders);
+        if (Array.isArray(orders) && orders.length > 0) {
+            let insert = await client.db(req.user.database).collection('ImportOrders').insertMany(orders);
+            if (!insert.insertedIds) {
+                throw new Error(`500: Tạo phiếu nhập kho thất bại!`);
+            }
+        } else {
+            throw new Error(`400: Không tạo được phiếu nhập kho!`);
+        }
         res.send({
             success: true,
             data: orders,
@@ -813,7 +791,6 @@ module.exports._updateImportOrder = async (req, res, next) => {
         delete req.body._id;
         delete req.body.order_id;
         let _order = { ...order, ...req.body };
-        console.log(_order.import_location);
         let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');

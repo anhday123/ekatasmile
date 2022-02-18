@@ -1,29 +1,8 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
+const { stringHandle } = require('../utils/string-handle');
 const SDB = process.env.DATABASE;
-
-let removeUnicode = (text, removeSpace) => {
-    /*
-        string là chuỗi cần remove unicode
-        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
-    */
-    if (typeof text != 'string') {
-        return '';
-    }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
-    text = text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
-    }
-    return text;
-};
 
 module.exports._getWard = async (req, res, next) => {
     try {
@@ -39,17 +18,29 @@ module.exports._getWard = async (req, res, next) => {
         }
         if (req.query.ward_name) {
             aggregateQuery.push({
-                $match: { slug_ward_name: new RegExp(removeUnicode(req.query.ward_name, true), 'gi') },
+                $match: {
+                    slug_ward_name: new RegExp(stringHandle(req.query.ward_name, { createRegexQuery: true }), 'gi'),
+                },
             });
         }
         if (req.query.district_name) {
             aggregateQuery.push({
-                $match: { slug_district_name: new RegExp(removeUnicode(req.query.district_name, true), 'gi') },
+                $match: {
+                    slug_district_name: new RegExp(
+                        stringHandle(req.query.district_name, { createRegexQuery: true }),
+                        'gi'
+                    ),
+                },
             });
         }
         if (req.query.province_name) {
             aggregateQuery.push({
-                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+                $match: {
+                    slug_province_name: new RegExp(
+                        stringHandle(req.query.province_name, { createRegexQuery: true }),
+                        'gi'
+                    ),
+                },
             });
         }
         aggregateQuery.push({
@@ -77,12 +68,22 @@ module.exports._getDistrict = async (req, res, next) => {
         }
         if (req.query.district_name) {
             aggregateQuery.push({
-                $match: { slug_district_name: new RegExp(removeUnicode(req.query.district_name, true), 'gi') },
+                $match: {
+                    slug_district_name: new RegExp(
+                        stringHandle(req.query.district_name, { createRegexQuery: true }),
+                        'gi'
+                    ),
+                },
             });
         }
         if (req.query.province_name) {
             aggregateQuery.push({
-                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+                $match: {
+                    slug_province_name: new RegExp(
+                        stringHandle(req.query.province_name, { createRegexQuery: true }),
+                        'gi'
+                    ),
+                },
             });
         }
         aggregateQuery.push({
@@ -106,7 +107,12 @@ module.exports._getProvince = async (req, res, next) => {
         }
         if (req.query.province_name) {
             aggregateQuery.push({
-                $match: { slug_province_name: new RegExp(removeUnicode(req.query.province_name, true), 'gi') },
+                $match: {
+                    slug_province_name: new RegExp(
+                        stringHandle(req.query.province_name, { createRegexQuery: true }),
+                        'gi'
+                    ),
+                },
             });
         }
         aggregateQuery.push({
@@ -128,7 +134,9 @@ module.exports._getCountry = async (req, res, next) => {
             aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
         if (req.query.name) {
-            aggregateQuery.push({ $match: { slug_name: new RegExp(removeUnicode(req.query.name, true), 'gi') } });
+            aggregateQuery.push({
+                $match: { slug_name: new RegExp(stringHandle(req.query.name, { createRegexQuery: true }), 'gi') },
+            });
         }
         aggregateQuery.push({
             $project: {
