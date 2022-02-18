@@ -366,7 +366,7 @@ module.exports._update = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('Locations')
-            .updateMany({ inventory_id: Number(req.params.branch_id) }, { $set: { name: req.body.name } });
+            .updateMany({ branch_id: Number(req.params.branch_id) }, { $set: { name: req.body.name } });
         try {
             let _action = {
                 business_id: req.user.business_id,
