@@ -164,6 +164,7 @@ module.exports._get = async (req, res, next) => {
                                     $group: {
                                         _id: { type: '$type', branch_id: '$branch_id', store_id: '$store_id' },
                                         branch_id: { $first: '$branch_id' },
+                                        name: { $first: '$name' },
                                         quantity: { $sum: '$quantity' },
                                     },
                                 },
@@ -185,7 +186,7 @@ module.exports._get = async (req, res, next) => {
             },
         });
         if (req.query.variant_code) {
-            aggregateQuery.push({ $match: { 'variants.code': req.query.variant_code } });
+            aggregateQuery.push({ $match: { 'variants.code': 0 } });
         }
         if (req.query.feedbacks) {
             aggregateQuery.push({

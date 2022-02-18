@@ -423,6 +423,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                         }
                         return '';
                     })(),
+                    name: importLocation.name,
                     quantity: eProduct.quantity,
                     create_date: moment().tz(TIMEZONE).format(),
                     creator_id: Number(req.user.user_id),
