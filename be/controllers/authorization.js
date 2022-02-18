@@ -735,8 +735,8 @@ module.exports._getOTP = async (req, res, next) => {
         const prefix = (req.headers && req.headers.shop) || false;
         let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
         const DB = (business && business.database_name) || '';
-        let rootUser = client.db(SDB).collection('Business').findOne({ username: req.body.username });
-        let user = client.db(DB).collection('Users').findOne({ username: req.body.username });
+        let rootUser = await client.db(SDB).collection('Business').findOne({ username: req.body.username });
+        let user = await client.db(DB).collection('Users').findOne({ username: req.body.username });
         if (!user) {
             throw new Error('400: Tài khoản người dùng không tồn tại!');
         }
@@ -789,8 +789,8 @@ module.exports._verifyOTP = async (req, res, next) => {
         const prefix = (req.headers && req.headers.shop) || false;
         let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
         const DB = (business && business.database_name) || '';
-        let rootUser = client.db(SDB).collection('Business').findOne({ username: req.body.username });
-        let user = client.db(DB).collection('Users').findOne({ username: req.body.username });
+        let rootUser = await client.db(SDB).collection('Business').findOne({ username: req.body.username });
+        let user = await client.db(DB).collection('Users').findOne({ username: req.body.username });
         if (user.active == false) {
             delete user.password;
             if (rootUser) {
