@@ -432,10 +432,12 @@ module.exports._createImportOrder = async (req, res, next) => {
                 };
                 insertLocations.push(_location);
                 if (_insertProductInventories[eProduct.product_id]) {
-                    _productInventories[eProduct.product_id].import_quantity += eProduct.quantity;
-                    _productInventories[eProduct.product_id].import_price += eProduct.quantity * eProduct.import_price;
-                    _productInventories[eProduct.product_id].end_quantity += eProduct.quantity;
-                    _productInventories[eProduct.product_id].import_quantity +=
+                    console.log(eProduct.product_id);
+                    _insertProductInventories[eProduct.product_id].import_quantity += eProduct.quantity;
+                    _insertProductInventories[eProduct.product_id].import_price +=
+                        eProduct.quantity * eProduct.import_price;
+                    _insertProductInventories[eProduct.product_id].end_quantity += eProduct.quantity;
+                    _insertProductInventories[eProduct.product_id].import_quantity +=
                         eProduct.quantity * eProduct.import_price;
                 }
                 if (!_insertProductInventories[eProduct.product_id]) {
