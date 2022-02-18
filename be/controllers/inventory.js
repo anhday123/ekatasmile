@@ -392,9 +392,9 @@ module.exports._createImportOrder = async (req, res, next) => {
             let insertPrices = [];
             let insertLocations = [];
             let _insertProductInventories = {};
-            let updateProductInventories = {};
+            let _updateProductInventories = {};
             let _insertVariantInventories = {};
-            let updateVariantInventories = {};
+            let _updateVariantInventories = {};
             order.products.map((eProduct) => {
                 if (!_prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`]) {
                     priceId++;
@@ -443,7 +443,9 @@ module.exports._createImportOrder = async (req, res, next) => {
                 if (!_insertProductInventories[eProduct.product_id]) {
                     if (_productInventories[eProduct.product_id]) {
                         _productInventories[eProduct.product_id].is_check = true;
-                        updateProductInventories.push({ ..._productInventories[eProduct.product_id] });
+                        _updateProductInventories[eProduct.product_id] = {
+                            ..._productInventories[eProduct.product_id],
+                        };
                     }
                     productInventoryId++;
                     _insertProductInventories[eProduct.product_id] = {
@@ -488,7 +490,9 @@ module.exports._createImportOrder = async (req, res, next) => {
                 if (!_insertVariantInventories[eProduct.variant_id]) {
                     if (_productInventories[eProduct.variant_id]) {
                         _productInventories[eProduct.variant_id].is_check = true;
-                        updateVariantInventories.push({ ..._variantInventories[eProduct.variant_id] });
+                        _updateVariantInventories[eProduct.variant_id] = {
+                            ..._variantInventories[eProduct.variant_id],
+                        };
                     }
                     variantInventoryId++;
                     _insertVariantInventories[eProduct.variant_id] = {
@@ -574,9 +578,9 @@ module.exports._createImportOrder = async (req, res, next) => {
                     .collection('VariantInventories')
                     .insertMany(insertVariantInventories);
             }
-            if (Array.isArray(updateProductInventories) && updateProductInventories.length > 0) {
+            if (Array.isArray(_updateProductInventories) && _updateProductInventories.length > 0) {
                 await Promise.all(
-                    updateProductInventories.map((eUpdate) => {
+                    _updateProductInventories.map((eUpdate) => {
                         return client
                             .db(req.user.database)
                             .collection('ProductInventories')
@@ -584,9 +588,9 @@ module.exports._createImportOrder = async (req, res, next) => {
                     })
                 );
             }
-            if (Array.isArray(updateVariantInventories) && updateVariantInventories.length > 0) {
+            if (Array.isArray(_updateVariantInventories) && _updateVariantInventories.length > 0) {
                 await Promise.all(
-                    updateVariantInventories.map((eUpdate) => {
+                    _updateVariantInventories.map((eUpdate) => {
                         return client
                             .db(req.user.database)
                             .collection('VariantInventories')
