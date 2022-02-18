@@ -1335,7 +1335,10 @@ export default function Sell() {
               ))}
             </Select>
           </div>
-          <ScanProduct addProductToCartInvoice={_addProductToCartInvoice} />
+          <ScanProduct
+            productsCurrent={invoices[indexInvoice].order_details}
+            addProductToCartInvoice={_addProductToCartInvoice}
+          />
         </Row>
         <Row align="middle" style={{ marginLeft: 30 }}>
           <Tabs

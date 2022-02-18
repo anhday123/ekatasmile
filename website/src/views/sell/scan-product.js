@@ -13,10 +13,11 @@ import { getProducts } from 'apis/product'
 import { ACTION, IMAGE_DEFAULT } from 'consts'
 import delay from 'delay'
 
-export default function ScanProduct({ addProductToCartInvoice }) {
+export default function ScanProduct({ addProductToCartInvoice, productsCurrent }) {
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const dispatch = useDispatch()
   const inputRef = useRef()
+  const scanRef = useRef()
   const quantityRef = useRef()
   const [form] = Form.useForm()
 
@@ -27,17 +28,19 @@ export default function ScanProduct({ addProductToCartInvoice }) {
 
   const reScan = () => {
     form.resetFields()
-    if (inputRef && inputRef.current) inputRef.current.focus()
+    inputRef.current.focus()
   }
 
   const _addToCart = async () => {
     addProductToCartInvoice({ ...product, quantity })
-    await delay(100)
+    await delay(200)
     toggle()
+    reScan()
   }
 
   const _getProduct = async (dataForm) => {
     try {
+      if (!dataForm.variant_code) _addToCart()
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getProducts({
         branch_id: branchIdApp || '',
@@ -49,12 +52,15 @@ export default function ScanProduct({ addProductToCartInvoice }) {
       if (res.status === 200) {
         if (res.data.success) {
           if (res.data.data && res.data.data.length) {
+            //check sp đã có trong giỏ hàng
+            const product = productsCurrent.find((p) => p._id === res.data.data[0].variants._id)
+            if (product)
+              notification.warning({ message: 'Bạn đang có sản phẩm này trong giỏ hàng' })
             setProduct(res.data.data[0].variants)
-            setQuantity(1)
-            toggle()
+            setVisible(true)
           }
-        } else notification.warning({ message: 'Không tìm thấy sản phẩm này' })
-      } else notification.warning({ message: 'Không tìm thấy sản phẩm này' })
+        } else notification.error({ message: 'Không tìm thấy sản phẩm này' })
+      } else notification.error({ message: 'Không tìm thấy sản phẩm này' })
       dispatch({ type: ACTION.LOADING, data: false })
       reScan()
     } catch (error) {
@@ -82,13 +88,9 @@ export default function ScanProduct({ addProductToCartInvoice }) {
         alt=""
         style={{ width: 30, height: 30, marginLeft: 17, cursor: 'pointer' }}
       />
-      <Form form={form} onFinish={_getProduct}>
+      <Form form={form} onFinish={_getProduct} style={{ width: 0, height: 0, opacity: 0 }}>
         <Form.Item name="variant_code">
-          <Input
-            autoFocus
-            ref={inputRef}
-            style={{ width: 0, height: 0, padding: 0, margin: 0, opacity: 0 }}
-          />
+          <Input autoFocus ref={inputRef} style={{ width: 0, height: 0, padding: 0 }} />
         </Form.Item>
       </Form>
 
@@ -106,7 +108,10 @@ export default function ScanProduct({ addProductToCartInvoice }) {
             </Button>
           </Row>
         }
-        onCancel={toggle}
+        onCancel={() => {
+          toggle()
+          reScan()
+        }}
         visible={visible}
         title="Nhập số lượng sản phẩm"
       >
@@ -162,6 +167,21 @@ export default function ScanProduct({ addProductToCartInvoice }) {
               </div>
             </Col>
           </Row>
+          <Row justify="end">
+            <a
+              onClick={() => {
+                scanRef.current.focus()
+                message.success('Bắt đầu quét sản phẩm')
+              }}
+            >
+              Nhấn vào đây quét sản phẩm khác
+            </a>
+          </Row>
+          <Form form={form} onFinish={_getProduct} style={{ width: 0, height: 0, opacity: 0 }}>
+            <Form.Item name="variant_code">
+              <Input autoFocus ref={scanRef} style={{ width: 0, height: 0, padding: 0 }} />
+            </Form.Item>
+          </Form>
         </div>
       </Modal>
     </>
