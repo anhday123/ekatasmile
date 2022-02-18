@@ -226,6 +226,9 @@ module.exports._get = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        if (req.query.variant_code) {
+            aggregateQuery.push({ $match: { 'variants.code': req.query.variant_code } });
+        }
         if (req.query.feedbacks) {
             aggregateQuery.push({
                 $lookup: {
