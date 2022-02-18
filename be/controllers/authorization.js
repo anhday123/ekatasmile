@@ -733,7 +733,14 @@ module.exports._getOTP = async (req, res, next) => {
             }
         });
         const prefix = (req.headers && req.headers.shop) || false;
-        let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
+        let business = await (async () => {
+            if (prefix) {
+                let result = client.db(SDB).collection('Business').findOne({ prefix: prefix });
+                return result;
+            }
+            let result = client.db(SDB).collection('Business').findOne({ username: req.body.username });
+            return result;
+        })();
         const DB = (business && business.database_name) || '';
         let rootUser = await client.db(SDB).collection('Business').findOne({ username: req.body.username });
         let user = await client.db(DB).collection('Users').findOne({ username: req.body.username });
@@ -787,10 +794,23 @@ module.exports._verifyOTP = async (req, res, next) => {
             }
         });
         const prefix = (req.headers && req.headers.shop) || false;
-        let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
+        let business = await (async () => {
+            if (prefix) {
+                let result = client.db(SDB).collection('Business').findOne({ prefix: prefix });
+                return result;
+            }
+            let result = client.db(SDB).collection('Business').findOne({ username: req.body.username });
+            return result;
+        })();
         const DB = (business && business.database_name) || '';
         let rootUser = await client.db(SDB).collection('Business').findOne({ username: req.body.username });
         let user = await client.db(DB).collection('Users').findOne({ username: req.body.username });
+        if (!user) {
+            throw new Error('400: Tài khoản người dùng không tồn tại!');
+        }
+        if (req.body.otp_code != user.otp_code) {
+            throw new Error('400: Mã xác thực không chính xác hoặc đã hết hạn sử dụng!');
+        }
         if (user.active == false) {
             delete user.password;
             if (rootUser) {
