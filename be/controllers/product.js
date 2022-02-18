@@ -142,7 +142,7 @@ module.exports._create = async (req, res, next) => {
                 variantId++;
                 req._variants.push({
                     variant_id: Number(variantId),
-                    code: String(attributeId).padStart(6, '0'),
+                    code: String(variantId).padStart(6, '0'),
                     product_id: Number(productId),
                     title: String(eVariant.title).toUpperCase(),
                     sku: String(eVariant.sku).toUpperCase(),
