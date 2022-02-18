@@ -136,56 +136,6 @@ module.exports._get = async (req, res, next) => {
                 as: 'attributes',
             },
         });
-        if (req.query.branch_id) {
-            req.query['branch'] = true;
-        }
-        let branchQuery = (() => {
-            if (req.query.branch) {
-                return [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$type', 'BRANCH'] },
-                                    ...(() => {
-                                        if (req.query.branch_id) {
-                                            return [{ $eq: ['$branch_id', Number(req.query.branch_id)] }];
-                                        }
-                                        return [];
-                                    })(),
-                                ],
-                            },
-                        },
-                    },
-                ];
-            }
-            return [];
-        })();
-        if (req.query.store_id) {
-            req.query['store'] = true;
-        }
-        let storeQuery = (() => {
-            if (req.query.store) {
-                return [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$type', 'STORE'] },
-                                    ...(() => {
-                                        if (req.query.store_id) {
-                                            return [{ $eq: ['$inventory_id', Number(req.query.store_id)] }];
-                                        }
-                                        return [];
-                                    })(),
-                                ],
-                            },
-                        },
-                    },
-                ];
-            }
-            return [];
-        })();
         aggregateQuery.push({
             $lookup: {
                 from: 'Variants',
@@ -198,14 +148,22 @@ module.exports._get = async (req, res, next) => {
                             let: { variantId: '$variant_id' },
                             pipeline: [
                                 { $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } },
-                                ...branchQuery,
-                                ...storeQuery,
+                                ...(() => {
+                                    if (req.query.branch_id) {
+                                        return [
+                                            {
+                                                $match: {
+                                                    $expr: { $eq: ['$variant_id', Number(req.query.branch_id)] },
+                                                },
+                                            },
+                                        ];
+                                    }
+                                    return [];
+                                })(),
                                 {
                                     $group: {
                                         _id: { type: '$type', branch_id: '$branch_id', store_id: '$store_id' },
-                                        type: { $first: '$type' },
                                         branch_id: { $first: '$branch_id' },
-                                        store_id: { $first: '$store_id' },
                                         quantity: { $sum: '$quantity' },
                                     },
                                 },
