@@ -914,7 +914,14 @@ module.exports._recoveryPassword = async (req, res, next) => {
             }
         });
         const prefix = (req.headers && req.headers.shop) || false;
-        let business = await client.db(DB).collection('Business').findOne({ prefix: prefix });
+        let business = await (async () => {
+            if (prefix) {
+                let result = client.db(SDB).collection('Business').findOne({ prefix: prefix });
+                return result;
+            }
+            let result = client.db(SDB).collection('Business').findOne({ username: req.body.username });
+            return result;
+        })();
         const DB = (business && business.database_name) || '';
         let rootUser = client
             .db(SDB)
