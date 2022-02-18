@@ -185,8 +185,11 @@ module.exports._get = async (req, res, next) => {
                 as: 'variants',
             },
         });
+        if (req.query.detach) {
+            aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
+        }
         if (req.query.variant_code) {
-            aggregateQuery.push({ $match: { 'variants.code': 0 } });
+            aggregateQuery.push({ $match: { 'variants.code': req.query.variant_code } });
         }
         if (req.query.feedbacks) {
             aggregateQuery.push({
@@ -251,9 +254,6 @@ module.exports._get = async (req, res, next) => {
                 },
                 { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
-        }
-        if (req.query.detach) {
-            aggregateQuery.push({ $unwind: { path: '$variants', preserveNullAndEmptyArrays: true } });
         }
         aggregateQuery.push({
             $project: {
