@@ -733,7 +733,7 @@ module.exports._getOTP = async (req, res, next) => {
             }
         });
         const prefix = (req.headers && req.headers.shop) || false;
-        let business = await client.db(DB).collection('Business').findOne({ prefix: prefix });
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
         const DB = (business && business.database_name) || '';
         let rootUser = client.db(SDB).collection('Business').findOne({ username: req.body.username });
         let user = client.db(DB).collection('Users').findOne({ username: req.body.username });
@@ -787,7 +787,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             }
         });
         const prefix = (req.headers && req.headers.shop) || false;
-        let business = await client.db(DB).collection('Business').findOne({ prefix: prefix });
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: prefix });
         const DB = (business && business.database_name) || '';
         let rootUser = client.db(SDB).collection('Business').findOne({ username: req.body.username });
         let user = client.db(DB).collection('Users').findOne({ username: req.body.username });
