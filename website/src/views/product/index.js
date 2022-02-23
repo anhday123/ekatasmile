@@ -85,6 +85,12 @@ export default function Product() {
     }
   }
 
+  const _onFilter = (attribute = '', value = '') => {
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
+    setParamsFilter({ ...paramsFilter, page: 1 })
+  }
+
   const enableBulkPrice = async (product, variant) => {
     try {
       setLoading(true)
@@ -543,6 +549,14 @@ export default function Product() {
       <div className="card">
         <TitlePage title="Danh sách sản phẩm">
           <Space>
+            <Button
+              size="large"
+              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+              onClick={onClickClear}
+              type="primary"
+            >
+              Xóa tất cả lọc
+            </Button>
             <SettingColumns
               columns={columns}
               setColumns={setColumns}
@@ -648,12 +662,8 @@ export default function Product() {
                   placeholder="Lọc theo nhà cung cấp"
                   optionFilterProp="children"
                   bordered={false}
-                  onChange={(value) =>
-                    setParamsFilter({ ...paramsFilter, supplier_id: value ? value : '' })
-                  }
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
+                  value={paramsFilter.supplier_id}
+                  onChange={(value) => _onFilter('supplier_id', value)}
                 >
                   {suppliers.map((supplier, index) => (
                     <Option value={supplier.supplier_id} key={index}>
@@ -662,33 +672,17 @@ export default function Product() {
                   ))}
                 </Select>
               </Col>
-              <Col
-                xs={24}
-                sm={24}
-                md={24}
-                lg={6}
-                xl={6}
-                style={{
-                  border: '1px solid #d9d9d9',
-                }}
-              >
+              <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ border: '1px solid #d9d9d9' }}>
                 <Select
                   allowClear
                   showSearch
                   size={FILTER_SIZE}
-                  style={{
-                    width: '100%',
-                  }}
+                  style={{ width: '100%' }}
                   placeholder="Lọc trạng thái"
                   optionFilterProp="children"
-                  // value={optionSearchName}
                   bordered={false}
-                  onChange={(value) =>
-                    setParamsFilter({ ...paramsFilter, active: value ? value : '' })
-                  }
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
+                  value={paramsFilter.supplier_id}
+                  onChange={(value) => _onFilter('supplier_id', value)}
                 >
                   <Option value={true}>Mở bán</Option>
                   <Option value={false}>Ngừng bán</Option>
@@ -860,15 +854,6 @@ export default function Product() {
               </Col>
             </Row>
           </Col>
-          <Button
-            style={{
-              display: Object.keys(paramsFilter).length <= 2 && 'none',
-            }}
-            onClick={onClickClear}
-            type="primary"
-          >
-            Xóa tất cả lọc
-          </Button>
         </Row>
 
         <Row justify="space-between" style={{ width: '100%', marginTop: 10, marginBottom: 10 }}>
