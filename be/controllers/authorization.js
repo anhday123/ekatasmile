@@ -896,9 +896,48 @@ module.exports._verifyOTP = async (req, res, next) => {
                 .db(DB)
                 .collection('Users')
                 .updateOne({ username: req.body.username }, { $set: { otp_code: true, otp_timelife: true } });
+            let [userData] = await client
+                .db(DB)
+                .collection('Users')
+                .aggregate([
+                    { $match: { username: req.body.username } },
+                    {
+                        $lookup: {
+                            from: 'Roles',
+                            localField: 'role_id',
+                            foreignField: 'role_id',
+                            as: '_role',
+                        },
+                    },
+                    { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'Branchs',
+                            localField: 'branch_id',
+                            foreignField: 'branch_id',
+                            as: '_branch',
+                        },
+                    },
+                    { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'Stores',
+                            localField: 'store_id',
+                            foreignField: 'store_id',
+                            as: '_store',
+                        },
+                    },
+                    { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                ])
+                .toArray();
+            let accessToken = await jwt.createToken(
+                { ...userData, database: DB, _business: business },
+                30 * 24 * 60 * 60
+            );
             res.send({
                 success: true,
                 message: `Mã OTP chính xác, xác thực thành công!`,
+                data: { accessToken: accessToken },
             });
         }
     } catch (err) {
