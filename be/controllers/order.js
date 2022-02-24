@@ -108,7 +108,7 @@ let changePoint = async (database, order) => {
                 }),
         ]);
     } catch (err) {
-        throw new Error(err.message);
+        throw err;
     }
 };
 
