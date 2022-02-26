@@ -1,6 +1,7 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
+const { stringHandle } = require('../utils/string-handle');
 const SDB = process.env.DATABASE;
 
 module.exports._checkDomain = async (req, res, next) => {
@@ -10,7 +11,12 @@ module.exports._checkDomain = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let domain = await client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix });
+        let domain = await client
+            .db(SDB)
+            .collection('Business')
+            .findOne({
+                prefix: new RegExp(stringHandle(req.body.prefix, { removeUnicode: true, removeSpace: true }), 'gi'),
+            });
         if (!domain) {
             res.status(400).send({ success: false });
             return;

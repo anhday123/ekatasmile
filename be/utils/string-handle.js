@@ -1,7 +1,8 @@
 class InputString {
     constructor(text) {
         if (typeof text != 'string') {
-            throw new Error('Typeof input must be string!');
+            text = String(text || '');
+            // throw new Error('Typeof input must be string!');
         }
         this.value = String(text).trim();
     }
@@ -9,6 +10,13 @@ class InputString {
 
 class HandleOptions {
     constructor(options) {
+        /**
+         * Xóa dấu tiếng việt
+         * @example
+         *
+         * Chuỗi có dấu ban đầu
+         * // => Chuoi co dau ban dau
+         */
         this.removeUnicode = options.removeUnicode;
         this.removeSpace = options.removeSpace;
         this.removeSpecialCharacter = options.removeSpecialCharacter;
@@ -23,18 +31,14 @@ class HandleOptions {
 }
 
 /**
- * Xử lý chuỗi thường gặp
+ * Các phương thức xử lý chuỗi thường gặp
  * @param {InputString} text Chuỗi cần xử lý
  * @param {HandleOptions} options Các tùy chọn xử lý
- * @returns {String} Trả về chuỗi đã được xử lý
+ * @returns {String} Chuỗi sau khi được xử lý
  */
 let stringHandle = (text, options) => {
-    if (text) {
-        text = new InputString(text).value;
-    }
-    if (options) {
-        options = new HandleOptions(options);
-    }
+    text = new InputString(text).value;
+    options = new HandleOptions(options);
     if (options) {
         if (options.removeStringInBrackets) {
             if (options.removeStringInBrackets == 'round') {
@@ -69,31 +73,32 @@ let stringHandle = (text, options) => {
             text = text.join('');
         }
         if (options.createSlug) {
-            console.log(text);
             text = text
+                .trim()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
                 .replace(/đ/g, 'd')
                 .replace(/Đ/g, 'D');
-            text = text.replace(/[^a-zA-Z0-9\s]/g, '');
+            text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
             text = text.replace(/\s{1,}/g, '-');
             text = text.toLowerCase();
         }
         if (options.createRegexQuery) {
             text = text
+                .trim()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
                 .replace(/đ/g, 'd')
                 .replace(/Đ/g, 'D');
-            text = text.replace(/[^a-zA-Z0-9\s]/g, '');
+            text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
             text = text.replace(/\s{1,}/g, '(.*?)');
             text = text.toLowerCase();
         }
         if (options.removeSpecialCharacter) {
-            text = text.replace(/[^a-zA-Z0-9\s]/g, '');
+            text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
         }
         if (options.replaceSpaceWithHyphen) {
-            text = text.replace(/(\s{1,}-{1,}\s{1,})/g, '-');
+            text = text.trim().replace(/(\s{1,}-{1,}\s{1,})/g, '-');
         }
         if (options.removeSpace) {
             text = text.replace(/\s/g, '');
