@@ -13,6 +13,7 @@ const { sendSMS } = require('../libs/sendSMS');
 const crypto = require('crypto');
 const { _permissions } = require('../templates/permissions');
 const { _menus } = require('../templates/menus');
+const { stringHandle } = require('../utils/string-handle');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -44,7 +45,11 @@ module.exports._register = async (req, res, next) => {
             }
         });
 
-        req.body.prefix = removeUnicode(req.body.business_name, true).toLowerCase();
+        req.body.prefix = stringHandle(req.body.business_name, {
+            removeUnicode: true,
+            removeSpace: true,
+            lowerCase: true,
+        });
         if (
             req.body.prefix == 'root' ||
             req.body.prefix == 'admin' ||
@@ -57,14 +62,10 @@ module.exports._register = async (req, res, next) => {
                 mess: 'Tên doanh nghiệp đã tồn tại, vui lòng chọn tên khác',
             });
         }
-        req.body.username = String(req.body.username || '')
-            .trim()
-            .toLowerCase();
-        req.body.email = String(req.body.email || '')
-            .trim()
-            .toLowerCase();
-        req.body.password = bcrypt.hash(req.body.password);
-        if (/^((viesoftware)|(admin)|(login)|(register)|(root))$/gi.test(req.body.prefix)) {
+        req.body.username = String(req.body.username).trim().toLowerCase();
+        req.body.email = String(req.body.email).trim().toLowerCase();
+        req.body.password = bcrypt.hash(String(req.body.password));
+        if (/^((viesoftware)|(admin)|(root)|(app)|(login)|(register))$/gi.test(req.body.prefix)) {
             throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp này!`);
         }
         let [business, user] = await Promise.all([
@@ -76,7 +77,6 @@ module.exports._register = async (req, res, next) => {
                     $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
                 }),
         ]);
-
         if (business) {
             throw new Error(`400: Tên doanh nghiệp đã được đăng ký!`);
         }
@@ -86,9 +86,7 @@ module.exports._register = async (req, res, next) => {
         const DB = `${req.body.prefix}DB`;
         let businessApp = await client.db(SDB).collection('AppSetting').findOne({ name: 'Business' });
         let business_id = parseInt(businessApp.value) + 1;
-
         var system_user_id = business_id;
-
         let otpCode = String(Math.random()).substr(2, 6);
         let verifyId = crypto.randomBytes(10).toString(`hex`);
         let verifyLink = `https://${req.body.prefix}.${process.env.DOMAIN}/verify-account?uid=${verifyId}`;
@@ -164,6 +162,7 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: system_user_id,
             active: false,
+            slug_business_name: stringHandle(req.body.business_name, { createSlug: true }),
             slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
             slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
             slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
@@ -604,9 +603,7 @@ module.exports._login = async (req, res, next) => {
             }
         });
         // let [prefix, username] = req.body.username.split("_");
-        console.log(shop);
         var username = req.body.username;
-
         let business = await client.db(SDB).collection('Business').findOne({ prefix: shop });
         if (!business) {
             throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
