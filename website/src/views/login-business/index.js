@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import styles from './check-subdomain.module.scss'
+import styles from './login-business.module.scss'
 import { useDispatch } from 'react-redux'
 import { ACTION, ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
@@ -9,6 +9,7 @@ import { Row, Col, Form, Input, Button, notification, Tabs } from 'antd'
 
 //apis
 import { checkDomain } from 'apis/app'
+import { checkBusiness } from 'apis/auth'
 
 export default function CheckSubdomain() {
   const dispatch = useDispatch()
@@ -20,16 +21,28 @@ export default function CheckSubdomain() {
   const _checkSubdomain = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await checkDomain(body.business_name)
+      const res = await checkBusiness(body.username)
       if (res.status === 200) {
-        if (res.data.success)
-          window.location.href = `https://${body.business_name}.${process.env.REACT_APP_HOST}/login`
+        if (res.data.data)
+          window.location.href = `https://${res.data.data.prefix}.${process.env.REACT_APP_HOST}${ROUTES.LOGIN}?username=${body.username}`
         else
           notification.warning({
-            message: res.data.message || 'Tên doanh nghiệp chưa được đăng ký!',
+            message: 'Bạn chưa đăng ký doanh nghiệp!',
+            description: (
+              <Button type="primary" onClick={() => history.push(ROUTES.REGISTER)}>
+                Đăng ký ngay
+              </Button>
+            ),
           })
       } else
-        notification.warning({ message: res.data.message || 'Tên doanh nghiệp chưa được đăng ký!' })
+        notification.warning({
+          message: 'Bạn chưa đăng ký doanh nghiệp!',
+          description: (
+            <Button type="primary" onClick={() => history.push(ROUTES.REGISTER)}>
+              Đăng ký ngay
+            </Button>
+          ),
+        })
 
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (err) {
@@ -53,7 +66,11 @@ export default function CheckSubdomain() {
             }}
           >
             <Tabs.TabPane
-              tab={<div style={{ fontSize: 23, fontWeight: 700, color: 'white' }}>Đăng nhập</div>}
+              tab={
+                <div style={{ fontSize: 23, fontWeight: 700, color: 'white' }}>
+                  Đăng nhập bằng số điện thoại
+                </div>
+              }
               key="login"
             >
               <Row justify="center" align="middle" style={{ padding: '0px 80px' }}>
@@ -64,11 +81,11 @@ export default function CheckSubdomain() {
                   style={{ width: '100%' }}
                 >
                   <Form.Item
-                    label={<div style={{ color: 'white' }}>Nhập tên doanh nghiệp của bạn</div>}
-                    name="business_name"
-                    rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp của bạn!' }]}
+                    label={<div style={{ color: 'white' }}>Số điện thoại</div>}
+                    name="username"
+                    rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
                   >
-                    <Input size="large" placeholder="Tên doanh nghiệp" />
+                    <Input size="large" placeholder="Nhập số điện thoại" />
                   </Form.Item>
                   <Row justify="center">
                     <Form.Item style={{ width: '100%' }}>

@@ -55,17 +55,17 @@ function App() {
     subDomain &&
     subDomain.length === 1
   )
-    window.location.href = `https://${process.env.REACT_APP_HOST}/register`
+    window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
 
   const checkSubdomain = async () => {
     let router = ''
 
-    if (domain.includes(`${process.env.REACT_APP_HOST}/check-subdomain`))
-      router = '/check-subdomain'
-    if (domain.includes(`${process.env.REACT_APP_HOST}/register`)) router = '/register'
-    if (domain.includes(`${process.env.REACT_APP_HOST}/login`)) router = '/login'
+    if (domain.includes(`${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`))
+      router = ROUTES.CHECK_SUBDOMAIN
+    if (domain.includes(`${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`)) router = ROUTES.REGISTER
+    if (domain.includes(`${process.env.REACT_APP_HOST}${ROUTES.LOGIN}`)) router = ROUTES.LOGIN
 
-    if (router === '/login') {
+    if (router === ROUTES.LOGIN) {
       setLoadingCheckDomain(true)
 
       if (subDomain && subDomain.length === 2) {
@@ -74,26 +74,26 @@ function App() {
         const res = await checkDomain(subDomain[1])
         if (res.status === 200) {
           if (!res.data.success) {
-            window.location.href = `https://${process.env.REACT_APP_HOST}/register`
+            window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`
             return
           }
         } else {
-          window.location.href = `https://${process.env.REACT_APP_HOST}/register`
+          window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`
           return
         }
       } else {
-        window.location.href = `https://${process.env.REACT_APP_HOST}/register`
+        window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`
         return
       }
     }
 
-    if (router === '/register')
+    if (router === ROUTES.REGISTER)
       if (subDomain && subDomain.length === 2)
-        window.location.href = `https://${process.env.REACT_APP_HOST}/register`
+        window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.REGISTER}`
 
-    if (router === '/check-subdomain')
+    if (router === ROUTES.CHECK_SUBDOMAIN)
       if (subDomain && subDomain.length === 2)
-        window.location.href = `https://${process.env.REACT_APP_HOST}/check-subdomain`
+        window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
 
     setLoadingCheckDomain(false)
   }
