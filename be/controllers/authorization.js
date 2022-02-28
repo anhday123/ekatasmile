@@ -36,6 +36,7 @@ let removeUnicode = (text, removeSpace) => {
   }
   return text
 }
+
 module.exports._checkBusiness = async (req, res, next) => {
   try {
     if (req.body.username == undefined)
