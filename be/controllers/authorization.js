@@ -619,7 +619,7 @@ module.exports._login = async (req, res, next) => {
         });
         // let [prefix, username] = req.body.username.split("_");
         var username = req.body.username;
-        let business = await client.db(SDB).collection('Business').findOne({ prefix: shop });
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: shop.toLowerCase() });
         if (!business) {
             throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
         }
