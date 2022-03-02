@@ -19,6 +19,8 @@ export default function ImportFile({
   customFileTemplated = false,
   fileName = '',
   shippingId = '',
+  reset,
+  keyForm = {},
 }) {
   const typingTimeoutRef = useRef()
 
@@ -31,6 +33,7 @@ export default function ImportFile({
   const toggle = () => {
     setVisible(!visible)
     setFileUpload(null)
+    if (reset) reset()
   }
 
   const _handleUpload = async () => {
@@ -47,6 +50,10 @@ export default function ImportFile({
           formData.append('shipping_company_id', shippingId)
           formData.append('status', 'DRAFT')
         }
+
+        //add them key khac neu co
+        const objKey = Object.keys(keyForm)
+        if (objKey.length !== 0) objKey.map((key) => formData.append(key, keyForm[key]))
 
         res = await upload(formData)
         console.log('res', res)
