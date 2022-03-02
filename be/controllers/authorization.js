@@ -37,6 +37,19 @@ let removeUnicode = (text, removeSpace) => {
     return text;
 };
 
+module.exports._checkBusiness = async (req, res, next) => {
+    try {
+        if (req.body.username == undefined) throw new Error('400: Vui lòng truyền username');
+
+        var business = await client.db(SDB).collection('Business').findOne({
+            username: req.body.username,
+        });
+        return res.send({ success: true, data: business });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports._register = async (req, res, next) => {
     try {
         ['business_name', 'username', 'email', 'password'].map((e) => {
@@ -162,7 +175,9 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: system_user_id,
             active: false,
-            slug_business_name: stringHandle(req.body.business_name, { createSlug: true }),
+            slug_business_name: stringHandle(req.body.business_name, {
+                createSlug: true,
+            }),
             slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
             slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
             slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
@@ -604,7 +619,7 @@ module.exports._login = async (req, res, next) => {
         });
         // let [prefix, username] = req.body.username.split("_");
         var username = req.body.username;
-        let business = await client.db(SDB).collection('Business').findOne({ prefix: shop.toLowerCase() });
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: shop });
         if (!business) {
             throw new Error(`400: Tài khoản doanh nghiệp chưa được đăng ký!`);
         }
@@ -959,14 +974,16 @@ module.exports._recoveryPassword = async (req, res, next) => {
             return result;
         })();
         const DB = (business && business.database_name) || '';
-        let rootUser = client
-            .db(SDB)
-            .collection('Business')
-            .findOne({ username: req.body.username, otp_code: true, otp_timelife: true });
-        let user = client
-            .db(DB)
-            .collection('Users')
-            .findOne({ username: req.body.username, otp_code: true, otp_timelife: true });
+        let rootUser = client.db(SDB).collection('Business').findOne({
+            username: req.body.username,
+            otp_code: true,
+            otp_timelife: true,
+        });
+        let user = client.db(DB).collection('Users').findOne({
+            username: req.body.username,
+            otp_code: true,
+            otp_timelife: true,
+        });
         if (!user) {
             throw new Error(`400: Tài khoản chưa được xác thực OTP!`);
         }

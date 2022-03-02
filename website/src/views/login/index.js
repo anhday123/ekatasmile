@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './login.module.scss'
 import { useDispatch } from 'react-redux'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import { ACTION, ROUTES } from 'consts'
 import jwt_decode from 'jwt-decode'
 
@@ -15,6 +15,7 @@ export default function Login() {
   const dispatch = useDispatch()
   const [formLogin] = Form.useForm()
   let history = useHistory()
+  const location = useLocation()
 
   const _login = async (body) => {
     try {
@@ -66,6 +67,12 @@ export default function Login() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
+
+  useEffect(() => {
+    //get username
+    const username = new URLSearchParams(location.search).get('username')
+    if (username) formLogin.setFieldsValue({ username: username })
+  }, [])
 
   return (
     <Row className={styles['login-container']}>

@@ -8,7 +8,7 @@ import BaseLayout from 'components/layout'
 import Authentication from 'components/authentication'
 
 //views
-import CheckSubdomain from './check-subdomain'
+import LoginBusiness from './login-business'
 import Login from './login'
 import Register from './register'
 import ProductCheck from './product-check'
@@ -482,9 +482,9 @@ const DEFINE_ROUTER = [
 const AUTH_ROUTER = [
   {
     path: ROUTES.CHECK_SUBDOMAIN,
-    Component: () => <CheckSubdomain />,
+    Component: () => <LoginBusiness />,
     exact: true,
-    title: 'Check Subdomain',
+    title: 'Login business',
     permissions: [],
   },
   {

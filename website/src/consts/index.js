@@ -34,7 +34,7 @@ export const SHIP_STATUS_ORDER = {
 }
 
 export const ROUTES = {
-  CHECK_SUBDOMAIN: '/check-subdomain',
+  CHECK_SUBDOMAIN: '/business-login',
   LOGIN: '/login',
   REGISTER: '/register',
   IMPORT_REPORT_FILE: '/import-report-file',
@@ -192,7 +192,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.3.7'
+export const VERSION_APP = '1.3.8'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
