@@ -71,10 +71,9 @@ export default function Customer() {
       setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
-
   function onChangeTypeCustomer(value) {
-    if (value) paramsFilter.type = value
-    else delete paramsFilter.type
+    if (value) paramsFilter.type_id = value
+    else delete paramsFilter.type_id
     setParamsFilter({ page: 1, ...paramsFilter })
   }
 
@@ -384,7 +383,7 @@ export default function Customer() {
                 bordered={false}
               >
                 {customerTypes.map((type, index) => (
-                  <Option value={type.name} key={index}>
+                  <Option value={type.type_id} key={index}>
                     {type.name}
                   </Option>
                 ))}
@@ -475,7 +474,7 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${
+                 `${record.address && record.address + ', '}${
                   record.district && record.district + ', '
                 }${record.province && record.province}`,
               sorter: (a, b) => compare(a, b, 'address'),
