@@ -50,6 +50,7 @@ import {
 import { getSuppliers } from 'apis/supplier'
 import { getProducts } from 'apis/product'
 import { getEmployees } from 'apis/employee'
+import { getAllBranch } from 'apis/branch'
 
 export default function ImportInventories() {
   let printOrderRef = useRef()
@@ -58,6 +59,8 @@ export default function ImportInventories() {
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
 
+  const [branchId, setBranchId] = useState()
+  const [branches, setBranches] = useState([])
   const [employees, setEmployees] = useState([])
   const [statusList, setStatusList] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
@@ -368,6 +371,15 @@ export default function ImportInventories() {
     }
   }
 
+  const _getBranches = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _getStatusOrderImportInventory = async () => {
     try {
       const res = await getStatusOrderImportInventory()
@@ -415,6 +427,7 @@ export default function ImportInventories() {
     _getSuppliers()
     _getProducts()
     _getEmployees()
+    _getBranches()
     _getStatusOrderImportInventory()
   }, [])
 
@@ -502,11 +515,37 @@ export default function ImportInventories() {
           </Modal>
 
           <ImportCSV
+            reset={() => setBranchId()}
+            keyForm={{ branch_id: branchId || '' }}
             size="large"
             txt="Nhập excel"
             upload={uploadOrdersImportInventory}
             reload={_getOrdersImportInventory}
-            title="Nhập hàng bằng file excel"
+            title={
+              <Row wrap={false} align="middle">
+                <div style={{ marginRight: 20, fontWeight: 600 }}>Nhập hàng bằng file excel</div>
+
+                <div>
+                  <div style={{ fontSize: 13 }}>Chọn chi nhánh</div>
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    value={branchId}
+                    onChange={setBranchId}
+                    placeholder="Chọn chi nhánh"
+                    size="small"
+                    style={{ width: 250 }}
+                    allowClear
+                  >
+                    {branches.map((branch, index) => (
+                      <Select.Option key={index} value={branch.branch_id}>
+                        {branch.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
+              </Row>
+            }
             fileName="InventoryImport"
             fileTemplated={
               fileTemplated.length
