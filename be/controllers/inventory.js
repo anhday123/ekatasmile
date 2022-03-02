@@ -672,8 +672,14 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 .collection('Variants')
                 .find({ sku: { $in: variantSkus } })
                 .toArray(),
-            client.db(req.user.database).collection('Branchs').findOne({ branch_id: req.body.branch_id }),
+            client
+                .db(req.user.database)
+                .collection('Branchs')
+                .findOne({ branch_id: Number(req.body.branch_id) }),
         ]);
+        if (!branch) {
+            throw new Error(`400: chi nhánh không tồn tại!`);
+        }
         let _products = {};
         products.map((eProduct) => {
             _products[eProduct.sku] = eProduct;
