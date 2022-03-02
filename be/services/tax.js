@@ -201,7 +201,6 @@ module.exports._create = async (req, res, next) => {
         }
         try {
             let _action = {
-                business_id: req.user.business_id,
                 type: 'Tạo',
                 properties: 'Thuế',
                 name: 'Tạo thuế',

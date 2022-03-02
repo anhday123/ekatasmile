@@ -59,7 +59,7 @@ module.exports._create = async (req, res, next) => {
         tax_id++;
         let _tax = {
             tax_id: tax_id,
-            code: String(table_id).padStart(6, '0'),
+            code: String(tax_id).padStart(6, '0'),
             name: req.body.name,
             value: Number(req.body.value),
             description: req.body.description || '',
