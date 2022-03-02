@@ -29,6 +29,12 @@ module.exports._get = async (req, res, next) => {
     try {
         let aggregateQuery = [];
         // lấy các thuộc tính tìm kiếm cần độ chính xác cao ('1' == '1', '1' != '12',...)
+        if (req.query.active == 'true') {
+            aggregateQuery.push({ $match: { active: true } });
+        }
+        if (req.query.active == 'false') {
+            aggregateQuery.push({ $match: { active: false } });
+        }
         if (req.query.product_id) {
             aggregateQuery.push({
                 $match: { product_id: Number(req.query.product_id) },
