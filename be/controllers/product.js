@@ -868,7 +868,7 @@ module.exports.importFileC = async (req, res, next) => {
                     name: eRow['tensanpham'],
                     slug: removeUnicode(String(eRow['tensanpham']), false).replace(/\s/g, '-').toLowerCase(),
                     supplier_id: _suppliers[eRow['_nhacungcap']]?.supplier_id,
-                    category_id: [_categories[eRow['_tenthuonghieu']]?.category_id],
+                    category_id: [_categories[eRow['_tendanhmuc']]?.category_id],
                     tax_id: (() => {
                         if (eRow['_thueapdung']) {
                             eRow['_thueapdung'].map((taxSlug) => {
