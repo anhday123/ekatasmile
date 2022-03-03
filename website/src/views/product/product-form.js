@@ -129,7 +129,7 @@ export default function ProductAdd() {
             ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
             sku: `${
               valueGeneratedSku || ''
-            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
             options: [{ name: attributes[0].option, value: value }],
             ...initVariant,
           })
@@ -144,7 +144,7 @@ export default function ProductAdd() {
               ).toUpperCase()} ${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
-              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+                }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[1].option, value: value }],
               ...initVariant,
             })
@@ -158,7 +158,7 @@ export default function ProductAdd() {
               ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
-              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+                }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[0].option, value: value }],
             })
           })
@@ -172,7 +172,7 @@ export default function ProductAdd() {
                 ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
                 sku: `${
                   valueGeneratedSku || ''
-                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                  }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
                 options: [
                   { name: attributes[0].option, value: v0 },
                   { name: attributes[1].option, value: v1 },
@@ -337,10 +337,10 @@ export default function ProductAdd() {
           sku: location.state
             ? skuProductWithEdit
             : !isGeneratedSku
-            ? formProduct.sku
               ? formProduct.sku
-              : valueDefaultSku
-            : valueGeneratedSku,
+                ? formProduct.sku
+                : valueDefaultSku
+              : valueGeneratedSku,
           options: [],
           image: images || [],
           supplier: supplier || '',
@@ -901,6 +901,10 @@ export default function ProductAdd() {
     _getSuppliers()
     _getCategories()
   }, [])
+  // cập nhật giá trị tạo mã sản phẩm/sku tự động 
+  useEffect(() => {
+    form.setFieldsValue({ sku: valueGeneratedSku })
+  }, [valueGeneratedSku])
 
   //get width device
   useEffect(() => {
@@ -972,7 +976,7 @@ export default function ProductAdd() {
                     }}
                   />
                 </Form.Item>
-                <div style={{ position: 'absolute', bottom: -17 }}>
+                {/* <div style={{ position: 'absolute', bottom: -17 }}>
                   <Checkbox
                     checked={isGeneratedSku}
                     onChange={(e) => {
@@ -983,7 +987,7 @@ export default function ProductAdd() {
                   >
                     Tự động tạo mã sản phẩm/sku
                   </Checkbox>
-                </div>
+                </div> */}
               </Col>
               <Col
                 xs={24}
@@ -1062,7 +1066,7 @@ export default function ProductAdd() {
               <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
                 <Form.Item label="Mã sản phẩm/SKU" name="sku">
                   <Input
-                    disabled={isGeneratedSku}
+                    // disabled={isGeneratedSku}
                     size="large"
                     placeholder="Nhập mã sản phẩm/sku"
                   />
@@ -1368,7 +1372,7 @@ export default function ProductAdd() {
                               size="large"
                               style={{
                                 marginTop: 17,
-                                display: attributes.length === 2 && 'none',
+                                // display: attributes.length === 2 && 'none',
                               }}
                               onClick={addAttribute}
                               disabled={location.state ? true : false}
