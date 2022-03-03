@@ -86,8 +86,10 @@ export default function Product() {
   }
 
   const _onFilter = (attribute = '', value = '') => {
-    if (value) paramsFilter[attribute] = value
-    else delete paramsFilter[attribute]
+    // if (value) paramsFilter[attribute] = value
+    // else delete paramsFilter[attribute]
+    if (value !== '') paramsFilter.active = value
+    else delete paramsFilter.active
     setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
