@@ -133,7 +133,6 @@ module.exports._get = async (req, res, next) => {
                 },
             });
         }
-        // lấy các thuộc tính tùy chọn khác
         aggregateQuery.push({
             $lookup: {
                 from: 'Attributes',
@@ -159,7 +158,7 @@ module.exports._get = async (req, res, next) => {
                                         return [
                                             {
                                                 $match: {
-                                                    $expr: { $eq: ['$variant_id', Number(req.query.branch_id)] },
+                                                    $expr: { $eq: ['$branch_id', Number(req.query.branch_id)] },
                                                 },
                                             },
                                         ];
@@ -168,7 +167,7 @@ module.exports._get = async (req, res, next) => {
                                 })(),
                                 {
                                     $group: {
-                                        _id: { type: '$type', branch_id: '$branch_id', store_id: '$store_id' },
+                                        _id: { type: '$type', branch_id: '$branch_id' },
                                         branch_id: { $first: '$branch_id' },
                                         name: { $first: '$name' },
                                         quantity: { $sum: '$quantity' },
