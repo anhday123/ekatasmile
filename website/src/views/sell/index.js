@@ -57,7 +57,7 @@ import {
   Tag,
   notification,
   message,
-  Col
+  Col, Form
 } from 'antd'
 
 //icons antd
@@ -127,6 +127,7 @@ export default function Sell() {
   const [customers, setCustomers] = useState([])
 
   const [infoBranch, setInfoBranch] = useState({})
+  const [form] = Form.useForm()
 
   //object invoice
   const initInvoice = {
@@ -158,6 +159,8 @@ export default function Sell() {
   )
   const [indexInvoice, setIndexInvoice] = useState(0)
   const [activeKeyTab, setActiveKeyTab] = useState(initInvoice.id)
+
+  const [valueDefShippingUnit, setValuDefaulf] = useState(invoices[indexInvoice].shipping || undefined)
 
   const _deleteInvoiceAfterCreateOrder = () => {
     const invoicesNew = [...invoices]
@@ -464,6 +467,12 @@ export default function Sell() {
   const _editInvoice = (attribute, value) => {
     const invoicesNew = [...invoices]
     invoicesNew[indexInvoice][attribute] = value
+    // mynote
+    if (value) {
+      form.setFieldsValue({ dvDef: valueDefShippingUnit })
+      setValuDefaulf(shippingsMethod[0].name)
+    }
+
 
     // tổng tiền của tất cả sản phẩm
     invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
@@ -1189,6 +1198,7 @@ export default function Sell() {
     try {
       const res = await getShippings()
       if (res.status === 200) setShippingsMethod(res.data.data)
+      form.setFieldsValue({ dvDef: (res.data.data[0].shipping_company_id) })
     } catch (error) {
       console.log(error)
     }
@@ -1977,126 +1987,131 @@ export default function Sell() {
                     marginBottom: 10,
                   }}
                 >
-                  <Select
-                    value={invoices[indexInvoice].shipping || undefined}
-                    onChange={(value) => _editInvoice('shipping', value)}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                    placeholder="Chọn đơn vị vận chuyển (nếu có)"
-                    optionFilterProp="children"
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {shippingsMethod.map((shipping, index) => (
-                      <Select.Option value={shipping.name} index={index}>
-                        {shipping.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </div>
-              </Row>
-              <Row justify="space-between" wrap={false} align="middle">
-                <p>Mã vận đơn</p>
-                <div
-                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%', marginBottom: 10 }}
-                >
-                  <Input
-                    onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
-                    value={invoices[indexInvoice].billOfLadingCode}
-                    placeholder="Nhập mã vận đơn (nếu có)"
-                    bordered={false}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              </Row>
-              <Row justify="space-between" wrap={false} align="middle">
-                <p style={{ marginTop: 10 }}>Phí giao hàng</p>
-                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%' }}>
-                  <InputNumber
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    value={invoices[indexInvoice].deliveryCharges || ''}
-                    onChange={(value) => _editInvoice('deliveryCharges', +value)}
-                    placeholder="Nhập phí giao hàng"
-                    defaultValue={''}
-                    min={0}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              </Row>
+                  <Form.Item name="dvDef">
+                    {console.log("valueDefShippingUnit", valueDefShippingUnit)}
+                    <Select
+                      value={valueDefShippingUnit}
+                      onChange={(value) => _editInvoice('shipping', value)}
+                      bordered={false}
+                      style={{ width: '100%' }}
+                      placeholder="Chọn đơn vị vận chuyển (nếu có)"
+                      optionFilterProp="children"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {shippingsMethod.map((shipping, index) => (
+                        <Select.Option value={shipping.shipping_company_id}
+                          index={index}>
+                          {shipping.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                
             </div>
-
-            <Row
-              justify="space-between"
-              wrap={false}
-              align="middle"
-              style={{ fontWeight: 700, color: '#0877de', fontSize: 17, margin: '13px 0px' }}
+          </Row>
+          <Row justify="space-between" wrap={false} align="middle">
+            <p>Mã vận đơn</p>
+            <div
+              style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%', marginBottom: 10 }}
             >
-              <div>Khách phải trả</div>
-              <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
-            </Row>
+              <Input
+                onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
+                value={invoices[indexInvoice].billOfLadingCode}
+                placeholder="Nhập mã vận đơn (nếu có)"
+                bordered={false}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </Row>
+          <Row justify="space-between" wrap={false} align="middle">
+            <p style={{ marginTop: 10 }}>Phí giao hàng</p>
+            <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%' }}>
+              <InputNumber
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                value={invoices[indexInvoice].deliveryCharges || ''}
+                onChange={(value) => _editInvoice('deliveryCharges', +value)}
+                placeholder="Nhập phí giao hàng"
+                defaultValue={''}
+                min={0}
+                bordered={false}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </Row>
+        </div>
 
-            <Row justify="space-between" wrap={false} align="middle">
-              <p style={{ marginBottom: 0 }}>
-                {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
-                (F2)
-              </p>
-              {invoices[indexInvoice].payments.length === 1 ? (
-                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
-                  <InputNumber
-                    ref={inputRef}
-                    value={
-                      invoices[indexInvoice].isDelivery
-                        ? invoices[indexInvoice].prepay
-                        : invoices[indexInvoice].moneyGivenByCustomer
-                    }
-                    onChange={(value) => {
-                      if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', value)
-                      else _editInvoice('moneyGivenByCustomer', value)
-                      _editInvoice('payments', [
-                        { method: invoices[indexInvoice].payments[0].method, value: value },
-                      ])
-                    }}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                    min={0}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              ) : (
-                formatCash(
+        <Row
+          justify="space-between"
+          wrap={false}
+          align="middle"
+          style={{ fontWeight: 700, color: '#0877de', fontSize: 17, margin: '13px 0px' }}
+        >
+          <div>Khách phải trả</div>
+          <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
+        </Row>
+
+        <Row justify="space-between" wrap={false} align="middle">
+          <p style={{ marginBottom: 0 }}>
+            {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
+            (F2)
+          </p>
+          {invoices[indexInvoice].payments.length === 1 ? (
+            <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
+              <InputNumber
+                ref={inputRef}
+                value={
                   invoices[indexInvoice].isDelivery
                     ? invoices[indexInvoice].prepay
                     : invoices[indexInvoice].moneyGivenByCustomer
-                )
-              )}
-            </Row>
-
-            <Row>
-              <PaymentMethods
-                setVisible={setVisiblePayments}
-                visible={visiblePayments}
-                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
-                indexInvoice={indexInvoice}
-                invoices={invoices}
-                editInvoice={_editInvoice}
+                }
+                onChange={(value) => {
+                  if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', value)
+                  else _editInvoice('moneyGivenByCustomer', value)
+                  _editInvoice('payments', [
+                    { method: invoices[indexInvoice].payments[0].method, value: value },
+                  ])
+                }}
+                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                min={0}
+                bordered={false}
+                style={{ width: '100%' }}
               />
-            </Row>
-            <div style={{ marginBottom: 10 }}>
-              <Space size="middle">
-                {invoices[indexInvoice].payments.map((payment) => (
-                  <i style={{ color: '#637381' }}>
-                    {payment.method} ({formatCash(payment.value || 0)})
-                  </i>
-                ))}
-              </Space>
             </div>
+          ) : (
+            formatCash(
+              invoices[indexInvoice].isDelivery
+                ? invoices[indexInvoice].prepay
+                : invoices[indexInvoice].moneyGivenByCustomer
+            )
+          )}
+        </Row>
 
-            {/* <div
+        <Row>
+          <PaymentMethods
+            setVisible={setVisiblePayments}
+            visible={visiblePayments}
+            moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
+            indexInvoice={indexInvoice}
+            invoices={invoices}
+            editInvoice={_editInvoice}
+          />
+        </Row>
+        <div style={{ marginBottom: 10 }}>
+          <Space size="middle">
+            {invoices[indexInvoice].payments.map((payment) => (
+              <i style={{ color: '#637381' }}>
+                {payment.method} ({formatCash(payment.value || 0)})
+              </i>
+            ))}
+          </Space>
+        </div>
+
+        {/* <div
               style={{
                 display: invoices[indexInvoice].payments.length !== 1 && 'none',
               }}
@@ -2121,52 +2136,52 @@ export default function Sell() {
                   : ''}
               </Row>
             </div> */}
-          </div>
+      </div>
 
-          {!invoices[indexInvoice].isDelivery && (
-            <Row wrap={false} justify="space-between" align="middle">
-              <span>Tiền thừa: </span>
-              <span style={{ fontWeight: 600, color: 'red' }}>
-                {formatCash(invoices[indexInvoice].excessCash)}
-              </span>
-            </Row>
-          )}
+      {!invoices[indexInvoice].isDelivery && (
+        <Row wrap={false} justify="space-between" align="middle">
+          <span>Tiền thừa: </span>
+          <span style={{ fontWeight: 600, color: 'red' }}>
+            {formatCash(invoices[indexInvoice].excessCash)}
+          </span>
+        </Row>
+      )}
 
-          <div style={{ marginBottom: 60, marginTop: 10 }}>
-            Ghi chú <EditOutlined />
-            <NoteInvoice />
-          </div>
+      <div style={{ marginBottom: 60, marginTop: 10 }}>
+        Ghi chú <EditOutlined />
+        <NoteInvoice />
+      </div>
 
-          <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
-            <Space>
-              <ReactToPrint
-                trigger={() => (
-                  <Button
-                    size="large"
-                    type="primary"
-                    style={{ width: 150, backgroundColor: '#EA9649', borderColor: '#EA9649' }}
-                  >
-                    In hóa đơn
-                  </Button>
-                )}
-                content={() => printOrderRef.current}
-              />
+      <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
+        <Space>
+          <ReactToPrint
+            trigger={() => (
               <Button
-                onClick={_validatedCreateOrderOrPay}
                 size="large"
                 type="primary"
-                style={{
-                  minWidth: 150,
-                  backgroundColor: '#0877DE',
-                  borderColor: '#0877DE',
-                }}
+                style={{ width: 150, backgroundColor: '#EA9649', borderColor: '#EA9649' }}
               >
-                {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
+                In hóa đơn
               </Button>
-            </Space>
-          </Row>
-        </div>
-      </div>
+            )}
+            content={() => printOrderRef.current}
+          />
+          <Button
+            onClick={_validatedCreateOrderOrPay}
+            size="large"
+            type="primary"
+            style={{
+              minWidth: 150,
+              backgroundColor: '#0877DE',
+              borderColor: '#0877DE',
+            }}
+          >
+            {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
+          </Button>
+        </Space>
+      </Row>
     </div>
+      </div >
+    </div >
   )
 }
