@@ -890,7 +890,7 @@ export default function ImportInventory() {
                   onChange={(value, option) => {
                     let p = {}
                     if (value) {
-                      const branchFind = branches.find((e) => e.name === value)
+                      const branchFind = branches.find((e) => e.branch_id === value)
                       if (branchFind) p.branch_id = branchFind.branch_id
                     }
                     setImportLocation({ ...p })

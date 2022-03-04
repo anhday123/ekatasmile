@@ -57,7 +57,7 @@ import {
   Tag,
   notification,
   message,
-  Col
+  Col,
 } from 'antd'
 
 //icons antd
@@ -115,7 +115,7 @@ export default function Sell() {
   const [countProducts, setCountProducts] = useState(0)
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [loadingProductRelated, setLoadingProductRelated] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState( { page: 1, page_size: 10 })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 10 })
 
   const [paymentMethodDefault, setPaymentMethodDefault] = useState({})
   const [visiblePayments, setVisiblePayments] = useState(false)
@@ -219,13 +219,16 @@ export default function Sell() {
     return (
       <div onClick={(e) => e.stopPropagation()}>
         <Tooltip placement="bottom">
-          <Button type="primary"
+          <Button
+            type="primary"
             onClick={toggle}
             style={{
               cursor: 'pointer',
             }}
-          >{name}</Button>
-        </Tooltip >
+          >
+            {name}
+          </Button>
+        </Tooltip>
         <Modal
           width={700}
           footer={
@@ -252,10 +255,13 @@ export default function Sell() {
     const btn = (
       <Row>
         <Col span={8}>
-          <ModalQuantityProductInStoresNew name={"Xem sản phẩm ở chi nhánh khác"} product={product} />
+          <ModalQuantityProductInStoresNew
+            name={'Xem sản phẩm ở chi nhánh khác'}
+            product={product}
+          />
         </Col>
         <Col span={8} offset={7}>
-          <ModalQuantityProductInStoresNew name={"Bán hàng pre-order"} product={product} />
+          <Button type="primary">Bán hàng pre-order</Button>
         </Col>
       </Row>
     )
@@ -283,19 +289,18 @@ export default function Sell() {
             //thuế VAT của mỗi sản phẩm
             invoicesNew[indexInvoice].order_details[indexProduct].VAT_Product =
               invoicesNew[indexInvoice].order_details[indexProduct]._taxes &&
-                invoicesNew[indexInvoice].order_details[indexProduct]._taxes.length
+              invoicesNew[indexInvoice].order_details[indexProduct]._taxes.length
                 ? (
-                  (invoicesNew[indexInvoice].order_details[indexProduct]._taxes.reduce(
-                    (total, current) => total + current.value,
-                    0
-                  ) /
-                    100) *
-                  invoicesNew[indexInvoice].order_details[indexProduct].sumCost
-                ).toFixed(0)
+                    (invoicesNew[indexInvoice].order_details[indexProduct]._taxes.reduce(
+                      (total, current) => total + current.value,
+                      0
+                    ) /
+                      100) *
+                    invoicesNew[indexInvoice].order_details[indexProduct].sumCost
+                  ).toFixed(0)
                 : 0
           } else
             notification.warning({
-
               message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
               description: (
                 <Button
@@ -317,9 +322,9 @@ export default function Sell() {
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
-                  (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                  product.price
-                ).toFixed(0)
+                    (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                    product.price
+                  ).toFixed(0)
                 : 0,
           })
         }
@@ -389,7 +394,7 @@ export default function Sell() {
           btn,
           style: {
             width: 500,
-          }
+          },
         })
     }
   }
@@ -522,15 +527,15 @@ export default function Sell() {
       //thuế VAT của mỗi sản phẩm
       invoicesNew[indexInvoice].order_details[index].VAT_Product =
         invoicesNew[indexInvoice].order_details[index]._taxes &&
-          invoicesNew[indexInvoice].order_details[index]._taxes.length
+        invoicesNew[indexInvoice].order_details[index]._taxes.length
           ? (
-            (invoicesNew[indexInvoice].order_details[index]._taxes.reduce(
-              (total, current) => total + current.value,
-              0
-            ) /
-              100) *
-            invoicesNew[indexInvoice].order_details[index].sumCost
-          ).toFixed(0)
+              (invoicesNew[indexInvoice].order_details[index]._taxes.reduce(
+                (total, current) => total + current.value,
+                0
+              ) /
+                100) *
+              invoicesNew[indexInvoice].order_details[index].sumCost
+            ).toFixed(0)
           : 0
 
       //tổng thuế VAT của tất cả các sản phẩm
@@ -796,9 +801,9 @@ export default function Sell() {
           VAT_Product:
             variant._taxes && variant._taxes.length
               ? (
-                (variant._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                variant.price
-              ).toFixed(0)
+                  (variant._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                  variant.price
+                ).toFixed(0)
               : 0,
         }
 
@@ -1018,7 +1023,7 @@ export default function Sell() {
             to_country_code: '',
             return_name: `${invoices[indexInvoice].deliveryAddress.first_name || ''} ${
               invoices[indexInvoice].deliveryAddress.last_name || ''
-              }`,
+            }`,
             return_phone: invoices[indexInvoice].deliveryAddress.phone || '',
             return_address: invoices[indexInvoice].deliveryAddress.address || '',
             return_ward: '',
@@ -1219,12 +1224,8 @@ export default function Sell() {
     try {
       setLoadingProductRelated(true)
 
-      const res = await getProducts({
-        branch_id: branchIdApp || '',
-        merge: true,
-        detach: true,
-        ...params,
-      })
+      const res = await getProducts({ branch_id: branchIdApp || '', detach: true, ...params })
+
       if (res.status === 200) {
         setProductsRelated(res.data.data.map((e) => e.variants))
         setCountProducts(res.data.count)
@@ -1782,8 +1783,8 @@ export default function Sell() {
                         fontSize: 18,
                         display:
                           invoices[indexInvoice] &&
-                            invoices[indexInvoice].customer &&
-                            invoices[indexInvoice].customer._id === customer._id
+                          invoices[indexInvoice].customer &&
+                          invoices[indexInvoice].customer._id === customer._id
                             ? ''
                             : 'none',
                       }}
@@ -1811,8 +1812,8 @@ export default function Sell() {
                       <a style={{ fontWeight: 600, marginRight: 5, color: '#1890ff' }}>
                         {invoices[indexInvoice].customer &&
                           invoices[indexInvoice].customer.first_name +
-                          ' ' +
-                          invoices[indexInvoice].customer.last_name}
+                            ' ' +
+                            invoices[indexInvoice].customer.last_name}
                       </a>
                     </ModalUpdateCustomer>
                   </Permission>
