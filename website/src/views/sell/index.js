@@ -1988,7 +1988,6 @@ export default function Sell() {
                   }}
                 >
                   <Form.Item name="dvDef">
-                    {console.log("valueDefShippingUnit", valueDefShippingUnit)}
                     <Select
                       value={valueDefShippingUnit}
                       onChange={(value) => _editInvoice('shipping', value)}
