@@ -1412,7 +1412,8 @@ export default function Sell() {
             addProductToCartInvoice={_addProductToCartInvoice}
           />
         </Row>
-        <Row align="middle" style={{ marginLeft: 30 }}>
+        <Row align="middle" style={{ marginLeft: 30 }}
+          className={styles['tab-sell']}>
           <Tabs
             hideAdd={invoices.length > 9 && true}
             moreIcon={<MoreOutlined style={{ color: 'white', fontSize: 16 }} />}
@@ -1453,16 +1454,19 @@ export default function Sell() {
                   </Popconfirm>
                 }
                 tab={
-                  <Tooltip title={invoice.name} mouseEnterDelay={1}>
-                    <p
-                      style={{
-                        marginBottom: 0,
-                        color: invoice.id === activeKeyTab ? 'black' : 'white',
-                      }}
-                    >
-                      {invoice.name}
-                    </p>
-                  </Tooltip>
+                  <>
+                    <Tooltip title={invoice.name} mouseEnterDelay={1}
+                      className="tab-sell">
+                      <p
+                        style={{
+                          marginBottom: 0,
+                          color: invoice.id === activeKeyTab ? 'black' : 'white',
+                        }}
+                      >
+                        {invoice.name}
+                      </p>
+                    </Tooltip>
+                  </>
                 }
                 key={invoice.id}
                 style={{ display: 'none' }}
@@ -2008,109 +2012,109 @@ export default function Sell() {
                       ))}
                     </Select>
                   </Form.Item>
-                
+
+                </div>
+              </Row>
+              <Row justify="space-between" wrap={false} align="middle">
+                <p>Mã vận đơn</p>
+                <div
+                  style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%', marginBottom: 10 }}
+                >
+                  <Input
+                    onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
+                    value={invoices[indexInvoice].billOfLadingCode}
+                    placeholder="Nhập mã vận đơn (nếu có)"
+                    bordered={false}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </Row>
+              <Row justify="space-between" wrap={false} align="middle">
+                <p style={{ marginTop: 10 }}>Phí giao hàng</p>
+                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%' }}>
+                  <InputNumber
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    value={invoices[indexInvoice].deliveryCharges || ''}
+                    onChange={(value) => _editInvoice('deliveryCharges', +value)}
+                    placeholder="Nhập phí giao hàng"
+                    defaultValue={''}
+                    min={0}
+                    bordered={false}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </Row>
             </div>
-          </Row>
-          <Row justify="space-between" wrap={false} align="middle">
-            <p>Mã vận đơn</p>
-            <div
-              style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%', marginBottom: 10 }}
+
+            <Row
+              justify="space-between"
+              wrap={false}
+              align="middle"
+              style={{ fontWeight: 700, color: '#0877de', fontSize: 17, margin: '13px 0px' }}
             >
-              <Input
-                onChange={(e) => _editInvoice('billOfLadingCode', e.target.value)}
-                value={invoices[indexInvoice].billOfLadingCode}
-                placeholder="Nhập mã vận đơn (nếu có)"
-                bordered={false}
-                style={{ width: '100%' }}
-              />
-            </div>
-          </Row>
-          <Row justify="space-between" wrap={false} align="middle">
-            <p style={{ marginTop: 10 }}>Phí giao hàng</p>
-            <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '50%' }}>
-              <InputNumber
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                value={invoices[indexInvoice].deliveryCharges || ''}
-                onChange={(value) => _editInvoice('deliveryCharges', +value)}
-                placeholder="Nhập phí giao hàng"
-                defaultValue={''}
-                min={0}
-                bordered={false}
-                style={{ width: '100%' }}
-              />
-            </div>
-          </Row>
-        </div>
+              <div>Khách phải trả</div>
+              <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
+            </Row>
 
-        <Row
-          justify="space-between"
-          wrap={false}
-          align="middle"
-          style={{ fontWeight: 700, color: '#0877de', fontSize: 17, margin: '13px 0px' }}
-        >
-          <div>Khách phải trả</div>
-          <div>{formatCash(invoices[indexInvoice].moneyToBePaidByCustomer)}</div>
-        </Row>
-
-        <Row justify="space-between" wrap={false} align="middle">
-          <p style={{ marginBottom: 0 }}>
-            {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
-            (F2)
-          </p>
-          {invoices[indexInvoice].payments.length === 1 ? (
-            <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
-              <InputNumber
-                ref={inputRef}
-                value={
+            <Row justify="space-between" wrap={false} align="middle">
+              <p style={{ marginBottom: 0 }}>
+                {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
+                (F2)
+              </p>
+              {invoices[indexInvoice].payments.length === 1 ? (
+                <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
+                  <InputNumber
+                    ref={inputRef}
+                    value={
+                      invoices[indexInvoice].isDelivery
+                        ? invoices[indexInvoice].prepay
+                        : invoices[indexInvoice].moneyGivenByCustomer
+                    }
+                    onChange={(value) => {
+                      if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', value)
+                      else _editInvoice('moneyGivenByCustomer', value)
+                      _editInvoice('payments', [
+                        { method: invoices[indexInvoice].payments[0].method, value: value },
+                      ])
+                    }}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                    min={0}
+                    bordered={false}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              ) : (
+                formatCash(
                   invoices[indexInvoice].isDelivery
                     ? invoices[indexInvoice].prepay
                     : invoices[indexInvoice].moneyGivenByCustomer
-                }
-                onChange={(value) => {
-                  if (invoices[indexInvoice].isDelivery) _editInvoice('prepay', value)
-                  else _editInvoice('moneyGivenByCustomer', value)
-                  _editInvoice('payments', [
-                    { method: invoices[indexInvoice].payments[0].method, value: value },
-                  ])
-                }}
-                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                min={0}
-                bordered={false}
-                style={{ width: '100%' }}
+                )
+              )}
+            </Row>
+
+            <Row>
+              <PaymentMethods
+                setVisible={setVisiblePayments}
+                visible={visiblePayments}
+                moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
+                indexInvoice={indexInvoice}
+                invoices={invoices}
+                editInvoice={_editInvoice}
               />
+            </Row>
+            <div style={{ marginBottom: 10 }}>
+              <Space size="middle">
+                {invoices[indexInvoice].payments.map((payment) => (
+                  <i style={{ color: '#637381' }}>
+                    {payment.method} ({formatCash(payment.value || 0)})
+                  </i>
+                ))}
+              </Space>
             </div>
-          ) : (
-            formatCash(
-              invoices[indexInvoice].isDelivery
-                ? invoices[indexInvoice].prepay
-                : invoices[indexInvoice].moneyGivenByCustomer
-            )
-          )}
-        </Row>
 
-        <Row>
-          <PaymentMethods
-            setVisible={setVisiblePayments}
-            visible={visiblePayments}
-            moneyToBePaidByCustomer={invoices[indexInvoice].moneyToBePaidByCustomer}
-            indexInvoice={indexInvoice}
-            invoices={invoices}
-            editInvoice={_editInvoice}
-          />
-        </Row>
-        <div style={{ marginBottom: 10 }}>
-          <Space size="middle">
-            {invoices[indexInvoice].payments.map((payment) => (
-              <i style={{ color: '#637381' }}>
-                {payment.method} ({formatCash(payment.value || 0)})
-              </i>
-            ))}
-          </Space>
-        </div>
-
-        {/* <div
+            {/* <div
               style={{
                 display: invoices[indexInvoice].payments.length !== 1 && 'none',
               }}
@@ -2135,51 +2139,51 @@ export default function Sell() {
                   : ''}
               </Row>
             </div> */}
-      </div>
+          </div>
 
-      {!invoices[indexInvoice].isDelivery && (
-        <Row wrap={false} justify="space-between" align="middle">
-          <span>Tiền thừa: </span>
-          <span style={{ fontWeight: 600, color: 'red' }}>
-            {formatCash(invoices[indexInvoice].excessCash)}
-          </span>
-        </Row>
-      )}
+          {!invoices[indexInvoice].isDelivery && (
+            <Row wrap={false} justify="space-between" align="middle">
+              <span>Tiền thừa: </span>
+              <span style={{ fontWeight: 600, color: 'red' }}>
+                {formatCash(invoices[indexInvoice].excessCash)}
+              </span>
+            </Row>
+          )}
 
-      <div style={{ marginBottom: 60, marginTop: 10 }}>
-        Ghi chú <EditOutlined />
-        <NoteInvoice />
-      </div>
+          <div style={{ marginBottom: 60, marginTop: 10 }}>
+            Ghi chú <EditOutlined />
+            <NoteInvoice />
+          </div>
 
-      <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
-        <Space>
-          <ReactToPrint
-            trigger={() => (
+          <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>
+            <Space>
+              <ReactToPrint
+                trigger={() => (
+                  <Button
+                    size="large"
+                    type="primary"
+                    style={{ width: 150, backgroundColor: '#EA9649', borderColor: '#EA9649' }}
+                  >
+                    In hóa đơn
+                  </Button>
+                )}
+                content={() => printOrderRef.current}
+              />
               <Button
+                onClick={_validatedCreateOrderOrPay}
                 size="large"
                 type="primary"
-                style={{ width: 150, backgroundColor: '#EA9649', borderColor: '#EA9649' }}
+                style={{
+                  minWidth: 150,
+                  backgroundColor: '#0877DE',
+                  borderColor: '#0877DE',
+                }}
               >
-                In hóa đơn
+                {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
               </Button>
-            )}
-            content={() => printOrderRef.current}
-          />
-          <Button
-            onClick={_validatedCreateOrderOrPay}
-            size="large"
-            type="primary"
-            style={{
-              minWidth: 150,
-              backgroundColor: '#0877DE',
-              borderColor: '#0877DE',
-            }}
-          >
-            {invoices[indexInvoice].isDelivery ? 'Tạo đơn giao hàng' : 'Thanh toán'} (F1)
-          </Button>
-        </Space>
-      </Row>
-    </div>
+            </Space>
+          </Row>
+        </div>
       </div >
     </div >
   )
