@@ -57,6 +57,7 @@ import {
   Tag,
   notification,
   message,
+  Col
 } from 'antd'
 
 //icons antd
@@ -114,7 +115,7 @@ export default function Sell() {
   const [countProducts, setCountProducts] = useState(0)
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [loadingProductRelated, setLoadingProductRelated] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 10 })
+  const [paramsFilter, setParamsFilter] = useState( { page: 1, page_size: 10 })
 
   const [paymentMethodDefault, setPaymentMethodDefault] = useState({})
   const [visiblePayments, setVisiblePayments] = useState(false)
@@ -202,8 +203,63 @@ export default function Sell() {
 
     setInvoices([...invoicesNew])
   }
+  const ModalQuantityProductInStoresNew = ({ product, name }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [locations, setLocations] = useState([])
 
+    const column = [
+      { title: 'Chi nhánh', dataIndex: 'name' },
+      {
+        title: 'Số lượng',
+        render: (text, record) => formatCash(record.quantity || 0),
+      },
+    ]
+
+    return (
+      <div onClick={(e) => e.stopPropagation()}>
+        <Tooltip placement="bottom">
+          <Button type="primary"
+            onClick={toggle}
+            style={{
+              cursor: 'pointer',
+            }}
+          >{name}</Button>
+        </Tooltip >
+        <Modal
+          width={700}
+          footer={
+            <Row justify="end">
+              <Button onClick={toggle}>Cancel</Button>
+            </Row>
+          }
+          visible={visible}
+          onCancel={toggle}
+          title={product && product.title}
+        >
+          <Table
+            pagination={false}
+            style={{ width: '100%' }}
+            columns={column}
+            size="small"
+            dataSource={locations}
+          />
+        </Modal>
+      </div>
+    )
+  }
   const _addProductToCartInvoice = (product) => {
+    const btn = (
+      <Row>
+        <Col span={8}>
+          <ModalQuantityProductInStoresNew name={"Xem sản phẩm ở chi nhánh khác"} product={product} />
+        </Col>
+        <Col span={8} offset={7}>
+          <ModalQuantityProductInStoresNew name={"Bán hàng pre-order"} product={product} />
+        </Col>
+      </Row>
+    )
+
     if (product) {
       //check product có đủ số lượng
       if (product.total_quantity !== 0) {
@@ -227,18 +283,19 @@ export default function Sell() {
             //thuế VAT của mỗi sản phẩm
             invoicesNew[indexInvoice].order_details[indexProduct].VAT_Product =
               invoicesNew[indexInvoice].order_details[indexProduct]._taxes &&
-              invoicesNew[indexInvoice].order_details[indexProduct]._taxes.length
+                invoicesNew[indexInvoice].order_details[indexProduct]._taxes.length
                 ? (
-                    (invoicesNew[indexInvoice].order_details[indexProduct]._taxes.reduce(
-                      (total, current) => total + current.value,
-                      0
-                    ) /
-                      100) *
-                    invoicesNew[indexInvoice].order_details[indexProduct].sumCost
-                  ).toFixed(0)
+                  (invoicesNew[indexInvoice].order_details[indexProduct]._taxes.reduce(
+                    (total, current) => total + current.value,
+                    0
+                  ) /
+                    100) *
+                  invoicesNew[indexInvoice].order_details[indexProduct].sumCost
+                ).toFixed(0)
                 : 0
           } else
             notification.warning({
+
               message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
               description: (
                 <Button
@@ -260,9 +317,9 @@ export default function Sell() {
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
-                    (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                    product.price
-                  ).toFixed(0)
+                  (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                  product.price
+                ).toFixed(0)
                 : 0,
           })
         }
@@ -327,7 +384,12 @@ export default function Sell() {
         setInvoices([...invoicesNew])
       } else
         notification.warning({
-          message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
+          // message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
+          message: 'Sản phẩm không đủ số lượng để bán, bạn muốn tạo đơn hàng đặt trước ?',
+          btn,
+          style: {
+            width: 500,
+          }
         })
     }
   }
@@ -460,15 +522,15 @@ export default function Sell() {
       //thuế VAT của mỗi sản phẩm
       invoicesNew[indexInvoice].order_details[index].VAT_Product =
         invoicesNew[indexInvoice].order_details[index]._taxes &&
-        invoicesNew[indexInvoice].order_details[index]._taxes.length
+          invoicesNew[indexInvoice].order_details[index]._taxes.length
           ? (
-              (invoicesNew[indexInvoice].order_details[index]._taxes.reduce(
-                (total, current) => total + current.value,
-                0
-              ) /
-                100) *
-              invoicesNew[indexInvoice].order_details[index].sumCost
-            ).toFixed(0)
+            (invoicesNew[indexInvoice].order_details[index]._taxes.reduce(
+              (total, current) => total + current.value,
+              0
+            ) /
+              100) *
+            invoicesNew[indexInvoice].order_details[index].sumCost
+          ).toFixed(0)
           : 0
 
       //tổng thuế VAT của tất cả các sản phẩm
@@ -734,9 +796,9 @@ export default function Sell() {
           VAT_Product:
             variant._taxes && variant._taxes.length
               ? (
-                  (variant._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                  variant.price
-                ).toFixed(0)
+                (variant._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                variant.price
+              ).toFixed(0)
               : 0,
         }
 
@@ -956,7 +1018,7 @@ export default function Sell() {
             to_country_code: '',
             return_name: `${invoices[indexInvoice].deliveryAddress.first_name || ''} ${
               invoices[indexInvoice].deliveryAddress.last_name || ''
-            }`,
+              }`,
             return_phone: invoices[indexInvoice].deliveryAddress.phone || '',
             return_address: invoices[indexInvoice].deliveryAddress.address || '',
             return_ward: '',
@@ -1720,8 +1782,8 @@ export default function Sell() {
                         fontSize: 18,
                         display:
                           invoices[indexInvoice] &&
-                          invoices[indexInvoice].customer &&
-                          invoices[indexInvoice].customer._id === customer._id
+                            invoices[indexInvoice].customer &&
+                            invoices[indexInvoice].customer._id === customer._id
                             ? ''
                             : 'none',
                       }}
@@ -1749,8 +1811,8 @@ export default function Sell() {
                       <a style={{ fontWeight: 600, marginRight: 5, color: '#1890ff' }}>
                         {invoices[indexInvoice].customer &&
                           invoices[indexInvoice].customer.first_name +
-                            ' ' +
-                            invoices[indexInvoice].customer.last_name}
+                          ' ' +
+                          invoices[indexInvoice].customer.last_name}
                       </a>
                     </ModalUpdateCustomer>
                   </Permission>
