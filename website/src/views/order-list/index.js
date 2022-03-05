@@ -40,8 +40,9 @@ import columnsOrder from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
+import { getOrders, deleteOrders } from 'apis/order'
 import { getEmployees } from 'apis/employee'
+import { getStatusShipping } from 'apis/shipping'
 
 const { RangePicker } = DatePicker
 export default function OrderList() {
@@ -193,7 +194,7 @@ export default function OrderList() {
 
   const _getStatus = async () => {
     try {
-      const res = await getStatusOrder()
+      const res = await getStatusShipping()
       if (res.status === 200) setStatusOrder(res.data.data)
     } catch (error) {
       console.log(error)
@@ -382,7 +383,7 @@ export default function OrderList() {
           </Button>
         </Row>
       </div>
-      
+
       <Table
         size="small"
         rowKey="order_id"
@@ -626,10 +627,10 @@ export default function OrderList() {
                   case "DRAFT":
                     colorStatus = "#fdaa3e"
                     break;
-                  case "VERIFY":
+                  case "WAITING_FOR_SHIPPING":
                     colorStatus = "#52c41a"
                     break;
-                  case "PROCESSING":
+                  case "COMPARED":
                     colorStatus = "#5b6be8"
                     break;
                   case "SHIPPING":
@@ -639,9 +640,6 @@ export default function OrderList() {
                     colorStatus = "#5b6be8"
                     break;
                   case "CANCEL":
-                    colorStatus = "red"
-                    break;
-                  case "REFUND":
                     colorStatus = "red"
                     break;
                 }
