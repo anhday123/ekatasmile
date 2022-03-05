@@ -382,7 +382,7 @@ export default function OrderList() {
           </Button>
         </Row>
       </div>
-
+      
       <Table
         size="small"
         rowKey="order_id"
@@ -621,7 +621,33 @@ export default function OrderList() {
               ...column,
               render: (text) => {
                 const status = statusOrder.find((s) => s.name === text)
-                return status ? status.label : ''
+                let colorStatus = null;
+                switch (status && status.name) {
+                  case "DRAFT":
+                    colorStatus = "#fdaa3e"
+                    break;
+                  case "VERIFY":
+                    colorStatus = "#52c41a"
+                    break;
+                  case "PROCESSING":
+                    colorStatus = "#5b6be8"
+                    break;
+                  case "SHIPPING":
+                    colorStatus = "#5b6be8"
+                    break;
+                  case "COMPLETE":
+                    colorStatus = "#5b6be8"
+                    break;
+                  case "CANCEL":
+                    colorStatus = "red"
+                    break;
+                  case "REFUND":
+                    colorStatus = "red"
+                    break;
+                }
+                return <span style={{ color: colorStatus }}>
+                  {status ? status.label : ''}
+                </span>
               },
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
