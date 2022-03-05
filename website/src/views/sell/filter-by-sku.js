@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 //antd
-import { Drawer, Row, Button, Space, Spin, Collapse, Input } from 'antd'
+import { Drawer, Row, Button, Space, Spin, Collapse, Input, Tooltip } from 'antd'
 
 //icons
 import { FunnelPlotFilled, SearchOutlined } from '@ant-design/icons'
@@ -73,7 +73,9 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
 
   return (
     <>
-      <FunnelPlotFilled style={{ cursor: 'pointer' }} onClick={toggle} />
+      <Tooltip title="Lọc theo thuộc tính">
+        <FunnelPlotFilled style={{ cursor: 'pointer' }} onClick={toggle} />
+      </Tooltip>
       <Drawer
         width={450}
         visible={visible}
@@ -141,7 +143,7 @@ export default function FilterProductsBySku({ setParamsFilter, paramsFilter }) {
                 header={
                   <span style={{ fontWeight: 700, marginBottom: 0 }}>
                     {valueSearch &&
-                    attribute.option.toLowerCase().includes(valueSearch.toLowerCase()) ? (
+                      attribute.option.toLowerCase().includes(valueSearch.toLowerCase()) ? (
                       <mark style={{ backgroundColor: 'yellow' }}>{attribute.option}</mark>
                     ) : (
                       attribute.option

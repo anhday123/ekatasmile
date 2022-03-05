@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 //antd
-import { Drawer, Row, Button, Input, Checkbox, Space, Spin } from 'antd'
+import { Drawer, Row, Button, Input, Checkbox, Space, Spin, Tooltip } from 'antd'
 
 //icons
 import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons'
@@ -40,7 +40,9 @@ export default function FilterProductsByCategory({ setParamsFilter, paramsFilter
 
   return (
     <>
-      <UnorderedListOutlined style={{ cursor: 'pointer' }} onClick={toggle} />
+      <Tooltip title="Lọc theo nhóm sản phẩm">
+        <UnorderedListOutlined style={{ cursor: 'pointer' }} onClick={toggle} />
+      </Tooltip>
       <Drawer
         width={450}
         visible={visible}

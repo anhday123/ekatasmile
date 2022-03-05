@@ -58,6 +58,7 @@ import {
   notification,
   message,
   Col,
+  Form,
 } from 'antd'
 
 //icons antd
@@ -127,6 +128,7 @@ export default function Sell() {
   const [customers, setCustomers] = useState([])
 
   const [infoBranch, setInfoBranch] = useState({})
+  const [form] = Form.useForm()
 
   //object invoice
   const initInvoice = {
@@ -158,6 +160,10 @@ export default function Sell() {
   )
   const [indexInvoice, setIndexInvoice] = useState(0)
   const [activeKeyTab, setActiveKeyTab] = useState(initInvoice.id)
+
+  const [valueDefShippingUnit, setValuDefaulf] = useState(
+    invoices[indexInvoice].shipping || undefined
+  )
 
   const _deleteInvoiceAfterCreateOrder = () => {
     const invoicesNew = [...invoices]
@@ -469,6 +475,11 @@ export default function Sell() {
   const _editInvoice = (attribute, value) => {
     const invoicesNew = [...invoices]
     invoicesNew[indexInvoice][attribute] = value
+    // mynote
+    if (value) {
+      form.setFieldsValue({ dvDef: valueDefShippingUnit })
+      setValuDefaulf(shippingsMethod[0].name)
+    }
 
     // tổng tiền của tất cả sản phẩm
     invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
@@ -1194,6 +1205,7 @@ export default function Sell() {
     try {
       const res = await getShippings()
       if (res.status === 200) setShippingsMethod(res.data.data)
+      form.setFieldsValue({ dvDef: res.data.data[0].shipping_company_id })
     } catch (error) {
       console.log(error)
     }
@@ -1403,7 +1415,7 @@ export default function Sell() {
             addProductToCartInvoice={_addProductToCartInvoice}
           />
         </Row>
-        <Row align="middle" style={{ marginLeft: 30 }}>
+        <Row align="middle" style={{ marginLeft: 30 }} className={styles['tab-sell']}>
           <Tabs
             hideAdd={invoices.length > 9 && true}
             moreIcon={<MoreOutlined style={{ color: 'white', fontSize: 16 }} />}
@@ -1444,16 +1456,18 @@ export default function Sell() {
                   </Popconfirm>
                 }
                 tab={
-                  <Tooltip title={invoice.name} mouseEnterDelay={1}>
-                    <p
-                      style={{
-                        marginBottom: 0,
-                        color: invoice.id === activeKeyTab ? 'black' : 'white',
-                      }}
-                    >
-                      {invoice.name}
-                    </p>
-                  </Tooltip>
+                  <>
+                    <Tooltip title={invoice.name} mouseEnterDelay={1} className="tab-sell">
+                      <p
+                        style={{
+                          marginBottom: 0,
+                          color: invoice.id === activeKeyTab ? 'black' : 'white',
+                        }}
+                      >
+                        {invoice.name}
+                      </p>
+                    </Tooltip>
+                  </>
                 }
                 key={invoice.id}
                 style={{ display: 'none' }}
@@ -1978,24 +1992,26 @@ export default function Sell() {
                     marginBottom: 10,
                   }}
                 >
-                  <Select
-                    value={invoices[indexInvoice].shipping || undefined}
-                    onChange={(value) => _editInvoice('shipping', value)}
-                    bordered={false}
-                    style={{ width: '100%' }}
-                    placeholder="Chọn đơn vị vận chuyển (nếu có)"
-                    optionFilterProp="children"
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    {shippingsMethod.map((shipping, index) => (
-                      <Select.Option value={shipping.name} index={index}>
-                        {shipping.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                  <Form.Item name="dvDef">
+                    <Select
+                      value={valueDefShippingUnit}
+                      onChange={(value) => _editInvoice('shipping', value)}
+                      bordered={false}
+                      style={{ width: '100%' }}
+                      placeholder="Chọn đơn vị vận chuyển (nếu có)"
+                      optionFilterProp="children"
+                      showSearch
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {shippingsMethod.map((shipping, index) => (
+                        <Select.Option value={shipping.shipping_company_id} index={index}>
+                          {shipping.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
                 </div>
               </Row>
               <Row justify="space-between" wrap={false} align="middle">

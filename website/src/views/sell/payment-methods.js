@@ -30,8 +30,11 @@ export default function PaymentMethods({
 
   const inputValue = (value, index) => {
     let paymentsNew = [...payments]
-    paymentsNew[index].value = value
-
+    if (value <= 400) {
+      paymentsNew[index].value = value
+    } else {
+      paymentsNew[index].value = 400
+    }
     const sumCostPaid = paymentsNew.reduce((total, current) => total + current.value, 0)
     const excessCash = sumCostPaid - moneyToBePaidByCustomer
 
@@ -186,13 +189,18 @@ export default function PaymentMethods({
                 <InputNumber
                   onBlur={(e) => {
                     const value = e.target.value.replaceAll(',', '')
-                    inputValue(+value, index)
+                    inputValue(value, index)
                   }}
                   defaultValue={payment.value}
+                  prefix={
+                    <div style={{ position: "absolute", left: 60, top: 5, zindex: 999 }}>/400</div>
+                  }
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  style={{ width: 230 }}
+                  style={{ width: 230., position: "relative" }}
                   min={0}
+                  maxLength={400}
+                  max={400}
                   placeholder="Tiền khách trả"
                   bordered={false}
                 />
