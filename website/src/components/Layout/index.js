@@ -143,6 +143,13 @@ const BaseLayout = (props) => {
       icon: <ShoppingOutlined />,
     },
     {
+      path: ROUTES.DELIVERY_CONTROL,
+      title: 'Quản lý giao hàng',
+      permissions: [],
+      icon: <NodeExpandOutlined />,
+      pathsChild: [],
+    },
+    {
       pathsChild: [ROUTES.PRODUCT_ADD, ROUTES.PRODUCT_UPDATE],
       icon: <CalendarOutlined />,
       path: ROUTES.PRODUCT,
@@ -302,14 +309,7 @@ const BaseLayout = (props) => {
       permissions: [],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
-    },
-    {
-      path: ROUTES.DELIVERY_CONTROL,
-      title: 'Quản lý giao hàng',
-      permissions: [],
-      icon: <NodeExpandOutlined />,
-      pathsChild: [],
-    },
+    },  
     // {
     //   path: ROUTES.CLIENT_MANAGEMENT,
     //   title: 'Quản lý client',
