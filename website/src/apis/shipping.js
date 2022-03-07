@@ -8,3 +8,4 @@ export const deleteShippings = (ids) =>
 export const addShippingControlWithFile = (formData, id) =>
   post('/shippingcompany/compare/import', formData)
 export const getShippingControlList = (query) => get('/shippingcompany/compare/card', query)
+export const getStatusShipping = () => get('/enum/shipping')
