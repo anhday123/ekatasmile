@@ -209,62 +209,12 @@ export default function Sell() {
 
     setInvoices([...invoicesNew])
   }
-  const ModalQuantityProductInStoresNew = ({ product, name }) => {
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(!visible)
-    const [locations, setLocations] = useState([])
 
-    const column = [
-      { title: 'Chi nhánh', dataIndex: 'name' },
-      {
-        title: 'Số lượng',
-        render: (text, record) => formatCash(record.quantity || 0),
-      },
-    ]
-
-    return (
-      <div onClick={(e) => e.stopPropagation()}>
-        <Tooltip placement="bottom">
-          <Button
-            type="primary"
-            onClick={toggle}
-            style={{
-              cursor: 'pointer',
-            }}
-          >
-            {name}
-          </Button>
-        </Tooltip>
-        <Modal
-          width={700}
-          footer={
-            <Row justify="end">
-              <Button onClick={toggle}>Cancel</Button>
-            </Row>
-          }
-          visible={visible}
-          onCancel={toggle}
-          title={product && product.title}
-        >
-          <Table
-            pagination={false}
-            style={{ width: '100%' }}
-            columns={column}
-            size="small"
-            dataSource={locations}
-          />
-        </Modal>
-      </div>
-    )
-  }
   const _addProductToCartInvoice = (product) => {
     const btn = (
       <Row>
         <Col span={8}>
-          <ModalQuantityProductInStoresNew
-            name={'Xem sản phẩm ở chi nhánh khác'}
-            product={product}
-          />
+          <ModalQuantityProductInStores btn="Xem sản phẩm ở chi nhánh khác" product={product} />
         </Col>
         <Col span={8} offset={7}>
           <Button type="primary">Bán hàng pre-order</Button>
@@ -611,7 +561,7 @@ export default function Sell() {
     }
   }
 
-  const ModalQuantityProductInStores = ({ product }) => {
+  const ModalQuantityProductInStores = ({ product, btn }) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
 
@@ -662,42 +612,55 @@ export default function Sell() {
 
     return (
       <div onClick={(e) => e.stopPropagation()}>
-        <Popover
-          content={content}
-          placement="bottom"
-          title={
-            <Row
-              wrap={false}
-              justify="space-between"
-              align="middle"
-              style={{ maxWidth: 450, minWidth: 250 }}
-            >
-              <p
-                style={{
-                  marginBottom: 0,
-                  fontWeight: 600,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  '-webkit-line-clamp': '1',
-                  '-webkit-box-orient': 'vertical',
-                  display: '-webkit-box',
-                }}
+        {btn ? (
+          <Button
+            type="primary"
+            onClick={toggle}
+            style={{
+              cursor: 'pointer',
+            }}
+          >
+            {btn}
+          </Button>
+        ) : (
+          <Popover
+            content={content}
+            placement="bottom"
+            title={
+              <Row
+                wrap={false}
+                justify="space-between"
+                align="middle"
+                style={{ maxWidth: 450, minWidth: 250 }}
               >
-                Thông tin sản phẩm: {product && product.title}
-              </p>
-              <SearchOutlined onClick={toggle} style={{ cursor: 'pointer', marginLeft: 30 }} />
-            </Row>
-          }
-        >
-          <ExclamationCircleOutlined
-            style={{ color: '#1991FF', fontSize: 12, cursor: 'pointer', marginLeft: 6 }}
-          />
-        </Popover>
+                <p
+                  style={{
+                    marginBottom: 0,
+                    fontWeight: 600,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    '-webkit-line-clamp': '1',
+                    '-webkit-box-orient': 'vertical',
+                    display: '-webkit-box',
+                  }}
+                >
+                  Thông tin sản phẩm: {product && product.title}
+                </p>
+                <SearchOutlined onClick={toggle} style={{ cursor: 'pointer', marginLeft: 30 }} />
+              </Row>
+            }
+          >
+            <ExclamationCircleOutlined
+              style={{ color: '#1991FF', fontSize: 12, cursor: 'pointer', marginLeft: 6 }}
+            />
+          </Popover>
+        )}
+
         <Modal
           width={700}
           footer={
             <Row justify="end">
-              <Button onClick={toggle}>Cancel</Button>
+              <Button onClick={toggle}>Đóng</Button>
             </Row>
           }
           visible={visible}
