@@ -184,6 +184,15 @@ module.exports._get = async (req, res, next) => {
                 { $unwind: { path: '$_creator', preserveNullAndEmptyArrays: true } }
             );
         }
+        aggregateQuery.push(
+            {$lookup: 
+              { from: "Products", 
+                localField: "category_id", 
+                foreignField: "category_id", as: "products"
+              }
+            }, { $addFields: {totalProducts: {$size: "$products"}}
+         }
+         )
         aggregateQuery.push({
             $project: {
                 slug_name: 0,
