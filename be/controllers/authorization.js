@@ -673,7 +673,7 @@ module.exports._login = async (req, res, next) => {
             throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`);
         }
         if (!bcrypt.compare(req.body.password, user.password)) {
-            res.send({ success: false, message: `400: Mật khẩu không chính xác!` });
+            res.send({ success: false, message: `Mật khẩu không chính xác!` });
             return;
         }
         delete user.password;
