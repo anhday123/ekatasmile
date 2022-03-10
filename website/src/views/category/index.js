@@ -46,7 +46,7 @@ export default function Category() {
   const [fileUpload, setFileUpload] = useState(null)
   const [imageView, setImageView] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [lstProductByCatogory, setLstProductByCatogory] = useState([])
+  const [productsByCategory, setProductsByCategory] = useState([])
 
   const [match, setMatch] = useState(
     location.state && location.state.condition ? location.state.condition.must_match : 'all'
@@ -161,14 +161,19 @@ export default function Category() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-
-    // get danh sach san pham theo nhom san pham
-  useEffect(async () => {
+  /**
+   * Lấy danh sách sản phẩm theo nhóm sản phẩm
+   */
+  const getProductsByCategory = async () =>{
     if (location.state && location.state.category_id) {
       const res = await getProducts({ ...paramsFilter, category_id: location.state.category_id })
-      setLstProductByCatogory(res.data.data)
+      setProductsByCategory(res.data.data)
     }
+  }
+  useEffect(() => {
+    getProductsByCategory();
   }, [])
+
   useEffect(() => {
     if (location.state) {
       form.setFieldsValue({ ...location.state })
@@ -458,7 +463,7 @@ export default function Category() {
 
             return column
           })}
-          dataSource={lstProductByCatogory}
+          dataSource={productsByCategory}
           size="small"
           pagination={{
             position: ['bottomLeft'],
