@@ -666,18 +666,9 @@ module.exports._login = async (req, res, next) => {
         if (!user) {
             throw new Error(`400: Tài khoản không tồn tại!`);
         }
-        // if (user.active == false) {
-        //   res.status(400).send({
-        //     success: false,
-        //     message: "Tài khoản chưa được kích hoạt!",
-        //     data: {
-        //       username: user.username,
-        //       email: user.email,
-        //       verify_with: business.verify_with,
-        //     },
-        //   });
-        //   return;
-        // }
+        if (user.active == false) {
+            throw new Error(`400: Tài khoản chưa được xác thực!`);
+        }
         if (user.active == `banned`) {
             throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`);
         }
@@ -821,7 +812,7 @@ module.exports._verifyOTP = async (req, res, next) => {
             throw new Error('400: Tài khoản người dùng không tồn tại!');
         }
         if (req.body.otp_code != user.otp_code) {
-            throw new Error('400: Mã xác thực không chính xác hoặc đã hết hạn sử dụng!');
+            throw new Error('400: Mã xác thực không chính xác!');
         }
         if (user.active == false) {
             delete user.password;
