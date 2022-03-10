@@ -21,6 +21,7 @@ export default function Login() {
 
   const _register = async (dataForm) => {
     try {
+      /*check validated form*/
       if (dataForm.password !== dataForm.passwordAgain) {
         notification.error({ message: 'Mật khẩu và nhập lại mật khẩu phải giống nhau' })
         return
@@ -29,7 +30,6 @@ export default function Login() {
         notification.error({ message: 'Vui lòng nhập số điện thoại đúng định dạng' })
         return
       }
-      /*check validated form*/
       delete dataForm.passwordAgain
       const body = {
         ...dataForm,
@@ -100,7 +100,6 @@ export default function Login() {
                   <Row className="edit-form-item-register" gutter={[20, 20]}>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
-                        // label={<div style={{ color: 'white' }}>Tên doanh nghiệp</div>}
                         name="business_name"
                         rules={[{ required: true, message: 'Vui lòng nhập tên doanh nghiệp' }]}
                       >
@@ -114,7 +113,6 @@ export default function Login() {
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
-                        // label={<div style={{ color: 'white' }}>Số điện thoại đăng ký</div>}
                         name="username"
                         rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
                       >
@@ -129,16 +127,9 @@ export default function Login() {
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         rules={[
-                          {
-                            type: 'email',
-                            message: 'Vui lòng nhập Email đúng định dạng!',
-                          },
-                          {
-                            required: true,
-                            message: 'Vui lòng nhập email',
-                          },
+                          { type: 'email', message: 'Vui lòng nhập Email đúng định dạng!' },
+                          { required: true, message: 'Vui lòng nhập email' },
                         ]}
-                        // label={<div style={{ color: 'white' }}>Email</div>}
                         name="email"
                       >
                         <Input
@@ -149,15 +140,7 @@ export default function Login() {
                         />
                       </Form.Item>
                     </Col>
-                    {/* <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                    <Form.Item
-                    rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
-                    label={<div style={{ color: 'white' }}>Tên</div>}
-                    name="last_name"
-                    >
-                    <Input size="large" placeholder="Tên" />
-                    </Form.Item>
-                    </Col> */}
+
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
                         name="password"
@@ -174,7 +157,6 @@ export default function Login() {
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                       <Form.Item
-                        // label={<div style={{ color: 'white' }}>Nhập lại mật khẩu</div>}
                         name="passwordAgain"
                         rules={[{ required: true, message: 'Vui lòng nhập lại mật khẩu' }]}
                       >

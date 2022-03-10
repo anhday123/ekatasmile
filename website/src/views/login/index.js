@@ -33,16 +33,14 @@ export default function Login() {
       console.log(res)
 
       //check account have verify
-      if (res.status === 400)
-        if (!res.data.success)
-          if (res.data.data) {
-            await getOtp(res.data.data.username)
-            notification.error({
-              message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',
-            })
-            history.push({ pathname: ROUTES.OTP, state: res.data.data })
-            return
-          }
+      if (res.status === 400) {
+        await getOtp(body.username)
+        notification.error({
+          message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',
+        })
+        history.push({ pathname: ROUTES.OTP, state: { username: body.username } })
+        return
+      }
 
       if (res.status === 200) {
         if (res.data.success) {

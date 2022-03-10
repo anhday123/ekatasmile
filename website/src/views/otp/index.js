@@ -48,7 +48,7 @@ export default function OTP() {
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
           await delay(300)
-          window.location.href = `https://${dataUser.data._business.business_name}.${process.env.REACT_APP_HOST}${ROUTES.OVERVIEW}`
+          window.location.href = `https://${dataUser.data._business.prefix}.${process.env.REACT_APP_HOST}${ROUTES.OVERVIEW}`
         } else
           notification.warning({
             message:
