@@ -936,11 +936,8 @@ export default function ImportInventories() {
             pageSize: paramsFilter.page_size,
             pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
             showQuickJumper: true,
-            onChange: (page, pageSize) => {
-              paramsFilter.page = page
-              paramsFilter.page_size = pageSize
-              setParamsFilter({ ...paramsFilter })
-            },
+            onChange: (page, pageSize) =>
+              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
             total: countOrder,
           }}
         />

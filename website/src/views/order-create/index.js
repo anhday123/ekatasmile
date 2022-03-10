@@ -772,86 +772,87 @@ export default function OrderCreateShipping() {
                 dropdownRender={(menu) => (
                   <div>
                     <Permission permissions={[PERMISSIONS.them_san_pham]}>
-                      <Row
-                        wrap={false}
-                        align="middle"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => window.open(ROUTES.PRODUCT_ADD, '_blank')}
-                      >
-                        <div
-                          style={{
-                            paddingLeft: 15,
-                            width: 45,
-                            height: 50,
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <PlusSquareOutlined style={{ fontSize: 19 }} />
-                        </div>
-                        <p style={{ marginLeft: 20, marginBottom: 0, fontSize: 16 }}>
-                          Thêm sản phẩm mới
-                        </p>
-                      </Row>
+                      <a rel="noreferrer" href={ROUTES.PRODUCT_ADD} target="_blank">
+                        <Row wrap={false} align="middle" style={{ color: 'black' }}>
+                          <div
+                            style={{
+                              paddingLeft: 15,
+                              width: 45,
+                              height: 50,
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <PlusSquareOutlined style={{ fontSize: 19 }} />
+                          </div>
+                          <p style={{ marginLeft: 20, marginBottom: 0, fontSize: 16 }}>
+                            Thêm sản phẩm mới
+                          </p>
+                        </Row>
+                      </a>
                     </Permission>
                     {menu}
                   </div>
                 )}
               >
-                {productsSearch.map((data) => (
-                  <Select.Option value={data.title} key={data.title}>
-                    <Row
-                      align="middle"
-                      wrap={false}
-                      style={{ padding: '7px 13px' }}
-                      onClick={(e) => {
-                        _addProductToOrder(data)
-                        e.stopPropagation()
-                      }}
-                    >
-                      <img
-                        src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
-                        alt=""
-                        style={{
-                          minWidth: 40,
-                          minHeight: 40,
-                          maxWidth: 40,
-                          maxHeight: 40,
-                          objectFit: 'cover',
+                {productsSearch.length ? (
+                  productsSearch.map((data) => (
+                    <Select.Option value={data.title} key={data.title}>
+                      <Row
+                        align="middle"
+                        wrap={false}
+                        style={{ padding: '7px 13px' }}
+                        onClick={(e) => {
+                          _addProductToOrder(data)
+                          e.stopPropagation()
                         }}
-                      />
+                      >
+                        <img
+                          src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
+                          alt=""
+                          style={{
+                            minWidth: 40,
+                            minHeight: 40,
+                            maxWidth: 40,
+                            maxHeight: 40,
+                            objectFit: 'cover',
+                          }}
+                        />
 
-                      <div style={{ width: '100%', marginLeft: 15 }}>
-                        <Row wrap={false} justify="space-between">
-                          <span
-                            style={{
-                              maxWidth: 200,
-                              marginBottom: 0,
-                              fontWeight: 600,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              WebkitLineClamp: 1,
-                              WebkitBoxOrient: 'vertical',
-                              display: '-webkit-box',
-                            }}
-                          >
-                            {data.title}
-                          </span>
-                          <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                            {formatCash(data.price)}
-                          </p>
-                        </Row>
-                        <Row wrap={false} justify="space-between">
-                          <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
-                          <p style={{ marginBottom: 0, color: 'gray' }}>
-                            Có thể bán: {formatCash(data.total_quantity)}
-                          </p>
-                        </Row>
-                      </div>
-                    </Row>
-                  </Select.Option>
-                ))}
+                        <div style={{ width: '100%', marginLeft: 15 }}>
+                          <Row wrap={false} justify="space-between">
+                            <span
+                              style={{
+                                maxWidth: 200,
+                                marginBottom: 0,
+                                fontWeight: 600,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                display: '-webkit-box',
+                              }}
+                            >
+                              {data.title}
+                            </span>
+                            <p style={{ marginBottom: 0, fontWeight: 500 }}>
+                              {formatCash(data.price)}
+                            </p>
+                          </Row>
+                          <Row wrap={false} justify="space-between">
+                            <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
+                            <p style={{ marginBottom: 0, color: 'gray' }}>
+                              Có thể bán: {formatCash(data.total_quantity)}
+                            </p>
+                          </Row>
+                        </div>
+                      </Row>
+                    </Select.Option>
+                  ))
+                ) : (
+                  <Select.Option style={{ display: 'none' }}></Select.Option>
+                )}
               </Select>
             </div>
 

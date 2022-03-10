@@ -10,8 +10,8 @@ import {
 } from 'consts'
 import { useHistory, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { compare, formatCash } from 'utils'
 import moment from 'moment'
-import { compare, compareCustom } from 'utils'
 
 //components
 import TitlePage from 'components/title-page'
@@ -28,10 +28,10 @@ import {
   Popconfirm,
   Modal,
   Form,
-  InputNumber,
   Upload,
   notification,
   DatePicker,
+  Tag,
 } from 'antd'
 
 //icons
@@ -41,6 +41,7 @@ import { DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
 import { getCategories, addCategory, deleteCategory } from 'apis/category'
 import { uploadFile } from 'apis/upload'
 import { getEmployees } from 'apis/employee'
+import { getProducts, updateProduct } from 'apis/product'
 
 const { RangePicker } = DatePicker
 const { Option } = Select
@@ -96,8 +97,7 @@ export default function Category() {
       if (value) paramsFilter.name = value
       else delete paramsFilter.name
 
-      paramsFilter.page = 1
-      setParamsFilter({ ...paramsFilter })
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
   const onChangeUserFilter = (value) => {
@@ -152,8 +152,139 @@ export default function Category() {
     }
   }
 
+  const ModalProductsCategory = ({ record }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [loading, setLoading] = useState(false)
+    const [products, setProducts] = useState([])
+    const [selectedRowKeys, setSelectedRowKeys] = useState([])
+
+    const _removeProductsToCategory = async () => {
+      try {
+        setLoading(true)
+
+        const listPromise = selectedRowKeys.map(async (product_id) => {
+          const product = products.find((p) => p.product_id == product_id)
+          const indexCategory = product.category_id.findIndex((c) => c === record.category_id)
+          product.category_id.splice(indexCategory, 1)
+          const res = await updateProduct({ category_id: product.category_id }, product_id)
+          return res
+        })
+
+        await Promise.all(listPromise)
+        setLoading(false)
+        toggle()
+        _getCategories() //reload
+
+        notification.success({ message: `Xóa sản phẩm khỏi nhóm sản phẩm thành công!` })
+      } catch (error) {
+        setLoading(false)
+        toggle()
+        console.log(error)
+      }
+    }
+
+    const _getProductsByCategory = async () => {
+      try {
+        setLoading(true)
+        setProducts([])
+        setSelectedRowKeys([])
+        const res = await getProducts({ category_id: record.category_id })
+
+        if (res.status === 200) setProducts(res.data.data)
+
+        setLoading(false)
+      } catch (error) {
+        console.log(error)
+        setLoading(false)
+      }
+    }
+    const columnsProduct = [
+      {
+        title: 'STT',
+        dataIndex: 'stt',
+        render: (text, record, index) => index + 1,
+      },
+      {
+        title: 'Tên sản phẩm',
+        dataIndex: 'name',
+      },
+      {
+        title: 'SKU',
+        dataIndex: 'sku',
+      },
+      {
+        title: 'Nhóm sản phẩm',
+        render: (text, record) =>
+          record._categories &&
+          record._categories.map((category, index) => (
+            <Tag key={index} closable={false}>
+              {category.name}
+            </Tag>
+          )),
+      },
+      {
+        title: 'Nhà cung cấp',
+        render: (text, record) => record.supplier_info && record.supplier_info.name,
+      },
+      {
+        title: 'Ngày tạo',
+        render: (text, record) => moment(record.create_date).format('DD/MM/YYYY HH:mm'),
+      },
+    ]
+
+    useEffect(() => {
+      if (visible) _getProductsByCategory()
+    }, [visible])
+
+    return (
+      <>
+        <a onClick={() => record.totalProducts && toggle()}>
+          {formatCash(record.totalProducts || 0)}
+        </a>
+        <Modal
+          style={{ top: 20 }}
+          cancelText="Đóng"
+          footer={
+            <Row justify="end">
+              <Space>
+                <Button onClick={toggle}>Đóng</Button>
+                <Button
+                  onClick={_removeProductsToCategory}
+                  type="primary"
+                  danger
+                  disabled={selectedRowKeys.length ? false : true}
+                >
+                  Xóa khỏi nhóm sản phẩm này
+                </Button>
+              </Space>
+            </Row>
+          }
+          width="80%"
+          title={`Danh sách sản phẩm thuộc nhóm sản phẩm ${record.name || ''}`}
+          onCancel={toggle}
+          visible={visible}
+        >
+          <Table
+            rowKey="product_id"
+            rowSelection={{
+              selectedRowKeys,
+              onChange: (keys) => setSelectedRowKeys(keys),
+            }}
+            scroll={{ y: '58vh' }}
+            style={{ width: '100%' }}
+            columns={columnsProduct}
+            dataSource={products}
+            size="small"
+            loading={loading}
+            pagination={false}
+          />
+        </Modal>
+      </>
+    )
+  }
+
   const ModalCreateCategoryChild = ({ record }) => {
-    console.log(record)
     const [visible, setVisible] = useState(false)
     const toggle = () => {
       setVisible(!visible)
@@ -161,7 +292,6 @@ export default function Category() {
     const [imageView, setImageView] = useState('')
     const [fileUpload, setFileUpload] = useState(null)
     const [loading, setLoading] = useState(false)
-    console.log(loading)
 
     const reset = () => {
       formCategoryChild.resetFields()
@@ -172,19 +302,9 @@ export default function Category() {
 
     return (
       <>
-        {record.parent_id !== -1 ? (
-          <Button
-            type="primary"
-            style={{ backgroundColor: 'rgb(253 170 62)', border: 'none' }}
-            onClick={toggle}
-          >
-            Tạo nhóm sản phẩm con
-          </Button>
-        ) : (
-          <Button type="primary" onClick={toggle}>
-            Tạo nhóm sản phẩm con
-          </Button>
-        )}
+        <Button type="primary" onClick={toggle}>
+          Tạo nhóm sản phẩm con
+        </Button>
         <Modal
           footer={
             <Row justify="end">
@@ -252,13 +372,13 @@ export default function Category() {
             >
               <Input placeholder="Nhập tên nhóm sản phẩm" style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               rules={[{ required: true, message: 'Vui lòng nhập độ ưu tiên' }]}
               name="priority"
               label="Độ ưu tiên"
             >
               <InputNumber placeholder="Nhập độ ưu tiên" style={{ width: '100%' }} />
-            </Form.Item>
+            </Form.Item> */}
           </Form>
         </Modal>
       </>
@@ -315,44 +435,55 @@ export default function Category() {
       title: 'Tên nhóm sản phẩm',
       align: 'center',
       sorter: (a, b) => compare(a, b, 'name'),
-
       render: (text, record) => (
         <Link to={{ pathname: ROUTES.CATEGORY, state: record }}>{record.name || ''}</Link>
       ),
     },
-    {
-      title: 'Mã nhóm sản phẩm',
-      align: 'center',
-      dataIndex: 'code',
-      sorter: (a, b) => compare(a, b, 'code'),
-    },
+    // {
+    //   title: 'Mã nhóm sản phẩm',
+    //   align: 'center',
+    //   dataIndex: 'code',
+    //   sorter: (a, b) => compare(a, b, 'code'),
+    // },
     {
       title: 'Bộ điều kiện',
       align: 'center',
       render: (text, record) => {
         return record.condition && record.condition.function.length
           ? record.condition.function.map((item) => (
-            <div>
-              <span>
-                {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
-              </span>
-            </div>
-          ))
+              <div>
+                <span>
+                  {CONDITION_NAME[item.name]} {CONDITION_OPERATOR[item.operator]} {item.value}
+                </span>
+              </div>
+            ))
           : ''
       },
     },
     {
-      title: 'Độ ưu tiên',
+      title: 'Người tạo',
       align: 'center',
-      dataIndex: 'priority',
-      sorter: (a, b) => compare(a, b, 'priority'),
+      render: (text, record) =>
+        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
     },
+    {
+      title: 'Sản phẩm trong nhóm',
+      align: 'center',
+      render: (text, record) => <ModalProductsCategory record={record} />,
+    },
+    // {
+    //   title: 'Độ ưu tiên',
+    //   align: 'center',
+    //   dataIndex: 'priority',
+    //   sorter: (a, b) => compare(a, b, 'priority'),
+    // },
     {
       title: 'Hành động',
       width: 100,
       align: 'center',
       render: (text, record) => (
         <Space>
+          <ModalCreateCategoryChild record={record} />
           <Popconfirm
             onConfirm={() => _deleteCategory(record.category_id)}
             title="Bạn có muốn xóa nhóm sản phẩm này không?"
@@ -383,10 +514,11 @@ export default function Category() {
       align: 'center',
       render: (text, record) => record.name || '',
     },
-    { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
+    // { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
 
-    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
+    // { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
     {
+      title: 'Hành động',
       align: 'center',
       render: (text, record) => (
         <Space>
@@ -421,21 +553,22 @@ export default function Category() {
       align: 'center',
       render: (text, record) => record.name || '',
     },
-    { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
+    // { title: 'Mã nhóm sản phẩm', align: 'center', dataIndex: 'code' },
+    // {
+    //   title: 'Người tạo',
+    //   align: 'center',
+    //   render: (text, record) =>
+    //     record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
+    // },
+    // {
+    //   title: 'Ngày tạo',
+    //   align: 'center',
+    //   render: (text, record) =>
+    //     record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
+    // },
+    // { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
     {
-      title: 'Người tạo',
-      align: 'center',
-      render: (text, record) =>
-        record._creator && `${record._creator.first_name} ${record._creator.last_name}`,
-    },
-    {
-      title: 'Ngày tạo',
-      align: 'center',
-      render: (text, record) =>
-        record.create_date && moment(record.create_date).format('DD/MM/YYYY HH:mm:ss'),
-    },
-    { title: 'Độ ưu tiên', align: 'center', dataIndex: 'priority' },
-    {
+      title: 'Hành động',
       render: (text, record) => (
         <Popconfirm
           onConfirm={() => _deleteCategory(record.category_id)}
@@ -484,7 +617,7 @@ export default function Category() {
               onChange={_onSearch}
               style={{ width: '100%' }}
               prefix={<SearchOutlined />}
-              placeholder="Tìm kiếm theo tên hoặc theo mã"
+              placeholder="Tìm kiếm theo tên nhóm sản phẩm"
               bordered={false}
             />
           </Col>
@@ -605,40 +738,32 @@ export default function Category() {
       <Table
         expandable={{
           expandedRowRender: (record) => {
-            console.log(record)
-            return record.children_category && record.children_category.length ? (
-              <div style={{ margin: 0, marginLeft: 25 }}>
-                <ModalCreateCategoryChild record={record} />
-                <Table
-                  rowKey="category_id"
-                  style={{ width: '100%', marginTop: 10 }}
-                  pagination={false}
-                  columns={columnsChildren}
-                  dataSource={record.children_category}
-                  size="small"
-                  expandable={{
-                    expandedRowRender: (record) =>
-                      record.children_category && record.children_category.length ? (
-                        <Table
-                          rowKey="category_id"
-                          style={{ width: '100%' }}
-                          pagination={false}
-                          columns={columnsChildrenSmall}
-                          dataSource={record.children_category}
-                          size="small"
-                        />
-                      ) : (
-                        ''
-                      ),
-                    expandedRowKeys: record.children_category.map((item) => item.category_id),
-                    expandIconColumnIndex: -1,
-                  }}
-                />
-              </div>
-            ) : (
-              <div style={{ margin: 0, marginLeft: 25 }}>
-                <ModalCreateCategoryChild record={record} />
-              </div>
+            return (
+              <Table
+                rowKey="category_id"
+                style={{ width: '100%', marginTop: 10, marginBottom: 10 }}
+                pagination={false}
+                columns={columnsChildren}
+                dataSource={record.children_category}
+                size="small"
+                expandable={{
+                  expandedRowRender: (record) =>
+                    record.children_category && record.children_category.length ? (
+                      <Table
+                        rowKey="category_id"
+                        style={{ width: '100%' }}
+                        pagination={false}
+                        columns={columnsChildrenSmall}
+                        dataSource={record.children_category}
+                        size="small"
+                      />
+                    ) : (
+                      ''
+                    ),
+                  // expandedRowKeys: record.children_category.map((item) => item.category_id),
+                  // expandIconColumnIndex: -1,
+                }}
+              />
             )
           },
         }}

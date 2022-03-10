@@ -129,7 +129,7 @@ export default function ProductAdd() {
             ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
             sku: `${
               valueGeneratedSku || ''
-              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
             options: [{ name: attributes[0].option, value: value }],
             ...initVariant,
           })
@@ -144,7 +144,7 @@ export default function ProductAdd() {
               ).toUpperCase()} ${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
-                }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[1].option, value: value }],
               ...initVariant,
             })
@@ -158,7 +158,7 @@ export default function ProductAdd() {
               ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
               sku: `${
                 valueGeneratedSku || ''
-                }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[0].option, value: value }],
             })
           })
@@ -172,7 +172,7 @@ export default function ProductAdd() {
                 ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
                 sku: `${
                   valueGeneratedSku || ''
-                  }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
                 options: [
                   { name: attributes[0].option, value: v0 },
                   { name: attributes[1].option, value: v1 },
@@ -337,10 +337,10 @@ export default function ProductAdd() {
           sku: location.state
             ? skuProductWithEdit
             : !isGeneratedSku
+            ? formProduct.sku
               ? formProduct.sku
-                ? formProduct.sku
-                : valueDefaultSku
-              : valueGeneratedSku,
+              : valueDefaultSku
+            : valueGeneratedSku,
           options: [],
           image: images || [],
           supplier: supplier || '',
@@ -381,8 +381,8 @@ export default function ProductAdd() {
         if (res.data.data && res.data.data.length) {
           const category = res.data.data.find((category) => category.active && category.default)
           if (!location.state) {
-            if (category) form.setFieldsValue({ category_id: category.category_id })
-            else form.setFieldsValue({ category_id: res.data.data[0].category_id })
+            if (category) form.setFieldsValue({ category_id: [category.category_id] })
+            else form.setFieldsValue({ category_id: [res.data.data[0].category_id] })
           }
           setCategories(res.data.data.filter((e) => e.active))
         }
@@ -901,7 +901,7 @@ export default function ProductAdd() {
     _getSuppliers()
     _getCategories()
   }, [])
-  // cập nhật giá trị tạo mã sản phẩm/sku tự động 
+  // cập nhật giá trị tạo mã sản phẩm/sku tự động
   useEffect(() => {
     form.setFieldsValue({ sku: valueGeneratedSku })
   }, [valueGeneratedSku])
@@ -998,6 +998,7 @@ export default function ProductAdd() {
                 style={{ display: 'flex', alignItems: 'flex-end' }}
               >
                 <Form.Item
+                  rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp' }]}
                   label="Nhà cung cấp"
                   name="supplier_id"
                   style={{ marginRight: 10, width: '100%' }}
@@ -1026,22 +1027,29 @@ export default function ProductAdd() {
                 </Form.Item>
                 <SupplierForm reloadData={_getSuppliers}>
                   <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
-                    <Button
-                      size="large"
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      style={{ marginBottom: 24 }}
-                    />
+                    <Tooltip title="Tạo nhà cung cấp">
+                      <Button
+                        size="large"
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        style={{ marginBottom: 24 }}
+                      />
+                    </Tooltip>
                   </Permission>
                 </SupplierForm>
               </Col>
               <Col xs={24} sm={24} md={7} lg={7} xl={7}>
-                <Form.Item label="Nhóm sản phẩm" name="category_id">
+                <Form.Item
+                  rules={[{ required: true, message: 'Vui lòng chọn nhóm sản phẩm' }]}
+                  label="Nhóm sản phẩm"
+                  name="category_id"
+                >
                   <TreeSelect
                     showCheckedStrategy={TreeSelect.SHOW_ALL}
                     size="large"
                     style={{ width: '100%' }}
-                    showSearch={false}
+                    treeNodeFilterProp="title"
+                    maxTagCount="responsive"
                     placeholder="Chọn nhóm sản phẩm"
                     allowClear
                     multiple
@@ -1063,13 +1071,13 @@ export default function ProductAdd() {
                   </TreeSelect>
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7} style={{ marginTop: 30 }}>
-                <Form.Item label="Mã sản phẩm/SKU" name="sku">
-                  <Input
-                    // disabled={isGeneratedSku}
-                    size="large"
-                    placeholder="Nhập mã sản phẩm/sku"
-                  />
+              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+                <Form.Item
+                  label="Mã sản phẩm/SKU"
+                  name="sku"
+                  rules={[{ message: 'Vui lòng nhập mã sản phẩm/SKU', required: true }]}
+                >
+                  <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
                 </Form.Item>
               </Col>
 
@@ -1081,13 +1089,7 @@ export default function ProductAdd() {
                 xl={24}
                 style={{ marginTop: 2, marginBottom: 15 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}
-                >
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                   <Switch
                     checked={productIsHaveDescription}
                     onChange={(checked) => {
@@ -1372,7 +1374,7 @@ export default function ProductAdd() {
                               size="large"
                               style={{
                                 marginTop: 17,
-                                // display: attributes.length === 2 && 'none',
+                                display: attributes.length === 2 && 'none',
                               }}
                               onClick={addAttribute}
                               disabled={location.state ? true : false}

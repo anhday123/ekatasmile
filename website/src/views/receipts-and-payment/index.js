@@ -4,24 +4,14 @@ import columnsReceiptsPayment from './columns'
 import { formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
+import moment from 'moment'
 
 //apis
 import { getCustomers } from 'apis/customer'
 import { getFinances } from 'apis/report'
 
 //antd
-import {
-  Row,
-  Space,
-  Button,
-  Input,
-  Select,
-  DatePicker,
-  Table,
-  Modal,
-  Form,
-  InputNumber,
-} from 'antd'
+import { Row, Space, Button, Input, Select, Table, Modal, Form, InputNumber } from 'antd'
 
 //icons
 import {
@@ -35,7 +25,7 @@ import {
 //components
 import SettingColumns from 'components/setting-columns'
 import TitlePage from 'components/title-page'
-import moment from 'moment'
+import FilterDate from 'components/filter-date'
 
 export default function ReceiptsAndPayment() {
   const history = useHistory()
@@ -45,59 +35,8 @@ export default function ReceiptsAndPayment() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [columns, setColumns] = useState([])
   const [finances, setFinances] = useState([])
-  const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
-  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
+
   const [paramsFilter, setParamsFilter] = useState({}) //params search by site, date, order name
-
-  function onFilterTime(dates, dateStrings) {
-    //khi search hoac filter thi reset page ve 1
-    // setPage(1)
-
-    if (isOpenSelect) toggleOpenSelect()
-
-    //nếu search date thì xoá các params date
-    delete paramsFilter.to_day
-    delete paramsFilter.yesterday
-    delete paramsFilter.this_week
-    delete paramsFilter.last_week
-    delete paramsFilter.last_month
-    delete paramsFilter.this_month
-    delete paramsFilter.this_year
-    delete paramsFilter.last_year
-
-    //Kiểm tra xem date có được chọn ko
-    //Nếu ko thì thoát khỏi hàm, tránh cash app
-    //và get danh sách order
-    if (!dateStrings[0] && !dateStrings[1]) {
-      delete paramsFilter.startDate
-      delete paramsFilter.endDate
-      // getOrdersByStatus(key, 1, pageSize, { ...paramsFilter })
-      setParamsFilter({ ...paramsFilter })
-      setValueDateSearch(null)
-      setValueTime()
-    } else {
-      const dateFirst = dateStrings[0]
-      const dateLast = dateStrings[1]
-      setValueDateSearch(dates)
-      setValueTime(`${dateFirst} -> ${dateLast}`)
-
-      dateFirst.replace(/-/g, '/')
-      dateLast.replace(/-/g, '/')
-      // getOrdersByStatus(key, 1, pageSize, {
-      //   ...paramsFilter,
-      //   startDate: dateFirst,
-      //   endDate: dateLast,
-      // })
-      setParamsFilter({
-        ...paramsFilter,
-        startDate: dateFirst,
-        endDate: dateLast,
-      })
-    }
-  }
 
   const ModalCreatePaymentOrReceipts = ({ type }) => {
     const [visible, setVisible] = useState(false)
@@ -346,7 +285,7 @@ export default function ReceiptsAndPayment() {
           allowClear
           bordered={false}
           placeholder="Chọn loại phiếu"
-          style={{ width: 150, borderRight: '1px solid #d9d9d9' }}
+          style={{ width: 100, borderRight: '1px solid #d9d9d9' }}
         >
           <Select.Option>Phiếu thu</Select.Option>
           <Select.Option>Phiếu chi</Select.Option>
@@ -375,76 +314,7 @@ export default function ReceiptsAndPayment() {
           <Select.Option>Đối tác vận chuyển</Select.Option>
         </Select>
 
-        <Select
-          clearIcon={<CloseOutlined />}
-          open={isOpenSelect}
-          onBlur={() => {
-            if (isOpenSelect) toggleOpenSelect()
-          }}
-          onClick={() => {
-            if (!isOpenSelect) toggleOpenSelect()
-          }}
-          bordered={false}
-          placeholder="Thời gian"
-          style={{ width: 280 }}
-          allowClear
-          value={valueTime}
-          onChange={async (value) => {
-            setValueTime(value)
-
-            //khi search hoac filter thi reset page ve 1
-            // setPage(1)
-
-            //xoa params search date hien tai
-            const p = Object.keys(valueDateTimeSearch)
-            if (p.length) delete paramsFilter[p[0]]
-
-            setValueDateSearch(null)
-            delete paramsFilter.startDate
-            delete paramsFilter.endDate
-
-            if (isOpenSelect) toggleOpenSelect()
-
-            if (value) {
-              const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-              // getOrdersByStatus(key, 1, pageSize, {
-              //   ...paramsFilter,
-              //   ...searchDate,
-              // })
-              setParamsFilter({ ...paramsFilter, ...searchDate })
-              setValueDateTimeSearch({ ...searchDate })
-            } else {
-              // getOrdersByStatus(key, 1, pageSize, { ...paramsFilter })
-              setParamsFilter({ ...paramsFilter })
-              setValueDateTimeSearch({})
-            }
-          }}
-          dropdownRender={(menu) => (
-            <div>
-              <DatePicker.RangePicker
-                onFocus={() => {
-                  if (!isOpenSelect) toggleOpenSelect()
-                }}
-                onBlur={() => {
-                  if (isOpenSelect) toggleOpenSelect()
-                }}
-                value={valueDateSearch}
-                onChange={onFilterTime}
-                style={{ width: '100%' }}
-              />
-              {menu}
-            </div>
-          )}
-        >
-          <Select.Option value="to_day">Today</Select.Option>
-          <Select.Option value="yesterday">Yesterday</Select.Option>
-          <Select.Option value="this_week">This week</Select.Option>
-          <Select.Option value="last_week">Last week</Select.Option>
-          <Select.Option value="last_month">Last month</Select.Option>
-          <Select.Option value="this_month">This month</Select.Option>
-          <Select.Option value="this_year">This year</Select.Option>
-          <Select.Option value="last_year">Last year</Select.Option>
-        </Select>
+        <FilterDate paramsFilter={paramsFilter} setParamsFilter={setParamsFilter} width={300} />
       </Row>
       <Row justify="space-between" align="middle" style={{ marginTop: 15, marginBottom: 15 }}>
         <Button

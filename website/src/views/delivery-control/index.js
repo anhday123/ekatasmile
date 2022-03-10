@@ -61,7 +61,7 @@ export default function DeliveryControl() {
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
   const [employees, setEmployees] = useState([])
-  const [branchs, setBranchs] = useState([])
+  const [branches, setBranches] = useState([])
   const [optionSearchName, setOptionSearchName] = useState('code')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: PAGE_SIZE })
   const [valueSearch, setValueSearch] = useState('')
@@ -222,7 +222,7 @@ export default function DeliveryControl() {
     try {
       const res = await getAllBranch()
       console.log(res)
-      if (res.status === 200) setBranchs(res.data.data)
+      if (res.status === 200) setBranches(res.data.data)
     } catch (error) {
       console.log(error)
     }
@@ -367,7 +367,7 @@ export default function DeliveryControl() {
               name="name"
               value={valueSearch}
               onChange={_onSearch}
-              placeholder="Tìm kiếm theo"
+              placeholder="Tìm kiếm đơn hàng"
               bordered={false}
               allowClear
             />
@@ -383,7 +383,7 @@ export default function DeliveryControl() {
               bordered={false}
             >
               <Select.Option value="code">Mã đơn hàng</Select.Option>
-              <Select.Option value="shipping_code">Mã đơn giao hàng</Select.Option>
+              <Select.Option value="tracking_number">Mã vận đơn</Select.Option>
               <Select.Option value="customer_name">Tên khách hàng</Select.Option>
               <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
             </Select>
@@ -458,12 +458,12 @@ export default function DeliveryControl() {
                   onChange={(value) => _onChangeFilter('employee_name', value)}
                   showSearch
                   size={FILTER_SIZE}
-                  placeholder="Chọn chi nhánh"
+                  placeholder="Lọc theo chi nhánh"
                   style={{ width: '100%' }}
                   bordered={false}
                 >
                   <Select.Option value="">Tất cả</Select.Option>
-                  {branchs.map((branch, index) => (
+                  {branches.map((branch, index) => (
                     <Select.Option value={branch.name} key={index}>
                       {branch.name}
                     </Select.Option>

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { ACTION, ROUTES } from 'consts'
-import columnsProduct from '../product/columns'
+import { ACTION, IMAGE_DEFAULT, ROUTES } from 'consts'
+import { Link } from 'react-router-dom'
+import { compare, compareCustom, formatCash } from 'utils'
+import moment from 'moment'
 
 //components
 import TitlePage from 'components/title-page'
@@ -12,18 +14,16 @@ import {
   Row,
   Form,
   Upload,
-  InputNumber,
   Input,
-  Checkbox,
   Button,
   notification,
   Radio,
   Space,
   Select,
-  Col,
   Table,
   Tag,
   Switch,
+  Modal,
 } from 'antd'
 
 //icons
@@ -33,9 +33,6 @@ import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/ico
 import { uploadFile } from 'apis/upload'
 import { addCategory, updateCategory } from 'apis/category'
 import { getProducts } from 'apis/product'
-import { Link } from 'react-router-dom'
-import { compare, compareCustom, formatCash } from 'utils'
-import moment from 'moment'
 
 export default function Category() {
   const history = useHistory()
@@ -46,7 +43,9 @@ export default function Category() {
   const [fileUpload, setFileUpload] = useState(null)
   const [imageView, setImageView] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
-  const [productsByCategory, setProductsByCategory] = useState([])
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [countProduct, setCountProduct] = useState(0)
 
   const [match, setMatch] = useState(
     location.state && location.state.condition ? location.state.condition.must_match : 'all'
@@ -56,6 +55,62 @@ export default function Category() {
       ? location.state.condition.function
       : [{ name: 'name', operator: 'is_equal_to', value: '' }]
   )
+
+  const columnsProduct = [
+    {
+      title: 'STT',
+      dataIndex: 'stt',
+      key: 'stt',
+      width: 50,
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'name',
+      key: 'name-product',
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+      key: 'sku',
+    },
+    {
+      title: 'Nhóm sản phẩm',
+      key: 'category',
+    },
+    {
+      title: 'Nhà cung cấp',
+      key: 'supplier',
+    },
+    {
+      title: 'Ngày tạo',
+      key: 'create_date',
+    },
+  ]
+
+  const columnsVariant = [
+    {
+      title: 'Hình ảnh',
+      key: 'image',
+      render: (text, record) =>
+        record.image && record.image.length ? (
+          <img
+            src={record.image[0] || IMAGE_DEFAULT}
+            alt=""
+            style={{ width: 75, height: 75, objectFit: 'contain' }}
+          />
+        ) : (
+          <img src={IMAGE_DEFAULT} alt="" style={{ width: 75, height: 75 }} />
+        ),
+    },
+    {
+      title: 'Thuộc tính',
+      dataIndex: 'title',
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+    },
+  ]
 
   const PRODUCT_TYPES = [
     { name: 'Tên sản phẩm' },
@@ -164,14 +219,23 @@ export default function Category() {
   /**
    * Lấy danh sách sản phẩm theo nhóm sản phẩm
    */
-  const getProductsByCategory = async () =>{
-    if (location.state && location.state.category_id) {
-      const res = await getProducts({ ...paramsFilter, category_id: location.state.category_id })
-      setProductsByCategory(res.data.data)
+  const getProductsByCategory = async () => {
+    try {
+      setLoading(true)
+      if (location.state && location.state.category_id) {
+        const res = await getProducts({ ...paramsFilter, category_id: location.state.category_id })
+        console.log(res)
+        setProducts(res.data.data)
+        setCountProduct(res.data.count)
+      }
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
     }
   }
   useEffect(() => {
-    getProductsByCategory();
+    getProductsByCategory()
   }, [])
 
   useEffect(() => {
@@ -359,127 +423,109 @@ export default function Category() {
             </Form.Item> */}
           </div>
         </Row>
-
       </Form>
-      <Row>
-        <Table
-          style={{ width: '100%' }}
-          // rowSelection={{ selectedRowKeys, onChange: onSelectChange }}
-          rowKey="product_id"
-          expandable={{
-            expandedRowRender: (record) => {
-              return (
-                <div style={{ marginTop: 25, marginBottom: 25 }}>
-                </div>
-              )
-            },
-            expandIconColumnIndex: -1,
-          }}
-          columns={columnsProduct.map((column) => {
-            if (column.key === 'stt')
-              return {
-                ...column,
-                width: 50,
-                render: (text, record, index) =>
-                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
-              }
-            if (column.key === 'name-product')
-              return {
-                ...column,
-                render: (text, record) =>
-                  record.active ? (
-                    <Link to={{ pathname: ROUTES.PRODUCT_UPDATE, state: record }}>{text}</Link>
-                  ) : (
-                    text
-                  ),
-                sorter: (a, b) => compare(a, b, 'name'),
-              }
+      <div style={{ display: !location.state && 'none' }}>
+        <Row>
+          <h4>Danh sách sản phẩm</h4>
+          <Table
+            loading={loading}
+            style={{ width: '100%' }}
+            expandable={{
+              expandedRowRender: (record) => {
+                return (
+                  <div style={{ marginTop: 25, marginBottom: 25 }}>
+                    <Table
+                      style={{ width: '100%' }}
+                      pagination={false}
+                      columns={columnsVariant}
+                      dataSource={record.variants}
+                      size="small"
+                    />
+                  </div>
+                )
+              },
+            }}
+            columns={columnsProduct.map((column) => {
+              if (column.key === 'stt')
+                return {
+                  ...column,
+                  width: 50,
+                  render: (text, record, index) =>
+                    (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+                }
+              if (column.key === 'name-product')
+                return {
+                  ...column,
+                  render: (text, record) => text,
+                  sorter: (a, b) => compare(a, b, 'name'),
+                }
 
-            if (column.key === 'sku')
-              return {
-                ...column,
-                sorter: (a, b) => compare(a, b, 'sku'),
-              }
+              if (column.key === 'sku')
+                return {
+                  ...column,
+                  sorter: (a, b) => compare(a, b, 'sku'),
+                }
 
-            if (column.key === 'category')
-              return {
-                ...column,
-                sorter: (a, b) =>
-                  compareCustom(
-                    a._category ? a._category.name : '',
-                    b._category ? b._category.name : ''
-                  ),
-                render: (text, record) =>
-                  record._categories &&
-                  record._categories.map((category, index) => (
-                    <Tag key={index} closable={false}>
-                      {category.name}
-                    </Tag>
-                  )),
-              }
+              if (column.key === 'category')
+                return {
+                  ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a._categories && a._categories.length ? a._categories[0].name : '',
+                      b._categories && b._categories.length ? b._categories[0].name : ''
+                    ),
+                  render: (text, record) =>
+                    record._categories &&
+                    record._categories.map((category, index) => (
+                      <Tag key={index} closable={false}>
+                        {category.name}
+                      </Tag>
+                    )),
+                }
 
-            if (column.key === 'supplier')
-              return {
-                ...column,
-                sorter: (a, b) =>
-                  compareCustom(
-                    a.supplier ? a.supplier.name : '',
-                    b.supplier ? b.supplier.name : ''
-                  ),
-                render: (text, record) => {
-                  // const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
-                  // if (supplier) return supplier.name
-                  // else 
-                  return ''
-                },
-              }
+              if (column.key === 'supplier')
+                return {
+                  ...column,
+                  sorter: (a, b) =>
+                    compareCustom(
+                      a.supplier_info ? a.supplier_info.name : '',
+                      b.supplier_info ? b.supplier_info.name : ''
+                    ),
+                  render: (text, record) => record.supplier_info && record.supplier_info.name,
+                }
+              if (column.key === 'create_date')
+                return {
+                  ...column,
+                  sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
 
-            if (column.key === 'create_date')
-              return {
-                ...column,
-                sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+                  render: (text, record) =>
+                    record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
+                }
 
-                render: (text, record) =>
-                  record.create_date && moment(record.create_date).format('DD-MM-YYYY HH:mm'),
-              }
-
-            if (column.key === 'active')
-              return {
-                ...column,
-                render: (text, record) => (
-                  <Space size="middle">
-                    <div>
-                      <div>Mở bán</div>
-                      <Switch
-                        defaultChecked={record.active}
-                      // onClick={() =>
-                      //   _updateProduct({ active: !record.active }, record.product_id)
-                      // }
-                      />
-                    </div>
-                  </Space>
-                ),
-              }
-
-            return column
-          })}
-          dataSource={productsByCategory}
-          size="small"
-          pagination={{
-            position: ['bottomLeft'],
-            current: paramsFilter.page,
-            pageSize: paramsFilter.page_size,
-            pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
-            showQuickJumper: true,
-            onChange: (page, pageSize) =>
-              setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
-            // total: countProduct,
-          }}
-        />
-      </Row>
-      <Row>
-      <div> Ghi chú: Nhóm sản phẩm chỉ hiệu quả khi doanh nghiệp có triển khai bán hàng online và bán hàng trên thương mại điện tử</div>  
-      </Row>
+              return column
+            })}
+            dataSource={products}
+            size="small"
+            pagination={{
+              position: ['bottomLeft'],
+              current: paramsFilter.page,
+              pageSize: paramsFilter.page_size,
+              pageSizeOptions: [20, 30, 40, 50, 60, 70, 80, 90, 100],
+              showQuickJumper: true,
+              onChange: (page, pageSize) =>
+                setParamsFilter({ ...paramsFilter, page: page, page_size: pageSize }),
+              total: countProduct,
+            }}
+          />
+        </Row>
+        <Row>
+          <div>
+            {' '}
+            Ghi chú: Nhóm sản phẩm chỉ hiệu quả khi doanh nghiệp có triển khai bán hàng online và
+            bán hàng trên thương mại điện tử
+          </div>
+        </Row>
+      </div>
     </div>
   )
 }

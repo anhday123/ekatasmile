@@ -86,10 +86,8 @@ export default function Product() {
   }
 
   const _onFilter = (attribute = '', value = '') => {
-    // if (value) paramsFilter[attribute] = value
-    // else delete paramsFilter[attribute]
-    if (value !== '') paramsFilter.active = value
-    else delete paramsFilter.active
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
     setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
@@ -309,7 +307,7 @@ export default function Product() {
             size="large"
             style={{ width: '100%', marginBottom: 30 }}
             placeholder="Chọn nhóm sản phẩm"
-            showSearch={false}
+            treeNodeFilterProp="title"
             onChange={(value) => setCategoryIds(value)}
             value={categoryIds}
           >
@@ -556,6 +554,7 @@ export default function Product() {
               style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
               onClick={onClickClear}
               type="primary"
+              danger
             >
               Xóa tất cả lọc
             </Button>
@@ -609,7 +608,7 @@ export default function Product() {
                     size={FILTER_SIZE}
                     value={valueSearch}
                     onChange={onSearch}
-                    placeholder="Tìm kiếm theo mã, theo tên"
+                    placeholder="Tìm kiếm sản phẩm"
                     allowClear
                     bordered={false}
                   />
@@ -643,7 +642,7 @@ export default function Product() {
           </Col>
 
           <Col xs={24} sm={24} md={24} lg={16} xl={16}>
-            <Row>
+            <Row gutter={[0, 20]}>
               <Col
                 xs={24}
                 sm={24}
@@ -680,11 +679,11 @@ export default function Product() {
                   showSearch
                   size={FILTER_SIZE}
                   style={{ width: '100%' }}
-                  placeholder="Lọc trạng thái"
+                  placeholder="Lọc theo trạng thái"
                   optionFilterProp="children"
                   bordered={false}
-                  value={paramsFilter.supplier_id}
-                  onChange={(value) => _onFilter('supplier_id', value)}
+                  value={paramsFilter.active}
+                  onChange={(value) => _onFilter('active', value)}
                 >
                   <Option value={true}>Mở bán</Option>
                   <Option value={false}>Ngừng bán</Option>
@@ -696,20 +695,18 @@ export default function Product() {
                 md={24}
                 lg={6}
                 xl={6}
-                style={{
-                  borderTop: '1px solid #d9d9d9',
-                  borderBottom: '1px solid #d9d9d9',
-                }}
+                style={{ borderTop: '1px solid #d9d9d9', borderBottom: '1px solid #d9d9d9' }}
               >
                 <TreeSelect
                   style={{ width: '100%' }}
-                  placeholder="Tìm kiếm theo nhóm sản phẩm "
+                  placeholder="Lọc theo nhóm sản phẩm "
                   allowClear
                   multiple
                   size={FILTER_SIZE}
-                  showSearch={false}
+                  treeNodeFilterProp="title"
                   treeDefaultExpandAll
                   bordered={false}
+                  maxTagCount="responsive"
                   value={
                     paramsFilter.category_id
                       ? paramsFilter.category_id.split('---').map((e) => +e)
@@ -937,12 +934,9 @@ export default function Product() {
             if (column.key === 'name-product')
               return {
                 ...column,
-                render: (text, record) =>
-                  record.active ? (
-                    <Link to={{ pathname: ROUTES.PRODUCT_UPDATE, state: record }}>{text}</Link>
-                  ) : (
-                    text
-                  ),
+                render: (text, record) => (
+                  <Link to={{ pathname: ROUTES.PRODUCT_UPDATE, state: record }}>{text}</Link>
+                ),
                 sorter: (a, b) => compare(a, b, 'name'),
               }
 
@@ -957,8 +951,8 @@ export default function Product() {
                 ...column,
                 sorter: (a, b) =>
                   compareCustom(
-                    a._category ? a._category.name : '',
-                    b._category ? b._category.name : ''
+                    a._categories && a._categories.length ? a._categories[0].name : '',
+                    b._categories && b._categories.length ? b._categories[0].name : ''
                   ),
                 render: (text, record) =>
                   record._categories &&
@@ -974,14 +968,10 @@ export default function Product() {
                 ...column,
                 sorter: (a, b) =>
                   compareCustom(
-                    a.supplier ? a.supplier.name : '',
-                    b.supplier ? b.supplier.name : ''
+                    a.supplier_info ? a.supplier_info.name : '',
+                    b.supplier_info ? b.supplier_info.name : ''
                   ),
-                render: (text, record) => {
-                  const supplier = suppliers.find((c) => c.supplier_id === record.supplier_id)
-                  if (supplier) return supplier.name
-                  else return ''
-                },
+                render: (text, record) => record.supplier_info && record.supplier_info.name,
               }
 
             if (column.key === 'create_date')

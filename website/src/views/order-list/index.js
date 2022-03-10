@@ -283,13 +283,7 @@ export default function OrderList() {
             </Select>
           </Col>
 
-          <Col
-            xs={24}
-            sm={24}
-            md={24}
-            lg={16}
-            xl={16}
-          >
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
             <Row>
               <Col
                 xs={24}
@@ -330,7 +324,7 @@ export default function OrderList() {
                   value={paramsFilter.bill_status}
                   onChange={(value) => _onChangeFilter('bill_status', value)}
                   showSearch
-                  placeholder="Lọc trạng thái đơn hàng"
+                  placeholder="Lọc theo trạng thái đơn hàng"
                   style={{ width: '100%' }}
                   bordered={false}
                 >
@@ -362,9 +356,12 @@ export default function OrderList() {
                   style={{ width: '100%' }}
                   bordered={false}
                 >
-                  <Select.Option value="">Tất cả</Select.Option>
+                  <Select.Option value="">Tất cả (nhân viên)</Select.Option>
                   {employees.map((employee, index) => (
-                    <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
+                    <Select.Option
+                      value={employee.first_name + ' ' + employee.last_name}
+                      key={index}
+                    >
                       {employee.first_name} {employee.last_name}
                     </Select.Option>
                   ))}
@@ -531,10 +528,11 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -622,30 +620,28 @@ export default function OrderList() {
               ...column,
               render: (text) => {
                 const status = statusOrder.find((s) => s.name === text)
-                let colorStatus = null;
+                let colorStatus = null
                 switch (status && status.name) {
-                  case "DRAFT":
-                    colorStatus = "#fdaa3e"
-                    break;
-                  case "WAITING_FOR_SHIPPING":
-                    colorStatus = "#52c41a"
-                    break;
-                  case "COMPARED":
-                    colorStatus = "#5b6be8"
-                    break;
-                  case "SHIPPING":
-                    colorStatus = "#5b6be8"
-                    break;
-                  case "COMPLETE":
-                    colorStatus = "#5b6be8"
-                    break;
-                  case "CANCEL":
-                    colorStatus = "red"
-                    break;
+                  case 'DRAFT':
+                    colorStatus = '#fdaa3e'
+                    break
+                  case 'WAITING_FOR_SHIPPING':
+                    colorStatus = '#52c41a'
+                    break
+                  case 'COMPARED':
+                    colorStatus = '#5b6be8'
+                    break
+                  case 'SHIPPING':
+                    colorStatus = '#5b6be8'
+                    break
+                  case 'COMPLETE':
+                    colorStatus = '#5b6be8'
+                    break
+                  case 'CANCEL':
+                    colorStatus = 'red'
+                    break
                 }
-                return <span style={{ color: colorStatus }}>
-                  {status ? status.label : ''}
-                </span>
+                return <span style={{ color: colorStatus }}>{status ? status.label : ''}</span>
               },
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
