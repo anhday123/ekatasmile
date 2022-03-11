@@ -180,6 +180,7 @@ module.exports._create = async (req, res, next) => {
     if (!req.body.order_details || req.body.order_details.length == 0) {
       throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!')
     }
+
     let [orderMaxId] = await Promise.all([
       client
         .db(req.user.database)

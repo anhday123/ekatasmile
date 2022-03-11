@@ -3,6 +3,19 @@ const TIMEZONE = process.env.TIMEZONE
 const client = require(`../config/mongodb`)
 const SDB = process.env.DATABASE
 
+module.exports._getEnumUnitProduct = async (req, res, next) => {
+  try {
+    let enums = await client
+      .db(SDB)
+      .collection('EnumUnitProduct')
+      .find({})
+      .toArray()
+    res.send({ success: true, data: enums })
+  } catch (err) {
+    next(err)
+  }
+}
+
 module.exports._getEnumPlatform = async (req, res, next) => {
   try {
     let enums = await client
