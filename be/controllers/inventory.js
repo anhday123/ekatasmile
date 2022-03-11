@@ -65,7 +65,7 @@ module.exports._getImportOrder = async (req, res, next) => {
     }
     if (req.query.code) {
       aggregateQuery.push({
-        $match: { code: String(req.query.code).replace('#', '') },
+        $match: { code: new RegExp(req.query.code).replace('#', '') },
       })
     }
     if (req.query.creator_id) {
