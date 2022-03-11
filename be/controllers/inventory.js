@@ -264,12 +264,12 @@ module.exports._createImportOrder = async (req, res, next) => {
     if (req.body.code == undefined)
       throw new Error('400: Vui lòng truyền số hoá đơn')
 
-    var order = await client
+    var orderImport = await client
       .db(req.user.database)
       .collection('ImportOrders')
       .findOne({ code: req.body.code })
 
-    if (order != undefined) throw new Error('400: Số hoá đơn đã tồn tại')
+    if (orderImport != undefined) throw new Error('400: Số hoá đơn đã tồn tại')
 
     if (req.body.status == 'COMPLETE') {
       req.body.products.map((item) => {
