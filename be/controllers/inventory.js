@@ -830,7 +830,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
       let _row = {}
 
       let optionRequire = [
-        'maphieunhap(*)',
         'masanpham(*)',
         'maphienban(*)',
         'gianhap(*)',
