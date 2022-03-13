@@ -38,7 +38,6 @@ export default function ImportFile({
 
   const _handleUpload = async () => {
     if (fileUpload) {
-      setLoading(true)
       let formData = new FormData()
       formData.append('file', fileUpload)
       try {
@@ -50,11 +49,16 @@ export default function ImportFile({
           formData.append('shipping_company_id', shippingId)
           formData.append('status', 'DRAFT')
         }
+        if (keyForm && keyForm.branch_id !== undefined && !keyForm.branch_id) {
+          notification.warning({ message: 'Vui lòng chọn chi nhánh' })
+          return
+        }
 
         //add them key khac neu co
         const objKey = Object.keys(keyForm)
         if (objKey.length !== 0) objKey.map((key) => formData.append(key, keyForm[key]))
 
+        setLoading(true)
         res = await upload(formData)
         console.log('res', res)
         if (res.status === 200) {
@@ -139,7 +143,7 @@ export default function ImportFile({
                         if (resp.rows[i].length) {
                           let obj = {}
                           for (let j = 0; j < resp.rows[0].length; ++j)
-                            if (resp.rows[0][j]) obj[resp.rows[0][j]] = resp.rows[i][j] || ''
+                            if (resp.rows[0][j]) obj[resp.rows[0][j]] = resp.rows[i][j]
 
                           result.push(obj)
                         }

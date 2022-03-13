@@ -10,7 +10,7 @@ const columns = [
     key: 'code',
   },
   {
-    title: 'Địa điểm nhập hàng',
+    title: 'Địa điểm nhận hàng',
     key: 'location',
   },
   {

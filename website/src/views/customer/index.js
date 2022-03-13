@@ -108,18 +108,22 @@ export default function Customer() {
     try {
       setTableLoading(true)
       const res = await getCustomers({ branch_id: branchIdApp })
-      console.log(res)
       if (res.status === 200) {
         dataExport = res.data.data.map((item, index) => ({
           STT: index + 1,
           'Mã khách hàng': item.code || '',
           'Tên khách hàng': (item.first_name || '') + ' ' + (item.last_name || ''),
-          'Loại khách hàng': item.type || '',
+          'Loại khách hàng': item._type ? item._type.name : '',
           'Liên hệ': item.phone || '',
-          'Tổng số đơn hàng': item.order_quantity || '',
-          'Điểm tích luỹ': item.point || '',
-          'Số điểm đã dùng': item.used_point || '',
-          'Tổng chi tiêu tại cửa hàng': item.order_total_cost || '',
+          'Tổng số đơn hàng': item.order_quantity || 0,
+          'Điểm tích luỹ': item.point || 0,
+          'Số điểm đã dùng': item.used_point || 0,
+          'Tổng chi tiêu tại cửa hàng': item.order_total_cost || 0,
+          'Ngày tạo': item.create_date ? moment(item.create_date).format('DD-MM-YYYY HH:mm') : '',
+          'Ngày sinh': item.birthday ? moment(item.birthday).format('DD-MM-YYYY') : '',
+          'Địa chỉ': `${item.address && item.address + ', '}${
+            item.district && item.district + ', '
+          }${item.province && item.province}`,
         }))
       }
       setTableLoading(false)
@@ -381,6 +385,8 @@ export default function Customer() {
                 onChange={onChangeTypeCustomer}
                 allowClear
                 bordered={false}
+                showSearch
+                optionFilterProp="children"
               >
                 {customerTypes.map((type, index) => (
                   <Option value={type.type_id} key={index}>
@@ -467,14 +473,14 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) =>
-                record.birthday && moment(record.birthday).format('DD-MM-YYYY HH:mm'),
+                record.birthday && moment(record.birthday).format('DD-MM-YYYY'),
               sorter: (a, b) => moment(a.birthday || '').unix() - moment(b.birthday || '').unix(),
             }
           if (column.key === 'address')
             return {
               ...column,
               render: (text, record) =>
-                 `${record.address && record.address + ', '}${
+                `${record.address && record.address + ', '}${
                   record.district && record.district + ', '
                 }${record.province && record.province}`,
               sorter: (a, b) => compare(a, b, 'address'),

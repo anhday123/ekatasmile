@@ -82,8 +82,8 @@ export default function ShippingProductAdd() {
             let value = e.target.value.replaceAll(',', '')
             _editProductInTransport('quantity', +value, index)
           }}
-          defaultValue={record.quantity || 0}
-          min={0}
+          defaultValue={record.quantity || 1}
+          min={1}
           max={record.locations && record.locations.length ? record.locations[0].quantity : 10000}
           placeholder="Nhập số lượng"
           formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -134,7 +134,7 @@ export default function ShippingProductAdd() {
 
       if (exportLocation.branch_id === importLocation.branch_id) {
         notification.warning({
-          message: 'Chi nhánh chuyển và Chi nhánh nhận không thể trùng nhau!',
+          message: 'Chi nhánh chuyển và chi nhánh nhận không thể trùng nhau!',
         })
         return
       }
@@ -308,7 +308,7 @@ export default function ShippingProductAdd() {
       </TitlePage>
 
       <Form form={form} layout="vertical">
-        <Row gutter={[20, 16]} style={{ marginTop: 15 }}>
+        <Row gutter={[15, 16]} style={{ marginTop: 15 }}>
           <Col xs={24} sm={24} md={12} lg={12} xl={8}>
             <Form.Item
               rules={[{ required: true, message: 'Vui lòng chọn nơi chuyển' }]}
@@ -397,7 +397,7 @@ export default function ShippingProductAdd() {
           </Col>
         </Row>
 
-        <Row wrap={false} style={{ marginBottom: 20, marginTop: 35 }}>
+        <Row wrap={false} style={{ marginBottom: 20, marginTop: 25 }}>
           <Select
             size="large"
             notFoundContent={loading ? <Spin size="small" /> : null}

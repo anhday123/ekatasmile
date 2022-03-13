@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
-import { compare, formatCash } from 'utils'
+import { formatCash } from 'utils'
 import { useHistory } from 'react-router-dom'
 import { FILTER_COL_HEIGHT, FILTER_SIZE, ROUTES } from 'consts'
 import delay from 'delay'
@@ -24,6 +24,7 @@ import { getCategories } from 'apis/category'
 export default function ReportInventory() {
   const history = useHistory()
   const dateFormat = 'YYYY-MM-DD'
+  const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [branches, setBranches] = useState([])
   const [categories, setCategories] = useState([])
@@ -36,15 +37,12 @@ export default function ReportInventory() {
     from_date: moment(new Date()).format('YYYY-MM-DD'),
     to_date: moment(new Date()).format('YYYY-MM-DD'),
   })
-  const [nameBranch, setNameBranch] = useState('')
-  console.log(nameBranch)
+
   const [countReport, setCountReport] = useState(0)
   const [warehousesNameExport, setWarehousesNameExport] = useState([])
   const [warehousesName, setWarehousesName] = useState([])
-  const [dateFilter, setDateFilter] = useState([moment(new Date()), moment(new Date())])
 
   const onChangeDate = (date, dateString) => {
-    setDateFilter(date)
     if (date) {
       paramsFilter.from_date = dateString[0]
       paramsFilter.to_date = dateString[1]
@@ -248,6 +246,10 @@ export default function ReportInventory() {
   }, [])
 
   useEffect(() => {
+    setParamsFilter({ ...paramsFilter, branch_id: branchIdApp })
+  }, [branchIdApp])
+
+  useEffect(() => {
     _reportInventory()
   }, [paramsFilter])
 
@@ -280,14 +282,18 @@ export default function ReportInventory() {
           Xuất excel
         </Button>
       </TitlePage>
-      <Row wrap={false} gutter={[16, 16]} style={{
-        marginLeft: 0,
-        marginRight: 0,
-        marginBottom: 20,
-        marginTop: 20,
-        border: '1px solid #d9d9d9',
-        borderRadius: '5px',
-      }}>
+      <Row
+        wrap={false}
+        gutter={[0, 16]}
+        style={{
+          marginLeft: 0,
+          marginRight: 0,
+          marginBottom: 20,
+          marginTop: 20,
+          border: '1px solid #d9d9d9',
+          borderRadius: '5px',
+        }}
+      >
         <Col
           xs={24}
           sm={24}
@@ -295,7 +301,6 @@ export default function ReportInventory() {
           lg={8}
           xl={8}
           style={{
-
             height: FILTER_COL_HEIGHT,
           }}
         >
@@ -307,23 +312,26 @@ export default function ReportInventory() {
             format={dateFormat}
           />
         </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{
-          borderLeft: '1px solid #d9d9d9',
-          borderRight: '1px solid #d9d9d9'
-        }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={8}
+          xl={8}
+          style={{
+            borderLeft: '1px solid #d9d9d9',
+            borderRight: '1px solid #d9d9d9',
+          }}
+        >
           <Select
-            mode="multiple"
             size={FILTER_SIZE}
             allowClear
             bordered={false}
-            value={paramsFilter.branch_id ? paramsFilter.branch_id.split('---').map((e) => +e) : []}
+            value={paramsFilter.branch_id}
             onChange={(value) => {
-              if (value.length) setParamsFilter({ ...paramsFilter, branch_id: value.join('---') })
-              else {
-                delete paramsFilter.branch_id
-                setParamsFilter({ ...paramsFilter })
-              }
-              setNameBranch(value)
+              if (value) paramsFilter.branch_id = value
+              else delete paramsFilter.branch_id
+              setParamsFilter({ ...paramsFilter, page: 1 })
             }}
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
@@ -375,7 +383,11 @@ export default function ReportInventory() {
       </Row>
       <Button
         onClick={_clearFilters}
-        style={{ display: Object.keys(paramsFilter).length <= 4 && 'none', width: '10%', marginBottom: 10 }}
+        style={{
+          display: Object.keys(paramsFilter).length <= 4 && 'none',
+          width: '10%',
+          marginBottom: 10,
+        }}
         danger
         type="primary"
       >

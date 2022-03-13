@@ -8,6 +8,12 @@ export const changeLanguage = (language) => {
   localStorage.setItem('language', language)
 }
 
+export const validatePhone = (phone = '') => {
+  const vnf_regex = /((09|03|07|08|05)+([0-9]{8})\b)/g
+  if (vnf_regex.test(phone)) return true
+  return false
+}
+
 export const compare = (a, b, key, convert) => {
   if (convert)
     return convert(a[key]) > convert(b[key]) ? 1 : convert(a[key]) === convert(b[key]) ? 0 : -1

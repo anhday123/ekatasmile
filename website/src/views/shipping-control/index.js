@@ -149,10 +149,10 @@ export default function ShippingControl() {
                 <div style={{ marginLeft: 20 }}>
                   <p style={{ margin: 0, fontSize: 12 }}>Chọn đơn vị vận chuyển</p>
                   <Select
+                    showSearch
+                    optionFilterProp="children"
                     onChange={setShippingId}
-                    value={
-                      shippingId
-                    }
+                    value={shippingId}
                     defaultValue={shippings.length !== 0 && shippings[0].name}
                     placeholder="Chọn đơn vị vận chuyển"
                     style={{ width: 250 }}
@@ -166,7 +166,7 @@ export default function ShippingControl() {
                 </div>
               </Row>
             }
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/18/35e278a0-a244-4c7e-9284-015fb9c00238/file_mau_doi_soat.xlsx"
+            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/13/d5937240-928b-46f1-b532-51e8f9cbed1d/file_mau_doi_soat.xlsx"
             reload={_getShippingControlList}
           />
           <SettingColumns

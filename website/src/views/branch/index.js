@@ -98,10 +98,7 @@ export default function Branch() {
             message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
           })
       } else
-        notification.error({
-          message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
-        })
-
+        notification.error({ message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!' })
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
       dispatch({ type: ACTION.LOADING, data: false })
@@ -389,7 +386,8 @@ export default function Branch() {
               return {
                 ...column,
                 render: (text, record) =>
-                  `${record.address && record.address + ', '}${record.district && record.district + ', '
+                  `${record.address && record.address + ', '}${
+                    record.district && record.district + ', '
                   }${record.province && record.province}`,
               }
             if (column.key === 'creator')

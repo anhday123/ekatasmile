@@ -173,7 +173,7 @@ export default function BranchAdd({ reloadData, children, record }) {
           ) : (
             <div>
               {loading ? <LoadingOutlined /> : <PlusOutlined />}
-              <div style={{ marginTop: 8 }}>Upload</div>
+              <div style={{ marginTop: 8 }}>Tải lên</div>
             </div>
           )}
         </Upload>
@@ -258,7 +258,7 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                name="warehouse_type"
+                name="type"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
               >
                 <Select
@@ -269,8 +269,8 @@ export default function BranchAdd({ reloadData, children, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  <Option value="sở hữu">Sở hữu</Option>
-                  <Option value="dịch vụ">Thuê dịch vụ</Option>
+                  <Option value="warehouse">Kho</Option>
+                  <Option value="store">Cửa hàng</Option>
                 </Select>
               </Form.Item>
             </Col>

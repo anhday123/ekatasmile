@@ -83,10 +83,8 @@ export default function ProductAdd() {
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
   const [imagesProduct, setImagesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
-  const [isInputInfoProduct, setIsInputInfoProduct] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
-  const [productIsHaveDescription, setProductIsHaveDescription] = useState(false)
   const [suppliers, setSuppliers] = useState([])
   const [supplier, setSupplier] = useState('') // dung o variant
   const [isGeneratedSku, setIsGeneratedSku] = useState(false)
@@ -320,7 +318,7 @@ export default function ProductAdd() {
         unit: formProduct.unit || '',
         files: files || [],
         warranties: idsWarranty,
-        description: productIsHaveDescription ? description || '' : '',
+        description: description || '',
       }
 
       if (isProductHasVariants) {
@@ -865,17 +863,7 @@ export default function ProductAdd() {
         setVariants([...product.variants])
       }
 
-      //check product co thong so khac
-      if (product.height || product.length || product.width || product.weight || product.unit) {
-        setIsInputInfoProduct(true)
-      }
-
-      //check product co mo ta ?
-      if (product.description) {
-        setProductIsHaveDescription(true)
-        setDescription(product.description)
-      }
-
+      setDescription(product.description || 0)
       setIsGeneratedSku(true)
       setValueGeneratedSku(product.sku)
       setFiles(product.files)
@@ -1089,26 +1077,11 @@ export default function ProductAdd() {
                 xl={24}
                 style={{ marginTop: 2, marginBottom: 15 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <Switch
-                    checked={productIsHaveDescription}
-                    onChange={(checked) => {
-                      setProductIsHaveDescription(checked)
-                    }}
-                    style={{ marginRight: 5 }}
-                  />
-                  Sản phẩm {productIsHaveDescription ? 'có' : 'không'} mô tả
-                </div>
-                {productIsHaveDescription ? (
-                  <div style={{ display: !productIsHaveDescription && 'none' }}>
-                    <CKEditor
-                      initData={location.state && parse(location.state.description)}
-                      onChange={(e) => setDescription(e.editor.getData())}
-                    />
-                  </div>
-                ) : (
-                  ''
-                )}
+                <div>Mô tả sản phẩm</div>
+                <CKEditor
+                  initData={location.state && parse(location.state.description)}
+                  onChange={(e) => setDescription(e.editor.getData())}
+                />
               </Col>
             </Row>
           </Tabs.TabPane>
@@ -1477,22 +1450,10 @@ export default function ProductAdd() {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Thông số sản phẩm" key="3">
             <Row justify="space-between" align="middle">
-              <Row align="middle" style={{ marginBottom: 5, marginTop: 10, width: '100%' }}>
-                <Switch
-                  checked={isInputInfoProduct}
-                  onChange={(checked) => setIsInputInfoProduct(checked)}
-                  style={{ marginRight: 5 }}
-                />
-                Thông số sản phẩm
-              </Row>
               <Row
                 justify="space-between"
                 align="middle"
-                style={{
-                  width: '100%',
-                  marginBottom: 15,
-                  display: !isInputInfoProduct && 'none',
-                }}
+                style={{ width: '100%', marginBottom: 15 }}
               >
                 <Col xs={24} sm={24} md={4} lg={4} xl={4}>
                   <Form.Item label="Chiều dài" name="length">

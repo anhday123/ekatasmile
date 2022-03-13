@@ -1,18 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './product.module.scss'
 import { Link } from 'react-router-dom'
-import {
-  ROUTES,
-  PERMISSIONS,
-  STATUS_PRODUCT,
-  IMAGE_DEFAULT,
-  FILTER_SIZE,
-  FILTER_COL_HEIGHT,
-} from 'consts'
+import { ROUTES, PERMISSIONS, IMAGE_DEFAULT, FILTER_SIZE } from 'consts'
 import { compareCustom, formatCash } from 'utils'
 import moment from 'moment'
 import { compare } from 'utils'
 import { useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 
 import {
   Switch,
@@ -58,6 +52,7 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 export default function Product() {
   const typingTimeoutRef = useRef(null)
+  const history = useHistory()
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
   const [loading, setLoading] = useState(true)
@@ -250,7 +245,6 @@ export default function Product() {
 
   const _getProducts = async () => {
     setLoading(true)
-    setSelectedRowKeys([])
     setProducts([])
 
     try {
@@ -516,7 +510,7 @@ export default function Product() {
       let res = await updateProduct(body, id)
       console.log(res)
       if (res.status === 200) {
-        if (res.data.success) notification.success({ message: 'Cập nhật thành công!' })
+        if (res.data.success) notification.success({ message: 'Cập nhật thành công!', duration: 1 })
         else
           notification.error({
             message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại!',
@@ -543,6 +537,23 @@ export default function Product() {
     paramsFilter.page = 1
     setParamsFilter({ ...paramsFilter })
   }
+
+  //Xử lí auto expand sản phẩm khi reload page
+  useEffect(() => {
+    if (selectedRowKeys.length)
+      localStorage.setItem('rowKeysProduct', JSON.stringify(selectedRowKeys))
+  }, [selectedRowKeys])
+
+  useEffect(() => {
+    //get keys product từ localStorage
+    const keysProduct = localStorage.getItem('rowKeysProduct')
+    setSelectedRowKeys(keysProduct ? JSON.parse(keysProduct) : [])
+
+    //xóa lưu khỏi localstorage khi remove DOM
+    return () => {
+      localStorage.removeItem('rowKeysProduct')
+    }
+  }, [])
 
   return (
     <>
@@ -683,7 +694,11 @@ export default function Product() {
                   optionFilterProp="children"
                   bordered={false}
                   value={paramsFilter.active}
-                  onChange={(value) => _onFilter('active', value)}
+                  onChange={(value) => {
+                    if (value !== undefined) paramsFilter.active = value
+                    else delete paramsFilter.active
+                    setParamsFilter({ ...paramsFilter, page: 1 })
+                  }}
                 >
                   <Option value={true}>Mở bán</Option>
                   <Option value={false}>Ngừng bán</Option>
@@ -858,24 +873,15 @@ export default function Product() {
         <Row justify="space-between" style={{ width: '100%', marginTop: 10, marginBottom: 10 }}>
           <Space size="middle" style={{ display: !selectedRowKeys.length && 'none' }}>
             <UpdateCategoryProducts />
-            {/* <Permission permission={[PERMISSIONS.xoa_san_pham]}>
-              <Popconfirm
-                title="Bạn có muốn xoá các sản phẩm này?"
-                okText="Đồng ý"
-                cancelText="Từ chối"
-                onConfirm={_deleteProducts}
-              >
-                <Button style={{ minWidth: 100 }} size="large" type="primary" danger>
-                  Xoá
-                </Button>
-              </Popconfirm>
-            </Permission> */}
+
             <Button
               size="large"
-              // onClick={onClickClear}
               type="primary"
+              onClick={() =>
+                history.push(`${ROUTES.IMPORT_INVENTORY}?product_ids=${selectedRowKeys.join('--')}`)
+              }
             >
-              Nhập hàng
+              Nhập hàng SP đã chọn
             </Button>
           </Space>
         </Row>

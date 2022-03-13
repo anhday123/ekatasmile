@@ -16,7 +16,6 @@ let login = (state = initialState, action) => {
       console.log('data user', data)
       if (data) {
         localStorage.setItem('accessToken', action.data.accessToken)
-        localStorage.setItem('username', data.data.username)
 
         return {
           ...state,

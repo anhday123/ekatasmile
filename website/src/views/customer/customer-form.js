@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react'
-
-import {
-  Select,
-  Button,
-  Input,
-  Form,
-  Row,
-  Col,
-  DatePicker,
-  notification,
-  Radio,
-  InputNumber,
-} from 'antd'
 import { useDispatch } from 'react-redux'
 import moment from 'moment'
 import { ACTION } from 'consts'
+import { validatePhone } from 'utils'
+
+// antd
+import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Radio } from 'antd'
 
 //apis
 import { getDistricts, getProvinces } from 'apis/address'
@@ -62,7 +53,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const onFinish = async (values) => {
     try {
-      if (!Number(values.phone)) {
+      if (!validatePhone(values.phone)) {
         notification.warning({ message: 'Vui lòng nhập số điện thoại đúng định dạng' })
         return
       }
@@ -260,29 +251,6 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         </Col>
 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-          <Form.Item label="Tỉnh/thành phố" name="province">
-            <Select
-              allowClear
-              size="large"
-              placeholder="Chọn tỉnh/thành phố"
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={provinceName}
-              onChange={setProvinceName}
-            >
-              {provinces.map((e, index) => (
-                <Option value={e.province_name} key={index}>
-                  {e.province_name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item label="Quận/huyện" name="district">
             <Select
               allowClear
@@ -301,6 +269,32 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
                     {e.district_name}
                   </Option>
                 ))}
+            </Select>
+          </Form.Item>
+        </Col>
+
+        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Form.Item label="Tỉnh/thành phố" name="province">
+            <Select
+              allowClear
+              size="large"
+              placeholder="Chọn tỉnh/thành phố"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              value={provinceName}
+              onChange={(value) => {
+                setProvinceName(value)
+                form.setFieldsValue({ district: undefined })
+              }}
+            >
+              {provinces.map((e, index) => (
+                <Option value={e.province_name} key={index}>
+                  {e.province_name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Col>

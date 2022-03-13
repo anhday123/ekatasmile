@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styles from './register.module.scss'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { ACTION, ROUTES } from 'consts'
+import { validatePhone } from 'utils'
 
 //background
 import background from 'assets/img/bg1.jpg'
 import logoRegister from 'assets/img/logoRegister.svg'
 
 //antd
-import { Row, Col, Form, Input, Button, notification, Tabs } from 'antd'
+import { Row, Col, Form, Input, Button, notification, Tabs, InputNumber } from 'antd'
 
 //apis
 import { register } from 'apis/auth'
@@ -22,11 +23,30 @@ export default function Login() {
   const _register = async (dataForm) => {
     try {
       /*check validated form*/
+      const regexPassword = /^[A-Za-z0-9 ]+$/
+      const regexPassword2 = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+
+      if (!regexPassword.test(dataForm.password)) {
+        notification.error({ message: 'Mật khẩu không được chứa dấu' })
+        return
+      }
+      if (!regexPassword2.test(dataForm.password)) {
+        notification.error({
+          message:
+            'Mật khẩu tối thiểu 8 ký tự, ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt',
+        })
+        return
+      }
       if (dataForm.password !== dataForm.passwordAgain) {
         notification.error({ message: 'Mật khẩu và nhập lại mật khẩu phải giống nhau' })
         return
       }
-      if (dataForm.username && !regex.test(dataForm.username)) {
+      const phone =
+        (dataForm.username + '')[0] + (dataForm.username + '')[1] === '84'
+          ? '0' + (dataForm.username + '').slice(2, (dataForm.username + '').length)
+          : dataForm.username + ''
+
+      if (dataForm.username && !validatePhone(phone)) {
         notification.error({ message: 'Vui lòng nhập số điện thoại đúng định dạng' })
         return
       }
@@ -75,8 +95,6 @@ export default function Login() {
     }
   }
 
-  const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
-
   return (
     <Row className={styles['registration']}>
       <img src={background} alt="background" />
@@ -117,6 +135,7 @@ export default function Login() {
                         rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
                       >
                         <Input
+                          type="number"
                           allowClear
                           style={{ width: '60%' }}
                           size="large"

@@ -14,6 +14,7 @@ import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
 import TitlePage from 'components/title-page'
 import PrintImportInventory from 'components/print/print-import-inventory'
+import FilterDate from 'components/filter-date'
 
 //antd
 import {
@@ -73,11 +74,6 @@ export default function ImportInventories() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
 
   const [fileTemplated, setFileTemplated] = useState([])
-  const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
-  const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
-  const [valueTime, setValueTime] = useState() //dùng để hiện thị value trong filter by time
-  const [valueDateTimeSearch, setValueDateTimeSearch] = useState({})
   const [valueSearch, setValueSearch] = useState('')
   const [supplierId, setSupplierId] = useState()
   const [productsSupplier, setProductsSupplier] = useState([])
@@ -126,8 +122,8 @@ export default function ImportInventories() {
         dataIndex: 'sku',
       },
       {
-        title: 'Số lượng',
-        render: (text, record) => record.sale_quantity && formatCash(record.sale_quantity || 0),
+        title: 'Số lượng nhập',
+        render: (text, record) => record.quantity && formatCash(record.quantity || 0),
       },
       {
         title: 'Chiều rộng',
@@ -184,7 +180,7 @@ export default function ImportInventories() {
                     STT: index + 1,
                     Tên: product.name || '',
                     SKU: product.sku || '',
-                    'Số lượng': product.sale_quantity && formatCash(product.sale_quantity || 0),
+                    'Số lượng nhập': product.quantity && formatCash(product.quantity || 0),
                     'Chiều rộng': product.width || 0,
                     'Cân nặng': product.weight || 0,
                     'Chiều dài': product.length || 0,
@@ -383,6 +379,7 @@ export default function ImportInventories() {
   const _getStatusOrderImportInventory = async () => {
     try {
       const res = await getStatusOrderImportInventory()
+      console.log(res)
       if (res.status === 200) setStatusList(res.data.data)
     } catch (error) {
       console.log(error)
@@ -550,7 +547,7 @@ export default function ImportInventories() {
             fileTemplated={
               fileTemplated.length
                 ? fileTemplated
-                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/823f2fb4-c3da-4203-9269-6f264cf412a3/InventoryImport.xlsx'
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/14/9c7ace44-309d-434e-a360-9a6d179a873d/InventoryImport.xlsx'
             }
             customFileTemplated={fileTemplated.length ? true : false}
           />
@@ -567,16 +564,9 @@ export default function ImportInventories() {
       </TitlePage>
 
       <div style={{ marginTop: 10 }}>
-        <Row
-          justify="space-between"
-          style={{
-            marginTop: '1rem',
-            border: '1px solid #d9d9d9',
-            borderRadius: 5,
-          }}
-        >
+        <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           {/* <Space wrap={true}> */}
-          <Col xs={24} sm={5} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
+          <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
             <Input
               allowClear
               style={{ width: '100%' }}
@@ -590,7 +580,7 @@ export default function ImportInventories() {
           </Col>
           <Col
             xs={24}
-            sm={4}
+            sm={24}
             md={4}
             lg={4}
             xl={4}
@@ -600,117 +590,16 @@ export default function ImportInventories() {
               height: FILTER_COL_HEIGHT,
             }}
           >
-            <Select
-              open={isOpenSelect}
-              onBlur={() => {
-                if (isOpenSelect) toggleOpenSelect()
-              }}
-              onClick={() => {
-                if (!isOpenSelect) toggleOpenSelect()
-              }}
-              allowClear
-              size={FILTER_SIZE}
-              showSearch
-              bordered={false}
-              placeholder="Lọc theo ngày nhập hàng"
-              optionFilterProp="children"
-              style={{ width: '100%' }}
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              value={valueTime}
-              onChange={async (value) => {
-                setValueTime(value)
-
-                paramsFilter.page = 1
-
-                //xoa params search date hien tai
-                const p = Object.keys(valueDateTimeSearch)
-                if (p.length) delete paramsFilter[p[0]]
-
-                setValueDateSearch(null)
-                delete paramsFilter.from_date
-                delete paramsFilter.to_date
-
-                if (isOpenSelect) toggleOpenSelect()
-
-                if (value) {
-                  const searchDate = Object.fromEntries([[value, true]]) // them params search date moi
-
-                  setParamsFilter({ ...paramsFilter, ...searchDate })
-                  setValueDateTimeSearch({ ...searchDate })
-                } else {
-                  setParamsFilter({ ...paramsFilter })
-                  setValueDateTimeSearch({})
-                }
-              }}
-              dropdownRender={(menu) => (
-                <>
-                  <DatePicker.RangePicker
-                    onFocus={() => {
-                      if (!isOpenSelect) toggleOpenSelect()
-                    }}
-                    onBlur={() => {
-                      if (isOpenSelect) toggleOpenSelect()
-                    }}
-                    value={valueDateSearch}
-                    onChange={(dates, dateStrings) => {
-                      //khi search hoac filter thi reset page ve 1
-                      paramsFilter.page = 1
-
-                      if (isOpenSelect) toggleOpenSelect()
-
-                      //nếu search date thì xoá các params date
-                      delete paramsFilter.to_day
-                      delete paramsFilter.yesterday
-                      delete paramsFilter.this_week
-                      delete paramsFilter.last_week
-                      delete paramsFilter.last_month
-                      delete paramsFilter.this_month
-                      delete paramsFilter.this_year
-                      delete paramsFilter.last_year
-
-                      //Kiểm tra xem date có được chọn ko
-                      //Nếu ko thì thoát khỏi hàm, tránh cash app
-                      //và get danh sách order
-                      if (!dateStrings[0] && !dateStrings[1]) {
-                        delete paramsFilter.from_date
-                        delete paramsFilter.to_date
-
-                        setValueDateSearch(null)
-                        setValueTime()
-                      } else {
-                        const dateFirst = dateStrings[0]
-                        const dateLast = dateStrings[1]
-                        setValueDateSearch(dates)
-                        setValueTime(`${dateFirst} -> ${dateLast}`)
-
-                        dateFirst.replace(/-/g, '/')
-                        dateLast.replace(/-/g, '/')
-
-                        paramsFilter.from_date = dateFirst
-                        paramsFilter.to_date = dateLast
-                      }
-
-                      setParamsFilter({ ...paramsFilter })
-                    }}
-                    style={{ width: '100%' }}
-                  />
-                  {menu}
-                </>
-              )}
-            >
-              <Select.Option value="today">Hôm nay</Select.Option>
-              <Select.Option value="yesterday">Hôm qua</Select.Option>
-              <Select.Option value="this_week">Tuần này</Select.Option>
-              <Select.Option value="last_week">Tuần trước</Select.Option>
-              <Select.Option value="this_month">Tháng này</Select.Option>
-              <Select.Option value="last_month">Tháng trước</Select.Option>
-              <Select.Option value="this_year">Năm này</Select.Option>
-              <Select.Option value="last_year">Năm trước</Select.Option>
-            </Select>
+            <FilterDate paramsFilter={paramsFilter} setParamsFilter={setParamsFilter} />
           </Col>
-          <Col xs={24} sm={4} md={4} lg={4} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={4}
+            lg={4}
+            xl={4}
+            style={{ height: FILTER_COL_HEIGHT, borderRight: '1px solid #d9d9d9', width: '100%' }}
+          >
             <Select
               placeholder="Lọc theo trạng thái"
               allowClear
@@ -722,16 +611,22 @@ export default function ImportInventories() {
               }
               value={paramsFilter.status}
               onChange={(value) => _onFilter('status', value)}
-              style={{ borderRight: '1px solid #d9d9d9', width: '100%' }}
+              style={{ width: '100%' }}
             >
-              {statusList.map((status, index) => (
+              <Select.Option value="DRAFT" index={1}>
+                Lưu nháp
+              </Select.Option>
+              <Select.Option value="COMPLETE" index={2}>
+                Đã nhập hàng
+              </Select.Option>
+              {/* {statusList.map((status, index) => (
                 <Select.Option value={status.name} index={index}>
                   {status.label}
                 </Select.Option>
-              ))}
+              ))} */}
             </Select>
           </Col>
-          <Col xs={24} sm={4} md={4} lg={4} xl={4} style={{ height: FILTER_COL_HEIGHT }}>
+          <Col xs={24} sm={24} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
               placeholder="Lọc theo nhân viên tạo đơn"
               allowClear
@@ -842,15 +737,17 @@ export default function ImportInventories() {
               return {
                 ...column,
                 render: (text, record) =>
-                  record._creator &&
-                  `${record._creator.first_name || ''} ${record._creator.last_name || ''}`,
+                  record._order_creator &&
+                  `${record._order_creator.first_name || ''} ${
+                    record._order_creator.last_name || ''
+                  }`,
               }
             if (column.key === 'verifier')
               return {
                 ...column,
                 render: (text, record) =>
-                  record._verifier &&
-                  `${record._verifier.first_name || ''} ${record._verifier.last_name || ''}`,
+                  record._receiver &&
+                  `${record._receiver.first_name || ''} ${record._receiver.last_name || ''}`,
               }
             if (column.key === 'verify_date')
               return {

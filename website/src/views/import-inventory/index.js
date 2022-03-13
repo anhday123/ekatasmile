@@ -52,6 +52,7 @@ import { createOrderImportInventory, updateOrderImportInventory } from 'apis/inv
 //components
 import Permission from 'components/permission'
 import TitlePage from 'components/title-page'
+import delay from 'delay'
 
 export default function ImportInventory() {
   const history = useHistory()
@@ -71,11 +72,13 @@ export default function ImportInventory() {
 
   const [supplierId, setSupplierId] = useState()
   const [productsSupplier, setProductsSupplier] = useState([])
+  const [selectedProducts, setSelectedProducts] = useState([])
   const [suppliers, setSuppliers] = useState([])
   const [visibleProductsToSupplier, setVisibleProductsToSupplier] = useState(false)
   const toggleProductsToSupplier = () => {
     setVisibleProductsToSupplier(!visibleProductsToSupplier)
     setProductsSupplier([])
+    setSelectedProducts([])
     setSupplierId()
   }
 
@@ -404,6 +407,30 @@ export default function ImportInventory() {
     }
   }
 
+  const _getProductsByIds = async (ids) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await getProducts({ merge: true, detach: true, bulk_query: ids })
+      console.log(res)
+      if (res.status === 200) {
+        const products = res.data.data.map((e) => ({
+          ...e.variants,
+          product_name: e.name,
+          import_price: e.import_price_default || 0,
+          quantity: 1,
+          inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
+          sumCost: e.import_price_default || 0,
+        }))
+
+        _editOrder('order_details', products)
+      }
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      console.log(error)
+      dispatch({ type: ACTION.LOADING, data: false })
+    }
+  }
+
   const _getProductsToSupplier = async (supplierId) => {
     try {
       setLoadingProduct(true)
@@ -419,6 +446,7 @@ export default function ImportInventory() {
         }))
 
         setProductsSupplier([...productsSupplierNew])
+        setSelectedProducts(res.data.data.map((e) => e.product_id))
       }
       setLoadingProduct(false)
     } catch (error) {
@@ -458,6 +486,11 @@ export default function ImportInventory() {
   }
 
   useEffect(() => {
+    const product_ids = new URLSearchParams(location.search).get('product_ids')
+    if (product_ids) _getProductsByIds(product_ids)
+  }, [])
+
+  useEffect(() => {
     _getBranches()
     _getSuppliers()
     _getProductsSearch()
@@ -491,6 +524,8 @@ export default function ImportInventory() {
         complete_date: location.state.complete_date ? moment(location.state.complete_date) : null,
         moneyToBePaidByCustomer: location.state.payment_amount || 0,
         paid: location.state.payment_amount || 0,
+        order_creator_id: location.state.order_creator_id,
+        receiver_id: location.state.receiver_id,
       })
     }
   }, [])
@@ -566,7 +601,11 @@ export default function ImportInventory() {
                     </Select>
                     <Button
                       onClick={() => {
-                        _editOrder('order_details', productsSupplier)
+                        const products = productsSupplier.filter((product) =>
+                          selectedProducts.includes(product.product_id)
+                        )
+
+                        _editOrder('order_details', products)
                         toggleProductsToSupplier()
                       }}
                       type="primary"
@@ -576,6 +615,11 @@ export default function ImportInventory() {
                     </Button>
                   </Row>
                   <Table
+                    rowSelection={{
+                      selectedRowKeys: selectedProducts,
+                      onChange: setSelectedProducts,
+                    }}
+                    rowKey="product_id"
                     size="small"
                     loading={loadingProduct}
                     dataSource={productsSupplier}
@@ -885,6 +929,8 @@ export default function ImportInventory() {
                 rules={[{ required: true, message: 'Vui lòng chọn địa điểm nhận hàng!' }]}
               >
                 <Select
+                  showSearch
+                  optionFilterProp="children"
                   placeholder="Chọn địa điểm nhận hàng"
                   style={{ width: '100%' }}
                   onChange={(value, option) => {
@@ -917,12 +963,13 @@ export default function ImportInventory() {
               </Form.Item>
 
               <Form.Item
-                rules={[{ required: true, message: 'Vui lòng chọn nhân viên lên đơn!' }]}
-                label="Nhân viên lên đơn"
+                rules={[{ required: true, message: 'Vui lòng chọn người tạo đơn!' }]}
+                label="Người tạo đơn"
                 name="order_creator_id"
               >
                 <Select
                   showSearch
+                  optionFilterProp="children"
                   placeholder="Chọn nhân viên lên đơn"
                   defaultValue={dataUser && dataUser.data && dataUser.data.user_id}
                 >
@@ -935,14 +982,16 @@ export default function ImportInventory() {
               </Form.Item>
 
               <Form.Item
-                rules={[{ required: true, message: 'Vui lòng chọn nhân viên nhận hàng!' }]}
-                label="Nhân viên nhận hàng"
+                // rules={[{ required: true, message: 'Vui lòng chọn người xác nhận phiếu!' }]}
+                label="Người xác nhận phiếu"
                 name="receiver_id"
               >
                 <Select
+                  allowClear
                   defaultValue={dataUser && dataUser.data && dataUser.data.user_id}
                   showSearch
-                  placeholder="Chọn nhân viên nhận hàng"
+                  optionFilterProp="children"
+                  placeholder="Chọn người xác nhận phiếu"
                 >
                   {users.map((user, index) => (
                     <Select.Option value={user.user_id} key={index}>

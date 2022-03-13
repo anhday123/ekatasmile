@@ -67,7 +67,7 @@ const BaseLayout = (props) => {
 
   const [branches, setBranches] = useState([])
   const [user, setUser] = useState({})
-  console.log(user)
+
   const login = useSelector((state) => state.login)
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const triggerReloadBranch = useSelector((state) => state.branch.trigger)
@@ -309,7 +309,7 @@ const BaseLayout = (props) => {
       permissions: [],
       icon: <CarOutlined />,
       pathsChild: [ROUTES.SHIPPING_CONTROL_ADD],
-    },  
+    },
     // {
     //   path: ROUTES.CLIENT_MANAGEMENT,
     //   title: 'Quản lý client',
