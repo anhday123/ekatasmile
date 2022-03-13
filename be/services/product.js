@@ -43,6 +43,12 @@ module.exports._get = async (req, res, next) => {
     if (req.query.code) {
       aggregateQuery.push({ $match: { code: String(req.query.code) } })
     }
+
+    if (req.query.bulk_query) {
+      var arr = req.query.bulkQuery.split('--')
+      aggregateQuery.push({ $match: { product_id: { $in: arr } } })
+    }
+
     if (req.query.slug) {
       aggregateQuery.push({ $match: { slug: String(req.query.slug) } })
     }
