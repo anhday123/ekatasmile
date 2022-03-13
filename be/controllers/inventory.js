@@ -836,16 +836,19 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         'soluongnhap(*)',
       ]
       var count = 0
+      var fieldMissing = ''
       for (let i in eRow) {
         if (
           optionRequire.includes(removeUnicode(String(i), true).toLowerCase())
         ) {
           count++
+        } else {
+          fieldMissing = i
         }
       }
       if (count < optionRequire.length) {
         throw new Error(
-          `400: Các thuộc tính có dấu (*) là thuộc tính bắt buộc!`
+          `400: Cột ${fieldMissing} bắt buột, không được để trống!`
         )
       }
 
