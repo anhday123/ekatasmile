@@ -45,7 +45,7 @@ module.exports._get = async (req, res, next) => {
     }
 
     if (req.query.bulk_query) {
-      var arr = req.query.bulkQuery.split('--')
+      var arr = new String(req.query.bulk_query).split('--')
       aggregateQuery.push({ $match: { product_id: { $in: arr } } })
     }
 
