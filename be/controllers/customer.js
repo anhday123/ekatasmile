@@ -210,8 +210,27 @@ module.exports._importFile = async (req, res, next) => {
     })
     insertCustomers = []
     insertTypes = []
+    var phoneAlready = []
+
     rows.map((eRow) => {
       if (eRow['stt']) {
+        // Check condition
+
+        var _indexPhone = phoneAlready.findIndex(
+          (itemP) => itemP == eRow['sodienthoai']
+        )
+        if (_indexPhone >= 0)
+          throw new Error(`400: Số điện thoại ${eRow['sodienthoai']} bị trùng`)
+
+        if (eRow['tenkhachhang'] == undefined || eRow['tenkhachhang'] == '')
+          throw new Error(
+            `400: Tên khách hàng không được để trống (STT ${eRow['stt']})`
+          )
+
+        if (eRow['hokhachhang'] == undefined) eRow['hokhachhang'] = ''
+
+        phoneAlready.push(eRow['sodienthoai'])
+
         if (!_types[eRow['_nhomkhachhang']]) {
           type_id++
           let _type = {
