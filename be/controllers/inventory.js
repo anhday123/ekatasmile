@@ -828,6 +828,28 @@ module.exports._createImportOrderFile = async (req, res, next) => {
     let variantSkus = []
     rows = rows.map((eRow) => {
       let _row = {}
+
+      let optionRequire = [
+        'maphieunhap(*)',
+        'masanpham(*)',
+        'maphienban(*)',
+        'gianhap(*)',
+        'soluongnhap(*)',
+      ]
+      var count = 0
+      for (let i in eRow) {
+        if (
+          optionRequire.includes(removeUnicode(String(i), true).toLowerCase())
+        ) {
+          count++
+        }
+      }
+      if (count < optionRequire.length) {
+        throw new Error(
+          `400: Các thuộc tính có dấu (*) là thuộc tính bắt buộc!`
+        )
+      }
+
       for (let i in eRow) {
         let field = String(removeUnicode(i, true))
           .replace(/\(\*\)/g, '')
@@ -917,6 +939,21 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         }
       }
       if (_orders[eRow['maphieunhap']]) {
+        if (isNaN(eRow['gianhap']))
+          throw new Error('400: Giá nhập không hợp lệ')
+
+        if (isNaN(eRow['chiphidichvu']))
+          throw new Error('400: Cột Phí dịch vụ không hợp lệ')
+
+        if (isNaN(eRow['phivanchuyen']))
+          throw new Error('400: Cột Phí vận chuyển không hợp lệ')
+
+        if (isNaN(eRow['tongcong(vnd)']))
+          throw new Error('400: Cột Tổng cộng không hợp lệ')
+
+        if (isNaN(eRow['soluongnhap']))
+          throw new Error('400: Cột Số lượng nhập không hợp lệ')
+
         if (eRow['masanpham'] && eRow['maphienban']) {
           _orders[eRow['maphieunhap']].products.push({
             product_id: (() => {
