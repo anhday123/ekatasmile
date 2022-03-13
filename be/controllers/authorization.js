@@ -750,13 +750,14 @@ module.exports._login = async (req, res, next) => {
       ])
       .toArray()
     if (!user) {
-      throw new Error(`400: Tài khoản không tồn tại!`)
+      throw new Error(`404: Tài khoản không không chính xác!`)
     }
+
     if (user.active == false) {
       throw new Error(`400: Tài khoản chưa được xác thực!`)
     }
     if (user.active == `banned`) {
-      throw new Error(`400: Tài khoản đã bị chặn bởi ADMIN!`)
+      throw new Error(`404: Doanh nghiệp đang bị tạm khoá!`)
     }
     if (!bcrypt.compare(req.body.password, user.password)) {
       res.send({ success: false, message: `Mật khẩu không chính xác!` })
