@@ -212,7 +212,7 @@ module.exports._importFile = async (req, res, next) => {
     insertTypes = []
     var phoneAlready = []
 
-    rows.map(async (eRow) => {
+    rows.map((eRow) => {
       if (eRow['stt']) {
         // Check condition
 
@@ -225,17 +225,6 @@ module.exports._importFile = async (req, res, next) => {
         if (eRow['tenkhachhang'] == undefined || eRow['tenkhachhang'] == '')
           throw new Error(
             `400: Tên khách hàng không được để trống (STT ${eRow['stt']})`
-          )
-
-        var _customerAlready = await client
-          .db(req.user.database)
-          .collection('Customers')
-          .findOne({
-            phone: eRow['sodienthoai'],
-          })
-        if (_customerAlready != undefined)
-          throw new Error(
-            `400: Số điện thoại ${eRow['sodienthoai']} đã tồn tại trong hệ thống`
           )
 
         if (eRow['hokhachhang'] == undefined) eRow['hokhachhang'] = ''
@@ -325,6 +314,17 @@ module.exports._importFile = async (req, res, next) => {
         insertCustomers.push(_customer)
       }
     })
+
+    var _customerAlready = await client
+      .db(req.user.database)
+      .collection('Customers')
+      .find({
+        phone: { $in: phoneAlready },
+      })
+      .toArray()
+
+    if (_customerAlready.length > 0)
+      throw new Error(`400: Số điện thoại đã tồn tại trong hệ thống`)
 
     await Promise.all([
       client
