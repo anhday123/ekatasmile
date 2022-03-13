@@ -198,6 +198,31 @@ module.exports._getImportOrder = async (req, res, next) => {
       },
       { $unwind: { path: '$_completer', preserveNullAndEmptyArrays: true } }
     )
+
+    aggregateQuery.push(
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'order_creator_id',
+          foreignField: 'user_id',
+          as: '_order_creator',
+        },
+      },
+      { $unwind: { path: '$_order_creator', preserveNullAndEmptyArrays: true } }
+    )
+
+    aggregateQuery.push(
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'receiver_id',
+          foreignField: 'user_id',
+          as: '_receiver',
+        },
+      },
+      { $unwind: { path: '$_receiver', preserveNullAndEmptyArrays: true } }
+    )
+
     aggregateQuery.push(
       {
         $lookup: {
