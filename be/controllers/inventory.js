@@ -2600,8 +2600,14 @@ module.exports._createInventoryNote = async (req, res, next) => {
     productIds = [...new Set(productIds)]
     variantIds = [...new Set(variantIds)]
     let [products, variants] = await Promise.all([
-      client.db(req.user.database).find({ product_id: { $in: productIds } }),
-      client.db(req.user.database).find({ variant_id: { $in: variantIds } }),
+      client
+        .db(req.user.database)
+        .collection('Products')
+        .find({ product_id: { $in: productIds } }),
+      client
+        .db(req.user.database)
+        .collection('Variants')
+        .find({ variant_id: { $in: variantIds } }),
     ])
 
     let _inventoryNote = {

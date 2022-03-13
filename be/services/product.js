@@ -205,6 +205,7 @@ module.exports._get = async (req, res, next) => {
     aggregateQuery.push({
       $unwind: { path: '$supplier_info', preserveNullAndEmptyArrays: true },
     })
+
     aggregateQuery.push({
       $lookup: {
         from: 'Variants',
@@ -217,20 +218,6 @@ module.exports._get = async (req, res, next) => {
               let: { variantId: '$variant_id' },
               pipeline: [
                 { $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } },
-                ...(() => {
-                  if (req.query.branch_id) {
-                    return [
-                      {
-                        $match: {
-                          $expr: {
-                            $eq: ['$branch_id', Number(req.query.branch_id)],
-                          },
-                        },
-                      },
-                    ]
-                  }
-                  return []
-                })(),
                 {
                   $group: {
                     _id: { type: '$type', branch_id: '$branch_id' },
@@ -258,6 +245,9 @@ module.exports._get = async (req, res, next) => {
         as: 'variants',
       },
     })
+
+    if (req.query.branch_id) {
+    }
     if (req.query.detach) {
       aggregateQuery.push({
         $unwind: { path: '$variants', preserveNullAndEmptyArrays: true },
