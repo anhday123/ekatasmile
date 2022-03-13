@@ -37,11 +37,8 @@ module.exports._get = async (req, res, next) => {
 
 module.exports._create = async (req, res, next) => {
   try {
-    if (
-      req.body.warehouse_type != 'Warehouse' &&
-      req.body.warehouse_type != 'Store'
-    )
-      throw new Error('400: warehouse_type không hợp lệ')
+    if (req.body.type != 'Warehouse' && req.body.type != 'Store')
+      throw new Error('400: type không hợp lệ')
     req.body.name = String(req.body.name).trim().toUpperCase()
     req.body.email = String(req.body.email || '')
       .trim()
@@ -77,7 +74,7 @@ module.exports._create = async (req, res, next) => {
       website: req.body.website || '',
       latitude: req.body.latitude || '',
       longitude: req.body.longitude || '',
-      warehouse_type: req.body.warehouse_type || 'Warehouse',
+      warehouse_type: req.body.type,
       address: req.body.address || '',
       ward: req.body.ward || '',
       district: req.body.district || '',
