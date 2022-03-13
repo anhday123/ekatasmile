@@ -212,7 +212,7 @@ module.exports._importFile = async (req, res, next) => {
     insertTypes = []
     var phoneAlready = []
 
-    rows.map((eRow) => {
+    rows.map(async (eRow) => {
       if (eRow['stt']) {
         // Check condition
 
@@ -225,6 +225,17 @@ module.exports._importFile = async (req, res, next) => {
         if (eRow['tenkhachhang'] == undefined || eRow['tenkhachhang'] == '')
           throw new Error(
             `400: Tên khách hàng không được để trống (STT ${eRow['stt']})`
+          )
+
+        var _customerAlready = await client
+          .db(req.user.database)
+          .collection('Customers')
+          .findOne({
+            phone: eRow['sodienthoai'],
+          })
+        if (_customerAlready != undefined)
+          throw new Error(
+            `400: Số điện thoại ${eRow['sodienthoai']} đã tồn tại trong hệ thống`
           )
 
         if (eRow['hokhachhang'] == undefined) eRow['hokhachhang'] = ''
@@ -314,6 +325,7 @@ module.exports._importFile = async (req, res, next) => {
         insertCustomers.push(_customer)
       }
     })
+
     await Promise.all([
       client
         .db(req.user.database)
@@ -336,12 +348,16 @@ module.exports._importFile = async (req, res, next) => {
         .collection('CustomerTypes')
         .insertMany(insertTypes)
     }
+
+    await client.db(req.user.database).collection('Customers')
+
     if (Array.isArray(insertCustomers) && insertCustomers.length > 0) {
       await client
         .db(req.user.database)
         .collection('Customers')
         .insertMany(insertCustomers)
     }
+
     res.send({ success: true, message: 'Thêm khách hàng thành công!' })
   } catch (err) {
     next(err)
