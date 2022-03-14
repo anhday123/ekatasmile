@@ -2328,7 +2328,7 @@ module.exports._updateInventoryNote = async (req, res, next) => {
     try {
         req.params.inventory_note_id = Number(req.params.inventory_note_id);
         let inventoryNote = await client
-            .db(DB)
+            .db(req.user.database)
             .collection('InventoryNotes')
             .findOne({ inventory_note_id: req.params.inventory_note_id });
         if (!inventoryNote) {
@@ -2345,9 +2345,21 @@ module.exports._updateInventoryNote = async (req, res, next) => {
         delete req.body.inventory_date;
         delete req.body.create_date;
         delete req.body.creator_id;
-        let _inventoryNote = {
-            ...inventoryNote,
-            ...req.body,
+        let _inventoryNote = { ...inventoryNote, ...req.body };
+        _inventoryNote = {
+            inventory_note_id: _inventoryNote.inventory_note_id,
+            code: _inventoryNote.code,
+            branch_id: _inventoryNote.branch_id,
+            products: _inventoryNote.products,
+            note: _inventoryNote.note,
+            status: _inventoryNote.status,
+            balance: _inventoryNote.balance,
+            inventory_date: _inventoryNote.inventory_date,
+            inventorier_id: _inventoryNote.inventorier_id,
+            balance_date: _inventoryNote.balance_date,
+            balancer_id: _inventoryNote.balancer_id,
+            create_date: _inventoryNote.create_date,
+            creator_id: _inventoryNote.creator_id,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
         };
