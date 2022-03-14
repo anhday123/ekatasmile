@@ -2550,6 +2550,16 @@ module.exports._getInventoryNote = async (req, res, next) => {
         $match: { create_date: { $lte: req.query.to_date } },
       })
     }
+
+    aggregateQuery.push({
+      $lookup: {
+        from: 'Branchs',
+        localField: 'branch_id',
+        foreignField: 'branch_id',
+        as: 'branch',
+      },
+    })
+
     aggregateQuery.push({
       $lookup: {
         from: 'Users',
