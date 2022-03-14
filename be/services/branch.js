@@ -3,7 +3,7 @@ const TIMEZONE = process.env.TIMEZONE
 const client = require(`../config/mongodb`)
 const DB = process.env.DATABASE
 const jwt = require(`../libs/jwt`)
-
+const SDB = process.env.DATABASE
 let removeUnicode = (text, removeSpace) => {
   /*
         string là chuỗi cần remove unicode
