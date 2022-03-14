@@ -2327,7 +2327,10 @@ module.exports._createInventoryNoteFile = async (req, res, next) => {
 module.exports._updateInventoryNote = async (req, res, next) => {
     try {
         req.params.inventory_note_id = Number(req.params.inventory_note_id);
-        let inventoryNote = await client.db(DB).collection('InventoryNotes').findOne(req.params);
+        let inventoryNote = await client
+            .db(DB)
+            .collection('InventoryNotes')
+            .findOne({ inventory_note_id: req.params.inventory_note_id });
         if (!inventoryNote) {
             throw new Error(`400: Phiếu kiểm hàng không tồn tại!`);
         }
