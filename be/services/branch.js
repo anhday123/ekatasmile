@@ -473,12 +473,48 @@ module.exports._update = async (req, res, next) => {
     // } catch (err) {
     //     console.log(err);
     // }
-    var user = await client
-      .db(req.user.database)
-      .collection('Users')
-      .findOne({
-        user_id: parseInt(req.user.user_id),
-      })
+
+    let [user] = await client
+      .db(DB)
+      .collection(`Users`)
+      .aggregate([
+        { $match: { username: username } },
+        {
+          $lookup: {
+            from: 'Roles',
+            localField: 'role_id',
+            foreignField: 'role_id',
+            as: '_role',
+          },
+        },
+        { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'Branchs',
+            localField: 'branch_id',
+            foreignField: 'branch_id',
+            as: '_branch',
+          },
+        },
+        { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'Stores',
+            localField: 'store_id',
+            foreignField: 'store_id',
+            as: '_store',
+          },
+        },
+        { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+      ])
+      .toArray()
+
+    let business = await client
+      .db(SDB)
+      .collection('Business')
+      .findOne({ username: user.username })
+    user._business = business
+
     let accessToken = await jwt.createToken(user, 30 * 24 * 60 * 60)
     res.send({ success: true, accessToken: accessToken, data: req.body })
   } catch (err) {
