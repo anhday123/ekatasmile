@@ -2327,6 +2327,7 @@ module.exports._createInventoryNoteFile = async (req, res, next) => {
 module.exports._updateInventoryNote = async (req, res, next) => {
     try {
         req.params.inventory_note_id = Number(req.params.inventory_note_id);
+        console.log(req.user.database);
         let inventoryNote = await client
             .db(req.user.database)
             .collection('InventoryNotes')
@@ -2371,7 +2372,7 @@ module.exports._updateInventoryNote = async (req, res, next) => {
             res.send({ success: true, message: 'Cân bằng kho thành công!' });
         }
         await client
-            .db(req.user.user_id)
+            .db(req.user.database)
             .collection('InventoryNotes')
             .updateOne({ inventory_note_id: _inventoryNote.inventory_note_id }, { $set: _inventoryNote });
         res.send({ success: true, message: 'Cập nhật phiếu kiểm hàng thành công!' });
