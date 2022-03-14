@@ -49,9 +49,9 @@ module.exports._create = async (req, res, next) => {
       .findOne({
         name: req.body.name,
       })
-    if (branch) {
-      throw new Error(`400: Chi nhánh đã tồn tại!`)
-    }
+    // if (branch) {
+    //   throw new Error(`400: Chi nhánh đã tồn tại!`)
+    // }
     let branch_id = await client
       .db(req.user.database)
       .collection('AppSetting')
