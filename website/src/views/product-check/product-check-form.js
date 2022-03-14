@@ -1,4 +1,4 @@
-import styles from './../add/add.module.scss'
+import styles from './add.module.scss'
 import {
   Popconfirm,
   Select,
@@ -12,12 +12,10 @@ import {
   Table,
   Modal,
   InputNumber,
-  Typography,
 } from 'antd'
 import { useHistory } from 'react-router-dom'
 import React, { useState } from 'react'
 const { Option } = Select
-const { Text } = Typography
 const columns = [
   {
     title: 'STT',
@@ -37,11 +35,7 @@ const columns = [
     dataIndex: 'productName',
     width: 150,
     sorter: (a, b) => {
-      return a.productName > b.productName
-        ? 1
-        : a.productName === b.productName
-        ? 0
-        : -1
+      return a.productName > b.productName ? 1 : a.productName === b.productName ? 0 : -1
     },
   },
   {
@@ -326,12 +320,7 @@ export default function ProductCheckAdd(props) {
               width: '100%',
             }}
           >
-            <Table
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={data}
-              size="small"
-            />
+            <Table rowSelection={rowSelection} columns={columns} dataSource={data} size="small" />
           </div>
 
           <Row
@@ -398,10 +387,7 @@ export default function ProductCheckAdd(props) {
                 </Button>
               </div>
               <div>
-                <Button
-                  type="primary"
-                  style={{ width: '5rem', marginLeft: '1rem' }}
-                >
+                <Button type="primary" style={{ width: '5rem', marginLeft: '1rem' }}>
                   Thêm
                 </Button>
               </div>

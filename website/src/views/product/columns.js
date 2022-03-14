@@ -6,6 +6,12 @@ const columnsProduct = [
     width: 50,
   },
   {
+    title: 'Hình ảnh',
+    key: 'image',
+    align: 'center',
+    width: 76,
+  },
+  {
     title: 'Tên sản phẩm',
     dataIndex: 'name',
     key: 'name-product',

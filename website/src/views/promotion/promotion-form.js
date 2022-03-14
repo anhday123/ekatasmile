@@ -14,7 +14,6 @@ import {
 import React, { useEffect, useState } from 'react'
 import styles from './add.module.scss'
 import { addPromotion, updatePromotion } from 'apis/promotion'
-import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { removeAccents } from 'utils'
 const { Option } = Select
@@ -49,7 +48,7 @@ export default function PromotionAdd(props) {
       }
 
       let res
-      if (props.state.length === 0) res = await addPromotion(obj)
+      if (props.state && props.state.length === 0) res = await addPromotion(obj)
       else res = await updatePromotion(props.state.promotion_id, obj)
 
       if (res.status === 200) {
@@ -59,8 +58,6 @@ export default function PromotionAdd(props) {
         form.resetFields()
         setIsChooseAllStore(false)
       } else throw res
-
-
     } catch (e) {
       console.log(e)
       notification.warning({
@@ -80,10 +77,10 @@ export default function PromotionAdd(props) {
     setIsChooseAllStore(value)
     value
       ? form.setFieldsValue({
-        store: storeList.map((e) => {
-          return e.branch_id
-        }),
-      })
+          store: storeList.map((e) => {
+            return e.branch_id
+          }),
+        })
       : form.setFieldsValue({ store: [] })
   }
 
@@ -104,8 +101,9 @@ export default function PromotionAdd(props) {
   }, [])
 
   useEffect(() => {
-    if (props.state) { form.setFieldsValue({ ...props.state }) }
-    else {
+    if (props.state) {
+      form.setFieldsValue({ ...props.state })
+    } else {
       form.resetFields()
     }
     if (!props.show) {

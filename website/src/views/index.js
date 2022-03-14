@@ -18,6 +18,7 @@ import ReportInventory from './report-inventory'
 import ShippingControl from './shipping-control'
 import ShippingControlForm from './shipping-control/shipping-control-form'
 import Guarantee from './guarantee'
+import GuaranteeForm from './guarantee/guarantee-form'
 import ShippingProduct from './shipping-product'
 import ClientManagement from './client-management'
 import Branch from './branch'
@@ -42,8 +43,7 @@ import VerifyAccount from './verify-account'
 import ActivityDiary from './activity-diary'
 
 import NotFound from './not-found/404'
-import TaxAdd from './actions/tax/add'
-import TaxUpdate from './actions/tax/update'
+
 import ShippingProductForm from './shipping-product/shipping-product-form'
 import OrderCreate from './order-create'
 import Categories from './categories'
@@ -62,19 +62,6 @@ import Supplier from './supplier'
 import Promotion from './promotion'
 import Role from './role'
 
-import ProductCheckAdd from './actions/product-check/add'
-import ProductCheckView from './actions/product-check/view'
-import OrderCreateShippingAdd from './actions/order-create-shipping/add'
-
-import RevenueCostView from './actions/revenue-cost/view'
-import ReportFinancialView from './actions/sale-detail/view'
-
-import InventoryAdd from './actions/inventory/add'
-
-import GuaranteeAdd from './actions/guarantee/add'
-import PromotionAdd from './actions/promotion/add'
-import RoleAdd from './actions/role/add'
-
 import Point from './point'
 import OfferListCreate from './offer-list-create'
 import Blog from './blog'
@@ -89,20 +76,6 @@ import ImportReportFile from './import-report-file'
 import DeliveryControl from './delivery-control'
 
 const DEFINE_ROUTER = [
-  {
-    path: ROUTES.REPORT_FINANCIAL_VIEW,
-    Component: () => <ReportFinancialView />,
-    title: 'Báo cáo chi tiết bán hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.REPORT_REVENUE_VIEW,
-    Component: () => <RevenueCostView />,
-    title: 'Báo cáo chi phí doanh thu',
-    permissions: [],
-    exact: true,
-  },
   {
     path: ROUTES.PRODUCT_CHECK,
     Component: () => <ProductCheck />,
@@ -227,8 +200,8 @@ const DEFINE_ROUTER = [
   },
   {
     path: ROUTES.GUARANTEE_ADD,
-    Component: () => <GuaranteeAdd />,
-    title: 'Quản lý bảo hành',
+    Component: () => <GuaranteeForm />,
+    title: 'Thêm bảo hành',
     permissions: [],
     exact: true,
   },
@@ -302,13 +275,7 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
-  {
-    path: ROUTES.INVENTORY_ADD,
-    Component: () => <InventoryAdd />,
-    title: 'Thêm kho',
-    permissions: [],
-    exact: true,
-  },
+
   {
     path: ROUTES.PRODUCT,
     Component: () => <Product />,
@@ -528,55 +495,6 @@ const AUTH_ROUTER = [
     exact: true,
     title: 'Forget password',
     permissions: [],
-  },
-  {
-    path: ROUTES.TAX_ADD,
-    Component: () => <TaxAdd />,
-    title: 'Thêm thuế',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.TAX_UPDATE,
-    Component: () => <TaxUpdate />,
-    title: 'Cập nhật thông tin thuế',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.PRODUCT_CHECK_ADD,
-    Component: () => <ProductCheckAdd />,
-    title: 'Thêm kiểm hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.PRODUCT_CHECK_VIEW,
-    Component: () => <ProductCheckView />,
-    title: 'Xem chi tiết kiểm hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ORDER_CREATE_SHIPPING_ADD,
-    Component: () => <OrderCreateShippingAdd />,
-    title: 'Thêm tạo đơn và giao hàng',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.PROMOTION_ADD,
-    Component: () => <PromotionAdd />,
-    title: 'Thêm khuyến mãi',
-    permissions: [],
-    exact: true,
-  },
-  {
-    path: ROUTES.ROLE_ADD,
-    Component: () => <RoleAdd />,
-    title: 'Thêm phân quyền',
-    permissions: [],
-    exact: true,
   },
 
   {

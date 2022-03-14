@@ -13,7 +13,7 @@ const columns = [
     key: 'code',
   },
   {
-    title: 'Kho kiểm hàng',
+    title: 'Chi nhánh kiểm hàng',
     key: 'branch',
   },
   {
@@ -34,7 +34,7 @@ const columns = [
   },
   {
     title: 'Ghi chú',
-    key: 'note',
+    dataIndex: 'note',
   },
 ]
 

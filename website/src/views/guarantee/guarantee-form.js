@@ -1,10 +1,11 @@
-import styles from './../add/add.module.scss'
+import React from 'react'
+
 import { Form, notification, Row, Col, Input, InputNumber, Button } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import React from 'react'
-import { addWarranty } from '../../../../apis/warranty'
 import { ROUTES } from 'consts'
+
+import { addWarranty } from 'apis/warranty'
 
 export default function GuaranteeAdd() {
   let history = useHistory()
@@ -39,13 +40,9 @@ export default function GuaranteeAdd() {
     }
   }
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo)
-  }
-
   return (
     <div className="card">
-      <Form onFinish={onFinish} form={form} layout="vertical" onFinishFailed={onFinishFailed}>
+      <Form onFinish={onFinish} form={form} layout="vertical">
         <Row
           style={{
             display: 'flex',
@@ -102,7 +99,7 @@ export default function GuaranteeAdd() {
               name="name"
               rules={[{ required: true, message: 'Vui lòng nhập tên bảo hành' }]}
             >
-              <Input size="large" placeholder='Nhập tên bảo hành' />
+              <Input size="large" placeholder="Nhập tên bảo hành" />
             </Form.Item>
           </Col>
           <Col span={11}>
@@ -116,7 +113,12 @@ export default function GuaranteeAdd() {
                 },
               ]}
             >
-              <InputNumber placeholder='Nhập thời hạn bảo hành' style={{ width: '100%' }} size="large" className="br-15__input" />
+              <InputNumber
+                placeholder="Nhập thời hạn bảo hành"
+                style={{ width: '100%' }}
+                size="large"
+                className="br-15__input"
+              />
             </Form.Item>
           </Col>
           <Col span={11}>
@@ -130,12 +132,12 @@ export default function GuaranteeAdd() {
                 },
               ]}
             >
-              <Input size="large" placeholder='Nhập tên bảo hành' />
+              <Input size="large" placeholder="Nhập tên bảo hành" />
             </Form.Item>
           </Col>
           <Col span={11}>
             <Form.Item label="Mô tả" name="description">
-              <Input.TextArea rows={5} placeholder='Nhập mô tả' />
+              <Input.TextArea rows={5} placeholder="Nhập mô tả" />
             </Form.Item>
           </Col>
         </Row>

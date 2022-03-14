@@ -424,6 +424,7 @@ const BaseLayout = (props) => {
   const onSignOut = () => {
     dispatch({ type: ACTION.LOGOUT })
     dispatch({ type: 'UPDATE_INVOICE', data: [] })
+    window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
   }
 
   useEffect(() => {
@@ -442,12 +443,12 @@ const BaseLayout = (props) => {
       </ModalUpdateUser>
 
       <div>
-        <Link to={ROUTES.LOGIN} onClick={onSignOut} style={{ color: '#565656', paddingLeft: 10 }}>
+        <a onClick={onSignOut} style={{ color: '#565656', paddingLeft: 10 }}>
           <div>
             <ExportOutlined style={{ fontSize: '1rem', marginRight: 10, color: '#565656' }} />
             Đăng xuất
           </div>
-        </Link>
+        </a>
       </div>
     </div>
   )

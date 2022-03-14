@@ -79,13 +79,15 @@ export default function CreateReport() {
 
   const _createOrUpdateCheckInventoryNote = async () => {
     try {
+      if (listProduct.length === 0) {
+        notification.warning({ message: 'Vui lòng thêm sản phẩm vào phiếu kiểm' })
+        return
+      }
+
       dispatch({ type: 'LOADING', data: true })
       await form.validateFields()
       const dataForm = form.getFieldsValue()
-      const body = {
-        ...dataForm,
-        products: listProduct,
-      }
+      const body = { ...dataForm, products: listProduct }
       console.log(body)
       let res
       if (!location.state) res = await createCheckInventoryNote(body)
@@ -118,10 +120,10 @@ export default function CreateReport() {
     }
   }
 
-  const _getProducts = async (query) => {
+  const _getProducts = async () => {
     try {
       setLoadingProduct(true)
-      const res = await getProducts(query)
+      const res = await getProducts()
       if (res.status === 200) {
         setProducts(res.data.data)
       }
@@ -168,19 +170,32 @@ export default function CreateReport() {
     }
   }
 
-  const _getBranches = async (query) => {
+  const _getBranches = async () => {
     try {
-      const res = await getAllBranch(query)
-      if (res.status === 200) setBranches(res.data.data)
+      const res = await getAllBranch()
+      console.log(res)
+      if (res.status === 200) {
+        setBranches(res.data.data)
+        if (!location.state) {
+          const branchId = res.data.data.length ? res.data.data[0].branch_id : ''
+          form.setFieldsValue({ branch_id: branchId })
+        }
+      }
     } catch (err) {
       console.log(err)
     }
   }
 
-  const _getUsers = async (query) => {
+  const _getUsers = async () => {
     try {
-      const res = await getUsers(query)
-      if (res.status === 200) setUsers(res.data.data)
+      const res = await getUsers()
+      if (res.status === 200) {
+        setUsers(res.data.data)
+        if (!location.state)
+          form.setFieldsValue({
+            inventorier_id: res.data.data.length ? res.data.data[0].user_id : '',
+          })
+      }
     } catch (err) {
       console.log(err)
     }
@@ -240,29 +255,9 @@ export default function CreateReport() {
     },
   ]
 
-  const columnsModal = [
-    {
-      dataIndex: 'variant_id',
-      width: 0,
-    },
-    {
-      title: 'Hình ảnh',
-      dataIndex: 'image',
-      width: 100,
-    },
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'title',
-    },
-    {
-      title: 'Giá',
-      dataIndex: 'price',
-    },
-  ]
-
   useEffect(() => {
-    _getProducts()
     _getBranches()
+    _getProducts()
     _getUsers()
     _getCategories()
   }, [])
@@ -324,7 +319,6 @@ export default function CreateReport() {
                 style={{ width: '100%' }}
                 placeholder="Chọn chi nhánh"
                 optionFilterProp="children"
-                onChange={(value) => _getProducts({ branch_id: value })}
               >
                 {branches.map((branch, index) => (
                   <Option key={index} value={branch.branch_id}>
@@ -383,7 +377,7 @@ export default function CreateReport() {
                 clearIcon={<CloseOutlined style={{ color: 'black' }} />}
                 suffixIcon={<SearchOutlined style={{ color: 'black', fontSize: 15 }} />}
                 style={{ width: '100%', marginBottom: 15 }}
-                placeholder="Thêm sản phẩm vào hoá đơn"
+                placeholder="Thêm sản phẩm vào phiếu kiểm"
                 dropdownRender={(menu) => <div>{menu}</div>}
               >
                 {products.map(
@@ -472,10 +466,17 @@ export default function CreateReport() {
         }}
         width="70%"
       >
-        <Checkbox.Group onChange={getSelectedKeys}>
-          <Checkbox value={formData.branch_id}>Tất cả sản phẩm</Checkbox>
-        </Checkbox.Group>
-        <Collapse accordion bordered={false}>
+        <Checkbox
+          onChange={(e) => {
+            if (e.target.checked)
+              setSelectedKeys(categories.map((category) => category.category_id))
+            else setSelectedKeys([])
+          }}
+        >
+          Tất cả sản phẩm
+        </Checkbox>
+
+        <Collapse accordion bordered={false} defaultActiveKey="1">
           <Panel className="edit-collapse-panel" header="Theo nhóm sản phẩm" key="1">
             <Checkbox.Group
               value={selectedKeys}

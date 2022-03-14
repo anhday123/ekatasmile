@@ -24,6 +24,7 @@ function App() {
   const getBusiness = async () => {
     try {
       const res = await getBusinesses({ _business: true })
+      console.log(res)
       if (res.status === 200)
         if (res.data.data)
           if (localStorage.getItem('accessToken')) {

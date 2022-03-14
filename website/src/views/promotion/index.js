@@ -26,10 +26,15 @@ import {
 } from 'antd'
 
 //icon antd
-import { PlusCircleOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import {
+  PlusCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  ArrowLeftOutlined,
+} from '@ant-design/icons'
 
 //components
-import PromotionAdd from 'views/actions/promotion/add'
+import PromotionAdd from './promotion-form'
 import Permission from 'components/permission'
 import { compare, tableSum, formatCash } from 'utils'
 import TitlePage from 'components/title-page'
@@ -61,7 +66,6 @@ export default function Promotion() {
   const dispatch = useDispatch()
   const history = useHistory()
 
-
   const onClose = () => {
     setVisible(false)
   }
@@ -82,10 +86,15 @@ export default function Promotion() {
       sorter: (a, b) => compare(a, b, 'name'),
       render: (data) => (
         <>
-          <a href onClick={() => {
-            setShowCreate(true)
-            setDataUpdate(data)
-          }}>{data.name}</a>
+          <a
+            href
+            onClick={() => {
+              setShowCreate(true)
+              setDataUpdate(data)
+            }}
+          >
+            {data.name}
+          </a>
           {data.description && <div>Mô tả:{data.description}</div>}
         </>
       ),
@@ -148,7 +157,7 @@ export default function Promotion() {
       width: 100,
       render(data, record) {
         return (
-          <Space size='middle'>
+          <Space size="middle">
             <Switch checked={data} onChange={(e) => onFinish(record.promotion_id, { active: e })} />
             <Popconfirm
               onConfirm={() => _deletePromotion(record.promotion_id)}
@@ -156,11 +165,7 @@ export default function Promotion() {
               okText="Đồng ý"
               cancelText="Từ chối"
             >
-              <Button
-                type="primary"
-                danger
-                icon={<DeleteOutlined />}
-              />
+              <Button type="primary" danger icon={<DeleteOutlined />} />
             </Popconfirm>
           </Space>
         )
@@ -214,8 +219,7 @@ export default function Promotion() {
         notification.error({
           message: res.data.message || 'Xoá sản phẩm thất bại, vui lòng thử lại!',
         })
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err)
     }
   }
@@ -303,8 +307,13 @@ export default function Promotion() {
           }
         >
           <Space>
-            <Button type="primary" danger onClick={resetFilter} size="large"
-              style={{ display: Object.keys(searchFilter).length == 0 && 'none' }}>
+            <Button
+              type="primary"
+              danger
+              onClick={resetFilter}
+              size="large"
+              style={{ display: Object.keys(searchFilter).length == 0 && 'none' }}
+            >
               Xóa bộ lọc
             </Button>
             <Permission permissions={[PERMISSIONS.them_khuyen_mai]}>
@@ -728,12 +737,17 @@ export default function Promotion() {
           setShowCreate(false)
           setDataUpdate([])
         }}
-        title={dataUpdate.length === 0 ? "Thêm khuyến mãi" : "Chỉnh sửa khuyến mãi"}
+        title={dataUpdate.length === 0 ? 'Thêm khuyến mãi' : 'Chỉnh sửa khuyến mãi'}
         width="75%"
       >
-        <PromotionAdd state={dataUpdate} close={() => {
-          setShowCreate(false)
-        }} reload={_getPromotions} show={showCreate} />
+        <PromotionAdd
+          state={dataUpdate}
+          close={() => {
+            setShowCreate(false)
+          }}
+          reload={_getPromotions}
+          show={showCreate}
+        />
       </Drawer>
     </>
   )
