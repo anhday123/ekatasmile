@@ -305,6 +305,7 @@ module.exports._update = async (req, res, next) => {
       code: _product.code || String(_product.product_id).padStart(6, '0'),
       name: String(_product.name).toUpperCase(),
       sku: String(_product.sku).toUpperCase(),
+      images: _product.images || [],
       slug: removeUnicode(String(_product.name || ''), false).replace(
         /\s/g,
         '-'
