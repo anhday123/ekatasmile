@@ -478,7 +478,7 @@ module.exports._update = async (req, res, next) => {
       .db(DB)
       .collection(`Users`)
       .aggregate([
-        { $match: { username: username } },
+        { $match: { username: req.user.username } },
         {
           $lookup: {
             from: 'Roles',
@@ -512,7 +512,7 @@ module.exports._update = async (req, res, next) => {
     let business = await client
       .db(SDB)
       .collection('Business')
-      .findOne({ username: user.username })
+      .findOne({ username: req.user.username })
     user._business = business
 
     let accessToken = await jwt.createToken(user, 30 * 24 * 60 * 60)
