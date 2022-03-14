@@ -84,6 +84,21 @@ module.exports._create = async (req, res, next) => {
       }
       return 0
     })()
+    if (req.body.sku == undefined)
+      throw new Error('400: Vui lòng truyền mã định danh sản phẩm (SKU)')
+
+    var productAlready = await client
+      .db(req.user.database)
+      .collection('Products')
+      .findOne({
+        sku: req.body.sku,
+      })
+
+    if (productAlready != undefined)
+      throw new Error(
+        `400: Mã định danh sản phẩm (SKU) ${req.body.sku} đã tồn tại`
+      )
+
     productId++
     req['_product'] = {
       product_id: productId,
