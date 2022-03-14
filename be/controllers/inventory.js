@@ -2551,14 +2551,17 @@ module.exports._getInventoryNote = async (req, res, next) => {
       })
     }
 
-    aggregateQuery.push({
-      $lookup: {
-        from: 'Branchs',
-        localField: 'branch_id',
-        foreignField: 'branch_id',
-        as: 'branch',
+    aggregateQuery.push(
+      {
+        $lookup: {
+          from: 'Branchs',
+          localField: 'branch_id',
+          foreignField: 'branch_id',
+          as: 'branch',
+        },
       },
-    })
+      { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
+    )
 
     aggregateQuery.push({
       $lookup: {
