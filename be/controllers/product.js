@@ -89,6 +89,7 @@ module.exports._create = async (req, res, next) => {
       product_id: productId,
       code: String(productId).padStart(6, '0'),
       sku: req.body.sku,
+      images: req.body.images || [],
       name: String(req.body.name).toUpperCase(),
       slug: removeUnicode(String(req.body.name), false)
         .toLowerCase()
@@ -967,6 +968,12 @@ module.exports.importFileC = async (req, res, next) => {
           code: String(product_id).padStart(6, '0'),
           sku: eRow['masanpham'],
           name: eRow['tensanpham'],
+          images: (() => {
+            if (eRow['hinhanh']) {
+              return eRow['hinhanh'].split(',')
+            }
+            return []
+          })(),
           slug: removeUnicode(String(eRow['tensanpham']), false)
             .replace(/\s/g, '-')
             .toLowerCase(),
