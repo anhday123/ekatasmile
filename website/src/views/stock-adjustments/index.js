@@ -13,14 +13,13 @@ import TitlePage from 'components/title-page'
 import FilterDate from 'components/filter-date'
 
 //antd
-import { Row, Col, Input, Button, DatePicker, Space, Table, Select } from 'antd'
+import { Row, Col, Input, Button, Space, Table, Select } from 'antd'
 
 //icons
 import { SearchOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
 
 //apis
 import { getCheckInventoryNote, importCheckInventoryNote } from 'apis/inventory'
-import { getAllBranch } from 'apis/branch'
 import { getEmployees } from 'apis/employee'
 
 export default function Reports() {
@@ -31,7 +30,6 @@ export default function Reports() {
   const [columns, setColumns] = useState([])
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [valueSearch, setValueSearch] = useState('')
-  const [valueBranch, setValueBranch] = useState([])
   const [inventoryNote, setInventoryNote] = useState([])
   const [valueUserFilter, setValueUserFilter] = useState(null)
   const [userList, setUserList] = useState([])
@@ -40,9 +38,8 @@ export default function Reports() {
     try {
       dispatch({ type: 'LOADING', data: true })
       const res = await getCheckInventoryNote({ ...paramsFilter })
-      if (res.status === 200) {
-        setInventoryNote(res.data.data)
-      }
+      console.log(res)
+      if (res.status === 200) setInventoryNote(res.data.data)
       dispatch({ type: 'LOADING', data: false })
     } catch (err) {
       console.log(err)
@@ -54,26 +51,10 @@ export default function Reports() {
     try {
       const res = await getEmployees({ page: 1, page_size: 1000 })
       if (res.status === 200) {
-        if (res.data.success) {
-          setUserList(res.data.data)
-        }
+        if (res.data.success) setUserList(res.data.data)
       }
     } catch (err) {
       console.log(err)
-    }
-  }
-
-  const _getBranches = async (query) => {
-    try {
-      dispatch({ type: 'LOADING', data: true })
-      const res = await getAllBranch(query)
-      if (res.status === 200) {
-        setValueBranch(res.data.data)
-      }
-      dispatch({ type: 'LOADING', data: false })
-    } catch (err) {
-      console.log(err)
-      dispatch({ type: 'LOADING', data: false })
     }
   }
 
@@ -139,7 +120,6 @@ export default function Reports() {
 
   useEffect(() => {
     _getCheckInventoryNote()
-    _getBranches()
     _getUserList()
   }, [paramsFilter])
 
@@ -240,6 +220,7 @@ export default function Reports() {
             placeholder="Lọc theo nhân viên tạo"
             allowClear
             showSearch
+            optionFilterProp="children"
             bordered={false}
           >
             {userList.map((item, index) => {
@@ -276,20 +257,19 @@ export default function Reports() {
           if (column.key === 'branch')
             return {
               ...column,
-              render: (text, record) =>
-                valueBranch.map((value) => value.branch_id === record.branch_id && value.name),
+              render: (text, record) => record.branch && record.branch.name,
             }
           if (column.key === 'create_date')
             return {
               ...column,
-              render: (text, record) => moment(record.create_date).format('DD/MM/YYYY, hh:mm:ss'),
+              render: (text, record) => moment(record.create_date).format('DD/MM/YYYY, hh:mm'),
             }
           if (column.key === 'inventory_date')
             return {
               ...column,
               render: (text, record) =>
                 record.inventory_date !== ''
-                  ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm:ss')
+                  ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm')
                   : 'Chưa kiểm',
             }
           if (column.key === 'creator_info')
@@ -300,11 +280,7 @@ export default function Reports() {
                   ? record.creator_info.first_name + ' ' + record.creator_info.last_name
                   : '',
             }
-          if (column.key === 'note')
-            return {
-              ...column,
-              render: (text, record) => (record.note ? record.note : ''),
-            }
+
           return column
         })}
         style={{ width: '100%', marginTop: 10 }}

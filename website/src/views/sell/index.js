@@ -1,21 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import styles from './sell.module.scss'
 import { v4 as uuidv4 } from 'uuid'
-import { useHistory, Link, BrowserRouter } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { formatCash, encryptText } from 'utils'
-import TienThoi from 'utils/tienthoi'
-import { Resizable, ResizableBox } from 'react-resizable'
-import {
-  ACTION,
-  BILL_STATUS_ORDER,
-  IMAGE_DEFAULT,
-  PERMISSIONS,
-  ROUTES,
-  SHIP_STATUS_ORDER,
-} from 'consts'
+import { ACTION, IMAGE_DEFAULT, PERMISSIONS, ROUTES, SHIP_STATUS_ORDER } from 'consts'
 import noData from 'assets/icons/no-data.png'
-import jwt_decode from 'jwt-decode'
 import KeyboardEventHandler from 'react-keyboard-event-handler'
 import ReactToPrint, { useReactToPrint } from 'react-to-print'
 
@@ -56,7 +46,6 @@ import {
   Spin,
   Tag,
   notification,
-  message,
   Col,
   Form,
 } from 'antd'
@@ -756,7 +745,11 @@ export default function Sell() {
           detach: true,
           product_id: product.product_id,
         })
-        if (res.status === 200) setVariants(res.data.data.map((e) => e.variants))
+        console.log(res)
+        if (res.status === 200) {
+          const variantList = res.data.data.map((e) => e.variants)
+          setVariants(variantList.filter((variant) => variant.total_quantity))
+        }
       } catch (error) {
         console.log(error)
       }
@@ -765,13 +758,13 @@ export default function Sell() {
     const _updateProductInCart = () => {
       if (variant) {
         let productsNew = invoices[indexInvoice].order_details
-        const price = variant.units && variant.units.length ? variant.units[0].price : 20000
+        // const price = variant.units && variant.units.length ? variant.units[0].price : 20000
         productsNew[index] = {
           ...variant,
           unit: variant.units && variant.units.length ? variant.units[0].name : 'Cái', //đơn vị
-          price: price, //giá sản phẩm
+          price: variant.price, //giá sản phẩm
           quantity: 1, //số lượng sản phẩm
-          sumCost: price, // tổng giá tiền
+          sumCost: variant.price, // tổng giá tiền
           VAT_Product:
             variant._taxes && variant._taxes.length
               ? (
@@ -813,9 +806,7 @@ export default function Sell() {
             Tên phiên bản
             <Select
               showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              optionFilterProp="children"
               value={sku}
               onChange={(value) => {
                 setSku(value)

@@ -258,6 +258,7 @@ export default function BranchAdd({ reloadData, children, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
+                rules={[{ message: 'Vui lòng chọn loại chi nhánh', required: true }]}
                 name="type"
                 label={<div style={{ color: 'black', fontWeight: '600' }}>Loại chi nhánh</div>}
               >
@@ -269,8 +270,8 @@ export default function BranchAdd({ reloadData, children, record }) {
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  <Option value="warehouse">Kho</Option>
-                  <Option value="store">Cửa hàng</Option>
+                  <Option value="Warehouse">Kho</Option>
+                  <Option value="Store">Cửa hàng</Option>
                 </Select>
               </Form.Item>
             </Col>

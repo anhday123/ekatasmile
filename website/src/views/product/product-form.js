@@ -36,6 +36,7 @@ import {
   Switch,
   Tabs,
   TreeSelect,
+  Badge,
 } from 'antd'
 
 //icons
@@ -52,13 +53,16 @@ import {
   DeleteOutlined,
   PlusCircleOutlined,
   InfoCircleOutlined,
+  PlusCircleFilled,
+  LoadingOutlined,
+  CloseCircleFilled,
 } from '@ant-design/icons'
 
 //apis
 import { getCategories } from 'apis/category'
 import { getSuppliers } from 'apis/supplier'
 import { uploadFiles, uploadFile } from 'apis/upload'
-import { getWarranties } from 'apis/warranty'
+import { getWarranties, addWarranty } from 'apis/warranty'
 import { updateProduct, addProduct } from 'apis/product'
 
 export default function ProductAdd() {
@@ -66,6 +70,7 @@ export default function ProductAdd() {
   const location = useLocation()
   const history = useHistory()
   const [form] = Form.useForm()
+  const [formGuarantee] = Form.useForm()
   const typingTimeoutRef = useRef(null)
   const dataUser = useSelector((state) => state.login.dataUser)
   const branchIdApp = useSelector((state) => state.branch.branchId)
@@ -73,20 +78,20 @@ export default function ProductAdd() {
   const [keyTab, setKeyTab] = useState('1')
   const [isRenderFirst, setIsRenderFirst] = useState(false)
   const [files, setFiles] = useState([])
-  const [loadingFile, setLoadingFile] = useState(false)
   const [idsWarranty, setIdsWarranty] = useState([])
-  const [isWarranty, setIsWarranty] = useState(true)
   const [warranties, setWarranties] = useState([])
   const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
   const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
-  const [imagesProduct, setImagesProduct] = useState([]) //files upload
+  const [filesProduct, setFilesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
   const [suppliers, setSuppliers] = useState([])
   const [supplier, setSupplier] = useState('') // dung o variant
+  const [imagesProduct, setImagesProduct] = useState([])
+  const [loadingUpload, setLoadingUpload] = useState(false)
   const [isGeneratedSku, setIsGeneratedSku] = useState(false)
   const [valueGeneratedSku, setValueGeneratedSku] = useState('')
   const [skuProductWithEdit, setSkuProductWithEdit] = useState('')
@@ -111,7 +116,7 @@ export default function ProductAdd() {
     console.log(dataForm)
 
     const initVariant = {
-      image: [],
+      image: imagesProduct || [],
       price: dataForm.price || 0,
       bulk_prices: [...bulkPrices],
       enable_bulk_price: true,
@@ -319,6 +324,7 @@ export default function ProductAdd() {
         files: files || [],
         warranties: idsWarranty,
         description: description || '',
+        images: imagesProduct || [],
       }
 
       if (isProductHasVariants) {
@@ -327,7 +333,7 @@ export default function ProductAdd() {
         const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
         body.variants = variantsNew
       } else {
-        const images = location.state ? imagesPreviewProduct : await uploadFiles(imagesProduct)
+        const images = location.state ? imagesPreviewProduct : await uploadFiles(filesProduct)
 
         body.attributes = []
         const bodyOneVariant = {
@@ -475,6 +481,102 @@ export default function ProductAdd() {
       )}
     </Upload>
   )
+
+  const ModalAddGuarantee = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+
+    const _addGuarantee = async () => {
+      try {
+        await formGuarantee.validateFields()
+        const body = formGuarantee.getFieldsValue()
+        const res = await addWarranty(body)
+        if (res.status === 200) {
+          if (res.data.success) {
+            _getWarranties()
+            notification.success({ message: 'Thêm chính sách bảo hành thành công' })
+            toggle()
+            formGuarantee.resetFields()
+          } else
+            notification.error({
+              message: res.data.message || 'Thêm chính sách bảo hành thất bại, vui lòng thử lại',
+            })
+        } else
+          notification.error({
+            message: res.data.message || 'Thêm chính sách bảo hành thất bại, vui lòng thử lại',
+          })
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    return (
+      <>
+        <Tooltip title="Thêm chính sách bảo hành">
+          <Button
+            onClick={toggle}
+            style={{ marginLeft: 10 }}
+            size="large"
+            icon={<PlusOutlined />}
+            type="primary"
+          />
+        </Tooltip>
+
+        <Modal
+          onOk={_addGuarantee}
+          width="60%"
+          cancelText="Đóng"
+          okText="Tạo"
+          title="Thêm chính sách bảo hành"
+          onCancel={toggle}
+          visible={visible}
+        >
+          <Form form={formGuarantee} layout="vertical">
+            <Row style={{ width: '100%', justifyContent: 'space-between', marginTop: 15 }}>
+              <Col span={11}>
+                <Form.Item
+                  label="Tên bảo hành"
+                  name="name"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên bảo hành' }]}
+                >
+                  <Input size="large" placeholder="Nhập tên bảo hành" />
+                </Form.Item>
+              </Col>
+              <Col span={11}>
+                <Form.Item
+                  label="Thời hạn bảo hành (tháng)"
+                  name="time"
+                  rules={[{ required: true, message: 'Vui lòng nhập thời hạn bảo hành' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    placeholder="Nhập thời hạn bảo hành"
+                    style={{ width: '100%' }}
+                    size="large"
+                    className="br-15__input"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={11}>
+                <Form.Item
+                  label="Loại bảo hành"
+                  name="type"
+                  rules={[{ required: true, message: 'Vui lòng nhập loại bảo hành' }]}
+                >
+                  <Input size="large" placeholder="Nhập tên bảo hành" />
+                </Form.Item>
+              </Col>
+              <Col span={11}>
+                <Form.Item label="Mô tả" name="description">
+                  <Input.TextArea rows={5} placeholder="Nhập mô tả" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+      </>
+    )
+  }
 
   const InputSku = ({ value, variant }) => {
     const [valueSku, setValueSku] = useState(value)
@@ -863,6 +965,8 @@ export default function ProductAdd() {
         setVariants([...product.variants])
       }
 
+      setImagesProduct(product.images || [])
+
       setDescription(product.description || 0)
       setIsGeneratedSku(true)
       setValueGeneratedSku(product.sku)
@@ -870,7 +974,6 @@ export default function ProductAdd() {
 
       //check bao hanh
       if (product.warranties.length) {
-        setIsWarranty(true)
         setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
       }
     }
@@ -1085,7 +1188,67 @@ export default function ProductAdd() {
               </Col>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Thuộc tính" key="2">
+          <Tabs.TabPane tab="Hình ảnh" key="2">
+            <h3 style={{ marginBottom: 20 }}>Danh sách hình ảnh sản phẩm</h3>
+            <Row wrap={false}>
+              {imagesProduct.map((image) => (
+                <div style={{ marginRight: 30 }}>
+                  <Badge
+                    count={
+                      <CloseCircleFilled
+                        onClick={() => {
+                          const indexImage = imagesProduct.findIndex((img) => img === image)
+                          if (indexImage !== -1) {
+                            const imagesNew = [...imagesProduct]
+                            imagesNew.splice(indexImage, 1)
+                            setImagesProduct([...imagesNew])
+                          }
+                        }}
+                        style={{ fontSize: 22, color: '#ff4d4f', cursor: 'pointer' }}
+                      />
+                    }
+                  >
+                    <img
+                      src={image}
+                      alt=""
+                      style={{ width: 130, height: 130, objectFit: 'cover' }}
+                    />
+                  </Badge>
+                </div>
+              ))}
+
+              <Upload
+                multiple
+                listType="picture-card"
+                showUploadList={false}
+                className={styles['product-upload-image']}
+                onChange={(file) => {
+                  if (typingTimeoutRef.current) {
+                    clearTimeout(typingTimeoutRef.current)
+                  }
+                  typingTimeoutRef.current = setTimeout(async () => {
+                    setLoadingUpload(true)
+                    const urls = await uploadFiles(file.fileList.map((e) => e.originFileObj))
+                    setLoadingUpload(false)
+                    if (urls) {
+                      const imagesNew = [...imagesProduct, ...urls]
+                      setImagesProduct([...imagesNew])
+                    }
+                  }, 450)
+                }}
+              >
+                <div>
+                  {loadingUpload ? (
+                    <LoadingOutlined />
+                  ) : (
+                    <PlusCircleFilled style={{ color: 'rgba(128, 128, 128, 0.3)', fontSize: 20 }} />
+                  )}
+                  <div style={{ marginTop: 8, color: '#808080' }}>Tải lên</div>
+                </div>
+              </Upload>
+            </Row>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Thuộc tính" key="3">
             <div style={{ display: !location.state && 'none', marginBottom: 10 }}>
               <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 thuộc tính</div>
             </div>
@@ -1432,7 +1595,7 @@ export default function ProductAdd() {
                       onChange={(info) => {
                         if (info.file.status !== 'done') info.file.status = 'done'
                         let imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                        setImagesProduct([...imagesProductNew])
+                        setFilesProduct([...imagesProductNew])
                       }}
                     >
                       <p className="ant-upload-drag-icon">
@@ -1448,7 +1611,7 @@ export default function ProductAdd() {
               </Col>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Thông số sản phẩm" key="3">
+          <Tabs.TabPane tab="Thông số sản phẩm" key="4">
             <Row justify="space-between" align="middle">
               <Row
                 justify="space-between"
@@ -1503,37 +1666,29 @@ export default function ProductAdd() {
               </Row>
               <Row style={{ width: '100%', marginTop: 20 }}>
                 <Col xs={24} sm={24} md={9} lg={9} xl={9}>
-                  <Checkbox
-                    style={{ marginBottom: 4 }}
-                    checked={isWarranty}
-                    onChange={(e) => {
-                      const checked = e.target.checked
-                      if (!checked) setIdsWarranty([])
-
-                      setIsWarranty(checked)
-                    }}
-                  >
-                    Thêm chính sách bảo hành (không bắt buộc)
-                  </Checkbox>
-                  <Select
-                    size="large"
-                    mode="multiple"
-                    style={{ width: '100%', display: !isWarranty && 'none' }}
-                    placeholder="Chọn chính sách bảo hành"
-                    onChange={(value) => setIdsWarranty(value)}
-                    value={idsWarranty}
-                  >
-                    {warranties.map((values, index) => (
-                      <Select.Option value={values.warranty_id} key={index}>
-                        {values.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                  <div>Thêm chính sách bảo hành (không bắt buộc)</div>
+                  <Row wrap={false}>
+                    <Select
+                      size="large"
+                      mode="multiple"
+                      style={{ width: '100%' }}
+                      placeholder="Chọn chính sách bảo hành"
+                      onChange={(value) => setIdsWarranty(value)}
+                      value={idsWarranty}
+                    >
+                      {warranties.map((values, index) => (
+                        <Select.Option value={values.warranty_id} key={index}>
+                          {values.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    <ModalAddGuarantee />
+                  </Row>
                 </Col>
               </Row>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="File đính kèm" key="4">
+          {/* <Tabs.TabPane tab="File đính kèm" key="5">
             <div style={{ minHeight: 250 }}>
               <Upload
                 fileList={files.map((file, index) => {
@@ -1576,7 +1731,7 @@ export default function ProductAdd() {
                 </Button>
               </Upload>
             </div>
-          </Tabs.TabPane>
+          </Tabs.TabPane> */}
         </Tabs>
       </Form>
     </div>

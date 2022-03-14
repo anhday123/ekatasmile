@@ -32,7 +32,7 @@ import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/ico
 //apis
 import { uploadFile } from 'apis/upload'
 import { addCategory, updateCategory } from 'apis/category'
-import { getProducts } from 'apis/product'
+import { getProducts, updateProduct } from 'apis/product'
 
 export default function Category() {
   const history = useHistory()
@@ -44,6 +44,7 @@ export default function Category() {
   const [imageView, setImageView] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [products, setProducts] = useState([])
+  const [productsUpdate, setProductsUpdate] = useState([])
   const [loading, setLoading] = useState(false)
   const [countProduct, setCountProduct] = useState(0)
 
@@ -85,7 +86,34 @@ export default function Category() {
       title: 'Ngày tạo',
       key: 'create_date',
     },
+    {
+      title: 'Hành động',
+      width: 90,
+      render: (text, record) => (
+        <Button
+          icon={<DeleteOutlined />}
+          type="primary"
+          danger
+          onClick={() => _removeProductToCategory(record)}
+        />
+      ),
+    },
   ]
+
+  const _removeProductToCategory = (product) => {
+    const productsNew = [...products]
+    const productsUpdateNew = [...productsUpdate]
+
+    const indexProduct = productsNew.findIndex((p) => p.product_id === product.product_id)
+
+    if (indexProduct !== -1) {
+      productsNew.splice(indexProduct, 1)
+      productsUpdateNew.push(product)
+    }
+
+    setProductsUpdate([...productsUpdateNew])
+    setProducts([...productsNew])
+  }
 
   const columnsVariant = [
     {
@@ -165,6 +193,20 @@ export default function Category() {
     reader.readAsDataURL(img)
   }
 
+  const _updateProducts = async () => {
+    try {
+      const listPromise = productsUpdate.map(async (product) => {
+        const indexCategory = product.category_id.findIndex((c) => c == location.state.category_id)
+        if (indexCategory !== -1) product.category_id.splice(indexCategory, 1)
+        const res = await updateProduct({ category_id: product.category_id }, product.product_id)
+        return res
+      })
+      await Promise.all(listPromise)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const _addOrUpdateCategory = async () => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -186,8 +228,10 @@ export default function Category() {
 
       let res
 
-      if (location.state) res = await updateCategory(body, location.state.category_id)
-      else res = await addCategory(body)
+      if (location.state) {
+        await _updateProducts()
+        res = await updateCategory(body, location.state.category_id)
+      } else res = await addCategory(body)
 
       console.log(res)
       if (res.status === 200) {
@@ -216,9 +260,7 @@ export default function Category() {
       dispatch({ type: ACTION.LOADING, data: false })
     }
   }
-  /**
-   * Lấy danh sách sản phẩm theo nhóm sản phẩm
-   */
+
   const getProductsByCategory = async () => {
     try {
       setLoading(true)
@@ -248,6 +290,7 @@ export default function Category() {
   return (
     <div className="card">
       <TitlePage
+        isAffix={true}
         title={
           <Row
             align="middle"
@@ -307,12 +350,7 @@ export default function Category() {
                 </Row>
                 {conditions.map((condition, index) => (
                   <>
-                    <Row
-                      wrap={false}
-                      justify="space-between"
-                      align="middle"
-                      style={{ marginTop: 20 }}
-                    >
+                    <Row wrap={false} justify="space-between" style={{ marginTop: 20 }}>
                       <Select
                         style={{ width: '50%' }}
                         value={condition.name}
@@ -352,6 +390,7 @@ export default function Category() {
                       </Select>
                       <div style={{ width: '50%' }}>
                         <Input
+                          placeholder="Từ khóa"
                           defaultValue={condition.value}
                           onBlur={(e) => {
                             const conditionsNew = [...conditions]
@@ -360,6 +399,11 @@ export default function Category() {
                           }}
                           style={{ width: '100%' }}
                         />
+                        <div
+                          style={{ color: 'red', fontSize: 12, display: condition.value && 'none' }}
+                        >
+                          Không được để trống
+                        </div>
                       </div>
 
                       <Button
@@ -426,7 +470,7 @@ export default function Category() {
       </Form>
       <div style={{ display: !location.state && 'none' }}>
         <Row>
-          <h4>Danh sách sản phẩm</h4>
+          <h3>Danh sách sản phẩm</h3>
           <Table
             loading={loading}
             style={{ width: '100%' }}
@@ -519,8 +563,7 @@ export default function Category() {
           />
         </Row>
         <Row>
-          <div>
-            {' '}
+          <div style={{ color: '#f56767' }}>
             Ghi chú: Nhóm sản phẩm chỉ hiệu quả khi doanh nghiệp có triển khai bán hàng online và
             bán hàng trên thương mại điện tử
           </div>

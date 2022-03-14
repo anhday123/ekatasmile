@@ -24,6 +24,7 @@ import {
   Popconfirm,
   Tag,
   TreeSelect,
+  Badge,
 } from 'antd'
 
 //components
@@ -40,13 +41,15 @@ import {
   InboxOutlined,
   LoadingOutlined,
   DeleteOutlined,
+  PlusCircleFilled,
+  CloseCircleFilled,
 } from '@ant-design/icons'
 
 //apis
 import { getSuppliers } from 'apis/supplier'
 import { getCategories } from 'apis/category'
 import { getProducts, updateProduct, deleteProducts, importProducts } from 'apis/product'
-import { uploadFile } from 'apis/upload'
+import { uploadFile, uploadFiles } from 'apis/upload'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -377,6 +380,112 @@ export default function Product() {
       setLoading(false)
       console.log(error)
     }
+  }
+
+  const ModalImagesProduct = ({ product }) => {
+    const [visible, setVisible] = useState(false)
+    const [imagesProduct, setImagesProducts] = useState(product.images || [])
+    const toggle = () => setVisible(!visible)
+    const [loadingUpload, setLoadingUpload] = useState(false)
+
+    const updateImageProduct = async (body) => {
+      try {
+        setLoadingUpload(true)
+        let res = await updateProduct(body, product.product_id)
+        setLoadingUpload(false)
+        console.log(res)
+        if (res.status === 200) {
+          if (res.data.success) {
+            notification.success({ message: 'Cập nhật hình ảnh thành công!', duration: 1 })
+          } else
+            notification.error({
+              message: res.data.message || 'Cập nhật hình ảnh thất bại, vui lòng thử lại!',
+            })
+        } else
+          notification.error({
+            message: res.data.message || 'Cập nhật hình ảnh thất bại, vui lòng thử lại!',
+          })
+      } catch (error) {
+        console.log(error)
+        setLoadingUpload(false)
+      }
+    }
+
+    return (
+      <>
+        <img
+          onClick={toggle}
+          src={imagesProduct && imagesProduct.length ? imagesProduct[0] : IMAGE_DEFAULT}
+          alt=""
+          style={{ cursor: 'pointer', width: 65, height: 65 }}
+        />
+
+        <Modal
+          title="Danh sách hình ảnh sản phẩm"
+          visible={visible}
+          footer={false}
+          onCancel={() => {
+            toggle()
+            _getProducts()
+          }}
+          width="90%"
+          style={{ top: 20 }}
+        >
+          <Space size="large" wrap={true} style={{ width: '100%', marginBottom: 0 }}>
+            {imagesProduct.map((image) => (
+              <Badge
+                count={
+                  <CloseCircleFilled
+                    onClick={() => {
+                      const indexImage = imagesProduct.findIndex((img) => img === image)
+                      if (indexImage !== -1) {
+                        const imagesNew = [...imagesProduct]
+                        imagesNew.splice(indexImage, 1)
+                        setImagesProducts([...imagesNew])
+                        updateImageProduct({ images: imagesNew })
+                      }
+                    }}
+                    style={{ fontSize: 25, color: '#ff4d4f', cursor: 'pointer' }}
+                  />
+                }
+              >
+                <img src={image} alt="" style={{ width: 170, height: 170, objectFit: 'cover' }} />
+              </Badge>
+            ))}
+            <Upload
+              multiple
+              listType="picture-card"
+              showUploadList={false}
+              className={styles['product-upload-img']}
+              onChange={(file) => {
+                if (typingTimeoutRef.current) {
+                  clearTimeout(typingTimeoutRef.current)
+                }
+                typingTimeoutRef.current = setTimeout(async () => {
+                  setLoadingUpload(true)
+                  const urls = await uploadFiles(file.fileList.map((e) => e.originFileObj))
+                  setLoadingUpload(false)
+                  if (urls) {
+                    const imagesNew = [...imagesProduct, ...urls]
+                    updateImageProduct({ images: imagesNew })
+                    setImagesProducts([...imagesNew])
+                  }
+                }, 450)
+              }}
+            >
+              <div>
+                {loadingUpload ? (
+                  <LoadingOutlined />
+                ) : (
+                  <PlusCircleFilled style={{ color: 'rgba(128, 128, 128, 0.3)', fontSize: 20 }} />
+                )}
+                <div style={{ marginTop: 8, color: '#808080' }}>Tải lên</div>
+              </div>
+            </Upload>
+          </Space>
+        </Modal>
+      </>
+    )
   }
 
   const ImagesVariant = ({ record, product }) => {
@@ -933,9 +1042,12 @@ export default function Product() {
             if (column.key === 'stt')
               return {
                 ...column,
-                width: 50,
-                render: (text, record, index) =>
-                  (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+                render: (text, record, index) => index + 1,
+              }
+            if (column.key === 'image')
+              return {
+                ...column,
+                render: (text, record) => <ModalImagesProduct product={record} />,
               }
             if (column.key === 'name-product')
               return {

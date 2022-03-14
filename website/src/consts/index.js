@@ -53,6 +53,7 @@ export const ROUTES = {
   SHIPPING_CONTROL_ADD: '/shipping-control/add',
   DELIVERY_CONTROL: '/delivery-control',
   GUARANTEE: '/guarantee',
+  GUARANTEE_ADD: '/guarantee-create',
   SHIPPING_PRODUCT: '/shipping-product',
   CLIENT_MANAGEMENT: '/client-management',
   BRANCH_MANAGEMENT: '/branch',
@@ -68,8 +69,6 @@ export const ROUTES = {
   PAYMENT_TYPE: '/payment-type',
   RECEIPTS_TYPE: '/receipts-type',
   ACTIVITY_DIARY: '/activity-diary',
-  TAX_ADD: '/actions/tax/add',
-  TAX_UPDATE: '/actions/tax/update',
   SHIPPING_PRODUCT_ADD: '/shipping-product-add',
   ORDER_CREATE: '/order-create',
   INVENTORY: '/inventory',
@@ -82,21 +81,8 @@ export const ROUTES = {
   SUPPLIER: '/supplier',
   PROMOTION: '/promotion',
   ROLE: '/role',
-  ACCUMULATE_POINT_SETTING_VIEW: '/actions/accumulate-point-setting/view',
-  CARD_ACCUMULATE_POINT_ADD: '/actions/card-accumulate-point/add',
-  ACCUMULATE_POINT_EDIT_ADDD: '/actions/accumulate-point-edit/add',
-  ACCUMULATE_POINT_EDIT_DETAIL: '/actions/accumulate-point-edit/detail',
-  PRODUCT_CHECK_ADD: '/actions/product-check/add',
-  PRODUCT_CHECK_VIEW: '/actions/product-check/view',
-  ORDER_CREATE_SHIPPING_ADD: '/actions/order-create-shipping/add',
-  REPORT_FINANCIAL_VIEW: '/actions/sale-detail/view',
-  REPORT_REVENUE_VIEW: '/actions/revenue-cost/view',
-  INVENTORY_ADD: '/actions/inventory/add',
   PRODUCT_ADD: '/product/add',
   PRODUCT_UPDATE: '/product/update',
-  PROMOTION_ADD: '/actions/promotion/add',
-  ROLE_ADD: '/actions/role/add',
-  GUARANTEE_ADD: '/actions/guarantee/add',
   POINT: '/point',
   CATEGORY: '/category',
   CATEGORIES: '/categories',
@@ -192,7 +178,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.3.10'
+export const VERSION_APP = '1.4.0'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

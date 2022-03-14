@@ -89,7 +89,7 @@ export default function Branch() {
         if (res.data.success) {
           dispatch({
             type: ACTION.LOGIN,
-            data: { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
+            data: { accessToken: res.data.accessToken },
           })
           _getBranches()
           notification.success({ message: 'Cập nhật thành công' })

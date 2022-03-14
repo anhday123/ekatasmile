@@ -1,5 +1,4 @@
 import { get, patch, post, destroy } from './httpClient'
-import axios from 'axios'
 
 export const getOrdersImportInventory = (params) => get('/inventory/import', params)
 export const updateOrderImportInventory = (body, id) =>
@@ -16,4 +15,4 @@ export const createCheckInventoryNote = (body) => post('/inventory/inventorynote
 export const importCheckInventoryNote = (formData) =>
   post('/inventory/inventorynote/create/file', formData)
 export const updateCheckInventoryNote = (body, id) =>
-  post('/inventory/inventorynote/update' + id, body)
+  patch('/inventory/inventorynote/update/' + id, body)
