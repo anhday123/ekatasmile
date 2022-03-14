@@ -87,10 +87,7 @@ export default function CreateReport() {
       dispatch({ type: 'LOADING', data: true })
       await form.validateFields()
       const dataForm = form.getFieldsValue()
-      const body = {
-        ...dataForm,
-        products: listProduct,
-      }
+      const body = { ...dataForm, products: listProduct }
       console.log(body)
       let res
       if (!location.state) res = await createCheckInventoryNote(body)

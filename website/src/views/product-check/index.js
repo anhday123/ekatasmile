@@ -1,25 +1,13 @@
-import styles from './../product-check/product-check.module.scss'
+import styles from './product-check.module.scss'
 import React, { useState } from 'react'
-import {
-  Input,
-  Button,
-  Row,
-  Col,
-  DatePicker,
-  Select,
-  Table,
-  Drawer,
-  Typography,
-} from 'antd'
-import { Link } from 'react-router-dom'
+import { Input, Button, Row, Col, DatePicker, Select, Table, Drawer } from 'antd'
 import { PlusCircleOutlined, FileExcelOutlined } from '@ant-design/icons'
 import moment from 'moment'
-import { ROUTES, PERMISSIONS } from 'consts'
-import ProductCheckAdd from 'views/actions/product-check/add'
+import { PERMISSIONS } from 'consts'
+import ProductCheckAdd from './product-check-form'
 import Permission from 'components/permission'
 const { Option } = Select
 const { RangePicker } = DatePicker
-const { Text } = Typography
 export default function ProductCheck() {
   const [showCreate, setShowCreate] = useState(false)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -110,9 +98,7 @@ export default function ProductCheck() {
             width: '100%',
           }}
         >
-          <div className={styles['promotion_manager_title']}>
-            Danh sách phiếu kiểm hàng
-          </div>
+          <div className={styles['promotion_manager_title']}>Danh sách phiếu kiểm hàng</div>
           <div className={styles['promotion_manager_button']}>
             <Permission permissions={[PERMISSIONS.them_phieu_kiem_hang]}>
               <Button
@@ -134,30 +120,12 @@ export default function ProductCheck() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Input
-                size="large"
-                placeholder="Tìm kiếm theo mã, theo tên"
-                enterButton
-              />
+              <Input size="large" placeholder="Tìm kiếm theo mã, theo tên" enterButton />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
               <RangePicker
                 size="large"
@@ -165,42 +133,17 @@ export default function ProductCheck() {
                 style={{ width: '100%' }}
                 ranges={{
                   Today: [moment(), moment()],
-                  'This Month': [
-                    moment().startOf('month'),
-                    moment().endOf('month'),
-                  ],
+                  'This Month': [moment().startOf('month'), moment().endOf('month')],
                 }}
               />
             </div>
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
-            <DatePicker
-              size="large"
-              className="br-15__date-picker"
-              style={{ width: '100%' }}
-            />
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
+            <DatePicker size="large" className="br-15__date-picker" style={{ width: '100%' }} />
           </Col>
-          <Col
-            style={{ width: '100%', marginTop: '1rem' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ width: '100%', marginTop: '1rem' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <div style={{ width: '100%' }}>
-              <Select
-                size="large"
-                style={{ width: '100%' }}
-                placeholder="Lọc theo người dùng"
-              >
+              <Select size="large" style={{ width: '100%' }} placeholder="Lọc theo người dùng">
                 <Option value="user1">Người dùng 1</Option>
                 <Option value="user2">Người dùng 2</Option>
                 <Option value="user3">Người dùng 3</Option>
@@ -216,14 +159,7 @@ export default function ProductCheck() {
             width: '100%',
           }}
         >
-          <Col
-            style={{ width: '100%' }}
-            xs={24}
-            sm={24}
-            md={12}
-            lg={12}
-            xl={12}
-          >
+          <Col style={{ width: '100%' }} xs={24} sm={24} md={12} lg={12} xl={12}>
             <Row
               style={{
                 display: 'flex',
