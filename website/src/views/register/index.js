@@ -23,17 +23,12 @@ export default function Login() {
   const _register = async (dataForm) => {
     try {
       /*check validated form*/
-      const regexPassword = /^[A-Za-z0-9 ]+$/
-      const regexPassword2 = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+      const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
 
       if (!regexPassword.test(dataForm.password)) {
-        notification.error({ message: 'Mật khẩu không được chứa dấu' })
-        return
-      }
-      if (!regexPassword2.test(dataForm.password)) {
         notification.error({
           message:
-            'Mật khẩu tối thiểu 8 ký tự, ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt',
+            'Mật khẩu không được chứa dấu và tối thiểu 8 ký tự, ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt',
         })
         return
       }

@@ -83,8 +83,6 @@ export default function ProductAdd() {
   const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
   const [selectRowKeyVariant, setSelectRowKeyVariant] = useState([])
-  const [isProductHasVariants, setIsProductHasVariants] = useState(false) //check product is have variants ?
-  const [filesProduct, setFilesProduct] = useState([]) //files upload
   const [imagesPreviewProduct, setImagesPreviewProduct] = useState([]) //url image
   const [isMobile, setIsMobile] = useState(false)
   const [description, setDescription] = useState('')
@@ -95,7 +93,9 @@ export default function ProductAdd() {
   const [isGeneratedSku, setIsGeneratedSku] = useState(false)
   const [valueGeneratedSku, setValueGeneratedSku] = useState('')
   const [skuProductWithEdit, setSkuProductWithEdit] = useState('')
-  const [bulkPrices, setBulkPrices] = useState([]) //giá sỉ
+  const [bulkPrices, setBulkPrices] = useState([
+    { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 },
+  ]) //giá sỉ
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -225,8 +225,10 @@ export default function ProductAdd() {
   const _addBulkPrice = () => {
     const bulkPricesNew = [...bulkPrices]
     const bulkPrice = { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 }
-    if (bulkPricesNew.length)
+    if (bulkPricesNew.length) {
       bulkPrice.min_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 1
+      bulkPrice.max_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 10
+    }
 
     bulkPricesNew.push(bulkPrice)
     setBulkPrices([...bulkPricesNew])
@@ -281,7 +283,7 @@ export default function ProductAdd() {
 
     if (!isValidated) return
 
-    if (isProductHasVariants && variants.length === 0) {
+    if (variants.length === 0) {
       notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
       return
     }
@@ -327,33 +329,10 @@ export default function ProductAdd() {
         images: imagesProduct || [],
       }
 
-      if (isProductHasVariants) {
-        body.attributes = attributes
+      body.attributes = attributes
 
-        const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
-        body.variants = variantsNew
-      } else {
-        const images = location.state ? imagesPreviewProduct : await uploadFiles(filesProduct)
-
-        body.attributes = []
-        const bodyOneVariant = {
-          title: formProduct.name,
-          sku: location.state
-            ? skuProductWithEdit
-            : !isGeneratedSku
-            ? formProduct.sku
-              ? formProduct.sku
-              : valueDefaultSku
-            : valueGeneratedSku,
-          options: [],
-          image: images || [],
-          supplier: supplier || '',
-          price: formProduct.price,
-          enable_bulk_price: formProduct.enable_bulk_price,
-          bulk_prices: bulkPrices,
-        }
-        body.variants = [bodyOneVariant]
-      }
+      const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
+      body.variants = variantsNew
 
       let res
       //case update product
@@ -904,14 +883,6 @@ export default function ProductAdd() {
               >
                 Thêm bán giá sỉ
               </Button>
-              <Row wrap={false}>
-                <Switch
-                  onChange={(checked) => _enableBulkPriceOfVariant(checked, record)}
-                  checked={record.enable_bulk_price}
-                  style={{ marginRight: 4 }}
-                />{' '}
-                <div>Bật giá sỉ</div>
-              </Row>
             </Space>
             <BulkPricesOfVariant variant={record} />
           </Space>
@@ -946,24 +917,19 @@ export default function ProductAdd() {
 
       form.setFieldsValue({ ...product })
 
-      if (product.variants.length === 1) {
-        setIsProductHasVariants(false)
-        setImagesPreviewProduct(product.variants[0].image || [])
-        form.setFieldsValue({
-          ...product.variants[0],
-          enable_bulk_price: product.variants[0].enable_bulk_price || false,
-        })
-        setSkuProductWithEdit(product.variants[0].sku)
-        setBulkPrices(product.variants[0].bulk_prices || [])
-      } else {
-        setIsProductHasVariants(true)
-        setAttributes([
-          ...product.attributes.map((e) => {
-            return { option: e.option, values: e.values }
-          }),
-        ])
-        setVariants([...product.variants])
-      }
+      setImagesPreviewProduct(product.variants[0].image || [])
+      form.setFieldsValue({
+        ...product.variants[0],
+        enable_bulk_price: product.variants[0].enable_bulk_price || false,
+      })
+      setSkuProductWithEdit(product.variants[0].sku)
+      setBulkPrices(product.variants[0].bulk_prices || [])
+      setAttributes([
+        ...product.attributes.map((e) => {
+          return { option: e.option, values: e.values }
+        }),
+      ])
+      setVariants([...product.variants])
 
       setImagesProduct(product.images || [])
 
@@ -1015,6 +981,7 @@ export default function ProductAdd() {
   return !isMobile ? (
     <div className="card">
       <TitlePage
+        isAffix={true}
         title={
           <Row
             wrap={false}
@@ -1045,8 +1012,8 @@ export default function ProductAdd() {
       <Form form={form} layout="vertical" style={{ width: '100%', marginTop: 15 }}>
         <Tabs activeKey={keyTab} type="card" onChange={setKeyTab}>
           <Tabs.TabPane tab="Thông tin sản phẩm" key="1">
-            <Row justify="space-between" align="middle">
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+            <Row gutter={[25, 25]} align="middle">
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
                 <Form.Item
                   label="Tên sản phẩm"
                   name="name"
@@ -1080,56 +1047,44 @@ export default function ProductAdd() {
                   </Checkbox>
                 </div> */}
               </Col>
-              <Col
-                xs={24}
-                sm={24}
-                md={7}
-                lg={7}
-                xl={7}
-                style={{ display: 'flex', alignItems: 'flex-end' }}
-              >
-                <Form.Item
-                  rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp' }]}
-                  label="Nhà cung cấp"
-                  name="supplier_id"
-                  style={{ marginRight: 10, width: '100%' }}
-                >
-                  <Select
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    size="large"
-                    style={{ width: '100%' }}
-                    placeholder="Chọn nhà cung cấp"
-                    onChange={(value) => {
-                      const supplier = suppliers.find((s) => s.supplier_id === value)
-                      supplier && setSupplier(supplier.name)
-                    }}
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Row wrap={false} align="middle">
+                  <Form.Item
+                    rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp' }]}
+                    label="Nhà cung cấp"
+                    name="supplier_id"
+                    style={{ marginRight: 10, width: '100%' }}
                   >
-                    {suppliers.map((values, index) => {
-                      return (
-                        <Select.Option value={values.supplier_id} key={index}>
-                          {values.name}
-                        </Select.Option>
-                      )
-                    })}
-                  </Select>
-                </Form.Item>
-                <SupplierForm reloadData={_getSuppliers}>
-                  <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
-                    <Tooltip title="Tạo nhà cung cấp">
-                      <Button
-                        size="large"
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        style={{ marginBottom: 24 }}
-                      />
-                    </Tooltip>
-                  </Permission>
-                </SupplierForm>
+                    <Select
+                      showSearch
+                      optionFilterProp="children"
+                      size="large"
+                      style={{ width: '100%' }}
+                      placeholder="Chọn nhà cung cấp"
+                      onChange={(value) => {
+                        const supplier = suppliers.find((s) => s.supplier_id === value)
+                        supplier && setSupplier(supplier.name)
+                      }}
+                    >
+                      {suppliers.map((values, index) => {
+                        return (
+                          <Select.Option value={values.supplier_id} key={index}>
+                            {values.name}
+                          </Select.Option>
+                        )
+                      })}
+                    </Select>
+                  </Form.Item>
+                  <SupplierForm reloadData={_getSuppliers}>
+                    <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
+                      <Tooltip title="Tạo nhà cung cấp">
+                        <Button size="large" type="primary" icon={<PlusOutlined />} />
+                      </Tooltip>
+                    </Permission>
+                  </SupplierForm>
+                </Row>
               </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
                 <Form.Item
                   rules={[{ required: true, message: 'Vui lòng chọn nhóm sản phẩm' }]}
                   label="Nhóm sản phẩm"
@@ -1162,7 +1117,7 @@ export default function ProductAdd() {
                   </TreeSelect>
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={24} md={7} lg={7} xl={7}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
                 <Form.Item
                   label="Mã sản phẩm/SKU"
                   name="sku"
@@ -1171,7 +1126,6 @@ export default function ProductAdd() {
                   <Input size="large" placeholder="Nhập mã sản phẩm/sku" />
                 </Form.Item>
               </Col>
-
               <Col
                 xs={24}
                 sm={24}
@@ -1249,21 +1203,9 @@ export default function ProductAdd() {
             </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Thuộc tính" key="3">
-            <div style={{ display: !location.state && 'none', marginBottom: 10 }}>
-              <div style={{ display: isProductHasVariants && 'none' }}>Sản phẩm 1 thuộc tính</div>
-            </div>
             <Row justify="space-between">
               <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-                <Form.Item
-                  rules={[
-                    {
-                      required: !isProductHasVariants && true,
-                      message: 'Vui lòng nhập giá bán!',
-                    },
-                  ]}
-                  label="Giá bán"
-                  name="price"
-                >
+                <Form.Item label="Giá bán" name="price">
                   <InputNumber
                     size="large"
                     min={0}
@@ -1285,17 +1227,6 @@ export default function ProductAdd() {
               <Col xs={24} sm={24} md={14} lg={14} xl={14}>
                 <div>
                   <Row wrap={false}>
-                    <Form.Item
-                      style={{ marginBottom: 5, marginRight: 25 }}
-                      name="enable_bulk_price"
-                      valuePropName="checked"
-                      initialValue={false}
-                    >
-                      <Space>
-                        <Switch />
-                        Bật giá sỉ
-                      </Space>
-                    </Form.Item>
                     <Button onClick={_addBulkPrice} type="primary" icon={<PlusOutlined />}>
                       Thêm giá bán sỉ
                     </Button>
@@ -1378,37 +1309,7 @@ export default function ProductAdd() {
                 </div>
               </Col>
 
-              <div
-                style={{
-                  width: '100%',
-                  marginTop: 40,
-                  marginBottom: 15,
-                  display: location.state && 'none',
-                }}
-              >
-                <Row wrap={false} align="middle" style={{ marginBottom: 8 }}>
-                  <div style={{ fontWeight: 600 }}>Thuộc tính</div>
-                  <InfoCircleOutlined style={{ marginLeft: 5, marginRight: 8, color: '' }} />
-                  <Switch
-                    checked={isProductHasVariants}
-                    onChange={(checked) => {
-                      setIsProductHasVariants(checked)
-                      setVariants([])
-                      setAttributes([{ option: '', values: [] }])
-                    }}
-                  />
-                </Row>
-                <div>
-                  Thêm mới thuộc tính giúp sản phẩm có nhiều sự lựa chọn, như kích cỡ hay màu sắc
-                </div>
-              </div>
-              <div
-                style={{
-                  display: isProductHasVariants ? '' : 'none',
-                  width: '100%',
-                  marginTop: 35,
-                }}
-              >
+              <div style={{ width: '100%', marginTop: 35 }}>
                 <div
                   style={{
                     marginBottom: 16,
@@ -1571,44 +1472,6 @@ export default function ProductAdd() {
                   />
                 </div>
               </div>
-
-              <Col
-                xs={24}
-                sm={24}
-                md={24}
-                lg={24}
-                xl={24}
-                style={{
-                  display: isProductHasVariants && 'none',
-                }}
-              >
-                Hình ảnh
-                <div>
-                  {location.state ? (
-                    <UploadImageWithEditProduct />
-                  ) : (
-                    <Upload.Dragger
-                      name="files"
-                      listType="picture"
-                      multiple
-                      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                      onChange={(info) => {
-                        if (info.file.status !== 'done') info.file.status = 'done'
-                        let imagesProductNew = info.fileList.map((e) => e.originFileObj)
-                        setFilesProduct([...imagesProductNew])
-                      }}
-                    >
-                      <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                      </p>
-                      <p className="ant-upload-text">
-                        Nhấp hoặc kéo tệp vào khu vực này để tải lên
-                      </p>
-                      <p className="ant-upload-hint">Hỗ trợ định dạng .PNG, .JPG, .TIFF, .EPS</p>
-                    </Upload.Dragger>
-                  )}
-                </div>
-              </Col>
             </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Thông số sản phẩm" key="4">
