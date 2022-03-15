@@ -285,11 +285,11 @@ export default function Product() {
       <>
         <Permission permissions={[PERMISSIONS.cap_nhat_nhom_san_pham]}>
           <Button size="large" onClick={toggle} type="primary">
-            Phân loại nhóm sản phẩm
+            Cập nhật nhóm sản phẩm
           </Button>
         </Permission>
         <Modal
-          title="Phân loại nhóm sản phẩm"
+          title="Cập nhật nhóm sản phẩm"
           centered
           width={500}
           footer={null}
