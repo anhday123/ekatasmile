@@ -509,11 +509,12 @@ module.exports._update = async (req, res, next) => {
       ])
       .toArray()
 
+    let shop = req.headers[`shop`]
     let business = await client
       .db(SDB)
       .collection('Business')
-      .findOne({ username: req.user.username })
-    user._business = business
+      .findOne({ prefix: shop.toLowerCase() })
+    user['_business'] = business
 
     let accessToken = await jwt.createToken(user, 30 * 24 * 60 * 60)
     res.send({ success: true, accessToken: accessToken, data: req.body })
