@@ -2369,6 +2369,75 @@ module.exports._updateInventoryNote = async (req, res, next) => {
         }
         if (inventoryNote.balance == false && _inventoryNote.balance == true) {
             // Cân bằng lại số lượng sản phẩm trong kho theo số lượng thực tế
+            let locationMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Locations' });
+            let locationId = (locationMaxId && locationMaxId.value) || 0;
+            let InventoryMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Inventories' });
+            let inventoryId = (InventoryMaxId && InventoryMaxId.value) || 0;
+            let variantIds = [];
+            for (let i in _inventoryNote.products) {
+                if (_inventoryNote.products[i].quantity != _inventoryNote.products[i].real_quantity) {
+                    variantIds.push(_inventoryNote.products[i].variant_id);
+                }
+            }
+            let sortQuery = (() => {
+                if (req.user._business.price_recipe == 'LIFO') {
+                    return { create_date: -1 };
+                }
+                return { create_date: 1 };
+            })();
+            let locations = await client
+                .db(req.user.database)
+                .collection('Locations')
+                .find({
+                    variant_id: { $in: variantIds },
+                    branch_id: req.body.sale_location.branch_id,
+                    quantity: { $gte: 0 },
+                })
+                .sort(sortQuery)
+                .toArray();
+            let _locations = {};
+            locations.map((eLocation) => {
+                if (!_locations[eLocation.variant_id]) {
+                    _locations[eLocation.variant_id] = [];
+                }
+                if (_locations[eLocation.variant_id]) {
+                    _locations[eLocation.variant_id].push(eLocation);
+                }
+            });
+            let insertLocations = [];
+            let updateLocations = [];
+            _inventoryNote.products.map((eProduct) => {
+                if (eProduct.quantity > eProduct.real_quantity) {
+                }
+                if (eProduct.quantity < eProduct.real_quantity) {
+                    insertLocations.push({
+                        location_id: ++locationId,
+                        product_id: eProduct.product_id,
+                        variant_id: eProduct.variant_id,
+                        price_id:
+                            _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id,
+                        branch_id: (() => {
+                            if (order.import_location && order.import_location.branch_id) {
+                                return order.import_location.branch_id;
+                            }
+                            return '';
+                        })(),
+                        name: importLocation.name,
+                        quantity: eProduct.quantity,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: Number(req.user.user_id),
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                    });
+                }
+            });
             res.send({ success: true, message: 'Cân bằng kho thành công!' });
         }
         await client

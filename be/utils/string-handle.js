@@ -62,43 +62,48 @@ let stringHandle = (text, options) => {
                 .replace(/Đ/g, 'D');
         }
         if (options.getFirstLetter) {
-            text = text.replace(/[^a-zA-Z0-9\s]/g, '');
-            text = text.split(' ');
-            text = text.map((e) => {
-                if (/[0-9]/g.test(e)) {
-                    return e;
-                }
-                return e[0];
-            });
+            text = text
+                .replace(/[^a-zA-Z0-9\s]/g, '')
+                .replace(/\s{1,}/g, ' ')
+                .split(' ')
+                .map((e) => {
+                    if (/[0-9]/g.test(e)) {
+                        return e;
+                    }
+                    return e[0];
+                });
             text = text.join('');
         }
         if (options.createSlug) {
             text = text
-                .trim()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
                 .replace(/đ/g, 'd')
-                .replace(/Đ/g, 'D');
-            text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
-            text = text.replace(/\s{1,}/g, '-');
-            text = text.toLowerCase();
+                .replace(/Đ/g, 'D')
+                .replace(/[^a-zA-Z0-9]/g, ' ')
+                .trim()
+                .replace(/\s{1,}/g, '-')
+                .toLowerCase();
         }
         if (options.createRegexQuery) {
             text = text
-                .trim()
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
                 .replace(/đ/g, 'd')
-                .replace(/Đ/g, 'D');
-            text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
-            text = text.replace(/\s{1,}/g, '(.*?)');
-            text = text.toLowerCase();
+                .replace(/Đ/g, 'D')
+                .replace(/[^a-zA-Z0-9]/g, '-')
+                .trim()
+                .replace(/-{1,}/g, '(.*?)')
+                .toLowerCase();
         }
         if (options.removeSpecialCharacter) {
             text = text.replace(/[^a-zA-Z0-9\s]/g, ' ');
         }
         if (options.replaceSpaceWithHyphen) {
-            text = text.trim().replace(/(\s{1,}-{1,}\s{1,})/g, '-');
+            text = text
+                .replace(/[^a-zA-Z0-9]/g, ' ')
+                .trim()
+                .replace(/\s{1,}/g, '-');
         }
         if (options.removeSpace) {
             text = text.replace(/\s/g, '');
