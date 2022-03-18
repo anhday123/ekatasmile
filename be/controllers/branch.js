@@ -126,7 +126,7 @@ module.exports._update = async (req, res, next) => {
     if (!branch) {
       throw new Error(`400: Chi nhánh không tồn tại!`)
     }
-    if (req.body.name) {
+    if (req.body.name != undefined) {
       let check = await client
         .db(req.user.database)
         .collection(`Branchs`)
@@ -135,7 +135,7 @@ module.exports._update = async (req, res, next) => {
           name: req.body.name,
         })
       if (check) {
-        throw new Error(`400: Chi nhánh đã tồn tại!`)
+        throw new Error(`400: Tên chi nhánh đã tồn tại!`)
       }
     }
     delete req.body._id
