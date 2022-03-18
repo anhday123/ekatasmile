@@ -38,7 +38,9 @@ module.exports._get = async (req, res, next) => {
 module.exports._create = async (req, res, next) => {
     try {
         if (req.body.type != 'Warehouse' && req.body.type != 'Store') throw new Error('400: type không hợp lệ');
-        req.body.name = String(req.body.name).trim().toUpperCase();
+        req.body.name = String(req.body.name || '')
+            .trim()
+            .toUpperCase();
         req.body.email = String(req.body.email || '')
             .trim()
             .toLowerCase();
@@ -70,7 +72,7 @@ module.exports._create = async (req, res, next) => {
             website: req.body.website || '',
             latitude: req.body.latitude || '',
             longitude: req.body.longitude || '',
-            warehouse_type: req.body.type,
+            type: req.body.type,
             address: req.body.address || '',
             ward: req.body.ward || '',
             district: req.body.district || '',
@@ -81,7 +83,7 @@ module.exports._create = async (req, res, next) => {
             updater_id: req.user.user_id,
             active: true,
             slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
-            slug_warehouse_type: removeUnicode(String(req.body.warehouse_type || 'Sở hữu'), true).toLowerCase(),
+            slug_type: removeUnicode(String(req.body.type || 'Cửa hàng'), true).toLowerCase(),
             slug_address: removeUnicode(String(req.body.address), true).toLowerCase(),
             slug_ward: removeUnicode(String(req.body.ward), true).toLowerCase(),
             slug_district: removeUnicode(String(req.body.district), true).toLowerCase(),
@@ -138,7 +140,7 @@ module.exports._update = async (req, res, next) => {
             website: _branch.website,
             latitude: _branch.latitude,
             longitude: _branch.longitude,
-            warehouse_type: _branch.warehouse_type,
+            type: _branch.type,
             address: _branch.address,
             ward: _branch.ward,
             district: _branch.district,
@@ -148,12 +150,12 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             active: _branch.active,
-            slug_name: removeUnicode(String(_branch.name), true).toLowerCase(),
-            slug_warehouse_type: removeUnicode(String(_branch.warehouse_type), true).toLowerCase(),
-            slug_address: removeUnicode(String(_branch.address), true).toLowerCase(),
-            slug_ward: removeUnicode(String(_branch.ward), true).toLowerCase(),
-            slug_district: removeUnicode(String(_branch.district), true).toLowerCase(),
-            slug_province: removeUnicode(String(_branch.province), true).toLowerCase(),
+            slug_name: removeUnicode(String(_branch.name || ''), true).toLowerCase(),
+            slug_type: removeUnicode(String(_branch.type || ''), true).toLowerCase(),
+            slug_address: removeUnicode(String(_branch.address || ''), true).toLowerCase(),
+            slug_ward: removeUnicode(String(_branch.ward || ''), true).toLowerCase(),
+            slug_district: removeUnicode(String(_branch.district || ''), true).toLowerCase(),
+            slug_province: removeUnicode(String(_branch.province || ''), true).toLowerCase(),
         };
         req[`body`] = _branch;
         await branchService._update(req, res, next);
