@@ -1325,8 +1325,17 @@ export default function ProductAdd() {
                         size="large"
                         placeholder="Nhập tên thuộc tính"
                         defaultValue={e.option}
-                        onBlur={(e) => {
-                          attributes[index].option = e.target.value
+                        onBlur={(event) => {
+                          const optionName = event.target.value
+                          const option = attributes.find(
+                            (attr) => attr.option === optionName && optionName
+                          )
+                          if (option) {
+                            notification.warning({ message: 'Bạn đã thêm thuộc tính này rồi' })
+                            attributes[index].option = ''
+                            return
+                          }
+                          attributes[index].option = optionName
                         }}
                         style={{ width: '100%' }}
                       />
@@ -1363,17 +1372,15 @@ export default function ProductAdd() {
                               //add tag
                               let items = [...attributes]
 
-                              //check value add này đã tồn tại chưa
-                              for (let i = 0; i < items.length; ++i) {
-                                for (let j = 0; j < items[i].values.length; ++j) {
-                                  if (items[i].values[j] === e) {
-                                    notification.error({
-                                      message: 'Giá trị đã có!',
-                                    })
-                                    return
-                                  }
-                                }
-                              }
+                              // //check value add này đã tồn tại chưa
+                              // for (let i = 0; i < items.length; ++i) {
+                              //   for (let j = 0; j < items[i].values.length; ++j) {
+                              //     if (items[i].values[j] === e) {
+                              //       notification.error({ message: 'Giá trị đã có!' })
+                              //       return
+                              //     }
+                              //   }
+                              // }
 
                               //trường hợp nhập nhiều variant bởi dấu phẩy
                               //ví dụ: color, size, quantity
@@ -1425,19 +1432,8 @@ export default function ProductAdd() {
                   })}
                 </div>
 
-                <div
-                  style={{
-                    marginBottom: 16,
-                    border: '1px solid #f0f0f0',
-                    width: '100%',
-                  }}
-                >
-                  <div
-                    style={{
-                      borderBottom: '1px solid #f0f0f0',
-                      width: '100%',
-                    }}
-                  >
+                <div style={{ marginBottom: 16, border: '1px solid #f0f0f0', width: '100%' }}>
+                  <div style={{ borderBottom: '1px solid #f0f0f0', width: '100%' }}>
                     <div style={{ width: '100%', padding: 16 }}>
                       <h3 style={{ marginBottom: 0, fontWeight: 700 }}>Thuộc tính</h3>
                     </div>

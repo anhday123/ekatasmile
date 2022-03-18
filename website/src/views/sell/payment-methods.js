@@ -155,24 +155,22 @@ export default function PaymentMethods({
           </Row>
 
           <Row wrap={false} justify="space-between" align="middle">
-            {
-              <Select
-                value={payments.map((e) => e.method)}
-                placeholder="Chọn hình thức thanh toán"
-                style={{ width: '100%' }}
-                mode="multiple"
-                allowClear
-                onSelect={(value) => console.log(value)}
-                onDeselect={(value) => console.log(value)}
-                onChange={_addPaymentMethod}
-              >
-                {paymentsMethod.map((paymentMethod, index) => (
-                  <Select.Option value={paymentMethod} key={index}>
-                    {paymentMethod}
-                  </Select.Option>
-                ))}
-              </Select>
-            }
+            <Select
+              value={payments.map((e) => e.method)}
+              placeholder="Chọn hình thức thanh toán"
+              style={{ width: '100%' }}
+              mode="multiple"
+              allowClear
+              onSelect={(value) => console.log(value)}
+              onDeselect={(value) => console.log(value)}
+              onChange={_addPaymentMethod}
+            >
+              {paymentsMethod.map((paymentMethod, index) => (
+                <Select.Option value={paymentMethod} key={index}>
+                  {paymentMethod}
+                </Select.Option>
+              ))}
+            </Select>
           </Row>
           <Space direction="vertical" style={{ width: '100%' }}>
             {payments.map((payment, index) => {
@@ -192,15 +190,10 @@ export default function PaymentMethods({
                     inputValue(value, index)
                   }}
                   defaultValue={payment.value}
-                  prefix={
-                    <div style={{ position: "absolute", left: 60, top: 5, zindex: 999 }}>/400</div>
-                  }
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                  style={{ width: 230., position: "relative" }}
+                  style={{ width: 230, position: 'relative' }}
                   min={0}
-                  maxLength={400}
-                  max={400}
                   placeholder="Tiền khách trả"
                   bordered={false}
                 />

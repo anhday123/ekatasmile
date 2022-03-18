@@ -117,7 +117,6 @@ export default function Sell() {
   const [customers, setCustomers] = useState([])
 
   const [infoBranch, setInfoBranch] = useState({})
-  const [form] = Form.useForm()
 
   //object invoice
   const initInvoice = {
@@ -149,10 +148,6 @@ export default function Sell() {
   )
   const [indexInvoice, setIndexInvoice] = useState(0)
   const [activeKeyTab, setActiveKeyTab] = useState(initInvoice.id)
-
-  const [valueDefShippingUnit, setValuDefaulf] = useState(
-    invoices[indexInvoice].shipping || undefined
-  )
 
   const _deleteInvoiceAfterCreateOrder = () => {
     const invoicesNew = [...invoices]
@@ -200,7 +195,7 @@ export default function Sell() {
   }
 
   const _addProductToCartInvoice = (product) => {
-    const btn = (
+    const buttonsBottom = (
       <Row>
         <Col span={8}>
           <ModalQuantityProductInStores btn="Xem sản phẩm ở chi nhánh khác" product={product} />
@@ -336,10 +331,8 @@ export default function Sell() {
         notification.warning({
           // message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
           message: 'Sản phẩm không đủ số lượng để bán, bạn muốn tạo đơn hàng đặt trước ?',
-          btn,
-          style: {
-            width: 500,
-          },
+          buttonsBottom,
+          style: { width: 500 },
         })
     }
   }
@@ -414,11 +407,6 @@ export default function Sell() {
   const _editInvoice = (attribute, value) => {
     const invoicesNew = [...invoices]
     invoicesNew[indexInvoice][attribute] = value
-    // mynote
-    if (value) {
-      form.setFieldsValue({ dvDef: valueDefShippingUnit })
-      setValuDefaulf(shippingsMethod[0].name)
-    }
 
     // tổng tiền của tất cả sản phẩm
     invoicesNew[indexInvoice].sumCostPaid = invoicesNew[indexInvoice].order_details.reduce(
@@ -731,6 +719,7 @@ export default function Sell() {
     const [sku, setSku] = useState(product.sku || '')
     const [variant, setVariant] = useState(null)
     const [variants, setVariants] = useState([])
+    const [loading, setLoading] = useState(false)
 
     const toggle = () => {
       setVisible(!visible)
@@ -739,18 +728,20 @@ export default function Sell() {
 
     const _getVariantsByProductId = async () => {
       try {
+        setLoading(true)
         const res = await getProducts({
           branch_id: infoBranch.branch_id || '',
           merge: true,
           detach: true,
           product_id: product.product_id,
         })
-        console.log(res)
         if (res.status === 200) {
           const variantList = res.data.data.map((e) => e.variants)
           setVariants(variantList.filter((variant) => variant.total_quantity))
         }
+        setLoading(false)
       } catch (error) {
+        setLoading(false)
         console.log(error)
       }
     }
@@ -794,7 +785,7 @@ export default function Sell() {
         <Modal
           cancelText="Hủy bỏ"
           okText="Cập nhật"
-          title="Cập nhật phiên bản"
+          title="Cập nhật thuộc tính"
           onCancel={() => {
             toggle()
             setSku(product.sku || '')
@@ -803,17 +794,25 @@ export default function Sell() {
           visible={visible}
         >
           <div>
-            Tên phiên bản
+            Tên thuộc tính
             <Select
+              loading={loading}
               showSearch
               optionFilterProp="children"
               value={sku}
               onChange={(value) => {
-                setSku(value)
-                const variantFind = variants.find((e) => e.sku === value)
-                setVariant(variantFind)
+                const skuProduct = invoices[indexInvoice].order_details.find((v) => v.sku === value)
+                if (skuProduct)
+                  notification.warning({
+                    message: 'Đã có sản phẩm này ở trong giỏ hàng, vui lòng chọn sản phẩm khác',
+                  })
+                else {
+                  setSku(value)
+                  const variantFind = variants.find((e) => e.sku === value)
+                  setVariant(variantFind)
+                }
               }}
-              placeholder="Chọn tên phiên bản"
+              placeholder="Chọn tên thuộc tính"
               style={{ width: '100%' }}
             >
               {variants.map((variant, index) => (
@@ -1158,8 +1157,13 @@ export default function Sell() {
   const _getShippingsMethod = async () => {
     try {
       const res = await getShippings()
-      if (res.status === 200) setShippingsMethod(res.data.data)
-      form.setFieldsValue({ dvDef: res.data.data[0].shipping_company_id })
+      if (res.status === 200) {
+        setShippingsMethod(res.data.data)
+        if (!invoices[indexInvoice].shipping) {
+          const shippingDefault = res.data.data.find((s) => s.default && s.active)
+          if (shippingDefault) _editInvoice('shipping', shippingDefault)
+        }
+      }
     } catch (error) {
       console.log(error)
     }
@@ -1463,7 +1467,7 @@ export default function Sell() {
                     <div className={styles['header-stt']}>STT</div>
                     <div className={styles['header-remove']}></div>
                     <div className={styles['header-name']}>Tên sản phẩm</div>
-                    <div className={styles['header-sku']}>Tên phiên bản</div>
+                    <div className={styles['header-sku']}>Tên thuộc tính</div>
                     <div className={styles['header-unit']}>Đơn vị</div>
                   </Row>
                   <div className={styles['header-quantity']}>Số lượng</div>
@@ -1850,7 +1854,6 @@ export default function Sell() {
                 style={{ marginRight: 10 }}
                 onChange={(checked) => {
                   _editInvoice('isDelivery', checked)
-                  _editInvoice('shipping', null)
                   _editInvoice('deliveryCharges', 0)
                   _editInvoice('billOfLadingCode', '')
                   _editInvoice('prepay', 0)
@@ -1946,26 +1949,24 @@ export default function Sell() {
                     marginBottom: 10,
                   }}
                 >
-                  <Form.Item name="dvDef">
-                    <Select
-                      value={valueDefShippingUnit}
-                      onChange={(value) => _editInvoice('shipping', value)}
-                      bordered={false}
-                      style={{ width: '100%' }}
-                      placeholder="Chọn đơn vị vận chuyển (nếu có)"
-                      optionFilterProp="children"
-                      showSearch
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      {shippingsMethod.map((shipping, index) => (
-                        <Select.Option value={shipping.shipping_company_id} index={index}>
-                          {shipping.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                  <Select
+                    value={invoices[indexInvoice].shipping?.shipping_company_id}
+                    onChange={(value) => {
+                      const shipping = shippingsMethod.find((s) => s.shipping_company_id == value)
+                      if (shipping) _editInvoice('shipping', shipping)
+                    }}
+                    bordered={false}
+                    style={{ width: '100%' }}
+                    placeholder="Chọn đơn vị vận chuyển (nếu có)"
+                    optionFilterProp="children"
+                    showSearch
+                  >
+                    {shippingsMethod.map((shipping, index) => (
+                      <Select.Option value={shipping.shipping_company_id} index={index}>
+                        {shipping.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
               </Row>
               <Row justify="space-between" wrap={false} align="middle">

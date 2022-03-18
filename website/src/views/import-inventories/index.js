@@ -547,7 +547,7 @@ export default function ImportInventories() {
             fileTemplated={
               fileTemplated.length
                 ? fileTemplated
-                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/14/9c7ace44-309d-434e-a360-9a6d179a873d/InventoryImport.xlsx'
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/18/9fa1d6d7-2cab-4bac-b99f-3f4667c72e56/InventoryImport.xlsx'
             }
             customFileTemplated={fileTemplated.length ? true : false}
           />

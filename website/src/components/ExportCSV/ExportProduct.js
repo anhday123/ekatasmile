@@ -74,33 +74,34 @@ export default function ExportProduct({ fileName, name, getProductsExport }) {
             'Xuất xứ': '',
             'Tình trạng': 'Mới',
             'Mô tả': e.description,
+            'Trạng thái': e.active ? 'Mở bán' : 'Ngừng bán',
           }
           e.attributes.map(
             (attribute, index) => (objProduct[`Thuộc tính ${index + 1}`] = attribute.option)
           )
-          if (e.active)
-            e.variants.map((v) => {
-              let locationImport = {}
-              v.locations.map((k) => {
-                locationImport['Nơi nhập'] = k.type
-                locationImport['Tên nơi nhập'] = k.name
-                locationImport['Số lượng nhập'] = k.quantity
-              })
 
-              dataExport.push({
-                ...objProduct,
-                'Tên phiên bản': v.title || '',
-                'Mã phiên bản': v.sku || '',
-                'Hình ảnh': v.image.join(', '),
-                'Giá nhập hàng': v.import_price || '',
-                'Giá vốn': v.base_price || '',
-                'Giá bán lẻ': v.sale_price || '',
-                'Giá bán sỉ': '',
-                'Số lượng sỉ': v.total_quantity || '',
-                'Số địa điểm nhập': v.locations.length || 0,
-                ...locationImport,
-              })
+          e.variants.map((v) => {
+            let locationImport = {}
+            v.locations.map((k) => {
+              locationImport['Nơi nhập'] = k.type
+              locationImport['Tên nơi nhập'] = k.name
+              locationImport['Số lượng nhập'] = k.quantity
             })
+
+            dataExport.push({
+              ...objProduct,
+              'Tên phiên bản': v.title || '',
+              'Mã phiên bản': v.sku || '',
+              'Hình ảnh': v.image.join(', '),
+              'Giá nhập hàng': v.import_price || '',
+              'Giá vốn': v.base_price || '',
+              'Giá bán lẻ': v.sale_price || '',
+              'Giá bán sỉ': '',
+              'Số lượng sỉ': v.total_quantity || '',
+              'Số địa điểm nhập': v.locations.length || 0,
+              ...locationImport,
+            })
+          })
         })
 
         exportToCSV(dataExport, fileName)

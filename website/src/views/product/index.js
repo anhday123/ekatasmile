@@ -31,7 +31,7 @@ import {
 import Permission from 'components/permission'
 import SettingColumns from 'components/setting-columns'
 import columnsProduct from './columns'
-import ExportProduct from 'components/ExportCSV/ExportProduct'
+import exportToCSV from 'components/ExportCSV/export'
 import TitlePage from 'components/title-page'
 import ImportCSV from 'components/ImportCSV'
 
@@ -43,6 +43,7 @@ import {
   DeleteOutlined,
   PlusCircleFilled,
   CloseCircleFilled,
+  ToTopOutlined,
 } from '@ant-design/icons'
 
 //apis
@@ -231,18 +232,69 @@ export default function Product() {
     }, 750)
   }
 
-  const _getProductsToExport = async () => {
+  const _getProductsToExport = async (query) => {
     try {
-      setLoading(true)
-      const res = await getProducts({ branch: true, branch_id: branchIdApp })
+      const res = await getProducts({ branch: true, ...query })
       console.log(res)
-      setLoading(false)
-      if (res.status === 200) return res.data.data
-      return []
+
+      if (res.status === 200) {
+        let dataExport = []
+
+        res.data.data.map((e) => {
+          const findCategory = categories.find((c) => c.category_id === e.category_id)
+
+          const findSupplier = suppliers.find((s) => s.supplier_id === e.supplier_id)
+
+          let objProduct = {
+            'Tên sản phẩm': e.name || '',
+            'Mã sản phẩm': e.sku || '',
+            'Loại sản phẩm': findCategory ? findCategory.name : '',
+            'Nhà cung cấp': findSupplier ? findSupplier.name : '',
+            'Chiều dài': e.length,
+            'Chiều rộng': e.width,
+            'Chiều cao': e.height,
+            'Cân nặng': e.weight,
+            'Đơn vị': e.unit,
+            Thuế: 'Có',
+            'Bảo hành': e.waranties && e.waranties.length ? 'Có' : 'Không',
+            'Thương hiệu': '',
+            'Xuất xứ': '',
+            'Tình trạng': 'Mới',
+            'Mô tả': e.description,
+            'Trạng thái': e.active ? 'Mở bán' : 'Ngừng bán',
+          }
+          e.attributes.map(
+            (attribute, index) => (objProduct[`Thuộc tính ${index + 1}`] = attribute.option)
+          )
+
+          e.variants.map((v) => {
+            let locationImport = {}
+            v.locations.map((k) => {
+              locationImport['Nơi nhập'] = k.type
+              locationImport['Tên nơi nhập'] = k.name
+              locationImport['Số lượng nhập'] = k.quantity
+            })
+
+            dataExport.push({
+              ...objProduct,
+              'Tên phiên bản': v.title || '',
+              'Mã phiên bản': v.sku || '',
+              'Hình ảnh': v.image.join(', '),
+              'Giá nhập hàng': v.import_price || '',
+              'Giá vốn': v.base_price || '',
+              'Giá bán lẻ': v.sale_price || '',
+              'Giá bán sỉ': '',
+              'Số lượng sỉ': v.total_quantity || '',
+              'Số địa điểm nhập': v.locations.length || 0,
+              ...locationImport,
+            })
+          })
+        })
+
+        exportToCSV(dataExport, 'Danh sách sản phẩm')
+      }
     } catch (error) {
       console.log(error)
-      setLoading(false)
-      return []
     }
   }
 
@@ -352,6 +404,75 @@ export default function Product() {
               Cập nhật
             </Button>
           </Row>
+        </Modal>
+      </>
+    )
+  }
+
+  const ModalOptionExportProducts = () => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [optionExport, setOptionExport] = useState()
+    const [loading, setLoading] = useState(false)
+
+    const handleExportProducts = async () => {
+      setLoading(true)
+      if (optionExport === 'all') await _getProductsToExport()
+      if (optionExport === 'onePage')
+        await _getProductsToExport({ page: paramsFilter.page, page_size: paramsFilter.page_size })
+      if (optionExport === 'filters') {
+        delete paramsFilter.page
+        delete paramsFilter.page_size
+        await _getProductsToExport({ ...paramsFilter })
+      }
+      setLoading(false)
+      toggle()
+    }
+
+    useEffect(() => {
+      if (!visible) setOptionExport()
+    }, [visible])
+
+    return (
+      <>
+        <Button size="large" onClick={toggle} type="primary" icon={<ToTopOutlined />}>
+          Export sản phẩm
+        </Button>
+
+        <Modal
+          onOk={handleExportProducts}
+          onCancel={toggle}
+          title="Tùy chọn export danh sách sản phẩm"
+          visible={visible}
+          footer={
+            <Row justify="end">
+              <Space>
+                <Button onClick={toggle}>Đóng</Button>
+                <Button
+                  disabled={optionExport ? false : true}
+                  loading={loading}
+                  onClick={handleExportProducts}
+                  type="primary"
+                >
+                  Export
+                </Button>
+              </Space>
+            </Row>
+          }
+        >
+          <div>Tùy chọn export sản phẩm</div>
+          <Select
+            value={optionExport}
+            onChange={setOptionExport}
+            style={{ width: 400 }}
+            placeholder="Chọn tùy chọn export sản phẩm"
+          >
+            <Select.Option value="all">Export tất cả sản phẩm</Select.Option>
+            <Select.Option value="onePage">Export những sản phẩm trên 1 trang</Select.Option>
+            <Select.Option value="filters">
+              Export những sản phẩm theo chế độ lọc đang chọn
+            </Select.Option>
+          </Select>
         </Modal>
       </>
     )
@@ -692,11 +813,7 @@ export default function Product() {
               fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
               reload={_getProducts}
             />
-            <ExportProduct
-              fileName="Products"
-              name="Export Sản Phẩm"
-              getProductsExport={_getProductsToExport}
-            />
+            <ModalOptionExportProducts />
             <Permission permissions={[PERMISSIONS.them_san_pham]}>
               <Link to={ROUTES.PRODUCT_ADD}>
                 <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
