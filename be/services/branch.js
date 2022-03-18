@@ -391,9 +391,8 @@ module.exports._update = async (req, res, next) => {
         // } catch (err) {
         //     console.log(err);
         // }
-
         let [user] = await client
-            .db(DB)
+            .db(req.user.database)
             .collection(`Users`)
             .aggregate([
                 { $match: { user_id: Number(req.user.user_id) } },
