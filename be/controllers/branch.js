@@ -126,18 +126,18 @@ module.exports._update = async (req, res, next) => {
     if (!branch) {
       throw new Error(`400: Chi nhánh không tồn tại!`)
     }
-    if (req.body.name != undefined) {
-      let check = await client
-        .db(req.user.database)
-        .collection(`Branchs`)
-        .findOne({
-          branch_id: { $ne: req.params.branch_id },
-          name: req.body.name,
-        })
-      if (check) {
-        throw new Error(`400: Tên chi nhánh đã tồn tại!`)
-      }
-    }
+    // if (req.body.name != undefined) {
+    //   let check = await client
+    //     .db(req.user.database)
+    //     .collection(`Branchs`)
+    //     .findOne({
+    //       branch_id: { $ne: req.params.branch_id },
+    //       name: req.body.name,
+    //     })
+    //   if (check) {
+    //     throw new Error(`400: Tên chi nhánh đã tồn tại!`)
+    //   }
+    // }
     delete req.body._id
     delete req.body.business_id
     delete req.body.branch_id
