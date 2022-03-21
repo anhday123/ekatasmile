@@ -35,3 +35,5 @@
 # Deploy
 
 -   Đưa folder lên server qua git/ssh, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
+
+scp -r ./out root@103.81.87.65:/var/www/gaucho/website-online/out
