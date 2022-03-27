@@ -9,104 +9,55 @@ const { removeUnicode } = require('../utils/string-handle');
 
 let getOverviewC = async (req, res, next) => {
     try {
-        let orderQuery = {};
-        let todayQuery = {};
-        let yesterdayQuery = {};
-        if (req.user) {
-            orderQuery['business_id'] = Number(req.user.business_id);
-            todayQuery['business_id'] = Number(req.user.business_id);
-            yesterdayQuery['business_id'] = Number(req.user.business_id);
-        }
-        if (req.query.business_id) {
-            orderQuery['business_id'] = Number(req.query.business_id);
-            todayQuery['business_id'] = Number(req.query.business_id);
-            yesterdayQuery['business_id'] = Number(req.query.business_id);
-        }
-        req.query = createTimeline(req.query);
-        if (req.query.from_date) {
-            if (!orderQuery['create_date']) {
-                orderQuery['create_date'] = {};
-            }
-            if (orderQuery['create_date']) {
-                orderQuery.create_date['$gte'] = req.query.from_date;
-            }
-        }
-        if (req.query.to_date) {
-            if (!orderQuery['create_date']) {
-                orderQuery['create_date'] = {};
-            }
-            if (orderQuery['create_date']) {
-                orderQuery.create_date['$lte'] = req.query.to_date;
-            }
-        }
-        todayQuery[`create_date`] = {};
-        todayQuery.create_date['$gte'] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 00:00:00`));
-        todayQuery.create_date['$lte'] = new Date(moment.tz(timezone).format(`YYYY-MM-DD 23:59:59`));
+        let page = Number(req.query.page || 1);
+        let page_size = Number(req.query.page_size || 50);
+        req.query = createTimeline({ ...req.query, today: true });
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .aggregate([
+                { $sort: { sale_quantity: -1 } },
+                { $skip: (page - 1) * page_size },
+                { $limit: page_size },
+                {
+                    lookup: {
+                        from: 'Attributes',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                        as: 'attributes',
+                    },
+                },
+                {
+                    lookup: {
+                        from: 'Variants',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                        as: 'variants',
+                    },
+                },
+            ])
+            .toArray();
 
-        yesterdayQuery[`create_date`] = {};
-        yesterdayQuery.create_date[`$gte`] = new Date(
-            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 00:00:00`)
-        );
-        yesterdayQuery.create_date[`$lte`] = new Date(
-            moment.tz(timezone).add(-1, `days`).format(`YYYY-MM-DD 23:59:59`)
-        );
-
-        let [orders] = await Promise.all([client.db(req.user.database).collection('Orders').find(orderQuery).toArray()]);
-        let total_base_price = 0;
-        let total_sales = 0;
-        let total_profit = 0;
-        orders.map((order) => {
-            if (order) {
-                order.order_details.map((detail) => {
-                    total_base_price += Number(detail.total_base_price || 0);
-                    total_sales += Number(detail.total_cost || 0);
-                    total_profit += Number(detail.final_cost || 0) - Number(detail.total_base_price || 0);
-                });
-            }
-        });
-        let timelines = [];
-        for (let i = 0; i < 24; i++) {
-            timelines.push(i);
-        }
-        let todayOrders = await Promise.all(
-            timelines.map((timeline) => {
-                return client
-                    .db(req.user.database)
-                    .collection('Orders')
-                    .find({ ...todayQuery, create_time: timeline })
-                    .count();
-            })
-        );
-        let _todayOrders = {};
-        for (let i in todayOrders) {
-            _todayOrders[`${String(i).padStart(2, '0')}:00`] = todayOrders[i];
-        }
-        let yesterdayOrder = await Promise.all(
-            timelines.map((timeline) => {
-                return client
-                    .db(req.user.database)
-                    .collection('Orders')
-                    .find({ ...yesterdayQuery, create_time: timeline })
-                    .count();
-            })
-        );
-        let _yesterdayOrder = {};
-        for (let i in yesterdayOrder) {
-            _yesterdayOrder[`${String(i).padStart(2, '0')}:00`] = yesterdayOrder[i];
-        }
-        res.send({
-            success: true,
-            data: {
-                order_quantity: orders.length,
-                total_base_price,
-                total_sales,
-                total_profit,
-                chart: [
-                    { name: 'Đơn hàng hôm nay', data: _todayOrders },
-                    { name: 'Đơn hàng hôm qua', data: _yesterdayOrder },
-                ],
-            },
-        });
+        let orders = await client
+            .db(req.user.database)
+            .collection('Orders')
+            .aggregate([
+                { $match: { create_date: { $gte: req.query.from_date } } },
+                { $match: { create_date: { $lte: req.query.to_date } } },
+                { $match: { bill_status: { $eq: 'COMPLETE' } } },
+                {
+                    $group: {
+                        _id: { bill_status: '$bill_status' },
+                        total_quantity: { $sum: 1 },
+                        total_base_price: { $sum: { $sum: '$order_detail.total_base_price' } },
+                        total_revenue: { $sum: '$total_cost' },
+                        total_profit: { $subtract: ['$total_cost', { $sum: '$order_detail.total_base_price' }] },
+                    },
+                },
+            ])
+            .toArray();
+        let result = { ...orders, ...{ products: products } };
+        res.send({ success: true, data: result });
     } catch (err) {
         next(err);
     }
