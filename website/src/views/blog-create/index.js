@@ -5,7 +5,6 @@ import { ArrowLeftOutlined, InfoCircleOutlined, InboxOutlined } from '@ant-desig
 import { Button, Input, Select, Table, Upload, message, notification, Form } from 'antd'
 import { useLocation, useHistory } from 'react-router-dom'
 import { ROUTES } from 'consts'
-
 // ckeditor
 import { CKEditor } from 'ckeditor4-react'
 // html react parser
@@ -45,7 +44,7 @@ export default function BlogCreate() {
   const _actionBlog = async () => {
     try {
       await form.validateFields()
-      const formData=form.getFieldsValue()
+      const formData = form.getFieldsValue()
       const body = {
         title: formData.title,
         content: content,
@@ -129,9 +128,8 @@ export default function BlogCreate() {
       setTitle(location.state.title)
       setImage(location.state.image || [])
       console.log(location.state)
-      form.setFieldsValue({title:location.state.title})
+      form.setFieldsValue({ title: location.state.title })
     }
-    
   }, [])
 
   return (
