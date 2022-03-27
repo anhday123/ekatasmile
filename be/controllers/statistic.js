@@ -9,15 +9,13 @@ const { removeUnicode } = require('../utils/string-handle');
 
 let getOverviewC = async (req, res, next) => {
     try {
-        let page = Number(req.query.page || 1);
-        let page_size = Number(req.query.page_size || 50);
         let products = await client
             .db(req.user.database)
             .collection('Products')
             .aggregate([
                 { $sort: { sale_quantity: -1 } },
-                { $skip: (page - 1) * page_size },
-                { $limit: page_size },
+                { $skip: 0 },
+                { $limit: 10 },
                 {
                     $lookup: {
                         from: 'Attributes',
