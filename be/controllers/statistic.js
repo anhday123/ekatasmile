@@ -1,5 +1,5 @@
 const moment = require(`moment-timezone`);
-const timezone = process.env.TIMEZONE;
+const TIMEZONE = process.env.TIMEZONE;
 const { ObjectId } = require('mongodb');
 const crypto = require(`crypto`);
 const client = require(`../config/mongodb`);
@@ -11,7 +11,6 @@ let getOverviewC = async (req, res, next) => {
     try {
         let page = Number(req.query.page || 1);
         let page_size = Number(req.query.page_size || 50);
-        req.query = createTimeline({ ...req.query, today: true });
         let products = await client
             .db(req.user.database)
             .collection('Products')
@@ -20,7 +19,7 @@ let getOverviewC = async (req, res, next) => {
                 { $skip: (page - 1) * page_size },
                 { $limit: page_size },
                 {
-                    lookup: {
+                    $lookup: {
                         from: 'Attributes',
                         let: { productId: '$product_id' },
                         pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
@@ -28,7 +27,7 @@ let getOverviewC = async (req, res, next) => {
                     },
                 },
                 {
-                    lookup: {
+                    $lookup: {
                         from: 'Variants',
                         let: { productId: '$product_id' },
                         pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
@@ -38,25 +37,69 @@ let getOverviewC = async (req, res, next) => {
             ])
             .toArray();
 
-        let orders = await client
+        let todayQuery = [
+            {
+                $match: {
+                    create_date: {
+                        $gte: moment().tz(TIMEZONE).startOf(`days`).format(),
+                        $lte: moment().tz(TIMEZONE).endOf(`days`).format(),
+                    },
+                },
+            },
+        ];
+        let [todayOrders] = await client
             .db(req.user.database)
             .collection('Orders')
             .aggregate([
-                { $match: { create_date: { $gte: req.query.from_date } } },
-                { $match: { create_date: { $lte: req.query.to_date } } },
+                ...todayQuery,
                 { $match: { bill_status: { $eq: 'COMPLETE' } } },
                 {
                     $group: {
                         _id: { bill_status: '$bill_status' },
                         total_quantity: { $sum: 1 },
-                        total_base_price: { $sum: { $sum: '$order_detail.total_base_price' } },
+                        total_base_price: { $sum: { $sum: '$order_details.total_base_price' } },
                         total_revenue: { $sum: '$total_cost' },
-                        total_profit: { $subtract: ['$total_cost', { $sum: '$order_detail.total_base_price' }] },
+                    },
+                },
+                {
+                    $addFields: {
+                        total_profit: { $subtract: ['$total_revenue', '$total_base_price'] },
                     },
                 },
             ])
             .toArray();
-        let result = { ...orders, ...{ products: products } };
+        let yesterdayQuery = [
+            {
+                $match: {
+                    create_date: {
+                        $gte: moment().tz(TIMEZONE).startOf(`days`).add(-1, 'days').format(),
+                        $lte: moment().tz(TIMEZONE).endOf(`days`).add(-1, 'days').format(),
+                    },
+                },
+            },
+        ];
+        let [yesterdayOrders] = await client
+            .db(req.user.database)
+            .collection('Orders')
+            .aggregate([
+                ...yesterdayQuery,
+                { $match: { bill_status: { $eq: 'COMPLETE' } } },
+                {
+                    $group: {
+                        _id: { bill_status: '$bill_status' },
+                        total_quantity: { $sum: 1 },
+                        total_base_price: { $sum: { $sum: '$order_details.total_base_price' } },
+                        total_revenue: { $sum: '$total_cost' },
+                    },
+                },
+                {
+                    $addFields: {
+                        total_profit: { $subtract: ['$total_revenue', '$total_base_price'] },
+                    },
+                },
+            ])
+            .toArray();
+        let result = { ...{ sales_today: todayOrders }, products: products };
         res.send({ success: true, data: result });
     } catch (err) {
         next(err);

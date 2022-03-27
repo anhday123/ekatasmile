@@ -2,6 +2,14 @@ const express = require(`express`);
 
 const router = express.Router();
 
+router.get('/check-working', (req, res, next) => {
+    try {
+        res.send({ success: true, message: 'API is working!' });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.use(`/authorization`, require(`./authorization`));
 router.use(`/appinfo`, require(`./appinfo`));
 router.use(`/business`, require(`./business`));
