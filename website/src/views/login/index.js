@@ -33,7 +33,7 @@ export default function Login() {
       console.log(res)
 
       //check account have verify
-      if (res.status === 400) {
+      if (res.status === 403) {
         await getOtp(body.username)
         notification.error({
           message: res.data.message || 'Đăng nhập thất bại, vui lòng thử lại',

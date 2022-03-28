@@ -23,7 +23,8 @@ export default function Login() {
   const _register = async (dataForm) => {
     try {
       /*check validated form*/
-      const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+      const regexPassword =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()?])[A-Za-z\d!@#$%^&*()?]{8,}$/
 
       if (!regexPassword.test(dataForm.password)) {
         notification.error({
