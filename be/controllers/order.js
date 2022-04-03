@@ -421,6 +421,7 @@ module.exports._create = async (req, res, next) => {
           if (detailQuantity == 0) {
             break
           }
+          console.log(location)
           let _basePrice = {
             location_id: location.location_id,
             branch_id: location.branch_id,
@@ -428,20 +429,10 @@ module.exports._create = async (req, res, next) => {
             variant_id: location.variant_id,
             price_id: location.price_id,
             quantity: 0,
-            base_price: (() => {
-              if (
-                _prices[location.price_id] &&
-                _prices[location.price_id].import_price
-              ) {
-                return _prices[location.price_id].import_price
-              }
-              return 0
-              throw new Error('400: Không tìm thấy giá vốn!')
-            })(),
+            base_price: location.import_price,
           }
           if (detailQuantity <= location.quantity) {
-            eDetail.total_base_price +=
-              detailQuantity * _prices[location.price_id].import_price
+            eDetail.total_base_price += detailQuantity * location.import_price
             _basePrice.quantity = detailQuantity
             location.quantity -= detailQuantity
             detailQuantity = 0
