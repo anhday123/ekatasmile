@@ -518,6 +518,17 @@ module.exports._create = async (req, res, next) => {
     }
     _order.total_base_price = total_base_price
     _order.total_profit = total_profit
+
+    // Xử lí thêm thuộc tính 'trackings' để truy vết tiến độ Vận chuyển
+    var enumTrackings = await client
+      .db(req.user.database)
+      .collection('EnumStatusShipping')
+      .find({})
+      .toArray()
+    for (var i = 0; i < enumTrackings.length; i++) {
+      enumTrackings[i].time_update = 'Chưa cập nhật'
+    }
+    _order.trackings = enumTrackings
     req['body'] = _order
     await orderService._create(req, res, next)
   } catch (err) {

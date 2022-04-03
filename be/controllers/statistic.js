@@ -13,8 +13,6 @@ let getOverviewTodayC = async (req, res, next) => {
     if (req.query.branch_id == undefined)
       throw new Error('400: Vui lòng truyền branch_id')
 
-    var to_day = moment().tz(TIMEZONE).hour(0).minutes(0).format()
-    console.log(to_day)
     var sum_order = await client
       .db(req.user.database)
       .collection('Orders')
