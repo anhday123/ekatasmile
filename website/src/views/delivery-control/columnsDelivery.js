@@ -12,8 +12,19 @@ const columnsDelivery = [
   },
   {
     title: 'Mã vận đơn',
-    dataIndex: 'shipping_code',
     key: 'shipping_code',
+  },
+  {
+    title: 'Đơn vị vận chuyển',
+    key: 'shipping_name',
+  },
+  {
+    title: 'Tổng COD',
+    key: 'total_cod',
+  },
+  {
+    title: 'Phí vận chuyển',
+    key: 'fee_shipping',
   },
   {
     title: 'Ngày đóng gói',
@@ -41,32 +52,9 @@ const columnsDelivery = [
     key: 'shipping_company_system',
   },
   {
-    title: 'Kênh bán hàng',
-    dataIndex: 'chanel',
-  },
-
-  {
-    title: 'Nhân viên',
-    key: 'employee',
-  },
-  {
-    title: 'Trạng thái đơn hàng',
+    title: 'Trạng thái giao hàng',
     dataIndex: 'bill_status',
     key: 'bill_status',
-  },
-  {
-    title: 'Thanh toán',
-    dataIndex: 'payment_status',
-    key: 'payment_status',
-  },
-  {
-    title: 'Khách phải trả',
-    dataIndex: 'final_cost',
-    key: 'final_cost',
-  },
-  {
-    title: 'Hành động',
-    key: 'action',
   },
 ]
 

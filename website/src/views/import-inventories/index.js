@@ -543,11 +543,11 @@ export default function ImportInventories() {
                 </div>
               </Row>
             }
-            fileName="InventoryImport"
+            fileName="nhap_kho_mau.xlsx"
             fileTemplated={
               fileTemplated.length
                 ? fileTemplated
-                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/18/9fa1d6d7-2cab-4bac-b99f-3f4667c72e56/InventoryImport.xlsx'
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/04/4029ef7f-ff28-4c0f-96eb-a024856ded01/nhap_kho_mau.xlsx'
             }
             customFileTemplated={fileTemplated.length ? true : false}
           />
@@ -628,7 +628,7 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={24} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
-              placeholder="Lọc theo nhân viên tạo đơn"
+              placeholder="Lọc theo người tạo đơn"
               allowClear
               showSearch
               size={FILTER_SIZE}
@@ -649,7 +649,7 @@ export default function ImportInventories() {
           </Col>
           <Col xs={24} sm={5} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
             <Select
-              placeholder="Lọc theo nhân viên xác nhận đơn"
+              placeholder="Lọc theo người xác nhận phiếu"
               allowClear
               showSearch
               size={FILTER_SIZE}

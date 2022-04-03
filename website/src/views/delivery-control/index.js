@@ -29,6 +29,7 @@ import {
   Affix,
   Drawer,
   Collapse,
+  Timeline,
 } from 'antd'
 
 //icons
@@ -89,29 +90,6 @@ export default function DeliveryControl() {
 
       setParamsFilter({ ...paramsFilter, page: 1 })
     }, 650)
-  }
-
-  const _deleteOrders = async (id) => {
-    try {
-      setLoading(true)
-      const res = await deleteOrders([id])
-      setLoading(false)
-      if (res.status === 200) {
-        if (res.data.success) {
-          notification.success({ message: 'Xóa đơn hàng thành công!' })
-          _getDeliveryOrders()
-        } else
-          notification.error({
-            message: res.data.message || 'Xóa đơn hàng thất bại, vui lòng thử lại',
-          })
-      } else
-        notification.error({
-          message: res.data.message || 'Xóa đơn hàng thất bại, vui lòng thử lại',
-        })
-    } catch (error) {
-      setLoading(false)
-      console.log(error)
-    }
   }
 
   const _onChangeDate = (date, dateString) => {
@@ -328,7 +306,7 @@ export default function DeliveryControl() {
         <Space>
           <SettingColumns
             columnsDefault={columnsDelivery}
-            nameColumn="columnsOrder"
+            nameColumn="columnsDelivery"
             columns={columns}
             setColumns={setColumns}
           />
@@ -493,126 +471,11 @@ export default function DeliveryControl() {
           expandedRowRender: (record) => {
             return (
               <div style={{ paddingTop: 17, paddingBottom: 17 }}>
-                <Row wrap={false}>
-                  <div
-                    style={{
-                      width: 'calc(100% - 165px)',
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: 5,
-                      border: '1px solid #E8EAEB',
-                      padding: '15px 0px',
-                      marginRight: 15,
-                      fontSize: 14.7,
-                    }}
-                  >
-                    <Row wrap={false}>
-                      <div style={{ width: '33.33333%', padding: '0px 25px' }}>
-                        <p style={{ fontWeight: 700, marginBottom: 6 }}>Chi tiết đơn giao hàng</p>
-                        <Row justify="space-between">
-                          <div style={{ color: '#747C87' }}>Mã đơn hàng:</div>
-                          <div>{record.order_id || ''}</div>
-                        </Row>
-                        <Row justify="space-between">
-                          <div style={{ color: '#747C87' }}>Ngày tạo:</div>
-                          <div>{moment(record.create_date).format('DD/MM/YYYY HH:mm')}</div>
-                        </Row>
-                        <Row justify="space-between">
-                          <div style={{ color: '#747C87' }}>Nguồn bán hàng:</div>
-                          <div>POS</div>
-                        </Row>
-                        <Row justify="space-between">
-                          <div style={{ color: '#747C87' }}>Nhân viên bán hàng:</div>
-                          <div>
-                            {record.employee
-                              ? `${record.employee.first_name} ${record.employee.last_name}`
-                              : ''}
-                          </div>
-                        </Row>
-                      </div>
-                      <div
-                        style={{
-                          width: '33.33333%',
-                          padding: '0px 25px',
-                          borderRight: '1px solid #E8EAEB',
-                        }}
-                      >
-                        <p style={{ fontWeight: 700, marginBottom: 6 }}>Khách hàng</p>
-                        <Row wrap={false} style={{ width: '100%' }}>
-                          <a>
-                            {record.customer
-                              ? `${record.customer.first_name} ${record.customer.last_name}`
-                              : ''}
-                          </a>
-                          <div style={{ margin: '0px 5px', display: !record.customer && 'none' }}>
-                            -
-                          </div>
-                          <div>{record.customer ? record.customer.phone : ''}</div>
-                        </Row>
-                        <div>
-                          {record.customer
-                            ? `${record.customer.address}, ${record.customer.district}, ${record.customer.province}`
-                            : ''}
-                        </div>
-                      </div>
-                      <div style={{ width: '33.33333%', padding: '0px 25px' }}>
-                        <div style={{ marginBottom: 10 }}>
-                          <p style={{ fontWeight: 700, marginBottom: 4 }}>Ghi chú đơn hàng</p>
-                          <div style={{ color: record.note ? '' : '#747C87' }}>
-                            {record.note ? record.note : 'Đơn hàng không có ghi chú'}
-                          </div>
-                        </div>
-                        <div>
-                          <p style={{ fontWeight: 700, marginBottom: 4 }}>Tags</p>
-                          <div
-                            style={{
-                              color: !record.tags || !record.tags.length ? '#747C87' : '',
-                            }}
-                          >
-                            {record.tags && record.tags.length
-                              ? record.tags.join(',')
-                              : 'Đơn hàng chưa có tag'}
-                          </div>
-                        </div>
-                      </div>
-                    </Row>
-                  </div>
-                  <Space direction="vertical">
-                    <Button
-                      style={{ width: 140 }}
-                      size="large"
-                      type="primary"
-                      onClick={async () => {
-                        console.log(record)
-                        setDataPrint({
-                          ...record,
-                          isDelivery: record.shipping_info ? true : false,
-                          deliveryCharges: record.shipping_info && (record.shipping_info.cod || 0),
-                          sumCostPaid: record.total_cost,
-                          discount:
-                            record.promotion && Object.keys(record.promotion).length
-                              ? record.promotion
-                              : null,
-                          moneyToBePaidByCustomer: record.final_cost,
-                          deliveryAddress: record.shipping_info,
-                          moneyGivenByCustomer: 0,
-                          prepay: 0,
-                        })
-                        await delay(500)
-                        handlePrint()
-                      }}
-                    >
-                      In đơn hàng
-                    </Button>
-                    <Button style={{ width: 140 }} size="large">
-                      Sửa đơn hàng
-                    </Button>
-                  </Space>
-                </Row>
                 <div className="table-product-in-order">
                   <Table
                     pagination={false}
                     size="small"
-                    style={{ width: '99%', marginTop: 30 }}
+                    style={{ width: '100%' }}
                     columns={columnsProduct}
                     dataSource={record.order_details}
                     summary={() => (
@@ -660,6 +523,24 @@ export default function DeliveryControl() {
                     )}
                   />
                 </div>
+                <Timeline>
+                  {record.trackings?.map((e) => {
+                    return (
+                      <Timeline.Item>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 18 }}>{e.label}</div>
+                          <div style={{ color: '#95a5a6' }}>
+                            <div>
+                              {e.time_update
+                                ? moment(e.time_update).format('LLLL')
+                                : 'Đang cập nhật'}
+                            </div>
+                          </div>
+                        </div>
+                      </Timeline.Item>
+                    )
+                  })}
+                </Timeline>
               </div>
             )
           },
@@ -718,17 +599,6 @@ export default function DeliveryControl() {
               render: (text, record) =>
                 record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
             }
-          if (column.key === 'employee')
-            return {
-              ...column,
-              sorter: (a, b) =>
-                compareCustom(
-                  a.employee ? `${a.employee.first_name} ${a.employee.last_name}` : '',
-                  a.employee ? `${b.employee.first_name} ${b.employee.last_name}` : ''
-                ),
-              render: (text, record) =>
-                record.employee ? `${record.employee.first_name} ${record.employee.last_name}` : '',
-            }
           if (column.key === 'bill_status')
             return {
               ...column,
@@ -738,27 +608,27 @@ export default function DeliveryControl() {
               },
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
-          if (column.key === 'payment_status')
-            return { ...column, sorter: (a, b) => compare(a, b, 'payment_status') }
-          if (column.key === 'final_cost')
+          if (column.key === 'shipping_code')
             return {
               ...column,
-              sorter: (a, b) => compare(a, b, 'final_cost'),
-              render: (text) => formatCash(text),
+              render: (text, record) =>
+                record.shipping_info && record.shipping_info?.tracking_number,
             }
-          if (column.key === 'action')
+          if (column.key === 'shipping_name')
             return {
               ...column,
-              render: (text, record) => (
-                <Popconfirm
-                  onConfirm={() => _deleteOrders(record.order_id)}
-                  title="Bạn có muốn xóa đơn giao hàng này không?"
-                >
-                  <Button type="primary" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
-              ),
+              render: (text, record) => record.shipping_info && record.shipping_info?.shipping_name,
             }
-
+          if (column.key === 'total_cod')
+            return {
+              ...column,
+              render: (text, record) => record.shipping_info && record.shipping_info?.cod,
+            }
+          if (column.key === 'fee_shipping')
+            return {
+              ...column,
+              render: (text, record) => record.shipping_info && record.shipping_info?.fee_shipping,
+            }
           return column
         })}
         style={{ width: '100%', marginTop: 25 }}

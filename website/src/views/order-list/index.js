@@ -27,6 +27,7 @@ import {
   notification,
   Col,
   Affix,
+  Tag,
 } from 'antd'
 
 //icons
@@ -620,33 +621,41 @@ export default function OrderList() {
               ...column,
               render: (text) => {
                 const status = statusOrder.find((s) => s.name === text)
-                let colorStatus = null
-                switch (status && status.name) {
-                  case 'DRAFT':
-                    colorStatus = '#fdaa3e'
-                    break
-                  case 'WAITING_FOR_SHIPPING':
-                    colorStatus = '#52c41a'
-                    break
-                  case 'COMPARED':
-                    colorStatus = '#5b6be8'
-                    break
-                  case 'SHIPPING':
-                    colorStatus = '#5b6be8'
-                    break
-                  case 'COMPLETE':
-                    colorStatus = '#5b6be8'
-                    break
-                  case 'CANCEL':
-                    colorStatus = 'red'
-                    break
+                let colorStatus = ''
+                if (status) {
+                  switch (status.name) {
+                    case 'DRAFT':
+                      colorStatus = '#fdaa3e'
+                      break
+                    case 'WAITING_FOR_SHIPPING':
+                      colorStatus = 'processing'
+                      break
+                    case 'COMPARED':
+                      colorStatus = '#5b6be8'
+                      break
+                    case 'SHIPPING':
+                      colorStatus = 'orange'
+                      break
+                    case 'COMPLETE':
+                      colorStatus = 'success'
+                      break
+                    case 'CANCEL':
+                      colorStatus = 'red'
+                      break
+                    default:
+                      colorStatus = 'purple'
+                  }
+                  return <Tag color={colorStatus}>{status.label}</Tag>
                 }
-                return <span style={{ color: colorStatus }}>{status ? status.label : ''}</span>
               },
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
-          if (column.key === 'payment_status')
-            return { ...column, sorter: (a, b) => compare(a, b, 'payment_status') }
+          if (column.key === 'payments_method')
+            return {
+              ...column,
+              render: (text, record) =>
+                record.payments && record.payments.map((payment) => payment.method).join(', '),
+            }
           if (column.key === 'final_cost')
             return {
               ...column,

@@ -102,7 +102,7 @@ export default function ReportInventory() {
             code: e.variant ? e.variant.code : '',
             name: e.variant ? e.variant.title : '',
             unit: e.variant ? e.variant.unit : '',
-            categories: e.product._categories ? e.product._categories : [],
+            categories: e.product ? e.product._categories : [],
           }
 
           e.warehouse.map((w) => {

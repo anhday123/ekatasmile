@@ -3,7 +3,7 @@ const columnsOrder = [
     title: 'STT',
     dataIndex: 'stt',
     key: 'stt',
-    width: 50
+    width: 50,
   },
   {
     title: 'Mã đơn hàng',
@@ -28,14 +28,13 @@ const columnsOrder = [
     key: 'employee',
   },
   {
-    title: 'Trạng thái đơn hàng',
+    title: 'Trạng thái',
     dataIndex: 'bill_status',
     key: 'bill_status',
   },
   {
-    title: 'Thanh toán',
-    dataIndex: 'payment_status',
-    key: 'payment_status',
+    title: 'Phương thức thanh toán',
+    key: 'payments_method',
   },
   {
     title: 'Khách phải trả',

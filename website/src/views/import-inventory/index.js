@@ -259,10 +259,13 @@ export default function ImportInventory() {
     },
     {
       title: 'Tổng tiền',
-      render: (text, record) => record.sumCost && formatCash(record.sumCost || 0),
+      render: (text, record) =>
+        record.sumCost && (
+          <div style={{ whiteSpace: 'nowrap' }}>{formatCash(record.sumCost || 0)}</div>
+        ),
     },
     {
-      width: 30,
+      width: 25,
       title: '',
       render: (data, record, index) => (
         <DeleteOutlined
@@ -920,7 +923,11 @@ export default function ImportInventory() {
           <Col span={8}>
             <div className={styles['block']} style={{ marginBottom: 30 }}>
               <div className={styles['title']}>Thông tin đơn hàng</div>
-              <Form.Item label="Mã đơn hàng" name="code">
+              <Form.Item
+                label="Mã đơn hàng"
+                name="code"
+                rules={[{ required: true, message: 'Vui lòng nhập mã đơn hàng!' }]}
+              >
                 <Input placeholder="Nhập mã đơn hàng" />
               </Form.Item>
               <Form.Item

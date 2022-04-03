@@ -12,19 +12,17 @@ import { Row, Col, Skeleton } from 'antd'
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
 
 //apis
-import { getStatistical } from 'apis/statis'
+import { getStatisticalToday, getStatisticalChart, getStatisticalProduct } from 'apis/statis'
+import moment from 'moment'
 
 const Overview = () => {
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
-  const [statistical, setStatistical] = useState({})
+  const [statisticalProduct, setStatisticalProduct] = useState({})
+  const [statisticalToday, setStatisticalToday] = useState({})
+  const [statisticalChart, setStatisticalChart] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
-  const [orderQuantity, setOrderQuantity] = useState(0)
-  const [totalBasePrice, setTotalBasePrice] = useState(0)
-  const [totalProfit, setTotalProfit] = useState(0)
-  const [totalSales, settTotalSales] = useState(0)
 
   const SALES = [
     {
@@ -48,14 +46,18 @@ const Overview = () => {
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
-      const res = await getStatistical({ branch_id: branchIdApp })
-      if (res.status === 200) {
-        setStatistical(res.data.data)
-        setOrderQuantity(res.data.data.order_quantity)
-        setTotalBasePrice(res.data.data.total_base_price)
-        setTotalProfit(res.data.data.total_profit)
-        settTotalSales(res.data.data.total_sales)
+      const resToday = await getStatisticalToday({ branch_id: branchIdApp })
+      if (resToday.status === 200) setStatisticalToday(resToday.data.data)
+
+      const resChart = await getStatisticalChart({ branch_id: branchIdApp })
+      if (resChart.status === 200) {
+        let data = {}
+        resChart.data.data.map((value) => (data[value.name] = value.data))
+        setStatisticalChart(data)
       }
+
+      const resProduct = await getStatisticalProduct({ branch_id: branchIdApp })
+      if (resProduct.status === 200) setStatisticalProduct(resProduct.data.data)
 
       setLoadingSkeleton(false)
     } catch (e) {
@@ -82,7 +84,7 @@ const Overview = () => {
       ) : (
         <div className={styles['card-overview']}>
           <div className={styles['dashboard_manager_balance_title']}>
-            <div>DOANH SỐ BÁN HÀNG</div>
+            <div>DOANH SỐ BÁN HÀNG HÔM NAY ({moment(new Date()).format('DD/MM/YYYY')})</div>
           </div>
           <Row justify="space-between" style={{ width: '100%' }}>
             {SALES.map((e, index) => (
@@ -94,10 +96,6 @@ const Overview = () => {
                   borderBottom: (index === 0 || index === 1) && '1px solid gray',
                 }}
               >
-                <Row wrap={false}>
-                  <p style={{ marginBottom: 0, fontSize: 17, marginRight: 7 }}>Hôm nay:</p>
-                  <p style={{ marginBottom: 0, fontSize: 17, color: '#5B6BE8' }}>{e.profitToday}</p>
-                </Row>
                 <Row justify="space-between" wrap={false} style={{ fontWeight: 600, fontSize: 18 }}>
                   <div>
                     <ShoppingCartOutlined /> {e.name}
@@ -105,10 +103,10 @@ const Overview = () => {
                   <InfoCircleOutlined />
                 </Row>
                 <span style={{ marginBottom: 0, fontWeight: 700, fontSize: 17, color: '#5B6BE8' }}>
-                  {(e.name === 'Tổng đơn hàng' && formatCash(orderQuantity)) ||
-                    (e.name === 'Tổng giá vốn' && formatCash(totalBasePrice)) ||
-                    (e.name === 'Tổng doanh thu' && formatCash(totalSales)) ||
-                    (e.name === 'Tổng lợi nhuận' && formatCash(totalProfit))}
+                  {(e.name === 'Tổng đơn hàng' && formatCash(statisticalToday?.sum_order)) ||
+                    (e.name === 'Tổng giá vốn' && formatCash(statisticalToday?.sum_origin_cost)) ||
+                    (e.name === 'Tổng doanh thu' && formatCash(statisticalToday?.sum_revenue)) ||
+                    (e.name === 'Tổng lợi nhuận' && formatCash(statisticalToday?.sum_profit))}
                 </span>
               </div>
             ))}
@@ -126,10 +124,10 @@ const Overview = () => {
               className={styles['card-overview']}
             >
               <div className={styles['dashboard_manager_revenue_title']}>
-                <div>Doanh thu</div>
+                <div>Biểu đồ doanh thu tháng {new Date().getMonth() + 1}</div>
               </div>
               <div>
-                <LineChart data={statistical.chart || []} />
+                <LineChart data={statisticalChart} />
               </div>
             </div>
           </Col>
@@ -149,11 +147,11 @@ const Overview = () => {
               className={styles['card-overview']}
             >
               <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
-                <div>Sản phẩm bán chạy</div>
+                <div>Top 10 sản phẩm bán chạy</div>
               </div>
               <div style={{ width: '100%', margin: 'auto' }}>
-                {statistical && statistical.product_rank ? (
-                  statistical.product_rank.slice(0, 5).map((e, index) => {
+                {statisticalProduct.length ? (
+                  statisticalProduct.map((e, index) => {
                     return (
                       <Row
                         align="middle"
@@ -164,16 +162,11 @@ const Overview = () => {
                         }
                       >
                         <Col span={5}>
-                          <img alt="" src={e[0].image && e[0].image[0]} width="50px" />
+                          <img alt="" src={e.image && e.image} width="50px" />
                         </Col>
                         <Col span={12}>
-                          <Row>{(e[0].name || e[0].title) && (e[0].name || e[0].title)}</Row>
-                          <Row style={{ fontWeight: 500 }}>Đã bán {e[1].quantity} sản phẩm</Row>
-                        </Col>
-                        <Col span={7} style={{ fontSize: 15 }}>
-                          <div style={{ width: 'max-content' }}>
-                            {formatCash(e[1].cost)} &#8363;
-                          </div>
+                          <Row>{e.name || e.title}</Row>
+                          <Row style={{ fontWeight: 500 }}>Đã bán {e.sale_quantity} sản phẩm</Row>
                         </Col>
                       </Row>
                     )

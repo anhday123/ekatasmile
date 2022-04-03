@@ -132,8 +132,10 @@ export default function ImportFile({
                     if (err) console.log(err)
                     else {
                       if (resp.rows[0]) {
+                        let stringKey = ''
                         const columns = resp.rows[0].map((item) => {
-                          return { title: item, dataIndex: item }
+                          stringKey += ' '
+                          return { title: item, dataIndex: item + stringKey }
                         })
                         setColumns([...columns])
                       }
@@ -142,12 +144,17 @@ export default function ImportFile({
                       for (let i = 1; i < resp.rows.length; ++i) {
                         if (resp.rows[i].length) {
                           let obj = {}
+                          let stringKey = ''
                           for (let j = 0; j < resp.rows[0].length; ++j)
-                            if (resp.rows[0][j]) obj[resp.rows[0][j]] = resp.rows[i][j]
+                            if (resp.rows[0][j]) {
+                              stringKey += ' '
+                              obj[resp.rows[0][j] + stringKey] = resp.rows[i][j]
+                            }
 
                           result.push(obj)
                         }
                       }
+                      console.log(result)
                       setDataView([...result])
                     }
                   })
@@ -163,7 +170,7 @@ export default function ImportFile({
           <Row style={{ marginTop: 30 }} justify="end">
             <Table
               sticky
-              scroll={{ x: 'max-content', y: 325 }}
+              scroll={{ x: 'max-content', y: '50vh' }}
               size="small"
               style={{ width: '100%', display: !fileUpload && 'none', marginBottom: 20 }}
               dataSource={dataView}
