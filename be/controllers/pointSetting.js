@@ -109,47 +109,33 @@ module.exports._create = async (req, res, next) => {
 
 module.exports._update = async (req, res, next) => {
   try {
-    // req.params.point_setting_id = Number(req.params.point_setting_id);
-    // let setting = await client.db(req.user.database).collection('PointSettings').findOne(req.params);
-    // if (!setting) {
-    //     throw new Error(`500: Chương trình tích điểm không tồn tại!`);
-    // }
-    delete req.body._id
-    delete req.body.point_setting_id
-    delete req.body.create_date
-    delete req.body.creator_id
-    let _setting = { ...setting, ...req.body }
-    _setting = {
-      point_setting_id: _setting.point_setting_id,
-      name: _setting.name,
-      accumulate_for_promotion_product:
-        _setting.accumulate_for_promotion_product || false,
-      accumulate_for_refund_order:
-        _setting.accumulate_for_refund_order || false,
-      accumulate_for_payment_point:
-        _setting.accumulate_for_payment_point || false,
-      accumulate_for_fee_shipping:
-        _setting.accumulate_for_fee_shipping || false,
-      stack_point: _setting.stack_point || false,
-      exchange_point_rate: _setting.exchange_point_rate || 0,
-      exchange_money_rate: _setting.exchange_money_rate || 0,
-      order_require: _setting.order_require || 0,
-      order_cost_require: _setting.order_cost_require || 0,
-      all_branch: _setting.all_branch || false,
-      branch_id: _setting.branch_id || [],
-      all_customer_type: _setting.all_customer_type || false,
-      customer_type_id: _setting.customer_type_id || [],
-      all_category: _setting.all_category || false,
-      category_id: _setting.category_id || [],
-      all_product: _setting.all_product || false,
-      product_id: _setting.product_id || [],
-      create_date: _setting.create_date,
-      creator_id: _setting.creator_id,
-      last_update: moment().tz(TIMEZONE).format(),
-      updater_id: req.user.user_id,
-      active: _setting.active,
-      slug_name: removeUnicode(String(_setting.name || ''), true).toLowerCase(),
-    }
+    if (req.body.active == undefined)
+      throw new Error('400: missing param active')
+    if (req.body.accumulate_for_promotion_product == undefined)
+      throw new Error('400: missing param accumulate_for_promotion_product')
+    if (req.body.stack_point == undefined)
+      throw new Error('400: missing param stack_point')
+    if (req.body.exchange_point_rate == undefined)
+      throw new Error('400: missing param exchange_point_rate')
+    if (req.body.order_require == undefined)
+      throw new Error('400: missing param order_require')
+    if (req.body.all_branch == undefined)
+      throw new Error('400: missing param all_branch')
+    if (req.body.branch_id == undefined)
+      throw new Error('400: missing param branch_id')
+    if (req.body.all_customer_type == undefined)
+      throw new Error('400: missing param all_customer_type')
+    if (req.body.customer_type_id == undefined)
+      throw new Error('400: missing param customer_type_id')
+    if (req.body.all_category == undefined)
+      throw new Error('400: missing param all_category')
+    if (req.body.category_id == undefined)
+      throw new Error('400: missing param category_id')
+    if (req.body.all_product == undefined)
+      throw new Error('400: missing param all_product')
+    if (req.body.product_id == undefined)
+      throw new Error('400: missing param product_id')
+
     await pointService._update(req, res, next)
   } catch (err) {
     next(err)
