@@ -4,29 +4,117 @@ const { ObjectId } = require('mongodb')
 const crypto = require(`crypto`)
 const client = require(`../config/mongodb`)
 const DB = process.env.DATABASE
+const { createTimeline } = require('../utils/date-handle')
 const { stringHandle } = require('../utils/string-handle')
 
 let getOverviewTodayC = async (req, res, next) => {
   try {
-    var query = {}
+    req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format()
     if (req.query.branch_id == undefined)
-      query.branch_id = parseInt(req.query.branch_id)
+      throw new Error('400: Vui lòng truyền branch_id')
 
+    var to_day = moment().tz(TIMEZONE).hour(0).minutes(0).format()
+    console.log(to_day)
     var sum_order = await client
       .db(req.user.database)
       .collection('Orders')
-      .countDocuments()
+      .countDocuments({
+        create_date: { $gte: req.query.from_date },
+        branch_id: parseInt(req.query.branch_id),
+      })
+
+    var sum_origin_cost = await client
+      .db(req.user.database)
+      .collection('Orders')
+      .aggregate([
+        {
+          $match: { create_date: { $gte: req.query.from_date } },
+        },
+        {
+          $match: {
+            branch_id: parseInt(req.query.branch_id),
+          },
+        },
+        {
+          $addFields: {
+            total: {
+              $sum: '$total_base_cost',
+            },
+          },
+        },
+        {
+          $project: {
+            total: 1,
+          },
+        },
+      ])
+      .toArray()
+
+    var sum_profit = await client
+      .db(req.user.database)
+      .collection('Orders')
+      .aggregate([
+        {
+          $match: { create_date: { $gte: req.query.from_date } },
+        },
+        {
+          $match: {
+            branch_id: parseInt(req.query.branch_id),
+          },
+        },
+        {
+          $addFields: {
+            total: {
+              $sum: '$total_profit',
+            },
+          },
+        },
+        {
+          $project: {
+            total: 1,
+          },
+        },
+      ])
+      .toArray()
+
+    var sum_total_sale = await client
+      .db(req.user.database)
+      .collection('Orders')
+      .aggregate([
+        {
+          $match: { create_date: { $gte: req.query.from_date } },
+        },
+        {
+          $match: {
+            branch_id: parseInt(req.query.branch_id),
+          },
+        },
+        {
+          $addFields: {
+            total: {
+              $sum: '$final_cost',
+            },
+          },
+        },
+        {
+          $project: {
+            total: 1,
+          },
+        },
+      ])
+      .toArray()
+
     // query branch_id
     // tong don hang
-    var to_day = moment().tz(TIMEZONE).hour(0).minutes(0)
-    console.log(to_day)
+
     return res.send({
       success: true,
       data: {
         sum_order: sum_order,
-        sum_origin_cost: 100000,
-        sum_revenue: 200000,
-        sum_profit: 10000,
+        sum_origin_cost:
+          sum_origin_cost.length != 0 ? sum_origin_cost[0].total : 0,
+        sum_revenue: sum_total_sale.length != 0 ? sum_total_sale[0].total : 0,
+        sum_profit: sum_profit.length != 0 ? sum_profit[0].total : 0,
       },
     })
   } catch (err) {
