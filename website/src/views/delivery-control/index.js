@@ -523,7 +523,7 @@ export default function DeliveryControl() {
                     )}
                   />
                 </div>
-                <Timeline>
+                <Timeline style={{ marginTop: 30 }}>
                   {record.trackings?.map((e) => {
                     return (
                       <Timeline.Item>
