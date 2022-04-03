@@ -435,6 +435,7 @@ module.exports._create = async (req, res, next) => {
               ) {
                 return _prices[location.price_id].import_price
               }
+              return 0
               throw new Error('400: Không tìm thấy giá vốn!')
             })(),
           }
