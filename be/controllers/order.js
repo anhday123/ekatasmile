@@ -721,16 +721,7 @@ module.exports._update = async (req, res, next) => {
             variant_id: location.variant_id,
             price_id: location.price_id,
             quantity: 0,
-            base_price: (() => {
-              if (
-                _prices[location.price_id] &&
-                _prices[location.price_id].import_price
-              ) {
-                return _prices[location.price_id].import_price
-              }
-              return 0
-              //throw new Error('400: Không tìm thấy giá vốn!');
-            })(),
+            base_price: location.import_price,
           }
           if (detailQuantity <= location.quantity) {
             _basePrice.quantity = detailQuantity
@@ -743,8 +734,7 @@ module.exports._update = async (req, res, next) => {
             location.quantity = 0
           }
           eDetail.base_prices.push(_basePrice)
-          eDetail.total_base_price +=
-            location.quantity * _prices[location.price_id].import_price
+          eDetail.total_base_price += location.quantity * location.import_price
           _updates.push(location)
         }
         if (detailQuantity > 0) {
