@@ -181,6 +181,9 @@ module.exports._create = async (req, res, next) => {
       throw new Error('400: Không thể tạo đơn hàng không có sản phẩm!')
     }
 
+    if (req.body.channel == undefined)
+      throw new Error('400: Không lòng truyền thuộc tính channel!')
+
     let [orderMaxId] = await Promise.all([
       client
         .db(req.user.database)
@@ -232,6 +235,8 @@ module.exports._create = async (req, res, next) => {
       _variants[String(eVariant.variant_id)] = eVariant
     })
     let totalCost = 0
+
+    var total_quantity = 0
     req.body.order_details = req.body.order_details.map((eDetail) => {
       let _detail = {
         ..._products[`${eDetail.product_id}`],
@@ -239,6 +244,7 @@ module.exports._create = async (req, res, next) => {
         ...eDetail,
       }
       totalCost += eDetail.price * eDetail.quantity
+      total_quantity += eDetail.quantity
       _detail = {
         product_id: _detail.product_id,
         variant_id: _detail.variant_id,
@@ -411,6 +417,8 @@ module.exports._create = async (req, res, next) => {
         _prices[String(ePrice.price_id)] = ePrice
       })
       let _updates = []
+      var total_base_price = 0
+      var total_profit = 0
       _order.order_details = _order.order_details.map((eDetail) => {
         if (!_locations[`${eDetail.variant_id}`]) {
           throw new Error('400: Sản phẩm không được cung cấp tại địa điểm bán!')
@@ -421,7 +429,6 @@ module.exports._create = async (req, res, next) => {
           if (detailQuantity == 0) {
             break
           }
-          console.log(location)
           let _basePrice = {
             location_id: location.location_id,
             branch_id: location.branch_id,
@@ -444,6 +451,10 @@ module.exports._create = async (req, res, next) => {
             detailQuantity -= location.quantity
             location.quantity = 0
           }
+          total_base_price += eDetail.total_base_price
+          total_profit +=
+            parseFloat(eDetail.total_cost) -
+            parseFloat(eDetail.total_base_price)
           eDetail.base_prices.push(_basePrice)
 
           _updates.push(location)
@@ -505,6 +516,8 @@ module.exports._create = async (req, res, next) => {
         .collection('Finances')
         .insertOne(_finance)
     }
+    _order.total_base_price = total_base_price
+    _order.total_profit = total_profit
     req['body'] = _order
     await orderService._create(req, res, next)
   } catch (err) {
@@ -704,6 +717,8 @@ module.exports._update = async (req, res, next) => {
         _prices[String(price.price_id)] = price
       })
       let _updates = []
+      var total_base_price = 0
+      var total_profit = 0
       _order.order_details = _order.order_details.map((eDetail) => {
         if (!_locations[`${eDetail.variant_id}`]) {
           throw new Error('400: Sản phẩm không được cung cấp tại địa điểm bán!')
@@ -735,6 +750,11 @@ module.exports._update = async (req, res, next) => {
           }
           eDetail.base_prices.push(_basePrice)
           eDetail.total_base_price += location.quantity * location.import_price
+          total_base_price += parseFloat(eDetail.total_base_price)
+          total_profit +=
+            parseFloat(eDetail.total_cost) -
+            parseFloat(eDetail.total_base_price)
+
           _updates.push(location)
         }
         if (detailQuantity > 0) {
@@ -766,6 +786,9 @@ module.exports._update = async (req, res, next) => {
           })
         }
       })
+      _order.total_base_price = total_base_price
+      _order.total_profit = total_profit
+
       let importOrderMaxId = await client
         .db(req.user.database)
         .collection('AppSetting')

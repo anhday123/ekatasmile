@@ -8,13 +8,22 @@ const { stringHandle } = require('../utils/string-handle')
 
 let getOverviewTodayC = async (req, res, next) => {
   try {
+    var query = {}
+    if (req.query.branch_id == undefined)
+      query.branch_id = parseInt(req.query.branch_id)
+
+    var sum_order = await client
+      .db(req.user.database)
+      .collection('Orders')
+      .countDocuments()
+    // query branch_id
     // tong don hang
     var to_day = moment().tz(TIMEZONE).hour(0).minutes(0)
     console.log(to_day)
     return res.send({
       success: true,
       data: {
-        sum_order: 10,
+        sum_order: sum_order,
         sum_origin_cost: 100000,
         sum_revenue: 200000,
         sum_profit: 10000,
@@ -76,6 +85,7 @@ let getTopSellC = async (req, res, next) => {
             code: 1,
             sale_quantity: 1,
             name: 1,
+            image: 1,
           },
         },
       ])
