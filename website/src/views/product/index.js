@@ -1226,7 +1226,7 @@ export default function Product() {
                     <div>
                       <div>Mở bán</div>
                       <Switch
-                        defaultChecked={record.active}
+                        checked={record.active}
                         onClick={() =>
                           _updateProduct({ active: !record.active }, record.product_id)
                         }

@@ -996,7 +996,8 @@ export default function Sell() {
             return_province_code: '',
             return_postcode_code: 70000,
             return_country_code: '',
-            cod: invoices[indexInvoice].deliveryCharges || 0,
+            cod: 0,
+            fee_shipping: invoices[indexInvoice].deliveryCharges || 0,
             delivery_time: '2021-09-30T00:00:00+07:00',
             complete_time: '2021-10-30T00:00:00+07:00',
           }
@@ -1044,6 +1045,7 @@ export default function Sell() {
         ship_status: SHIP_STATUS_ORDER.DRAFT,
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
+        channel: invoices[indexInvoice].salesChannel,
       }
 
       //encrypt body create order
@@ -1182,7 +1184,8 @@ export default function Sell() {
     try {
       setLoadingProduct(true)
       const res = await getProducts({ branch_id: branchIdApp, merge: true, detach: true })
-      if (res.status === 200) setProductsSearch(res.data.data.map((e) => e.variants))
+      if (res.status === 200)
+        setProductsSearch(res.data.data.map((e) => ({ ...e.variants, active: e.active })))
       setLoadingProduct(false)
     } catch (error) {
       console.log(error)
@@ -1197,7 +1200,7 @@ export default function Sell() {
       const res = await getProducts({ branch_id: branchIdApp || '', detach: true, ...params })
 
       if (res.status === 200) {
-        setProductsRelated(res.data.data.map((e) => e.variants))
+        setProductsRelated(res.data.data.map((e) => ({ ...e.variants, active: e.active })))
         setCountProducts(res.data.count)
       }
 
@@ -1330,10 +1333,10 @@ export default function Sell() {
                       src={data.image[0] ? data.image[0] : IMAGE_DEFAULT}
                       alt=""
                       style={{
-                        minWidth: 40,
-                        minHeight: 40,
-                        maxWidth: 40,
-                        maxHeight: 40,
+                        minWidth: 55,
+                        minHeight: 55,
+                        maxWidth: 55,
+                        maxHeight: 55,
                         objectFit: 'cover',
                       }}
                     />
@@ -1355,6 +1358,11 @@ export default function Sell() {
                           {data.title}
                         </span>
                         <p style={{ marginBottom: 0, fontWeight: 500 }}>{formatCash(data.price)}</p>
+                      </Row>
+                      <Row wrap={false} justify="space-between">
+                        <p style={{ marginBottom: 0, fontWeight: 500 }}>
+                          {data.active ? 'Đang mở bán' : 'Đã tắt bán'}
+                        </p>
                       </Row>
                       <Row wrap={false} justify="space-between">
                         <p style={{ marginBottom: 0, color: 'gray' }}>{data.sku}</p>
@@ -1695,9 +1703,14 @@ export default function Sell() {
                           <p className={styles['product-item__name']}>{product.title}</p>
                           <ModalQuantityProductInStores product={product} />
                         </Row>
-                        <p className={styles['product-item__price']}>
-                          {formatCash(product.price)} VNĐ
-                        </p>
+                        <Row justify="space-between" wrap={false} align="middle">
+                          <p className={styles['product-item__price']}>
+                            {formatCash(product.price)} VNĐ
+                          </p>
+                          <p style={{ fontSize: 12 }} className={styles['product-item__price']}>
+                            {product.active ? 'Mở bán' : 'Tắt bán'}
+                          </p>
+                        </Row>
                       </div>
                     </div>
                   ))}
@@ -1860,6 +1873,7 @@ export default function Sell() {
                   _editInvoice('moneyGivenByCustomer', 0)
                   _editInvoice('payments', [paymentMethodDefault])
                   _editInvoice('excessCash', 0)
+                  _editInvoice('salesChannel', 'Chi nhánh')
                 }}
               />
               Giao hàng tận nơi
@@ -2012,10 +2026,7 @@ export default function Sell() {
             </Row>
 
             <Row justify="space-between" wrap={false} align="middle">
-              <p style={{ marginBottom: 0 }}>
-                {invoices[indexInvoice].isDelivery ? 'Tiền thanh toán một phần' : 'Tiền khách đưa'}{' '}
-                (F2)
-              </p>
+              <p style={{ marginBottom: 0 }}>Tiền khách đưa (F2)</p>
               {invoices[indexInvoice].payments.length === 1 ? (
                 <div style={{ borderBottom: '0.75px solid #C9C8C8', width: '40%' }}>
                   <InputNumber

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 //antd
 import { Modal, Row, Button, InputNumber, Space, Popconfirm, Input, Select } from 'antd'
@@ -10,6 +11,7 @@ import { formatCash } from 'utils'
 
 //apis
 import { getPayments } from 'apis/payment'
+import { ROUTES } from 'consts'
 
 export default function PaymentMethods({
   editInvoice,
@@ -30,11 +32,7 @@ export default function PaymentMethods({
 
   const inputValue = (value, index) => {
     let paymentsNew = [...payments]
-    if (value <= 400) {
-      paymentsNew[index].value = value
-    } else {
-      paymentsNew[index].value = 400
-    }
+    paymentsNew[index].value = +value
     const sumCostPaid = paymentsNew.reduce((total, current) => total + current.value, 0)
     const excessCash = sumCostPaid - moneyToBePaidByCustomer
 
@@ -161,8 +159,6 @@ export default function PaymentMethods({
               style={{ width: '100%' }}
               mode="multiple"
               allowClear
-              onSelect={(value) => console.log(value)}
-              onDeselect={(value) => console.log(value)}
               onChange={_addPaymentMethod}
             >
               {paymentsMethod.map((paymentMethod, index) => (
@@ -231,6 +227,9 @@ export default function PaymentMethods({
             <p>Tiền thừa</p>
             <p>{formatCash(excessCash)}</p>
           </Row>
+          <Link to={ROUTES.PAYMENT} target="_blank" style={{ fontSize: 14 }}>
+            Cài đặt phướng thức thanh toán mặc định ở Cấu hình
+          </Link>
         </Space>
       </Modal>
     </>

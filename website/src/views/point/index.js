@@ -66,10 +66,10 @@ export default function Point() {
   })
   const [orderPoint, setOrderPoint] = useState({
     order_require: config.order_require === false ? 0 : config.order_require,
-    order_require_check: config.order_require === false ? false : config.order_require !== false && true
+    order_require_check:
+      config.order_require === false ? false : config.order_require !== false && true,
   })
   // console.log(orderPoint)
-
 
   const PointTitle = ({ title }) => (
     <Row style={{ borderBottom: 'solid 1px #B4B4B4', paddingBottom: '10px' }}>
@@ -111,17 +111,23 @@ export default function Point() {
         (data.all_category === false && data.category_id.length === 0) ||
         (data.all_product === false && data.product_id.length === 0)
       ) {
-        notification.error({ message: 'Cấu hình tích điểm thất bại, vui lòng điền đầy đủ thông tin' })
+        notification.error({
+          message: 'Cấu hình tích điểm thất bại, vui lòng điền đầy đủ thông tin',
+        })
       } else {
-        const res = await updatePoint(data, point.point_setting_id)
+        const res = await updatePoint(data)
         if (res.status === 200) {
           if (res.data.success) {
             notification.success({ message: 'Cấu hình tích điểm thành công' })
           } else {
-            notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
+            notification.error({
+              message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại',
+            })
           }
         } else {
-          notification.error({ message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại' })
+          notification.error({
+            message: res.data.message || 'Cấu hình tích điểm thất bại, vui lòng thử lại',
+          })
         }
       }
       dispatch({ type: 'LOADING', data: false })
@@ -444,13 +450,13 @@ export default function Point() {
                 //   }
                 // }}
               >
-                {
-                  customerTypes.length !== 0 ?
-                    customerTypes.map((type, index) => (
-                      <Select.Option value={type.type_id} key={index}>{type.name}</Select.Option>
+                {customerTypes.length !== 0
+                  ? customerTypes.map((type, index) => (
+                      <Select.Option value={type.type_id} key={index}>
+                        {type.name}
+                      </Select.Option>
                     ))
-                    : ''
-                }
+                  : ''}
               </Select>
             </Row>
           </Row>
@@ -489,12 +495,11 @@ export default function Point() {
                 //   }
                 // }}
               >
-                {
-                  dataCategories.length !== 0 ?
-                    dataCategories.map((e) => (
+                {dataCategories.length !== 0
+                  ? dataCategories.map((e) => (
                       <Select.Option value={e.category_id}>{e.name}</Select.Option>
                     ))
-                    : ''}
+                  : ''}
               </Select>
             </Row>
           </Row>
@@ -533,12 +538,11 @@ export default function Point() {
                 //   }
                 // }}
               >
-                {
-                  dataProduct.length !== 0 ?
-                    dataProduct.map((e) => (
+                {dataProduct.length !== 0
+                  ? dataProduct.map((e) => (
                       <Select.Option value={e.product_id}>{e.name}</Select.Option>
                     ))
-                    : ''}
+                  : ''}
               </Select>
             </Row>
           </Row>
