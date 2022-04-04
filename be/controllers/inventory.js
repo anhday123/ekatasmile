@@ -295,7 +295,7 @@ module.exports._createImportOrder = async (req, res, next) => {
         })();
         let order = {
             order_id: ++orderId,
-            code: req.body.code || String(order_id).padStart(6, '0'),
+            code: req.body.code || String(orderId).padStart(6, '0'),
             import_location: req.body.import_location,
             import_location_info: importLocation,
             products: req.body.products || [],
@@ -1110,7 +1110,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 .sort(sortQuery)
                 .toArray();
             let _locations = {};
-            location.map((eLocation) => {
+            locations.map((eLocation) => {
                 if (!_locations[eLocation.variant_id]) {
                     _locations[eLocation.variant_id] = [];
                 }
@@ -1193,7 +1193,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     product_id: eLocation.product_id,
                     variant_id: eLocation.variant_id,
                     branch_id: (order.export_location && order.export_location.branch_id) || 0,
-                    type: 'export-product',
+                    type: 'transport-export-product',
                     import_quantity: 0,
                     import_price: 0,
                     export_quantity: eLocation.quantity,
@@ -1205,7 +1205,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     product_id: eLocation.product_id,
                     variant_id: eLocation.variant_id,
                     branch_id: (order.import_location && order.import_location.branch_id) || 0,
-                    type: 'import-product',
+                    type: 'transport-import-product',
                     import_quantity: eLocation.quantity,
                     import_price: eLocation.import_price,
                     export_quantity: 0,
@@ -1541,23 +1541,15 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 .toArray();
             let _locations = {};
             locations.map((location) => {
-                if (!_locations[String(location.variant_id)]) {
-                    _locations[String(location.variant_id)] = [];
+                if (!_locations[location.variant_id]) {
+                    _locations[location.variant_id] = [];
                 }
-                if (_locations[String(location.variant_id)]) {
-                    _locations[String(location.variant_id)].push(location);
+                if (_locations[location.variant_id]) {
+                    _locations[location.variant_id].push(location);
                 }
             });
-            let prices = await client
-                .db(req.user.database)
-                .collection('Prices')
-                .find({ variant_id: { $in: variantIds } })
-                .toArray();
-            let _prices = {};
-            prices.map((price) => {
-                _prices[String(price.price_id)] = price;
-            });
-            let _updates = [];
+            let _updateLocations = [];
+            let _insertLocations = [];
             _order.products = _order.products.map((eProduct) => {
                 if (!_locations[`${eProduct.variant_id}`]) {
                     throw new Error('400: Sản phẩm trong kho không đủ số lượng!');
@@ -1568,20 +1560,6 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     if (detailQuantity == 0) {
                         break;
                     }
-                    let _basePrice = {
-                        location_id: location.location_id,
-                        branch_id: location.branch_id,
-                        product_id: location.product_id,
-                        variant_id: location.variant_id,
-                        price_id: location.price_id,
-                        quantity: 0,
-                        base_price: (() => {
-                            if (_prices[location.price_id] && _prices[location.price_id].import_price) {
-                                return _prices[location.price_id].import_price;
-                            }
-                            throw new Error('400: Không tìm thấy giá vốn!');
-                        })(),
-                    };
                     if (detailQuantity <= location.quantity) {
                         _basePrice.quantity = detailQuantity;
                         location.quantity -= detailQuantity;
