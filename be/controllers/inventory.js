@@ -1529,6 +1529,11 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 }
                 return { create_date: -1 };
             })();
+            let locationMaxId = await client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Locations' });
+            let locationId = (locationMaxId && locationMaxId.value) || 0;
             let locations = await client
                 .db(req.user.database)
                 .collection('Locations')
@@ -1548,8 +1553,8 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     _locations[location.variant_id].push(location);
                 }
             });
-            let _updateLocations = [];
-            let _insertLocations = [];
+            let updateLocations = [];
+            let insertInventories = [];
             _order.products = _order.products.map((eProduct) => {
                 if (!_locations[`${eProduct.variant_id}`]) {
                     throw new Error('400: Sản phẩm trong kho không đủ số lượng!');
@@ -1570,10 +1575,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                         detailQuantity -= location.quantity;
                         location.quantity = 0;
                     }
-                    if (!eProduct.base_prices) eProduct.base_prices = [];
-                    eProduct.base_prices.push(_basePrice);
-                    eProduct.total_base_price += location.quantity * _prices[location.price_id].import_price;
-                    _updates.push(location);
+                    updateLocations.push(location);
                 }
                 if (detailQuantity > 0) {
                     throw new Error('400: Sản phẩm trong kho không đủ số lượng!');
