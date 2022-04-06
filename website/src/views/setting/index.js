@@ -167,7 +167,7 @@ export default function Setting() {
         <Tabs.TabPane tab="Kết nối API" key="3">
           Phát triển sau
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Logo" key="4">
+        {/* <Tabs.TabPane tab="Logo" key="4">
           <Upload
             name="avatar"
             listType="picture-card"
@@ -226,7 +226,7 @@ export default function Setting() {
               onClick={() => copyText(imageUrl)}
             />
           </h3>
-        </Tabs.TabPane>
+        </Tabs.TabPane> */}
       </Tabs>
     </div>
   )
