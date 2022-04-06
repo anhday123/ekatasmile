@@ -468,6 +468,7 @@ module.exports._create = async (req, res, next) => {
       })
       await Promise.all(
         _updates.map((eUpdate) => {
+          delete eUpdate._id
           return client
             .db(req.user.database)
             .collection('Locations')
