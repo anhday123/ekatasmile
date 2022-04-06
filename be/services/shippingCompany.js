@@ -1,6 +1,12 @@
 const moment = require(`moment-timezone`)
 const TIMEZONE = process.env.TIMEZONE
 const client = require(`../config/mongodb`)
+const AWS = require('aws-sdk')
+const { v4: uuidv4 } = require('uuid')
+var S3 = require('aws-sdk/clients/s3')
+const bucketName = 'admin-order'
+require('dotenv').config()
+const wasabiEndpoint = new AWS.Endpoint('s3.ap-northeast-1.wasabisys.com')
 const DB = process.env.DATABASE
 const XLSX = require('xlsx')
 
@@ -169,6 +175,7 @@ module.exports._get = async (req, res, next) => {
         $match: { create_date: { $lte: req.query.to_date } },
       })
     }
+
     // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
     if (req.query.name) {
       aggregateQuery.push({
@@ -392,6 +399,60 @@ module.exports._update = async (req, res, next) => {
   }
 }
 
+let uploadWSB = async (file) => {
+  try {
+    var d = new Date(),
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear()
+    file.originalname = new String(file.originalname)
+      .toLowerCase()
+      .replace('/', '')
+
+    file.originalname = removeUnicode(file.originalname)
+
+    if (month.length < 2) month = '0' + month
+    if (day.length < 2) day = '0' + day
+
+    var today = year + '/' + month + '/' + day + '/' + uuidv4()
+    file.originalname = today + '_' + file.originalname
+
+    const s3 = new S3({
+      endpoint: wasabiEndpoint,
+      region: 'ap-northeast-1',
+      accessKeyId: process.env.access_key_wasabi,
+      secretAccessKey: process.env.secret_key_wasabi,
+    })
+
+    file.originalname = new String(file.originalname).replace(
+      /[&\/\\#,+()$~%'":*?<>{}]/g,
+      '_'
+    )
+
+    return new Promise(async (resolve, reject) => {
+      s3.putObject(
+        {
+          Body: file.buffer,
+          Bucket: bucketName,
+          Key: file.originalname,
+          ACL: 'public-read',
+        },
+        (err, data) => {
+          if (err) {
+            console.log(err)
+          }
+          resolve(
+            'https://s3.ap-northeast-1.wasabisys.com/admin-order/' +
+              file.originalname
+          )
+        }
+      )
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
 module.exports._importCompareCard = async (req, res, next) => {
   try {
     let excelData = XLSX.read(req.file.buffer, {
@@ -401,6 +462,7 @@ module.exports._importCompareCard = async (req, res, next) => {
     let rows = XLSX.utils.sheet_to_json(
       excelData.Sheets[excelData.SheetNames[0]]
     )
+    var _urlFile = await uploadWSB(req.file)
 
     var fields = [
       'ma_van_don_(*)',
@@ -418,6 +480,40 @@ module.exports._importCompareCard = async (req, res, next) => {
 
     if (req.body.status != 'DRAFT' && req.body.status != 'COMPLETE')
       throw new Error('400: Trạng thái phiếu không hợp lệ')
+
+    var card_confirm_shipping = {
+      shipping_company_id: parseInt(req.body.shipping_company_id),
+    }
+
+    var appSetting = await client
+      .db(req.user.database)
+      .collection('AppSetting')
+      .findOne({
+        name: 'CardConfirmShipping',
+      })
+
+    card_confirm_shipping.card_id = parseInt(appSetting.value) + 1
+    await client
+      .db(DB)
+      .collection('AppSetting')
+      .updateOne(
+        {
+          name: 'CardConfirmShipping',
+        },
+        {
+          $set: {
+            value: card_confirm_shipping.card_id,
+          },
+        }
+      )
+    card_confirm_shipping.create_date = moment().tz(TIMEZONE).format()
+    card_confirm_shipping.total_order = rows.length
+    card_confirm_shipping.link_file = _urlFile
+    card_confirm_shipping.employee_id = req.user.user_id
+    await client
+      .db(req.user.database)
+      .collection('CardCompare')
+      .insertOne(card_confirm_shipping)
 
     // valid date
     rows.map((item) => {
@@ -469,10 +565,10 @@ module.exports._importCompareCard = async (req, res, next) => {
       .toArray()
 
     // Tien hanh doi soat
-    var code = moment().tz(process.env.TIMEZONE).format('yyyyMMDD')
+
     for (var j = 0; j < rows.length; j++) {
+      rows[j].card_id = card_confirm_shipping.card_id
       var is_find = false
-      rows[j].code = code
       rows[j].tracking_number = rows[j].ma_van_don
       rows[j].date_receive_order = rows[j].ngay_nhan_don
       rows[j].date_complete_order = rows[j].ngay_hoan_thanh
@@ -519,7 +615,7 @@ module.exports._importCompareCard = async (req, res, next) => {
     }
     await client
       .db(req.user.database)
-      .collection('CardCompare')
+      .collection('CardCompareItem')
       .insertMany(rows)
 
     return res.send({ success: true, result: rows })
@@ -573,6 +669,15 @@ module.exports._getCompareCard = async (req, res, next) => {
         },
       })
     }
+
+    aggregateQuery.push({
+      $lookup: {
+        from: 'CardCompareItem',
+        localField: 'card_id',
+        foreignField: 'card_id',
+        as: 'list_order',
+      },
+    })
 
     if (req.query['today']) {
       req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format()

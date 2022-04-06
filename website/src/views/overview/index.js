@@ -24,31 +24,14 @@ const Overview = () => {
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  const SALES = [
-    {
-      profitToday: '0 VND',
-      name: 'Tổng đơn hàng',
-    },
-    {
-      profitToday: '0 VND',
-      name: 'Tổng giá vốn',
-    },
-    {
-      profitToday: '0 VND',
-      name: 'Tổng doanh thu',
-    },
-    {
-      profitToday: '0 VND',
-      name: 'Tổng lợi nhuận',
-    },
-  ]
+  const SALES = ['Tổng đơn hàng', 'Tổng giá vốn', 'Tổng doanh thu', 'Tổng lợi nhuận']
 
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
       const resToday = await getStatisticalToday({ branch_id: branchIdApp })
+      console.log(resToday)
       if (resToday.status === 200) setStatisticalToday(resToday.data.data)
-
       const resChart = await getStatisticalChart({ branch_id: branchIdApp })
       if (resChart.status === 200) {
         let data = {}
@@ -98,15 +81,15 @@ const Overview = () => {
               >
                 <Row justify="space-between" wrap={false} style={{ fontWeight: 600, fontSize: 18 }}>
                   <div>
-                    <ShoppingCartOutlined /> {e.name}
+                    <ShoppingCartOutlined /> {e}
                   </div>
                   <InfoCircleOutlined />
                 </Row>
                 <span style={{ marginBottom: 0, fontWeight: 700, fontSize: 17, color: '#5B6BE8' }}>
-                  {(e.name === 'Tổng đơn hàng' && formatCash(statisticalToday?.sum_order)) ||
-                    (e.name === 'Tổng giá vốn' && formatCash(statisticalToday?.sum_origin_cost)) ||
-                    (e.name === 'Tổng doanh thu' && formatCash(statisticalToday?.sum_revenue)) ||
-                    (e.name === 'Tổng lợi nhuận' && formatCash(statisticalToday?.sum_profit))}
+                  {e === 'Tổng đơn hàng' && formatCash(statisticalToday.sum_order || 0)}
+                  {e === 'Tổng giá vốn' && formatCash(statisticalToday.sum_origin_cost || 0)}
+                  {e === 'Tổng doanh thu' && formatCash(statisticalToday.sum_revenue || 0)}
+                  {e === 'Tổng lợi nhuận' && formatCash(statisticalToday.sum_profit || 0)}
                 </span>
               </div>
             ))}
