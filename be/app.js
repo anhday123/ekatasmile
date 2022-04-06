@@ -31,7 +31,7 @@ app.use(cors()).use((req, res, next) => {
 });
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use("/app", express.static(__dirname + "/assets"));
+app.use('/app', express.static(__dirname + '/assets'));
 app.use(`/` + endPoint, router)
     .use((req, res, next) => {
         next(new Error(`404: Endpoint is not exists!`));
@@ -84,6 +84,6 @@ let clearAccount = async () => {
 
 setInterval(() => {
     clearAccount();
-}, process.env.OTP_TIMELIFE * 60 * 1000);
+}, 5 * 60 * 1000);
 
 module.exports = app;
