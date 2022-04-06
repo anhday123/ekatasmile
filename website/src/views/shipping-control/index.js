@@ -363,7 +363,7 @@ export default function ShippingControl() {
             if (column.key === 'code')
               return {
                 ...column,
-                render: (text, record) => record.code || '',
+                render: (text, record) => <span>#{record.card_id}</span> || '',
                 sort: (a, b) => compare(a, b, 'code'),
               }
             if (column.key === 'shipping_company')
@@ -376,6 +376,12 @@ export default function ShippingControl() {
               return {
                 ...column,
                 render: (text, record) => '',
+              }
+            if (column.key === 'file')
+              return {
+                ...column,
+                render: (text, record) =>
+                  record.link_file ? <a href={record.link_file}>Tải file</a> : '',
               }
             if (column.key === 'employee')
               return {
@@ -393,6 +399,7 @@ export default function ShippingControl() {
               }
             return column
           })}
+          rowKey="_id"
           expandable={{
             expandedRowRender: (record) => {
               return (
@@ -401,7 +408,7 @@ export default function ShippingControl() {
                     style={{ width: '100%' }}
                     pagination={false}
                     columns={columnsOrder}
-                    dataSource={record.data || []}
+                    dataSource={record.list_order || []}
                     size="small"
                   />
                 </div>

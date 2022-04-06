@@ -14,6 +14,7 @@ import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
 //apis
 import { getStatisticalToday, getStatisticalChart, getStatisticalProduct } from 'apis/statis'
 import moment from 'moment'
+import { IMAGE_DEFAULT } from 'consts'
 
 const Overview = () => {
   const branchIdApp = useSelector((state) => state.branch.branchId)
@@ -30,7 +31,6 @@ const Overview = () => {
     try {
       setLoadingSkeleton(true)
       const resToday = await getStatisticalToday({ branch_id: branchIdApp })
-      console.log(resToday)
       if (resToday.status === 200) setStatisticalToday(resToday.data.data)
       const resChart = await getStatisticalChart({ branch_id: branchIdApp })
       if (resChart.status === 200) {
@@ -40,6 +40,7 @@ const Overview = () => {
       }
 
       const resProduct = await getStatisticalProduct({ branch_id: branchIdApp })
+      console.log(resProduct)
       if (resProduct.status === 200) setStatisticalProduct(resProduct.data.data)
 
       setLoadingSkeleton(false)
@@ -48,6 +49,8 @@ const Overview = () => {
       console.log(e)
     }
   }
+
+  console.log(statisticalToday)
 
   useEffect(() => {
     _getStatistical()
@@ -86,10 +89,13 @@ const Overview = () => {
                   <InfoCircleOutlined />
                 </Row>
                 <span style={{ marginBottom: 0, fontWeight: 700, fontSize: 17, color: '#5B6BE8' }}>
-                  {e === 'Tổng đơn hàng' && formatCash(statisticalToday.sum_order || 0)}
-                  {e === 'Tổng giá vốn' && formatCash(statisticalToday.sum_origin_cost || 0)}
-                  {e === 'Tổng doanh thu' && formatCash(statisticalToday.sum_revenue || 0)}
-                  {e === 'Tổng lợi nhuận' && formatCash(statisticalToday.sum_profit || 0)}
+                  {e.name === 'Tổng đơn hàng'
+                    ? formatCash(statisticalToday?.sum_order)
+                    : e.name === 'Tổng giá vốn'
+                    ? formatCash(statisticalToday?.sum_origin_cost)
+                    : e.name === 'Tổng doanh thu'
+                    ? formatCash(statisticalToday?.sum_revenue)
+                    : formatCash(statisticalToday?.sum_profit)}
                 </span>
               </div>
             ))}
@@ -145,7 +151,11 @@ const Overview = () => {
                         }
                       >
                         <Col span={5}>
-                          <img alt="" src={e.image && e.image} width="50px" />
+                          <img
+                            alt=""
+                            src={e.image && e.image.length ? e.image : IMAGE_DEFAULT}
+                            width="50px"
+                          />
                         </Col>
                         <Col span={12}>
                           <Row>{e.name || e.title}</Row>

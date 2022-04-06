@@ -500,9 +500,13 @@ export default function OrderList() {
                     >
                       In đơn hàng
                     </Button>
-                    <Button style={{ width: 140 }} size="large">
-                      Sửa đơn hàng
-                    </Button>
+                    {orders && orders.bill_status === 'DRAFT' ? (
+                      <Button style={{ width: 140 }} size="large">
+                        Sửa đơn hàng
+                      </Button>
+                    ) : (
+                      ''
+                    )}
                   </Space>
                 </Row>
                 <div className="table-product-in-order">
@@ -597,6 +601,12 @@ export default function OrderList() {
               ...column,
               render: (text, record) => text && moment(text).format('DD/MM/YYYY HH:mm'),
               sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
+            }
+          if (column.key === 'channel')
+            return {
+              ...column,
+              render: (text, record, index) => <span>{text}</span>,
+              //   (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
             }
           if (column.key === 'customer')
             return {
