@@ -715,12 +715,11 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
-        if (order.status == 'COMPLETE') {
-            console.log(`asd`);
-            order['verifier_id'] = Number(req.user.user_id);
-            order['verify_date'] = moment().tz(TIMEZONE).format();
-            order['completer_id'] = Number(req.user.user_id);
-            order['complete_date'] = moment().tz(TIMEZONE).format();
+        if (_order.status == 'COMPLETE') {
+            _order['verifier_id'] = Number(req.user.user_id);
+            _order['verify_date'] = moment().tz(TIMEZONE).format();
+            _order['completer_id'] = Number(req.user.user_id);
+            _order['complete_date'] = moment().tz(TIMEZONE).format();
             let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
@@ -733,12 +732,12 @@ module.exports._updateImportOrder = async (req, res, next) => {
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let insertLocations = [];
             let insertInventories = [];
-            order.products.map((eProduct) => {
+            _order.products.map((eProduct) => {
                 insertLocations.push({
                     location_id: ++locationId,
                     product_id: eProduct.product_id,
                     variant_id: eProduct.variant_id,
-                    branch_id: (order.import_location && order.import_location.branch_id) || 0,
+                    branch_id: (_order.import_location && _order.import_location.branch_id) || 0,
                     name: importLocation.name,
                     import_price: eProduct.import_price,
                     quantity: eProduct.quantity,
@@ -751,7 +750,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     inventory_id: ++inventoryId,
                     product_id: eProduct.product_id,
                     variant_id: eProduct.variant_id,
-                    branch_id: (order.import_location && order.import_location.branch_id) || 0,
+                    branch_id: (_order.import_location && _order.import_location.branch_id) || 0,
                     import_quantity: eProduct.quantity,
                     import_price: eProduct.import_price,
                     export_quantity: 0,
