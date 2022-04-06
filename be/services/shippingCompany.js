@@ -175,6 +175,14 @@ module.exports._get = async (req, res, next) => {
         $match: { create_date: { $lte: req.query.to_date } },
       })
     }
+    aggregateQuery.push({
+      $lookup: {
+        from: 'CardCompareItem',
+        localField: 'card_id',
+        foreignField: 'card_id',
+        as: 'list_order',
+      },
+    })
     // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
     if (req.query.name) {
       aggregateQuery.push({
@@ -462,7 +470,6 @@ module.exports._importCompareCard = async (req, res, next) => {
       excelData.Sheets[excelData.SheetNames[0]]
     )
     var _urlFile = await uploadWSB(req.file)
-    console.log(_urlFile)
 
     var fields = [
       'ma_van_don_(*)',
@@ -480,6 +487,39 @@ module.exports._importCompareCard = async (req, res, next) => {
 
     if (req.body.status != 'DRAFT' && req.body.status != 'COMPLETE')
       throw new Error('400: Trạng thái phiếu không hợp lệ')
+
+    var card_confirm_shipping = {
+      shipping_company_id: parseInt(req.body.shipping_company_id),
+    }
+
+    var appSetting = await client
+      .db(req.user.database)
+      .collection('AppSetting')
+      .findOne({
+        name: 'CardConfirmShipping',
+      })
+
+    card_confirm_shipping.card_id = parseInt(appSetting.value) + 1
+    await client
+      .db(DB)
+      .collection('AppSetting')
+      .updateOne(
+        {
+          name: 'CardConfirmShipping',
+        },
+        {
+          $set: {
+            value: card_confirm_shipping.card_id,
+          },
+        }
+      )
+    card_confirm_shipping.create_date = moment().tz(TIMEZONE).format()
+    card_confirm_shipping.total_order = rows.length
+    card_confirm_shipping.link_file = _urlFile
+    await client
+      .db(req.user.database)
+      .collection('CardCompare')
+      .insertOne(card_confirm_shipping)
 
     // valid date
     rows.map((item) => {
@@ -531,10 +571,10 @@ module.exports._importCompareCard = async (req, res, next) => {
       .toArray()
 
     // Tien hanh doi soat
-    var code = moment().tz(process.env.TIMEZONE).format('yyyyMMDD')
+
     for (var j = 0; j < rows.length; j++) {
+      rows[j].card_id = card_confirm_shipping.card_id
       var is_find = false
-      rows[j].code = code
       rows[j].tracking_number = rows[j].ma_van_don
       rows[j].date_receive_order = rows[j].ngay_nhan_don
       rows[j].date_complete_order = rows[j].ngay_hoan_thanh
