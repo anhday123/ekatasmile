@@ -24,10 +24,16 @@ import {
   Tag,
   Switch,
   Modal,
+  Tooltip,
 } from 'antd'
 
 //icons
-import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons'
 
 //apis
 import { uploadFile } from 'apis/upload'
@@ -407,7 +413,6 @@ export default function Category() {
                       </div>
 
                       <Button
-                        style={{ display: conditions.length === 1 && 'none' }}
                         onClick={() => {
                           const conditionsNew = [...conditions]
                           conditionsNew.splice(index, 1)
@@ -433,17 +438,27 @@ export default function Category() {
                   </Row> */}
                   </>
                 ))}
-                <Button
-                  style={{ borderRadius: 6, width: 'max-content', marginTop: 30 }}
-                  type="primary"
-                  onClick={() => {
-                    const conditionsNew = [...conditions]
-                    conditionsNew.push({ name: 'name', operator: 'is_equal_to', value: '' })
-                    setConditions([...conditionsNew])
-                  }}
-                >
-                  Thêm điều kiện khác
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: 15 }}>
+                  <Button
+                    style={{ borderRadius: 6, width: 'max-content' }}
+                    type="primary"
+                    onClick={() => {
+                      const conditionsNew = [...conditions]
+                      conditionsNew.push({ name: 'name', operator: 'is_equal_to', value: '' })
+                      setConditions([...conditionsNew])
+                    }}
+                  >
+                    Thêm điều kiện khác
+                  </Button>
+                  <Tooltip
+                    placement="rightTop"
+                    title="Điều kiện nhóm sản phẩm giúp bạn tự động ghép nhóm cho sản phẩm khi nhập file hàng loạt sản phẩm"
+                  >
+                    <a>
+                      <QuestionCircleOutlined style={{ fontSize: 20, marginLeft: 8 }} />
+                    </a>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>

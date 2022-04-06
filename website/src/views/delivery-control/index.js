@@ -46,6 +46,8 @@ import TitlePage from 'components/title-page'
 import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 import { getAllBranch } from 'apis/branch'
+import { getShippings } from 'apis/shipping'
+import { getEnumPlatform } from 'apis/enum'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
@@ -53,6 +55,8 @@ export default function DeliveryControl() {
   let printOrderRef = useRef()
   const branchIdApp = useSelector((state) => state.branch.branchId)
   const history = useHistory()
+  const [shippingCompany, setShippingCompany] = useState([])
+  const [platforms, setPlatForms] = useState([])
   const typingTimeoutRef = useRef(null)
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
   const [columns, setColumns] = useState([])
@@ -65,6 +69,7 @@ export default function DeliveryControl() {
   const [branches, setBranches] = useState([])
   const [optionSearchName, setOptionSearchName] = useState('code')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: PAGE_SIZE })
+  const [paramsFilterOther, setParamsFilterOther] = useState({})
   const [valueSearch, setValueSearch] = useState('')
   const [visibleDrawer, setVisibleDrawer] = useState(false)
 
@@ -108,6 +113,22 @@ export default function DeliveryControl() {
     if (value) paramsFilter[attribute] = value
     else delete paramsFilter[attribute]
     setParamsFilter({ ...paramsFilter })
+  }
+
+  const _onChangeOtherFilter = (attribute = '', value = '') => {
+    if (value) paramsFilterOther[attribute] = value
+    else {
+      delete paramsFilterOther[attribute]
+      delete paramsFilter[attribute]
+    }
+    setParamsFilterOther({ ...paramsFilterOther })
+  }
+
+  console.log(paramsFilterOther)
+  console.log(paramsFilter)
+
+  const _submitFilterOther = () => {
+    setParamsFilter({ ...paramsFilter, ...paramsFilterOther })
   }
 
   const columnsProduct = [
@@ -180,8 +201,28 @@ export default function DeliveryControl() {
 
   const _getEmployees = async () => {
     try {
-      const res = await getEmployees()
+      const res = await getEmployees({ role_id: 2 })
       if (res.status === 200) setEmployees(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getShippingCompany = async () => {
+    try {
+      const res = await getShippings()
+      console.log(res)
+      if (res.status === 200) setShippingCompany(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getPlatform = async () => {
+    try {
+      const res = await getEnumPlatform()
+      console.log(res)
+      if (res.status === 200) setPlatForms(res.data.data)
     } catch (error) {
       console.log(error)
     }
@@ -215,6 +256,8 @@ export default function DeliveryControl() {
     _getStatus()
     _getEmployees()
     _getBranch()
+    _getShippingCompany()
+    _getPlatform()
   }, [])
 
   useEffect(() => {
@@ -223,7 +266,17 @@ export default function DeliveryControl() {
 
   return (
     <div className="card">
-      <Drawer title="Bộ lọc khác" placement="right" onClose={toggleDrawer} visible={visibleDrawer}>
+      <Drawer
+        title="Bộ lọc khác"
+        placement="right"
+        onClose={toggleDrawer}
+        visible={visibleDrawer}
+        extra={
+          <Button onClick={_submitFilterOther} type="primary">
+            Lọc
+          </Button>
+        }
+      >
         <Collapse defaultActiveKey={['1']} ghost>
           <Panel header="Đối tác giao hàng" key="1">
             <Select
@@ -231,11 +284,15 @@ export default function DeliveryControl() {
               style={{ width: '100%' }}
               size={FILTER_SIZE}
               allowClear
+              // value={paramsFilterOther.shipping_company_id || null}
+              onChange={(value) => _onChangeOtherFilter('shipping_company_id', value)}
             >
-              <Select.Option value=""></Select.Option>
+              {shippingCompany.map((item) => (
+                <Select.Option value={item.shipping_company_id}>{item.name}</Select.Option>
+              ))}
             </Select>
           </Panel>
-          <Panel header="Trạng thái đối soát" key="2">
+          {/* <Panel header="Trạng thái đối soát" key="2">
             <Select
               placeholder="Trạng thái đối soát"
               style={{ width: '100%' }}
@@ -254,8 +311,8 @@ export default function DeliveryControl() {
             >
               <Select.Option value=""></Select.Option>
             </Select>
-          </Panel>
-          <Panel header="Ngày xuất kho" key="4">
+          </Panel> */}
+          {/* <Panel header="Ngày xuất kho" key="4">
             <RangePicker
               size={FILTER_SIZE}
               onChange={_onChangeDate}
@@ -266,23 +323,30 @@ export default function DeliveryControl() {
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
               }}
             />
-          </Panel>
+          </Panel> */}
           <Panel header="Nguồn" key="5">
-            <Select placeholder="Nguồn" style={{ width: '100%' }} size={FILTER_SIZE} allowClear>
-              <Select.Option value=""></Select.Option>
+            <Select
+              placeholder="Nguồn"
+              style={{ width: '100%' }}
+              size={FILTER_SIZE}
+              allowClear
+              // value={paramsFilterOther.platform || null}
+              onChange={(value) => _onChangeOtherFilter('platform', value)}
+            >
+              {platforms.map((item) => (
+                <Select.Option value={item.name}>{item.label}</Select.Option>
+              ))}
             </Select>
           </Panel>
           <Panel header="Nhân viên tạo" key="6">
             <Select
-              value={paramsFilter.employee_name || ''}
-              onChange={(value) => _onChangeFilter('employee_name', value)}
+              onChange={(value) => _onChangeOtherFilter('employee_name', value)}
               showSearch
               size={FILTER_SIZE}
               placeholder="Chọn nhân viên"
               style={{ width: '100%' }}
               allowClear
             >
-              <Select.Option value="">Tất cả</Select.Option>
               {employees.map((employee, index) => (
                 <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
                   {employee.first_name} {employee.last_name}
@@ -290,15 +354,16 @@ export default function DeliveryControl() {
               ))}
             </Select>
           </Panel>
-          <Panel header="Địa chỉ giao hàng" key="7">
+          {/* <Panel header="Địa chỉ giao hàng" key="7">
             <Input
               style={{ width: '100%' }}
               prefix={<SearchOutlined />}
               name="address"
+              onBlur={(e) => _onChangeFilter('address', e.target.value)}
               placeholder="Tìm kiếm theo địa chỉ giao hàng"
               allowClear
             />
-          </Panel>
+          </Panel> */}
         </Collapse>
       </Drawer>
       <Print />
@@ -364,6 +429,7 @@ export default function DeliveryControl() {
               <Select.Option value="tracking_number">Mã vận đơn</Select.Option>
               <Select.Option value="customer_name">Tên khách hàng</Select.Option>
               <Select.Option value="customer_phone">SĐT khách hàng</Select.Option>
+              <Select.Option value="address">Địa chỉ giao hàng</Select.Option>
             </Select>
           </Col>
 

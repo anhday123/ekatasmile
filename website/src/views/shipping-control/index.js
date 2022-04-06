@@ -1,23 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { FILTER_COL_HEIGHT, FILTER_SIZE, PERMISSIONS, ROUTES } from 'consts'
-import { useHistory } from 'react-router-dom'
-import { compare, formatCash } from 'utils'
-
+import { SearchOutlined } from '@ant-design/icons'
 //antd
-import { Button, Space, Row, Input, Col, Select, DatePicker, Table } from 'antd'
-import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
-
+import { Col, DatePicker, Input, Row, Select, Space, Table } from 'antd'
+import { getEmployees } from 'apis/employee'
 //apis
 import { addShippingControlWithFile, getShippingControlList, getShippings } from 'apis/shipping'
-import { getEmployees } from 'apis/employee'
-
-//components
-import Permission from 'components/permission'
-import TitlePage from 'components/title-page'
 import ImportCsv from 'components/ImportCSV'
 import SettingColumns from 'components/setting-columns'
-import columnsShippingControl from './columns'
+import TitlePage from 'components/title-page'
+import { FILTER_COL_HEIGHT, FILTER_SIZE } from 'consts'
 import moment from 'moment'
+import React, { useEffect, useRef, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { compare, formatCash } from 'utils'
+import columnsShippingControl from './columns'
 
 export default function ShippingControl() {
   const history = useHistory()
@@ -105,7 +100,12 @@ export default function ShippingControl() {
     try {
       setLoading(true)
       const res = await getShippings()
-      if (res.status === 200) setShippings(res.data.data)
+      console.log(res)
+      if (res.status === 200) {
+        setShippings(res.data.data)
+        const defaultShippingId = res.data.data.find((item) => item.default === true)
+        setShippingId(defaultShippingId.shipping_company_id)
+      }
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -153,7 +153,7 @@ export default function ShippingControl() {
                     optionFilterProp="children"
                     onChange={setShippingId}
                     value={shippingId}
-                    defaultValue={shippings.length !== 0 && shippings[0].name}
+                    defaultValue={shippingId}
                     placeholder="Chọn đơn vị vận chuyển"
                     style={{ width: 250 }}
                   >
