@@ -441,6 +441,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     'so-luong-nhap': 'number',
                 };
                 let errorColumns = [];
+                let eRow = { ...rows[i] };
                 for (let j in eRow) {
                     let field = stringHandle(j, { removeStringInBrackets: 'round', createSlug: true });
                     _row[field] = eRow[j];
@@ -540,15 +541,15 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 };
             }
             if (_orders[eRow['ma-phieu-nhap']]) {
-                if (isNaN(eRow['gia-nhap'])) throw new Error('400: Giá nhập không hợp lệ');
+                // if (isNaN(eRow['gia-nhap'])) throw new Error('400: Giá nhập không hợp lệ');
 
-                if (isNaN(eRow['chi-phi-dich-vu'])) throw new Error('400: Cột Phí dịch vụ không hợp lệ');
+                // if (isNaN(eRow['chi-phi-dich-vu'])) throw new Error('400: Cột Phí dịch vụ không hợp lệ');
 
-                if (isNaN(eRow['phi-van-chuyen'])) throw new Error('400: Cột Phí vận chuyển không hợp lệ');
+                // if (isNaN(eRow['phi-van-chuyen'])) throw new Error('400: Cột Phí vận chuyển không hợp lệ');
 
-                if (isNaN(eRow['tong-cong'])) throw new Error('400: Cột Tổng cộng không hợp lệ');
+                // if (isNaN(eRow['tong-cong'])) throw new Error('400: Cột Tổng cộng không hợp lệ');
 
-                if (isNaN(eRow['so-luong-nhap'])) throw new Error('400: Cột Số lượng nhập không hợp lệ');
+                // if (isNaN(eRow['so-luong-nhap'])) throw new Error('400: Cột Số lượng nhập không hợp lệ');
 
                 if (eRow['ma-san-pham'] && eRow['ma-phien-ban']) {
                     _orders[eRow['ma-phieu-nhap']].products.push({
