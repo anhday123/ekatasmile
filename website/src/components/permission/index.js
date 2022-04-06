@@ -3,8 +3,8 @@ import jwt_decode from 'jwt-decode'
 
 const Permission = ({ permissions, children, ...props }) => {
   try {
-    const context =
-      localStorage.getItem('accessToken') && jwt_decode(localStorage.getItem('accessToken'))
+    const token = localStorage.getItem('accessToken')
+    const context = token && jwt_decode(token)
 
     if (!context) {
       return null

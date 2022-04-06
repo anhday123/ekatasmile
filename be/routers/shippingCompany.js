@@ -7,6 +7,7 @@ const router = express.Router();
 const shippingCompany = require(`../controllers/shippingCompany`);
 const { auth } = require(`../middleware/jwt`);
 
+
 router.route(`/create`).post(auth, shippingCompany._create);
 router.route(`/update/:shipping_company_id`).patch(auth, shippingCompany._update);
 router.route(`/`).get(auth, shippingCompany._get);

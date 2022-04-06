@@ -526,6 +526,10 @@ export default function OrderList() {
                               <div>{record.total_cost ? formatCash(+record.total_cost) : 0}</div>
                             </Row>
                             <Row wrap={false} justify="space-between">
+                              <div>Tổng thuế</div>
+                              <div>{record.total_tax ? formatCash(+record.total_tax) : 0}</div>
+                            </Row>
+                            <Row wrap={false} justify="space-between">
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
