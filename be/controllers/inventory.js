@@ -373,6 +373,10 @@ module.exports._createImportOrder = async (req, res, next) => {
                     import_price: eProduct.import_price,
                     export_quantity: 0,
                     export_price: 0,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
                 });
             });
             await client
@@ -752,6 +756,10 @@ module.exports._updateImportOrder = async (req, res, next) => {
                     import_price: eProduct.import_price,
                     export_quantity: 0,
                     export_price: 0,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
                 });
             });
             await client
@@ -1202,6 +1210,10 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     import_price: 0,
                     export_quantity: eLocation.quantity,
                     export_price: eLocation.import_price,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
                 });
                 insertInventories.push({
                     inventory_id: ++inventoryId,
@@ -1214,6 +1226,10 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     import_price: eLocation.import_price,
                     export_quantity: 0,
                     export_price: 0,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
                 });
             });
             await client
@@ -1587,6 +1603,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                                 import_price: 0,
                                 export_quantity: detailQuantity,
                                 export_price: location.import_price,
+                                create_date: moment().tz(TIMEZONE).format(),
+                                creator_id: Number(req.user.user_id),
+                                last_update: moment().tz(TIMEZONE).format(),
+                                updater_id: req.user.user_id,
                             };
                         } else {
                             _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity +=
@@ -1607,6 +1627,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                                 import_price: 0,
                                 export_quantity: location.quantity,
                                 export_price: location.import_price,
+                                create_date: moment().tz(TIMEZONE).format(),
+                                creator_id: Number(req.user.user_id),
+                                last_update: moment().tz(TIMEZONE).format(),
+                                updater_id: req.user.user_id,
                             };
                         } else {
                             _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity +=
@@ -1692,6 +1716,10 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                     import_price: eInventory.export_price,
                     export_quantity: 0,
                     export_price: 0,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: Number(req.user.user_id),
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
                 });
             });
             await client
