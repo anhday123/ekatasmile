@@ -5,12 +5,7 @@ module.exports = {
             name: 'AdminOrder',
             watch: true,
         },
-        {
-            script: './service-worker/',
-            watch: true,
-        },
     ],
-
     deploy: {
         production: {
             user: 'root',
