@@ -186,7 +186,7 @@ export default function DeliveryControl() {
   const _getDeliveryOrders = async () => {
     try {
       setLoading(true)
-      const res = await getOrders({ ...paramsFilter, branch_id: branchIdApp })
+      const res = await getOrders({ ...paramsFilter, branch_id: branchIdApp, is_delivery: true })
       console.log(res)
       if (res.status === 200) {
         setOrders(res.data.data)
@@ -561,11 +561,10 @@ export default function DeliveryControl() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${
-                                      record.promotion.type && record.promotion.type !== 'VALUE'
-                                        ? '%'
-                                        : ''
-                                    }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
+                                    ? '%'
+                                    : ''
+                                  }`
                                   : 0}
                               </div>
                             </Row>
