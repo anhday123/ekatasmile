@@ -403,13 +403,13 @@ module.exports._importCompareCard = async (req, res, next) => {
     )
 
     var fields = [
-      'ma_van_don',
-      'ngay_nhan_don',
-      'ngay_hoan_thanh',
+      'ma_van_don_(*)',
+      'ngay_nhan_don_(*)',
+      'ngay_hoan_thanh_(*)',
       'khoi_luong',
-      'tien_cod',
+      'tien_cod_(*)',
       'phi_bao_hiem',
-      'phi_giao_hang',
+      'phi_giao_hang_(*)',
       'phi_luu_kho',
     ]
 
