@@ -175,11 +175,13 @@ export default function EmployeeForm({ children, reloadData, record }) {
           <Row justify="space-between" align="middle">
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
-                label="Tài khoản"
+                label="Số điện thoại"
                 name="username"
-                rules={[{ required: record ? false : true, message: 'Vui lòng nhập tài khoản!' }]}
+                rules={[
+                  { required: record ? false : true, message: 'Vui lòng nhập số điện thoại!' },
+                ]}
               >
-                <Input disabled={record ? true : false} placeholder="Nhập tài khoản" />
+                <Input disabled={record ? true : false} placeholder="Nhập số điện thoại" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11} style={{ display: record && 'none' }}>
@@ -211,7 +213,12 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 label="Chi nhánh làm việc"
                 rules={[{ required: true, message: 'Vui lòng chọn chi nhánh làm việc' }]}
               >
-                <Select value={branchIdApp} placeholder="Chọn chi nhánh làm việc">
+                <Select
+                  showSearch
+                  optionFilterProp="children"
+                  value={branchIdApp}
+                  placeholder="Chọn chi nhánh làm việc"
+                >
                   {branches.map((branch, index) => (
                     <Select.Option value={branch.branch_id} key={index}>
                       {branch.name}
