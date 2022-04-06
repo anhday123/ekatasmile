@@ -357,6 +357,7 @@ module.exports._create = async (req, res, next) => {
       product_handle: '',
       last_update: moment().tz(TIMEZONE).format(),
       updater_id: req.user.user_id,
+      total_cod: 0,
       // hmac: hmac,
     }
     /*
@@ -519,6 +520,11 @@ module.exports._create = async (req, res, next) => {
     }
     _order.total_base_price = total_base_price
     _order.total_profit = total_profit
+    if (_order.is_delivery) {
+      _order.total_cod = _order.final_cost
+    } else {
+      _order.total_cod = 0
+    }
 
     // Xử lí thêm thuộc tính 'trackings' để truy vết tiến độ Vận chuyển
     var enumTrackings = await client
