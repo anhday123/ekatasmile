@@ -8,7 +8,7 @@ module.exports = {
     ],
     deploy: {
         production: {
-            key: './key.pem',
+            key: '~/.ssh/id_rsa',
             user: 'root',
             host: ['103.81.87.65'],
             ref: 'origin/master',
