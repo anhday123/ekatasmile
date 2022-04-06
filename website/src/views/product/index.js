@@ -192,10 +192,10 @@ export default function Product() {
           ''
         ),
     },
-    {
-      title: 'Giá sỉ',
-      key: 'enable_bulk_price',
-    },
+    // {
+    //   title: 'Giá sỉ',
+    //   key: 'enable_bulk_price',
+    // },
   ]
 
   const _getSuppliers = async () => {
@@ -1131,18 +1131,18 @@ export default function Product() {
                             <ImagesVariant record={variant} product={record} />
                           ),
                         }
-                      if (column.key === 'enable_bulk_price')
-                        return {
-                          ...column,
-                          render: (text, variant) => (
-                            <Switch
-                              checked={variant.enable_bulk_price}
-                              onChange={(checked) =>
-                                enableBulkPrice(record, { ...variant, enable_bulk_price: checked })
-                              }
-                            />
-                          ),
-                        }
+                      // if (column.key === 'enable_bulk_price')
+                      //   return {
+                      //     ...column,
+                      //     render: (text, variant) => (
+                      //       <Switch
+                      //         checked={variant.enable_bulk_price}
+                      //         onChange={(checked) =>
+                      //           enableBulkPrice(record, { ...variant, enable_bulk_price: checked })
+                      //         }
+                      //       />
+                      //     ),
+                      //   }
 
                       return column
                     })}
