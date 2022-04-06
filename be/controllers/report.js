@@ -111,10 +111,10 @@ module.exports._getIOIReport = async (req, res, next) => {
                     from: 'Products',
                     let: { productId: '$_id.product_id' },
                     pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                    as: 'product_info',
+                    as: 'product',
                 },
             },
-            { $unwind: { path: '$product_info', preserveNullAndEmptyArrays: true } }
+            { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } }
         );
         if (/^(variant)$/g.test(req.query.type)) {
             endPeriodQuery.push(
@@ -123,10 +123,10 @@ module.exports._getIOIReport = async (req, res, next) => {
                         from: 'Variants',
                         let: { variantId: '$_id.variant_id' },
                         pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
-                        as: 'variant_info',
+                        as: 'variant',
                     },
                 },
-                { $unwind: { path: '$variant_info', preserveNullAndEmptyArrays: true } }
+                { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
             );
         }
         let beginPeriods = await client
@@ -216,68 +216,13 @@ module.exports._getIOIReport = async (req, res, next) => {
 module.exports._getInventoryReport = async (req, res, next) => {
     try {
         let aggregateQuery = [];
-        if (req.query.branch) {
-            aggregateQuery.push({ $match: { store_id: '' } });
-        }
-        if (req.query.store) {
-            aggregateQuery.push({ $match: { branch_id: '' } });
-        }
         if (req.query.branch_id) {
             let ids = req.query.branch_id.split('---').map((id) => {
                 return Number(id);
             });
-            console.log(ids);
             aggregateQuery.push({ $match: { branch_id: { $in: ids } } });
         }
-        if (req.query.store_id) {
-            aggregateQuery.push({ $match: { store_id: Number(req.query.store_id) } });
-        }
-        if (req.query['today']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
-            delete req.query.today;
-        }
-        if (req.query['yesterday']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
-            delete req.query.yesterday;
-        }
-        if (req.query['this_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
-            delete req.query.this_week;
-        }
-        if (req.query['last_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
-            delete req.query.last_week;
-        }
-        if (req.query['this_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
-            delete req.query.this_month;
-        }
-        if (req.query['last_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
-            delete req.query.last_month;
-        }
-        if (req.query['this_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
-            delete req.query.this_year;
-        }
-        if (req.query['last_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
-            delete req.query.last_year;
-        }
-        if (req.query['from_date']) {
-            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
-        }
-        if (req.query['to_date']) {
-            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             aggregateQuery.push({
                 $match: { create_date: { $gte: req.query.from_date } },
@@ -288,141 +233,57 @@ module.exports._getInventoryReport = async (req, res, next) => {
                 $match: { create_date: { $lte: req.query.to_date } },
             });
         }
-        if (req.query.warehouse_id) {
-            aggregateQuery.push({
-                $match: { branch_id: Number(req.query.warehouse_id) },
-            });
-        }
         aggregateQuery.push({ $sort: { create_date: 1 } });
-        if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
-            aggregateQuery.push({
-                $group: {
-                    _id: {
-                        product_id: '$product_id',
-                        branch_id: '$branch_id',
-                        store_id: '$store_id',
-                    },
-                    product_id: { $first: '$product_id' },
-                    branch_id: { $first: '$branch_id' },
-                    store_id: { $first: '$store_id' },
-                    // begin_quantity: { $first: '$begin_quantity' },
-                    // begin_price: { $first: '$begin_price' },
-                    // import_quantity: { $sum: '$import_quantity' },
-                    // import_price: { $sum: '$import_price' },
-                    // export_quantity: { $sum: '$export_quantity' },
-                    // export_price: { $sum: '$export_price' },
-                    // end_quantity: { $last: '$end_quantity' },
-                    // end_price: { $last: '$end_price' },
-
-                    end_quantity: { $last: '$end_quantity' },
-                    end_price: { $last: '$end_price' },
-                },
-            });
-        }
-        if (/^(variant)$/gi.test(req.query.type)) {
-            aggregateQuery.push({
-                $group: {
-                    _id: {
-                        product_id: '$product_id',
-                        variant_id: '$variant_id',
-                        branch_id: '$branch_id',
-                        store_id: '$store_id',
-                    },
-                    product_id: { $first: '$product_id' },
-                    variant_id: { $first: '$variant_id' },
-                    branch_id: { $first: '$branch_id' },
-                    store_id: { $first: '$store_id' },
-                    // begin_quantity: { $first: '$begin_quantity' },
-                    // begin_price: { $first: '$begin_price' },
-                    // import_quantity: { $sum: '$import_quantity' },
-                    // import_price: { $sum: '$import_price' },
-                    // export_quantity: { $sum: '$export_quantity' },
-                    // export_price: { $sum: '$export_price' },
-                    // end_quantity: { $last: '$end_quantity' },
-                    // end_price: { $last: '$end_price' },
-
-                    end_quantity: { $last: '$end_quantity' },
-                    end_price: { $last: '$end_price' },
-                },
-            });
-        }
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Branchs',
-                    let: { branchId: '$branch_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
-                    as: 'branch',
-                },
+        aggregateQuery.push({
+            $group: {
+                ...(() => {
+                    if (/^(product)$/gi.test(req.query.type)) {
+                        return {
+                            _id: { branch_id: '$branch_id', product_id: '$product_id' },
+                            product_id: { $first: '$product_id' },
+                        };
+                    }
+                    if (/^(variant)$/gi.test(req.query.type)) {
+                        return {
+                            _id: { branch_id: '$branch_id', product_id: '$product_id', variant_id: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
+                    }
+                })(),
+                branch_id: { $first: '$branch_id' },
+                quantity: { $sum: '$quantity' },
             },
-            { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
-        );
+        });
         // aggregateQuery.push(
         //     {
         //         $lookup: {
-        //             from: 'Stores',
-        //             let: { storeId: '$store_id' },
-        //             pipeline: [{ $match: { $expr: { $eq: ['$store_id', '$$storeId'] } } }],
-        //             as: 'store',
+        //             from: 'Branchs',
+        //             let: { branchId: '$branch_id' },
+        //             pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
+        //             as: 'branch',
         //         },
         //     },
-        //     { $unwind: { path: '$store', preserveNullAndEmptyArrays: true } }
+        //     { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
         // );
-        if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
-            aggregateQuery.push({
-                $group: {
-                    _id: { product_id: '$product_id' },
-                    product_id: { $first: '$product_id' },
-                    warehouse: {
-                        $push: {
-                            branch_id: '$branch_id',
-                            branch: '$branch',
-                            store_id: '$store_id',
-                            store: '$store',
-                            // begin_quantity: '$begin_quantity',
-                            // begin_price: '$begin_price',
-                            // import_quantity: '$import_quantity',
-                            // import_price: '$import_price',
-                            // export_quantity: '$export_quantity',
-                            // export_price: '$export_price',
-                            // end_quantity: '$end_quantity',
-                            // end_price: '$end_price',
+        // if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
+        //     aggregateQuery.push({
+        //         $group: {
+        //             _id: { product_id: '$product_id' },
+        //             product_id: { $first: '$product_id' },
+        //             warehouse: {
+        //                 $push: {
+        //                     branch_id: '$branch_id',
+        //                     branch: '$branch',
+        //                     store_id: '$store_id',
+        //                     store: '$store',
+        //                     quantity: '$end_quantity',
+        //                     price: '$end_price',
+        //                 },
+        //             },
+        //         },
+        //     });
+        // }
 
-                            quantity: '$end_quantity',
-                            price: '$end_price',
-                        },
-                    },
-                },
-            });
-        }
-        if (/^(variant)$/gi.test(req.query.type)) {
-            aggregateQuery.push({
-                $group: {
-                    _id: { variant_id: '$variant_id' },
-                    product_id: { $first: '$product_id' },
-                    variant_id: { $first: '$variant_id' },
-                    warehouse: {
-                        $push: {
-                            branch_id: '$branch_id',
-                            branch: '$branch',
-                            store_id: '$store_id',
-                            store: '$store',
-                            // begin_quantity: '$begin_quantity',
-                            // begin_price: '$begin_price',
-                            // import_quantity: '$import_quantity',
-                            // import_price: '$import_price',
-                            // export_quantity: '$export_quantity',
-                            // export_price: '$export_price',
-                            // end_quantity: '$end_quantity',
-                            // end_price: '$end_price',
-
-                            quantity: '$end_quantity',
-                            price: '$end_price',
-                        },
-                    },
-                },
-            });
-        }
         aggregateQuery.push(
             {
                 $lookup: {
