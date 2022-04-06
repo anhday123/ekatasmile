@@ -488,13 +488,14 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         variants.map((eVariant) => {
             _variants[eVariant.sku] = eVariant;
         });
-        let branch = client
+        let branch = await client
             .db(req.user.database)
             .collection('Branchs')
             .findOne({ branch_id: Number(req.body.branch_id) });
         if (!branch) {
             throw new Error(`400: chi nhánh không tồn tại!`);
         }
+        console.log(branch);
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
