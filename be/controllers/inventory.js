@@ -495,7 +495,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         if (!branch) {
             throw new Error(`400: chi nhánh không tồn tại!`);
         }
-        console.log(branch);
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
@@ -622,37 +621,39 @@ module.exports._updateImportOrder = async (req, res, next) => {
         if (!importLocation) {
             throw new Error('400: Địa điểm nhập hàng không chính xác!');
         }
-        let productIds = [];
-        let variantIds = [];
-        req.body.products.map((product) => {
-            productIds.push(product.product_id);
-            variantIds.push(product.variant_id);
-        });
-        productIds = [...new Set(productIds)];
-        variantIds = [...new Set(variantIds)];
-        let products = await client
-            .db(req.user.database)
-            .collection('Products')
-            .find({ product_id: { $in: productIds } })
-            .toArray();
-        let variants = await client
-            .db(req.user.database)
-            .collection('Variants')
-            .find({ variant_id: { $in: variantIds } })
-            .toArray();
-        let _products = {};
-        products.map((product) => {
-            _products[product.product_id] = product;
-        });
-        let _variants = {};
-        variants.map((variant) => {
-            _variants[variant.variant_id] = variant;
-        });
-        _order.products = _order.products.map((eProduct) => {
-            eProduct['product_info'] = _products[`${eProduct.product_id}`];
-            eProduct['variant_info'] = _variants[`${eProduct.variant_id}`];
-            return eProduct;
-        });
+        if (req.body.products) {
+            let productIds = [];
+            let variantIds = [];
+            req.body.products.map((product) => {
+                productIds.push(product.product_id);
+                variantIds.push(product.variant_id);
+            });
+            productIds = [...new Set(productIds)];
+            variantIds = [...new Set(variantIds)];
+            let products = await client
+                .db(req.user.database)
+                .collection('Products')
+                .find({ product_id: { $in: productIds } })
+                .toArray();
+            let variants = await client
+                .db(req.user.database)
+                .collection('Variants')
+                .find({ variant_id: { $in: variantIds } })
+                .toArray();
+            let _products = {};
+            products.map((product) => {
+                _products[product.product_id] = product;
+            });
+            let _variants = {};
+            variants.map((variant) => {
+                _variants[variant.variant_id] = variant;
+            });
+            _order.products = _order.products.map((eProduct) => {
+                eProduct['product_info'] = _products[`${eProduct.product_id}`];
+                eProduct['variant_info'] = _variants[`${eProduct.variant_id}`];
+                return eProduct;
+            });
+        }
         let payment_amount = (() => {
             let result = 0;
             if (_order.payment_info && Array.isArray(_order.payment_info) && _order.payment_info.length > 0) {
