@@ -19,8 +19,8 @@ module.exports = {
                 NODE_ENV: 'sandbox',
             },
             env_production: {
-                LOCAL_PORT: '6000',
-                GLOBAL_PORT: '6001',
+                LOCAL_PORT: '5000',
+                GLOBAL_PORT: '5001',
                 DOMAIN: 'upsale.com.vn',
                 END_POINT: 'api',
                 TIMEZONE: 'Asia/Ho_Chi_Minh',
