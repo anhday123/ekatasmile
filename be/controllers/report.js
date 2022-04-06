@@ -26,6 +26,16 @@ module.exports._getIOIReport = async (req, res, next) => {
             inPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
             endPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
         }
+        if (req.query.variant_id) {
+            beginPeriodQuery.push({ $match: { variant_id: Number(req.query.variant_id) } });
+            inPeriodQuery.push({ $match: { variant_id: Number(req.query.variant_id) } });
+            endPeriodQuery.push({ $match: { variant_id: Number(req.query.variant_id) } });
+        }
+        if (req.query.branch_id) {
+            beginPeriodQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
+            inPeriodQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
+            endPeriodQuery.push({ $match: { branch_id: Number(req.query.branch_id) } });
+        }
         beginPeriodQuery.push({
             $group: {
                 ...(() => {
@@ -110,7 +120,17 @@ module.exports._getIOIReport = async (req, res, next) => {
                 $lookup: {
                     from: 'Products',
                     let: { productId: '$_id.product_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+                        {
+                            $lookup: {
+                                from: 'Categories',
+                                let: { categoryId: '$category_id' },
+                                pipeline: [{ $match: { $expr: { $in: ['$category_id', '$$categoryId'] } } }],
+                                as: 'categories',
+                            },
+                        },
+                    ],
                     as: 'product',
                 },
             },
