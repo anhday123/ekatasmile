@@ -509,6 +509,7 @@ module.exports._importCompareCard = async (req, res, next) => {
     card_confirm_shipping.create_date = moment().tz(TIMEZONE).format()
     card_confirm_shipping.total_order = rows.length
     card_confirm_shipping.link_file = _urlFile
+    card_confirm_shipping.employee_id = req.user.user_id
     await client
       .db(req.user.database)
       .collection('CardCompare')
